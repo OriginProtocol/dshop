@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+
+<head>
+  <title>TITLE</title>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no, user-scalable=no">
+  <meta http-equiv="Content-Language" content="en">
+
+
+
+
+
+
+  <link rel="data-dir" href="DATA_DIR" />
+
+  <link rel="icon" href="favicon.ico" />
+
+
+  <link rel="stylesheet" href="vendors~app.d5ed7a71.css"
+    integrity="sha256-C8HKEuQh5FEjUSw3TH11QQX62+TaXFTm12GIOFdWEfc= sha384-T8101jtRui2EKgIblzaUqnHdQStZrKaxevClG+6uKp2RXYYi98bgYO6+dLDMhXi/"
+    crossorigin="anonymous" />
+
+
+
+  <link rel="stylesheet" href="app.d5ed7a71.css"
+    integrity="sha256-ycD0WPRLqD7W6MUfwSaHthzMzvQOkQbQH2D/CtPv/6A= sha384-T4J4vADuktqtvhKbL5sNJA47e2mV0ZW8Lfij2R7uuN+2nhjzcCVGFb5EWff3kjjY"
+    crossorigin="anonymous" />
+
+
+</head>
+
+<body>
+  <div id="app">
+    <div class="loading-screen"></div>
+  </div>
+</body>
+<script crossorigin src="dist/openpgp.min.js"></script>
+<script>
+  if (typeof window.openpgp !== 'undefined') {
+    openpgp.config.show_comment = false
+    openpgp.config.show_version = false
+    openpgp.initWorker({ path: 'dist/openpgp.worker.min.js' })
+  }
+</script>
+<script>
+  localStorage.metaMaskEnabled = true
+  localStorage.ognNetwork = "localhost"
+  localStorage.customConfig = '{"performanceMode":false,"proxyAccountsEnabled":false,"relayerEnabled":false,"provider":"http://localhost:8545"}'
+</script>
+
+
+<script src="dist/vendors~app.d5ed7a71.bundle.js"
+  integrity="sha256-BjyD0NhUFIcbfkOkn3MHQNV8o5WvN7mjFODJLKMBeZg= sha384-P8oO/fC+e6GQ5hWGw50ypmx8gckDjT9s9eJQ9c6m4l7g8GHNxvIxAtHjkIAXpDDv"
+  crossorigin="anonymous"></script>
+
+
+
+<script src="app.d5ed7a71.js"
+  integrity="sha256-QkoA9bFQ/1dhY41z56mAZJaGL3IPojnna009b63idW0= sha384-68IhzC+2Rii7N44/2sh+fzrXyi1zMabj2wb+35fU/08iLPjMhy11s7CR/hJinBZJ"
+  crossorigin="anonymous"></script>
+
+
+
+</html>

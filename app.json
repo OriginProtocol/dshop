@@ -1,0 +1,24 @@
+{
+  "name": "Origin Shop",
+  "description": "A decentralized e-commerce store.",
+  "repository": "https://github.com/OriginProtocol/origin/dapps/shop",
+  "logo": "https://www.originprotocol.com/static/img/origin-icon.png",
+  "keywords": ["ethereum", "node", "ipfs"],
+  "addons": [
+    {
+      "plan": "heroku-postgresql:hobby-dev"
+    },
+    {
+      "plan": "mailgun:starter"
+    }
+  ],
+  "env": {
+    "PROVIDER": {
+      "description": "Ethereum provider websocket",
+      "required": true
+    },
+    "WEB3_PK": {
+      "description": "Private Ethereum Key. Used to make offers on behalf of credit card users."
+    }
+  }
+}
