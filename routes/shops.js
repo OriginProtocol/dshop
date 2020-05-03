@@ -3,10 +3,10 @@ const { Seller, Shop, SellerShop, Network } = require('../models')
 const { authSellerAndShop, authRole } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
 const encConf = require('../utils/encryptedConfig')
-// const encryptedConfig = require('../utils/encryptedConfig')
 const { createShop } = require('../utils/shop')
 const setCloudflareRecords = require('../utils/cloudflare')
 const get = require('lodash/get')
+const set = require('lodash/set')
 const fs = require('fs')
 const os = require('os')
 const configs = require('../scripts/configs')
@@ -131,10 +131,40 @@ module.exports = function(app) {
       )
     })
 
+    const networkName =
+      network.networkId === 1
+        ? 'mainnet'
+        : network.networkId === 4
+        ? 'rinkeby'
+        : 'localhost'
     const html = fs.readFileSync(`${OutputDir}/public/index.html`).toString()
     fs.writeFileSync(
       `${OutputDir}/public/index.html`,
-      html.replace('TITLE', name).replace('DATA_DIR', dataDir)
+      html
+        .replace('TITLE', name)
+        .replace('DATA_DIR', dataDir)
+        .replace('PROVIDER', network.provider)
+        .replace('NETWORK', networkName)
+    )
+
+    let shopConfig = {
+      ...configs.shopConfig,
+      title: name,
+      fullTitle: name,
+      backendAuthToken: dataDir,
+      supportEmail: `${name} Store <${dataDir}@ogn.app>`,
+      emailSubject: `Your ${name} Order`,
+      pgpPublicKey: pgpPublicKey.replace(/\\r/g, '')
+    }
+    shopConfig = set(
+      shopConfig,
+      `networks[${network.networkId}].backend`,
+      req.body.backend
+    )
+    shopConfig = set(
+      shopConfig,
+      `networks[${network.networkId}].listingId`,
+      req.body.listingId
     )
 
     if (printfulApi) {
@@ -145,16 +175,6 @@ module.exports = function(app) {
       await writeProductData({ OutputDir })
       await downloadPrintfulMockups({ OutputDir })
       await resizePrintfulMockups({ OutputDir })
-    }
-
-    const shopConfig = {
-      ...configs.shopConfig,
-      title: name,
-      fullTitle: name,
-      backendAuthToken: dataDir,
-      supportEmail: `${name} Store <${dataDir}@ogn.app>`,
-      emailSubject: `Your ${name} Order`,
-      pgpPublicKey: pgpPublicKey.replace(/\\r/g, '')
     }
 
     const shopConfigPath = `${OutputDir}/data/config.json`
