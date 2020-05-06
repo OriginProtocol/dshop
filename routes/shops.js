@@ -1,5 +1,5 @@
 const omit = require('lodash/omit')
-const { Seller, Shop, SellerShop, Network } = require('../models')
+const { Seller, Shop, SellerShop, Network, Sequelize } = require('../models')
 const { authSellerAndShop, authRole } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
 const encConf = require('../utils/encryptedConfig')
@@ -13,6 +13,7 @@ const configs = require('../scripts/configs')
 const deploy = require('ipfs-deploy')
 const { exec } = require('child_process')
 const prime = require('../utils/primeIpfs')
+const ipfsClient = require('ipfs-http-client')
 
 const downloadProductData = require('../scripts/printful/downloadProductData')
 const downloadPrintfulMockups = require('../scripts/printful/downloadPrintfulMockups')
@@ -65,15 +66,43 @@ module.exports = function(app) {
       shops.push(shopData)
     }
 
-    res.json({
-      success: true,
-      shops
-    })
+    res.json({ success: true, shops })
   })
 
   app.post('/shop', async (req, res) => {
     if (!req.session.sellerId) {
       return res.json({ success: false, reason: 'not authed' })
+    }
+
+    const existingShop = await Shop.findOne({
+      where: {
+        [Sequelize.Op.or]: [
+          { listingId: req.body.listingId },
+          { authToken: req.body.dataDir }
+        ]
+      }
+    })
+    if (existingShop) {
+      const field =
+        existingShop.listingId === req.body.listingId ? 'listingId' : 'dataDir'
+      return res.json({
+        success: false,
+        reason: 'invalid',
+        field,
+        message: 'Already exists'
+      })
+    }
+
+    const network = await Network.findOne({ where: { active: true } })
+    const networkConfig = encConf.getConfig(network.config)
+    const netAndVersion = `${network.networkId}-${network.marketplaceVersion}`
+    if (req.body.listingId.indexOf(netAndVersion) !== 0) {
+      return res.json({
+        success: false,
+        reason: 'invalid',
+        field: 'listingId',
+        message: `Must start with ${netAndVersion}`
+      })
     }
 
     const shopResponse = await createShop({
@@ -89,9 +118,6 @@ module.exports = function(app) {
         .status(400)
         .json({ success: false, message: 'Invalid shop data' })
     }
-
-    const network = await Network.findOne({ where: { active: true } })
-    const networkConfig = encConf.getConfig(network.config)
 
     const shopId = shopResponse.shop.id
 
@@ -114,7 +140,11 @@ module.exports = function(app) {
     await SellerShop.create({ sellerId: req.session.sellerId, shopId, role })
     console.log(`Added role OK`)
 
-    const { dataDir, name, pgpPublicKey, printfulApi } = req.body
+    const { dataDir, name, pgpPublicKey, printfulApi, shopType } = req.body
+
+    if (shopType === 'blank') {
+      return res.json({ success: true })
+    }
 
     const OutputDir = `${os.tmpdir()}/dshop`
     await new Promise(resolve => exec(`rm -rf ${OutputDir}`, resolve))
@@ -167,7 +197,9 @@ module.exports = function(app) {
       req.body.listingId
     )
 
-    if (printfulApi) {
+    console.log(`Shop type: ${shopType}`)
+
+    if (shopType === 'printful' && printfulApi) {
       const apiAuth = Buffer.from(printfulApi).toString('base64')
       const PrintfulURL = 'https://api.printful.com'
 
@@ -175,6 +207,16 @@ module.exports = function(app) {
       await writeProductData({ OutputDir })
       await downloadPrintfulMockups({ OutputDir })
       await resizePrintfulMockups({ OutputDir })
+    } else if (shopType === 'single-product' || shopType === 'multi-product') {
+      await new Promise((resolve, reject) => {
+        exec(
+          `cp -r ${__dirname}/../data/shop-templates/${shopType} ${OutputDir}/data`,
+          (error, stdout) => {
+            if (error) reject(error)
+            else resolve(stdout)
+          }
+        )
+      })
     }
 
     const shopConfigPath = `${OutputDir}/data/config.json`
@@ -193,37 +235,51 @@ module.exports = function(app) {
       )
     })
 
+    let hash
     const publicDirPath = `${OutputDir}/public`
-    const hash = await deploy({
-      publicDirPath,
-      remotePinners: ['pinata'],
-      siteDomain: dataDir,
-      credentials: {
-        pinata: {
-          apiKey: networkConfig.pinataKey,
-          secretApiKey: networkConfig.pinataSecret
+    if (networkConfig.pinataKey) {
+      hash = await deploy({
+        publicDirPath,
+        remotePinners: ['pinata'],
+        siteDomain: dataDir,
+        credentials: {
+          pinata: {
+            apiKey: networkConfig.pinataKey,
+            secretApiKey: networkConfig.pinataSecret
+          }
         }
+      })
+
+      await prime(`https://gateway.pinata.cloud/ipfs/${hash}`, publicDirPath)
+      await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
+      await prime(`https://ipfs-prod.ogn.app/ipfs/${hash}`, publicDirPath)
+    } else if (network.ipfsApi.indexOf('localhost') > 0) {
+      const ipfs = ipfsClient(network.ipfsApi)
+      const allFiles = []
+      const glob = ipfsClient.globSource(publicDirPath, { recursive: true })
+      for await (const file of ipfs.add(glob)) {
+        allFiles.push(file)
       }
-    })
+      hash = String(allFiles[allFiles.length - 1].cid)
+    }
 
-    const subdomain = req.body.hostname
-    const zone = networkConfig.domain
-    const domain = `https://${subdomain}.${zone}`
+    let domain
+    if (networkConfig.cloudflareApiKey) {
+      const subdomain = req.body.hostname
+      const zone = networkConfig.domain
+      domain = `https://${subdomain}.${zone}`
 
-    await setCloudflareRecords({
-      email: networkConfig.cloudflareEmail,
-      key: networkConfig.cloudflareApiKey,
-      ipfsGateway: 'ipfs-prod.ogn.app',
-      zone,
-      subdomain,
-      hash
-    })
+      await setCloudflareRecords({
+        email: networkConfig.cloudflareEmail,
+        key: networkConfig.cloudflareApiKey,
+        ipfsGateway: 'ipfs-prod.ogn.app',
+        zone,
+        subdomain,
+        hash
+      })
+    }
 
-    await prime(`https://gateway.pinata.cloud/ipfs/${hash}`, publicDirPath)
-    await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
-    await prime(`https://ipfs-prod.ogn.app/ipfs/${hash}`, publicDirPath)
-
-    res.json({ success: true, hash, domain })
+    res.json({ success: true, hash, domain, gateway: network.ipfs })
   })
 
   app.post(
