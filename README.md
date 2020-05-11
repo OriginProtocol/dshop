@@ -98,4 +98,5 @@ Add new migration:
 
 ## Sync Repos
 
-    rsync -rv --exclude=.git --exclude=.gitignore --exclude=scripts/output backend/ --exclude=backend/data/dshop.db DESTINATION
+    npm run build:dist
+    rsync -rv --exclude=.git --exclude=.gitignore --exclude=scripts/output --exclude=backend/data/dshop.db --exclude=/node_modules --delete backend/ DESTINATION
