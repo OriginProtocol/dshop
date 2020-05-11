@@ -95,3 +95,7 @@ Export key pair in base64 with no newlines:
 Add new migration:
 
     npx sequelize migration:generate --name migrationName --migrations-path=./data/migrations
+
+## Sync Repos
+
+    rsync -rv --exclude=.git --exclude=.gitignore --exclude=scripts/output backend/ --exclude=backend/data/dshop.db DESTINATION

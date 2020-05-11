@@ -1270,23 +1270,6 @@
   flex-wrap: wrap-reverse;
 }
 
-.admin.login {
-  margin: 0;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  -ms-flex-direction: column;
-  -moz-flex-direction: column;
-  -webkit-flex-direction: column;
-  flex-direction: column;
-}
-
-.admin.login input {
-  text-align: center;
-}
-
 .admin-orders tbody tr {
   cursor: pointer;
 }
