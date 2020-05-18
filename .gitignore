@@ -1,5 +1,141 @@
-node_modules
+# Common #
+##########
+.env
+.idea
+.sass-cache
+build/
+build_webpack/
+coverage
+coverage.json
+npm-debug.log*
+node_modules/
+
+# IDEs and editors
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Deployment #
+##############
+secrets.yaml
+secrets-dev.yaml
+secrets-staging.yaml
+secrets-prod.yaml
+github.key
+
+# Development #
+###############
+/devops/.ipfs
+
+# origin-bridge #
+#################
+
+# docs #
+###############
+/docs/*.gem
+/docs/*.rbc
+/docs/.bundle
+/docs/.config
+/docs/InstalledFiles
+/docs/lib/bundler/man
+/docs/pkg
+/docs/rdoc
+/docs/spec/reports
+/docs/test/tmp
+/docs/test/version_tmp
+/docs/tmp
+/docs/.cache
+/docs/.vagrant
+/docs/.yardoc
+/docs/_yardoc
+/docs/doc/
+
+# origin-js #
+#############
+/packages/origin-js/dist
+/packages/origin-js/connect.lock
+/packages/origin-js/libpeerconnection.log
+/packages/origin-js/testem.log
+/packages/origin-js/typings
+
+# infra/linking #
+#################
+/infra/linking/*.rdb
+/infra/linking/*.p8
+/infra/linking/dist
+
+# infra/notifications #
+# #####################
+/infra/notifications/firebase-service.json
+
+# origin-dapp-creator-server #
+##############################
+/infra/dapp-creator-server/dist
+
+# origin-mobile #
+#################
+/mobile/android/sentry.properties
+/mobile/ios/sentry.properties
+
+# Recommended rules per https://gist.github.com/octocat/9257657 #
+# vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv #
+
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+!gradle-wrapper.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+*.sqlite3
+
+# OS generated files #
+######################
 .DS_Store
-data/*.db
-scripts/output
-tstEmail.js
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+!packages/contracts/releases/**/*
+
+# Redis #
+*dump.rdb
+
+# Secrets #
+devops/github
+devops/kubernetes/values/origin/secrets-*.enc.yaml
+devops/kubernetes/values/origin-monitoring/secrets

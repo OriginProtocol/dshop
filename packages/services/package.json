@@ -1,0 +1,36 @@
+{
+  "author": "Nick Poulden <nick@originprotocol.com>",
+  "name": "@origin/services",
+  "version": "0.1.0",
+  "license": "MIT",
+  "description": "Origin Services",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OriginProtocol/origin"
+  },
+  "scripts": {
+    "start": "node start.js",
+    "clean": "rm -rf data/db && rm -rf data/ipfs && rm -rf data/geth",
+    "geth": "geth --nodiscover --datadir ./data/geth --maxpeers 0 --dev --rpc --ws --wsorigins=* --rpccorsdomain=* --rpcaddr=0.0.0.0 --wsaddr=0.0.0.0 --rpcvhosts=*",
+    "lint": "eslint . && npm run prettier:check",
+    "prettier": "prettier --write *.js \"src/**/*.js\"",
+    "prettier:check": "prettier -c *.js \"src/**/*.js\""
+  },
+  "dependencies": {
+    "commander": "^4.0.0",
+    "ganache-core": "2.4.0",
+    "http-proxy": "1.18.0",
+    "ipfs": "^0.43.3",
+    "ipfs-api": "^26.1.2",
+    "memdown": "^5.0.0"
+  },
+  "devDependencies": {
+    "eslint": "6.8.0",
+    "prettier": "1.19.1"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  }
+}
