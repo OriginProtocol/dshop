@@ -2,13 +2,7 @@ import { spawn } from 'child_process'
 import fs from 'fs'
 
 import services from '@origin/services'
-let localContractAddress
-try {
-  const Addresses = require(`@origin/contracts/build/contracts.json`)
-  localContractAddress = Addresses.Marketplace_V01
-} catch (e) {
-  /* Ignore */
-}
+
 
 async function start() {
   // Make life easier by creating a .env if one doesn't exist
@@ -61,7 +55,10 @@ async function start() {
   )
   let backend
   if (process.env.BACKEND !== 'false') {
+    const Addresses = require(`@origin/contracts/build/contracts.json`)
+    const localContractAddress = Addresses.Marketplace_V01
     console.log(`Starting backend with local contract ${localContractAddress}`)
+
     backend = spawn('node', ['../backend'], {
       stdio: 'inherit',
       env: {

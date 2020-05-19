@@ -1,0 +1,14 @@
+{
+  "Marketplace": "0xBFF408fD7DCb4E9B3fF68941699636a86B93eD7C",
+  "MarketplaceEpoch": 8898,
+  "Marketplace_V01": "0xcddE3E2D6b42764DB3637b0463D529209526569e",
+  "MarketplaceEpoch_V01": 137982,
+  "IdentityEvents": "0xeEEDf6E5f697C1B7D58F13A95b0b65d731A1068B",
+  "IdentityEventsEpoch": 8794,
+  "UniswapDaiExchange": "0x8ba2d7842262a16f9522e7397d467e2cb27e4e54",
+  "ProxyFactory": "0x66654fb666ef2d5e9129242cea3c82b3f9f9d16f",
+  "ProxyFactoryEpoch": 8405,
+  "IdentityProxyImplementation": "0x1372a6c7cf0e6c0a8caf05ea32387a4401af77a8",
+  "OGN": "0xc923fe39022d528889a11738792dd07eac388426",
+  "DAI": "0x0207a4fc06b9905d0c4fb741b3f6d2d134d00b38"
+}
