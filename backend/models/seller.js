@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const Seller = sequelize.define(
-    'Seller',
+    "Seller",
     {
       name: DataTypes.STRING,
       email: DataTypes.STRING,
@@ -9,13 +9,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       underscored: true,
-      tableName: 'sellers'
+      tableName: "sellers"
     }
-  )
+  );
 
   Seller.associate = function(models) {
-    Seller.belongsToMany(models.Shop, { through: models.SellerShop })
-  }
+    Seller.belongsToMany(models.Shop, { through: models.SellerShop });
+  };
 
-  return Seller
-}
+  return Seller;
+};

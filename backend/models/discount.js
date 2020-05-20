@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const Discount = sequelize.define(
-    'Discount',
+    "Discount",
     {
       networkId: {
         type: DataTypes.INTEGER
@@ -9,13 +9,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER
       },
       status: {
-        type: DataTypes.ENUM('active', 'inactive')
+        type: DataTypes.ENUM("active", "inactive")
       },
       code: {
         type: DataTypes.STRING
       },
       discountType: {
-        type: DataTypes.ENUM('fixed', 'percentage')
+        type: DataTypes.ENUM("fixed", "percentage")
       },
       value: {
         type: DataTypes.INTEGER
@@ -38,13 +38,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       underscored: true,
-      tableName: 'discounts'
+      tableName: "discounts"
     }
-  )
+  );
 
   Discount.associate = function(models) {
-    Discount.belongsTo(models.Shop, { as: 'shops', foreignKey: 'shopId' })
-  }
+    Discount.belongsTo(models.Shop, { as: "shops", foreignKey: "shopId" });
+  };
 
-  return Discount
-}
+  return Discount;
+};

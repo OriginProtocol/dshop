@@ -2,10 +2,10 @@
  * DNS utilities for GCP CLoud DNS
  */
 
-const { DNS } = require('@google-cloud/dns')
+const { DNS } = require("@google-cloud/dns");
 
-let CACHED_CLIENT
-const DEFAULT_TTL = 300 // 5 minutes
+let CACHED_CLIENT;
+const DEFAULT_TTL = 300; // 5 minutes
 
 /**
  * Return a Google Cloud DNS API client
@@ -13,13 +13,13 @@ const DEFAULT_TTL = 300 // 5 minutes
  * @returns {DNS}
  */
 function getClient(credentials) {
-  if (CACHED_CLIENT) return CACHED_CLIENT
-  if (!credentials) throw new Error('Must supply GCP credentails')
-  if (typeof credentials === 'string') credentials = JSON.parse(credentials)
+  if (CACHED_CLIENT) return CACHED_CLIENT;
+  if (!credentials) throw new Error("Must supply GCP credentails");
+  if (typeof credentials === "string") credentials = JSON.parse(credentials);
 
-  CACHED_CLIENT = new DNS({ projectId: credentials.project_id, credentials })
+  CACHED_CLIENT = new DNS({ projectId: credentials.project_id, credentials });
 
-  return CACHED_CLIENT
+  return CACHED_CLIENT;
 }
 
 /**
@@ -30,8 +30,8 @@ function getClient(credentials) {
  * @returns {string} s+e
  */
 function append(s, e) {
-  if (s.endsWith(e)) return s
-  return `${s}${e}`
+  if (s.endsWith(e)) return s;
+  return `${s}${e}`;
 }
 
 /**
@@ -43,16 +43,16 @@ function append(s, e) {
  * @returns {Zone}
  */
 async function getZone(DNSName) {
-  const dns = getClient()
-  const [zones] = await dns.getZones({ maxResults: 50 })
+  const dns = getClient();
+  const [zones] = await dns.getZones({ maxResults: 50 });
 
   for (let i = 0; i < zones.length; i++) {
-    const dnsName = zones[i].metadata.dnsName
+    const dnsName = zones[i].metadata.dnsName;
     if (dnsName === DNSName) {
-      return zones[i]
+      return zones[i];
     }
   }
-  return null
+  return null;
 }
 
 /**
@@ -67,12 +67,12 @@ async function getZone(DNSName) {
  * @returns {Change}
  */
 async function addCNAME(zone, name, target) {
-  const rec = zone.record('CNAME', {
+  const rec = zone.record("CNAME", {
     name,
     data: target,
     ttl: DEFAULT_TTL
-  })
-  return await zone.addRecords(rec)
+  });
+  return await zone.addRecords(rec);
 }
 
 /**
@@ -87,12 +87,12 @@ async function addCNAME(zone, name, target) {
  * @returns {Change}
  */
 async function addTXT(zone, name, txt) {
-  const rec = zone.record('TXT', {
+  const rec = zone.record("TXT", {
     name,
     data: txt,
     ttl: DEFAULT_TTL
-  })
-  return await zone.addRecords(rec)
+  });
+  return await zone.addRecords(rec);
 }
 
 /**
@@ -107,7 +107,7 @@ async function addTXT(zone, name, txt) {
  * @returns {Change}
  */
 async function addDNSLink(zone, name, ipfsHash) {
-  return await addTXT(zone, `_dnslink.${name}`, `dnslink=/ipfs/${ipfsHash}`)
+  return await addTXT(zone, `_dnslink.${name}`, `dnslink=/ipfs/${ipfsHash}`);
 }
 
 /**
@@ -126,40 +126,40 @@ async function addDNSLink(zone, name, ipfsHash) {
  * @returns {array} of Change
  */
 async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
-  const fqSubdomain = append(`${subdomain}.${zone}`, '.')
-  zone = append(zone, '.')
-  ipfsGateway = append(ipfsGateway, '.')
+  const fqSubdomain = append(`${subdomain}.${zone}`, ".");
+  zone = append(zone, ".");
+  ipfsGateway = append(ipfsGateway, ".");
 
   // Configure the client with given credentials
-  getClient(credentials)
+  getClient(credentials);
 
-  const zoneObj = await getZone(zone)
+  const zoneObj = await getZone(zone);
 
   if (!zoneObj || !(await zoneObj.exists())) {
-    console.error(`Zone ${zone} not found.`)
-    return
+    console.error(`Zone ${zone} not found.`);
+    return;
   }
 
-  const records = await zoneObj.getRecords({ maxResults: 250 })
+  const records = await zoneObj.getRecords({ maxResults: 250 });
 
   if (
     records &&
     records.length > 0 &&
     records[0].some(rec => rec.name === fqSubdomain)
   ) {
-    console.warning(`${fqSubdomain} already exists`)
-    return
+    console.warning(`${fqSubdomain} already exists`);
+    return;
   }
 
-  const changes = []
+  const changes = [];
 
   // Add CNAME record pointing to the IPFS gateway
-  changes.push(await addCNAME(zoneObj, fqSubdomain, ipfsGateway))
+  changes.push(await addCNAME(zoneObj, fqSubdomain, ipfsGateway));
 
   // Add the DNSLink record pointing at the IPFS hash
-  changes.push(await addDNSLink(zoneObj, fqSubdomain, hash))
+  changes.push(await addDNSLink(zoneObj, fqSubdomain, hash));
 
-  return changes
+  return changes;
 }
 
-module.exports = setRecords
+module.exports = setRecords;

@@ -27,7 +27,7 @@ module.exports = vars => `
       <mj-column>
         <mj-text mj-class="medium">Order Summary</mj-text>
         <mj-table padding-top="15px">
-          ${vars.orderItems.join('\n')}
+          ${vars.orderItems.join("\n")}
         </mj-table>
         <mj-divider />
         <mj-table width="50%" align="right">
@@ -36,7 +36,7 @@ module.exports = vars => `
             <td class="price">${vars.subTotal}</td>
           </tr>${
             !vars.hasDonation
-              ? ''
+              ? ""
               : `
           <tr class="cart-summary">
             <td class="label">Donation</td>
@@ -48,7 +48,7 @@ module.exports = vars => `
             <td class="price">${vars.shipping}</td>
           </tr>${
             !vars.hasDiscount
-              ? ''
+              ? ""
               : `
           <tr class="cart-summary">
             <td class="label">Discount</td>
@@ -67,13 +67,13 @@ module.exports = vars => `
       <mj-column>
         <mj-text mj-class="medium">Shipping address</mj-text>
         <mj-text mj-class="light">
-          ${vars.shippingAddress.join('<br />')}
+          ${vars.shippingAddress.join("<br />")}
         </mj-text>
       </mj-column>
       <mj-column>
         <mj-text mj-class="medium">Billing address</mj-text>
         <mj-text mj-class="light">
-          ${vars.billingAddress.join('<br />')}
+          ${vars.billingAddress.join("<br />")}
         </mj-text>
       </mj-column>
     </mj-section>
@@ -93,4 +93,4 @@ module.exports = vars => `
     </mj-section>
   </mj-body>
 </mjml>
-`
+`;

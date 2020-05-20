@@ -1,8 +1,8 @@
 function assert(cond, message) {
   if (!cond) {
-    throw new Error(`Assertion error: ${message}`)
+    throw new Error(`Assertion error: ${message}`);
   }
-  return true
+  return true;
 }
 
 /**
@@ -10,20 +10,20 @@ function assert(cond, message) {
  */
 function validateShop(shop) {
   try {
-    assert(typeof shop === 'object', 'Invalid shop object')
-    assert(typeof shop.name === 'string', 'Shop name should be a string')
-    assert(shop.name !== '', 'Shop name missing')
-    assert(shop.listingId, 'Shop needs a listing ID')
-    assert(shop.authToken, 'Shop needs an authentication token')
-    assert(!shop.config, 'Shop configuration should not exist')
+    assert(typeof shop === "object", "Invalid shop object");
+    assert(typeof shop.name === "string", "Shop name should be a string");
+    assert(shop.name !== "", "Shop name missing");
+    assert(shop.listingId, "Shop needs a listing ID");
+    assert(shop.authToken, "Shop needs an authentication token");
+    assert(!shop.config, "Shop configuration should not exist");
   } catch (err) {
-    if (err.message.includes('Assertion')) {
-      console.warn(err.message)
-      return false
+    if (err.message.includes("Assertion")) {
+      console.warn(err.message);
+      return false;
     }
-    throw err
+    throw err;
   }
-  return true
+  return true;
 }
 
 /**
@@ -31,10 +31,10 @@ function validateShop(shop) {
  */
 function validateConfig(config) {
   // TODO
-  return !!config
+  return !!config;
 }
 
 module.exports = {
   validateShop,
   validateConfig
-}
+};

@@ -85,4 +85,4 @@ module.exports = () => `
     }
   </mj-style>
 </mj-head>
-`
+`;

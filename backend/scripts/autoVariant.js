@@ -10,9 +10,9 @@ function variants(product, key, values) {
       available: true,
       options: [v],
       price: product.price
-    }
-  })
-  return JSON.stringify({ ...product, variants }, null, 2)
+    };
+  });
+  return JSON.stringify({ ...product, variants }, null, 2);
 }
 
-module.exports = variants
+module.exports = variants;

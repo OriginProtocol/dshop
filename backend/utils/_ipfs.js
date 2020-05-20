@@ -1,11 +1,11 @@
-const bs58 = require('bs58')
-const FormData = require('form-data')
-const fetch = require('node-fetch')
-const memoize = require('lodash/memoize')
+const bs58 = require("bs58");
+const FormData = require("form-data");
+const fetch = require("node-fetch");
+const memoize = require("lodash/memoize");
 
-require('dotenv').config()
-const config = require('../config')
-const { DATA_URL, IPFS_GATEWAY } = require('./const')
+require("dotenv").config();
+const config = require("../config");
+const { DATA_URL, IPFS_GATEWAY } = require("./const");
 
 /**
  * Resolve an IPFS gateway from whatever's available.  Either a provided config
@@ -15,26 +15,26 @@ const { DATA_URL, IPFS_GATEWAY } = require('./const')
  * @returns {string} IPFS gateway URL
  */
 async function resolveIPFSGateway(dataURL, networkId) {
-  if (typeof DATA_URL !== 'undefined' || typeof dataURL !== 'undefined') {
-    const conf = await config.getSiteConfig(DATA_URL || dataURL, networkId)
+  if (typeof DATA_URL !== "undefined" || typeof dataURL !== "undefined") {
+    const conf = await config.getSiteConfig(DATA_URL || dataURL, networkId);
     if (!conf) {
       // TODO: Use a fallback/default?
-      throw new Error('Unable to fetch config')
+      throw new Error("Unable to fetch config");
     }
-    return conf.ipfsGateway
+    return conf.ipfsGateway;
   }
-  if (typeof IPFS_GATEWAY === 'undefined') {
-    throw new Error('DATA_URL or IPFS_GATEWAY needs to be defined')
+  if (typeof IPFS_GATEWAY === "undefined") {
+    throw new Error("DATA_URL or IPFS_GATEWAY needs to be defined");
   }
-  return IPFS_GATEWAY
+  return IPFS_GATEWAY;
 }
-const getIPFSGateway = memoize(resolveIPFSGateway)
+const getIPFSGateway = memoize(resolveIPFSGateway);
 
 function getBytes32FromIpfsHash(hash) {
   return `0x${bs58
     .decode(hash)
     .slice(2)
-    .toString('hex')}`
+    .toString("hex")}`;
 }
 
 // Return base58 encoded ipfs hash from bytes32 hex string,
@@ -44,10 +44,10 @@ function getIpfsHashFromBytes32(bytes32Hex) {
   // Add our default ipfs values for first 2 bytes:
   // function:0x12=sha2, size:0x20=256 bits
   // and cut off leading "0x"
-  const hashHex = '1220' + bytes32Hex.slice(2)
-  const hashBytes = Buffer.from(hashHex, 'hex')
-  const hashStr = bs58.encode(hashBytes)
-  return hashStr
+  const hashHex = "1220" + bytes32Hex.slice(2);
+  const hashBytes = Buffer.from(hashHex, "hex");
+  const hashStr = bs58.encode(hashBytes);
+  return hashStr;
 }
 
 /**
@@ -60,11 +60,11 @@ function getIpfsHashFromBytes32(bytes32Hex) {
  */
 function gatewayUrl(gateway, ipfsUrl) {
   if (!ipfsUrl) {
-    return
+    return;
   }
-  const match = ipfsUrl.match(/^ipfs:\/\/([A-Za-z0-9]{46})$/)
+  const match = ipfsUrl.match(/^ipfs:\/\/([A-Za-z0-9]{46})$/);
   if (match) {
-    return `${gateway}/ipfs/${match[1]}`
+    return `${gateway}/ipfs/${match[1]}`;
   }
 }
 
@@ -78,24 +78,24 @@ function gatewayUrl(gateway, ipfsUrl) {
 // }
 
 async function post(gateway, json, rawHash) {
-  const formData = new FormData()
-  let file
-  if (typeof Blob === 'undefined') {
-    file = Buffer.from(JSON.stringify(json))
+  const formData = new FormData();
+  let file;
+  if (typeof Blob === "undefined") {
+    file = Buffer.from(JSON.stringify(json));
   } else {
-    file = new Blob([JSON.stringify(json)])
+    file = new Blob([JSON.stringify(json)]);
   }
-  formData.append('file', file)
+  formData.append("file", file);
 
   const rawRes = await fetch(`${gateway}/api/v0/add`, {
-    method: 'POST',
+    method: "POST",
     body: formData
-  })
-  const res = await rawRes.json()
+  });
+  const res = await rawRes.json();
   if (rawHash) {
-    return res.Hash
+    return res.Hash;
   } else {
-    return getBytes32FromIpfsHash(res.Hash)
+    return getBytes32FromIpfsHash(res.Hash);
   }
 }
 
@@ -108,14 +108,14 @@ async function post(gateway, json, rawHash) {
  * @returns {Promise<{string}>}
  */
 async function postBinary(gateway, buffer) {
-  const formData = new FormData()
-  formData.append('file', buffer)
+  const formData = new FormData();
+  formData.append("file", buffer);
   const rawRes = await fetch(`${gateway}/api/v0/add`, {
-    method: 'POST',
+    method: "POST",
     body: formData
-  })
-  const res = await rawRes.json()
-  return res.Hash
+  });
+  const res = await rawRes.json();
+  return res.Hash;
 }
 
 // async function postEnc(gateway, json, pubKeys) {
@@ -155,43 +155,43 @@ async function postBinary(gateway, buffer) {
 
 async function getTextFn(gateway, hashAsBytes, timeoutMS) {
   const hash =
-    hashAsBytes.indexOf('0x') === 0
+    hashAsBytes.indexOf("0x") === 0
       ? getIpfsHashFromBytes32(hashAsBytes)
-      : hashAsBytes
+      : hashAsBytes;
   const response = await new Promise((resolve, reject) => {
-    let didTimeOut = false
+    let didTimeOut = false;
     const timeout = setTimeout(() => {
-      didTimeOut = true
-      reject('IPFS gateway timeout')
-    }, timeoutMS)
+      didTimeOut = true;
+      reject("IPFS gateway timeout");
+    }, timeoutMS);
     fetch(`${gateway}/ipfs/${hash}`)
       .then(response => {
-        clearTimeout(timeout)
+        clearTimeout(timeout);
         if (!didTimeOut) {
-          resolve(response)
+          resolve(response);
         }
       })
       .catch(error => {
-        clearTimeout(timeout)
+        clearTimeout(timeout);
         if (!didTimeOut) {
-          reject(error)
+          reject(error);
         }
-      })
-    if (didTimeOut) console.log(`Timeout when fetching ${hash}`)
-  })
+      });
+    if (didTimeOut) console.log(`Timeout when fetching ${hash}`);
+  });
   if (!response) {
-    return '{}'
+    return "{}";
   }
-  return await response.text()
+  return await response.text();
 }
 
-const getText = memoize(getTextFn, (...args) => args[1])
+const getText = memoize(getTextFn, (...args) => args[1]);
 
 async function get(gateway, hashAsBytes, timeoutMS = 10000) {
   // }, party) {
-  if (!hashAsBytes) return null
+  if (!hashAsBytes) return null;
 
-  const text = await getText(gateway, hashAsBytes, timeoutMS)
+  const text = await getText(gateway, hashAsBytes, timeoutMS);
   // if (text.indexOf('-----BEGIN PGP MESSAGE-----') === 0 && party) {
   //   try {
   //     text = await decode(text, party.privateKey, party.pgpPass)
@@ -200,7 +200,7 @@ async function get(gateway, hashAsBytes, timeoutMS = 10000) {
   //   }
   // }
 
-  return JSON.parse(text)
+  return JSON.parse(text);
 }
 
 module.exports = {
@@ -212,4 +212,4 @@ module.exports = {
   getIpfsHashFromBytes32,
   gatewayUrl,
   getIPFSGateway
-}
+};

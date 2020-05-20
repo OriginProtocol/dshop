@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const Shop = sequelize.define(
-    'Shop',
+    "Shop",
     {
       networkId: DataTypes.INTEGER,
       listingId: DataTypes.STRING, // e.g. 1-001-1212
@@ -15,16 +15,16 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       underscored: true,
-      tableName: 'shops'
+      tableName: "shops"
     }
-  )
+  );
 
   Shop.associate = function(models) {
-    Shop.belongsToMany(models.Seller, { through: models.SellerShop })
-    Shop.hasMany(models.Order, { as: 'orders', targetKey: 'shopId' })
-    Shop.hasMany(models.Transaction, { as: 'transactions' })
-    Shop.hasMany(models.Discount, { as: 'discounts' })
-  }
+    Shop.belongsToMany(models.Seller, { through: models.SellerShop });
+    Shop.hasMany(models.Order, { as: "orders", targetKey: "shopId" });
+    Shop.hasMany(models.Transaction, { as: "transactions" });
+    Shop.hasMany(models.Discount, { as: "discounts" });
+  };
 
-  return Shop
-}
+  return Shop;
+};

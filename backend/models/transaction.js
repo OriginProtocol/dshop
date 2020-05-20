@@ -1,10 +1,10 @@
 module.exports = (sequelize, DataTypes) => {
   const Transaction = sequelize.define(
-    'Transaction',
+    "Transaction",
     {
       networkId: {
         type: DataTypes.INTEGER,
-        unique: 'compositeIndex',
+        unique: "compositeIndex",
         primaryKey: true
       },
       shopId: {
@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       transactionHash: {
         type: DataTypes.STRING,
-        unique: 'compositeIndex',
+        unique: "compositeIndex",
         primaryKey: true
       },
       blockNumber: {
@@ -21,14 +21,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       underscored: true,
-      tableName: 'transactions',
+      tableName: "transactions",
       timestamps: false
     }
-  )
+  );
 
   Transaction.associate = function(models) {
-    Transaction.belongsTo(models.Shop, { as: 'shops', foreignKey: 'shopId' })
-  }
+    Transaction.belongsTo(models.Shop, { as: "shops", foreignKey: "shopId" });
+  };
 
-  return Transaction
-}
+  return Transaction;
+};

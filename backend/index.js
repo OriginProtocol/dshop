@@ -1,5 +1,5 @@
-require('./app')
-if (process.env.LISTENER !== 'false') {
-  const start = require('./listener')
-  start()
+require("./app");
+if (process.env.LISTENER !== "false") {
+  const start = require("./listener");
+  start();
 }

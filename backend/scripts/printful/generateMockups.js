@@ -1,6 +1,6 @@
-const get = require('lodash/get')
+const get = require("lodash/get");
 
-const downloadMockups = require('./downloadMockups')
+const downloadMockups = require("./downloadMockups");
 
 async function generateMockups({
   OutputDir,
@@ -14,44 +14,44 @@ async function generateMockups({
     `${PrintfulURL}/mockup-generator/create-task/${productId}`,
     {
       headers: {
-        'content-type': 'application/json',
+        "content-type": "application/json",
         authorization: `Basic ${apiAuth}`
       },
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(body)
     }
-  )
-  const json = await res.json()
-  console.log(JSON.stringify(json, null, 2))
-  const result = json.result
+  );
+  const json = await res.json();
+  console.log(JSON.stringify(json, null, 2));
+  const result = json.result;
   console.log(
     `${PrintfulURL}/mockup-generator/task?task_key=${result.task_key}`
-  )
+  );
 
   // await new Promise(resolve => setTimeout(resolve, 5000))
-  let taskJson = {}
+  let taskJson = {};
 
-  while (get(taskJson, 'result.status') !== 'completed') {
-    await new Promise(resolve => setTimeout(resolve, 1000))
+  while (get(taskJson, "result.status") !== "completed") {
+    await new Promise(resolve => setTimeout(resolve, 1000));
     const taskRes = await fetch(
       `${PrintfulURL}/mockup-generator/task?task_key=${result.task_key}`,
       {
         headers: {
-          'content-type': 'application/json',
+          "content-type": "application/json",
           authorization: `Basic ${apiAuth}`
         },
-        method: 'GET'
+        method: "GET"
       }
-    )
-    taskJson = await taskRes.json()
-    if (get(taskJson, 'result.status') !== 'completed') {
-      console.log(JSON.stringify(taskJson, null, 2))
+    );
+    taskJson = await taskRes.json();
+    if (get(taskJson, "result.status") !== "completed") {
+      console.log(JSON.stringify(taskJson, null, 2));
     }
   }
-  if (get(taskJson, 'result.status') === 'completed') {
-    await downloadMockups({ OutputDir, id, taskJson })
+  if (get(taskJson, "result.status") === "completed") {
+    await downloadMockups({ OutputDir, id, taskJson });
   }
-  console.log(JSON.stringify(taskJson, null, 2))
+  console.log(JSON.stringify(taskJson, null, 2));
 }
 
-module.exports = generateMockups
+module.exports = generateMockups;

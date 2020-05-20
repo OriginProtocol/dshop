@@ -1,10 +1,10 @@
-'use strict'
+"use strict";
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(() =>
       Promise.all([
-        queryInterface.createTable('seller_shop', {
+        queryInterface.createTable("seller_shop", {
           seller_id: {
             type: Sequelize.INTEGER,
             primaryKey: true
@@ -19,27 +19,27 @@ module.exports = {
         }),
         new Promise(resolve => {
           queryInterface.sequelize
-            .query('SELECT id AS shop_id, seller_id FROM shops')
+            .query("SELECT id AS shop_id, seller_id FROM shops")
             .then(([rows]) => {
               if (rows.length) {
-                const toInsert = rows.map(r => ({ ...r, role: 'admin' }))
+                const toInsert = rows.map(r => ({ ...r, role: "admin" }));
                 const insert = queryInterface.bulkInsert(
-                  'seller_shop',
+                  "seller_shop",
                   toInsert
-                )
-                resolve(insert)
+                );
+                resolve(insert);
               } else {
-                resolve()
+                resolve();
               }
-            })
+            });
         })
       ])
-    )
+    );
   },
 
   down: queryInterface => {
     return queryInterface.sequelize.transaction(() =>
-      Promise.all([queryInterface.dropTable('seller_shop')])
-    )
+      Promise.all([queryInterface.dropTable("seller_shop")])
+    );
   }
-}
+};

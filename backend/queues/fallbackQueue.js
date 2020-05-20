@@ -11,9 +11,9 @@ class FallbackQueue {
    * @param {object} opts - unused, here for compatibility only
    */
   constructor(name, opts) {
-    this.name = name
-    this.processor = undefined
-    this.opts = opts
+    this.name = name;
+    this.processor = undefined;
+    this.opts = opts;
   }
 
   /**
@@ -22,16 +22,16 @@ class FallbackQueue {
    * @param {*} data
    */
   async add(data) {
-    console.log(this.name + ' queue using inline queue processor fallback.')
+    console.log(this.name + " queue using inline queue processor fallback.");
     if (this.processor == undefined) {
-      throw new Error('No processor defined for this fake job queue')
+      throw new Error("No processor defined for this fake job queue");
     }
     const job = {
       data: data,
       progress: () => undefined,
       log: console.log
-    }
-    await this.processor(job)
+    };
+    await this.processor(job);
   }
 
   /**
@@ -39,7 +39,7 @@ class FallbackQueue {
    * @param {function} fn - code the runs for each submitted job
    */
   process(fn) {
-    this.processor = fn
+    this.processor = fn;
   }
 
   /**
@@ -53,4 +53,4 @@ class FallbackQueue {
   pause() {}
 }
 
-module.exports = FallbackQueue
+module.exports = FallbackQueue;
