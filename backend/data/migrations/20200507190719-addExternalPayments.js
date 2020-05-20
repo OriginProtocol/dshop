@@ -2,7 +2,7 @@ module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(() => {
       return Promise.all([
-        queryInterface.createTable("external_payments", {
+        queryInterface.createTable('external_payments', {
           id: {
             type: Sequelize.INTEGER,
             autoIncrement: true,
@@ -18,7 +18,7 @@ module.exports = {
           fee: Sequelize.INTEGER,
           net: Sequelize.INTEGER
         }),
-        queryInterface.createTable("external_orders", {
+        queryInterface.createTable('external_orders', {
           id: {
             type: Sequelize.INTEGER,
             autoIncrement: true,
@@ -32,15 +32,15 @@ module.exports = {
           data: Sequelize.TEXT,
           amount: Sequelize.INTEGER
         })
-      ]);
-    });
+      ])
+    })
   },
   down: queryInterface => {
     return queryInterface.sequelize.transaction(() => {
       return Promise.all([
-        queryInterface.dropTable("external_payments"),
-        queryInterface.dropTable("external_orders")
-      ]);
-    });
+        queryInterface.dropTable('external_payments'),
+        queryInterface.dropTable('external_orders')
+      ])
+    })
   }
-};
+}

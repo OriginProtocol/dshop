@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const SellerShop = sequelize.define(
-    "SellerShop",
+    'SellerShop',
     {
       sellerId: {
         type: DataTypes.INTEGER,
@@ -14,9 +14,9 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       underscored: true,
-      tableName: "seller_shop"
+      tableName: 'seller_shop'
     }
-  );
+  )
 
-  return SellerShop;
-};
+  return SellerShop
+}

@@ -21,7 +21,7 @@ or Visit our store (${vars.storeUrl} )
 Order summary
 -------------
 
-${vars.orderItemsTxt.join("\n")}
+${vars.orderItemsTxt.join('\n')}
 
 Subtotal: ${vars.subTotal}
 Shipping: ${vars.shipping}
@@ -34,12 +34,12 @@ Customer information
 Shipping address
 ----------------
 
-${vars.shippingAddress.join("\n")}
+${vars.shippingAddress.join('\n')}
 
 Billing address
 ---------------
 
-${vars.billingAddress.join("\n")}
+${vars.billingAddress.join('\n')}
 
 Shipping method
 ---------------
@@ -53,4 +53,4 @@ ${vars.paymentMethod}
 
 If you have any questions, reply to this email or
 contact us at ${vars.supportEmailPlain}
-`;
+`

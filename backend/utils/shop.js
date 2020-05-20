@@ -1,26 +1,26 @@
-const { Shop } = require("../models");
+const { Shop } = require('../models')
 
 async function createShop({ name, listingId, authToken, config, sellerId }) {
   if (!name) {
-    return { status: 400, error: "Provide a shop name" };
+    return { status: 400, error: 'Provide a shop name' }
   }
   if (!listingId) {
-    return { status: 400, error: "Provide a listing ID" };
+    return { status: 400, error: 'Provide a listing ID' }
   }
   if (!String(listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
     return {
       status: 400,
-      error: "Listing ID must be of form xxx-xxx-xxx eg 1-001-123"
-    };
+      error: 'Listing ID must be of form xxx-xxx-xxx eg 1-001-123'
+    }
   }
   if (!authToken) {
-    return { status: 400, error: "Provide an auth token" };
+    return { status: 400, error: 'Provide an auth token' }
   }
   if (!sellerId) {
-    return { status: 400, error: "Provide a seller ID" };
+    return { status: 400, error: 'Provide a seller ID' }
   }
 
-  const networkId = Number(listingId.split("-")[0]);
+  const networkId = Number(listingId.split('-')[0])
 
   const shop = await Shop.create({
     name,
@@ -29,16 +29,16 @@ async function createShop({ name, listingId, authToken, config, sellerId }) {
     authToken,
     config,
     sellerId
-  });
+  })
 
-  return { shop };
+  return { shop }
 }
 
 function findShopByHostname(req, res, next) {
   Shop.findOne({ where: { hostname: req.hostname } }).then(shop => {
-    req.shop = shop;
-    next();
-  });
+    req.shop = shop
+    next()
+  })
 }
 
-module.exports = { createShop, findShopByHostname };
+module.exports = { createShop, findShopByHostname }

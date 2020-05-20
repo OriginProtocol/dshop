@@ -1,43 +1,43 @@
-const fs = require("fs");
-const crypto = require("crypto");
-const dotenv = require("dotenv");
-const { promisify } = require("bluebird");
-const { ENCRYPTION_KEY } = require("./const");
-const { Shop } = require("../models");
+const fs = require('fs')
+const crypto = require('crypto')
+const dotenv = require('dotenv')
+const { promisify } = require('bluebird')
+const { ENCRYPTION_KEY } = require('./const')
+const { Shop } = require('../models')
 
-const readFileAsync = promisify(fs.readFile);
+const readFileAsync = promisify(fs.readFile)
 
-if (typeof process.env.ENCRYPTION_KEY === "undefined") {
-  throw new TypeError("ENCRYPTION_KEY undefined");
+if (typeof process.env.ENCRYPTION_KEY === 'undefined') {
+  throw new TypeError('ENCRYPTION_KEY undefined')
 }
 
 const ENCRYPTION_KEY_HASH = crypto
-  .createHash("sha256")
+  .createHash('sha256')
   .update(ENCRYPTION_KEY)
-  .digest();
-const CYPHER_ALGO = "aes256";
-const IV_LENGTH = 16;
+  .digest()
+const CYPHER_ALGO = 'aes256'
+const IV_LENGTH = 16
 
-const loadedConfigs = {};
-const loadedIVs = {};
+const loadedConfigs = {}
+const loadedIVs = {}
 
 function genIV() {
-  return crypto.randomBytes(IV_LENGTH);
+  return crypto.randomBytes(IV_LENGTH)
 }
 
 function getConfig(config) {
-  if (!config) return {};
-  const [iv, configRaw] = config.split(":");
-  return decryptJSON(Buffer.from(iv, "hex"), configRaw);
+  if (!config) return {}
+  const [iv, configRaw] = config.split(':')
+  return decryptJSON(Buffer.from(iv, 'hex'), configRaw)
 }
 
 function setConfig(newConfig, existingConfig) {
-  let iv = genIV();
+  let iv = genIV()
   if (existingConfig) {
-    iv = Buffer.from(existingConfig.split(":")[0], "hex");
+    iv = Buffer.from(existingConfig.split(':')[0], 'hex')
   }
-  const config = encryptJSON(iv, newConfig);
-  return `${iv.toString("hex")}:${config}`;
+  const config = encryptJSON(iv, newConfig)
+  return `${iv.toString('hex')}:${config}`
 }
 
 /**
@@ -47,13 +47,13 @@ function setConfig(newConfig, existingConfig) {
  * @returns {Buffer}
  */
 function getIV(shopId) {
-  let iv;
-  if (typeof loadedIVs[shopId] === "undefined") {
-    iv = crypto.randomBytes(IV_LENGTH);
+  let iv
+  if (typeof loadedIVs[shopId] === 'undefined') {
+    iv = crypto.randomBytes(IV_LENGTH)
   }
   // only shop it if we've been given an ID
-  if (shopId) loadedIVs[shopId] = iv;
-  return iv;
+  if (shopId) loadedIVs[shopId] = iv
+  return iv
 }
 
 /**
@@ -64,14 +64,14 @@ function getIV(shopId) {
  * @returns {string} - encrypted data
  */
 function encrypt(iv, str) {
-  const msg = [];
+  const msg = []
 
-  const cypher = crypto.createCipheriv(CYPHER_ALGO, ENCRYPTION_KEY_HASH, iv);
+  const cypher = crypto.createCipheriv(CYPHER_ALGO, ENCRYPTION_KEY_HASH, iv)
 
-  msg.push(cypher.update(str, "binary", "hex"));
-  msg.push(cypher.final("hex"));
+  msg.push(cypher.update(str, 'binary', 'hex'))
+  msg.push(cypher.final('hex'))
 
-  return msg.join("");
+  return msg.join('')
 }
 
 /**
@@ -82,7 +82,7 @@ function encrypt(iv, str) {
  * @returns {string} - encrypted data
  */
 function encryptJSON(iv, obj) {
-  return encrypt(iv, JSON.stringify(obj));
+  return encrypt(iv, JSON.stringify(obj))
 }
 
 /**
@@ -93,14 +93,14 @@ function encryptJSON(iv, obj) {
  * @returns {string} - decrypted data
  */
 function decrypt(iv, enc) {
-  const msg = [];
+  const msg = []
 
-  const decypher = crypto.createDecipheriv("aes256", ENCRYPTION_KEY_HASH, iv);
+  const decypher = crypto.createDecipheriv('aes256', ENCRYPTION_KEY_HASH, iv)
 
-  msg.push(decypher.update(enc, "hex", "binary"));
-  msg.push(decypher.final("binary"));
+  msg.push(decypher.update(enc, 'hex', 'binary'))
+  msg.push(decypher.final('binary'))
 
-  return msg.join("");
+  return msg.join('')
 }
 
 /**
@@ -111,7 +111,7 @@ function decrypt(iv, enc) {
  * @returns {string} - decrypted object
  */
 function decryptJSON(iv, enc) {
-  return JSON.parse(decrypt(iv, enc));
+  return JSON.parse(decrypt(iv, enc))
 }
 
 /**
@@ -122,20 +122,19 @@ function decryptJSON(iv, enc) {
  * @returns {Object} - Shops model instance
  */
 async function create(name, configObj) {
-  const iv = getIV();
-  const encryptedConf = encryptJSON(iv, configObj);
+  const iv = getIV()
+  const encryptedConf = encryptJSON(iv, configObj)
   const record = await Shop.create({
     name,
-    config: [iv, encryptedConf].join(":")
-  });
-  if (!record.id)
-    throw new Error("Shop does not have an id, something failed!");
+    config: [iv, encryptedConf].join(':')
+  })
+  if (!record.id) throw new Error('Shop does not have an id, something failed!')
 
-  const shopId = record.id;
-  loadedConfigs[shopId] = configObj;
-  loadedIVs[shopId] = iv;
+  const shopId = record.id
+  loadedConfigs[shopId] = configObj
+  loadedIVs[shopId] = iv
 
-  return record;
+  return record
 }
 
 /**
@@ -146,27 +145,27 @@ async function create(name, configObj) {
  * @returns {Object} - Shops model instance
  */
 async function createConfig(shopId, configObj) {
-  const iv = getIV();
-  const encryptedConf = encryptJSON(iv, configObj);
+  const iv = getIV()
+  const encryptedConf = encryptJSON(iv, configObj)
   const record = await Shop.update(
     {
-      config: [iv, encryptedConf].join(":")
+      config: [iv, encryptedConf].join(':')
     },
     {
       where: {
         id: shopId
       }
     }
-  );
+  )
 
   if (!record || record[0] === 0) {
-    throw new Error("Shop does not have an id, something failed!");
+    throw new Error('Shop does not have an id, something failed!')
   }
 
-  loadedConfigs[shopId] = configObj;
-  loadedIVs[shopId] = iv;
+  loadedConfigs[shopId] = configObj
+  loadedIVs[shopId] = iv
 
-  return record;
+  return record
 }
 
 /**
@@ -176,10 +175,10 @@ async function createConfig(shopId, configObj) {
  * @returns {boolean} - If it succeeded
  */
 function clear(shopId) {
-  if (typeof loadedConfigs[shopId] === "undefined") {
-    return false;
+  if (typeof loadedConfigs[shopId] === 'undefined') {
+    return false
   }
-  return delete loadedConfigs[shopId] && delete loadedIVs[shopId];
+  return delete loadedConfigs[shopId] && delete loadedIVs[shopId]
 }
 
 /**
@@ -189,22 +188,22 @@ function clear(shopId) {
  * @returns {Object} - Shop model instance
  */
 async function save(shopId) {
-  const record = await Shop.findOne({ where: { id: shopId } });
-  if (!record) throw new Error("Shop does not exist");
+  const record = await Shop.findOne({ where: { id: shopId } })
+  if (!record) throw new Error('Shop does not exist')
 
   // Skip if we don't have any config
-  if (typeof loadedConfigs[shopId] === "undefined") return record;
-  if (typeof loadedIVs[shopId] === "undefined")
-    throw new Error("Missing initialization vector?");
+  if (typeof loadedConfigs[shopId] === 'undefined') return record
+  if (typeof loadedIVs[shopId] === 'undefined')
+    throw new Error('Missing initialization vector?')
 
   record.config = [
-    loadedIVs[shopId].toString("hex"),
+    loadedIVs[shopId].toString('hex'),
     encryptJSON(loadedIVs[shopId], loadedConfigs[shopId])
-  ].join(":");
+  ].join(':')
 
-  await record.save({ fields: ["config"] });
+  await record.save({ fields: ['config'] })
 
-  return record;
+  return record
 }
 
 /**
@@ -215,22 +214,22 @@ async function save(shopId) {
  * @returns {Object} - Shop model instance
  */
 async function load(shopId, force = false) {
-  const record = await Shop.findOne({ where: { id: shopId } });
-  if (!force && typeof loadedConfigs[shopId] !== "undefined") return record;
+  const record = await Shop.findOne({ where: { id: shopId } })
+  if (!force && typeof loadedConfigs[shopId] !== 'undefined') return record
   if (!record.config) {
-    await createConfig(shopId, {});
-    return null;
+    await createConfig(shopId, {})
+    return null
   }
 
-  const [iv, encryptedConf] = record.config.split(":");
-  loadedIVs[shopId] = Buffer.from(iv, "hex");
+  const [iv, encryptedConf] = record.config.split(':')
+  loadedIVs[shopId] = Buffer.from(iv, 'hex')
 
   //console.log('iv: ', loadedIVs[shopId])
   //console.log('encryptedConf: ', encryptedConf)
 
-  loadedConfigs[shopId] = decryptJSON(loadedIVs[shopId], encryptedConf);
+  loadedConfigs[shopId] = decryptJSON(loadedIVs[shopId], encryptedConf)
 
-  return record;
+  return record
 }
 
 /**
@@ -241,18 +240,18 @@ async function load(shopId, force = false) {
  * @returns {Object} - Shops model instance
  */
 async function loadFromEnv(shopId, filename) {
-  const rawConfig = dotenv.parse(await readFileAsync(filename));
+  const rawConfig = dotenv.parse(await readFileAsync(filename))
 
   if (!loadedConfigs[shopId]) {
-    loadedConfigs[shopId] = {};
+    loadedConfigs[shopId] = {}
   }
 
   for (const k in rawConfig) {
     // TODO: toLowerCase right here?
-    loadedConfigs[shopId][k.toLowerCase()] = rawConfig[k];
+    loadedConfigs[shopId][k.toLowerCase()] = rawConfig[k]
   }
 
-  return await save(shopId);
+  return await save(shopId)
 }
 
 /**
@@ -263,19 +262,19 @@ async function loadFromEnv(shopId, filename) {
  * @returns {Object} - Shop model instance
  */
 async function createFromEnv(shopName, filename) {
-  const rawConfig = dotenv.parse(await readFileAsync(filename));
-  const config = {};
+  const rawConfig = dotenv.parse(await readFileAsync(filename))
+  const config = {}
 
   for (const k in rawConfig) {
     // TODO: toLowerCase right here?
-    config[k.toLowerCase()] = rawConfig[k];
+    config[k.toLowerCase()] = rawConfig[k]
   }
 
-  const record = await create(shopName, config);
+  const record = await create(shopName, config)
 
-  loadedConfigs[record.id] = config;
+  loadedConfigs[record.id] = config
 
-  return record;
+  return record
 }
 
 /**
@@ -287,9 +286,9 @@ async function createFromEnv(shopName, filename) {
  * @param {boolean} autosave - whether or not to persist the config
  */
 async function set(shopId, key, val, autosave = true) {
-  await load(shopId);
-  loadedConfigs[shopId][key] = val;
-  if (autosave) await save(shopId);
+  await load(shopId)
+  loadedConfigs[shopId][key] = val
+  if (autosave) await save(shopId)
 }
 
 /**
@@ -300,12 +299,12 @@ async function set(shopId, key, val, autosave = true) {
  * @param {boolean} autosave - whether or not to persist the config
  */
 async function assign(shopId, conf, autosave = true) {
-  await load(shopId);
+  await load(shopId)
   loadedConfigs[shopId] = {
     ...loadedConfigs[shopId],
     ...conf
-  };
-  if (autosave) await save(shopId);
+  }
+  if (autosave) await save(shopId)
 }
 
 /**
@@ -316,8 +315,8 @@ async function assign(shopId, conf, autosave = true) {
  * @returns {T} value set to the configuration key
  */
 async function get(shopId, key) {
-  await load(shopId);
-  return loadedConfigs[shopId][key];
+  await load(shopId)
+  return loadedConfigs[shopId][key]
 }
 
 /**
@@ -327,8 +326,8 @@ async function get(shopId, key) {
  * @returns {Object} shop config
  */
 async function dump(shopId) {
-  await load(shopId);
-  return loadedConfigs[shopId];
+  await load(shopId)
+  return loadedConfigs[shopId]
 }
 
 module.exports = {
@@ -348,4 +347,4 @@ module.exports = {
   dump,
   getConfig,
   setConfig
-};
+}

@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const Order = sequelize.define(
-    "Order",
+    'Order',
     {
       shopId: DataTypes.INTEGER,
       networkId: DataTypes.INTEGER,
@@ -32,13 +32,13 @@ module.exports = (sequelize, DataTypes) => {
     {
       underscored: true,
       timestamps: false,
-      tableName: "orders"
+      tableName: 'orders'
     }
-  );
+  )
 
   Order.associate = function(models) {
-    Order.belongsTo(models.Shop, { as: "shops", foreignKey: "shopId" });
-  };
+    Order.belongsTo(models.Shop, { as: 'shops', foreignKey: 'shopId' })
+  }
 
-  return Order;
-};
+  return Order
+}

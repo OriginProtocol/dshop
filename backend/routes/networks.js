@@ -1,12 +1,12 @@
-const { authSuperUser } = require("./_auth");
-const { Network } = require("../models");
-const { getConfig, setConfig } = require("../utils/encryptedConfig");
-const startListener = require("../listener");
-const omit = require("lodash/omit");
-const pick = require("lodash/pick");
+const { authSuperUser } = require('./_auth')
+const { Network } = require('../models')
+const { getConfig, setConfig } = require('../utils/encryptedConfig')
+const startListener = require('../listener')
+const omit = require('lodash/omit')
+const pick = require('lodash/pick')
 
 module.exports = function(app) {
-  app.post("/networks", authSuperUser, async (req, res) => {
+  app.post('/networks', authSuperUser, async (req, res) => {
     const networkObj = {
       networkId: req.body.networkId,
       provider: req.body.provider,
@@ -24,50 +24,50 @@ module.exports = function(app) {
         gcpCredentials: req.body.gcpCredentials,
         domain: req.body.domain
       })
-    };
+    }
 
     const existing = await Network.findOne({
       where: { networkId: networkObj.networkId }
-    });
+    })
     if (existing) {
       await Network.update(networkObj, {
         where: { networkId: networkObj.networkId }
-      });
+      })
     } else {
-      await Network.create(networkObj);
+      await Network.create(networkObj)
     }
 
-    startListener();
+    startListener()
 
-    res.json({ success: true });
-  });
+    res.json({ success: true })
+  })
 
-  app.get("/networks/:netId", authSuperUser, async (req, res) => {
-    const where = { networkId: req.params.netId };
-    const network = await Network.findOne({ where });
+  app.get('/networks/:netId', authSuperUser, async (req, res) => {
+    const where = { networkId: req.params.netId }
+    const network = await Network.findOne({ where })
     if (!network) {
-      return res.json({ success: false, reason: "no-network" });
+      return res.json({ success: false, reason: 'no-network' })
     }
 
-    const config = getConfig(network.config);
-    res.json({ ...omit(network.dataValues, "config"), ...config });
-  });
+    const config = getConfig(network.config)
+    res.json({ ...omit(network.dataValues, 'config'), ...config })
+  })
 
-  app.put("/networks/:netId", authSuperUser, async (req, res) => {
-    const where = { networkId: req.params.netId };
-    const network = await Network.findOne({ where });
+  app.put('/networks/:netId', authSuperUser, async (req, res) => {
+    const where = { networkId: req.params.netId }
+    const network = await Network.findOne({ where })
     if (!network) {
-      return res.json({ success: false, reason: "no-network" });
+      return res.json({ success: false, reason: 'no-network' })
     }
 
     const config = pick(req.body, [
-      "pinataKey",
-      "pinataSecret",
-      "cloudflareEmail",
-      "cloudflareApiKey",
-      "domain",
-      "deployDir"
-    ]);
+      'pinataKey',
+      'pinataSecret',
+      'cloudflareEmail',
+      'cloudflareApiKey',
+      'domain',
+      'deployDir'
+    ])
 
     const result = await Network.update(
       {
@@ -76,12 +76,12 @@ module.exports = function(app) {
         ipfsApi: req.body.ipfsApi
       },
       { where }
-    );
+    )
 
     if (!result || result[0] < 1) {
-      return res.json({ success: false });
+      return res.json({ success: false })
     }
 
-    res.json({ success: true });
-  });
-};
+    res.json({ success: true })
+  })
+}

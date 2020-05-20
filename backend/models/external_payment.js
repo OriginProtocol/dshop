@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const ExternalPayment = sequelize.define(
-    "ExternalPayment",
+    'ExternalPayment',
     {
       id: {
         type: DataTypes.INTEGER,
@@ -17,16 +17,16 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       underscored: true,
-      tableName: "external_payments"
+      tableName: 'external_payments'
     }
-  );
+  )
 
   ExternalPayment.associate = function(models) {
     ExternalPayment.belongsTo(models.Order, {
-      as: "externalPayments",
-      foreignKey: "orderId"
-    });
-  };
+      as: 'externalPayments',
+      foreignKey: 'orderId'
+    })
+  }
 
-  return ExternalPayment;
-};
+  return ExternalPayment
+}

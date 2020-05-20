@@ -1,4 +1,4 @@
-const { makeOfferQueue } = require("../queues/queues");
+const { makeOfferQueue } = require('../queues/queues')
 
 /**
  * req.shop
@@ -6,9 +6,9 @@ const { makeOfferQueue } = require("../queues/queues");
  * req.body.data encrypted IPFS data hash
  */
 async function makeOffer(req, res) {
-  const shop = req.shop;
-  const amount = req.amount;
-  const encryptedData = req.body.data;
+  const shop = req.shop
+  const amount = req.amount
+  const encryptedData = req.body.data
 
   await makeOfferQueue.add(
     {
@@ -17,9 +17,9 @@ async function makeOffer(req, res) {
       encryptedData: encryptedData
     },
     { attempts: 6 }
-  ); // Allow up to six attempts
+  ) // Allow up to six attempts
 
-  res.sendStatus(200);
+  res.sendStatus(200)
 }
 
-module.exports = makeOffer;
+module.exports = makeOffer

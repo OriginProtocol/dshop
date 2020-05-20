@@ -3,7 +3,7 @@ module.exports = vars => `
   <td class="image">
     <img src="${vars.img}" />
   </td>
-  <td class="title">${vars.title} × ${vars.quantity}${vars.options || ""}</td>
+  <td class="title">${vars.title} × ${vars.quantity}${vars.options || ''}</td>
   <td class="price">${vars.price}</td>
 </tr>
-`;
+`
