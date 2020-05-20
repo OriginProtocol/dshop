@@ -364,7 +364,7 @@ module.exports = function(app) {
       ipfsGateway,
       ipfsHash: hash
     })
-    console.log(`Recorded deployment in DB. id=${deployment.id}`, domain, ipfsGateway, hash)
+    console.log(`Recorded shop deployment in the DB. id=${deployment.id} domain=${domain} ipfs=${ipfsGateway} hash=${hash}`)
 
     return res.json({ success: true, hash, domain, gateway: network.ipfs })
   })
