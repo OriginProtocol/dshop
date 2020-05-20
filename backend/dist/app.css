@@ -1449,6 +1449,13 @@
   }
 }
 
+.uphold-logout {
+  font-size: 0.875rem;
+  margin-left: auto;
+  margin-right: 0.5rem;
+  color: #666;
+}
+
 .uphold-cards tr th {
   border-top: 0;
 }
