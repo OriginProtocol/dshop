@@ -18,19 +18,6 @@ in a Postgres database.
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
-## Deploy to Heroku script
-
-Make sure your `.env` file has all the values you want to see configured. Make
-sure your PGP keys are base64 encoded (see below). If you're satisfied with the
-configuration(it can be changed later), run the deploy script:
-
-    ./deploy_heroku.sh myAppName
-
-### Don't forget
-
-Configure a stripe webhook with your new Heroku URL, then set
-`STRIPE_WEBHOOK_SECRET` to the generated signing secret given by Stripe.
-
 ## Manual Deploy
 
 This assumes you have already followed the steps to setup and deploy a store to
@@ -53,17 +40,11 @@ ensure this does not happen.
 
     # Enable Postgres and Sendgrid addons
     heroku addons:create heroku-postgresql:hobby-dev
+    heroku addons:create heroku-redis:hobby-dev
     heroku addons:create sendgrid:starter
 
     # Set environment variables
-    heroku config:set PROVIDER=https://mainnet.infura.io/ws/v3/YOUR-PROJECT-ID
-    heroku config:set PROVIDER_WS=wss://mainnet.infura.io/ws/v3/YOUR-PROJECT-ID
     heroku config:set ENCRYPTION_KEY=randomstring
-    heroku config:set REDIS_URL=redis://URL:PORT
-
-    # If you're taking credit card orders, provide a private key. Offers on the
-    # Origin Marketplace contract will be made with this account.
-    heroku config:set WEB3_PK=0xprivatekey
 
     # Commit files
     git add .
@@ -76,10 +57,6 @@ ensure this does not happen.
     # Switch to 'hobby' type dyno to prevent sleeping ($7/month)
 
     heroku ps:type hobby
-
-    # Set up a new shop
-
-    heroku run -- node scripts/createShop.js
 
 ## PGP/GPG Key Export
 

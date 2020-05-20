@@ -39,7 +39,8 @@
     "lint": "lerna run lint",
     "format": "eslint **/**/*.js --quiet --fix",
     "test": "node scripts/test.js",
-    "package-diffs": "find . -maxdepth 3 -name package.json -type f | grep -v node_modules | node scripts/package-versions.js"
+    "package-diffs": "find . -maxdepth 3 -name package.json -type f | grep -v node_modules | node scripts/package-versions.js",
+    "postinstall": "lerna run migrate --scope @origin/shop-backend --stream --no-prefix"
   },
   "husky": {
     "hooks": {

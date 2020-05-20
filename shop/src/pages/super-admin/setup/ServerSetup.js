@@ -46,6 +46,7 @@ function initialState() {
     gcpCredentials: '',
     ipfs: '',
     ipfsApi: '',
+    deployDir: '',
     marketplaceContract: '',
     marketplaceVersion: '',
     ...Defaults[networkId]
@@ -231,6 +232,11 @@ const ServerSetup = ({ next }) => {
                 />
                 {Feedback('ipfsApi')}
               </div>
+            </div>
+            <div className="form-group">
+              <label>Deployment Dir (leave empty for tmp dir)</label>
+              <input {...input('deployDir')} />
+              {Feedback('deployDir')}
             </div>
             <div className="form-row">
               <div className="form-group col-md-6">
