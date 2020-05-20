@@ -11,7 +11,7 @@
     "heroku-postbuild": "npm run migrate",
     "prettier": "prettier --write *.js \"**/*.js\"",
     "prettier:check": "prettier -c *.js \"src/**/*.js\"",
-    "lint": "eslint --ignore-pattern \"dist/*\" . && npm run prettier:check"
+    "lint": "eslint . && npm run prettier:check"
   },
   "author": "Nick Poulden <nick@originprotocol.com>",
   "license": "MIT",
@@ -58,7 +58,13 @@
     "ws": "^7.2.0"
   },
   "devDependencies": {
-    "prettier": "1.19.1",
-    "eslint": "6.8.0"
-  }
+    "eslint": "6.8.0",
+    "prettier": "1.19.1"
+  },
+  "eslintIgnore": [
+    "dist",
+    "docs",
+    "node_modules",
+    "public"
+  ]
 }
