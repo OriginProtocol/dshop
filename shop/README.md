@@ -36,6 +36,11 @@ First create a listing on shoporigin.com and make a note of the listing ID.
    cd backend
    yarn run migration
 
+   # The backend uses redis for queues. While you can skip this,
+   # it's highly recommended to run a local redis so your testing
+   # matches production behavior
+   export REDIS_URL=redis://localhost:6379/
+
    # Optional: If you want to use the super-admin to create new shops, build the bundle.
    yarn run build:dist
 

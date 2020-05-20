@@ -2,7 +2,6 @@
   "name": "root",
   "private": true,
   "dependencies": {
-<<<<<<< HEAD
     "lerna": "3.20.2"
   },
   "workspaces": {
@@ -14,48 +13,6 @@
     "nohoist": [
       "**/openzeppelin-solidity"
     ]
-=======
-    "@google-cloud/bigquery": "^4.7.0",
-    "@google-cloud/dns": "^2.0.0",
-    "aws-sdk": "^2.572.0",
-    "bcrypt": "^3.0.7",
-    "body-parser": "^1.19.0",
-    "bottleneck": "^2.19.5",
-    "bs58": "^4.0.1",
-    "bull": "^3.14.0",
-    "bull-board": "^0.7.0",
-    "cids": ">0.5.5",
-    "cloudflare": "^2.7.0",
-    "commander": "^4.1.1",
-    "connect-session-sequelize": "^6.1.1",
-    "cors": "^2.8.5",
-    "dayjs": "^1.8.14",
-    "dotenv": "^8.2.0",
-    "envkey": "^1.2.7",
-    "ethereumjs-util": "^6.2.0",
-    "express": "^4.17.1",
-    "express-session": "^1.17.0",
-    "form-data": "^3.0.0",
-    "inquirer": "^7.0.4",
-    "ipfs-deploy": "7.14.0",
-    "ipfs-http-client": "^44.0.3",
-    "lodash": "^4.17.15",
-    "mjml": "^4.5.1",
-    "node-fetch": "^2.6.0",
-    "nodemailer": "^6.3.1",
-    "openpgp": "^4.6.2",
-    "pg": "7.18.1",
-    "randomstring": "^1.1.5",
-    "reconnecting-websocket": "^4.4.0",
-    "sequelize": "^5.21.2",
-    "sequelize-cli": "^5.5.1",
-    "serve-static": "^1.14.1",
-    "sharp": "0.24.0",
-    "sqlite3": "^4.1.1",
-    "stripe": "^8.0.0",
-    "web3": "1.0.0-beta.34",
-    "ws": "^7.2.0"
->>>>>>> 05660731bd28654b7f147d8e76eec094e663cd98
   },
   "devDependencies": {
     "babel-eslint": "10.1.0",
