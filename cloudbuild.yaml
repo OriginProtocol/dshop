@@ -28,7 +28,7 @@ steps:
           "gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)"
   
   - id: 'Tag the image latest'
-    name: 'gcr.io/cloud-builders/docker'
+    name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: '/bin/bash'
     args:
       - '-c'
