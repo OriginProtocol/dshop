@@ -2,7 +2,6 @@ const { spawn } = require('child_process')
 const Ganache = require('ganache-core')
 const IPFS = require('ipfs')
 const HttpIPFS = require('ipfs/src/http')
-const ipfsAPI = require('ipfs-api')
 const fs = require('fs')
 const memdown = require('memdown')
 const net = require('net')
@@ -11,9 +10,12 @@ const proxy = require('http-proxy')
 const key = fs.readFileSync(`${__dirname}/data/localhost.key`, 'utf8')
 const cert = fs.readFileSync(`${__dirname}/data/localhost.cert`, 'utf8')
 
-const PORTS = {
-  graphql: 4007
-}
+
+// Constants
+const contractsPackageDir = `${__dirname}/../contracts`
+const truffleBuildDir = `${contractsPackageDir}/build/contracts`
+const devJsonConfigPath = `${contractsPackageDir}/build/contracts.json`
+
 
 const portInUse = port =>
   new Promise(function(resolve) {
@@ -82,61 +84,79 @@ const startIpfs = async () => {
   return httpAPI
 }
 
-const populateIpfs = ({ logFiles } = {}) =>
-  new Promise((resolve, reject) => {
-    const ipfs = ipfsAPI('localhost', '5002', { protocol: 'http' })
-    console.log('Populating IPFS...')
-    ipfs.util.addFromFs(
-      path.resolve(__dirname, './fixtures'),
-      { recursive: true },
-      (err, result) => {
-        if (err) {
-          return reject(err)
-        }
-        if (logFiles) {
-          result.forEach(r => console.log(`  ${r.hash} ${r.path}`))
-        }
-        console.log(`Populated IPFS with ${result.length} files.`)
-        resolve(result)
-      }
-    )
-  })
+/**
+ * Utility method to update the JSON config file for local network based on
+ * addresses of contracts deployed by truffle.
+ *  - Look for contracts ABIs in truffle's build directory: packages/contracts/build/contracts/
+ *  - Get the contract's address for network 999
+ *  - Write the address into the JSON config file packages/contracts/build/contracts.json
+ */
+function _updateContractsJsonConfig() {
+  // Mapping between contract names and their associated key
+  // in the JSON file packages/contracts/build/contracts.json
+  const contracts = {
+    V01_Marketplace: 'Marketplace_V01',
+    OriginToken: 'OGN'
+  }
 
-function writeTruffleAddress(contract, network, address) {
-  const filename = `${__dirname}/../contracts/build/contracts/${contract}.json`
-  const rawContract = fs.readFileSync(filename)
-  const Contract = JSON.parse(rawContract)
+  // 1. Look for contracts ABIs in truffle's build directory
+  let addresses = {}
+  for (const [contractName, configFieldName] of Object.entries(contracts)) {
+    const abiPath = `${truffleBuildDir}/${contractName}.json`
+    try {
+      const rawAbi = fs.readFileSync(abiPath)
+      const abi = JSON.parse(rawAbi)
+      const address = abi.networks['999'].address
+      addresses[configFieldName] = address
+      console.log(`Found ABI for ${contractName}. Address=${address}`)
+    } catch (err) {
+      console.log(`Failed loading truffle generated ABI at ${abiPath}:`, err)
+    }
+  }
+
+  // Write the addresses that were collected to packages/contracts/build/contracts.json
+  if (!fs.existsSync(devJsonConfigPath)) {
+    // If for some reason the config is not present, create an empty one.
+    fs.writeFileSync(devJsonConfigPath, '{}')
+  }
   try {
-    Contract.networks[network] = Contract.networks[network] || {}
-    Contract.networks[network].address = address
-    fs.writeFileSync(filename, JSON.stringify(Contract, null, 2))
-  } catch (error) {
-    // Didn't copy contract build files into the build directory?
-    console.log('Could not write contract address to truffle file')
+    // Read the config file from disk, update the addresses and write it back.
+    let config = {}
+    if (fs.existsSync(devJsonConfigPath)){
+      const rawConfig = fs.readFileSync(devJsonConfigPath)
+      config = JSON.parse(rawConfig)
+    }
+    config = { ...config, ...addresses}
+    fs.writeFileSync(devJsonConfigPath, JSON.stringify(config, null, 2))
+    console.log(`Updated ${devJsonConfigPath} with locally deployed addresses`)
+  } catch(err) {
+    console.log(`Failed updating to ${devJsonConfigPath}:`, err)
   }
 }
 
-const contractsPath = `${__dirname}/../contracts/build`
-const writeTruffle = () =>
-  new Promise(resolve => {
-    console.log('Writing truffle...')
-    try {
-      const rawAddresses = fs.readFileSync(contractsPath + '/contracts.json')
-      const addresses = JSON.parse(rawAddresses)
-      if (addresses.Marketplace) {
-        writeTruffleAddress('V00_Marketplace', '999', addresses.Marketplace)
+const deployContracts = () =>
+  new Promise((resolve, reject) => {
+    console.log('Deploying contracts...')
+    const cmd = spawn(
+      `npm`,
+      ['run', 'migrate'],
+      {
+        cwd: contractsPackageDir,
+        stdio: 'inherit',
+        env: process.env
       }
-      if (addresses.IdentityEvents) {
-        writeTruffleAddress('IdentityEvents', '999', addresses.IdentityEvents)
+    )
+    cmd.on('exit', code => {
+      if (code === 0) {
+        // Now sync the JSON config so that it points to the deployed contracts addresses.
+        _updateContractsJsonConfig()
+        console.log('Deploying contracts succeeded.')
+        resolve()
+      } else {
+        reject('Deploying contracts failed.')
+        reject()
       }
-      if (addresses.OGN) {
-        writeTruffleAddress('OriginToken', '999', addresses.OGN)
-      }
-    } catch (e) {
-      console.log(e)
-    }
-    console.log('contracts.json written OK')
-    resolve()
+    })
   })
 
 const startSslProxy = () =>
@@ -158,7 +178,7 @@ const startSslProxy = () =>
           target: { port },
           ssl: { key, cert }
         })
-        .on('error', e => console.error(e.code))
+        .on('error', e => console.logor(e.code))
         .listen(src)
 
       console.log(`Started proxy ${src} => ${port}`)
@@ -166,172 +186,16 @@ const startSslProxy = () =>
     resolve()
   })
 
-const deployContracts = ({ skipIfExists, filename = 'contracts' }) =>
-  new Promise((resolve, reject) => {
-    console.log('Deploying contracts...')
-    const filePath = `${contractsPath}/${filename}.json`
-    if (skipIfExists && fs.existsSync(filePath)) {
-      try {
-        const c = JSON.parse(fs.readFileSync(filePath))
-        if (Object.keys(c).length) return resolve()
-      } catch (e) {
-        /* Regenerate file */
-      }
-    }
-    const originContractsPath = path.resolve(__dirname, '../graphql')
-    const startServer = spawn(
-      `node`,
-      ['-r', '@babel/register', 'fixtures/populate-server.js', filename],
-      {
-        cwd: originContractsPath,
-        stdio: 'inherit',
-        env: process.env
-      }
-    )
-    startServer.on('exit', code => {
-      if (code === 0) {
-        console.log('Deploying contracts finished OK.')
-        resolve()
-      } else {
-        reject('Deploying contracts failed.')
-        reject()
-      }
-    })
-  })
 
-const startRelayer = () =>
-  new Promise(resolve => {
-    console.log('Starting relayer server...')
-    const cwd = path.resolve(__dirname, '../../infra/relayer')
-    const startServer = spawn(`node`, ['src/app.js'], {
-      cwd,
-      stdio: 'inherit',
-      env: {
-        ...process.env,
-        NETWORK_ID: '999',
-        LOG_LEVEL: process.env.LOG_LEVEL || 'NONE'
-      }
-    })
-    startServer.on('exit', () => {
-      console.log('Relayer stopped.')
-    })
-    resolve(startServer)
-  })
-
-const startBridge = () =>
-  new Promise(resolve => {
-    console.log('Starting bridge server...')
-    const cwd = path.resolve(__dirname, '../../infra/bridge')
-    const startServer = spawn(`node`, ['src/app.js'], {
-      cwd,
-      stdio: 'inherit',
-      env: {
-        ...process.env,
-        DATABASE_URL: 'postgres://origin:origin@localhost/origin',
-        LOG_LEVEL: process.env.LOG_LEVEL || 'NONE'
-      }
-    })
-    startServer.on('exit', () => {
-      console.log('Bridge stopped.')
-    })
-    resolve(startServer)
-  })
-
-const startMockBridge = () =>
-  new Promise(resolve => {
-    console.log('Starting mock bridge server...')
-    const cwd = path.resolve(__dirname, '../../infra/bridge')
-    const startServer = spawn(`node`, ['src/mockServer.js'], {
-      cwd,
-      stdio: 'inherit',
-      env: {
-        ...process.env
-      }
-    })
-    startServer.on('exit', () => {
-      console.log('Mock bridge stopped.')
-    })
-    resolve(startServer)
-  })
-
-const startListener = () =>
-  new Promise(resolve => {
-    console.log('Starting listener server...')
-    const cwd = path.resolve(__dirname, '../../infra/discovery')
-    const spawnedListener = spawn(
-      `node`,
-      [
-        'src/listener/listener.js',
-        '--network=localhost',
-        '--marketplace',
-        '--identity',
-        '--elasticsearch',
-        '--messaging-events'
-      ],
-      {
-        cwd,
-        stdio: 'inherit',
-        env: {
-          ...process.env,
-          ELASTICSEARCH_HOST: 'localhost:9200',
-          DATABASE_URL: 'postgres://origin:origin@localhost/origin',
-          LOG_LEVEL: process.env.LOG_LEVEL || 'NONE'
-        }
-      }
-    )
-    spawnedListener.on('exit', () => {
-      console.log('Listener stopped.')
-    })
-    resolve(spawnedListener)
-  })
-
-const startDiscovery = () =>
-  new Promise(resolve => {
-    console.log('Starting discovery server...')
-    const cwd = path.resolve(__dirname, '../../infra/discovery')
-    const spawnedDiscovery = spawn(
-      `node`,
-      [
-        'src/apollo/app.js',
-        '--network=localhost',
-        '--marketplace',
-        '--identity',
-        '--elasticsearch'
-      ],
-      {
-        cwd,
-        stdio: 'inherit',
-        env: {
-          ...process.env,
-          NETWORK_ID: '999',
-          ELASTICSEARCH_HOST: 'localhost:9200',
-          DATABASE_URL: 'postgres://origin:origin@localhost/origin',
-          LOG_LEVEL: process.env.LOG_LEVEL || 'NONE'
-        }
-      }
-    )
-    spawnedDiscovery.on('exit', () => {
-      console.log('Discovery stopped.')
-    })
-    resolve(spawnedDiscovery)
-  })
-
-const startGraphql = () =>
-  new Promise(resolve => {
-    console.log('Starting graphql server...')
-    const startServer = spawn(`node`, ['-r', '@babel/register', 'server'], {
-      cwd: path.resolve(__dirname, '../graphql'),
-      stdio: 'inherit',
-      env: { ...process.env, GRAPHQL_SERVER_PORT: PORTS.graphql }
-    })
-    startServer.on('exit', () => console.log('GraphQL Server stopped.'))
-    resolve(startServer)
-  })
-
+/**
+ * Main entry point for the module.
+ * @type {{}}
+ */
 const started = {}
 let extrasResult
 
 module.exports = async function start(opts = {}) {
+  // Handle starting Ganache (local blockchain).
   if (opts.ganache && !started.ganache) {
     const ganacheOpts = opts.ganache === true ? {} : opts.ganache
     if (await portInUse(8545)) {
@@ -343,6 +207,7 @@ module.exports = async function start(opts = {}) {
     }
   }
 
+  // Handle starting a local IPFS daemon.
   if (opts.ipfs && !started.ipfs) {
     if (await portInUse(5002)) {
       if (!opts.quiet) {
@@ -357,132 +222,23 @@ module.exports = async function start(opts = {}) {
     }
   }
 
+  // Handle compiling and deploying contracts on the local blockchain.
+  // Writes the addresses of the deployed contract to the config
+  // at packages/contracts/build/contracts.json
   if (opts.deployContracts && !started.contracts) {
-    if (!fs.existsSync(`${contractsPath}/contracts.json`)) {
-      fs.writeFileSync(`${contractsPath}/contracts.json`, '{}')
-    }
-    if (!fs.existsSync(`${contractsPath}/tests.json`)) {
-      fs.writeFileSync(`${contractsPath}/tests.json`, '{}')
-    }
-    await deployContracts({
-      skipIfExists: opts.skipContractsIfExists,
-      filename: opts.contractsFile
-    })
+    await deployContracts()
     started.contracts = true
   }
 
-  if (opts.writeTruffle) {
-    await writeTruffle()
-  }
 
   if (opts.sslProxy) {
     await startSslProxy()
-  }
-
-  if (opts.graphqlServer) {
-    if (await portInUse(PORTS.graphql)) {
-      if (!opts.quiet) {
-        console.log('GraphQL Server already started')
-      }
-    } else {
-      started.graphql = await startGraphql()
-    }
-  }
-
-  if (opts.bridge) {
-    if (!(await portInUse(5432))) {
-      console.log('Bridge server requires Postgres to be running on port 5432')
-    } else if (await portInUse(5000)) {
-      console.log('Bridge server already started')
-    } else {
-      if (!(await portInUse(6379))) {
-        // Without Redis, bridge server can be used for some actions such
-        // as reading/writing identity.
-        console.warn(
-          'Redis not started. Bridge server will not be fully functional'
-        )
-      }
-      started.bridge = await startBridge()
-    }
-  }
-
-  if (opts.mockBridge) {
-    if (await portInUse(5000)) {
-      if (!opts.quiet) {
-        console.log('Mock bridge server already started')
-      }
-    } else {
-      started.mockBridge = await startMockBridge()
-    }
-  }
-
-  if (opts.listener) {
-    if (!(await portInUse(5432))) {
-      console.log('Listener requires Postgres to be running on port 5432')
-    } else if (!(await portInUse(9200))) {
-      console.log('Listener requires ElasticSearch to be running on port 9200')
-    } else {
-      started.listener = await startListener()
-    }
-  }
-
-  if (opts.discovery) {
-    if (!(await portInUse(5432))) {
-      console.log('Discovery requires Postgres to be running on port 5432')
-    } else if (!(await portInUse(9200))) {
-      console.log('Discovery requires ElasticSearch to be running on port 9200')
-    } else if (!(await portInUse(6379))) {
-      console.log('Discovery requires Redis to be running on port 6379')
-    } else if (await portInUse(4000)) {
-      console.log('Discovery Server already started')
-    } else {
-      started.discovery = await startDiscovery()
-    }
-  }
-
-  if (opts.relayer && !started.relayer) {
-    if (await portInUse(5100)) {
-      if (!opts.quiet) {
-        console.log('Relayer already started')
-      }
-    } else {
-      started.relayer = await startRelayer()
-    }
-  }
-
-  if (opts.extras && !started.extras) {
-    extrasResult = await opts.extras()
-    started.extras = true
-  }
-
-  if (process.env.DOCKER) {
-    // Used to indicate to other services in Docker that the services package
-    // is complete via wait-for.sh
-    net.createServer().listen(1111, '0.0.0.0')
   }
 
   const shutdownFn = async function shutdown() {
     console.log('Shutting services down...')
     if (started.ganache) {
       await started.ganache.close()
-    }
-    if (started.relayer) {
-      started.relayer.kill('SIGHUP')
-    }
-    if (started.graphql) {
-      started.graphql.kill('SIGHUP')
-    }
-    if (started.listener) {
-      started.listener.kill('SIGHUP')
-    }
-    if (started.discovery) {
-      started.discovery.kill('SIGHUP')
-    }
-    if (started.bridge) {
-      started.bridge.kill('SIGHUP')
-    }
-    if (started.mockBridge) {
-      started.mockBridge.kill('SIGHUP')
     }
     if (started.ipfs) {
       await started.ipfs.stop()
