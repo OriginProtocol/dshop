@@ -9,12 +9,10 @@ const proxy = require('http-proxy')
 const key = fs.readFileSync(`${__dirname}/data/localhost.key`, 'utf8')
 const cert = fs.readFileSync(`${__dirname}/data/localhost.cert`, 'utf8')
 
-
 // Constants
 const contractsPackageDir = `${__dirname}/../contracts`
 const truffleBuildDir = `${contractsPackageDir}/build/contracts`
 const devJsonConfigPath = `${contractsPackageDir}/build/contracts.json`
-
 
 const portInUse = port =>
   new Promise(function(resolve) {
@@ -121,14 +119,14 @@ function _updateContractsJsonConfig() {
   try {
     // Read the config file from disk, update the addresses and write it back.
     let config = {}
-    if (fs.existsSync(devJsonConfigPath)){
+    if (fs.existsSync(devJsonConfigPath)) {
       const rawConfig = fs.readFileSync(devJsonConfigPath)
       config = JSON.parse(rawConfig)
     }
     config = { ...config, ...addresses }
     fs.writeFileSync(devJsonConfigPath, JSON.stringify(config, null, 2))
     console.log(`Updated ${devJsonConfigPath} with locally deployed addresses`)
-  } catch(err) {
+  } catch (err) {
     console.log(`Failed updating to ${devJsonConfigPath}:`, err)
   }
 }
@@ -136,15 +134,11 @@ function _updateContractsJsonConfig() {
 const deployContracts = () =>
   new Promise((resolve, reject) => {
     console.log('Deploying contracts...')
-    const cmd = spawn(
-      `npm`,
-      ['run', 'migrate'],
-      {
-        cwd: contractsPackageDir,
-        stdio: 'inherit',
-        env: process.env
-      }
-    )
+    const cmd = spawn(`npm`, ['run', 'migrate'], {
+      cwd: contractsPackageDir,
+      stdio: 'inherit',
+      env: process.env
+    })
     cmd.on('exit', code => {
       if (code === 0) {
         // Now sync the JSON config so that it points to the deployed contracts addresses.
@@ -184,7 +178,6 @@ const startSslProxy = () =>
     })
     resolve()
   })
-
 
 /**
  * Main entry point for the module.

@@ -4,7 +4,10 @@ const start = require('./index.js')
 program
   .option('-g, --ganache', 'Start Ganache')
   .option('-i, --ipfs', 'Start IPFS')
-  .option('-d, --deploy-contracts', 'Deploy contracts and update addresses in relevant configs')
+  .option(
+    '-d, --deploy-contracts',
+    'Deploy contracts and update addresses in relevant configs'
+  )
   .option('-x, --ssl-proxy', 'Start SSL proxy')
   .option('-q, --quiet', 'Quiet')
   .parse(process.argv)
