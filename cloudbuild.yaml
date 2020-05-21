@@ -2,11 +2,10 @@
 steps:
   - id: 'Create tag'
     name: 'gcr.io/cloud-builders/docker'
-    
     entrypoint: '/bin/bash'
     args:
       - '-c'
-      - date +'%%Y%%m%%d%%H%%M%%s' > .tag
+      - date +'%Y%m%d%H%M%s' > .tag
 
   - id: 'Build docker image'
     name: 'gcr.io/cloud-builders/docker'
