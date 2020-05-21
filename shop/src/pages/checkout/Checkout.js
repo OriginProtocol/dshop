@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Switch, Route, useHistory } from 'react-router-dom'
 import { StripeProvider } from 'react-stripe-elements'
-import { ApolloProvider } from 'react-apollo'
-import client from '@origin/graphql'
 import Styl from 'react-styl'
 
 import { Elements } from 'react-stripe-elements'
@@ -43,26 +41,24 @@ const Checkout = () => {
   }, [])
 
   return (
-    <ApolloProvider client={client}>
-      <StripeProvider stripe={stripe}>
-        <Elements>
-          <div className="checkout">
-            <h3 className="d-md-none my-4 ml-4">{config.fullTitle}</h3>
-            <div className="user-details">
-              <Switch>
-                <Route path="/checkout/shipping" component={Shipping} />
-                <Route path="/checkout/payment" component={Payment} />
-                <Route path="/checkout" component={Information} />
-              </Switch>
-            </div>
-
-            <div className="order-summary-wrap">
-              <Summary cart={cart} discountForm={true} donationForm={true} />
-            </div>
+    <StripeProvider stripe={stripe}>
+      <Elements>
+        <div className="checkout">
+          <h3 className="d-md-none my-4 ml-4">{config.fullTitle}</h3>
+          <div className="user-details">
+            <Switch>
+              <Route path="/checkout/shipping" component={Shipping} />
+              <Route path="/checkout/payment" component={Payment} />
+              <Route path="/checkout" component={Information} />
+            </Switch>
           </div>
-        </Elements>
-      </StripeProvider>
-    </ApolloProvider>
+
+          <div className="order-summary-wrap">
+            <Summary cart={cart} discountForm={true} donationForm={true} />
+          </div>
+        </div>
+      </Elements>
+    </StripeProvider>
   )
 }
 

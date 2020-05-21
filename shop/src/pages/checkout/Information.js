@@ -8,7 +8,7 @@ import { useStateValue } from 'data/state'
 import { Countries } from 'data/Countries'
 
 import Link from 'components/Link'
-import ShippingForm from './_ShippingForm'
+import ShippingForm from 'components/ShippingForm'
 
 import BetaWarning from './_BetaWarning'
 

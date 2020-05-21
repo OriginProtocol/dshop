@@ -1402,51 +1402,82 @@
   text-align: center;
 }
 
-.crypto-chooser .tokens > div:hover {
-  opacity: 1;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
-  filter: alpha(opacity=100);
-}
-
-.crypto-chooser .tokens > div.active {
-  opacity: 1;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
-  filter: alpha(opacity=100);
-  border-color: #007bff;
-}
-
-.crypto-chooser .tokens > div .sm {
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-}
-
-.crypto-chooser .tokens > div {
+.checkout-payment-method {
   border: 1px solid #eee;
-  padding: 1rem;
   border-radius: 0.5rem;
-  margin-right: 1rem;
+  padding: 1rem;
+}
+
+.checkout-payment-method label {
+  margin-bottom: 0;
+}
+
+.checkout-payment-method label .description {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.checkout-payment-method label.inactive:hover {
+  color: #666;
+}
+
+.checkout-payment-method label.inactive {
   cursor: pointer;
-  text-align: center;
-  opacity: 0.75;
-  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=75);
-  filter: alpha(opacity=75);
 }
 
-.crypto-chooser .tokens {
+.checkout-payment-method label:not(:first-child) {
+  border-top: 1px solid #eee;
+  margin-top: 1rem;
+  padding-top: 1rem;
+}
+
+.checkout-payment-method .radio input {
+  margin-right: 0.5rem;
+  margin-bottom: 3px;
+}
+
+.checkout-payment-method .radio .cards > div.visa {
+  background: url(images/visa.svg);
+}
+
+.checkout-payment-method .radio .cards > div.master {
+  background: url(images/master.svg);
+}
+
+.checkout-payment-method .radio .cards > div.amex {
+  background: url(images/amex.svg);
+}
+
+.checkout-payment-method .radio .cards > div.discover {
+  background: url(images/discover.svg);
+}
+
+.checkout-payment-method .radio .cards > div:last-child {
+  margin-right: 8px;
+}
+
+.checkout-payment-method .radio .cards > div {
+  width: 38px;
+  height: 24px;
+  margin-right: 4px;
+}
+
+.checkout-payment-method .radio .cards {
+  margin-left: auto;
   display: flex;
+  font-size: 12px;
+  color: #737373;
+  align-items: center;
 }
 
-@media (max-width: 767.98px) {
-  .crypto-chooser .tokens > div:not(:last-child) {
-    margin-bottom: 1rem;
-  }
+.checkout-payment-method .radio {
+  display: flex;
+  align-items: baseline;
+}
 
-  .crypto-chooser .tokens {
-    -ms-flex-direction: column;
-    -moz-flex-direction: column;
-    -webkit-flex-direction: column;
-    flex-direction: column;
-  }
+.beta-warning {
+  margin-top: 2rem;
+  font-size: 0.875rem;
 }
 
 .uphold-logout {
@@ -1936,9 +1967,51 @@
   background-color: #ff2000;
 }
 
-.beta-warning {
-  margin-top: 2rem;
-  font-size: 0.875rem;
+.pay-with-crypto .tokens > div:hover {
+  opacity: 1;
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
+  filter: alpha(opacity=100);
+}
+
+.pay-with-crypto .tokens > div.active {
+  opacity: 1;
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=100);
+  filter: alpha(opacity=100);
+  border-color: #007bff;
+}
+
+.pay-with-crypto .tokens > div .sm {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.pay-with-crypto .tokens > div {
+  border: 1px solid #eee;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-right: 1rem;
+  cursor: pointer;
+  text-align: center;
+  opacity: 0.75;
+  -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=75);
+  filter: alpha(opacity=75);
+}
+
+.pay-with-crypto .tokens {
+  display: flex;
+}
+
+@media (max-width: 767.98px) {
+  .pay-with-crypto .tokens > div:not(:last-child) {
+    margin-bottom: 1rem;
+  }
+
+  .pay-with-crypto .tokens {
+    -ms-flex-direction: column;
+    -moz-flex-direction: column;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+  }
 }
 
 .order-summary {

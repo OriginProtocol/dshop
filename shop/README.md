@@ -20,7 +20,7 @@ First create a listing on shoporigin.com and make a note of the listing ID.
    cp -r data/example-single data/mystore
 
    # Copy PGP dist files
-   cp -r ../../node_modules/openpgp/dist public
+   cp -r ../node_modules/openpgp/dist public
 
    # Generate PGP keys. Make a note of public and private keys.
    node scripts/genKey

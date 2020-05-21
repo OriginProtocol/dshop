@@ -5,6 +5,7 @@
   "logo": "",
   "css": "",
   "footer": "© 2019 <a href=\"https://www.originprotocol.com\">Origin Protocol</a>. <span class=\"ml-1\">Learn more about this decentralized e-commerce store <a class=\"ul\" href=\"https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0\">here</a>.</span>",
+  "backendAuthToken": "example",
 
   "supportEmail": "My Store <help@mystore.com>",
   "emailSubject": "Your Order",
@@ -13,14 +14,14 @@
   "instagram": "",
   "facebook": "",
 
-  "stripe": false,
+  "stripe": true,
   "beta": true,
   "discountCodes": true,
 
-  "pgpPublicKey": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\nXXXX\n-----END PGP PUBLIC KEY BLOCK-----\n",
+  "pgpPublicKey": "-----BEGIN PGP PUBLIC KEY BLOCK-----\r\n\r\nxjMEXsRLkRYJKwYBBAHaRw8BAQdA6bQHhtFsAV16DPhsij/JobxPXskacLMq\r\nzs8fayNXCo/NGkQtU2hvcCA8ZHNob3BAZXhhbXBsZS5jb20+wngEEBYKACAF\r\nAl7ES5EGCwkHCAMCBBUICgIEFgIBAAIZAQIbAwIeAQAKCRBhjhWRlgSn9d5H\r\nAQCAlUGKiKlw3qQ2CtZ6Fukf4yGoIS3AWi7mqmFe5YK4vgD/Sa3rP4uRhAl+\r\nEgk+0iLo8hxN5Ajt5YKIPsJfd+nkWA3OOARexEuREgorBgEEAZdVAQUBAQdA\r\n5pQAuj7adWXcgUUOSpHj5mt1yT0BEUkEOpECigghiWcDAQgHwmEEGBYIAAkF\r\nAl7ES5ECGwwACgkQYY4VkZYEp/VICQD9HPEjtMSoc+SF76hndKnFYibwXcCP\r\nbEaFPxCeddKMWl0BAPV7DjxX/9nNv9ufXC26GYMBI3KgI4X0UMyMNYjhRD8O\r\n=zX7D\r\n-----END PGP PUBLIC KEY BLOCK-----\r\n",
   "contentCDN": "",
   "contentHash": "",
-  "stripeKey": "",
+  "stripeKey": "pk_test_HBSUtNy4B8zLoqXIhNP8ZzV300DpIaVzHV",
 
   "networks": {
     "1": {

@@ -11,14 +11,14 @@
     "prettier:check": "prettier -c *.js \"src/**/*.js\" \"test/**/*.js\""
   },
   "dependencies": {
-    "ajv": "^6.10.0",
-    "bottleneck": "^2.19.1",
-    "crypto-js": "^3.1.9-1",
-    "crypto-random-string": "^3.0.0",
+    "ajv": "^6.12.2",
+    "bottleneck": "^2.19.5",
+    "crypto-js": "^4.0.0",
+    "crypto-random-string": "^3.2.0",
     "debug": "^4.1.1",
-    "eth-ecies": "^1.0.3",
+    "eth-ecies": "^1.0.4",
     "json-stable-stringify": "^1.0.1",
-    "secp256k1": "3.8.0"
+    "secp256k1": "4.0.1"
   },
   "prettier": {
     "semi": false,
@@ -39,20 +39,20 @@
     ]
   },
   "devDependencies": {
-    "@babel/core": "7.9.0",
+    "@babel/core": "7.9.6",
     "@babel/plugin-proposal-class-properties": "7.8.3",
     "@babel/plugin-proposal-export-default-from": "7.8.3",
-    "@babel/plugin-proposal-object-rest-spread": "7.9.5",
+    "@babel/plugin-proposal-object-rest-spread": "7.9.6",
     "@babel/plugin-transform-destructuring": "7.9.5",
     "@babel/plugin-transform-object-assign": "7.8.3",
-    "@babel/plugin-transform-runtime": "7.9.0",
-    "@babel/preset-env": "7.9.5",
+    "@babel/plugin-transform-runtime": "7.9.6",
+    "@babel/preset-env": "7.9.6",
     "@babel/preset-react": "7.9.4",
     "@babel/register": "7.9.0",
-    "@babel/runtime": "7.9.2",
+    "@babel/runtime": "7.9.6",
     "debug": "4.1.1",
-    "mocha": "7.0.1",
-    "eslint": "6.8.0",
-    "prettier": "1.19.1"
+    "mocha": "7.1.2",
+    "eslint": "7.0.0",
+    "prettier": "2.0.5"
   }
 }

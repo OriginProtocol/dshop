@@ -1,66 +1,7 @@
-<!doctype html>
-<html lang="en" dir="ltr">
-
-<head>
-  <title>Origin Protocol Store</title>
-  <meta charset="utf-8">
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no, user-scalable=no">
-  <meta http-equiv="Content-Language" content="en">
-  
-
-  
-
-  
-
-  <link rel="data-dir" href="DATA_DIR" />
-
-  <link rel="icon" href="favicon.ico" />
-  
-  
-  <link rel="stylesheet" href="vendors~app.2d4d8a5f.css"
-    integrity="sha256-C8HKEuQh5FEjUSw3TH11QQX62+TaXFTm12GIOFdWEfc= sha384-T8101jtRui2EKgIblzaUqnHdQStZrKaxevClG+6uKp2RXYYi98bgYO6+dLDMhXi/"
-    crossorigin="anonymous" />
-  
-  
-  
-  <link rel="stylesheet" href="app.2d4d8a5f.css"
-    integrity="sha256-4RVFGcUNL7aPRmbL3qhU4uB1xd8HZe78gDYjCUgbo1w= sha384-Z+xJ6S4kPBZ3fJLA4T15kcUyL62uDt4kkZlksf7unLlzhSC+55nf/k04qcySPRdX"
-    crossorigin="anonymous" />
-  
-  
-</head>
-
-<body>
-  <div id="app">
-    <div class="loading-screen"></div>
-  </div>
-</body>
-<script crossorigin src="dist/openpgp.min.js"></script>
-<script>
-  if (typeof window.openpgp !== 'undefined') {
+<!doctype html><html lang="en" dir="ltr"><head><title>Origin Protocol Store</title><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,shrink-to-fit=no,user-scalable=no"><meta http-equiv="Content-Language" content="en"><link rel="data-dir" href="DATA_DIR"/><link rel="icon" href="favicon.ico"/><link rel="stylesheet" href="vendors~app.3092cfab.css" integrity="sha256-C8HKEuQh5FEjUSw3TH11QQX62+TaXFTm12GIOFdWEfc= sha384-T8101jtRui2EKgIblzaUqnHdQStZrKaxevClG+6uKp2RXYYi98bgYO6+dLDMhXi/" crossorigin="anonymous"/><link rel="stylesheet" href="app.3092cfab.css" integrity="sha256-q7WwVuKMrZU6JUFIHWcnwtLjoESNL98dERdou7M9Jxg= sha384-jNk3Bb48ztMklV36XDaM1WIER4SfdIiBGJvrmRETLF+uPkXBS6QJLgognHb5grnE" crossorigin="anonymous"/></head><body><div id="app"><div class="loading-screen"></div></div></body><script crossorigin src="dist/openpgp.min.js"></script><script>if (typeof window.openpgp !== 'undefined') {
     openpgp.config.show_comment = false
     openpgp.config.show_version = false
     openpgp.initWorker({ path: 'dist/openpgp.worker.min.js' })
-  }
-</script>
-<script>
-  localStorage.metaMaskEnabled = true
+  }</script><script>localStorage.metaMaskEnabled = true
   localStorage.ognNetwork = "NETWORK"
-  localStorage.customConfig = '{"performanceMode":false,"proxyAccountsEnabled":false,"relayerEnabled":false,"provider":"PROVIDER"}'
-</script>
-
-
-<script src="dist/vendors~app.2d4d8a5f.bundle.js"
-  integrity="sha256-VumNhQBfoPcrTjyVKysH5HOXK3xh3rGeJOULEwSxH2U= sha384-6SA1BN1lSvX0xg1IIXR90D3ATdZGL9lSzo020EqvjnYx6hvEnNHXAPgXrarxtGGg"
-  crossorigin="anonymous"></script>
-
-
-
-<script src="app.2d4d8a5f.js"
-  integrity="sha256-N1CnK/cAj6pFnYi57lZxwUmTjc54JD97hg5i1puaouc= sha384-zvM7q0Krl+DKwRVMCfWRRw+T2Fl587zIfsueALJKKq/COttsXRO67UXF8uuYxruj"
-  crossorigin="anonymous"></script>
-
-
-
-</html>
+  localStorage.customConfig = '{"performanceMode":false,"proxyAccountsEnabled":false,"relayerEnabled":false,"provider":"PROVIDER"}'</script><script src="dist/vendors~app.3092cfab.bundle.js" integrity="sha256-PvX9L8OhXD/mQ1qwr4ughp+usqo9tIvRzaG2JE1GWe0= sha384-XFfnxl6tcWtrQB/ZJ57pEaK7DX6YcLJ/fdnuSM4yc2NA7Ai5OGkSdklPH4lSIfaJ" crossorigin="anonymous"></script><script src="app.3092cfab.js" integrity="sha256-NfKA0utadyFTaDe+QEar6YoDwafERlDJ9FuA0yCOAug= sha384-y5OF+WaASvwUtcDpZuzLgvCTBB24fpGNr0n7/JVBx1x8i133Sw3KrOuUxnrYQsAK" crossorigin="anonymous"></script></html>
