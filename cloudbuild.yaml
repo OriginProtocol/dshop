@@ -24,7 +24,10 @@ steps:
   
   - id: 'Tag the image latest'
     name: 'gcr.io/cloud-builders/docker'
-    entrypoint: |
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - |
         gcloud container images add-tag \
           "gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)" \
           "gcr.io/${PROJECT_ID}/experimental/dshop-backend:latest" \
