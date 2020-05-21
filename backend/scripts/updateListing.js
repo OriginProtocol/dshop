@@ -185,7 +185,11 @@ async function _sendTx({
     )
 
     try {
-      tx = await wrapTxToSend.send({ from: fromAddress, gas: 500000, gasPrice })
+      tx = await wrapTxToSend.send({
+        from: fromAddress,
+        gas: 500000,
+        gasPrice
+      })
     } catch (e) {
       console.log('Send tx via proxy error:', e)
       throw new Error('Failed updating the listing on the marketplace')

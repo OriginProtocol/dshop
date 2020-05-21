@@ -1,0 +1,39 @@
+---
+steps:
+  - id: 'Create tag'
+    name: 'gcr.io/cloud-builders/docker'
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - date +'%Y%m%d%H%M%s' > .tag
+
+  - id: 'Build docker image'
+    name: 'gcr.io/cloud-builders/docker'
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - |
+        docker build \
+            -f ./devops/Dockerfile \
+            -t "gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)" \
+            $(pwd)
+
+  - id: 'Push the image to GCR'
+    name: 'gcr.io/cloud-builders/docker'
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - |
+        docker push \
+          "gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)"
+  
+  - id: 'Tag the image latest'
+    name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - |
+        gcloud container images add-tag \
+          "gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)" \
+          "gcr.io/${PROJECT_ID}/experimental/dshop-backend:latest" \
+          --quiet  

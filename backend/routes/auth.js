@@ -75,7 +75,12 @@ module.exports = function(app) {
       order: [['createdAt', 'desc']]
     })
     if (!shops.length) {
-      return res.json({ success: false, reason: 'no-shops', networks, network })
+      return res.json({
+        success: false,
+        reason: 'no-shops',
+        networks,
+        network
+      })
     }
 
     res.json({ success: true, email: user.email, networks, network, shops })

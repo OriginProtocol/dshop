@@ -118,6 +118,7 @@
     "webpack-dev-server": "3.11.0"
   },
   "eslintIgnore": [
+    "docs",
     "node_modules",
     "public"
   ]

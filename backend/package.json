@@ -10,7 +10,8 @@
     "migrate": "sequelize db:migrate --config data/config.js --migrations-path data/migrations",
     "heroku-postbuild": "npm run migrate",
     "prettier": "prettier --write *.js \"**/*.js\"",
-    "prettier:check": "prettier -c *.js \"src/**/*.js\""
+    "prettier:check": "prettier -c *.js \"src/**/*.js\"",
+    "lint": "eslint . && npm run prettier:check"
   },
   "author": "Nick Poulden <nick@originprotocol.com>",
   "license": "MIT",
@@ -57,6 +58,13 @@
     "ws": "^7.3.0"
   },
   "devDependencies": {
+    "eslint": "6.8.0",
     "prettier": "2.0.5"
-  }
+  },
+  "eslintIgnore": [
+    "dist",
+    "docs",
+    "node_modules",
+    "public"
+  ]
 }

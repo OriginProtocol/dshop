@@ -1,5 +1,12 @@
 const omit = require('lodash/omit')
-const { Seller, Shop, SellerShop, Network, Sequelize } = require('../models')
+const {
+  Seller,
+  Shop,
+  ShopDeployment,
+  SellerShop,
+  Network,
+  Sequelize
+} = require('../models')
 const { authSellerAndShop, authRole, authSuperUser } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
 const { getConfig, setConfig } = require('../utils/encryptedConfig')
@@ -73,32 +80,40 @@ module.exports = function(app) {
     res.json({ success: true, shops })
   })
 
-  app.post('/shop/sync-printful', authSuperUser, authSellerAndShop, async (req, res) => {
-    const shop = req.shop
-    const network = await Network.findOne({ where: { active: true } })
-    if (!network) {
-      return res.json({ success: false, reason: 'no-active-network' })
+  app.post(
+    '/shop/sync-printful',
+    authSuperUser,
+    authSellerAndShop,
+    async (req, res) => {
+      const shop = req.shop
+      const network = await Network.findOne({ where: { active: true } })
+      if (!network) {
+        return res.json({ success: false, reason: 'no-active-network' })
+      }
+
+      const { printful } = getConfig(shop.config)
+      if (!printful) {
+        return res.json({ success: false, reason: 'no-printful-api-key' })
+      }
+
+      const networkConfig = getConfig(network.config)
+      if (!networkConfig.deployDir) {
+        return res.json({ success: false, reason: 'no-local-deploy-dir' })
+      }
+      const OutputDir = `${networkConfig.deployDir}/${shop.authToken}`
+
+      await downloadProductData({ OutputDir, printfulApi: printful })
+      await writeProductData({ OutputDir })
+      await downloadPrintfulMockups({ OutputDir })
+      await resizePrintfulMockups({ OutputDir })
+
+      res.json({ success: true })
     }
+  )
 
-    const { printful } = getConfig(shop.config)
-    if (!printful) {
-      return res.json({ success: false, reason: 'no-printful-api-key' })
-    }
-
-    const networkConfig = getConfig(network.config)
-    if (!networkConfig.deployDir) {
-      return res.json({ success: false, reason: 'no-local-deploy-dir' })
-    }
-    const OutputDir = `${networkConfig.deployDir}/${shop.authToken}`
-
-    await downloadProductData({ OutputDir, printfulApi: printful })
-    await writeProductData({ OutputDir })
-    await downloadPrintfulMockups({ OutputDir })
-    await resizePrintfulMockups({ OutputDir })
-
-    res.json({ success: true })
-  })
-
+  /**
+   * Creates a new shop.
+   */
   app.post('/shop', authSuperUser, async (req, res) => {
     const existingShop = await Shop.findOne({
       where: {
@@ -275,9 +290,11 @@ module.exports = function(app) {
       }
     }
 
-    let hash
+    // Deploy the shop to IPFS.
+    let hash, ipfsGateway
     const publicDirPath = `${OutputDir}/public`
     if (networkConfig.pinataKey && networkConfig.pinataSecret) {
+      ipfsGateway = 'https://gateway.pinata.cloud'
       hash = await deploy({
         publicDirPath,
         remotePinners: ['pinata'],
@@ -292,10 +309,12 @@ module.exports = function(app) {
       if (!hash) {
         return res.json({ success: false, reason: 'ipfs-error' })
       }
+      console.log(`Deployed shop on Pinata. Hash=${hash}`)
       await prime(`https://gateway.pinata.cloud/ipfs/${hash}`, publicDirPath)
       await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
       await prime(`https://ipfs-prod.ogn.app/ipfs/${hash}`, publicDirPath)
     } else if (network.ipfsApi.indexOf('localhost') > 0) {
+      ipfsGateway = network.ipfsApi
       const ipfs = ipfsClient(network.ipfsApi)
       const allFiles = []
       const glob = ipfsClient.globSource(publicDirPath, { recursive: true })
@@ -303,6 +322,11 @@ module.exports = function(app) {
         allFiles.push(file)
       }
       hash = String(allFiles[allFiles.length - 1].cid)
+      console.log(`Deployed shop on local IPFS. Hash=${hash}`)
+    } else {
+      console.log(
+        'Shop not deployed to IPFS: Pinata not configured and not a dev environment.'
+      )
     }
 
     let domain
@@ -322,7 +346,7 @@ module.exports = function(app) {
         await setCloudflareRecords({
           ...opts,
           email: networkConfig.cloudflareEmail,
-          key: networkConfig.cloudflareApiKey,
+          key: networkConfig.cloudflareApiKey
         })
       } else if (networkConfig.gcpCredentials) {
         await setCloudDNSRecords({
@@ -331,6 +355,17 @@ module.exports = function(app) {
         })
       }
     }
+
+    // Record the deployment in the DB.
+    const deployment = await ShopDeployment.create({
+      shopId,
+      domain,
+      ipfsGateway,
+      ipfsHash: hash
+    })
+    console.log(
+      `Recorded shop deployment in the DB. id=${deployment.id} domain=${domain} ipfs=${ipfsGateway} hash=${hash}`
+    )
 
     return res.json({ success: true, hash, domain, gateway: network.ipfs })
   })
