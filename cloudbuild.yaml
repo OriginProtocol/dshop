@@ -20,7 +20,11 @@ steps:
 
   - id: 'Push the image to GCR'
     name: 'gcr.io/cloud-builders/docker'
-    entrypoint: 'docker push "gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)"'
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - |
+        docker push "gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)"
   
   - id: 'Tag the image latest'
     name: 'gcr.io/cloud-builders/docker'
