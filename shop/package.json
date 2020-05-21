@@ -35,7 +35,6 @@
     "flexsearch": "^0.6.30",
     "graphql-tag": "^2.10.1",
     "openpgp": "^4.6.2",
-    "prettier": "^1.18.2",
     "query-string": "^6.8.1",
     "react": "^16.8.6",
     "react-apollo": "^3.0.0",
@@ -113,6 +112,7 @@
     "mocha": "7.0.1",
     "node-sass": "4.13.1",
     "optimize-css-assets-webpack-plugin": "5.0.3",
+    "prettier": "1.19.1",
     "react-router-dom": "5.1.2",
     "sass-loader": "8.0.2",
     "sharp": "0.24.0",
@@ -125,12 +125,8 @@
     "webpack-dev-server": "3.10.3"
   },
   "eslintIgnore": [
+    "docs",
     "node_modules",
     "public"
-  ],
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "proseWrap": "always"
-  }
+  ]
 }

@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const Event = sequelize.define(
-    "Event",
+    'Event',
     {
       networkId: {
         type: DataTypes.INTEGER
@@ -57,8 +57,8 @@ module.exports = (sequelize, DataTypes) => {
     {
       underscored: true,
       timestamps: false,
-      tableName: "events"
+      tableName: 'events'
     }
-  );
-  return Event;
-};
+  )
+  return Event
+}

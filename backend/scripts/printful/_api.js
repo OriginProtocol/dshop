@@ -1,31 +1,31 @@
-const fetch = require("node-fetch");
+const fetch = require('node-fetch')
 
-const PrintfulURL = "https://api.printful.com";
+const PrintfulURL = 'https://api.printful.com'
 
 async function post(path, { auth, body }) {
   const res = await fetch(`${PrintfulURL}${path}`, {
     headers: {
-      "content-type": "application/json",
+      'content-type': 'application/json',
       authorization: `Basic ${auth}`
     },
-    method: "POST",
+    method: 'POST',
     body: JSON.stringify(body)
-  });
-  return await res.json();
+  })
+  return await res.json()
 }
 
 async function get(path, { auth, apiKey }) {
   if (apiKey) {
-    auth = Buffer.from(apiKey).toString("base64");
+    auth = Buffer.from(apiKey).toString('base64')
   }
   const res = await fetch(`${PrintfulURL}${path}`, {
     headers: {
-      "content-type": "application/json",
+      'content-type': 'application/json',
       authorization: `Basic ${auth}`
     },
-    method: "GET"
-  });
-  return await res.json();
+    method: 'GET'
+  })
+  return await res.json()
 }
 
-module.exports = { post, get };
+module.exports = { post, get }

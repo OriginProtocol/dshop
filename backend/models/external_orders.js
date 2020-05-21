@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const ExternalOrder = sequelize.define(
-    "ExternalOrder",
+    'ExternalOrder',
     {
       id: {
         type: DataTypes.INTEGER,
@@ -19,16 +19,16 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       underscored: true,
-      tableName: "external_orders"
+      tableName: 'external_orders'
     }
-  );
+  )
 
   ExternalOrder.associate = function(models) {
     ExternalOrder.belongsTo(models.Order, {
-      as: "externalOrders",
-      foreignKey: "orderId"
-    });
-  };
+      as: 'externalOrders',
+      foreignKey: 'orderId'
+    })
+  }
 
-  return ExternalOrder;
-};
+  return ExternalOrder
+}

@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
   const Network = sequelize.define(
-    "Network",
+    'Network',
     {
       networkId: {
         type: DataTypes.INTEGER,
@@ -21,8 +21,8 @@ module.exports = (sequelize, DataTypes) => {
     {
       timestamps: false,
       underscored: true,
-      tableName: "networks"
+      tableName: 'networks'
     }
-  );
-  return Network;
-};
+  )
+  return Network
+}
