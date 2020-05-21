@@ -57,10 +57,6 @@ RUN yarn run build:dist
 
 WORKDIR $APP_DIR/backend
 
-RUN ls -lah 
-RUN ls -lah ../
-RUN ls -lah ../backend
-RUN ls -lah ../node_modules
 RUN cp -r ../node_modules/openpgp/dist public
 
 ######
