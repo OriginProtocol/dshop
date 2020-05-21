@@ -5,7 +5,6 @@ const HttpIPFS = require('ipfs/src/http')
 const fs = require('fs')
 const memdown = require('memdown')
 const net = require('net')
-const path = require('path')
 const proxy = require('http-proxy')
 const key = fs.readFileSync(`${__dirname}/data/localhost.key`, 'utf8')
 const cert = fs.readFileSync(`${__dirname}/data/localhost.cert`, 'utf8')
@@ -100,7 +99,7 @@ function _updateContractsJsonConfig() {
   }
 
   // 1. Look for contracts ABIs in truffle's build directory
-  let addresses = {}
+  const addresses = {}
   for (const [contractName, configFieldName] of Object.entries(contracts)) {
     const abiPath = `${truffleBuildDir}/${contractName}.json`
     try {
@@ -126,7 +125,7 @@ function _updateContractsJsonConfig() {
       const rawConfig = fs.readFileSync(devJsonConfigPath)
       config = JSON.parse(rawConfig)
     }
-    config = { ...config, ...addresses}
+    config = { ...config, ...addresses }
     fs.writeFileSync(devJsonConfigPath, JSON.stringify(config, null, 2))
     console.log(`Updated ${devJsonConfigPath} with locally deployed addresses`)
   } catch(err) {
@@ -216,10 +215,6 @@ module.exports = async function start(opts = {}) {
     } else {
       started.ipfs = await startIpfs()
     }
-    if (opts.populate && !started.populate) {
-      started.populate = true
-      await populateIpfs()
-    }
   }
 
   // Handle compiling and deploying contracts on the local blockchain.
@@ -230,11 +225,12 @@ module.exports = async function start(opts = {}) {
     started.contracts = true
   }
 
-
+  // Handle starting a SSL proxy.
   if (opts.sslProxy) {
     await startSslProxy()
   }
 
+  // Shutdown callback. Cleanly terminates any server that was started.
   const shutdownFn = async function shutdown() {
     console.log('Shutting services down...')
     if (started.ganache) {
