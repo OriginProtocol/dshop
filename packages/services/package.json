@@ -7,7 +7,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/OriginProtocol/origin"
+    "url": "https://github.com/OriginProtocol/dshop"
   },
   "scripts": {
     "start": "node start.js",
@@ -18,15 +18,15 @@
     "prettier:check": "prettier -c *.js \"src/**/*.js\""
   },
   "dependencies": {
+  },
+  "devDependencies": {
     "commander": "^4.0.0",
+    "eslint": "6.8.0",
     "ganache-core": "2.4.0",
     "http-proxy": "1.18.0",
     "ipfs": "^0.43.3",
     "ipfs-api": "^26.1.2",
-    "memdown": "^5.0.0"
-  },
-  "devDependencies": {
-    "eslint": "6.8.0",
+    "memdown": "^5.0.0",
     "prettier": "1.19.1"
   },
   "prettier": {
