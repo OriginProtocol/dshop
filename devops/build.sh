@@ -1,45 +1,36 @@
 #!/bin/bash
 ################################################################################
 ## Usage:
-##  ENVKEY="myEnvkey" dshop_backend_build.sh <tag>
+##  dshop_backend_build.sh <tag>
 ################################################################################
 
 PWD="$(pwd)"
 DIR="$(realpath "$(dirname "${BASH_SOURCE[0]}")")"
-PROJECT_ROOT="$(realpath $DIR/../../../)"
-DSHOP_VALUES_DIR="$PROJECT_ROOT/devops/kubernetes/values/origin-experimental"
-DSOP_SECRETS_LOC="$DSHOP_VALUES_DIR/secrets-dshop.yaml"
+CONTEXT="$(realpath $DIR/..)"
 PROJECT_ID="origin-214503"
-DOCKERFILES_DIR="$PROJECT_ROOT/devops/dockerfiles"
+DOCKERFILE="$DIR/Dockerfile"
 NAME="dshop-backend"
-DOCKERFILE="$NAME"
 NAMESPACE="experimental"
 TAG=$(date +'%Y%m%d%H%M%s')
 
 if [[ -z "$ENVKEY" ]]; then
-  echo "ENVKEY must be defined"
-  exit 1
+  # Not really currently used but might be in the future
+  echo "INFO: ENVKEY is not defined"
 fi
-
-cd $PROJECT_ROOT
-
-# Don't do helm ops with this right now
-# test -f "$DSOP_SECRETS_LOC"
-# if [[ $? -ne "0" ]]; then
-#   echo "decrypt secrets at $DSHOP_VALUES_DIR/secrets.enc"
-#   exit 1
-# fi
 
 # Use arg as tag if given
 if [[ -n "$1" ]]; then
   TAG="$1"
 fi
 
+echo "CONTEXT: $CONTEXT"
+
+# TODO: Remove above and --no-cache
 docker build \
-    -f "$DOCKERFILES_DIR/$DOCKERFILE" \
+    -f "$DOCKERFILE" \
     -t "gcr.io/$PROJECT_ID/$NAMESPACE/$NAME:$TAG" \
     --build-arg ENVKEY="$ENVKEY" \
-    . && \
+    $CONTEXT && \
 gcloud auth configure-docker && \
 docker push "gcr.io/$PROJECT_ID/$NAMESPACE/$NAME:$TAG" && \
 gcloud container images add-tag \
