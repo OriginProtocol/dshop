@@ -25,7 +25,6 @@ steps:
       - '-c'
       - |
         docker push \
-          --log-level debug \
           "gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)"
   
   - id: 'Tag the image latest'
