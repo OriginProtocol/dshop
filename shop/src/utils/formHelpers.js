@@ -12,7 +12,7 @@ export const formInput = (state, setState, opts = {}) => (field, valueOnly) => {
     value: state[field] || '',
     className,
     name: field,
-    onChange: e =>
+    onChange: (e) =>
       setState({
         [field]: valueOnly ? e : e.target.value,
         [`${field}Error`]: false
@@ -20,7 +20,7 @@ export const formInput = (state, setState, opts = {}) => (field, valueOnly) => {
   }
 }
 
-export const formFeedback = state =>
+export const formFeedback = (state) =>
   function InvalidFeedback(field) {
     return state[`${field}Error`] ? (
       <div className="invalid-feedback" style={{ display: 'block' }}>

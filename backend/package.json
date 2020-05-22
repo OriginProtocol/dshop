@@ -1,17 +1,17 @@
 {
   "name": "@origin/shop-backend",
   "version": "0.0.1",
-  "description": "Origin Shop Backend",
+  "description": "Origin Dshop Backend",
   "engines": {
     "node": "10.x"
   },
   "main": "index.js",
   "scripts": {
-    "clean": "rm data/dshop.db && npm run migrate",
-    "migrate": "sequelize db:migrate --config data/config.js --migrations-path data/migrations",
+    "clean": "rm db/dshop.db && npm run migrate",
+    "migrate": "sequelize db:migrate --config db/config.js --migrations-path db/migrations",
     "heroku-postbuild": "npm run migrate",
     "prettier": "prettier --write *.js \"**/*.js\"",
-    "prettier:check": "prettier -c *.js \"src/**/*.js\"",
+    "prettier:check": "prettier -c *.js \"**/*.js\"",
     "lint": "eslint . && npm run prettier:check"
   },
   "author": "Nick Poulden <nick@originprotocol.com>",
@@ -67,5 +67,11 @@
     "docs",
     "node_modules",
     "public"
-  ]
+  ],
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "proseWrap": "always",
+    "trailingComma": "none"
+  }
 }

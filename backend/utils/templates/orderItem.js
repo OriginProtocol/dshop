@@ -1,4 +1,4 @@
-module.exports = vars => `
+module.exports = (vars) => `
 <tr class="item-row">
   <td class="image">
     <img src="${vars.img}" />

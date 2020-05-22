@@ -5,17 +5,14 @@ const HttpIPFS = require('ipfs/src/http')
 const fs = require('fs')
 const memdown = require('memdown')
 const net = require('net')
-const proxy = require('http-proxy')
-const key = fs.readFileSync(`${__dirname}/data/localhost.key`, 'utf8')
-const cert = fs.readFileSync(`${__dirname}/data/localhost.cert`, 'utf8')
 
 // Constants
 const contractsPackageDir = `${__dirname}/../contracts`
 const truffleBuildDir = `${contractsPackageDir}/build/contracts`
 const devJsonConfigPath = `${contractsPackageDir}/build/contracts.json`
 
-const portInUse = port =>
-  new Promise(function(resolve) {
+const portInUse = (port) =>
+  new Promise(function (resolve) {
     const srv = net
       .createServer()
       .once('error', () => resolve(true))
@@ -46,7 +43,7 @@ const startGanache = (opts = {}) =>
     }
     const server = Ganache.server(ganacheOpts)
     const port = 8545
-    server.listen(port, err => {
+    server.listen(port, (err) => {
       if (err) {
         return reject(err)
       }
@@ -139,7 +136,7 @@ const deployContracts = () =>
       stdio: 'inherit',
       env: process.env
     })
-    cmd.on('exit', code => {
+    cmd.on('exit', (code) => {
       if (code === 0) {
         // Now sync the JSON config so that it points to the deployed contracts addresses.
         _updateContractsJsonConfig()
@@ -150,33 +147,6 @@ const deployContracts = () =>
         reject()
       }
     })
-  })
-
-const startSslProxy = () =>
-  new Promise(resolve => {
-    console.log('Starting secure proxies...')
-    const Ports = [
-      [443, 3000],
-      [8546, 8545],
-      [8081, 8080],
-      [5003, 5002]
-    ]
-
-    Ports.map(pair => {
-      const [src, port] = pair
-      proxy
-        .createServer({
-          xfwd: true,
-          ws: true,
-          target: { port },
-          ssl: { key, cert }
-        })
-        .on('error', e => console.logor(e.code))
-        .listen(src)
-
-      console.log(`Started proxy ${src} => ${port}`)
-    })
-    resolve()
   })
 
 /**
@@ -216,11 +186,6 @@ module.exports = async function start(opts = {}) {
   if (opts.deployContracts && !started.contracts) {
     await deployContracts()
     started.contracts = true
-  }
-
-  // Handle starting a SSL proxy.
-  if (opts.sslProxy) {
-    await startSslProxy()
   }
 
   // Shutdown callback. Cleanly terminates any server that was started.

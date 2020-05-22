@@ -40,12 +40,12 @@ async function getCollections() {
       title: 'h1',
       links: x('a', ['@href']).paginate('ul.pagination li:last-child a@href')
     })
-    const links = json.links.filter(i => i.indexOf(`${url}/`) === 0)
+    const links = json.links.filter((i) => i.indexOf(`${url}/`) === 0)
     const splitUrl = url.split('/')
     collections.push({
       id: splitUrl[splitUrl.length - 1],
       title: json.title,
-      products: uniq(links.map(link => link.replace(`${url}/data/`, '')))
+      products: uniq(links.map((link) => link.replace(`${url}/data/`, '')))
     })
   }
 
@@ -62,9 +62,7 @@ async function getProductURLs() {
   const sitemapXml = await sitemap.text()
   const $sitemap = cheerio.load(sitemapXml, { xmlMode: true })
 
-  const productMapUrl = $sitemap('sitemapindex sitemap loc')
-    .first()
-    .text()
+  const productMapUrl = $sitemap('sitemapindex sitemap loc').first().text()
 
   console.log(`Fetching product URLs from ${productMapUrl}`)
   const productsSitemap = await fetch(productMapUrl)
@@ -77,7 +75,7 @@ async function getProductURLs() {
     products.push(productUrl.text())
   })
 
-  return products.filter(p => p.indexOf('/products/') > 0)
+  return products.filter((p) => p.indexOf('/products/') > 0)
 }
 
 async function fetchProductJson(urls) {
@@ -133,7 +131,7 @@ async function processProducts() {
     })
     idMap[data.handle] = {
       id: data.id,
-      variants: data.variants.map(v => v.id)
+      variants: data.variants.map((v) => v.id)
     }
     const productDir = `${OutputDir}/data/${data.handle}`
     const scrubbed = scrub(data, imageMap)
@@ -168,7 +166,7 @@ function scrub(data, imageMap) {
     price: data.price,
     available: true,
     options: data.options,
-    images: data.images.map(i => imageMap[i]),
+    images: data.images.map((i) => imageMap[i]),
     image: imageMap[data.images[0]],
     variants: data.variants.map((variant, idx) => {
       let image

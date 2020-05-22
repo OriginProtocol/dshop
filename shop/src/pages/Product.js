@@ -20,7 +20,7 @@ import fetchProduct from 'data/fetchProduct'
 
 function getOptions(product, offset) {
   const options = new Set(
-    product.variants.map(variant => variant.options[offset])
+    product.variants.map((variant) => variant.options[offset])
   )
   return Array.from(options)
 }
@@ -30,7 +30,7 @@ const reducer = (state, newState) => ({ ...state, ...newState })
 function getImageForVariant(productData, variant) {
   if (productData && get(variant, 'image')) {
     const variantImage = productData.images.findIndex(
-      i => variant.image.indexOf(i) >= 0
+      (i) => variant.image.indexOf(i) >= 0
     )
     return variantImage > 0 ? variantImage : 0
   }
@@ -54,7 +54,7 @@ const Product = ({ history, location, match }) => {
   useEffect(() => {
     async function setData(data) {
       const variant =
-        data.variants.find(v => String(v.id) === opts.variant) ||
+        data.variants.find((v) => String(v.id) === opts.variant) ||
         data.variants[0]
       const newState = {
         productData: data,
@@ -70,9 +70,9 @@ const Product = ({ history, location, match }) => {
     }
     if (config.isAffiliate) {
       if (products.length) {
-        const product = products.find(p => p.id === match.params.id)
+        const product = products.find((p) => p.id === match.params.id)
         const url = `${config.ipfsGateway}${product.data}/data.json`
-        fetch(url).then(async res => {
+        fetch(url).then(async (res) => {
           const json = await res.json()
           setData({ ...product, ...json })
         })
@@ -105,10 +105,10 @@ const Product = ({ history, location, match }) => {
   }
 
   const collectionParam = get(match, 'params.collection')
-  const collection = collections.find(c => c.id === collectionParam)
+  const collection = collections.find((c) => c.id === collectionParam)
   const urlPrefix = collectionParam ? `/collections/${collectionParam}` : ''
 
-  const variant = productData.variants.find(v =>
+  const variant = productData.variants.find((v) =>
     isEqual(options, pick(v, 'option1', 'option2', 'option3'))
   )
 
@@ -117,7 +117,7 @@ const Product = ({ history, location, match }) => {
       ...options,
       [`option${idx}`]: value
     }
-    const variant = productData.variants.find(v =>
+    const variant = productData.variants.find((v) =>
       isEqual(newOptions, pick(v, 'option1', 'option2', 'option3'))
     )
     const newState = { options: newOptions }
@@ -137,11 +137,11 @@ const Product = ({ history, location, match }) => {
   let pics = []
   if (config.isAffiliate) {
     pics = productData.images.map(
-      i => `${config.ipfsGateway}${productData.data}/orig/${i}`
+      (i) => `${config.ipfsGateway}${productData.data}/orig/${i}`
     )
   } else {
     pics = productData.images.map(
-      i => `${dataUrl()}${productData.id}/orig/${i}`
+      (i) => `${dataUrl()}${productData.id}/orig/${i}`
     )
   }
   const lg = isMobile ? ' btn-lg' : ''
@@ -160,9 +160,9 @@ const Product = ({ history, location, match }) => {
   const galleryProps = {
     pics,
     active: activeImage,
-    onChange: activeId => {
+    onChange: (activeId) => {
       const sizeIdx = productOptions.indexOf('Size')
-      const foundVariant = productData.variants.find(curVariant => {
+      const foundVariant = productData.variants.find((curVariant) => {
         if (sizeIdx >= 0 && productOptions.length > 1) {
           const sizeMatches =
             variant[`option${sizeIdx + 1}`] ==
@@ -235,7 +235,7 @@ const Product = ({ history, location, match }) => {
                   <select
                     className="form-control form-control-sm"
                     value={options[`option${idx + 1}`] || ''}
-                    onChange={e => setOption(idx + 1, e.target.value)}
+                    onChange={(e) => setOption(idx + 1, e.target.value)}
                   >
                     {getOptions(productData, idx).map((item, idx) => (
                       <option key={idx}>{item}</option>

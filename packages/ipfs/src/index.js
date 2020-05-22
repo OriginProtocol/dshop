@@ -10,10 +10,7 @@ const fetch = require('cross-fetch')
 const memoize = require('lodash/memoize')
 
 function getBytes32FromIpfsHash(hash) {
-  return `0x${bs58
-    .decode(hash)
-    .slice(2)
-    .toString('hex')}`
+  return `0x${bs58.decode(hash).slice(2).toString('hex')}`
 }
 
 // Return base58 encoded ipfs hash from bytes32 hex string,
@@ -144,13 +141,13 @@ async function getTextFn(gateway, hashAsBytes, timeoutMS) {
       reject('IPFS gateway timeout')
     }, timeoutMS)
     fetch(`${gateway}/ipfs/${hash}`)
-      .then(response => {
+      .then((response) => {
         clearTimeout(timeout)
         if (!didTimeOut) {
           resolve(response)
         }
       })
-      .catch(error => {
+      .catch((error) => {
         clearTimeout(timeout)
         if (!didTimeOut) {
           reject(error)

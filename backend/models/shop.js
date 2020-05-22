@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   )
 
-  Shop.associate = function(models) {
+  Shop.associate = function (models) {
     Shop.belongsToMany(models.Seller, { through: models.SellerShop })
     Shop.hasMany(models.Order, { as: 'orders', targetKey: 'shopId' })
     Shop.hasMany(models.Transaction, { as: 'transactions' })

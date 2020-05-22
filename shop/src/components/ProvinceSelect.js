@@ -7,7 +7,7 @@ const ProvinceSelect = ({ country, value, onChange, className }) => {
   }
 
   const provinces = sortBy(
-    Object.keys(country.provinces).map(p => ({
+    Object.keys(country.provinces).map((p) => ({
       code: p.code,
       title: p
     })),

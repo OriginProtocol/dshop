@@ -42,7 +42,7 @@ const MobileMenu = ({ open, onClose }) => {
             {`Cart${cart.items.length ? ` (${cart.items.length})` : ''}`}
           </Link>
         </li>
-        {collections.map(cat => (
+        {collections.map((cat) => (
           <Item key={cat.id} onClick={onClose} id={cat.id}>
             {cat.title}
           </Item>

@@ -28,7 +28,7 @@ const CreateMug = () => {
         <input
           type="text"
           value={url}
-          onChange={e => setUrl(e.target.value)}
+          onChange={(e) => setUrl(e.target.value)}
           className={`form-control${error ? ' is-invalid' : ''} w-100`}
           placeholder="eg https://twitter.com/elonmusk/status/1012783222386712576"
         />
@@ -47,7 +47,7 @@ const CreateMug = () => {
           <input
             type="text"
             value={url}
-            onChange={e => setUrl(e.target.value)}
+            onChange={(e) => setUrl(e.target.value)}
             className={`form-control${error ? ' is-invalid' : ''} w-100`}
             placeholder="eg https://twitter.com/elonmusk/status/1012783222386712576"
           />
@@ -65,7 +65,7 @@ const CreateMug = () => {
   return (
     <>
       <form
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           const match = url.match(
             /^https:\/\/twitter.com\/.*\/status\/([0-9]+)/

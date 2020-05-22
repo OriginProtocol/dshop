@@ -35,7 +35,7 @@ async function createShop({ name, listingId, authToken, config, sellerId }) {
 }
 
 function findShopByHostname(req, res, next) {
-  Shop.findOne({ where: { hostname: req.hostname } }).then(shop => {
+  Shop.findOne({ where: { hostname: req.hostname } }).then((shop) => {
     req.shop = shop
     next()
   })

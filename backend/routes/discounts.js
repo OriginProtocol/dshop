@@ -1,7 +1,7 @@
 const { Sequelize, Discount } = require('../models')
 const { authShop, authSellerAndShop } = require('./_auth')
 
-module.exports = function(app) {
+module.exports = function (app) {
   app.post('/check-discount', authShop, async (req, res) => {
     const code = req.body.code
     const discounts = await Discount.findAll({

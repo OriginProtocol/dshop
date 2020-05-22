@@ -37,7 +37,7 @@ const Admin = () => {
         authorization: `bearer ${config.backendAuthToken}`
       }
     })
-      .then(async response => {
+      .then(async (response) => {
         if (response.status === 200) {
           const auth = await response.json()
           dispatch({ type: 'setAuth', auth })

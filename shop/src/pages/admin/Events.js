@@ -25,7 +25,7 @@ const AdminEvents = () => {
             </tr>
           </thead>
           <tbody>
-            {data.map(event => (
+            {data.map((event) => (
               <tr key={event.id}>
                 <td>{event.listingId}</td>
                 <td>{event.offerId}</td>

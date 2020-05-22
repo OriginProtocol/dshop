@@ -46,7 +46,7 @@ const Modal = ({ children, onClose, className, shouldClose }) => {
         }}
       >
         <div
-          onClick={e => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
           className={`modal-dialog modal-dialog-centered ${className || ''}`}
           role="document"
         >

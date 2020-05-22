@@ -21,7 +21,7 @@ const AdminDashboard = () => {
   }
 
   const startOfDay = dayjs().startOf('day')
-  const filteredSales = orders.filter(i => {
+  const filteredSales = orders.filter((i) => {
     if (!i || !i.data || !i.data.total) return false
     const createdDay = dayjs(i.createdAt).startOf('day')
     if (
@@ -52,9 +52,9 @@ const AdminDashboard = () => {
   }, 0)
 
   const topProductsRaw = orders
-    .map(o => o.data.items)
+    .map((o) => o.data.items)
     .flat()
-    .filter(i => i)
+    .filter((i) => i)
     .reduce((m, o) => {
       m[o.product] = m[o.product] || { revenue: 0, orders: 0 }
       m[o.product].orders += o.quantity
@@ -62,13 +62,13 @@ const AdminDashboard = () => {
       return m
     }, {})
 
-  const topProducts = sortBy(Object.entries(topProductsRaw), o => -o[1][sort])
+  const topProducts = sortBy(Object.entries(topProductsRaw), (o) => -o[1][sort])
     .slice(0, 10)
     .map(([productId, stats]) => {
-      const product = products.find(p => p.id === productId)
+      const product = products.find((p) => p.id === productId)
       return product ? { ...product, ...stats } : null
     })
-    .filter(p => p)
+    .filter((p) => p)
 
   return (
     <>
@@ -79,7 +79,7 @@ const AdminDashboard = () => {
           <select
             className="ml-2"
             value={range}
-            onChange={e => setRange(e.target.value)}
+            onChange={(e) => setRange(e.target.value)}
           >
             <option value="all-time">All time</option>
             <option value="30-days">Last 30 days</option>
@@ -111,7 +111,7 @@ const AdminDashboard = () => {
             <th className="text-center">
               <a
                 href="#"
-                onClick={e => {
+                onClick={(e) => {
                   e.preventDefault()
                   setSort('orders')
                 }}
@@ -122,7 +122,7 @@ const AdminDashboard = () => {
             <th className="text-center">
               <a
                 href="#"
-                onClick={e => {
+                onClick={(e) => {
                   e.preventDefault()
                   setSort('revenue')
                 }}
@@ -133,7 +133,7 @@ const AdminDashboard = () => {
           </tr>
         </thead>
         <tbody>
-          {topProducts.map(product => (
+          {topProducts.map((product) => (
             <tr key={product.id}>
               <td>
                 <div

@@ -9,19 +9,19 @@ import ProductList from 'components/ProductList'
 function resultsFor(productIndex, product) {
   const terms = product.title
     .split(' ')
-    .map(i => i.toLowerCase())
-    .filter(term => ['ethereum'].indexOf(term) < 0)
+    .map((i) => i.toLowerCase())
+    .filter((term) => ['ethereum'].indexOf(term) < 0)
     .slice(0, 3)
 
   const results = sortBy(
-    terms.map(t => productIndex.search(t)),
+    terms.map((t) => productIndex.search(t)),
     'length'
   )
   return uniq(
     zip
       .apply(null, results)
       .flat()
-      .filter(i => i && i !== product.id)
+      .filter((i) => i && i !== product.id)
   )
 }
 
@@ -40,7 +40,7 @@ const SimilarProducts = ({ product, count = 3 }) => {
 
   const filteredProducts = ids
     .slice(0, count)
-    .map(id => products.find(p => p.id === id))
+    .map((id) => products.find((p) => p.id === id))
 
   if (!filteredProducts.length) {
     return null

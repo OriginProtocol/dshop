@@ -13,8 +13,9 @@ const Price = ({ className, target, currencies, prefix = '', ...props }) => {
   if (!currency) return null
 
   const currencyId = typeof currency === 'string' ? currency : currency.id
-  const foundCurrency = currencies.find(c => c.id === currencyId)
-  const targetCurrency = currencies.find(c => c.id === target) || foundCurrency
+  const foundCurrency = currencies.find((c) => c.id === currencyId)
+  const targetCurrency =
+    currencies.find((c) => c.id === target) || foundCurrency
 
   if (!foundCurrency) return null
 

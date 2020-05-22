@@ -15,7 +15,7 @@ const BetaWarning = () => {
       or crypto currency. Please use Rinkeby for crypto transactions or click{' '}
       <a
         href="#test"
-        onClick={e => {
+        onClick={(e) => {
           e.preventDefault()
           setCc(true)
         }}

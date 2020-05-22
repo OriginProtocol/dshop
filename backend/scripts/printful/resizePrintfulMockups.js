@@ -5,7 +5,7 @@ const uniq = require('lodash/uniq')
 async function resizePrintfulMockups({ OutputDir }) {
   const filesRaw = fs.readFileSync(`${OutputDir}/printful-images.json`)
   const files = JSON.parse(filesRaw)
-  const fileIds = uniq(files.map(f => f.id))
+  const fileIds = uniq(files.map((f) => f.id))
   console.log(`Resizing mockups for ${fileIds.length} products...`)
 
   for (const fileId of fileIds) {

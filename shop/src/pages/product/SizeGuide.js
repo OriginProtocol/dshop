@@ -8,10 +8,10 @@ const SizeGuide = ({ product, wide }) => {
   const data = product.sizeGuide
   const sizeOffset = product.options.indexOf('Size')
   const productSizes = product.variants.map(
-    variant => variant.options[sizeOffset]
+    (variant) => variant.options[sizeOffset]
   )
   const sizes = product.sizeGuide.sizes.filter(
-    s => productSizes.indexOf(s.size) >= 0
+    (s) => productSizes.indexOf(s.size) >= 0
   )
   // console.log(sizes.length, wide)
 
@@ -35,7 +35,7 @@ const SizeGuide = ({ product, wide }) => {
           </tr>
         </thead>
         <tbody>
-          {sizes.map(size => (
+          {sizes.map((size) => (
             <tr key={size.size}>
               <td>{size.size}</td>
               {data.measurements.map((m, idx) => (

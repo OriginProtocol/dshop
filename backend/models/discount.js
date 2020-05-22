@@ -42,7 +42,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   )
 
-  Discount.associate = function(models) {
+  Discount.associate = function (models) {
     Discount.belongsTo(models.Shop, { as: 'shops', foreignKey: 'shopId' })
   }
 

@@ -31,10 +31,12 @@ const SuperAdmin = () => {
     // }
 
     fetch(`${config.backend}/superuser/auth`, { credentials: 'include' })
-      .then(async response => {
+      .then(async (response) => {
         if (response.status === 200) {
           const auth = await response.json()
           dispatch({ type: 'setAuth', auth })
+        } else {
+          setError(true)
         }
         setLoading(false)
       })
@@ -44,7 +46,7 @@ const SuperAdmin = () => {
   }, [reload.auth])
 
   if (error) {
-    return <div className="fixed-loader">Admin Connection Error</div>
+    return <div className="fixed-loader">API Connection Error</div>
   } else if (loading && !admin) {
     return <div className="fixed-loader">Loading...</div>
   }

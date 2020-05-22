@@ -21,10 +21,10 @@ function useAffiliateEarnings() {
           Authorization: `bearer ${config.backendAuthToken}`
         },
         body: JSON.stringify({ msg: affiliate.msg, sig: affiliate.sig })
-      }).then(res => {
+      }).then((res) => {
         setLoading(false)
         if (res.ok) {
-          res.json().then(json => setEarnings(json))
+          res.json().then((json) => setEarnings(json))
         }
       })
     }

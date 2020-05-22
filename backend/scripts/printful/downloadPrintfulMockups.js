@@ -14,18 +14,16 @@ async function downloadPrintfulMockups({ OutputDir, png }) {
     const filenameOut = png ? filename : filename.replace('.png', '.jpg')
     // console.log(filenameOut)
     if (!fs.existsSync(filenameOut)) {
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         const f = fs.createWriteStream(filename).on('finish', resolve)
-        https.get(file.url, response => response.pipe(f))
+        https.get(file.url, (response) => response.pipe(f))
       })
       let resizedFile
       if (png) {
         resizedFile = await sharp(filename).toBuffer()
         fs.writeFileSync(filenameOut, resizedFile)
       } else {
-        resizedFile = await sharp(filename)
-          .jpeg()
-          .toBuffer()
+        resizedFile = await sharp(filename).jpeg().toBuffer()
         fs.writeFileSync(filenameOut, resizedFile)
         fs.unlinkSync(filename)
       }

@@ -7,7 +7,7 @@ const { findOrder } = require('../utils/orders')
 
 const PrintfulURL = 'https://api.printful.com'
 
-module.exports = function(app) {
+module.exports = function (app) {
   app.get(
     '/orders/:orderId/printful',
     authSellerAndShop,
@@ -132,11 +132,11 @@ module.exports = function(app) {
         zip: recipient.zip
       },
       items: items
-        .map(i => ({
+        .map((i) => ({
           quantity: i.quantity,
           variant_id: i.variant
         }))
-        .filter(i => i.variant_id)
+        .filter((i) => i.variant_id)
     }
 
     if (!query.items.length) {
@@ -155,7 +155,7 @@ module.exports = function(app) {
     const json = await shippingRatesResponse.json()
     if (json.result) {
       res.json(
-        json.result.map(rate => {
+        json.result.map((rate) => {
           const [, label] = rate.name.match(/^(.*) \((.*)\)/)
           const min = rate.minDeliveryDays + 1
           const max = rate.maxDeliveryDays + 2

@@ -5,7 +5,7 @@ const { NETWORK_ID, CONTRACTS } = require('./const')
 const VERSION_TO_ADDRESS = CONTRACTS[NETWORK_ID].marketplace
 const ADDRESS_TO_VERSION = {}
 
-Object.keys(CONTRACTS[NETWORK_ID].marketplace).map(k => {
+Object.keys(CONTRACTS[NETWORK_ID].marketplace).map((k) => {
   const v = CONTRACTS[NETWORK_ID].marketplace[k]
   return (ADDRESS_TO_VERSION[v] = k)
 })

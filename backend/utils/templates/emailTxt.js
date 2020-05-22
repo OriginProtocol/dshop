@@ -1,4 +1,4 @@
-module.exports = vars => `
+module.exports = (vars) => `
 ***************************************
 ${vars.siteName} ( ${vars.storeUrl} )
 ***************************************

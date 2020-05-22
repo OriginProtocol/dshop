@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   )
 
-  Seller.associate = function(models) {
+  Seller.associate = function (models) {
     Seller.belongsToMany(models.Shop, { through: models.SellerShop })
   }
 

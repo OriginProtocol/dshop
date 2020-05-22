@@ -18,7 +18,7 @@ const SignUp = ({ next }) => {
       </div>
       <form
         className="sign-up"
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
 
           const body = JSON.stringify({
@@ -36,7 +36,7 @@ const SignUp = ({ next }) => {
             credentials: 'include',
             body
           })
-            .then(async res => {
+            .then(async (res) => {
               if (res.ok) {
                 setState({ ...state, error: '' })
                 // const auth = await res.json()
@@ -45,7 +45,7 @@ const SignUp = ({ next }) => {
                 setState({ ...state, error: 'Unauthorized' })
               }
             })
-            .catch(err => {
+            .catch((err) => {
               console.error('Error signing in', err)
               setState({ ...state, error: 'Unauthorized' })
             })
@@ -56,7 +56,7 @@ const SignUp = ({ next }) => {
             className="form-control"
             placeholder="Name"
             value={state.name}
-            onChange={e => setState({ ...state, name: e.target.value })}
+            onChange={(e) => setState({ ...state, name: e.target.value })}
           />
         </div>
         <div className="form-group">
@@ -64,13 +64,13 @@ const SignUp = ({ next }) => {
             className="form-control"
             placeholder="E-mail"
             value={state.email}
-            onChange={e => setState({ ...state, email: e.target.value })}
+            onChange={(e) => setState({ ...state, email: e.target.value })}
           />
         </div>
         <div className="form-group">
           <input
             value={state.password}
-            onChange={e => setState({ ...state, password: e.target.value })}
+            onChange={(e) => setState({ ...state, password: e.target.value })}
             type="password"
             className="form-control"
             placeholder="Password"

@@ -4,7 +4,7 @@ module.exports = {
   ...baseConfig,
   globals: {
     web3: true,
-    originTest: true,
+    originTest: true
   },
   extends: [...baseConfig.extends, 'plugin:react/recommended'],
   plugins: ['react'],
@@ -13,6 +13,11 @@ module.exports = {
     'react/no-deprecated': 'off',
     'react/no-children-prop': 'off',
     'react/prop-types': 'off',
-    camelcase: ['error', { properties: 'never' }],
+    camelcase: ['error', { properties: 'never' }]
   },
+  settings: {
+    react: {
+      version: 'detect'
+    }
+  }
 }

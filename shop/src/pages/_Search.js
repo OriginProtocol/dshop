@@ -11,7 +11,9 @@ const Search = ({ onSearch }) => {
   const opts = queryString.parse(location.search)
 
   useEffect(() => {
-    searchRef.current.addEventListener('search', e => doSearch(e.target.value))
+    searchRef.current.addEventListener('search', (e) =>
+      doSearch(e.target.value)
+    )
   }, [searchRef])
 
   function doSearch(search) {

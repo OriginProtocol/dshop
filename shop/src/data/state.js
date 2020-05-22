@@ -88,7 +88,7 @@ function getReducer(key) {
     if (action.type === 'addToCart') {
       const { product, variant, maxQuantity } = action.item
       const existingIdx = state.cart.items.findIndex(
-        i => i.product === product && i.variant === variant
+        (i) => i.product === product && i.variant === variant
       )
       if (existingIdx >= 0) {
         const quantity = get(newState, `cart.items[${existingIdx}].quantity`)
@@ -109,14 +109,14 @@ function getReducer(key) {
       newState = set(newState, 'cart.shipping')
     } else if (action.type === 'removeFromCart') {
       const items = get(state, 'cart.items').filter(
-        i => !isEqual(i, action.item)
+        (i) => !isEqual(i, action.item)
       )
       newState = set(newState, 'cart.items', items)
       newState = set(newState, 'shippingZones', [])
       newState = set(newState, 'cart.shipping')
     } else if (action.type === 'updateCartQuantity') {
       const { quantity } = action
-      const idx = get(state, 'cart.items').findIndex(i =>
+      const idx = get(state, 'cart.items').findIndex((i) =>
         isEqual(i, action.item)
       )
       newState = set(newState, `cart.items[${idx}].quantity`, quantity)
@@ -125,7 +125,7 @@ function getReducer(key) {
     } else if (action.type === 'setProducts') {
       newState = set(newState, `products`, action.products)
       const index = FlexSearch.create()
-      action.products.forEach(product => index.add(product.id, product.title))
+      action.products.forEach((product) => index.add(product.id, product.title))
       newState = set(newState, `productIndex`, index)
       // const productIds = action.products.map(p => p.id)
       // newState = set(

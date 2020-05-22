@@ -22,7 +22,7 @@ const SubscribeToNewHeads = JSON.stringify({
 })
 
 const SubscribeToLogs = ({ address, listingIds }) => {
-  const listingTopics = listingIds.map(listingId => {
+  const listingTopics = listingIds.map((listingId) => {
     return web3.utils.padLeft(web3.utils.numberToHex(listingId), 64)
   })
 
@@ -35,7 +35,7 @@ const SubscribeToLogs = ({ address, listingIds }) => {
 }
 
 const GetPastLogs = ({ address, fromBlock, toBlock, listingIds }) => {
-  const listingTopics = listingIds.map(listingId => {
+  const listingTopics = listingIds.map((listingId) => {
     return web3.utils.padLeft(web3.utils.numberToHex(listingId), 64)
   })
   const rpc = {
@@ -87,7 +87,7 @@ async function connectWS({ network, listingIds }) {
     }, 30000 + 5000)
   }
 
-  ws.addEventListener('error', err => {
+  ws.addEventListener('error', (err) => {
     console.log('WS error:', err.message)
   })
   ws.addEventListener('close', function clear() {
@@ -130,7 +130,7 @@ async function connectWS({ network, listingIds }) {
       heads = data.result
     } else if (data.id === 3) {
       console.log(`Got ${data.result.length} unhandled logs`)
-      data.result.map(result =>
+      data.result.map((result) =>
         handleLog({ ...result, web3, address, networkId, contractVersion })
       )
     } else if (get(data, 'params.subscription') === logs) {
@@ -176,7 +176,7 @@ async function getListingIds({ network }) {
     where: { networkId: network.networkId, listingId: { [Op.ne]: null } }
   })
 
-  return shops.map(shop => shop.listingId.split('-')[2])
+  return shops.map((shop) => shop.listingId.split('-')[2])
 }
 
 async function start() {

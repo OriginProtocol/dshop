@@ -22,15 +22,15 @@ const CheckoutShipping = () => {
 
   const country = get(cart, 'userInfo.country')
   const countryCode = get(Countries, `${country}.code`)
-  const defaultShippingZone = shippingZones.find(zone => !zone.countries)
+  const defaultShippingZone = shippingZones.find((zone) => !zone.countries)
   const filteredShippingZones = shippingZones.filter(
-    zone => (zone.countries || []).indexOf(countryCode) >= 0
+    (zone) => (zone.countries || []).indexOf(countryCode) >= 0
   )
   if (!filteredShippingZones.length && defaultShippingZone) {
     filteredShippingZones.push(defaultShippingZone)
   }
 
-  const unshippableItems = cart.items.filter(item => {
+  const unshippableItems = cart.items.filter((item) => {
     const restrictTo = get(item, 'restrictShippingTo', [])
     if (!restrictTo.length) {
       return false
@@ -40,7 +40,7 @@ const CheckoutShipping = () => {
 
   useEffect(() => {
     const selected = get(cart, 'shipping.id')
-    const hasSelected = filteredShippingZones.find(z => z.id === selected)
+    const hasSelected = filteredShippingZones.find((z) => z.id === selected)
     if (!cart.shipping || !hasSelected) {
       const zone = filteredShippingZones[0]
       if (zone) {
@@ -86,7 +86,7 @@ const CheckoutShipping = () => {
         ) : !filteredShippingZones.length ? (
           <div>Sorry, there was an error calculating shipping costs.</div>
         ) : (
-          filteredShippingZones.map(zone => (
+          filteredShippingZones.map((zone) => (
             <label key={zone.id} className={`radio ${isActive(zone, cart)}`}>
               <input
                 type="radio"

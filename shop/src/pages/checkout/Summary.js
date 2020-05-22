@@ -27,7 +27,7 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
       <a
         className={`toggle-order-summary d-md-none${summary ? ' active' : ''}`}
         href="#"
-        onClick={e => {
+        onClick={(e) => {
           e.preventDefault()
           showSummary(!summary)
         }}

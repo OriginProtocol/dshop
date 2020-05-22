@@ -15,7 +15,7 @@ const OrderDiscount = ({ cart }) => {
   return (
     <form
       className="discount"
-      onSubmit={async e => {
+      onSubmit={async (e) => {
         e.preventDefault()
         if (!code) {
           return
@@ -44,7 +44,7 @@ const OrderDiscount = ({ cart }) => {
           className="form-control"
           placeholder="Discount code"
           value={code}
-          onChange={e => {
+          onChange={(e) => {
             setCode(e.target.value)
             if (!e.target.value) {
               setError(false)
@@ -69,7 +69,7 @@ const OrderDiscount = ({ cart }) => {
             {existingCode}{' '}
             <a
               href="#"
-              onClick={e => {
+              onClick={(e) => {
                 e.preventDefault()
                 setCode('')
                 dispatch({ type: 'removeDiscount' })

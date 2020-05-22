@@ -12,10 +12,10 @@ const About = () => {
   useEffect(() => {
     if (config.about) {
       setLoading(true)
-      fetch(`${dataUrl()}${config.about}`).then(res => {
+      fetch(`${dataUrl()}${config.about}`).then((res) => {
         setLoading(false)
         if (res.ok) {
-          res.text().then(body => setAbout(body))
+          res.text().then((body) => setAbout(body))
         }
       })
     }

@@ -18,7 +18,7 @@ const Login = ({ next }) => {
       <div className="mb-4">Welcome to Dshop! Sign in to continue.</div>
       <form
         className="sign-up"
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
 
           const { email, password } = state
@@ -28,7 +28,7 @@ const Login = ({ next }) => {
             credentials: 'include',
             body: JSON.stringify({ email, password })
           })
-            .then(async res => {
+            .then(async (res) => {
               if (res.ok) {
                 setState({ ...state, error: '' })
                 // const auth = await res.json()
@@ -37,7 +37,7 @@ const Login = ({ next }) => {
                 setState({ ...state, error: 'Unauthorized' })
               }
             })
-            .catch(err => {
+            .catch((err) => {
               console.error('Error signing in', err)
               setState({ ...state, error: 'Unauthorized' })
             })
@@ -48,13 +48,13 @@ const Login = ({ next }) => {
             className="form-control"
             placeholder="E-mail"
             value={state.email}
-            onChange={e => setState({ ...state, email: e.target.value })}
+            onChange={(e) => setState({ ...state, email: e.target.value })}
           />
         </div>
         <div className="form-group">
           <input
             value={state.password}
-            onChange={e => setState({ ...state, password: e.target.value })}
+            onChange={(e) => setState({ ...state, password: e.target.value })}
             type="password"
             className="form-control"
             placeholder="Password"

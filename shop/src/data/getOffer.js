@@ -61,7 +61,7 @@ const marketplaceAbi = [
     type: 'function'
   }
 ]
-window.provider = provider
+
 const marketplaceInterface = new ethers.utils.Interface(marketplaceAbi)
 
 const marketplaceAddr = '0x9FBDa871d559710256a2502A2517b794B482Db40'

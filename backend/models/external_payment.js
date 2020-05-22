@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   )
 
-  ExternalPayment.associate = function(models) {
+  ExternalPayment.associate = function (models) {
     ExternalPayment.belongsTo(models.Order, {
       as: 'externalPayments',
       foreignKey: 'orderId'

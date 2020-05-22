@@ -1,4 +1,4 @@
-module.exports = vars => `
+module.exports = (vars) => `
 <mjml>
   ${vars.head}
   <mj-body>

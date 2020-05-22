@@ -18,7 +18,7 @@ async function checkPassword(password, passwordHash) {
 }
 
 function authRole(role) {
-  return function(req, res, next) {
+  return function (req, res, next) {
     if (req.sellerShop.role !== role) {
       return res.json({ success: false, error: 'Unauthorized' })
     }
@@ -40,7 +40,7 @@ async function authSellerAndShop(req, res, next) {
   }
 
   const include = { model: Seller, where: { id: sellerId } }
-  Shop.findOne({ where: { authToken }, include }).then(shop => {
+  Shop.findOne({ where: { authToken }, include }).then((shop) => {
     if (!shop) {
       return res.status(401).json({ success: false, message: 'Unauthorized' })
     }
@@ -71,7 +71,7 @@ async function authShop(req, res, next) {
     return res.status(401).json({ success: false, message: 'No auth token' })
   }
 
-  Shop.findOne({ where: { authToken } }).then(shop => {
+  Shop.findOne({ where: { authToken } }).then((shop) => {
     if (!shop) {
       return res.status(401).json({ success: false, message: 'Shop not found' })
     }

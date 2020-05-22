@@ -17,7 +17,7 @@ const Popover = ({
   const arrow = useRef()
 
   useEffect(() => {
-    const listener = event => {
+    const listener = (event) => {
       if (!popover.current || popover.current.contains(event.target)) {
         return
       }

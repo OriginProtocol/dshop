@@ -13,7 +13,7 @@ function validate(state) {
     newState.dataUrlError = 'Enter a data URL'
   }
 
-  const valid = Object.keys(newState).every(f => f.indexOf('Error') < 0)
+  const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
 
   return { valid, newState: { ...state, ...newState } }
 }
@@ -80,7 +80,7 @@ const AdminSettings = () => {
   const [keyFromDb, setKeyFromDb] = useState()
   const [state, setStateRaw] = useState(defaultValues)
   const [keyValid, setKeyValid] = useState(false)
-  const setState = newState => setStateRaw({ ...state, ...newState })
+  const setState = (newState) => setStateRaw({ ...state, ...newState })
 
   const pgpPublicKey = keyFromDb
     ? shopConfig.pgpPublicKey || ''
@@ -111,20 +111,20 @@ const AdminSettings = () => {
     doTest()
   }, [pgpPublicKey, state.pgpPrivateKey, state.pgpPrivateKeyPass])
 
-  const input = formInput(state, newState => setState(newState))
+  const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
 
   return (
     <form
       className="mt-3"
-      onSubmit={async e => {
+      onSubmit={async (e) => {
         e.preventDefault()
         const { valid, newState } = validate(state)
         setState(newState)
 
-        const cfgOk = await new Promise(resolve => {
+        const cfgOk = await new Promise((resolve) => {
           fetch(`${state.dataUrl}config.json`)
-            .then(res => resolve(res.ok ? true : false))
+            .then((res) => resolve(res.ok ? true : false))
             .catch(() => resolve(false))
         })
         if (!cfgOk) {
@@ -325,7 +325,7 @@ const AdminSettings = () => {
                 <a
                   href="#"
                   className={keyFromDb ? '' : 'font-weight-bold'}
-                  onClick={e => {
+                  onClick={(e) => {
                     e.preventDefault()
                     setKeyFromDb(false)
                   }}
@@ -336,7 +336,7 @@ const AdminSettings = () => {
                 <a
                   href="#"
                   className={keyFromDb ? 'font-weight-bold' : ''}
-                  onClick={e => {
+                  onClick={(e) => {
                     e.preventDefault()
                     setKeyFromDb(true)
                   }}

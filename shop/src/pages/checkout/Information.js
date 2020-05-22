@@ -40,7 +40,7 @@ function validate(state) {
     newState.zipError = 'Enter a ZIP / postal code'
   }
 
-  const valid = Object.keys(newState).every(f => f.indexOf('Error') < 0)
+  const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
 
   return { valid, newState: { ...state, ...newState } }
 }
@@ -52,9 +52,9 @@ const CheckoutInfo = () => {
   const [state, setStateRaw] = useState(
     cart.userInfo || { country: 'United States' }
   )
-  const setState = newState => setStateRaw({ ...state, ...newState })
+  const setState = (newState) => setStateRaw({ ...state, ...newState })
 
-  const input = formInput(state, newState => setState(newState))
+  const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
 
   return (
@@ -71,7 +71,7 @@ const CheckoutInfo = () => {
         </div>
       </div>
       <form
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           const { valid, newState } = validate(state)
           setState(newState)

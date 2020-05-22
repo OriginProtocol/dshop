@@ -7,12 +7,12 @@ async function fetchItem(dataURL, item) {
   return {
     ...item,
     product: data,
-    variant: data.variants.find(v => v.id === item.variant)
+    variant: data.variants.find((v) => v.id === item.variant)
   }
 }
 
 async function fetchItems(dataURL, items) {
-  return await Promise.all(items.map(i => fetchItem(dataURL, i)))
+  return await Promise.all(items.map((i) => fetchItem(dataURL, i)))
 }
 
 module.exports = fetchItems

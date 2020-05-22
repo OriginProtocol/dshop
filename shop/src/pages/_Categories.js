@@ -26,7 +26,7 @@ const Categories = () => {
   return (
     <div className="categories d-none d-md-block">
       <ul className="list-unstyled">
-        {collections.map(cat => (
+        {collections.map((cat) => (
           <Item active={active === cat.id} key={cat.id} id={cat.id}>
             {cat.title}
           </Item>

@@ -57,11 +57,11 @@ async function getMockups({ PrintfulURL, apiAuth, OutputDir, id }) {
   }
 
   const variantMapping = mockTemplates.result.variant_mapping.find(
-    p => p.variant_id === variantId
+    (p) => p.variant_id === variantId
   )
-  const variantTemplates = variantMapping.templates.map(t => {
+  const variantTemplates = variantMapping.templates.map((t) => {
     const template = mockTemplates.result.templates.find(
-      tpl => tpl.template_id === t.template_id
+      (tpl) => tpl.template_id === t.template_id
     )
     return {
       ...t,
@@ -72,7 +72,7 @@ async function getMockups({ PrintfulURL, apiAuth, OutputDir, id }) {
   // console.log(JSON.stringify(variantTemplates, null, 2))
 
   const variantPrintfile = printFiles.result.variant_printfiles.find(
-    p => p.variant_id === variantId
+    (p) => p.variant_id === variantId
   )
   console.log(JSON.stringify(variantPrintfile, null, 2))
   console.log(JSON.stringify(printFiles.result.option_groups, null, 2))
@@ -88,7 +88,7 @@ async function getMockups({ PrintfulURL, apiAuth, OutputDir, id }) {
     const layer = design.placements[placement][tplId[0]].layers[0]
     // console.log(layer.fileItem.urlFullSize)
     // console.log(layer.position)
-    const placementTpl = variantTemplates.find(t => t.placement === placement)
+    const placementTpl = variantTemplates.find((t) => t.placement === placement)
     // console.log(placementTpl)
     files.push({
       placement,
@@ -154,7 +154,7 @@ async function getMockups({ PrintfulURL, apiAuth, OutputDir, id }) {
   let taskJson = {}
 
   while (get(taskJson, 'result.status') !== 'completed') {
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
     const taskRes = await fetch(
       `${PrintfulURL}/mockup-generator/task?task_key=${task_key}`,
       {

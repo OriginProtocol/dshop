@@ -22,7 +22,7 @@ async function writeProductData({ OutputDir, png }) {
   } catch (e) {
     /* Ignore */
   }
-  let productsOut = existingProducts.filter(p => p.keep)
+  let productsOut = existingProducts.filter((p) => p.keep)
   const downloadImages = []
   const allImages = {}
   const printfulIds = {}
@@ -45,7 +45,7 @@ async function writeProductData({ OutputDir, png }) {
     }
 
     const existingProduct = existingProducts.find(
-      p => p.externalId === externalId
+      (p) => p.externalId === externalId
     )
 
     let handle
@@ -61,7 +61,7 @@ async function writeProductData({ OutputDir, png }) {
         .replace(/-$/, '')
       const origHandle = handle
 
-      for (let n = 1; productsOut.find(p => p.id === handle); n++) {
+      for (let n = 1; productsOut.find((p) => p.id === handle); n++) {
         handle = `${origHandle}-${n}`
       }
     }
@@ -74,7 +74,7 @@ async function writeProductData({ OutputDir, png }) {
     syncProduct.sync_variants.forEach((syncVariant, idx) => {
       const vId = syncVariant.product.variant_id
       printfulSyncIds[vId] = syncVariant.id
-      const v = product.variants.find(v => v.id === vId)
+      const v = product.variants.find((v) => v.id === vId)
       if (!v) {
         console.log(`Could not find variant ${vId} on product ${row.id}`)
         return
@@ -87,7 +87,7 @@ async function writeProductData({ OutputDir, png }) {
       if (size && sizes.indexOf(size) < 0) {
         sizes.push(size)
       }
-      const img = syncVariant.files.find(f => f.type === 'preview')
+      const img = syncVariant.files.find((f) => f.type === 'preview')
       if (img) {
         if (allImages[img.preview_url] === undefined) {
           const splitImg = img.preview_url.split('/')
@@ -112,7 +112,7 @@ async function writeProductData({ OutputDir, png }) {
 
     const variants = syncProduct.sync_variants.map((variant, idx) => {
       const id = variant.product.variant_id
-      const v = product.variants.find(v => v.id === id)
+      const v = product.variants.find((v) => v.id === id)
       const options = []
       if (colors.length > 1) {
         options.push(v.color)
@@ -167,13 +167,13 @@ async function writeProductData({ OutputDir, png }) {
   }
 
   // Keep original products.json order
-  const existingProductSlugs = existingProducts.map(p => p.id)
+  const existingProductSlugs = existingProducts.map((p) => p.id)
   const existingProductExternalIds = existingProducts
-    .map(p => p.externalId)
-    .filter(i => i)
+    .map((p) => p.externalId)
+    .filter((i) => i)
 
   if (existingProductSlugs.length) {
-    productsOut = sortBy(productsOut, p => {
+    productsOut = sortBy(productsOut, (p) => {
       let idx
       if (p.externalId && existingProductExternalIds.length) {
         idx = existingProductExternalIds.indexOf(p.externalId)
@@ -198,18 +198,18 @@ async function writeProductData({ OutputDir, png }) {
   const collectionsPath = `${OutputDir}/data/collections.json`
   try {
     const existingCollections = JSON.parse(fs.readFileSync(collectionsPath))
-    const productIds = productsOut.map(p => p.id)
+    const productIds = productsOut.map((p) => p.id)
     let productsInCollection = []
-    collections = existingCollections.map(c => {
-      const products = c.products.filter(p => productIds.indexOf(p) >= 0)
+    collections = existingCollections.map((c) => {
+      const products = c.products.filter((p) => productIds.indexOf(p) >= 0)
       productsInCollection = [...productsInCollection, ...c.products]
       return { ...c, products }
     })
     if (productsInCollection.length) {
       const newProductIds = productIds.filter(
-        p => productsInCollection.indexOf(p) < 0
+        (p) => productsInCollection.indexOf(p) < 0
       )
-      const other = collections.find(c => c.id === 'other')
+      const other = collections.find((c) => c.id === 'other')
       if (other) {
         other.products = [...other.products, ...newProductIds]
       } else if (newProductIds.length) {
@@ -225,7 +225,7 @@ async function writeProductData({ OutputDir, png }) {
       {
         id: 'all',
         title: 'All',
-        products: productsOut.map(p => p.id)
+        products: productsOut.map((p) => p.id)
       }
     ]
   }

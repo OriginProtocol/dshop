@@ -21,7 +21,7 @@ const CartItems = () => {
         <div className="th price">Price</div>
         <div className="th quantity">Quantity</div>
         <div className="th total">Total</div>
-        {cart.items.map(item => (
+        {cart.items.map((item) => (
           <CartItem key={`${item.product}-${item.variant}`} item={item} />
         ))}
       </div>
@@ -32,7 +32,7 @@ const CartItems = () => {
             rows="5"
             className="form-control"
             value={cart.instructions}
-            onChange={e => {
+            onChange={(e) => {
               dispatch({ type: 'updateInstructions', value: e.target.value })
             }}
           />

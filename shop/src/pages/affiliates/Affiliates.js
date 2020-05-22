@@ -15,7 +15,7 @@ const Affiliates = () => {
   const [state, setStateRaw] = useState({
     mode: affiliate ? 'affiliate' : 'default'
   })
-  const setState = newState => setStateRaw({ ...state, ...newState })
+  const setState = (newState) => setStateRaw({ ...state, ...newState })
   const { mode, account } = state
 
   const props = { setState, state, affiliate, dispatch, account }
@@ -98,7 +98,7 @@ const Affiliate = ({ setState, dispatch, affiliate }) => {
         <div className="d-flex align-items-center">
           <Toggle
             value={affiliate.toolbar}
-            onChange={toolbar =>
+            onChange={(toolbar) =>
               dispatch({
                 type: 'setAffiliate',
                 affiliate: { ...affiliate, toolbar }

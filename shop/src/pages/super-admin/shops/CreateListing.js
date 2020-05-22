@@ -16,11 +16,11 @@ const CreateListing = ({
     <button
       type="button"
       className={className}
-      onClick={e => {
+      onClick={(e) => {
         e.preventDefault()
         createListing({ config, network: admin.network })
           .then(onCreated)
-          .catch(err => onError(err.message))
+          .catch((err) => onError(err.message))
       }}
       children={children}
     />
