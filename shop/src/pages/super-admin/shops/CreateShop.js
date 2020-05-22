@@ -26,18 +26,21 @@ async function genPGP() {
 function validate(state) {
   const newState = {}
 
-  if (!state.name) {
-    newState.nameError = 'Enter a Shop Name'
+  if (state.shopType !== 'local-dir') {
+    if (!state.name) {
+      newState.nameError = 'Enter a Shop Name'
+    }
+    if (!state.hostname) {
+      newState.hostnameError = 'Enter a hostname'
+    } else if (!state.hostname.match(/^[a-zA-Z0-9-]+$/)) {
+      newState.hostnameError = 'Invalid hostname'
+    }
   }
+
   if (!state.dataDir) {
     newState.dataDirError = 'Enter a Data Dir'
   } else if (!state.dataDir.match(/^[a-z0-9-]+$/)) {
     newState.dataDirError = 'Use alpha-numeric characters only'
-  }
-  if (!state.hostname) {
-    newState.hostnameError = 'Enter a hostname'
-  } else if (!state.hostname.match(/^[a-zA-Z0-9-]+$/)) {
-    newState.hostnameError = 'Invalid hostname'
   }
   if (!state.listingId) {
     newState.listingIdError = 'Enter a Listing ID'
@@ -139,7 +142,7 @@ const CreateShop = () => {
           <label>Shop type</label>
           <select {...input('shopType')}>
             <option value="blank">Blank Template</option>
-            <option value="clone-existing">Clone Existing</option>
+            <option value="local-dir">From Local Dir</option>
             <option value="clone-domain">Clone Domain</option>
             <option value="clone-ipfs">Clone IPFS Hash</option>
             <option value="printful">New Printful</option>
@@ -148,11 +151,22 @@ const CreateShop = () => {
             <option value="affiliate">New Affiliate</option>
           </select>
         </div>
-        <div className="form-group col-md-6">
-          <label>Shop Name</label>
-          <input {...input('name')} placeholder="eg My Store" />
-          {Feedback('name')}
-        </div>
+        {state.shopType === 'local-dir' ? (
+          <div className="form-group col-md-6">
+            <label>Data dir</label>
+            <select {...input('dataDir')}>
+              {get(admin, 'localShops', []).map((localShop) => (
+                <option key={localShop}>{localShop}</option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <div className="form-group col-md-6">
+            <label>Shop Name</label>
+            <input {...input('name')} placeholder="eg My Store" />
+            {Feedback('name')}
+          </div>
+        )}
       </div>
       <div className="form-group">
         <label>Existing Listing ID</label>

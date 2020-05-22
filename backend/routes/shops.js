@@ -145,10 +145,22 @@ module.exports = function (app) {
       })
     }
 
+    const { dataDir, pgpPublicKey, printfulApi, shopType } = req.body
+    let name = req.body.name
+    const OutputDir = `${__dirname}/../data/${dataDir}`
+
+    if (req.body.shopType === 'local-dir') {
+      const existingData = fs
+        .readFileSync(`${OutputDir}/data/config.json`)
+        .toString()
+      const json = JSON.parse(existingData)
+      name = json.fullTitle || json.title
+    }
+
     const shopResponse = await createShop({
       sellerId: req.session.sellerId,
       listingId: req.body.listingId,
-      name: req.body.name,
+      name,
       authToken: req.body.dataDir,
       config: setConfig({
         dataUrl: `https://${req.body.hostname}/${req.body.dataDir}/`,
@@ -176,13 +188,10 @@ module.exports = function (app) {
     await SellerShop.create({ sellerId: req.session.sellerId, shopId, role })
     console.log(`Added role OK`)
 
-    const { dataDir, name, pgpPublicKey, printfulApi, shopType } = req.body
-
-    if (shopType === 'blank') {
+    if (shopType === 'blank' || shopType === 'local-dir') {
       return res.json({ success: true })
     }
 
-    const OutputDir = `${__dirname}/../data/${dataDir}`
     fs.mkdirSync(OutputDir, { recursive: true })
     console.log(`Outputting to ${OutputDir}`)
 

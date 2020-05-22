@@ -70,27 +70,41 @@ module.exports = function (app) {
       return res.json({ success: false, reason: 'no-active-network' })
     }
 
+    const shopDataDir = `${__dirname}/../data`
     const { networkId } = network
     const shops = await Shop.findAll({
       where: { networkId },
       order: [['createdAt', 'desc']]
     }).map((s) => ({
       ...s.dataValues,
-      viewable: fs.existsSync(
-        `${__dirname}/../data/${s.authToken}/data/config.json`
-      )
+      viewable: fs.existsSync(`${shopDataDir}/${s.authToken}/data/config.json`)
     }))
+
+    const localShops = fs
+      .readdirSync(shopDataDir)
+      .filter((shop) =>
+        fs.existsSync(`${shopDataDir}/${shop}/data/config.json`)
+      )
+      .filter((dir) => !shops.some((s) => s.authToken === dir))
 
     if (!shops.length) {
       return res.json({
         success: false,
         reason: 'no-shops',
         networks,
-        network
+        network,
+        localShops
       })
     }
 
-    res.json({ success: true, email: user.email, networks, network, shops })
+    res.json({
+      success: true,
+      email: user.email,
+      networks,
+      network,
+      shops,
+      localShops
+    })
   })
 
   app.get('/auth/:email', async (req, res) => {
