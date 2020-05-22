@@ -26,7 +26,6 @@ COPY lerna.json ./lerna.json
 COPY yarn.lock ./yarn.lock
 
 COPY $DSHOP_BACKEND_SOURCE/data ./backend/data
-COPY $DSHOP_BACKEND_SOURCE/dist ./backend/dist
 COPY $DSHOP_BACKEND_SOURCE/models ./backend/models
 COPY $DSHOP_BACKEND_SOURCE/queues ./backend/queues
 COPY $DSHOP_BACKEND_SOURCE/routes ./backend/routes
