@@ -33,60 +33,6 @@ secrets-staging.yaml
 secrets-prod.yaml
 github.key
 
-# Development #
-###############
-/devops/.ipfs
-
-# origin-bridge #
-#################
-
-# docs #
-###############
-/docs/*.gem
-/docs/*.rbc
-/docs/.bundle
-/docs/.config
-/docs/InstalledFiles
-/docs/lib/bundler/man
-/docs/pkg
-/docs/rdoc
-/docs/spec/reports
-/docs/test/tmp
-/docs/test/version_tmp
-/docs/tmp
-/docs/.cache
-/docs/.vagrant
-/docs/.yardoc
-/docs/_yardoc
-/docs/doc/
-
-# origin-js #
-#############
-/packages/origin-js/dist
-/packages/origin-js/connect.lock
-/packages/origin-js/libpeerconnection.log
-/packages/origin-js/testem.log
-/packages/origin-js/typings
-
-# infra/linking #
-#################
-/infra/linking/*.rdb
-/infra/linking/*.p8
-/infra/linking/dist
-
-# infra/notifications #
-# #####################
-/infra/notifications/firebase-service.json
-
-# origin-dapp-creator-server #
-##############################
-/infra/dapp-creator-server/dist
-
-# origin-mobile #
-#################
-/mobile/android/sentry.properties
-/mobile/ios/sentry.properties
-
 # Recommended rules per https://gist.github.com/octocat/9257657 #
 # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv #
 

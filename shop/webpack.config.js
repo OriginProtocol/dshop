@@ -54,9 +54,6 @@ const webpackConfig = {
     publicPath: absolute ? '/' : '',
     crossOriginLoading: 'anonymous'
   },
-  externals: {
-    Web3: 'web3'
-  },
   module: {
     noParse: [/^react$/],
     rules: [
@@ -135,7 +132,8 @@ const webpackConfig = {
     historyApiFallback: true,
     headers: { 'Access-Control-Allow-Origin': '*' },
     contentBase: [path.join(__dirname, 'public'), path.join(__dirname, 'data')],
-    // Below is so proxy does not take precedence. See https://github.com/webpack/webpack-dev-server/issues/1132#issuecomment-340639565
+    // Below is so proxy does not take precedence.
+    // See https://github.com/webpack/webpack-dev-server/issues/1132#issuecomment-340639565
     features: [
       'before',
       'setup',

@@ -9,7 +9,7 @@ const abi = [
   'function createListing(bytes32, uint256, address)',
   'function updateListing(uint256, bytes32, uint256)',
   'event ListingCreated (address indexed party, uint indexed listingID, bytes32 ipfsHash)',
-  'event ListingUpdated (address indexed party, uint indexed listingID, bytes32 ipfsHash)'
+  'event ListingUpdated (address indexed party, uint indexed listingID, bytes32 ipfsHash)',
 ]
 
 // Base template for marketplace listing data.
@@ -29,7 +29,7 @@ const baseListing = {
   commission: { currency: 'OGN', amount: '0' },
   commissionPerUnit: { currency: 'OGN', amount: '0' },
   requiresShipping: false,
-  unitsTotal: 1000
+  unitsTotal: 1000,
 }
 
 /**
@@ -104,8 +104,8 @@ export async function createListing({ title, network }) {
     throw new Error(`Browser is not web3 enabled.`)
   }
   const provider = new ethers.providers.Web3Provider(window.ethereum)
-  const providerNetwork = await provider.getNetwork()
-  if (providerNetwork.chainId !== network.networkId) {
+  const providerNetwork = await provider.send('net_version')
+  if (Number(providerNetwork) !== network.networkId) {
     throw new Error(`Network should be ${network.networkId}`)
   }
 
@@ -118,7 +118,11 @@ export async function createListing({ title, network }) {
   const tx = await contract.createListing(bytes32Hash, 0, address)
   const receipt = await tx.wait()
 
-  const listingCreated = receipt.events.find(e => e.event === 'ListingCreated')
+  window.receipt = receipt
+
+  const listingCreated = receipt.events.find(
+    (e) => e.event === 'ListingCreated'
+  )
   if (listingCreated) {
     return listingCreated.args.listingID.toNumber()
   }
@@ -189,7 +193,7 @@ export async function updateListing({ config, shopIpfsHash }) {
   const updatedListingData = {
     ...baseListing,
     title: config.title,
-    shopIpfsHash
+    shopIpfsHash,
   }
 
   // Upload the listing's JSON data to IPFS.

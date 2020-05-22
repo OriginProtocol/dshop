@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation, useRouteMatch } from 'react-router-dom'
-import { ApolloProvider } from 'react-apollo'
-import client from '@origin/graphql'
+
 import queryString from 'query-string'
 import get from 'lodash/get'
 import Styl from 'react-styl'
@@ -149,17 +148,15 @@ const Order = () => {
   }
 
   return (
-    <ApolloProvider client={client}>
-      <div className="checkout">
-        <h3 className="d-md-none my-4 ml-4">{config.title}</h3>
-        <div className="user-details">
-          <OrderDetails cart={cart} />
-        </div>
-        <div className="order-summary-wrap">
-          <Summary cart={cart} />
-        </div>
+    <div className="checkout">
+      <h3 className="d-md-none my-4 ml-4">{config.title}</h3>
+      <div className="user-details">
+        <OrderDetails cart={cart} />
       </div>
-    </ApolloProvider>
+      <div className="order-summary-wrap">
+        <Summary cart={cart} />
+      </div>
+    </div>
   )
 }
 

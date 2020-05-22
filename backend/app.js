@@ -1,5 +1,6 @@
 const fetch = require('node-fetch')
 const fs = require('fs')
+const path = require('path')
 const express = require('express')
 const session = require('express-session')
 const SequelizeStore = require('connect-session-sequelize')(session.Store)
@@ -133,8 +134,15 @@ app.get('/', (req, res) => {
 })
 
 app.get('*', (req, res, next) => {
-  serveStatic(`${__dirname}/public/${req.hostname}`)(req, res, next)
+  const tst = req.path.split('/')[1]
+  const dir = path.resolve(`../data/${tst}/data`)
+  console.log(dir)
+  serveStatic(dir)(req, res, next)
 })
+
+// app.get('*', (req, res, next) => {
+//   serveStatic(`${__dirname}/public/${req.hostname}`)(req, res, next)
+// })
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
