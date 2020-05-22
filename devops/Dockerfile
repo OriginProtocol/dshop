@@ -30,6 +30,7 @@ COPY $DSHOP_BACKEND_SOURCE/models ./backend/models
 COPY $DSHOP_BACKEND_SOURCE/queues ./backend/queues
 COPY $DSHOP_BACKEND_SOURCE/routes ./backend/routes
 COPY $DSHOP_BACKEND_SOURCE/utils ./backend/utils
+COPY $DSHOP_BACKEND_SOURCE/scripts ./backend/scripts
 COPY $DSHOP_BACKEND_SOURCE/*.js ./backend/
 COPY $DSHOP_BACKEND_SOURCE/package.json ./backend/package.json
 
@@ -65,7 +66,7 @@ RUN cp -r ../node_modules/openpgp/dist public
 WORKDIR $APP_DIR
 
 RUN lerna clean --no-progress -y
-RUN rm -rf $APP_DIR/$DSHOP_DAPP_DIR
+RUN rm -rf $APP_DIR/$DSHOP_DAPP_SOURCE
 RUN yarn install --pure-lockfile --no-cache && yarn cache clean
 
 ######
