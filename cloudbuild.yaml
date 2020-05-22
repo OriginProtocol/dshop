@@ -5,7 +5,7 @@ steps:
     entrypoint: '/bin/bash'
     args:
       - '-c'
-      - date +'%Y%m%d%H%M%s' > .tag
+      - 'date +%Y%m%d%H%M%s > .tag'
 
   - id: 'Build docker image'
     name: 'gcr.io/cloud-builders/docker'
@@ -25,7 +25,7 @@ steps:
       - '-c'
       - |
         docker push \
-          "gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)"
+          gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)
   
   - id: 'Tag the image latest'
     name: 'gcr.io/cloud-builders/gcloud'
