@@ -5,7 +5,7 @@ import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
 import usePrice from 'utils/usePrice'
-import { signer, ogn, marketplace } from 'utils/origin'
+import useOrigin from 'utils/useOrigin'
 import { useStateValue } from 'data/state'
 
 function useMakeOffer({
@@ -13,8 +13,9 @@ function useMakeOffer({
   activeToken,
   encryptedData,
   onChange,
-  buttonText
+  buttonText,
 }) {
+  const { signer, ogn, marketplace } = useOrigin()
   const { config } = useConfig()
   const { toTokenPrice } = usePrice()
   const [{ cart }] = useStateValue()
@@ -44,7 +45,7 @@ function useMakeOffer({
         totalPrice: { amount: 0, currency: 'encrypted' },
         commission: { currency: 'OGN', amount: '0' },
         finalizes,
-        encryptedData: encryptedData.hash
+        encryptedData: encryptedData.hash,
       })
 
       marketplace
@@ -58,7 +59,7 @@ function useMakeOffer({
           currency,
           address,
           {
-            value: activeToken.id === 'token-ETH' ? amountWei : 0
+            value: activeToken.id === 'token-ETH' ? amountWei : 0,
           }
         )
         .then((tx) => {

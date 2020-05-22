@@ -7,18 +7,18 @@ import usePrice from 'utils/usePrice'
 import useMakeOffer from 'utils/useMakeOffer'
 import useToken from 'utils/useToken'
 import useWallet from 'utils/useWallet'
+import useOrigin from 'utils/useOrigin'
 import { useStateValue } from 'data/state'
-
-import { ogn, marketplace } from 'utils/origin'
 
 const DefaultTokens = [
   { id: 'token-OGN', name: 'OGN' },
   { id: 'token-DAI', name: 'DAI' },
-  { id: 'token-ETH', name: 'ETH' }
+  { id: 'token-ETH', name: 'ETH' },
 ]
 
 const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
   const { config } = useConfig()
+  const { ogn, marketplace } = useOrigin()
   const [{ cart }, dispatch] = useStateValue()
   const [activeToken, setActiveToken] = useState({})
   const token = useToken(activeToken)
@@ -45,7 +45,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
         !activeToken.id ||
         !token.hasBalance ||
         !token.hasAllowance ||
-        token.loading
+        token.loading,
     }
     if (activeToken.id) {
       newState.buttonText = `Pay ${toTokenPrice(
@@ -65,7 +65,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
         onChange={() => {
           dispatch({
             type: 'updatePaymentMethod',
-            method: cryptoPaymentMethod
+            method: cryptoPaymentMethod,
           })
         }}
       />

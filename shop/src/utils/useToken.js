@@ -2,7 +2,7 @@ import ethers from 'ethers'
 import { useEffect, useState } from 'react'
 
 import usePrice from 'utils/usePrice'
-import { provider, signer, ogn, marketplace } from 'utils/origin'
+import useOrigin from 'utils/useOrigin'
 import { useStateValue } from 'data/state'
 
 function useToken(activeToken = {}) {
@@ -12,6 +12,8 @@ function useToken(activeToken = {}) {
     loading: true,
     hasAllowance: false
   })
+  const { provider, signer, ogn, marketplace } = useOrigin()
+
   const setState = (newState) => setStateRaw({ ...state, ...newState })
   const { exchangeRates } = usePrice()
   const [{ cart }] = useStateValue()
