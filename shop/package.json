@@ -32,12 +32,10 @@
     "dayjs": "^1.8.27",
     "ethers": "^5.0.0-beta.182",
     "flexsearch": "^0.6.32",
-    "graphql-tag": "^2.10.3",
     "openpgp": "^4.10.4",
     "prettier": "^2.0.5",
     "query-string": "^6.12.1",
     "react": "^16.13.1",
-    "react-apollo": "^3.1.5",
     "react-dom": "^16.13.1",
     "react-spring": "^8.0.27",
     "react-stripe-elements": "^6.1.2",
@@ -121,5 +119,11 @@
     "docs",
     "node_modules",
     "public"
-  ]
+  ],
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "proseWrap": "always",
+    "trailingComma": "none"
+  }
 }

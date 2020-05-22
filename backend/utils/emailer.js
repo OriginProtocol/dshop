@@ -90,9 +90,7 @@ async function sendMail(shopId, cart, skip) {
 
     const imgStream = await fetch(`${dataURL}${item.product.id}/520/${img}`)
     const imgBlob = await imgStream.arrayBuffer()
-    const content = await sharp(Buffer.from(imgBlob))
-      .resize(100)
-      .toBuffer()
+    const content = await sharp(Buffer.from(imgBlob)).resize(100).toBuffer()
 
     attachments.push({ filename: img, content, cid })
 
@@ -109,7 +107,7 @@ async function sendMail(shopId, cart, skip) {
     )
   }
 
-  const orderItemsTxt = items.map(item => {
+  const orderItemsTxt = items.map((item) => {
     const options = optionsForItem(item)
     return orderItemTxt({
       title: item.product.title,

@@ -17,7 +17,7 @@ const CartItem = ({ item }) => {
 
   if (!product) return null
 
-  let variant = product.variants.find(v => v.id === item.variant)
+  let variant = product.variants.find((v) => v.id === item.variant)
   if (!variant) {
     variant = product
   }
@@ -51,7 +51,7 @@ const CartItem = ({ item }) => {
         <div className="mt-2">
           <a
             href="#"
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault()
               dispatch({ type: 'removeFromCart', item })
             }}
@@ -68,12 +68,12 @@ const CartItem = ({ item }) => {
           <select
             className="form-control"
             value={item.quantity}
-            onChange={e => {
+            onChange={(e) => {
               const quantity = Number(e.target.value)
               dispatch({ type: 'updateCartQuantity', item, quantity })
             }}
           >
-            {quantities.map(q => (
+            {quantities.map((q) => (
               <option key={q}>{q}</option>
             ))}
           </select>

@@ -35,12 +35,12 @@ function generatePrintfulOrder(order, printfulIds, draft) {
       zip: data.userInfo.zip
     },
     items: data.items
-      .map(item => ({
+      .map((item) => ({
         sync_variant_id: get(printfulIds, `[${item.product}][${item.variant}]`),
         quantity: item.quantity,
         retail_price: (item.price / 100).toFixed(2)
       }))
-      .filter(i => i.sync_variant_id),
+      .filter((i) => i.sync_variant_id),
 
     retail_costs: {
       currency: 'USD',
@@ -183,7 +183,7 @@ const PrintfulDetails = ({
       })}
       <div className="printful-products mt-4">
         {printfulOrder.items.map((item, idx) => {
-          const img = item.files.find(i => i.type === 'preview')
+          const img = item.files.find((i) => i.type === 'preview')
           return (
             <div key={idx}>
               <img src={get(img, 'thumbnail_url')} />
@@ -196,7 +196,7 @@ const PrintfulDetails = ({
       <div className="mt-3">
         <a
           href="#"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault()
             setShowJson(!showJson)
           }}

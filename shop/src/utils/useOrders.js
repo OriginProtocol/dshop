@@ -19,13 +19,13 @@ function useOrders() {
         }
       })
       const ordersRaw = await raw.json()
-      const orders = ordersRaw.map(order => {
+      const orders = ordersRaw.map((order) => {
         return {
           ...order,
           data: JSON.parse(order.data)
         }
       })
-      const sortedOrders = sortBy(orders, order => {
+      const sortedOrders = sortBy(orders, (order) => {
         return -Number(order.orderId.split('-')[3])
       })
 

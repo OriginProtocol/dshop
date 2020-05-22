@@ -50,7 +50,7 @@ const AffiliateNav = () => {
           </Link>
           <a
             href="#"
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault()
               dispatch({ type: 'setAffiliate', affiliate: undefined })
             }}
@@ -76,7 +76,7 @@ const TextLink = ({ url }) => {
         </div>
         <div>Copy the link and paste it into your website.</div>
         <input
-          onClick={e => e.target.select()}
+          onClick={(e) => e.target.select()}
           className="form-control my-2"
           defaultValue={url}
         />

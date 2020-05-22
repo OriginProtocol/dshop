@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   )
 
-  ShopDeployment.associate = function(models) {
+  ShopDeployment.associate = function (models) {
     ShopDeployment.belongsTo(models.Shop, {
       as: 'shopDeployments',
       foreignKey: 'shopId'

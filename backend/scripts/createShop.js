@@ -25,7 +25,7 @@ const PrintfulURL = 'https://api.printful.com'
 const DefaultPK =
   '0xAE6AE8E5CCBFB04590405997EE2D52D2B330726137B875053C36D94E974D162F'
 
-const validate = value => (value.length > 0 ? true : 'Please enter a value')
+const validate = (value) => (value.length > 0 ? true : 'Please enter a value')
 
 const userQuestions = [
   { type: 'input', name: 'email', message: 'Email', validate },
@@ -182,14 +182,14 @@ async function go() {
       name: 'printfulApi',
       message: 'Printful API Key',
       when: ({ shopType }) => shopType === 'printful',
-      validate: function(apiKey) {
+      validate: function (apiKey) {
         if (!apiKey) {
           return 'Printful API key required'
         }
         const done = this.async()
         printfulAPI
           .get('/store', { apiKey })
-          .then(json => {
+          .then((json) => {
             if (json.error) {
               done(json.error.message)
             } else {

@@ -76,7 +76,7 @@ function validate(state) {
     newState.ipfsApiError = 'IPFS API required'
   }
 
-  const valid = Object.keys(newState).every(f => f.indexOf('Error') < 0)
+  const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
 
   return { valid, newState: { ...state, ...newState } }
 }
@@ -86,8 +86,8 @@ const ServerSetup = ({ next }) => {
   const [, dispatch] = useStateValue()
   const [advanced, setAdvanced] = useState(false)
   const [state, setStateRaw] = useState(initialState())
-  const setState = newState => setStateRaw({ ...state, ...newState })
-  const input = formInput(state, newState => setState(newState))
+  const setState = (newState) => setStateRaw({ ...state, ...newState })
+  const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
 
   useEffect(() => {
@@ -101,7 +101,7 @@ const ServerSetup = ({ next }) => {
       <div className="mb-4">Server setup:</div>
       <form
         className="sign-up"
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
 
           const { valid, newState } = validate(state)
@@ -113,7 +113,7 @@ const ServerSetup = ({ next }) => {
           }
 
           const network = Object.keys(state)
-            .filter(k => k.indexOf('Error') < 0)
+            .filter((k) => k.indexOf('Error') < 0)
             .reduce((m, o) => {
               m[o] = state[o]
               return m
@@ -125,13 +125,13 @@ const ServerSetup = ({ next }) => {
             credentials: 'include',
             body: JSON.stringify(network)
           })
-            .then(async res => {
+            .then(async (res) => {
               if (res.ok) {
                 dispatch({ type: 'setNetwork', network })
                 next()
               }
             })
-            .catch(err => {
+            .catch((err) => {
               console.error('Error signing in', err)
               // setState({ ...state, error: 'Unauthorized' })
             })
@@ -205,7 +205,7 @@ const ServerSetup = ({ next }) => {
         <div className="mb-2 justify-content-center d-flex">
           <a
             href="#"
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault()
               setAdvanced(!advanced)
             }}

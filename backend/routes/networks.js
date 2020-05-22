@@ -5,7 +5,7 @@ const startListener = require('../listener')
 const omit = require('lodash/omit')
 const pick = require('lodash/pick')
 
-module.exports = function(app) {
+module.exports = function (app) {
   app.post('/networks', authSuperUser, async (req, res) => {
     const networkObj = {
       networkId: req.body.networkId,

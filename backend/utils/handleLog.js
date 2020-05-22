@@ -24,7 +24,7 @@ const handleLog = async ({
   transactionHash,
   blockNumber
 }) => {
-  const eventAbi = MarketplaceABI.find(i => i.signature === topics[0])
+  const eventAbi = MarketplaceABI.find((i) => i.signature === topics[0])
   if (!eventAbi) {
     console.log('Unknown event')
     return
@@ -171,7 +171,7 @@ async function insertOrderFromEvent({ offerId, event, shop }) {
       orderId: offerId,
       shopName: shop.name,
       total: `$${(data.total / 100).toFixed(2)}`,
-      items: data.items.map(i => i.title).filter(t => t)
+      items: data.items.map((i) => i.title).filter((t) => t)
     })
   } catch (e) {
     console.error(e)

@@ -19,7 +19,7 @@ function validate(state) {
     newState.roleError = 'Select a role'
   }
 
-  const valid = Object.keys(newState).every(f => f.indexOf('Error') < 0)
+  const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
 
   return { valid, newState: { ...state, ...newState } }
 }
@@ -27,7 +27,7 @@ function validate(state) {
 const AdminUsers = () => {
   const { config } = useConfig()
   const [state, setStateRaw] = useState({ loading: false, users: [] })
-  const setState = newState => setStateRaw({ ...state, ...newState })
+  const setState = (newState) => setStateRaw({ ...state, ...newState })
 
   useEffect(() => {
     setState({ loading: true })
@@ -37,7 +37,7 @@ const AdminUsers = () => {
         'content-type': 'application/json'
       },
       credentials: 'include'
-    }).then(async res => {
+    }).then(async (res) => {
       if (res.ok) {
         const json = await res.json()
         setState({ loading: false, users: json.users })
@@ -45,7 +45,7 @@ const AdminUsers = () => {
     })
   }, [])
 
-  const input = formInput(state, newState => setState(newState))
+  const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
 
   return (
@@ -62,7 +62,7 @@ const AdminUsers = () => {
             </tr>
           </thead>
           <tbody>
-            {state.users.map(user => (
+            {state.users.map((user) => (
               <tr key={user.id}>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
@@ -74,7 +74,7 @@ const AdminUsers = () => {
       )}
       <form
         className="d-flex flex-wrap align-items-start"
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           const { valid, newState } = validate(state)
           setState(newState)
@@ -94,7 +94,7 @@ const AdminUsers = () => {
               password: state.password,
               role: state.role
             })
-          }).then(async res => {
+          }).then(async (res) => {
             if (res.ok) {
               const json = await res.json()
               console.log(json)

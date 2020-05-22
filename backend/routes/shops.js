@@ -16,8 +16,6 @@ const setCloudDNSRecords = require('../utils/dns/clouddns')
 const get = require('lodash/get')
 const set = require('lodash/set')
 const fs = require('fs')
-const path = require('path')
-const os = require('os')
 const configs = require('../scripts/configs')
 const deploy = require('ipfs-deploy')
 const { exec } = require('child_process')
@@ -29,7 +27,7 @@ const downloadPrintfulMockups = require('../scripts/printful/downloadPrintfulMoc
 const resizePrintfulMockups = require('../scripts/printful/resizePrintfulMockups')
 const writeProductData = require('../scripts/printful/writeProductData')
 
-module.exports = function(app) {
+module.exports = function (app) {
   app.get(
     '/shop/users',
     authSellerAndShop,
@@ -47,7 +45,7 @@ module.exports = function(app) {
 
       res.json({
         success: true,
-        users: users.map(user => {
+        users: users.map((user) => {
           return {
             id: user.id,
             email: user.email,
@@ -184,13 +182,7 @@ module.exports = function(app) {
       return res.json({ success: true })
     }
 
-    let OutputDir
-    if (!networkConfig.deployDir) {
-      OutputDir = `${os.tmpdir()}/dshop`
-      await new Promise(resolve => exec(`rm -rf ${OutputDir}`, resolve))
-    } else {
-      OutputDir = `${networkConfig.deployDir}/${dataDir}`
-    }
+    const OutputDir = `${__dirname}/../data/${dataDir}`
     fs.mkdirSync(OutputDir, { recursive: true })
     console.log(`Outputting to ${OutputDir}`)
 
@@ -236,7 +228,7 @@ module.exports = function(app) {
       await downloadPrintfulMockups({ OutputDir })
       await resizePrintfulMockups({ OutputDir })
     } else if (allowedTypes.indexOf(shopType) >= 0) {
-      const shopTpl = `${__dirname}/../data/shop-templates/${shopType}`
+      const shopTpl = `${__dirname}/../db/shop-templates/${shopType}`
       const config = fs.readFileSync(`${shopTpl}/config.json`).toString()
       shopConfig = JSON.parse(config)
       await new Promise((resolve, reject) => {
@@ -279,16 +271,16 @@ module.exports = function(app) {
       )
     })
 
-    if (networkConfig.deployDir) {
-      const rootPath = path.normalize(`${__dirname}/../../data/${dataDir}`)
-      if (!fs.existsSync(rootPath)) {
-        console.log('Creating symlink')
-        fs.symlinkSync(
-          path.normalize(`${networkConfig.deployDir}/${dataDir}/data`),
-          rootPath
-        )
-      }
-    }
+    // if (networkConfig.deployDir) {
+    //   const rootPath = path.normalize(`${__dirname}/../../data/${dataDir}`)
+    //   if (!fs.existsSync(rootPath)) {
+    //     console.log('Creating symlink')
+    //     fs.symlinkSync(
+    //       path.normalize(`${networkConfig.deployDir}/${dataDir}/data`),
+    //       rootPath
+    //     )
+    //   }
+    // }
 
     // Deploy the shop to IPFS.
     let hash, ipfsGateway
@@ -393,7 +385,7 @@ module.exports = function(app) {
         .then(() => {
           res.json({ success: true })
         })
-        .catch(err => {
+        .catch((err) => {
           console.error(err)
           next(err)
         })

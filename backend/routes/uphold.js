@@ -17,7 +17,7 @@ const UpholdEndpoints = {
   }
 }
 
-module.exports = function(app) {
+module.exports = function (app) {
   app.get('/uphold/authed', authShop, async (req, res) => {
     const { upholdApi } = getConfig(req.shop.config)
     if (!UpholdEndpoints[upholdApi]) {
@@ -121,9 +121,9 @@ module.exports = function(app) {
       }
     )
     const json = await response.json()
-    const cards = json.map(card => {
+    const cards = json.map((card) => {
       const { id, label, balance, currency, normalized } = card
-      const norm = normalized.find(n => n.currency === 'USD')
+      const norm = normalized.find((n) => n.currency === 'USD')
       return {
         id,
         label,
@@ -132,8 +132,8 @@ module.exports = function(app) {
         currency
       }
     })
-    const filteredCards = cards.filter(c => c.balance !== '0.00')
-    const sortedCards = sortBy(filteredCards, [o => -o.normalizedBalance])
+    const filteredCards = cards.filter((c) => c.balance !== '0.00')
+    const sortedCards = sortBy(filteredCards, [(o) => -o.normalizedBalance])
     res.json(sortedCards)
   })
 
@@ -191,7 +191,7 @@ module.exports = function(app) {
   app.post('/uphold/logout', authShop, (req, res) => {
     req.session.upholdAccessToken = null
     req.session.upholdAuth = null
-    req.session.save(function() {
+    req.session.save(function () {
       res.json({ success: true })
     })
   })

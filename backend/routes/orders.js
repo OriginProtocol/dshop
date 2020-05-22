@@ -4,7 +4,7 @@ const { findOrder } = require('../utils/orders')
 const makeOffer = require('./_makeOffer')
 const sendMail = require('../utils/emailer')
 
-module.exports = function(app) {
+module.exports = function (app) {
   app.get('/orders', authSellerAndShop, async (req, res) => {
     const orders = await Order.findAll({
       where: { shopId: req.shop.id },

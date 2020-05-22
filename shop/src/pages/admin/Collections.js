@@ -16,7 +16,7 @@ const AdminCollections = () => {
           </tr>
         </thead>
         <tbody>
-          {collections.map(collection => (
+          {collections.map((collection) => (
             <tr key={collection.id}>
               <td>{collection.title}</td>
               <td className="text-center">{collection.products.length}</td>

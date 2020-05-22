@@ -11,7 +11,7 @@ const { validateConfig } = require('../utils/validators')
 const get = require('lodash/get')
 const omit = require('lodash/omit')
 
-module.exports = function(app) {
+module.exports = function (app) {
   app.get('/auth', authSellerAndShop, (req, res) => {
     if (!req.session.sellerId) {
       return res.json({ success: false })
@@ -22,8 +22,8 @@ module.exports = function(app) {
     Shop.findAll({
       attributes: ['name', 'id', 'authToken', 'hostname'],
       include: { model: Seller, where: { id } }
-    }).then(allShops => {
-      const shops = allShops.map(s => ({
+    }).then((allShops) => {
+      const shops = allShops.map((s) => ({
         id: s.dataValues.id,
         name: s.dataValues.name,
         authToken: s.dataValues.authToken,
@@ -31,7 +31,7 @@ module.exports = function(app) {
         role: get(s, 'Sellers[0].SellerShop.dataValues.role')
       }))
 
-      Seller.findOne({ where: { id } }).then(seller => {
+      Seller.findOne({ where: { id } }).then((seller) => {
         res.json({
           success: true,
           email: seller.email,
@@ -60,11 +60,11 @@ module.exports = function(app) {
     }
 
     const allNetworks = await Network.findAll()
-    const networks = allNetworks.map(n => {
+    const networks = allNetworks.map((n) => {
       const net = { ...encConf.getConfig(n.config), ...n.dataValues }
       return omit(net, ['config'])
     })
-    const network = networks.find(n => n.active)
+    const network = networks.find((n) => n.active)
     if (!network) {
       return res.json({ success: false, reason: 'no-active-network' })
     }
@@ -136,7 +136,7 @@ module.exports = function(app) {
 
   const logoutHandler = (req, res) => {
     if (req.session.sellerId) {
-      req.session.destroy(function() {
+      req.session.destroy(function () {
         res.json({ success: true })
       })
     } else {

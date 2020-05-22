@@ -16,10 +16,10 @@ function filterOrders(orders, search) {
   // Filter by order ids, eg: "ids:1-001-123-456,1-001-123-789"
   if (search.startsWith('ids:')) {
     const ids = search.substr(4).split(',')
-    return orders.filter(o => ids.indexOf(o.orderId) >= 0)
+    return orders.filter((o) => ids.indexOf(o.orderId) >= 0)
   }
   // Otherwise do a basic text search on the order JSON
-  return orders.filter(o => {
+  return orders.filter((o) => {
     const lowered = JSON.stringify(o).toLowerCase()
     return lowered.indexOf(search) >= 0
   })
@@ -34,7 +34,9 @@ const AdminOrders = () => {
   const filteredOrders = filterOrders(orders, search)
 
   useEffect(() => {
-    searchRef.current.addEventListener('search', e => setSearch(e.target.value))
+    searchRef.current.addEventListener('search', (e) =>
+      setSearch(e.target.value)
+    )
   }, [searchRef])
 
   return (
@@ -47,7 +49,7 @@ const AdminOrders = () => {
           className="form-control mx-4"
           placeholder="Search"
           value={searchInput}
-          onChange={e => setSearchInput(e.target.value)}
+          onChange={(e) => setSearchInput(e.target.value)}
         />
         <button
           className="btn btn-sm btn-outline-secondary"
@@ -97,7 +99,7 @@ const AdminOrdersTable = ({ orders }) => {
         </tr>
       </thead>
       <tbody>
-        {orders.map(order => (
+        {orders.map((order) => (
           <tr
             key={order.orderId}
             onClick={() => {
@@ -134,15 +136,15 @@ const fields = `
   Zip,data.userInfo.zip
   Country,data.userInfo.country`
   .split('\n')
-  .filter(i => i)
-  .map(i => i.trim().split(','))
+  .filter((i) => i)
+  .map((i) => i.trim().split(','))
 
 const AdminOrdersCSV = ({ orders }) => {
-  const cols = fields.map(f => f[0]).join(',')
+  const cols = fields.map((f) => f[0]).join(',')
   const data = orders
     .slice()
     .reverse()
-    .map(order => {
+    .map((order) => {
       try {
         const joined = fields
           .map(([, field, filter]) => {
@@ -151,7 +153,7 @@ const AdminOrdersCSV = ({ orders }) => {
               value = (value / 100).toFixed(2)
             }
             if (filter === 'product') {
-              value = value.map(i => i.product).join(',')
+              value = value.map((i) => i.product).join(',')
             }
             return '"' + value + '"'
           })
@@ -167,7 +169,7 @@ const AdminOrdersCSV = ({ orders }) => {
         className="form-control"
         rows="10"
         readOnly
-        value={[cols, ...data].filter(a => a).join('\n')}
+        value={[cols, ...data].filter((a) => a).join('\n')}
       />
     </div>
   )

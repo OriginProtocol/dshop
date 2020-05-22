@@ -138,7 +138,7 @@ function scrub(data, imageMap) {
     description: data.description,
     price: getPrice(data),
     available: true,
-    images: data.media.map(i => imageMap[i.urlExpanded]),
+    images: data.media.map((i) => imageMap[i.urlExpanded]),
     image: imageMap[data.media[0].urlExpanded],
     variants: [
       {

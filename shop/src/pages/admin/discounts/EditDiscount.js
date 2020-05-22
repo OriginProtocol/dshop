@@ -28,7 +28,7 @@ function validate(state) {
     newState.valueError = 'Value must be greater than zero'
   }
 
-  const valid = Object.keys(newState).every(f => f.indexOf('Error') < 0)
+  const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
 
   return { valid, newState: { ...state, ...newState } }
 }
@@ -50,7 +50,7 @@ const AdminEditDiscount = () => {
     skip: discountId === 'new'
   })
   const [state, setStateRaw] = useState(defaultValues)
-  const setState = newState => setStateRaw({ ...state, ...newState })
+  const setState = (newState) => setStateRaw({ ...state, ...newState })
   useEffect(() => {
     if (discount) {
       setState({
@@ -66,7 +66,7 @@ const AdminEditDiscount = () => {
     }
   }, [discount])
 
-  const input = formInput(state, newState => setState(newState))
+  const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
   const title = `${discountId === 'new' ? 'Create' : 'Edit'} Discount`
 
@@ -80,7 +80,7 @@ const AdminEditDiscount = () => {
         {title}
       </h3>
       <form
-        onSubmit={async e => {
+        onSubmit={async (e) => {
           e.preventDefault()
           const { valid, newState } = validate(state)
           setState(newState)
@@ -194,7 +194,7 @@ const AdminEditDiscount = () => {
               className="form-check-input"
               type="checkbox"
               checked={state.excludeShipping ? true : false}
-              onChange={e => setState({ excludeShipping: e.target.checked })}
+              onChange={(e) => setState({ excludeShipping: e.target.checked })}
             />
             Exclude shipping price from discount
           </label>
@@ -239,7 +239,7 @@ const AdminEditDiscount = () => {
               type="checkbox"
               name="type"
               checked={state.endDateEnabled ? true : false}
-              onChange={e => setState({ endDateEnabled: e.target.checked })}
+              onChange={(e) => setState({ endDateEnabled: e.target.checked })}
             />
             Set end date
           </label>

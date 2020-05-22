@@ -11,7 +11,7 @@ const AdminMenu = () => {
   const { pathname } = useLocation()
   const { config } = useConfig()
   const [, dispatch] = useStateValue()
-  const active = path => (pathname.indexOf(path) === 0 ? 'active' : '')
+  const active = (path) => (pathname.indexOf(path) === 0 ? 'active' : '')
 
   return (
     <Menu>
@@ -36,13 +36,13 @@ const AdminMenu = () => {
       <li className="db">
         <a
           href="#logout"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault()
 
             fetch(`${config.backend}/auth/logout`, {
               method: 'POST',
               credentials: 'include'
-            }).then(async response => {
+            }).then(async (response) => {
               if (response.status === 200) {
                 dispatch({ type: 'logout' })
               }

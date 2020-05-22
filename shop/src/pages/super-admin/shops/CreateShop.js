@@ -11,7 +11,7 @@ import ShopReady from './ShopReady'
 
 async function genPGP() {
   const randomArray = Array.from(crypto.getRandomValues(new Uint32Array(5)))
-  const pgpPrivateKeyPass = randomArray.map(n => n.toString(36)).join('')
+  const pgpPrivateKeyPass = randomArray.map((n) => n.toString(36)).join('')
 
   const key = await openpgp.generateKey({
     userIds: [{ name: 'D-Shop', email: `dshop@example.com` }],
@@ -49,7 +49,7 @@ function validate(state) {
     newState.printfulApiError = 'Enter an API key'
   }
 
-  const valid = Object.keys(newState).every(f => f.indexOf('Error') < 0)
+  const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
 
   return { valid, newState: { ...state, ...newState } }
 }
@@ -73,11 +73,11 @@ const CreateShop = () => {
     web3Pk: '',
     shopType: 'blank'
   })
-  const setState = newState => setStateRaw({ ...state, ...newState })
-  const input = formInput(state, newState => setState(newState))
+  const setState = (newState) => setStateRaw({ ...state, ...newState })
+  const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
   useEffect(() => {
-    genPGP().then(pgpKeys => setState(pgpKeys))
+    genPGP().then((pgpKeys) => setState(pgpKeys))
   }, [])
   useEffect(() => {
     const hostname = state.name
@@ -101,7 +101,7 @@ const CreateShop = () => {
   return (
     <form
       className="sign-up"
-      onSubmit={async e => {
+      onSubmit={async (e) => {
         e.preventDefault()
 
         const { valid, newState } = validate(state)
@@ -136,20 +136,22 @@ const CreateShop = () => {
     >
       <div className="form-row">
         <div className="form-group col-md-6">
-          <label>Shop Name</label>
-          <input {...input('name')} placeholder="eg My Store" />
-          {Feedback('name')}
-        </div>
-
-        <div className="form-group col-md-6">
           <label>Shop type</label>
           <select {...input('shopType')}>
             <option value="blank">Blank Template</option>
-            <option value="printful">Printful</option>
-            <option value="single-product">Single Product</option>
-            <option value="multi-product">Multi Product</option>
-            <option value="affiliate">Affiliate</option>
+            <option value="clone-existing">Clone Existing</option>
+            <option value="clone-domain">Clone Domain</option>
+            <option value="clone-ipfs">Clone IPFS Hash</option>
+            <option value="printful">New Printful</option>
+            <option value="single-product">New Single Product</option>
+            <option value="multi-product">New Multi Product</option>
+            <option value="affiliate">New Affiliate</option>
           </select>
+        </div>
+        <div className="form-group col-md-6">
+          <label>Shop Name</label>
+          <input {...input('name')} placeholder="eg My Store" />
+          {Feedback('name')}
         </div>
       </div>
       <div className="form-group">
@@ -168,8 +170,8 @@ const CreateShop = () => {
           <div style={{ flex: 1 }}>
             <CreateListing
               className="btn btn-outline-primary w-100"
-              onCreated={listingId => setStateRaw({ ...state, listingId })}
-              onError={createListingError => setState({ createListingError })}
+              onCreated={(listingId) => setStateRaw({ ...state, listingId })}
+              onError={(createListingError) => setState({ createListingError })}
             >
               <span className="btn-content">Create Listing</span>
             </CreateListing>
@@ -209,7 +211,7 @@ const CreateShop = () => {
       <div className="mb-2">
         <a
           href="#"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault()
             setAdvanced(!advanced)
           }}

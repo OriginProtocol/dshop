@@ -77,7 +77,7 @@ const webpackConfig = {
           {
             loader: 'css-loader',
             options: {
-              url: url => {
+              url: (url) => {
                 return url.match(/(svg|png)/) ? false : true
               }
             }
@@ -93,7 +93,7 @@ const webpackConfig = {
           {
             loader: 'css-loader',
             options: {
-              url: url => {
+              url: (url) => {
                 return url.match(/(svg|png)/) ? false : true
               }
             }

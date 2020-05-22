@@ -26,7 +26,7 @@ const AdminProducts = () => {
       </div>
       <table className="table admin-products">
         <tbody>
-          {pagedProducts.map(product => (
+          {pagedProducts.map((product) => (
             <tr key={product.id}>
               <td>
                 <div

@@ -21,7 +21,7 @@ const ProductList = ({ products }) => {
   return (
     <div className="products">
       {products.length ? null : <div>No Products!</div>}
-      {products.map(product => {
+      {products.map((product) => {
         let img = `${dataUrl()}${product.id}/520/${product.image}`
         if (product.data) {
           img = `${config.ipfsGateway}${product.data}/520/${product.image}`
@@ -30,7 +30,7 @@ const ProductList = ({ products }) => {
           <div
             key={product.id}
             className="product"
-            onClick={e => {
+            onClick={(e) => {
               const pathname = `${urlPrefix}/products/${product.id}`
               if (altClick(e)) {
                 history.push({ pathname, state: { scrollToTop: true } })

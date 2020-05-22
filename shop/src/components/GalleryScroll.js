@@ -7,7 +7,7 @@ const GalleryScroll = ({ pics = [], onChange }) => {
   const [scrollOffset, setScrollOffset] = useState(0)
   const [zoom, setZoomRaw] = useState(false)
 
-  const setOffset = active => {
+  const setOffset = (active) => {
     setOffsetRaw(active)
     if (onChange) {
       onChange(active)
@@ -34,7 +34,7 @@ const GalleryScroll = ({ pics = [], onChange }) => {
         <div className="gallery-mobile-zoom">
           <a
             href="#close"
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault()
               setZoom(false)
             }}

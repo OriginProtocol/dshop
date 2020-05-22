@@ -6,7 +6,7 @@ const Sequelize = require('sequelize')
 const basename = path.basename(__filename)
 const db = {}
 
-const SqliteURI = `sqlite:${__dirname}/../data/dshop.db`
+const SqliteURI = `sqlite:${__dirname}/../db/dshop.db`
 const URI = process.env.DATABASE_URL || SqliteURI
 const sequelize = new Sequelize(URI, {
   logging: false,
@@ -14,17 +14,17 @@ const sequelize = new Sequelize(URI, {
   timestamps: false
 })
 
-const isJs = file =>
+const isJs = (file) =>
   file.indexOf('.') !== 0 && file !== basename && file.slice(-3) === '.js'
 
 fs.readdirSync(__dirname)
   .filter(isJs)
-  .forEach(file => {
+  .forEach((file) => {
     const model = sequelize['import'](path.join(__dirname, file))
     db[model.name] = model
   })
 
-Object.keys(db).forEach(modelName => {
+Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
     db[modelName].associate(db)
   }

@@ -2,7 +2,7 @@ const fetch = require('node-fetch')
 
 const url = process.env.DISCORD_WEBHOOK
 
-module.exports = function({ shopName, orderId, total, items = [] }) {
+module.exports = function ({ shopName, orderId, total, items = [] }) {
   if (!url) {
     return
   }
@@ -15,10 +15,10 @@ module.exports = function({ shopName, orderId, total, items = [] }) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ content })
   })
-    .then(res => {
+    .then((res) => {
       console.log(`Discord webhook OK: ${res.ok}`)
     })
-    .catch(err => {
+    .catch((err) => {
       console.log('Discord webhook err:', err)
     })
 }

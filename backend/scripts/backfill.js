@@ -119,8 +119,8 @@ async function fetchEvents(listingIdFull) {
   if (listingCreatedEvent) {
     const toBlock = latestBlock
     const fromBlock = maxBlock + 1
-    const requests = range(fromBlock, toBlock + 1, batchSize).map(start =>
-      limiter.schedule(args => getLogs(args), {
+    const requests = range(fromBlock, toBlock + 1, batchSize).map((start) =>
+      limiter.schedule((args) => getLogs(args), {
         fromBlock: start,
         toBlock: Math.min(start + batchSize - 1, toBlock),
         listingId,
@@ -160,8 +160,8 @@ async function fetchEvents(listingIdFull) {
       storeEvents({ web3, events: batchEvents, shopId: shop.id, networkId })
 
       listingCreatedEvent = batchEvents
-        .map(e => getEventObj(e))
-        .find(o => o.eventName === 'ListingCreated')
+        .map((e) => getEventObj(e))
+        .find((o) => o.eventName === 'ListingCreated')
     } while (!listingCreatedEvent)
 
     if (listingCreatedEvent) {

@@ -19,13 +19,13 @@ const AdminConsole = () => {
       <label className="font-weight-bold">Create order via IPFS hash</label>
       <form
         className="d-flex"
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           if (!encryptedData) {
             return
           }
 
-          fetch(`${config.ipfsGateway}/ipfs/${encryptedData}`).then(res => {
+          fetch(`${config.ipfsGateway}/ipfs/${encryptedData}`).then((res) => {
             if (!res.ok) {
               console.log('Not OK')
               return
@@ -39,7 +39,7 @@ const AdminConsole = () => {
               credentials: 'include',
               method: 'POST',
               body: JSON.stringify({ encryptedData })
-            }).then(saveRes => {
+            }).then((saveRes) => {
               if (!saveRes.ok) {
                 console.log('Not OK')
                 return
@@ -54,7 +54,7 @@ const AdminConsole = () => {
           placeholder="Encrypted IPFS Hash"
           style={{ maxWidth: 300 }}
           value={encryptedData}
-          onChange={e => setEncryptedData(e.target.value)}
+          onChange={(e) => setEncryptedData(e.target.value)}
         />
         <button type="submit" className="btn btn-outline-primary ml-3">
           Submit
@@ -63,7 +63,7 @@ const AdminConsole = () => {
       <label className="mt-4 font-weight-bold">Send confirmation email</label>
       <form
         className="d-flex"
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           if (!orderId) {
             return
@@ -76,7 +76,7 @@ const AdminConsole = () => {
             },
             credentials: 'include',
             method: 'POST'
-          }).then(saveRes => {
+          }).then((saveRes) => {
             if (!saveRes.ok) {
               console.log('Not OK')
               return
@@ -90,7 +90,7 @@ const AdminConsole = () => {
           placeholder="Order ID"
           style={{ maxWidth: 300 }}
           value={orderId}
-          onChange={e => setOrderId(e.target.value)}
+          onChange={(e) => setOrderId(e.target.value)}
         />
         <button type="submit" className="btn btn-outline-primary ml-3">
           Submit
@@ -99,7 +99,7 @@ const AdminConsole = () => {
       <label className="mt-4 font-weight-bold">Read encrypted hash</label>
       <form
         className="d-flex"
-        onSubmit={async e => {
+        onSubmit={async (e) => {
           e.preventDefault()
           if (!readHash) {
             return
@@ -129,7 +129,7 @@ const AdminConsole = () => {
           placeholder="IPFS Hash"
           style={{ maxWidth: 300 }}
           value={readHash}
-          onChange={e => setReadHash(e.target.value)}
+          onChange={(e) => setReadHash(e.target.value)}
         />
         <button type="submit" className="btn btn-outline-primary ml-3">
           Submit
@@ -139,7 +139,7 @@ const AdminConsole = () => {
       <label className="mt-4 font-weight-bold">Emit ListingUpdated event</label>
       <form
         className="d-flex"
-        onSubmit={async e => {
+        onSubmit={async (e) => {
           e.preventDefault()
           if (!shopIpfsHash) {
             return
@@ -150,7 +150,7 @@ const AdminConsole = () => {
           console.log('Calling ListingUpdated...')
           updateListing({ config, shopIpfsHash })
             .then(() => console.log('Listing updated successfully'))
-            .catch(err => console.error('Listing update failed', err.message))
+            .catch((err) => console.error('Listing update failed', err.message))
         }}
       >
         <input
@@ -158,7 +158,7 @@ const AdminConsole = () => {
           placeholder="IPFS Hash"
           style={{ maxWidth: 300 }}
           value={shopIpfsHash}
-          onChange={e => setShopIpfsHash(e.target.value)}
+          onChange={(e) => setShopIpfsHash(e.target.value)}
         />
         <button type="submit" className="btn btn-outline-primary ml-3">
           Submit
@@ -168,7 +168,7 @@ const AdminConsole = () => {
       <label className="mt-4 font-weight-bold">Sync Printful</label>
       <form
         className="d-flex"
-        onSubmit={async e => {
+        onSubmit={async (e) => {
           e.preventDefault()
           fetch(`${config.backend}/shop/sync-printful`, {
             headers: {
@@ -177,7 +177,7 @@ const AdminConsole = () => {
             },
             credentials: 'include',
             method: 'POST'
-          }).then(saveRes => {
+          }).then((saveRes) => {
             if (!saveRes.ok) {
               console.log('Not OK')
               return

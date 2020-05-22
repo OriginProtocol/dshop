@@ -13,20 +13,17 @@ const tokenAbi = [
   'function allowance(address owner, address spender) view returns (uint256)',
   'function approve(address spender, uint256 value) returns (bool)',
   'function decimals() view returns (uint8)',
-  'function symbol() view returns (string)',
+  'function symbol() view returns (string)'
 ]
 
 const marketplaceAbi = [
   'function makeOffer(uint listingID, bytes32 ipfsHash, uint finalizes, address affiliate, uint256 commission, uint value, address currency, address arbitrator) payable',
-  'event OfferCreated (address indexed party, uint indexed listingID, uint indexed offerID, bytes32 ipfsHash)',
+  'event OfferCreated (address indexed party, uint indexed listingID, uint indexed offerID, bytes32 ipfsHash)'
 ]
 
 function useOrigin() {
   const provider = new ethers.providers.Web3Provider(window.ethereum)
   const signer = provider.getSigner()
-
-  window.ethers = ethers
-  window.provider = provider
 
   const contracts = networks[localStorage.ognNetwork || 'localhost']
 

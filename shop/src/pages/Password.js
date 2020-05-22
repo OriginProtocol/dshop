@@ -28,7 +28,7 @@ const Password = () => {
         (BAT) or on <a href="https://reddit.com/r/BATProject">Reddit</a>!
       </div>
       <form
-        onSubmit={e => {
+        onSubmit={(e) => {
           e.preventDefault()
           setError('')
           if (password === '') {
@@ -42,7 +42,7 @@ const Password = () => {
             },
             body: JSON.stringify({ password }),
             credentials: 'include'
-          }).then(async response => {
+          }).then(async (response) => {
             if (response.status === 200) {
               const data = await response.json()
               if (!data.success) {
@@ -57,7 +57,7 @@ const Password = () => {
           <input
             type="password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             className={`form-control mb-2 mr-sm-2${error ? ' is-invalid' : ''}`}
             placeholder="Enter password"
           />

@@ -27,7 +27,7 @@ const AffiliateBanner = () => {
       <Link
         to="/affiliates"
         className="btn btn-dark"
-        onClick={e => e.preventDefault()}
+        onClick={(e) => e.preventDefault()}
       >
         Learn more
       </Link>

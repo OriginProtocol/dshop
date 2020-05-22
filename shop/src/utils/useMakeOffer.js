@@ -13,7 +13,7 @@ function useMakeOffer({
   activeToken,
   encryptedData,
   onChange,
-  buttonText,
+  buttonText
 }) {
   const { signer, ogn, marketplace } = useOrigin()
   const { config } = useConfig()
@@ -45,7 +45,7 @@ function useMakeOffer({
         totalPrice: { amount: 0, currency: 'encrypted' },
         commission: { currency: 'OGN', amount: '0' },
         finalizes,
-        encryptedData: encryptedData.hash,
+        encryptedData: encryptedData.hash
       })
 
       marketplace
@@ -59,7 +59,7 @@ function useMakeOffer({
           currency,
           address,
           {
-            value: activeToken.id === 'token-ETH' ? amountWei : 0,
+            value: activeToken.id === 'token-ETH' ? amountWei : 0
           }
         )
         .then((tx) => {

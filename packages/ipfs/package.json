@@ -21,6 +21,8 @@
   },
   "prettier": {
     "semi": false,
-    "singleQuote": true
+    "singleQuote": true,
+    "proseWrap": "always",
+    "trailingComma": "none"
   }
 }

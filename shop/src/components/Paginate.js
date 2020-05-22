@@ -34,7 +34,7 @@ const Paginate = ({ total }) => {
         <a
           className="page-link"
           href="#"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault()
             if (hasPrevious) {
               handlePage(page - 1)
@@ -49,7 +49,7 @@ const Paginate = ({ total }) => {
           <a
             className="page-link"
             href="#"
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault()
               if (page !== i + 1) {
                 handlePage(i + 1)
@@ -64,7 +64,7 @@ const Paginate = ({ total }) => {
         <a
           className="page-link"
           href="#"
-          onClick={e => {
+          onClick={(e) => {
             e.preventDefault()
             if (hasNext) {
               handlePage(page + 1)

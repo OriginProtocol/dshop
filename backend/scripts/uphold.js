@@ -14,9 +14,9 @@ async function go() {
   console.log(`Logged in as ${me.email}`)
 
   const cards = await uphold.getCards()
-  cards.items.forEach(card => {
+  cards.items.forEach((card) => {
     // console.log(card)
-    const norm = card.normalized.find(n => n.currency === 'USD')
+    const norm = card.normalized.find((n) => n.currency === 'USD')
     console.log(
       `${card.label}: $${norm.balance} (${card.balance} ${card.currency})`
     )

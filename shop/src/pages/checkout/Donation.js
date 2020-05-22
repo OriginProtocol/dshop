@@ -50,7 +50,7 @@ const Donation = ({ cart }) => {
   return (
     <form
       className="donation"
-      onSubmit={async e => {
+      onSubmit={async (e) => {
         e.preventDefault()
         if (other || isMobile) {
           if (otherValue.match(/^[0-9]+$/)) {
@@ -79,7 +79,7 @@ const Donation = ({ cart }) => {
         </div>
         {isMobile ? null : (
           <div className="btn-group">
-            {amounts.map(amount => (
+            {amounts.map((amount) => (
               <Btn key={amount} {...props} amount={amount} />
             ))}
 
@@ -103,7 +103,7 @@ const Donation = ({ cart }) => {
                 className={`form-control${error ? ' is-invalid' : ''}`}
                 placeholder="Other Amount"
                 value={otherValue}
-                onChange={e => {
+                onChange={(e) => {
                   const value = e.target.value
                   setOtherValue(value)
                 }}

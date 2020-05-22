@@ -11,7 +11,7 @@ const SortBy = () => {
       <select
         className="form-control form-control-sm"
         value={opts.sort || 'manual'}
-        onChange={e => {
+        onChange={(e) => {
           const sort = e.target.value
           history.replace({
             pathname: location.pathname,

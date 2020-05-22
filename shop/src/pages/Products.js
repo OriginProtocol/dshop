@@ -26,7 +26,7 @@ const Products = () => {
   const { start, end } = usePaginate()
 
   const collectionParam = get(match, 'params.collection')
-  let collection = collections.find(c => c.id === collectionParam)
+  let collection = collections.find((c) => c.id === collectionParam)
   if (!collection && collectionParam === 'all') {
     collection = { id: 'all', title: 'All Products' }
   }
@@ -36,12 +36,12 @@ const Products = () => {
   if (productIndex && isSearch) {
     filteredProducts = productIndex
       .search({ query: opts.q, depth: 1 })
-      .map(p => products.find(product => product.id === p))
-      .filter(p => p)
+      .map((p) => products.find((product) => product.id === p))
+      .filter((p) => p)
   } else if (collection && collection.products) {
     filteredProducts = collection.products
-      .map(p => products.find(product => product.id === p))
-      .filter(p => p)
+      .map((p) => products.find((product) => product.id === p))
+      .filter((p) => p)
   }
 
   filteredProducts = sortProducts(filteredProducts, opts.sort)

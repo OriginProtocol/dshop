@@ -38,7 +38,7 @@ const Zoom = ({ pics = [], onClose, initialActive }) => {
         <a
           href="#prev"
           className="prev"
-          onClick={e => {
+          onClick={(e) => {
             e.stopPropagation()
             e.preventDefault()
             setActive(active === 0 ? pics.length - 1 : active - 1)
@@ -52,7 +52,7 @@ const Zoom = ({ pics = [], onClose, initialActive }) => {
         <a
           href="#next"
           className="next"
-          onClick={e => {
+          onClick={(e) => {
             e.stopPropagation()
             e.preventDefault()
             setActive(active === pics.length - 1 ? 0 : active + 1)
@@ -62,7 +62,7 @@ const Zoom = ({ pics = [], onClose, initialActive }) => {
       <a
         href="#close"
         className="close"
-        onClick={e => {
+        onClick={(e) => {
           e.stopPropagation()
           e.preventDefault()
           onClose(active)
@@ -109,7 +109,7 @@ const Gallery = ({ pics = [], active: activeImage, onChange }) => {
         <Zoom
           pics={pics}
           initialActive={active}
-          onClose={lastActive => {
+          onClose={(lastActive) => {
             setZoom(false)
             setActive(lastActive)
           }}
@@ -124,7 +124,7 @@ const Gallery = ({ pics = [], active: activeImage, onChange }) => {
           <a
             href="#prev"
             className="prev"
-            onClick={e => {
+            onClick={(e) => {
               e.stopPropagation()
               e.preventDefault()
               setActive(active === 0 ? pics.length - 1 : active - 1)
@@ -135,7 +135,7 @@ const Gallery = ({ pics = [], active: activeImage, onChange }) => {
           <a
             href="#next"
             className="next"
-            onClick={e => {
+            onClick={(e) => {
               e.stopPropagation()
               e.preventDefault()
               setActive(active === pics.length - 1 ? 0 : active + 1)

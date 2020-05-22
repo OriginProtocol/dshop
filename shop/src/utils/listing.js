@@ -9,7 +9,7 @@ const abi = [
   'function createListing(bytes32, uint256, address)',
   'function updateListing(uint256, bytes32, uint256)',
   'event ListingCreated (address indexed party, uint indexed listingID, bytes32 ipfsHash)',
-  'event ListingUpdated (address indexed party, uint indexed listingID, bytes32 ipfsHash)',
+  'event ListingUpdated (address indexed party, uint indexed listingID, bytes32 ipfsHash)'
 ]
 
 // Base template for marketplace listing data.
@@ -29,7 +29,7 @@ const baseListing = {
   commission: { currency: 'OGN', amount: '0' },
   commissionPerUnit: { currency: 'OGN', amount: '0' },
   requiresShipping: false,
-  unitsTotal: 1000,
+  unitsTotal: 1000
 }
 
 /**
@@ -118,8 +118,6 @@ export async function createListing({ title, network }) {
   const tx = await contract.createListing(bytes32Hash, 0, address)
   const receipt = await tx.wait()
 
-  window.receipt = receipt
-
   const listingCreated = receipt.events.find(
     (e) => e.event === 'ListingCreated'
   )
@@ -193,7 +191,7 @@ export async function updateListing({ config, shopIpfsHash }) {
   const updatedListingData = {
     ...baseListing,
     title: config.title,
-    shopIpfsHash,
+    shopIpfsHash
   }
 
   // Upload the listing's JSON data to IPFS.

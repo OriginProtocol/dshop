@@ -12,7 +12,7 @@ function getEventObj(event) {
   let decodedLog = {},
     eventAbi = {}
   eventAbi = Marketplace._jsonInterface.find(
-    i => i.signature === event.topics[0]
+    (i) => i.signature === event.topics[0]
   )
   if (eventAbi) {
     decodedLog = w3.eth.abi.decodeLog(

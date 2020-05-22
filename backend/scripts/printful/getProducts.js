@@ -12,7 +12,7 @@ async function getProducts({ apiAuth, OutputDir }) {
 
   console.log(`Synced ${json.result.length} products from Printful`)
 
-  return json.result.map(d => d.id)
+  return json.result.map((d) => d.id)
 }
 
 module.exports = getProducts

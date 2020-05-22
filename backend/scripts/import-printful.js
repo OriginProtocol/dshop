@@ -63,7 +63,7 @@ async function writePrintfulIds() {
   const shopifyPrintful = JSON.parse(shopifyPrintfulRaw)
 
   const printfulIds = Object.keys(shopifyIds).reduce((m, o) => {
-    m[o] = shopifyIds[o].variants.map(v => shopifyPrintful[String(v)])
+    m[o] = shopifyIds[o].variants.map((v) => shopifyPrintful[String(v)])
     return m
   }, {})
 
@@ -84,7 +84,7 @@ async function matchPrintfulToExisting({ OutputDir }) {
   const printfulIds = {}
   for (const printfulProduct of printfulProducts) {
     console.log(`Printful product: ${printfulProduct.name}`)
-    const product = products.find(p => p.title === printfulProduct.name)
+    const product = products.find((p) => p.title === printfulProduct.name)
     if (product) {
       console.log(`✅ Found product ${product.title}`)
       const ppRaw = fs.readFileSync(
@@ -99,7 +99,7 @@ async function matchPrintfulToExisting({ OutputDir }) {
         )
       } else {
         for (var i = 0; i < d.variants.length; i++) {
-          const opts = d.variants[i].options.filter(o => o)
+          const opts = d.variants[i].options.filter((o) => o)
           const pVariant = pp.sync_variants[i]
           console.log(
             `${opts.join(', ')} - ${pVariant.name.replace(
@@ -108,7 +108,7 @@ async function matchPrintfulToExisting({ OutputDir }) {
             )}`
           )
         }
-        printfulIds[d.id] = pp.sync_variants.map(s => s.id)
+        printfulIds[d.id] = pp.sync_variants.map((s) => s.id)
       }
     } else {
       console.log('❌ No corresponding product found.')

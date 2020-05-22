@@ -51,7 +51,7 @@ const AdminDiscounts = () => {
             </tr>
           </thead>
           <tbody>
-            {discounts.map(discount => (
+            {discounts.map((discount) => (
               <tr
                 key={discount.id}
                 onClick={() => {

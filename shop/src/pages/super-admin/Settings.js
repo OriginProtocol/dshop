@@ -14,7 +14,7 @@ function validate(state) {
     newState.domainError = 'Enter a domain'
   }
 
-  const valid = Object.keys(newState).every(f => f.indexOf('Error') < 0)
+  const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
 
   return { valid, newState: { ...state, ...newState } }
 }
@@ -45,13 +45,13 @@ const SuperAdminSettings = () => {
 
   const { config } = useConfig()
   const [state, setStateRaw] = useState(defaultValues)
-  const setState = newState => setStateRaw({ ...state, ...newState })
+  const setState = (newState) => setStateRaw({ ...state, ...newState })
 
   useEffect(() => {
     fetch(`${config.backend}/networks/${networkConfig.networkId}`, {
       headers: { 'content-type': 'application/json' },
       credentials: 'include'
-    }).then(async res => {
+    }).then(async (res) => {
       if (res.ok) {
         const json = await res.json()
         setState(json)
@@ -59,13 +59,13 @@ const SuperAdminSettings = () => {
     })
   }, [])
 
-  const input = formInput(state, newState => setState(newState))
+  const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
 
   return (
     <form
       className="mt-3"
-      onSubmit={async e => {
+      onSubmit={async (e) => {
         e.preventDefault()
         const { valid, newState } = validate(state)
         setState(newState)

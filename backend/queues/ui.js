@@ -10,7 +10,7 @@ const { authSuperUser } = require('../routes/_auth')
  * @param {*} app
  */
 function noUi(app) {
-  app.get('/super-admin/queue', authSuperUser, function(req, res) {
+  app.get('/super-admin/queue', authSuperUser, function (req, res) {
     res.send('Redis is not configured. Queuing disabled.')
   })
 }
@@ -35,7 +35,7 @@ function bullBoardUI(app) {
   app.use('/super-admin/queue', authSuperUser, UI)
 }
 
-module.exports = function(app) {
+module.exports = function (app) {
   if (REDIS_URL != undefined) {
     bullBoardUI(app)
   } else {

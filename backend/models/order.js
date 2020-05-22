@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   )
 
-  Order.associate = function(models) {
+  Order.associate = function (models) {
     Order.belongsTo(models.Shop, { as: 'shops', foreignKey: 'shopId' })
   }
 

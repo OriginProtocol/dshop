@@ -1,2 +1,5 @@
 - Use contract addresses from json
 - Verify in other web3 wallets
+- Order detail page for users with web3
+- Keep local shop files in backend subdir
+- Fix up Uphold payment method

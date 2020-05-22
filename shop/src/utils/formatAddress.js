@@ -1,7 +1,7 @@
 const upperFirst = require('lodash/upperFirst')
 
 function formatAddress(data, prefix) {
-  const field = name => (prefix ? `${prefix}${upperFirst(name)}` : name)
+  const field = (name) => (prefix ? `${prefix}${upperFirst(name)}` : name)
 
   if (!data) return []
   const address = []

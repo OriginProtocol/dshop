@@ -39,11 +39,11 @@ async function getSizeGuide({ OutputDir, productId }) {
     const isOld = body.match(/sizeGuideTablePar.isOldSizeGuide = true;/)
     const { data, productSizes } = isOld ? getOldData(body) : getNewData(body)
 
-    const measurements = Object.keys(data).map(key => ({
+    const measurements = Object.keys(data).map((key) => ({
       name: key,
       type: productId === 186 ? '' : data[key].type // Exclude socks
     }))
-    const sizes = productSizes.map(size => {
+    const sizes = productSizes.map((size) => {
       const values = measurements.reduce((m, key) => {
         m[key.name] = data[key.name].values[size].join(' - ')
         return m

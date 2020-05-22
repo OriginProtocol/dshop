@@ -14,7 +14,7 @@ const CartItem = ({ item }) => {
 
   if (!product) return null
 
-  let variant = product.variants.find(v => v.id === item.variant)
+  let variant = product.variants.find((v) => v.id === item.variant)
   if (!variant) {
     variant = product
   }

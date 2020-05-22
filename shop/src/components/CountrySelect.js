@@ -5,7 +5,7 @@ import { Countries } from 'data/Countries'
 
 const CountrySelect = ({ className, value, onChange }) => {
   const countries = sortBy(
-    Object.keys(Countries).map(c => ({
+    Object.keys(Countries).map((c) => ({
       code: c.code,
       title: c
     })),

@@ -32,7 +32,7 @@ async function generateMockups({
   let taskJson = {}
 
   while (get(taskJson, 'result.status') !== 'completed') {
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
     const taskRes = await fetch(
       `${PrintfulURL}/mockup-generator/task?task_key=${result.task_key}`,
       {

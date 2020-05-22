@@ -59,7 +59,7 @@ const App = ({ location, config }) => {
         authorization: `bearer ${config.backendAuthToken}`
       },
       credentials: 'include'
-    }).then(async response => {
+    }).then(async (response) => {
       setPasswordLoading(false)
       if (response.status === 200) {
         const data = await response.json()

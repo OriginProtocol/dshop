@@ -8,7 +8,7 @@ import get from 'lodash/get'
 import upperFirst from 'lodash/upperFirst'
 
 const ShippingForm = ({ prefix = '', state, setState, input, Feedback }) => {
-  const field = name => (prefix ? `${prefix}${upperFirst(name)}` : name)
+  const field = (name) => (prefix ? `${prefix}${upperFirst(name)}` : name)
   const country = Countries[state[field('country')] || 'United States']
 
   return (
@@ -44,7 +44,7 @@ const ShippingForm = ({ prefix = '', state, setState, input, Feedback }) => {
           <CountrySelect
             className="form-control"
             value={state[field('country')]}
-            onChange={e => {
+            onChange={(e) => {
               const provinces = get(Countries[e.target.value], 'provinces')
               setState({
                 [field('country')]: e.target.value,

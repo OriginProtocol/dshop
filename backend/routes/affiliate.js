@@ -30,12 +30,12 @@ function authAffiliate(req, res, next) {
  * Formats a BigQuery product row into a dshop product obj
  */
 function bqProductFormatter(product) {
-  const listingIdFromProductId = id => {
+  const listingIdFromProductId = (id) => {
     const parts = id.split('-')
     parts.pop()
     return parts.join('-')
   }
-  const makeId = product => {
+  const makeId = (product) => {
     // product ID is only in the IPFS path returned
     const productId = product.ipfs_path.split('/')[2]
     // listing ID is part of the "product_id" returned by BQ
@@ -87,7 +87,7 @@ async function fetchAffiliateProducts({ listingId, credentials, table }) {
   const seen = new Set()
 
   return rows
-    .filter(row => {
+    .filter((row) => {
       if (seen.has(row.ipfs_path)) {
         return false
       }
@@ -95,10 +95,10 @@ async function fetchAffiliateProducts({ listingId, credentials, table }) {
       return true
     })
     .slice(0, 50)
-    .map(row => bqProductFormatter(row))
+    .map((row) => bqProductFormatter(row))
 }
 
-module.exports = function(app) {
+module.exports = function (app) {
   app.post('/affiliate/login', authShop, authAffiliate, async (req, res) => {
     res.json({ authed: true, account: req.affiliate })
   })
@@ -115,7 +115,7 @@ module.exports = function(app) {
       commissionPaid: 0
     }
 
-    orders.forEach(order => {
+    orders.forEach((order) => {
       if (order.statusStr === 'OfferFinalized') {
         results.completedOrders += 1
       } else {

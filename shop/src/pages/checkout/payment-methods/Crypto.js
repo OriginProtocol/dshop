@@ -13,7 +13,7 @@ import { useStateValue } from 'data/state'
 const DefaultTokens = [
   { id: 'token-OGN', name: 'OGN' },
   { id: 'token-DAI', name: 'DAI' },
-  { id: 'token-ETH', name: 'ETH' },
+  { id: 'token-ETH', name: 'ETH' }
 ]
 
 const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
@@ -45,7 +45,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
         !activeToken.id ||
         !token.hasBalance ||
         !token.hasAllowance ||
-        token.loading,
+        token.loading
     }
     if (activeToken.id) {
       newState.buttonText = `Pay ${toTokenPrice(
@@ -65,7 +65,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
         onChange={() => {
           dispatch({
             type: 'updatePaymentMethod',
-            method: cryptoPaymentMethod,
+            method: cryptoPaymentMethod
           })
         }}
       />

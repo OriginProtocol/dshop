@@ -148,7 +148,7 @@ async function go() {
     { WebSocket }
   )
 
-  ws.addEventListener('error', err => {
+  ws.addEventListener('error', (err) => {
     console.log('WS error:', err.message)
   })
   ws.addEventListener('close', function clear() {

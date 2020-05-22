@@ -99,7 +99,7 @@ async function _fetchListingInfo(graphqlUrl, ipfsGatewayUrl, listingId) {
   if (!events) {
     throw new Error('Graphql did not return any event for the listing')
   }
-  const filteredEvents = events.filter(e =>
+  const filteredEvents = events.filter((e) =>
     ['ListingCreated', 'ListingUpdated'].includes(e.event)
   )
   if (!filteredEvents.length) {
@@ -287,7 +287,7 @@ async function updateListing({
 // MAIN
 //
 const args = {}
-process.argv.forEach(arg => {
+process.argv.forEach((arg) => {
   const t = arg.split('=')
   const argVal = t.length > 1 ? t[1] : true
   args[t[0]] = argVal
@@ -339,7 +339,7 @@ updateListing({
     console.log('Finished')
     process.exit()
   })
-  .catch(err => {
+  .catch((err) => {
     console.log('Failure: ', err)
     console.log('Exiting')
     process.exit(-1)

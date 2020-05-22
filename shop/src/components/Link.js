@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-const ScrollToTopLink = props => {
+const ScrollToTopLink = (props) => {
   let { to } = props
   if (typeof to === 'string') {
     to = { pathname: to, state: { scrollToTop: true } }

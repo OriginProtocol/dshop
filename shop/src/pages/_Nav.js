@@ -22,7 +22,7 @@ const Nav = () => {
         className={`navbar navbar-expand-md${affiliate ? ' border-top-0' : ''}`}
       >
         <div className="container bb">
-          <form className="form-inline" onSubmit={e => e.preventDefault()}>
+          <form className="form-inline" onSubmit={(e) => e.preventDefault()}>
             <Search />
           </form>
           <button className="navbar-toggler">

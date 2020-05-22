@@ -21,12 +21,14 @@ const Chart = ({ orders = [], numDays = 10 }) => {
       .reverse()
 
     const labels = [
-      ...days.map(d => d.format('ddd Do')).slice(0, numDays - 1),
+      ...days.map((d) => d.format('ddd Do')).slice(0, numDays - 1),
       'Today'
     ]
 
-    const byDay = groupBy(orders, o => dayjs(o.createdAt).format('YYYY-MM-DD'))
-    const seriesRaw = days.map(d => {
+    const byDay = groupBy(orders, (o) =>
+      dayjs(o.createdAt).format('YYYY-MM-DD')
+    )
+    const seriesRaw = days.map((d) => {
       const day = dayjs(d).format('YYYY-MM-DD')
       return get(byDay, `[${day}].length`, 0)
     })
@@ -38,7 +40,7 @@ const Chart = ({ orders = [], numDays = 10 }) => {
       { axisY: { offset: 20 }, axisX: { showGrid: false } }
     )
 
-    chart.on('draw', function(data) {
+    chart.on('draw', function (data) {
       if (data.type === 'bar') {
         const node = data.element.getNode()
         let instance

@@ -20,7 +20,9 @@ async function validate(dataDir) {
     where: { shopId: shop.id },
     limit: 500
   })
-  const encryptedHashes = orders.map(o => o.encryptedIpfsHash).filter(i => i)
+  const encryptedHashes = orders
+    .map((o) => o.encryptedIpfsHash)
+    .filter((i) => i)
   console.log(`Found ${encryptedHashes.length} orders with encrypted hashes`)
 
   const stripe = stripeRaw(stripeKey)
@@ -28,7 +30,7 @@ async function validate(dataDir) {
   let after
 
   do {
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       const eventArgs = {
         limit: 100,
         type: 'payment_intent.succeeded',
@@ -36,9 +38,9 @@ async function validate(dataDir) {
       }
       console.log(`Fetching events after ${after}`)
 
-      stripe.events.list(eventArgs, function(err, events) {
+      stripe.events.list(eventArgs, function (err, events) {
         console.log(`Found ${events.data.length} completed Stripe payments`)
-        events.data.forEach(item => {
+        events.data.forEach((item) => {
           const { shopId, encryptedData } = item.data.object.metadata
           if (Number(shopId) !== shop.id) {
             /* Ignore */
