@@ -57,7 +57,7 @@ RUN yarn run build:dist
 
 WORKDIR $APP_DIR/backend
 
-RUN cp -r ../node_modules/openpgp/dist public
+RUN cp -r ../node_modules/openpgp/dist dist
 
 ######
 # Cleanup after dapp build
