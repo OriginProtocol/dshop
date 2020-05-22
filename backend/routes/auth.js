@@ -5,6 +5,7 @@ const {
   authSellerAndShop,
   authRole
 } = require('./_auth')
+const fs = require('fs')
 const { createSeller } = require('../utils/sellers')
 const encConf = require('../utils/encryptedConfig')
 const { validateConfig } = require('../utils/validators')
@@ -73,7 +74,13 @@ module.exports = function (app) {
     const shops = await Shop.findAll({
       where: { networkId },
       order: [['createdAt', 'desc']]
-    })
+    }).map((s) => ({
+      ...s.dataValues,
+      viewable: fs.existsSync(
+        `${__dirname}/../data/${s.authToken}/data/config.json`
+      )
+    }))
+
     if (!shops.length) {
       return res.json({
         success: false,

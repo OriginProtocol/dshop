@@ -61,31 +61,29 @@ const SuperAdmin = () => {
   }
 
   return (
-    <div className="backend-admin">
-      <div className="admin">
-        <nav>
-          <div className="container">
-            <h1>
-              <img src="images/dshop-logo.svg" />
-              <div>Super Admin</div>
-            </h1>
-            <div>{`Welcome, ${admin.email}`}</div>
-          </div>
-        </nav>
+    <div className="admin">
+      <nav>
         <div className="container">
-          <div className="row">
-            <div className="col-md-3">
-              <Menu />
-            </div>
-            <div className="col-md-9">
-              <Switch>
-                <Route path="/super-admin/shops/new" component={NewShop} />
-                <Route path="/super-admin/shops" component={Shops} />
-                <Route path="/super-admin/settings" component={Settings} />
-                <Route path="/super-admin/dashboard" component={Dashboard} />
-                <Redirect to="/super-admin/dashboard" />
-              </Switch>
-            </div>
+          <h1>
+            <img src="images/dshop-logo.svg" />
+            <div>Super Admin</div>
+          </h1>
+          <div>{`Welcome, ${admin.email}`}</div>
+        </div>
+      </nav>
+      <div className="container">
+        <div className="row">
+          <div className="col-md-3">
+            <Menu />
+          </div>
+          <div className="col-md-9">
+            <Switch>
+              <Route path="/super-admin/shops/new" component={NewShop} />
+              <Route path="/super-admin/shops" component={Shops} />
+              <Route path="/super-admin/settings" component={Settings} />
+              <Route path="/super-admin/dashboard" component={Dashboard} />
+              <Redirect to="/super-admin/dashboard" />
+            </Switch>
           </div>
         </div>
       </div>
@@ -96,4 +94,6 @@ const SuperAdmin = () => {
 export default SuperAdmin
 
 require('react-styl')(`
+  .admin table a
+    color: #007bff
 `)

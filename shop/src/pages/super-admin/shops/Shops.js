@@ -26,7 +26,7 @@ const AdminShops = () => {
             <th>Name</th>
             <th>Listing ID</th>
             <th>Created</th>
-            <th>Data Dir</th>
+            <th />
           </tr>
         </thead>
         <tbody>
@@ -41,15 +41,17 @@ const AdminShops = () => {
               <td>{shop.listingId}</td>
               <td>{dayjs(shop.createdAt).format('MMM D, h:mm A')}</td>
               <td>
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    sessionStorage.dataDir = shop.authToken
-                    window.open(location.origin)
-                  }}
-                  children={shop.authToken}
-                />
+                {!shop.viewable ? null : (
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      sessionStorage.dataDir = shop.authToken
+                      window.open(location.origin)
+                    }}
+                    children="View"
+                  />
+                )}
               </td>
             </tr>
           ))}

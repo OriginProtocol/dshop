@@ -134,6 +134,9 @@ app.get('/', (req, res) => {
 
 app.get('*', (req, res, next) => {
   const split = req.path.split('/')
+  if (split.length <= 2) {
+    return next()
+  }
   const dataDir = split[1]
   const dir = `${__dirname}/data/${dataDir}/data`
   req.url = split.slice(2).join('/')
