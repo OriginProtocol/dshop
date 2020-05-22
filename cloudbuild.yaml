@@ -37,3 +37,5 @@ steps:
           "gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)" \
           "gcr.io/${PROJECT_ID}/experimental/dshop-backend:latest" \
           --quiet  
+
+timeout: '1800s'
