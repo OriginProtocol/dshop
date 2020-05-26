@@ -182,7 +182,8 @@ module.exports = function (app) {
         stripeWebhookSecret: '',
         pgpPublicKey: req.body.pgpPublicKey,
         pgpPrivateKey: req.body.pgpPrivateKey,
-        pgpPrivateKeyPass: req.body.pgpPrivateKeyPass
+        pgpPrivateKeyPass: req.body.pgpPrivateKeyPass,
+        web3Pk: req.body.web3Pk
       })
     })
 

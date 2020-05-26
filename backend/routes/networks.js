@@ -22,7 +22,8 @@ module.exports = function (app) {
         cloudflareEmail: req.body.cloudflareEmail,
         cloudflareApiKey: req.body.cloudflareApiKey,
         gcpCredentials: req.body.gcpCredentials,
-        domain: req.body.domain
+        domain: req.body.domain,
+        deployDir: req.body.deployDir
       })
     }
 
