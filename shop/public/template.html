@@ -65,11 +65,7 @@
     openpgp.config.show_version = false
     openpgp.initWorker({ path: '<%= htmlWebpackPlugin.options.absolute ? '/' : '' %>dist/openpgp.worker.min.js' })
   }
-</script>
-<script>
-  localStorage.metaMaskEnabled = true
   localStorage.ognNetwork = "<%= htmlWebpackPlugin.options.network %>"
-  localStorage.customConfig = '{"performanceMode":false,"proxyAccountsEnabled":false,"relayerEnabled":false<% if (htmlWebpackPlugin.options.provider) { %>,"provider":"<%= htmlWebpackPlugin.options.provider %>"<% } %>}'
 </script>
 <% _.forEach(htmlWebpackPlugin.files.js, function(file, index) { %>
 <% if (htmlWebpackPlugin.files.jsIntegrity) { %>

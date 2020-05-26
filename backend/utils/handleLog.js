@@ -7,9 +7,9 @@ const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
 const sendMail = require('./emailer')
 const { upsertEvent, getEventObj } = require('./events')
-const encConf = require('./encryptedConfig')
+const { getConfig } = require('./encryptedConfig')
 const discordWebhook = require('./discordWebhook')
-const { Order, Shop } = require('../models')
+const { Order, Shop, Network } = require('../models')
 
 const web3 = new Web3()
 const Marketplace = new web3.eth.Contract(abi)
@@ -83,6 +83,9 @@ async function insertOrderFromEvent({ offerId, event, shop }) {
   console.log(`${event.eventName} - ${event.offerId} by ${event.party}`)
   console.log(`IPFS Hash: ${event.ipfsHash}`)
 
+  const network = await Network.findOne({ where: { active: true } })
+  const networkConfig = getConfig(network.config)
+
   let order = await Order.findOne({
     where: {
       networkId: event.networkId,
@@ -105,7 +108,8 @@ async function insertOrderFromEvent({ offerId, event, shop }) {
   }
 
   try {
-    const dataUrl = await encConf.get(shop.id, 'dataUrl')
+    const shopConfig = getConfig(shop.config)
+    const { dataUrl, pgpPrivateKey, pgpPrivateKeyPass } = shopConfig
     const ipfsGateway = await getIPFSGateway(dataUrl, event.networkId)
     console.log('IPFS Gateway', ipfsGateway)
 
@@ -121,12 +125,9 @@ async function insertOrderFromEvent({ offerId, event, shop }) {
     const encryptedDataJson = await getText(ipfsGateway, encrypedHash, 10000)
     const encryptedData = JSON.parse(encryptedDataJson)
 
-    const PrivateKey = await encConf.get(shop.id, 'pgpPrivateKey')
-    const PrivateKeyPass = await encConf.get(shop.id, 'pgpPrivateKeyPass')
-
-    const privateKey = await openpgp.key.readArmored(PrivateKey)
+    const privateKey = await openpgp.key.readArmored(pgpPrivateKey)
     const privateKeyObj = privateKey.keys[0]
-    await privateKeyObj.decrypt(PrivateKeyPass)
+    await privateKeyObj.decrypt(pgpPrivateKeyPass)
 
     const message = await openpgp.message.readArmored(encryptedData.data)
     const options = { message, privateKeys: [privateKeyObj] }
@@ -168,6 +169,7 @@ async function insertOrderFromEvent({ offerId, event, shop }) {
     console.log('sendMail', data)
     sendMail(shop.id, data)
     discordWebhook({
+      url: networkConfig.discordWebhook,
       orderId: offerId,
       shopName: shop.name,
       total: `$${(data.total / 100).toFixed(2)}`,

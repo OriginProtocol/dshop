@@ -98,17 +98,7 @@ export async function getListingLatestIpfsHash(
  *   Format is <network id>-<contract version>-<listing id>
  *   For example: 1-001-123
  */
-export async function createListing({ title, network }) {
-  const enabled = await window.ethereum.enable()
-  if (!enabled) {
-    throw new Error(`Browser is not web3 enabled.`)
-  }
-  const provider = new ethers.providers.Web3Provider(window.ethereum)
-  const providerNetwork = await provider.send('net_version')
-  if (Number(providerNetwork) !== network.networkId) {
-    throw new Error(`Network should be ${network.networkId}`)
-  }
-
+export async function createListing({ title, network, provider }) {
   const signer = provider.getSigner()
   const address = await signer.getAddress()
 

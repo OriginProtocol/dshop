@@ -63,18 +63,19 @@ const CreateShop = () => {
   const [advanced, setAdvanced] = useState(false)
   const [ready, setReady] = useState()
   const [loading, setLoading] = useState(false)
+  const localShops = get(admin, 'localShops', [])
   const [state, setStateRaw] = useState({
     listingId: '',
     name: '',
     backend: get(window, 'location.origin'),
-    dataDir: 'data',
+    dataDir: localShops.length ? localShops[0] : 'data',
     hostname: '',
     printfulApi: '',
     pgpPublicKey: '',
     pgpPrivateKey: '',
     pgpPrivateKeyPass: '',
     web3Pk: '',
-    shopType: 'blank'
+    shopType: localShops.length ? 'local-dir' : 'blank'
   })
   const setState = (newState) => setStateRaw({ ...state, ...newState })
   const input = formInput(state, (newState) => setState(newState))
@@ -141,10 +142,12 @@ const CreateShop = () => {
         <div className="form-group col-md-6">
           <label>Shop type</label>
           <select {...input('shopType')}>
-            <option value="blank">Blank Template</option>
-            <option value="local-dir">From Local Dir</option>
-            <option value="clone-domain">Clone Domain</option>
-            <option value="clone-ipfs">Clone IPFS Hash</option>
+            <option value="blank">DB Entry Only</option>
+            {localShops.length ? (
+              <option value="local-dir">From Local Dir</option>
+            ) : null}
+            {/* <option value="clone-domain">Clone Domain</option> */}
+            {/* <option value="clone-ipfs">Clone IPFS Hash</option> */}
             <option value="printful">New Printful</option>
             <option value="single-product">New Single Product</option>
             <option value="multi-product">New Multi Product</option>
@@ -155,7 +158,7 @@ const CreateShop = () => {
           <div className="form-group col-md-6">
             <label>Data dir</label>
             <select {...input('dataDir')}>
-              {get(admin, 'localShops', []).map((localShop) => (
+              {localShops.map((localShop) => (
                 <option key={localShop}>{localShop}</option>
               ))}
             </select>

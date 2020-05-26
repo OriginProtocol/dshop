@@ -13,6 +13,7 @@ const AdminConsole = () => {
   const [orderId, setOrderId] = useState('')
   const [readHash, setReadHash] = useState('')
   const [shopIpfsHash, setShopIpfsHash] = useState('')
+  const [printfulError, setPrintfulError] = useState('')
 
   return (
     <div className="mt-4">
@@ -170,6 +171,7 @@ const AdminConsole = () => {
         className="d-flex"
         onSubmit={async (e) => {
           e.preventDefault()
+          setPrintfulError('')
           fetch(`${config.backend}/shop/sync-printful`, {
             headers: {
               authorization: `bearer ${config.backendAuthToken}`,
@@ -182,13 +184,20 @@ const AdminConsole = () => {
               console.log('Not OK')
               return
             }
-            console.log('OK')
+            saveRes.json().then(json => {
+              if (!json.success) {
+                setPrintfulError(json.reason)
+                return
+              }
+
+            })
           })
         }}
       >
         <button type="submit" className="btn btn-outline-primary">
           Sync
         </button>
+        {printfulError ? <div className="ml-3">{printfulError}</div> : null}
       </form>
     </div>
   )

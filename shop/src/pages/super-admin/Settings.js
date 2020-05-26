@@ -27,15 +27,7 @@ const defaultValues = {
   gcpCredentials: '',
   domain: '',
   web3Pk: '',
-  deployDir: ''
-
-  // provider: '',
-  // providerWs: '',
-  // ipfs: '',
-  // ipfsApi: '',
-  // marketplaceContract: '',
-  // marketplaceVersion: '',
-  // active: true
+  discordWebhook: ''
 }
 
 const SuperAdminSettings = () => {
@@ -146,11 +138,6 @@ const SuperAdminSettings = () => {
               {Feedback('ipfsApi')}
             </div>
           </div>
-          <div className="form-group">
-            <label>Deployment Dir (leave empty for tmp dir)</label>
-            <input {...input('deployDir')} />
-            {Feedback('deployDir')}
-          </div>
         </div>
       </div>
       <div className="row">
@@ -160,6 +147,17 @@ const SuperAdminSettings = () => {
               <label>GCP Service Account Credentials</label>
               <textarea {...input('gcpCredentials')}></textarea>
               {Feedback('gcpCredentials')}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="row">
+        <div className="col-md-6">
+          <div className="form-row">
+            <div className="form-group col-md-12">
+              <label>Discord Webhook</label>
+              <PasswordField field="discordWebhook" input={input} />
+              {Feedback('discordWebhook')}
             </div>
           </div>
         </div>

@@ -1,7 +1,4 @@
 node_modules
 .DS_Store
 db/*.db
-scripts/output
-tstEmail.js
 data/
-dist/

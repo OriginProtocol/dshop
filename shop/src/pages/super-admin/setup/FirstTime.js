@@ -32,9 +32,9 @@ const FirstTime = () => {
     <div className="container admin-first-time">
       <DshopLogo />
       {step === 'sign-up' ? (
-        <SignUp next={() => setStep('server-setup')} />
+        <SignUp />
       ) : step === 'server-setup' ? (
-        <ServerSetup next={() => setStep('create-shop')} />
+        <ServerSetup />
       ) : (
         <>
           <div className="mb-4">Create a Shop:</div>
