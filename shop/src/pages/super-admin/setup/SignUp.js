@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 
 import useConfig from 'utils/useConfig'
+import { useStateValue } from 'data/state'
 
-const SignUp = ({ next }) => {
+const SignUp = () => {
   const { config } = useConfig()
+  const [, dispatch] = useStateValue()
   const [state, setState] = useState({
     name: '',
     email: '',
@@ -39,8 +41,7 @@ const SignUp = ({ next }) => {
             .then(async (res) => {
               if (res.ok) {
                 setState({ ...state, error: '' })
-                // const auth = await res.json()
-                next()
+                dispatch({ type: 'reload', target: 'auth' })
               } else {
                 setState({ ...state, error: 'Unauthorized' })
               }

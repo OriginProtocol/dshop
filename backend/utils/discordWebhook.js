@@ -1,8 +1,6 @@
 const fetch = require('node-fetch')
 
-const url = process.env.DISCORD_WEBHOOK
-
-module.exports = function ({ shopName, orderId, total, items = [] }) {
+module.exports = function ({ url, shopName, orderId, total, items = [] }) {
   if (!url) {
     return
   }

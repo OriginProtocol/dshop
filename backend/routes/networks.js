@@ -66,7 +66,8 @@ module.exports = function (app) {
       'cloudflareEmail',
       'cloudflareApiKey',
       'domain',
-      'deployDir'
+      'deployDir',
+      'discordWebhook'
     ])
 
     const result = await Network.update(

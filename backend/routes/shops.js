@@ -94,11 +94,7 @@ module.exports = function (app) {
         return res.json({ success: false, reason: 'no-printful-api-key' })
       }
 
-      const networkConfig = getConfig(network.config)
-      if (!networkConfig.deployDir) {
-        return res.json({ success: false, reason: 'no-local-deploy-dir' })
-      }
-      const OutputDir = `${networkConfig.deployDir}/${shop.authToken}`
+      const OutputDir = `${__dirname}/../data/${shop.authToken}`
 
       await downloadProductData({ OutputDir, printfulApi: printful })
       await writeProductData({ OutputDir })
@@ -113,6 +109,18 @@ module.exports = function (app) {
    * Creates a new shop.
    */
   app.post('/shop', authSuperUser, async (req, res) => {
+    const { dataDir, pgpPublicKey, printfulApi, shopType, backend } = req.body
+    const OutputDir = `${__dirname}/../data/${dataDir}`
+
+    if (fs.existsSync(OutputDir)) {
+      return res.json({
+        success: false,
+        reason: 'invalid',
+        field: 'dataDir',
+        message: 'Already exists'
+      })
+    }
+
     const existingShop = await Shop.findOne({
       where: {
         [Sequelize.Op.or]: [
@@ -145,9 +153,7 @@ module.exports = function (app) {
       })
     }
 
-    const { dataDir, pgpPublicKey, printfulApi, shopType } = req.body
     let name = req.body.name
-    const OutputDir = `${__dirname}/../data/${dataDir}`
 
     if (req.body.shopType === 'local-dir') {
       const existingData = fs
@@ -157,14 +163,20 @@ module.exports = function (app) {
       name = json.fullTitle || json.title
     }
 
+    const zone = networkConfig.domain
+    const subdomain = req.body.hostname
+    const isLocal = zone === 'localhost'
+    const publicUrl = isLocal ? backend : `https://${subdomain}.${zone}`
+    const dataUrl = `${publicUrl}/${req.body.dataDir}/`
+
     const shopResponse = await createShop({
       sellerId: req.session.sellerId,
       listingId: req.body.listingId,
       name,
       authToken: req.body.dataDir,
       config: setConfig({
-        dataUrl: `https://${req.body.hostname}/${req.body.dataDir}/`,
-        publicUrl: '',
+        dataUrl,
+        publicUrl,
         printful: req.body.printfulApi,
         stripeBackend: '',
         stripeWebhookSecret: '',
@@ -280,17 +292,6 @@ module.exports = function (app) {
       )
     })
 
-    // if (networkConfig.deployDir) {
-    //   const rootPath = path.normalize(`${__dirname}/../../data/${dataDir}`)
-    //   if (!fs.existsSync(rootPath)) {
-    //     console.log('Creating symlink')
-    //     fs.symlinkSync(
-    //       path.normalize(`${networkConfig.deployDir}/${dataDir}/data`),
-    //       rootPath
-    //     )
-    //   }
-    // }
-
     // Deploy the shop to IPFS.
     let hash, ipfsGateway
     const publicDirPath = `${OutputDir}/public`
@@ -332,8 +333,6 @@ module.exports = function (app) {
 
     let domain
     if (networkConfig.cloudflareApiKey || networkConfig.gcpCredentials) {
-      const subdomain = req.body.hostname
-      const zone = networkConfig.domain
       domain = `https://${subdomain}.${zone}`
 
       const opts = {

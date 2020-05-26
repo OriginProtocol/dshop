@@ -27,6 +27,7 @@ require('react-styl')(`
         font-size: 1rem
         img
           max-height: 2.5rem
+          max-width: 12rem
         div
           display: flex
           align-items: center

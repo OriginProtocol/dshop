@@ -10,10 +10,9 @@ import CheckCircle from 'components/icons/CheckCircle'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
+import useOrigin from 'utils/useOrigin'
 import formatAddress from 'utils/formatAddress'
 import Summary from './checkout/Summary'
-
-import getOffer from 'data/getOffer'
 
 const OrderDetails = ({ cart }) => {
   const { config } = useConfig()
@@ -104,6 +103,7 @@ const OrderDetails = ({ cart }) => {
 
 const Order = () => {
   const { config } = useConfig()
+  const { getOffer } = useOrigin()
   const [cart, setCart] = useState()
   const [error, setError] = useState()
   const [, dispatch] = useStateValue()
@@ -113,7 +113,8 @@ const Order = () => {
 
   useEffect(() => {
     async function go() {
-      const result = await getOffer(match.params.tx, opts.auth, config)
+      const { tx } = match.params
+      const result = await getOffer({ tx, password: opts.auth })
       if (result) {
         setCart(result.cart)
         setError(false)
@@ -122,8 +123,10 @@ const Order = () => {
         setError(true)
       }
     }
-    go()
-  }, [match.params.tx, opts.auth])
+    if (getOffer) {
+      go()
+    }
+  }, [match.params.tx, opts.auth, getOffer])
 
   useEffect(() => {
     if (!window.orderCss) {

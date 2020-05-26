@@ -40,17 +40,33 @@ const AdminShops = () => {
               <td>{shop.name}</td>
               <td>{shop.listingId}</td>
               <td>{dayjs(shop.createdAt).format('MMM D, h:mm A')}</td>
-              <td>
+              <td className="text-right">
                 {!shop.viewable ? null : (
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      sessionStorage.dataDir = shop.authToken
-                      window.open(location.origin)
-                    }}
-                    children="View"
-                  />
+                  <>
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        sessionStorage.dataDir = shop.authToken
+                        window.open(location.origin)
+                      }}
+                      children="Storefront"
+                    />
+                    <span className="mx-2" style={{ color: '#999' }}>
+                      |
+                    </span>
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        sessionStorage.dataDir = shop.authToken
+                        window.open(
+                          `${location.origin}/#/admin/settings/server`
+                        )
+                      }}
+                      children="Admin"
+                    />
+                  </>
                 )}
               </td>
             </tr>

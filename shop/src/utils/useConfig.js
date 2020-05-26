@@ -15,11 +15,12 @@ function useConfig() {
 
   useEffect(() => {
     async function fetchConfig() {
-      config = { backend: '', firstTimeSetup: true }
+      const net = localStorage.ognNetwork || process.env.NETWORK
+      const netId = net === 'mainnet' ? '1' : net === 'rinkeby' ? '4' : '999'
+
+      config = { backend: '', firstTimeSetup: true, netId }
       setLoading(true)
       try {
-        const net = localStorage.ognNetwork || process.env.NETWORK
-        const netId = net === 'mainnet' ? '1' : net === 'rinkeby' ? '4' : '999'
         const url = `${dataUrl()}config.json`
         console.debug(`Loading config from ${url}...`)
         const raw = await fetch(url)

@@ -14,7 +14,8 @@ if (!dataDir) {
   console.log('Usage: node deploy.js [data_dir]')
   process.exit()
 }
-if (dataDir !== 'prime' && !fs.existsSync(`${__dirname}/../data/${dataDir}`)) {
+const fullPath = `${__dirname}/../../backend/data/${dataDir}/public`
+if (dataDir !== 'prime' && !fs.existsSync(fullPath)) {
   console.log(`data/${dataDir} not found`)
   process.exit()
 }
@@ -32,7 +33,7 @@ if (!process.env.PINATA_SECRET) {
 async function getFiles(dir) {
   const dirents = await readdir(dir, { withFileTypes: true })
   const files = await Promise.all(
-    dirents.map(dirent => {
+    dirents.map((dirent) => {
       const res = resolve(dir, dirent.name)
       return dirent.isDirectory() ? getFiles(res) : res
     })
@@ -41,37 +42,38 @@ async function getFiles(dir) {
 }
 
 async function download(url) {
-  await new Promise(resolve => {
+  await new Promise((resolve) => {
     const f = fs.createWriteStream('/dev/null').on('finish', resolve)
     console.log(`Priming ${url}`)
-    https.get(url, response => response.pipe(f))
+    https.get(url, (response) => response.pipe(f))
   })
 }
 
 async function prime(urlPrefix) {
-  const filesWithPath = await getFiles(`${__dirname}/../public`)
-  const files = filesWithPath.map(f => f.split('public/')[1])
+  const filesWithPath = await getFiles(fullPath)
+  const files = filesWithPath.map((f) => f.split('public/')[1])
   for (const file of files) {
     const url = `${urlPrefix}/${file}`
-    limiter.schedule(url => download(url), url)
+    limiter.schedule((url) => download(url), url)
   }
 }
 
 async function go() {
-  await new Promise((resolve, reject) => {
-    exec(`rm -rf public/${dataDir}`, (error, stdout) => {
-      if (error) reject(error)
-      else resolve(stdout)
-    })
-  })
-  await new Promise((resolve, reject) => {
-    exec(`cp -r data/${dataDir} public/${dataDir}`, (error, stdout) => {
-      if (error) reject(error)
-      else resolve(stdout)
-    })
-  })
+  // await new Promise((resolve, reject) => {
+  //   exec(`rm -rf public/${dataDir}`, (error, stdout) => {
+  //     if (error) reject(error)
+  //     else resolve(stdout)
+  //   })
+  // })
+  // await new Promise((resolve, reject) => {
+  //   exec(`cp -r data/${dataDir} public/${dataDir}`, (error, stdout) => {
+  //     if (error) reject(error)
+  //     else resolve(stdout)
+  //   })
+  // })
 
   const hash = await deploy({
+    publicDirPath: fullPath,
     remotePinners: ['pinata'],
     // dnsProviders: ['cloudflare'],
     siteDomain: dataDir,
@@ -92,12 +94,12 @@ async function go() {
 
   await primeAll(hash)
 
-  await new Promise((resolve, reject) => {
-    exec(`rm -rf public/${dataDir}`, (error, stdout) => {
-      if (error) reject(error)
-      else resolve(stdout)
-    })
-  })
+  // await new Promise((resolve, reject) => {
+  //   exec(`rm -rf public/${dataDir}`, (error, stdout) => {
+  //     if (error) reject(error)
+  //     else resolve(stdout)
+  //   })
+  // })
 }
 
 async function primeAll(hash) {

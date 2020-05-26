@@ -46,7 +46,6 @@ function initialState() {
     gcpCredentials: '',
     ipfs: '',
     ipfsApi: '',
-    deployDir: '',
     marketplaceContract: '',
     marketplaceVersion: '',
     ...Defaults[networkId]
@@ -81,7 +80,7 @@ function validate(state) {
   return { valid, newState: { ...state, ...newState } }
 }
 
-const ServerSetup = ({ next }) => {
+const ServerSetup = () => {
   const { config } = useConfig()
   const [, dispatch] = useStateValue()
   const [advanced, setAdvanced] = useState(false)
@@ -127,8 +126,7 @@ const ServerSetup = ({ next }) => {
           })
             .then(async (res) => {
               if (res.ok) {
-                dispatch({ type: 'setNetwork', network })
-                next()
+                dispatch({ type: 'reload', target: 'auth' })
               }
             })
             .catch((err) => {
@@ -232,11 +230,6 @@ const ServerSetup = ({ next }) => {
                 />
                 {Feedback('ipfsApi')}
               </div>
-            </div>
-            <div className="form-group">
-              <label>Deployment Dir (leave empty for tmp dir)</label>
-              <input {...input('deployDir')} />
-              {Feedback('deployDir')}
             </div>
             <div className="form-row">
               <div className="form-group col-md-6">

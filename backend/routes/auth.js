@@ -80,12 +80,15 @@ module.exports = function (app) {
       viewable: fs.existsSync(`${shopDataDir}/${s.authToken}/data/config.json`)
     }))
 
-    const localShops = fs
-      .readdirSync(shopDataDir)
-      .filter((shop) =>
-        fs.existsSync(`${shopDataDir}/${shop}/data/config.json`)
-      )
-      .filter((dir) => !shops.some((s) => s.authToken === dir))
+    let localShops = []
+    if (fs.existsSync(shopDataDir)) {
+      localShops = fs
+        .readdirSync(shopDataDir)
+        .filter((shop) =>
+          fs.existsSync(`${shopDataDir}/${shop}/data/config.json`)
+        )
+        .filter((dir) => !shops.some((s) => s.authToken === dir))
+    }
 
     if (!shops.length) {
       return res.json({
