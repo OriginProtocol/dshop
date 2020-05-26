@@ -13,7 +13,8 @@ module.exports = (sequelize, DataTypes) => {
       external_id: DataTypes.STRING,
       order_id: DataTypes.STRING,
       data: DataTypes.TEXT,
-      amount: DataTypes.INTEGER
+      amount: DataTypes.INTEGER,
+      accepted: DataTypes.BOOLEAN
     },
     {
       underscored: true,

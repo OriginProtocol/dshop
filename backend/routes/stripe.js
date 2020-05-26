@@ -3,7 +3,7 @@ const get = require('lodash/get')
 const bodyParser = require('body-parser')
 const Stripe = require('stripe')
 
-const { Shop } = require('../models')
+const { Shop, ExternalPayment } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
 const makeOffer = require('./_makeOffer')
@@ -50,14 +50,22 @@ module.exports = function (app) {
   })
 
   async function handleWebhook(req, res, next) {
+    let json
     try {
-      const json = JSON.parse(req.body.toString())
+      json = JSON.parse(req.body.toString())
       const id = get(json, 'data.object.metadata.shopId')
       req.shop = await Shop.findOne({ where: { id } })
     } catch (err) {
       console.error('Error parsing body: ', err)
       return res.sendStatus(400)
     }
+
+    const externalPayment = ExternalPayment.create({
+      ordered_at: new Date(json.created * 1000), // created is a unix timestamp
+      external_id: json.id,
+      data: JSON.stringify(json),
+      accepted: false
+    })
 
     if (!req.shop) {
       console.debug('Missing shopId from /webhook request')
@@ -87,6 +95,11 @@ module.exports = function (app) {
 
     req.body.data = get(event, 'data.object.metadata.encryptedData')
     req.amount = get(event, 'data.object.amount')
+
+    externalPayment.external_id = get(event, 'data.object.id')
+    externalPayment.amount = req.amount
+    externalPayment.accepted = true
+    externalPayment.save()
 
     next()
   }

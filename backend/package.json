@@ -9,6 +9,7 @@
   "scripts": {
     "clean": "rm db/dshop.db && npm run migrate",
     "migrate": "sequelize db:migrate --config db/config.js --migrations-path db/migrations",
+    "migration:create": "sequelize migration:create --config db/config.js --migrations-path db/migrations",
     "heroku-postbuild": "npm run migrate",
     "prettier": "prettier --write *.js \"**/*.js\"",
     "prettier:check": "prettier -c *.js \"**/*.js\"",
