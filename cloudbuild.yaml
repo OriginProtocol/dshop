@@ -76,13 +76,13 @@ steps:
     args:
       - '-c'
       - |
-        gcloud container clusters get-credentials "$CLOUDSDK_CONTAINER_CLUSTER" \
+        gcloud container clusters get-credentials "$$CLOUDSDK_CONTAINER_CLUSTER" \
           --project "$(gcloud config get-value core/project)" \
           --zone "$(gcloud config get-value compute/zone)"
 
         export STS_NAME="${_NAMESPACE}-${_IMAGE_NAME}-$(cat .network)"
 
-        kubectl patch statefulset $STS_NAME --type='json' \
+        kubectl patch statefulset $$STS_NAME --type='json' \
           -p='[{ \
             "op": "replace", \
             "path": "/spec/template/spec/containers/0/image", \
