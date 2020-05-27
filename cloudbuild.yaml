@@ -84,10 +84,10 @@ steps:
         export STS_NAME="${_NAMESPACE}-${_IMAGE_NAME}-$(cat .network)"
 
         kubectl patch statefulset $$STS_NAME --type='json' \
-          -p='[{ \
+          -p="[{ \
             "op": "replace", \
             "path": "/spec/template/spec/containers/0/image", \
             "value":"gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
-          }]'
+          }]"
 
 timeout: '1800s'
