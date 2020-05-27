@@ -38,7 +38,7 @@ steps:
       - |
         docker build \
             -f ./devops/Dockerfile \
-            -t "gcr.io/${PROJECT_ID}/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+            -t "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
             $(pwd)
 
   - id: 'Push the image to GCR'
@@ -48,7 +48,7 @@ steps:
       - '-c'
       - |
         docker push \
-          gcr.io/${PROJECT_ID}/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)
+          gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)
 
   - id: 'Tag the image'
     name: 'gcr.io/cloud-builders/gcloud'
@@ -57,14 +57,14 @@ steps:
       - '-c'
       - |
         gcloud container images add-tag \
-          "gcr.io/${PROJECT_ID}/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
-          "gcr.io/${PROJECT_ID}/${_NAMESPACE}/${_IMAGE_NAME}:latest" \
+          "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+          "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:latest" \
           --quiet
 
         [[ "$BRANCH_NAME" == "stable" ]] && \
         gcloud container images add-tag \
-          "gcr.io/${PROJECT_ID}/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
-          "gcr.io/${PROJECT_ID}/${_NAMESPACE}/${_IMAGE_NAME}:mainnet" \
+          "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+          "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:mainnet" \
           --quiet
 
   - id: 'Update the StatefulSet'
@@ -76,7 +76,7 @@ steps:
     args:
       - '-c'
       - |
-        gcloud container clusters get-credentials "${CLOUDSDK_CONTAINER_CLUSTER}" \
+        gcloud container clusters get-credentials "$CLOUDSDK_CONTAINER_CLUSTER" \
           --project "$(gcloud config get-value core/project)" \
           --zone "$(gcloud config get-value compute/zone)"
 
@@ -86,7 +86,7 @@ steps:
           -p='[{ \
             "op": "replace", \
             "path": "/spec/template/spec/containers/0/image", \
-            "value":"gcr.io/${PROJECT_ID}/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+            "value":"gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
           }]'
 
 timeout: '1800s'
