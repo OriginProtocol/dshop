@@ -83,9 +83,9 @@ steps:
 
         export STS_NAME="${_NAMESPACE}-${_IMAGE_NAME}-$(cat .network)"
         export PATCH_JSON="[{ \
-          "op": "replace", \
-          "path": "/spec/template/spec/containers/0/image", \
-          "value":"gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+          \"op\": \"replace\", \
+          \"path\": \"/spec/template/spec/containers/0/image\", \
+          \"value\": \"gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)\" \
         }]"
 
         echo "Pathcing: $$PATCH_JSON"
