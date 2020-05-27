@@ -12,14 +12,11 @@ steps:
       - |
         # Write network to file for future usage
         case "$BRANCH_NAME" in
-          master)
-            echo "rinkeby" > .network
-            ;;
           stable)
             echo "mainnet" > .network
             ;;
           *)
-            exit 1
+            echo "rinkeby" > .network
             ;;
         esac
 
@@ -87,8 +84,6 @@ steps:
           \"path\": \"/spec/template/spec/containers/0/image\", \
           \"value\": \"gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)\" \
         }]"
-
-        echo "Pathcing: $$PATCH_JSON"
 
         kubectl -n ${_NAMESPACE} patch statefulset $$STS_NAME --type='json' \
           -p="$$PATCH_JSON"
