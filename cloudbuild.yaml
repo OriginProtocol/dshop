@@ -61,11 +61,12 @@ steps:
           "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:latest" \
           --quiet
 
-        [[ "$BRANCH_NAME" == "stable" ]] && \
-        gcloud container images add-tag \
-          "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
-          "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:mainnet" \
-          --quiet
+        if [[ "$BRANCH_NAME" == "stable" ]]; then
+          gcloud container images add-tag \
+            "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+            "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:mainnet" \
+            --quiet
+        fi
 
   - id: 'Update the StatefulSet'
     name: 'gcr.io/cloud-builders/kubectl'
