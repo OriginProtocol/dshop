@@ -83,7 +83,7 @@ steps:
 
         export STS_NAME="${_NAMESPACE}-${_IMAGE_NAME}-$(cat .network)"
 
-        kubectl patch statefulset $$STS_NAME --type='json' \
+        kubectl -n ${_NAMESPACE} patch statefulset $$STS_NAME --type='json' \
           -p="[{ \
             "op": "replace", \
             "path": "/spec/template/spec/containers/0/image", \
