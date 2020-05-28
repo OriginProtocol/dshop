@@ -27,10 +27,10 @@ const AdminMenu = () => {
           Shops
         </Link>
       </li>
-      <li className={`settings ${active('/super-admin/settings')}`}>
-        <Link to="/super-admin/settings">
+      <li className={`settings ${active('/super-admin/networks')}`}>
+        <Link to="/super-admin/networks">
           <Icons.Settings />
-          Settings
+          Networks
         </Link>
       </li>
       <li className="db">

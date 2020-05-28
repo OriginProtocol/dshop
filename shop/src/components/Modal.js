@@ -7,7 +7,7 @@ const Modal = ({ children, onClose, className, shouldClose }) => {
 
   const bgProps = useSpring({
     config: { duration: 150 },
-    opacity: show ? 0.5 : 0
+    opacity: show ? 0.7 : 0
   })
 
   const modalProps = useSpring({
@@ -20,8 +20,10 @@ const Modal = ({ children, onClose, className, shouldClose }) => {
 
   useEffect(() => {
     document.body.appendChild(el.current)
+    document.getElementById('app').style.filter = 'blur(2px)'
     setShow(true)
     return () => {
+      document.getElementById('app').style.filter = ''
       el.current.parentElement.removeChild(el.current)
     }
   }, [el])
@@ -60,3 +62,12 @@ const Modal = ({ children, onClose, className, shouldClose }) => {
 }
 
 export default Modal
+
+require('react-styl')(`
+  .modal-backdrop
+    background-color: #fff
+  .modal-content .text-lg
+    font-size: 28px
+    margin-bottom: 2rem
+    line-height: normal
+`)

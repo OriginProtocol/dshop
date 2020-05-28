@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
+import useSetState from 'utils/useSetState'
 
 import PasswordField from 'components/admin/PasswordField'
 
@@ -78,9 +79,8 @@ const AdminSettings = () => {
   const { shopConfig } = useShopConfig()
   const [saving, setSaving] = useState()
   const [keyFromDb, setKeyFromDb] = useState()
-  const [state, setStateRaw] = useState(defaultValues)
+  const [state, setState] = useSetState(defaultValues)
   const [keyValid, setKeyValid] = useState(false)
-  const setState = (newState) => setStateRaw({ ...state, ...newState })
 
   const pgpPublicKey = keyFromDb
     ? shopConfig.pgpPublicKey || ''
@@ -90,7 +90,7 @@ const AdminSettings = () => {
     if (shopConfig) {
       setState(shopConfig)
     } else {
-      setStateRaw(defaultValues)
+      setState(defaultValues, true)
     }
   }, [shopConfig])
 

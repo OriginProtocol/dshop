@@ -10,18 +10,12 @@ import useWallet from 'utils/useWallet'
 import useOrigin from 'utils/useOrigin'
 import { useStateValue } from 'data/state'
 
-const DefaultTokens = [
-  { id: 'token-OGN', name: 'OGN' },
-  { id: 'token-DAI', name: 'DAI' },
-  { id: 'token-ETH', name: 'ETH' }
-]
-
 const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
   const { config } = useConfig()
-  const { ogn, marketplace } = useOrigin()
+  const { marketplace } = useOrigin()
   const [{ cart }, dispatch] = useStateValue()
   const [activeToken, setActiveToken] = useState({})
-  const token = useToken(activeToken)
+  const token = useToken(activeToken, cart.total)
   const { exchangeRates, toTokenPrice } = usePrice()
   const [approveUnlockTx, setApproveUnlockTx] = useState(false)
   const [unlockTx, setUnlockTx] = useState(false)
@@ -36,7 +30,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
     return null
   }
 
-  const acceptedTokens = config.acceptedTokens || DefaultTokens
+  const acceptedTokens = config.acceptedTokens
 
   useEffect(() => {
     const newState = {
@@ -93,6 +87,15 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
         </div>
       </>
     )
+  } else if (!wallet.networkOk) {
+    return (
+      <>
+        {label}
+        <div className="mt-2">
+          {`Please switch your wallet to ${config.netName} to continue`}
+        </div>
+      </>
+    )
   }
 
   return (
@@ -108,16 +111,27 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
                 onClick={() => setActiveToken(token)}
               >
                 <div>{`Pay with ${token.name}`}</div>
-                <div>{`${toTokenPrice(cart.total, token.name)} ${
-                  token.name
-                }`}</div>
-                <div className="sm">{`1 ${token.name} = $${(
-                  1 / exchangeRates[token.name]
-                ).toFixed(2)}`}</div>
+                {!exchangeRates[token.name] ? (
+                  <>
+                    <div>Loading</div>
+                    <div className="sm">Loading</div>
+                  </>
+                ) : (
+                  <>
+                    <div>{`${toTokenPrice(cart.total, token.name)} ${
+                      token.name
+                    }`}</div>
+                    <div className="sm">{`1 ${token.name} = $${(
+                      1 / exchangeRates[token.name]
+                    ).toFixed(2)}`}</div>
+                  </>
+                )}
               </div>
             ))}
           </div>
-          {!activeToken.id || token.loading ? null : !token.hasBalance ? (
+          {!activeToken.id || token.loading ? null : token.error ? (
+            <div className="alert alert-danger mt-3 mb-0">{token.error}</div>
+          ) : !token.hasBalance ? (
             <div className="alert alert-danger mt-3 mb-0">
               Insufficient balance
             </div>
@@ -135,7 +149,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
                   const amount = toTokenPrice(cart.total, activeToken.name)
                   const amountWei = ethers.utils.parseUnits(amount, 'ether')
                   setApproveUnlockTx(true)
-                  ogn
+                  token.contract
                     .approve(marketplace.address, amountWei)
                     .then((tx) => {
                       setUnlockTx(true)

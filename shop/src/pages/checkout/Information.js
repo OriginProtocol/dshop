@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
+import useSetState from 'utils/useSetState'
 import { useStateValue } from 'data/state'
 import { Countries } from 'data/Countries'
 
@@ -49,10 +50,9 @@ const CheckoutInfo = () => {
   const { config } = useConfig()
   const history = useHistory()
   const [{ cart }, dispatch] = useStateValue()
-  const [state, setStateRaw] = useState(
+  const [state, setState] = useSetState(
     cart.userInfo || { country: 'United States' }
   )
-  const setState = (newState) => setStateRaw({ ...state, ...newState })
 
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)

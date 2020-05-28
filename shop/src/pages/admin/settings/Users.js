@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
+import useSetState from 'utils/useSetState'
 
 function validate(state) {
   const newState = {}
@@ -26,8 +27,7 @@ function validate(state) {
 
 const AdminUsers = () => {
   const { config } = useConfig()
-  const [state, setStateRaw] = useState({ loading: false, users: [] })
-  const setState = (newState) => setStateRaw({ ...state, ...newState })
+  const [state, setState] = useSetState({ loading: false, users: [] })
 
   useEffect(() => {
     setState({ loading: true })

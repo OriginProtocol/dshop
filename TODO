@@ -3,5 +3,4 @@
 
 - Validate listing exists / is owner on create shop
 - Default shop configs in network settings
-- ERC-20 addresses from config
 - 'Loading' for create listing

@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useRest from 'utils/useRest'
+import useSetState from 'utils/useSetState'
 import Link from 'components/Link'
 
 const times = Array(48)
@@ -49,8 +50,7 @@ const AdminEditDiscount = () => {
   const { data: discount } = useRest(`/discounts/${discountId}`, {
     skip: discountId === 'new'
   })
-  const [state, setStateRaw] = useState(defaultValues)
-  const setState = (newState) => setStateRaw({ ...state, ...newState })
+  const [state, setState] = useSetState(defaultValues)
   useEffect(() => {
     if (discount) {
       setState({
@@ -62,7 +62,7 @@ const AdminEditDiscount = () => {
         endTime: dayjs(discount.endTime).format('HH:mm:ss')
       })
     } else {
-      setStateRaw(defaultValues)
+      setState(defaultValues, true)
     }
   }, [discount])
 

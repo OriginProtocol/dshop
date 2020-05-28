@@ -3,7 +3,7 @@ import { useHistory } from 'react-router-dom'
 
 import { useStateValue } from 'data/state'
 
-const ShopReady = ({ hash, domain, gateway }) => {
+const ShopReady = ({ hash, domain, gateway, actions = true }) => {
   const gatewayUrl = `${gateway}/ipfs/${hash}/`
   const history = useHistory()
   const [, dispatch] = useStateValue()
@@ -26,17 +26,19 @@ const ShopReady = ({ hash, domain, gateway }) => {
           </a>
         </div>
       ) : null}
-      <div className="mt-3">
-        <button
-          type="button"
-          className="btn btn-primary btn-lg mt-2"
-          children="Continue"
-          onClick={() => {
-            dispatch({ type: 'reload', target: 'auth' })
-            history.push('/super-admin/shops')
-          }}
-        />
-      </div>
+      {!actions ? null : (
+        <div className="mt-3">
+          <button
+            type="button"
+            className="btn btn-primary btn-lg mt-2"
+            children="Continue"
+            onClick={() => {
+              dispatch({ type: 'reload', target: 'auth' })
+              history.push('/super-admin/shops')
+            }}
+          />
+        </div>
+      )}
     </>
   )
 }
