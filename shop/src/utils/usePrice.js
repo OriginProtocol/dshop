@@ -3,7 +3,8 @@ import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
 const ratesUrl = 'https://bridge.originprotocol.com/utils/exchange-rates'
-const cosUrl = 'https://api.coingecko.com/api/v3/coins/markets?ids=contentos&vs_currency=usd'
+const cosUrl =
+  'https://api.coingecko.com/api/v3/coins/markets?ids=contentos&vs_currency=usd'
 
 function usePrice() {
   const [exchangeRates, setRates] = useState({})
@@ -15,7 +16,7 @@ function usePrice() {
       const json = await raw.json()
       const acceptedTokens = config.acceptedTokens || []
       if (acceptedTokens.find((t) => t.id === 'token-COS')) {
-        const cosData = await fetch(cosUrl).then(raw => raw.json())
+        const cosData = await fetch(cosUrl).then((raw) => raw.json())
         json.COS = 1 / get(cosData, '[0].current_price')
       }
       setRates(json)
