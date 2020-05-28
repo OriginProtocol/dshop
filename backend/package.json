@@ -38,6 +38,7 @@
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "form-data": "^3.0.0",
+    "formidable": "^1.2.2",
     "inquirer": "^7.1.0",
     "ipfs-deploy": "7.14.0",
     "ipfs-http-client": "^44.1.0",

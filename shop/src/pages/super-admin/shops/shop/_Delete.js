@@ -7,7 +7,7 @@ import useConfig from 'utils/useConfig'
 
 import Modal from 'components/Modal'
 
-const AdminDeleteShop = ({ shopId }) => {
+const AdminDeleteShop = ({ shopId, className = '' }) => {
   const history = useHistory()
   const { config } = useConfig()
   const [, dispatch] = useStateValue()
@@ -32,7 +32,7 @@ const AdminDeleteShop = ({ shopId }) => {
     <>
       <button
         type="button"
-        className="btn btn-outline-danger"
+        className={`btn btn-outline-danger ${className}`}
         onClick={() => setState({ delete: true })}
       >
         Delete

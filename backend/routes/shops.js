@@ -9,6 +9,7 @@ const set = require('lodash/set')
 const fs = require('fs')
 const configs = require('../scripts/configs')
 const { exec } = require('child_process')
+const formidable = require('formidable')
 
 const { deployShop } = require('../utils/deployShop')
 
@@ -263,6 +264,40 @@ module.exports = function (app) {
       return res.json({ success: false, reason: e.message })
     }
   })
+
+  app.post(
+    '/shops/:shopId/save-files',
+    authSuperUser,
+    async (req, res, next) => {
+      const shop = await Shop.findOne({
+        where: { authToken: req.params.shopId }
+      })
+      if (!shop) {
+        return res.json({ success: false, reason: 'shop-not-found' })
+      }
+
+      const dataDir = req.params.shopId
+      const uploadDir = `${__dirname}/../data/${dataDir}/data`
+
+      if (!fs.existsSync(uploadDir)) {
+        return res.json({ success: false, reason: 'dir-not-found' })
+      }
+
+      const form = formidable({ multiples: true })
+
+      form.parse(req, (err, fields, files) => {
+        if (err) {
+          next(err)
+          return
+        }
+        for (const fileObj in files) {
+          const file = files[fileObj]
+          fs.renameSync(file.path, `${uploadDir}/${file.name}`)
+        }
+        res.json({ fields, files })
+      })
+    }
+  )
 
   app.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })

@@ -8,7 +8,7 @@ import Modal from 'components/Modal'
 
 import ShopReady from '../ShopReady'
 
-const AdminDeployShop = ({ shopId }) => {
+const AdminDeployShop = ({ shopId, className = '' }) => {
   const [{ admin }] = useStateValue()
   const { config } = useConfig()
   const [state, setState] = useSetState()
@@ -35,7 +35,7 @@ const AdminDeployShop = ({ shopId }) => {
     <>
       <button
         type="button"
-        className="btn btn-outline-primary"
+        className={`btn btn-outline-primary ${className}`}
         onClick={() => setState({ deploy: true })}
       >
         Deploy
