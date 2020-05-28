@@ -3,6 +3,7 @@ import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
+import useSetState from 'utils/useSetState'
 import CreateListing from './CreateListing'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import PasswordField from 'components/admin/PasswordField'
@@ -64,7 +65,7 @@ const CreateShop = () => {
   const [ready, setReady] = useState()
   const [loading, setLoading] = useState(false)
   const localShops = get(admin, 'localShops', [])
-  const [state, setStateRaw] = useState({
+  const [state, setState] = useSetState({
     listingId: '',
     name: '',
     backend: get(window, 'location.origin'),
@@ -77,7 +78,6 @@ const CreateShop = () => {
     web3Pk: '',
     shopType: localShops.length ? 'local-dir' : 'blank'
   })
-  const setState = (newState) => setStateRaw({ ...state, ...newState })
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
   useEffect(() => {
@@ -187,7 +187,7 @@ const CreateShop = () => {
           <div style={{ flex: 1 }}>
             <CreateListing
               className="btn btn-outline-primary w-100"
-              onCreated={(listingId) => setStateRaw({ ...state, listingId })}
+              onCreated={(listingId) => setState({ ...state, listingId }, true)}
               onError={(createListingError) => setState({ createListingError })}
             >
               <span className="btn-content">Create Listing</span>

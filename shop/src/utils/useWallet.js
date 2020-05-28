@@ -60,7 +60,7 @@ function useWallet() {
     })
   }
 
-  return { enable, ...state }
+  return { enable, ...state, networkOk: config.netId === state.netId }
 }
 
 export default useWallet
