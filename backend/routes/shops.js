@@ -12,6 +12,7 @@ const { exec } = require('child_process')
 const formidable = require('formidable')
 
 const { deployShop } = require('../utils/deployShop')
+const { DSHOP_CACHE } = require('../utils/const')
 
 const downloadProductData = require('../scripts/printful/downloadProductData')
 const downloadPrintfulMockups = require('../scripts/printful/downloadPrintfulMockups')
@@ -85,7 +86,7 @@ module.exports = function (app) {
         return res.json({ success: false, reason: 'no-printful-api-key' })
       }
 
-      const OutputDir = `${__dirname}/../data/${shop.authToken}`
+      const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
 
       await downloadProductData({ OutputDir, printfulApi: printful })
       await writeProductData({ OutputDir })
@@ -101,7 +102,7 @@ module.exports = function (app) {
    */
   app.post('/shop', authSuperUser, async (req, res) => {
     const { dataDir, pgpPublicKey, printfulApi, shopType, backend } = req.body
-    const OutputDir = `${__dirname}/../data/${dataDir}`
+    const OutputDir = `${DSHOP_CACHE}/${dataDir}`
 
     if (fs.existsSync(OutputDir) && req.body.shopType !== 'local-dir') {
       return res.json({
@@ -277,7 +278,7 @@ module.exports = function (app) {
       }
 
       const dataDir = req.params.shopId
-      const uploadDir = `${__dirname}/../data/${dataDir}/data`
+      const uploadDir = `${DSHOP_CACHE}/${dataDir}/data`
 
       if (!fs.existsSync(uploadDir)) {
         return res.json({ success: false, reason: 'dir-not-found' })
@@ -290,11 +291,16 @@ module.exports = function (app) {
           next(err)
           return
         }
-        for (const fileObj in files) {
-          const file = files[fileObj]
-          fs.renameSync(file.path, `${uploadDir}/${file.name}`)
+        const allFiles = Array.isArray(files.file) ? files.file : [files.file]
+        try {
+          for (const file of allFiles) {
+            fs.renameSync(file.path, `${uploadDir}/${file.name}`)
+          }
+          res.json({ fields, files })
+        } catch (e) {
+          console.log(e)
+          res.json({ success: false })
         }
-        res.json({ fields, files })
       })
     }
   )
@@ -312,7 +318,7 @@ module.exports = function (app) {
     }
 
     const dataDir = req.params.shopId
-    const OutputDir = `${__dirname}/../data/${dataDir}`
+    const OutputDir = `${DSHOP_CACHE}/${dataDir}`
 
     try {
       const deployOpts = {

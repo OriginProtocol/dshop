@@ -1,6 +1,7 @@
 require('dotenv').config()
 const fs = require('fs')
 const { Order, Shop } = require('../models')
+const { DSHOP_CACHE } = require('../utils/const')
 const flatten = require('lodash/flatten')
 
 function onlyUnique(value, index, self) {
@@ -10,7 +11,7 @@ function onlyUnique(value, index, self) {
 async function validate(dataDir) {
   let productIds
   try {
-    const path = `${__dirname}/../../data/${dataDir}/products.json`
+    const path = `${DSHOP_CACHE}/${dataDir}/products.json`
     const products = JSON.parse(fs.readFileSync(path))
     productIds = products.map((p) => p.id)
   } catch (e) {

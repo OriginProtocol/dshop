@@ -7,14 +7,14 @@ import useConfig from 'utils/useConfig'
 
 import Modal from 'components/Modal'
 
-const AdminDeleteShop = ({ shopId, className = '' }) => {
+const AdminDeleteShop = ({ shop, className = '' }) => {
   const history = useHistory()
   const { config } = useConfig()
   const [, dispatch] = useStateValue()
   const [state, setState] = useSetState()
   useEffect(() => {
     if (state.deleteShop) {
-      fetch(`${config.backend}/shops/${shopId}`, {
+      fetch(`${config.backend}/shops/${shop.authToken}`, {
         headers: {
           'content-type': 'application/json'
         },

@@ -56,6 +56,7 @@ const {
  */
 const DATA_URL = null
 const PRINTFUL_URL = 'https://api.printful.com'
+const DSHOP_CACHE = process.env.DSHOP_CACHE || `${__dirname}/../data`
 
 module.exports = {
   CONTRACTS,
@@ -72,5 +73,6 @@ module.exports = {
   NETWORK,
   NETWORK_ID: NETWORK_NAME_TO_ID[NETWORK] || 999,
   SUPPORT_EMAIL_OVERRIDE,
-  PRINTFUL_URL
+  PRINTFUL_URL,
+  DSHOP_CACHE
 }
