@@ -19,7 +19,7 @@ const DefaultPaymentMethods = [
 
 const net = localStorage.ognNetwork || process.env.NETWORK || 'localhost'
 const netId = net === 'mainnet' ? '1' : net === 'rinkeby' ? '4' : '999'
-const contracts = networks[net]
+const contracts = networks[net] || {}
 
 const DefaultTokens = [
   { id: 'token-OGN', name: 'OGN', address: contracts.OGN },
