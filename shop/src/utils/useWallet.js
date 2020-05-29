@@ -15,21 +15,24 @@ function useWallet() {
     // Default to browser supplied provider
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner()
       const mm = get(window, 'ethereum._metamask')
       if (mm.isEnabled) {
         Promise.all([mm.isEnabled(), mm.isUnlocked(), mm.isApproved()]).then(
           ([isEnabled, isUnlocked, isApproved]) => {
             const enabled = isEnabled && isUnlocked && isApproved
-            setState({ provider, status: enabled ? 'enabled' : 'disabled' })
+            const status = enabled ? 'enabled' : 'disabled'
+            setState({ provider, signer, status })
           }
         )
       } else {
-        setState({ provider, status: 'enabled' })
+        setState({ provider, signer, status: 'enabled' })
       }
     } else if (providerUrl) {
       // Fall back to provider specified by Network
       const provider = new ethers.providers.JsonRpcProvider(providerUrl)
-      setState({ provider, status: 'enabled' })
+      const signer = provider.getSigner()
+      setState({ provider, signer, status: 'enabled' })
     } else {
       setState({ status: 'no-web3' })
     }
@@ -41,10 +44,23 @@ function useWallet() {
     }
 
     state.provider.send('net_version').then((netId) => setState({ netId }))
-    if (window.ethereum) {
-      window.ethereum.on('networkChanged', (netId) => setState({ netId }))
+
+    const onNetChanged = (netId) => {
+      setState({ netId })
     }
-  }, [state.status])
+    const onAccountsChanged = (accounts) => {
+      setState({ signer: state.provider.getSigner(accounts[0]) })
+    }
+
+    if (window.ethereum) {
+      window.ethereum.on('networkChanged', onNetChanged)
+      window.ethereum.on('accountsChanged', onAccountsChanged)
+    }
+    return function cleanup() {
+      window.ethereum.off('networkChanged', onNetChanged)
+      window.ethereum.off('accountsChanged', onAccountsChanged)
+    }
+  }, [state.status, state.netId, state.provider])
 
   function enable() {
     if (!window.ethereum) {

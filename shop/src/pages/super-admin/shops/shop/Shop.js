@@ -11,6 +11,7 @@ import DeleteShop from './_Delete'
 import DeployShop from './_Deploy'
 import FileEditor from './_FileEditor'
 import Assets from './_Assets'
+import ServerSettings from 'pages/admin/settings/Server'
 
 const Files = [
   { name: 'Config', path: 'config.json' },
@@ -19,6 +20,20 @@ const Files = [
   { name: 'Shipping', path: 'shipping.json' },
   { name: 'About', path: 'about.html' }
 ]
+
+const NavItem = ({ id, active, name, setState }) => (
+  <li className="nav-item">
+    <a
+      className={`nav-link${active ? ' active' : ''}`}
+      href="#"
+      onClick={(e) => {
+        e.preventDefault()
+        setState({ activeFile: id })
+      }}
+      children={name}
+    />
+  </li>
+)
 
 const AdminShop = () => {
   const [{ admin }] = useStateValue()
@@ -61,32 +76,31 @@ const AdminShop = () => {
 
       <ul className="nav nav-tabs mt-3 mb-3">
         {Files.map((file) => (
-          <li className="nav-item" key={file.path}>
-            <a
-              className={`nav-link${activeFile === file.path ? ' active' : ''}`}
-              href="#"
-              onClick={(e) => {
-                e.preventDefault()
-                setState({ activeFile: file.path })
-              }}
-              children={file.name}
-            />
-          </li>
-        ))}
-        <li className="nav-item">
-          <a
-            className={`nav-link${activeFile === 'assets' ? ' active' : ''}`}
-            href="#"
-            onClick={(e) => {
-              e.preventDefault()
-              setState({ activeFile: 'assets' })
-            }}
-            children="Assets"
+          <NavItem
+            key={file.path}
+            active={activeFile === file.path}
+            id={file.path}
+            name={file.name}
+            setState={setState}
           />
-        </li>
+        ))}
+        <NavItem
+          active={activeFile === 'assets'}
+          id="assets"
+          name="Assets"
+          setState={setState}
+        />
+        {/* <NavItem
+          active={activeFile === 'server'}
+          id="server"
+          name="Server"
+          setState={setState}
+        /> */}
       </ul>
       {activeFile === 'assets' ? (
         <Assets shop={shop} />
+      ) : activeFile === 'server' ? (
+        <ServerSettings shop={shop} />
       ) : (
         <FileEditor {...{ Files, shopId, activeFile }} />
       )}

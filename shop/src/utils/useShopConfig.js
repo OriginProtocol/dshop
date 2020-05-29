@@ -4,15 +4,10 @@ import useConfig from 'utils/useConfig'
 
 const getShopConfig = memoize(
   async function fetchOrder(backend, authToken) {
-    const headers = new Headers({
-      authorization: `bearer ${authToken}`
-    })
-    const myRequest = new Request(`${backend}/config`, {
+    const result = await fetch(`${backend}/config`, {
       credentials: 'include',
-      headers
-    })
-    const raw = await fetch(myRequest)
-    const result = await raw.json()
+      headers: { authorization: `bearer ${authToken}` }
+    }).then((raw) => raw.json())
 
     return result.config
   },

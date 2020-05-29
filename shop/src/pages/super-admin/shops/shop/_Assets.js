@@ -3,15 +3,13 @@ import React, { useEffect } from 'react'
 import useSetState from 'utils/useSetState'
 
 const AdminShopAssets = ({ shop }) => {
-  const [state, setState] = useSetState({
-    assets: [],
-    save: 0
-  })
+  const [state, setState] = useSetState({ assets: [], save: 0 })
 
   useEffect(() => {
     if (!state.save) {
       return
     }
+
     const body = new FormData()
     for (const asset of state.assets) {
       body.append('file', asset)
@@ -29,16 +27,16 @@ const AdminShopAssets = ({ shop }) => {
           setState({ save: state.save + 1 })
         }}
       >
-        <input
-          type="file"
-          className="form-control"
-          accept=".png, .jpeg, .ico, .svg"
-          multiple="multiple"
-          onChange={(e) => {
-            console.log(e.target)
-            setState({ assets: e.target.files })
-          }}
-        />
+        <div className="form-group">
+          <label>Upload Assets (.png, .jpg, .ico, .svg)</label>
+          <input
+            type="file"
+            className="form-control"
+            accept=".png, .jpeg, .ico, .svg"
+            multiple="multiple"
+            onChange={(e) => setState({ assets: e.target.files })}
+          />
+        </div>
         <button className={`btn btn-primary`}>Save</button>
       </form>
     </div>

@@ -2,6 +2,7 @@ import ethers from 'ethers'
 import { useEffect, useState } from 'react'
 
 import usePrice from 'utils/usePrice'
+import useWallet from 'utils/useWallet'
 import useOrigin from 'utils/useOrigin'
 
 const tokenAbi = [
@@ -19,7 +20,8 @@ function useToken(activeToken = {}, totalUsd) {
     loading: true,
     hasAllowance: false
   })
-  const { provider, signer, marketplace } = useOrigin()
+  const { status } = useWallet()
+  const { marketplace, provider, signer } = useOrigin()
 
   const setState = (newState) => setStateRaw({ ...state, ...newState })
   const { exchangeRates } = usePrice()
@@ -104,7 +106,7 @@ function useToken(activeToken = {}, totalUsd) {
         error: 'No exchange rate for token'
       })
     }
-  }, [activeToken.name, state.shouldRefetchBalance, totalUsd])
+  }, [activeToken.name, state.shouldRefetchBalance, totalUsd, signer, status])
 
   return {
     ...state,

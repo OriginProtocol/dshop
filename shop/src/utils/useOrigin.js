@@ -126,10 +126,8 @@ async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
 
 function useOrigin() {
   const { config } = useConfig()
-  const { status, provider } = useWallet()
+  const { status, provider, signer } = useWallet()
   if (status !== 'enabled') return {}
-
-  const signer = provider ? provider.getSigner() : null
 
   const marketplace = new ethers.Contract(
     config.contracts.Marketplace_V01,

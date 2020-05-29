@@ -74,9 +74,9 @@ async function testKey({ msg, pgpPublicKey, pgpPrivateKey, pass }) {
   return plaintext.data === msg ? '✅' : '❌'
 }
 
-const AdminSettings = () => {
-  const { config } = useConfig()
-  const { shopConfig } = useShopConfig()
+const AdminSettings = ({ shop }) => {
+  const { config } = useConfig(shop)
+  const { shopConfig } = useShopConfig(shop)
   const [saving, setSaving] = useState()
   const [keyFromDb, setKeyFromDb] = useState()
   const [state, setState] = useSetState(defaultValues)
@@ -133,18 +133,17 @@ const AdminSettings = () => {
         }
 
         if (valid) {
-          const headers = new Headers({
-            authorization: `bearer ${config.backendAuthToken}`,
-            'content-type': 'application/json'
-          })
-          const myRequest = new Request(`${config.backend}/config`, {
-            headers,
+          setSaving('saving')
+          const token = shop ? shop.authToken : config.backendAuthToken
+          const raw = await fetch(`${config.backend}/config`, {
+            headers: {
+              authorization: `bearer ${token}`,
+              'content-type': 'application/json'
+            },
             credentials: 'include',
             method: 'POST',
             body: JSON.stringify(newState)
           })
-          setSaving('saving')
-          const raw = await fetch(myRequest)
           if (raw.ok) {
             setSaving('ok')
             setTimeout(() => setSaving(null), 3000)
