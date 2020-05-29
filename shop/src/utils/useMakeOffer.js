@@ -8,6 +8,8 @@ import usePrice from 'utils/usePrice'
 import useOrigin from 'utils/useOrigin'
 import { useStateValue } from 'data/state'
 
+const { AddressZero } = ethers.constants
+
 function useMakeOffer({
   submit,
   activeToken,
@@ -15,7 +17,7 @@ function useMakeOffer({
   onChange,
   buttonText
 }) {
-  const { signer, ogn, marketplace } = useOrigin()
+  const { signer, marketplace } = useOrigin()
   const { config } = useConfig()
   const { toTokenPrice } = usePrice()
   const [{ cart }] = useStateValue()
@@ -27,15 +29,11 @@ function useMakeOffer({
       onChange({ disabled: true, buttonText: 'Awaiting approval...' })
       const l = config.listingId.split('-')
       const listingId = l[l.length - 1]
-      const finalizes = 60 * 60 * 24 * 14
+      const finalizes = 60 * 60 * 24 * 14 // 2 weeks after offer accepted
 
       const amount = toTokenPrice(cart.total, activeToken.name)
       const amountWei = ethers.utils.parseUnits(amount, 'ether')
-      const address = await signer.getAddress()
-      const currency =
-        activeToken.id === 'token-ETH'
-          ? ethers.constants.AddressZero
-          : ogn.address
+      const buyerWalletAddress = await signer.getAddress()
 
       const offerIpfs = await post(config.ipfsApi, {
         schemaId: 'https://schema.originprotocol.com/offer_2.0.0.json',
@@ -48,22 +46,22 @@ function useMakeOffer({
         encryptedData: encryptedData.hash
       })
 
+      const value = activeToken.address === AddressZero ? amountWei : 0
+
       marketplace
         .makeOffer(
           listingId,
           offerIpfs,
           finalizes,
-          ethers.constants.AddressZero,
+          AddressZero,
           0,
           amountWei,
-          currency,
-          address,
-          {
-            value: activeToken.id === 'token-ETH' ? amountWei : 0
-          }
+          activeToken.address,
+          buyerWalletAddress,
+          { value }
         )
         .then((tx) => {
-          onChange({ buttonText: 'Confirming transaction...' })
+          onChange({ disabled: true, buttonText: 'Confirming transaction...' })
           tx.wait().then(() => {
             onChange({ tx: tx.hash })
           })

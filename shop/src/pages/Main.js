@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Switch, Route, Redirect } from 'react-router-dom'
 
 import useIsMobile from 'utils/useIsMobile'
@@ -20,6 +20,19 @@ import Cart from './cart/Cart'
 
 const Content = () => {
   const { config } = useConfig()
+
+  useEffect(() => {
+    const bc = new BroadcastChannel('dshop')
+
+    bc.onmessage = function msg(ev) {
+      if (ev.data === 'reload') {
+        window.location.reload()
+      }
+    }
+    return function cleanup() {
+      bc.close()
+    }
+  }, [])
 
   const Routes = (
     <Switch>

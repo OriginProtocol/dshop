@@ -1,4 +1,5 @@
 import React from 'react'
+import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 import dayjs from 'dayjs'
 
@@ -9,18 +10,21 @@ import Link from 'components/Link'
 
 const AdminShops = () => {
   const [{ admin }] = useStateValue()
+  const history = useHistory()
 
   const shops = get(admin, 'shops', [])
 
   return (
     <>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3 className="m-0">Shops</h3>
-        <Link to="/super-admin/shops/new" className="btn btn-primary">
-          Create shop
-        </Link>
-      </div>
-      <table className="table admin-discounts">
+      <h3 className="admin-title">
+        Shops
+        <div className="ml-auto">
+          <Link to="/super-admin/shops/new" className="btn btn-primary">
+            Create shop
+          </Link>
+        </div>
+      </h3>
+      <table className="table admin-discounts table-hover">
         <thead>
           <tr>
             <th>Name</th>
@@ -33,9 +37,9 @@ const AdminShops = () => {
           {shops.map((shop) => (
             <tr
               key={shop.id}
-              // onClick={() => {
-              //   history.push(`/admin/super-admin/shops/${shop.id}`)
-              // }}
+              onClick={() => {
+                history.push(`/super-admin/shops/${shop.authToken}`)
+              }}
             >
               <td>{shop.name}</td>
               <td>{shop.listingId}</td>
@@ -47,6 +51,7 @@ const AdminShops = () => {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault()
+                        e.stopPropagation()
                         sessionStorage.dataDir = shop.authToken
                         window.open(location.origin)
                       }}

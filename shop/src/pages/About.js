@@ -40,9 +40,9 @@ const About = () => {
         {!about ? null : <div dangerouslySetInnerHTML={{ __html: about }} />}
         <div className="question">What is this site?</div>
         <div className="answer">
-          This is a decentralized e-commerce site leveraging Ethereum, IPFS, ENS
-          and PGP. All content is hosted on IPFS. Payments can be made with Eth,
-          Dai or Credit Card.
+          This is a decentralized e-commerce site leveraging Ethereum, IPFS and
+          PGP. All content is hosted on IPFS. Payments can be made with Eth,
+          ERC-20 tokens or Credit Card.
         </div>
         <div className="question">Who built this?</div>
         <div className="answer">
@@ -50,7 +50,7 @@ const About = () => {
           <a href="https://www.originprotocol.com">Origin Protocol</a>, whose
           mission it is to bring about decentralized, peer to peer marketplaces.
           It is 100% open source and available on{' '}
-          <a href="https://github.com/OriginProtocol/origin">GitHub</a>.
+          <a href="https://github.com/OriginProtocol/dshop">GitHub</a>.
         </div>
         <div className="question">
           How do I deploy my own decentralized e-commerce store?

@@ -106,16 +106,15 @@ const AdminConsole = () => {
             return
           }
 
-          const encryptedData = await get(config.ipfsGateway, readHash, 10000)
+          const { pgpPrivateKey, pgpPrivateKeyPass } = shopConfig
 
-          const privateKey = await openpgp.key.readArmored(
-            shopConfig.pgpPrivateKey
-          )
+          const encryptedData = await get(config.ipfsGateway, readHash, 10000)
+          const privateKey = await openpgp.key.readArmored(pgpPrivateKey)
           if (privateKey.err && privateKey.err.length) {
             throw privateKey.err[0]
           }
           const privateKeyObj = privateKey.keys[0]
-          await privateKeyObj.decrypt(shopConfig.pgpPrivateKeyPass)
+          await privateKeyObj.decrypt(pgpPrivateKeyPass)
 
           const message = await openpgp.message.readArmored(encryptedData.data)
           const options = { message, privateKeys: [privateKeyObj] }
@@ -184,12 +183,11 @@ const AdminConsole = () => {
               console.log('Not OK')
               return
             }
-            saveRes.json().then(json => {
+            saveRes.json().then((json) => {
               if (!json.success) {
                 setPrintfulError(json.reason)
                 return
               }
-
             })
           })
         }}

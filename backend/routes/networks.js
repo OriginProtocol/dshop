@@ -15,7 +15,7 @@ module.exports = function (app) {
       ipfsApi: req.body.ipfsApi,
       marketplaceContract: req.body.marketplaceContract,
       marketplaceVersion: req.body.marketplaceVersion,
-      active: true,
+      active: req.body.active ? true : false,
       config: setConfig({
         pinataKey: req.body.pinataKey,
         pinataSecret: req.body.pinataSecret,

@@ -12,9 +12,11 @@ import Menu from './_Menu'
 import FirstTime from './setup/FirstTime'
 
 import Shops from './shops/Shops'
+import Shop from './shops/shop/Shop'
 import NewShop from './shops/NewShop'
 import Dashboard from './Dashboard'
-import Settings from './Settings'
+import Networks from './networks/Networks'
+import NewNetwork from './networks/CreateNetwork'
 
 const SuperAdmin = () => {
   const { config } = useConfig()
@@ -79,8 +81,10 @@ const SuperAdmin = () => {
           <div className="col-md-9">
             <Switch>
               <Route path="/super-admin/shops/new" component={NewShop} />
+              <Route path="/super-admin/shops/:shopId" component={Shop} />
               <Route path="/super-admin/shops" component={Shops} />
-              <Route path="/super-admin/settings" component={Settings} />
+              <Route path="/super-admin/networks/new" component={NewNetwork} />
+              <Route path="/super-admin/networks" component={Networks} />
               <Route path="/super-admin/dashboard" component={Dashboard} />
               <Redirect to="/super-admin/dashboard" />
             </Switch>

@@ -8,6 +8,7 @@ import Link from 'components/Link'
 
 import OrderDetails from './Details'
 import Printful from './Printful'
+import Contract from './Contract'
 
 const AdminOrder = () => {
   const match = useRouteMatch('/admin/orders/:orderId/:tab?')
@@ -66,6 +67,13 @@ const AdminOrder = () => {
             </NavLink>
           </li>
         )}
+        {admin.role !== 'admin' ? null : (
+          <li className="nav-item">
+            <NavLink className="nav-link" to={`${urlPrefix}/contract`}>
+              Contract
+            </NavLink>
+          </li>
+        )}
       </ul>
       {loading ? (
         'Loading...'
@@ -75,6 +83,9 @@ const AdminOrder = () => {
             <Printful />
           </Route>
           <Route path={`${urlPrefix}/payment`}>Payment</Route>
+          <Route path={`${urlPrefix}/contract`}>
+            <Contract order={order} />
+          </Route>
           <Route>
             <OrderDetails order={order} />
           </Route>
