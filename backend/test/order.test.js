@@ -14,8 +14,9 @@ openpgp.config.show_version = false
 
 /**
  * Utility method to generate a PGP key.
+ *
  * @param {string} name
- * @param {string}passphrase
+ * @param {string} passphrase
  * @returns {Promise<{publicKeyArmored: string, privateKeyArmored: string}>}
  */
 async function generatePgpKey(name, passphrase) {
@@ -27,8 +28,15 @@ async function generatePgpKey(name, passphrase) {
   return key
 }
 
-// Utility function copied from shop/src/data/addData.js
-// TODO: refactor into a common package.
+/**
+ * Utility function copied from shop/src/data/addData.js
+ * TODO: refactor into a common package.
+ *
+ * @param {Object} data
+ * @param {string} pgpPublicKey
+ * @param {string} ipfsApi
+ * @returns {Promise<{auth: string, bytes32: string, hash: string}>}
+ */
 async function addData(data, { pgpPublicKey, ipfsApi }) {
   const pubKeyObj = await openpgp.key.readArmored(pgpPublicKey)
 
@@ -90,12 +98,13 @@ describe('Orders', () => {
       await Network.create(networkObj)
     }
 
-    // Create a shop in the DB.
+    // Create the merchant's PGP key.
     const pgpPrivateKeyPass = 'password123'
     const key = await generatePgpKey('tester', pgpPrivateKeyPass)
     const pgpPublicKey = key.publicKeyArmored
     const pgpPrivateKey = key.privateKeyArmored
 
+    // Create a shop in the DB.
     const shopCreationResult = await createShop({
       name: 'TestShop',
       listingId,
@@ -122,7 +131,7 @@ describe('Orders', () => {
     data = {
       items: [
         {
-          product: 'badge-bat-tee',
+          product: 'iron mask',
           quantity: 1,
           variant: 0,
           price: 2500,
@@ -200,6 +209,8 @@ describe('Orders', () => {
       blockNumber: 1,
       timestamp: Date.now() / 1000
     }
+
+    // Call the logic for inserting an order in the DB based on a OfferCreated blockchain event.
     await insertOrderFromEvent({ offerId, event, shop })
 
     // Check the order was inserted with the proper values.
