@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       updated_at: DataTypes.DATE,
       external_id: DataTypes.STRING,
       order_id: DataTypes.STRING,
-      data: DataTypes.TEXT,
+      data: DataTypes.JSON, // Note: unlike JSONB, JSON is supported by both Postgres and sqlite.
       payment_at: DataTypes.DATE,
       amount: DataTypes.INTEGER,
       fee: DataTypes.INTEGER,

@@ -34,7 +34,7 @@ async function validate(dataDir) {
   const orders = allOrders
     .map((o) => o.dataValues)
     .filter((o) => o.ipfsHash)
-    .map((o) => JSON.parse(o.data))
+    .map((o) => o.data)
     .filter((o) => o.items)
 
   const orderProductIds = flatten(orders.map((o) => o.items))

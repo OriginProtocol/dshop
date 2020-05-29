@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       ordered_at: DataTypes.DATE,
       external_id: DataTypes.STRING,
       order_id: DataTypes.STRING,
-      data: DataTypes.TEXT,
+      data: DataTypes.JSON, // Note: unlike JSONB, JSON is supported by both Postgres and sqlite.
       amount: DataTypes.INTEGER
     },
     {
