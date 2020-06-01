@@ -1,4 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
+  const isPostgres = sequelize.options.dialect === 'postgres'
+
   const ExternalOrder = sequelize.define(
     'ExternalOrder',
     {
@@ -11,7 +13,8 @@ module.exports = (sequelize, DataTypes) => {
       updated_at: DataTypes.DATE,
       external_id: DataTypes.STRING,
       order_id: DataTypes.STRING,
-      data: DataTypes.TEXT,
+      // Note: Postgres supports JSONB while sqlite only supports JSON.
+      data: isPostgres ? DataTypes.JSONB : DataTypes.JSON,
       payment_at: DataTypes.DATE,
       amount: DataTypes.INTEGER,
       fee: DataTypes.INTEGER,

@@ -8,6 +8,10 @@ module.exports = function ({ url, shopName, orderId, total, items = [] }) {
   const allItems = items.join(', ')
   const content = `Order #${orderId} on '${shopName}' for ${total}: ${allItems}`
   console.log(`Discord webhook: ${content}`)
+  if (process.env.NODE_ENV === 'test') {
+    console.log('Test environment. Discord webhook not called.')
+    return
+  }
   fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

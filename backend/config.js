@@ -8,7 +8,8 @@ const Defaults = {
   '999': {
     ipfsGateway: 'http://localhost:8080',
     ipfsApi: 'http://localhost:5002',
-    provider: 'ws://localhost:8545',
+    provider: 'http://localhost:8545',
+    providerWs: 'ws://localhost:8545',
     marketplaceContract: process.env.MARKETPLACE_CONTRACT
   },
   '4': {
@@ -50,6 +51,7 @@ const getSiteConfig = memoize(async function getSiteConfig(
 })
 
 module.exports = {
+  defaults: Defaults,
   getSiteConfig,
   provider: PROVIDER
 }

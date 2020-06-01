@@ -7,7 +7,7 @@ const { Shop } = require('../models')
 
 const readFileAsync = promisify(fs.readFile)
 
-if (typeof process.env.ENCRYPTION_KEY === 'undefined') {
+if (typeof ENCRYPTION_KEY === 'undefined') {
   throw new TypeError('ENCRYPTION_KEY undefined')
 }
 

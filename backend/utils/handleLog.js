@@ -138,7 +138,7 @@ async function insertOrderFromEvent({ offerId, event, shop }) {
     data.tx = event.transactionHash
 
     const fields = {
-      data: JSON.stringify(data),
+      data,
       statusStr: event.eventName,
       updatedBlock: event.blockNumber
     }
@@ -179,7 +179,7 @@ async function insertOrderFromEvent({ offerId, event, shop }) {
     console.error(e)
     const fields = {
       statusStr: 'error',
-      data: JSON.stringify({ error: e.message })
+      data: { error: e.message }
     }
     if (order) {
       await order.update(fields)

@@ -33,7 +33,12 @@ function optionsForItem(item) {
 async function sendMail(shopId, cart, skip) {
   const config = await encConf.dump(shopId)
   if (!config.email || config.email === 'disabled') {
-    console.log('Emailer disabled')
+    console.log('Emailer disabled. Skipping sending email.')
+    return
+  }
+  if (process.env.NODE_ENV === 'test') {
+    console.log('Test environment. Email will be generated but not sent.')
+    skip = true
   }
 
   let transporter
