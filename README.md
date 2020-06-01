@@ -9,13 +9,6 @@ A decentralized e-commerce store served entirely from IPFS.
 - packages: utility packages
 - scripts: development helper scripts
 
-## Getting started
-
-To bring up the example store and server on your local:
-
-    yarn install
-    DATA_DIR=example yarn run start
-
 ## Documentation
 
 - Front-end [README](./shop/README.md)
