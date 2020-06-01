@@ -68,6 +68,7 @@ require('react-styl')(`
     background-color: #fff
   .modal-content .text-lg
     font-size: 28px
-    margin-bottom: 2rem
     line-height: normal
+  .modal-content .actions
+    margin-top: 2rem
 `)

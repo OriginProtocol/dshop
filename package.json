@@ -47,5 +47,15 @@
     "singleQuote": true,
     "proseWrap": "always",
     "trailingComma": "none"
+  },
+  "renovate": {
+    "extends": [
+      "config:base"
+    ],
+    "groupName": "all",
+    "ignoreDeps": [],
+    "ignorePaths": [],
+    "schedule": "before 2am",
+    "rebaseStalePrs": false
   }
 }

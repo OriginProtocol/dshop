@@ -13,7 +13,7 @@ import FirstTime from './setup/FirstTime'
 
 import Shops from './shops/Shops'
 import Shop from './shops/shop/Shop'
-import NewShop from './shops/NewShop'
+import NewShop from './shops/new-shop/NewShop'
 import Dashboard from './Dashboard'
 import Networks from './networks/Networks'
 import NewNetwork from './networks/CreateNetwork'

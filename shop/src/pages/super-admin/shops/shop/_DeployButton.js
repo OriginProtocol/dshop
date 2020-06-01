@@ -6,7 +6,7 @@ import { useStateValue } from 'data/state'
 
 import Modal from 'components/Modal'
 
-import ShopReady from '../ShopReady'
+import ShopReady from '../new-shop/ShopReady'
 
 const AdminDeployShop = ({ className = '', shop }) => {
   const [{ admin }] = useStateValue()
@@ -72,7 +72,7 @@ const Deploy = ({ state, setState, admin, shop }) => {
   return (
     <>
       <div className="text-lg">Deploy Shop</div>
-      <div className="d-flex align-items-center justify-content-center mb-4">
+      <div className="d-flex align-items-center justify-content-center my-4">
         <label className="mb-0">Network</label>
         <select
           value={state.networkId}

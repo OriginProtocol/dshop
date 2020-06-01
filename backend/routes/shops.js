@@ -1,5 +1,12 @@
 const omit = require('lodash/omit')
-const { Seller, Shop, SellerShop, Network, Sequelize } = require('../models')
+const {
+  Seller,
+  Shop,
+  SellerShop,
+  Network,
+  Sequelize,
+  ShopDeployment
+} = require('../models')
 const { authSellerAndShop, authRole, authSuperUser } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
 const { getConfig, setConfig } = require('../utils/encryptedConfig')
@@ -70,32 +77,78 @@ module.exports = function (app) {
     res.json({ success: true, shops })
   })
 
-  app.post(
-    '/shop/sync-printful',
-    authSuperUser,
-    authSellerAndShop,
-    async (req, res) => {
-      const shop = req.shop
-      const network = await Network.findOne({ where: { active: true } })
-      if (!network) {
-        return res.json({ success: false, reason: 'no-active-network' })
-      }
-
-      const { printful } = getConfig(shop.config)
-      if (!printful) {
-        return res.json({ success: false, reason: 'no-printful-api-key' })
-      }
-
-      const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
-
-      await downloadProductData({ OutputDir, printfulApi: printful })
-      await writeProductData({ OutputDir })
-      await downloadPrintfulMockups({ OutputDir })
-      await resizePrintfulMockups({ OutputDir })
-
-      res.json({ success: true })
+  app.post('/shops/:shopId/sync-printful', authSuperUser, async (req, res) => {
+    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    if (!shop) {
+      return res.json({ success: false, reason: 'no-such-shop' })
     }
-  )
+
+    const network = await Network.findOne({ where: { active: true } })
+    if (!network) {
+      return res.json({ success: false, reason: 'no-active-network' })
+    }
+
+    const { printful } = getConfig(shop.config)
+    if (!printful) {
+      return res.json({ success: false, reason: 'no-printful-api-key' })
+    }
+
+    const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
+
+    await downloadProductData({ OutputDir, printfulApi: printful })
+    await writeProductData({ OutputDir })
+    await downloadPrintfulMockups({ OutputDir })
+    await resizePrintfulMockups({ OutputDir })
+
+    res.json({ success: true })
+  })
+
+  app.get('/shops/:shopId/deployments', authSuperUser, async (req, res) => {
+    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    if (!shop) {
+      return res.json({ success: false, reason: 'no-such-shop' })
+    }
+
+    const deployments = await ShopDeployment.findAll({
+      where: { shopId: shop.id },
+      order: [['createdAt', 'desc']]
+    })
+
+    res.json({ deployments })
+  })
+
+  app.get('/shops/:shopId/assets', authSuperUser, async (req, res) => {
+    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    if (!shop) {
+      return res.json({ success: false, reason: 'no-such-shop' })
+    }
+
+    const OutputDir = `${DSHOP_CACHE}/${shop.authToken}/data`
+    fs.readdir(OutputDir, (err, files) => {
+      res.json({
+        assets: err ? [] : files.filter((f) => f.match(/\.(png|svg|jpg|ico)$/))
+      })
+    })
+  })
+
+  app.delete('/shops/:shopId/assets', authSuperUser, async (req, res) => {
+    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    if (!shop) {
+      return res.json({ success: false, reason: 'no-such-shop' })
+    }
+    if (!req.body.file) {
+      return res.json({ success: false, reason: 'no-file-specified' })
+    }
+
+    const file = `${DSHOP_CACHE}/${shop.authToken}/data/${req.body.file}`
+    if (!file) {
+      return res.json({ success: false, reason: 'no-such-file' })
+    }
+
+    fs.unlink(file, (err) => {
+      res.json({ success: err ? false : true })
+    })
+  })
 
   /**
    * Creates a new shop.

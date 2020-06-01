@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 
 import useSetState from 'utils/useSetState'
 
-const AdminShopAssets = ({ shop }) => {
+const AdminShopAssets = ({ shop, onSuccess }) => {
   const [state, setState] = useSetState({ assets: [], save: 0 })
 
   useEffect(() => {
@@ -15,7 +15,9 @@ const AdminShopAssets = ({ shop }) => {
       body.append('file', asset)
     }
 
-    fetch(`/shops/${shop.authToken}/save-files`, { method: 'POST', body })
+    fetch(`/shops/${shop.authToken}/save-files`, { method: 'POST', body }).then(
+      onSuccess
+    )
   }, [state.save])
 
   return (
@@ -29,15 +31,19 @@ const AdminShopAssets = ({ shop }) => {
       >
         <div className="form-group">
           <label>Upload Assets (.png, .jpg, .ico, .svg)</label>
-          <input
-            type="file"
-            className="form-control"
-            accept=".png, .jpeg, .ico, .svg"
-            multiple="multiple"
-            onChange={(e) => setState({ assets: e.target.files })}
-          />
+          <div className="input-group">
+            <input
+              type="file"
+              className="form-control"
+              accept=".png, .jpeg, .ico, .svg"
+              multiple="multiple"
+              onChange={(e) => setState({ assets: e.target.files })}
+            />
+            <div className="input-group-append">
+              <button className={`btn btn-primary`}>Upload</button>
+            </div>
+          </div>
         </div>
-        <button className={`btn btn-primary`}>Save</button>
       </form>
     </div>
   )

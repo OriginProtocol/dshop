@@ -6,7 +6,7 @@ import { DshopLogo } from 'components/icons/Admin'
 
 import SignUp from './SignUp'
 import ServerSetup from './ServerSetup'
-import CreateShop from '../shops/CreateShop'
+import CreateShop from '../shops/new-shop/CreateShop'
 
 const FirstTime = () => {
   const [{ admin }] = useStateValue()

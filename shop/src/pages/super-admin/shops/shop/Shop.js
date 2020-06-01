@@ -1,35 +1,21 @@
 import React from 'react'
-import { useRouteMatch } from 'react-router-dom'
+import { Link, Switch, Route, useRouteMatch, Redirect } from 'react-router-dom'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
-import useSetState from 'utils/useSetState'
 
-import Link from 'components/Link'
-
+import SyncShop from './Sync'
 import DeleteShop from './_Delete'
-import DeployShop from './_Deploy'
-import FileEditor from './_FileEditor'
-import Assets from './_Assets'
-import ServerSettings from 'pages/admin/settings/Server'
+import DeployShop from './Deploy'
+import FileEditor from './FileEditor'
+import Assets from './Assets'
+// import ServerSettings from 'pages/admin/settings/Server'
 
-const Files = [
-  { name: 'Config', path: 'config.json' },
-  { name: 'Products', path: 'products.json' },
-  { name: 'Collections', path: 'collections.json' },
-  { name: 'Shipping', path: 'shipping.json' },
-  { name: 'About', path: 'about.html' }
-]
-
-const NavItem = ({ id, active, name, setState }) => (
+const NavItem = ({ url, active, name }) => (
   <li className="nav-item">
-    <a
+    <Link
       className={`nav-link${active ? ' active' : ''}`}
-      href="#"
-      onClick={(e) => {
-        e.preventDefault()
-        setState({ activeFile: id })
-      }}
+      to={url}
       children={name}
     />
   </li>
@@ -37,20 +23,19 @@ const NavItem = ({ id, active, name, setState }) => (
 
 const AdminShop = () => {
   const [{ admin }] = useStateValue()
-  const match = useRouteMatch('/super-admin/shops/:shopId')
-  const { shopId } = match.params
-
-  const [state, setState] = useSetState({
-    activeFile: Files[0].path
-  })
+  const match = useRouteMatch('/super-admin/shops/:shopId/:tab?')
+  const { shopId, tab } = match.params
 
   const shops = get(admin, 'shops', [])
   const shop = shops.find((s) => s.authToken === shopId)
-  if (!shop) {
+  if (!shops.length) {
     return <div>Loading...</div>
   }
+  if (!shop) {
+    return <div>Shop not found</div>
+  }
 
-  const { activeFile } = state
+  const prefix = `/super-admin/shops/${shopId}`
 
   return (
     <>
@@ -67,43 +52,53 @@ const AdminShop = () => {
               sessionStorage.dataDir = shop.authToken
               window.open(location.origin)
             }}
-            children="Preview"
+            children="Storefront"
           />
-          <DeployShop shop={shop} className="ml-2" />
+          <button
+            className="btn btn-outline-primary ml-2"
+            onClick={() => {
+              sessionStorage.dataDir = shop.authToken
+              window.open(`${location.origin}/#/admin/settings/server`)
+            }}
+            children="Admin"
+          />
           <DeleteShop shop={shop} className="ml-2" />
         </div>
       </h3>
 
       <ul className="nav nav-tabs mt-3 mb-3">
-        {Files.map((file) => (
-          <NavItem
-            key={file.path}
-            active={activeFile === file.path}
-            id={file.path}
-            name={file.name}
-            setState={setState}
-          />
-        ))}
         <NavItem
-          active={activeFile === 'assets'}
-          id="assets"
-          name="Assets"
-          setState={setState}
+          active={tab === 'files'}
+          url={`${prefix}/files`}
+          name="Files"
         />
-        {/* <NavItem
-          active={activeFile === 'server'}
-          id="server"
-          name="Server"
-          setState={setState}
-        /> */}
+        <NavItem
+          active={tab === 'assets'}
+          url={`${prefix}/assets`}
+          name="Assets"
+        />
+        <NavItem
+          active={tab === 'deploy'}
+          url={`${prefix}/deploy`}
+          name="Deploy"
+        />
+        <NavItem active={tab === 'sync'} url={`${prefix}/sync`} name="Sync" />
       </ul>
-      {activeFile === 'assets' ? (
-        <Assets shop={shop} />
-      ) : activeFile === 'server' ? (
-        <ServerSettings shop={shop} />
-      ) : (
-        <FileEditor {...{ Files, shopId, activeFile }} />
-      )}
+      <Switch>
+        <Route path={`${prefix}/assets`}>
+          <Assets shop={shop} />
+        </Route>
+        <Route path={`${prefix}/deploy`}>
+          <DeployShop shop={shop} />
+        </Route>
+        <Route path={`${prefix}/sync`}>
+          <SyncShop shop={shop} />
+        </Route>
+        <Route path={`${prefix}/files`}>
+          <FileEditor shop={shopId} />
+        </Route>
+        <Redirect to={`${prefix}/files`} />
+      </Switch>
     </>
   )
 }

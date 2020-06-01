@@ -2,33 +2,42 @@ import React, { useEffect } from 'react'
 
 import useSetState from 'utils/useSetState'
 
+const Files = [
+  { name: 'Config', path: 'config.json' },
+  { name: 'Products', path: 'products.json' },
+  { name: 'Collections', path: 'collections.json' },
+  { name: 'Shipping', path: 'shipping.json' },
+  { name: 'About', path: 'about.html' }
+]
+
 let bc
 
-const AdminShop = ({ Files, shopId, activeFile }) => {
+const AdminShop = ({ shop }) => {
   const [state, setState] = useSetState({
     config: '',
     [Files[0].path]: '',
     valid: true,
-    save: 0
+    save: 0,
+    activeFile: Files[0].path
   })
 
   useEffect(() => {
-    fetch(`/${shopId}/${activeFile}`)
+    fetch(`/${shop}/${state.activeFile}`)
       .then((res) => (res.ok ? res.text() : new Promise(() => '')))
       .then((content) => {
-        setState({ [activeFile]: content, valid: true })
+        setState({ [state.activeFile]: content, valid: true })
       })
-  }, [activeFile])
+  }, [state.activeFile])
 
   useEffect(() => {
     if (!state.save) {
       return
     }
     const body = new FormData()
-    const file = new Blob([state[activeFile]])
-    body.append('file', file, activeFile)
+    const file = new Blob([state[state.activeFile]])
+    body.append('file', file, state.activeFile)
 
-    fetch(`/shops/${shopId}/save-files`, { method: 'POST', body })
+    fetch(`/shops/${shop.authToken}/save-files`, { method: 'POST', body })
   }, [state.save])
 
   function onSave(e) {
@@ -59,28 +68,42 @@ const AdminShop = ({ Files, shopId, activeFile }) => {
 
   return (
     <form className="admin-shop-edit" onSubmit={onSave}>
+      <div className="d-flex mb-3">
+        <select
+          onChange={(e) => setState({ activeFile: e.target.value })}
+          className="form-control w-auto"
+        >
+          {Files.map((file) => (
+            <option key={file.path} value={file.path}>
+              {file.name}
+            </option>
+          ))}
+        </select>
+
+        <div className="ml-auto d-flex align-items-center">
+          {state.valid ? null : <div className="mr-3">Invalid JSON</div>}
+          <button
+            className={`btn btn-primary${state.valid ? '' : ' disabled'}`}
+            children="Save"
+          />
+        </div>
+      </div>
       <div className="form-group">
         <textarea
           className="form-control"
-          value={state[activeFile]}
+          value={state[state.activeFile]}
           onChange={(e) => {
             let valid = true
-            if (activeFile.indexOf('.json') > 0) {
+            if (state.activeFile.indexOf('.json') > 0) {
               try {
                 JSON.parse(e.target.value)
               } catch (e) {
                 valid = false
               }
             }
-            setState({ [activeFile]: e.target.value, valid })
+            setState({ [state.activeFile]: e.target.value, valid })
           }}
-        ></textarea>
-      </div>
-      <div className="d-flex">
-        <button className={`btn btn-primary${state.valid ? '' : ' disabled'}`}>
-          Save
-        </button>
-        {state.valid ? null : <div className="ml-3">Invalid JSON</div>}
+        />
       </div>
     </form>
   )
@@ -92,5 +115,5 @@ require('react-styl')(`
   .admin-shop-edit
     textarea
       font-family: monospace
-      min-height: 90vh
+      height: 90vh
 `)

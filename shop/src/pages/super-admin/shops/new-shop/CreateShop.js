@@ -9,6 +9,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import PasswordField from 'components/admin/PasswordField'
 
 import ShopReady from './ShopReady'
+import FetchShopConfig from './_FetchShopConfig'
 
 async function genPGP() {
   const randomArray = Array.from(crypto.getRandomValues(new Uint32Array(5)))
@@ -146,7 +147,7 @@ const CreateShop = () => {
             {localShops.length ? (
               <option value="local-dir">From Local Dir</option>
             ) : null}
-            {/* <option value="clone-domain">Clone Domain</option> */}
+            <option value="clone-url">Clone URL</option>
             {/* <option value="clone-ipfs">Clone IPFS Hash</option> */}
             <option value="printful">New Printful</option>
             <option value="single-product">New Single Product</option>
@@ -162,6 +163,25 @@ const CreateShop = () => {
                 <option key={localShop}>{localShop}</option>
               ))}
             </select>
+          </div>
+        ) : state.shopType === 'clone-url' ? (
+          <div className="form-group col-md-6">
+            <label>URL</label>
+            <div className="input-group">
+              <input
+                {...input('cloneUrl')}
+                placeholder="eg https://originswag.eth.link"
+              />
+              <div className="input-group-append">
+                <FetchShopConfig
+                  onSuccess={(hash) => console.log(hash)}
+                  className="btn btn-outline-primary"
+                  url={state.cloneUrl}
+                  children="Go"
+                />
+              </div>
+            </div>
+            {Feedback('cloneUrl')}
           </div>
         ) : (
           <div className="form-group col-md-6">
