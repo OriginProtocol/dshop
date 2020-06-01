@@ -8,11 +8,13 @@
   "main": "index.js",
   "scripts": {
     "clean": "rm db/dshop.db && npm run migrate",
-    "migrate": "sequelize db:migrate --config db/config.js --migrations-path db/migrations",
     "heroku-postbuild": "npm run migrate",
+    "lint": "eslint . && npm run prettier:check",
+    "migrate": "sequelize db:migrate --config db/config.js --migrations-path db/migrations",
+    "migrate:undo": "sequelize db:migrate:undo --config db/config.js --migrations-path db/migrations",
     "prettier": "prettier --write *.js \"**/*.js\"",
     "prettier:check": "prettier -c *.js \"**/*.js\"",
-    "lint": "eslint . && npm run prettier:check"
+    "test": "NODE_ENV=test mocha --timeout 10000 --exit --file test/setup test"
   },
   "author": "Nick Poulden <nick@originprotocol.com>",
   "license": "MIT",
@@ -38,6 +40,7 @@
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "form-data": "^3.0.0",
+    "formidable": "^1.2.2",
     "inquirer": "^7.1.0",
     "ipfs-deploy": "7.14.0",
     "ipfs-http-client": "^44.1.0",
@@ -59,7 +62,9 @@
     "ws": "^7.3.0"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
     "eslint": "6.8.0",
+    "mocha": "^7.1.0",
     "prettier": "2.0.5"
   },
   "eslintIgnore": [

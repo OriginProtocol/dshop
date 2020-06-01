@@ -24,7 +24,7 @@ async function go() {
     })
     if (offer) {
       try {
-        const data = JSON.parse(offer.data)
+        const data = offer.data
         csv.push(data.total)
         csv.push(data.paymentMethod.label)
         csv.push(data.userInfo.country)

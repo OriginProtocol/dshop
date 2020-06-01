@@ -6,7 +6,7 @@ const SequelizeStore = require('connect-session-sequelize')(session.Store)
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const serveStatic = require('serve-static')
-const { IS_PROD } = require('./utils/const')
+const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
 const { findShopByHostname } = require('./utils/shop')
 const { sequelize } = require('./models')
 const encConf = require('./utils/encryptedConfig')
@@ -138,7 +138,7 @@ app.get('*', (req, res, next) => {
     return next()
   }
   const dataDir = split[1]
-  const dir = `${__dirname}/data/${dataDir}/data`
+  const dir = `${DSHOP_CACHE}/${dataDir}/data`
   req.url = split.slice(2).join('/')
   serveStatic(dir)(req, res, next)
 })

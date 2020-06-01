@@ -1,0 +1,5 @@
+dist/*
+docs/*
+nodes_modules/*
+db/*
+data/*

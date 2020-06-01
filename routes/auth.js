@@ -9,6 +9,7 @@ const fs = require('fs')
 const { createSeller } = require('../utils/sellers')
 const encConf = require('../utils/encryptedConfig')
 const { validateConfig } = require('../utils/validators')
+const { DSHOP_CACHE } = require('../utils/const')
 const get = require('lodash/get')
 const omit = require('lodash/omit')
 
@@ -70,7 +71,7 @@ module.exports = function (app) {
       return res.json({ success: false, reason: 'no-active-network' })
     }
 
-    const shopDataDir = `${__dirname}/../data`
+    const shopDataDir = DSHOP_CACHE
     const { networkId } = network
     const shops = await Shop.findAll({
       where: { networkId },
@@ -80,12 +81,15 @@ module.exports = function (app) {
       viewable: fs.existsSync(`${shopDataDir}/${s.authToken}/data/config.json`)
     }))
 
-    const localShops = fs
-      .readdirSync(shopDataDir)
-      .filter((shop) =>
-        fs.existsSync(`${shopDataDir}/${shop}/data/config.json`)
-      )
-      .filter((dir) => !shops.some((s) => s.authToken === dir))
+    let localShops = []
+    if (fs.existsSync(shopDataDir)) {
+      localShops = fs
+        .readdirSync(shopDataDir)
+        .filter((shop) =>
+          fs.existsSync(`${shopDataDir}/${shop}/data/config.json`)
+        )
+        .filter((dir) => !shops.some((s) => s.authToken === dir))
+    }
 
     if (!shops.length) {
       return res.json({
