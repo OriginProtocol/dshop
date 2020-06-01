@@ -17,6 +17,8 @@ const fs = require('fs')
 const configs = require('../scripts/configs')
 const { exec } = require('child_process')
 const formidable = require('formidable')
+const https = require('https')
+const http = require('http')
 
 const { deployShop } = require('../utils/deployShop')
 const { DSHOP_CACHE } = require('../utils/const')
@@ -148,6 +150,68 @@ module.exports = function (app) {
     fs.unlink(file, (err) => {
       res.json({ success: err ? false : true })
     })
+  })
+
+  app.post('/shops/:shopId/sync-cache', authSuperUser, async (req, res) => {
+    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    if (!shop) {
+      return res.json({ success: false, reason: 'no-such-shop' })
+    }
+    if (!req.body.hash) {
+      return res.json({ success: false, reason: 'no-hash-specified' })
+    }
+
+    const network = await Network.findOne({ where: { active: true } })
+    if (!network.ipfsApi) {
+      return res.json({ success: false, reason: 'no-ipfs-api' })
+    }
+
+    const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
+
+    fs.mkdirSync(OutputDir, { recursive: true })
+    const url = `${network.ipfsApi}/api/v0/get?arg=${req.body.hash}&archive=true&compress=true`
+
+    await new Promise((resolve) => {
+      const f = fs
+        .createWriteStream(`${OutputDir}/data.tar.gz`)
+        .on('finish', resolve)
+      const fetchLib = url.indexOf('https') === 0 ? https : http
+      const req = fetchLib.request(url, { method: 'POST' }, (response) =>
+        response.pipe(f)
+      )
+      req.end()
+    })
+
+    await new Promise((resolve, reject) => {
+      exec(`rm -rf ${OutputDir}/data`, (error, stdout) => {
+        if (error) reject(error)
+        else resolve(stdout)
+      })
+    })
+
+    await new Promise((resolve, reject) => {
+      exec(
+        `tar -xvzf ${OutputDir}/data.tar.gz -C ${OutputDir}`,
+        (error, stdout) => {
+          if (error) reject(error)
+          else resolve(stdout)
+        }
+      )
+    })
+
+    fs.unlinkSync(`${OutputDir}/data.tar.gz`)
+
+    await new Promise((resolve, reject) => {
+      exec(
+        `mv ${OutputDir}/${req.body.hash} ${OutputDir}/data`,
+        (error, stdout) => {
+          if (error) reject(error)
+          else resolve(stdout)
+        }
+      )
+    })
+
+    res.json({ success: true })
   })
 
   /**
