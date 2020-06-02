@@ -112,6 +112,7 @@ async function connectWS({ network, listingIds }) {
     const hash = web3.utils.sha3(raw)
     if (handled[hash]) {
       console.log('Ignoring repeated ws message')
+      return
     }
     handled[hash] = true
 
