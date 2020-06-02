@@ -13,7 +13,7 @@ const { sequelize, Shop, Network, Event } = require('../models')
 const { CONTRACTS } = require('../utils/const')
 const { storeEvents, getEventObj } = require('../utils/events')
 
-const { insertOrderFromEvent } = require('../utils/handleLog')
+const { processDShopEvent } = require('../utils/handleLog')
 
 const limiter = new Bottleneck({ maxConcurrent: 10 })
 const batchSize = 5000
@@ -181,7 +181,7 @@ async function handleEvents(listingIdFull) {
     order: [['block_number', 'ASC']]
   })
   for (const event of events) {
-    await insertOrderFromEvent({
+    await processDShopEvent({
       offerId: `${listingIdFull}-${event.offerId}`,
       event,
       shop

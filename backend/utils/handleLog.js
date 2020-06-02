@@ -18,13 +18,14 @@ const MarketplaceABI = Marketplace._jsonInterface
 /**
  * Handles processing events emitted by the marketplace contract.
  *
- * @param web3
- * @param networkId
- * @param contractVersion
- * @param data
- * @param topics
- * @param transactionHash
- * @param blockNumber
+ * @param {Object} web3: Web3 object
+ * @param {Integer} networkId: Ethereum newtrok id
+ * @param {string} contractVersion: Version of the marketplace contract. Ex: '001'
+ * @param {Object} data: blockchain event data
+ * @param {Array<Object>} topics: event topics
+ * @param {string} transactionHash: blockchain transaction hash
+ * @param {Integer} blockNumber: block number
+ * @param {Function} mockGetEventObj: for testing only. Mock function to call to parse the event.
  * @returns {Promise<void>}
  */
 const handleLog = async ({
@@ -34,7 +35,8 @@ const handleLog = async ({
   data,
   topics,
   transactionHash,
-  blockNumber
+  blockNumber,
+  mockGetEventObj
 }) => {
   const eventAbi = MarketplaceABI.find((i) => i.signature === topics[0])
   if (!eventAbi) {
@@ -42,26 +44,11 @@ const handleLog = async ({
     return
   }
 
-  // console.log('fetch existing...', transactionHash)
-  // const existingTx = await Transaction.findOne({ where: { transactionHash } })
-  // if (existingTx) {
-  //   console.log('Already handled tx')
-  //   return
-  // } else {
-  //   Transaction.create({
-  //     networkId,
-  //     transactionHash,
-  //     blockNumber: web3.utils.hexToNumber(blockNumber)
-  //   })
-  //     .then(res => {
-  //       console.log(`Created tx ${res.dataValues.id}`)
-  //     })
-  //     .catch(err => {
-  //       console.error(err)
-  //     })
-  // }
-
-  const eventObj = getEventObj({
+  const getEventObjFn =
+    process.env.NODE_ENV === 'test' && mockGetEventObj
+      ? mockGetEventObj
+      : getEventObj
+  const eventObj = getEventObjFn({
     data,
     topics,
     transactionHash,
@@ -94,10 +81,20 @@ const handleLog = async ({
     }
   })
 
-  await insertOrderFromEvent({ offerId, event, shop })
+  // Process the order.
+  await processDShopEvent({ offerId, event, shop })
 }
 
-async function insertOrderFromEvent({ offerId, event, shop }) {
+/**
+ * Processes a dshop event
+ *
+ * @param {string} offerId: format is <networkId>-<contract_version>-<listing_id>-<offer_id>
+ * @param {Event} event: Event DB model object.
+ * @param {Shop} shop: Shop DB model object.
+ * @returns {Promise<void>}
+ */
+async function processDShopEvent({ offerId, event, shop }) {
+  let data
   const eventName = event.eventName
 
   // Skip any event that is not offer related.
@@ -122,7 +119,7 @@ async function insertOrderFromEvent({ offerId, event, shop }) {
       statusStr: eventName,
       updatedBlock: event.blockNumber
     })
-    return
+    return order
   }
 
   // At this point we expect the event to be an offer creation since no existing
@@ -170,7 +167,7 @@ async function insertOrderFromEvent({ offerId, event, shop }) {
     const options = { message, privateKeys: [privateKeyObj] }
 
     const plaintext = await openpgp.decrypt(options)
-    const data = JSON.parse(plaintext.data)
+    data = JSON.parse(plaintext.data)
     data.offerId = offerId
     data.tx = event.transactionHash
 
@@ -193,37 +190,34 @@ async function insertOrderFromEvent({ offerId, event, shop }) {
     }
     order = await Order.create(orderObj)
     console.log(`Saved order ${order.orderId} to DB.`)
-
-    // Handle sending notifications via email and discord.
-    console.log('sendMail', data)
-    sendMail(shop.id, data)
-    discordWebhook({
-      url: networkConfig.discordWebhook,
-      orderId: offerId,
-      shopName: shop.name,
-      total: `$${(data.total / 100).toFixed(2)}`,
-      items: data.items.map((i) => i.title).filter((t) => t)
-    })
   } catch (e) {
     console.error(e)
-    const fields = {
+    // Record the error in the DB.
+    order = await Order.create({
+      networkId: event.networkId,
+      shopId: shop.id,
+      orderId: offerId,
       statusStr: 'error',
       data: { error: e.message }
-    }
-    if (order) {
-      await order.update(fields)
-    } else {
-      await Order.create({
-        networkId: event.networkId,
-        shopId: shop.id,
-        orderId: offerId,
-        ...fields
-      })
-    }
+    })
+    return order
   }
+
+  // Send notifications via email and discord.
+  console.log('sendMail', data)
+  await sendMail(shop.id, data)
+  await discordWebhook({
+    url: networkConfig.discordWebhook,
+    orderId: offerId,
+    shopName: shop.name,
+    total: `$${(data.total / 100).toFixed(2)}`,
+    items: data.items.map((i) => i.title).filter((t) => t)
+  })
+
+  return order
 }
 
 module.exports = {
   handleLog,
-  insertOrderFromEvent
+  processDShopEvent
 }

@@ -4,7 +4,7 @@ const openpgp = require('openpgp')
 
 const { Order, Network, Shop } = require('../models')
 const { defaults } = require('../config')
-const { insertOrderFromEvent } = require('../utils/handleLog')
+const { processDShopEvent, handleLog } = require('../utils/handleLog')
 const { post, getBytes32FromIpfsHash } = require('../utils/_ipfs')
 const { createShop } = require('../utils/shop')
 const { setConfig } = require('../utils/encryptedConfig')
@@ -62,7 +62,7 @@ async function addData(data, { pgpPublicKey, ipfsApi }) {
 
 describe('Orders', () => {
   const listingId = '1-001-1'
-  let offerIpfsHash, shopId, data
+  let offerIpfsHash, shopId, data, offerId
 
   before(async () => {
     const config = defaults['999']
@@ -192,11 +192,41 @@ describe('Orders', () => {
     offerIpfsHash = await post(config.ipfsApi, offer, true)
   })
 
+  it('It should ignore an event unrelated to dshop', async () => {
+    // Create a fake OfferCreated event for a listing that is not dshop related.
+    const offerCreatedSignature =
+      '0x6ee68cb753f284cf771c1a32c236d7ffcab6011345186a30e57837d761e86837'
+    const event = {
+      eventName: 'OfferCreated',
+      listingId: 2020,
+      offerId: 1,
+      party: '0xabcdef',
+      ipfsHash: 'TESTHASH',
+      networkId: 999,
+      transactionHash: '0x12345',
+      blockNumber: 1,
+      timestamp: Date.now() / 1000
+    }
+
+    const order = await handleLog({
+      web3: null,
+      networkId: '999',
+      contractVersion: '001',
+      data: null,
+      topics: [offerCreatedSignature],
+      transactionHash: '0x12345',
+      blockNumber: 1,
+      mockGetEventObj: () => event
+    })
+
+    expect(order).to.be.undefined
+  })
+
   it('It should insert an order from an event', async () => {
     const shop = await Shop.findByPk(shopId)
 
     const uniqueId = Math.round(Date.now() / 1000) // Use timestamp in second as a unique offer id.
-    const offerId = `${listingId}-${uniqueId}`
+    offerId = `${listingId}-${uniqueId}`
 
     // Create a fake OfferCreated blockchain event.
     const event = {
@@ -211,7 +241,7 @@ describe('Orders', () => {
     }
 
     // Call the logic for inserting an order in the DB based on a OfferCreated blockchain event.
-    await insertOrderFromEvent({ offerId, event, shop })
+    await processDShopEvent({ offerId, event, shop })
 
     // Check the order was inserted with the proper values.
     const order = await Order.findOne({ where: { orderId: offerId } })
@@ -226,5 +256,30 @@ describe('Orders', () => {
       ...data,
       ...{ offerId, tx: event.transactionHash }
     })
+  })
+
+  it('It should update an order on an OfferAccepted event', async () => {
+    const shop = await Shop.findByPk(shopId)
+
+    // Create a fake OfferCreated blockchain event.
+    const event = {
+      eventName: 'OfferAccepted',
+      offerId,
+      party: '0xabcdef',
+      ipfsHash: offerIpfsHash,
+      networkId: 999,
+      transactionHash: '0xABCD',
+      blockNumber: 2,
+      timestamp: Date.now() / 1000
+    }
+
+    // Call the logic for processing the event.
+    await processDShopEvent({ offerId, event, shop })
+
+    // Check the order status and updateBlock were updated.
+    const order = await Order.findOne({ where: { orderId: offerId } })
+    expect(order).to.be.an('object')
+    expect(order.statusStr).to.equal('OfferAccepted')
+    expect(order.updatedBlock).to.equal(2)
   })
 })
