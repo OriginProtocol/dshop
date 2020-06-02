@@ -33,6 +33,12 @@ const AdminMenu = () => {
           Networks
         </Link>
       </li>
+      <li className={`settings ${active('/super-admin/users')}`}>
+        <Link to="/super-admin/users">
+          <Icons.User />
+          Users
+        </Link>
+      </li>
       <li className="db">
         <a
           href="#logout"

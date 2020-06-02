@@ -70,6 +70,7 @@ app.use((err, req, res, next) => {
 
 require('./routes/networks')(app)
 require('./routes/auth')(app)
+require('./routes/users')(app)
 require('./routes/shops')(app)
 require('./routes/affiliate')(app)
 require('./routes/uphold')(app)

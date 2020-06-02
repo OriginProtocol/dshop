@@ -7,7 +7,7 @@
     "start": "node -r @babel/register index",
     "build:js": "NODE_ENV=production webpack --loglevel notice",
     "build:css": "node scripts/getCss > public/app.css",
-    "build:dist": "rm -rf ../backend/dist && PROVIDER=PROVIDER TITLE=TITLE NETWORK=NETWORK DATA_DIR=DATA_DIR NODE_ENV=production npm run build && cp -r public ../backend/dist",
+    "build:dist": "rm -rf ../backend/dist && NODE_ENV=production npm run build && cp -r public ../backend/dist",
     "build": "npm run build:css && npm run build:js",
     "lint": "eslint . && npm run prettier:check",
     "prettier": "prettier --write *.js \"{src,test}/**/*.js\"",

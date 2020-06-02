@@ -1,7 +1,7 @@
 const { Seller } = require('../models')
 const { createSalt, hashPassword, checkPassword } = require('../routes/_auth')
 
-async function createSeller({ name, email, password }) {
+async function createSeller({ name, email, password, superuser }) {
   if (!name || !email || !password) {
     return { status: 400, error: 'Invalid registration' }
   }
@@ -22,7 +22,7 @@ async function createSeller({ name, email, password }) {
     name,
     email,
     password: passwordHash,
-    superuser: numSellers === 0 ? true : false // First seller is superUser
+    superuser: superuser || (numSellers === 0 ? true : false) // First seller is superUser
   })
 
   return { seller }

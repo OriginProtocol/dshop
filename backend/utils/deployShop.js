@@ -38,6 +38,14 @@ async function deployShop({ OutputDir, dataDir, network, subdomain, shop }) {
     )
   })
 
+  let publicShopConfig = {}
+  try {
+    const raw = fs.readFileSync(`${OutputDir}/data/config.json`)
+    publicShopConfig = JSON.parse(raw.toString())
+  } catch (e) {
+    /* Ignore */
+  }
+
   const networkName =
     network.networkId === 1
       ? 'mainnet'
@@ -49,9 +57,11 @@ async function deployShop({ OutputDir, dataDir, network, subdomain, shop }) {
   fs.writeFileSync(
     `${OutputDir}/public/index.html`,
     html
-      .replace('TITLE', shop.name)
+      .replace('TITLE', publicShopConfig.fullTitle)
+      .replace('META_DESC', publicShopConfig.metaDescription || '')
       .replace('DATA_DIR', dataDir)
       .replace('NETWORK', networkName)
+      .replace('FAVICON', publicShopConfig.favicon || 'favicon.ico')
   )
 
   // Deploy the shop to IPFS.

@@ -69,6 +69,9 @@ const Deploy = ({ state, setState, admin, shop }) => {
   const network = admin.networks.find((n) => {
     return String(n.networkId) === state.networkId
   })
+  if (state.deployShop) {
+    return <div className="text-lg">Deploying...</div>
+  }
   return (
     <>
       <div className="text-lg">Deploy Shop</div>
