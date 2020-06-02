@@ -20,9 +20,7 @@ const Password = () => {
       </header>
       <div className="bdr" />
       <h3>Opening Soon</h3>
-      <div className="description">
-        Please check back soon!
-      </div>
+      <div className="description">Please check back soon!</div>
       <form
         onSubmit={(e) => {
           e.preventDefault()
