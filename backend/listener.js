@@ -5,9 +5,8 @@ const WebSocket = require('ws')
 
 const Web3 = require('web3')
 const get = require('lodash/get')
-const isEqual = require('lodash/isEqual')
 
-const { Op, Network, Shop } = require('./models')
+const { Network } = require('./models')
 const { handleLog } = require('./utils/handleLog')
 
 const web3 = new Web3()
@@ -21,23 +20,28 @@ const SubscribeToNewHeads = JSON.stringify({
   params: ['newHeads']
 })
 
-const SubscribeToLogs = ({ address, listingIds }) => {
-  const listingTopics = listingIds.map((listingId) => {
-    return web3.utils.padLeft(web3.utils.numberToHex(listingId), 64)
-  })
-
+/**
+ * Prepares a request to subscribe to all events emitted by the marketplace contract.
+ * @param {string} address: Marketplace contract's address.
+ * @returns {string} The request to send to the provider.
+ */
+const SubscribeToLogs = ({ address }) => {
   return JSON.stringify({
     jsonrpc: '2.0',
     id: 1,
     method: 'eth_subscribe',
-    params: ['logs', { address, topics: [null, null, listingTopics] }]
+    params: ['logs', { address }]
   })
 }
 
-const GetPastLogs = ({ address, fromBlock, toBlock, listingIds }) => {
-  const listingTopics = listingIds.map((listingId) => {
-    return web3.utils.padLeft(web3.utils.numberToHex(listingId), 64)
-  })
+/**
+ * Prepares a request to fetch past events emitted by the marketplace contract.
+ * @param {string} address: Marketplace contract's address.
+ * @param {Integer} fromBlock: Block range start.
+ * @param {Integer} toBlock: Block range end.
+ * @returns {string} The request to send to the provider.
+ */
+const GetPastLogs = ({ address, fromBlock, toBlock }) => {
   const rpc = {
     jsonrpc: '2.0',
     id: 3,
@@ -45,7 +49,6 @@ const GetPastLogs = ({ address, fromBlock, toBlock, listingIds }) => {
     params: [
       {
         address,
-        topics: [null, null, listingTopics],
         fromBlock: web3.utils.numberToHex(fromBlock),
         toBlock: web3.utils.numberToHex(toBlock)
       }
@@ -54,7 +57,7 @@ const GetPastLogs = ({ address, fromBlock, toBlock, listingIds }) => {
   return JSON.stringify(rpc)
 }
 
-async function connectWS({ network, listingIds }) {
+async function connectWS({ network }) {
   let lastBlock, pingTimeout
   const { networkId, providerWs } = network
   const res = await Network.findOne({ where: { networkId } })
@@ -65,12 +68,11 @@ async function connectWS({ network, listingIds }) {
     console.log('No recorded block found')
   }
 
-  const contractVersion = network.marketplaceVersion
-  const address = network.marketplaceContract
-
-  const allListings = listingIds.join(', ')
+  const { contractVersion, address } = network
   console.log(`Connecting to ${providerWs} (netId ${networkId})`)
-  console.log(`Watching listings ${allListings} on contract ${address}`)
+  console.log(
+    `Watching events on contract version ${contractVersion} at address ${address}`
+  )
 
   if (ws) {
     clearTimeout(pingTimeout)
@@ -100,7 +102,7 @@ async function connectWS({ network, listingIds }) {
       console.log('WS ping.')
       heartbeat()
     })
-    ws.send(SubscribeToLogs({ address, listingIds }))
+    ws.send(SubscribeToLogs({ address }))
     ws.send(SubscribeToNewHeads)
   })
 
@@ -115,13 +117,6 @@ async function connectWS({ network, listingIds }) {
       return
     }
     handled[hash] = true
-
-    const latestListings = await getListingIds({ network })
-    if (!isEqual(latestListings, listingIds)) {
-      console.log('Change in listings detected. Restarting listener...')
-      connectWS({ listingIds: latestListings, network })
-      return
-    }
 
     const data = JSON.parse(raw)
     if (data.id === 1) {
@@ -149,9 +144,7 @@ async function connectWS({ network, listingIds }) {
         console.log('Too many new blocks. Skip past log fetch.')
       } else if (blockDiff > 1) {
         console.log(`Fetching ${blockDiff} past logs...`)
-        ws.send(
-          GetPastLogs({ fromBlock: lastBlock, toBlock: number, listingIds })
-        )
+        ws.send(GetPastLogs({ fromBlock: lastBlock, toBlock: number }))
       }
       lastBlock = number
     } else {
@@ -168,16 +161,6 @@ const handleNewHead = (head, networkId) => {
   console.log(`New block ${number} timestamp: ${timestamp}`)
 
   return number
-}
-
-async function getListingIds({ network }) {
-  const shops = await Shop.findAll({
-    attributes: ['listingId'],
-    group: ['listingId'],
-    where: { networkId: network.networkId, listingId: { [Op.ne]: null } }
-  })
-
-  return shops.map((shop) => shop.listingId.split('-')[2])
 }
 
 async function start() {

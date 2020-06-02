@@ -9,12 +9,24 @@ const sendMail = require('./emailer')
 const { upsertEvent, getEventObj } = require('./events')
 const { getConfig } = require('./encryptedConfig')
 const discordWebhook = require('./discordWebhook')
-const { Order, Shop, Network } = require('../models')
+const { Network, Order, Shop } = require('../models')
 
 const web3 = new Web3()
 const Marketplace = new web3.eth.Contract(abi)
 const MarketplaceABI = Marketplace._jsonInterface
 
+/**
+ * Handles processing events emitted by the marketplace contract.
+ *
+ * @param web3
+ * @param networkId
+ * @param contractVersion
+ * @param data
+ * @param topics
+ * @param transactionHash
+ * @param blockNumber
+ * @returns {Promise<void>}
+ */
 const handleLog = async ({
   web3,
   networkId,
@@ -58,12 +70,18 @@ const handleLog = async ({
 
   const listingId = `${networkId}-${contractVersion}-${eventObj.listingId}`
   const offerId = `${listingId}-${eventObj.offerId}`
+
+  // The listener calls handleLog with any event emitted by the marketplace.
+  // Skip processing any event that is not dshop related.
   const shop = await Shop.findOne({ where: { listingId } })
   if (!shop) {
-    console.log(`No shop for listing ${listingId}`)
+    console.log(
+      `Event for listing Id ${listingId} is not dshop related. Skipping.`
+    )
     return
   }
 
+  // Persist the event in the database.
   const event = await upsertEvent({
     web3,
     shopId: shop.id,
@@ -80,12 +98,15 @@ const handleLog = async ({
 }
 
 async function insertOrderFromEvent({ offerId, event, shop }) {
-  console.log(`${event.eventName} - ${event.offerId} by ${event.party}`)
-  console.log(`IPFS Hash: ${event.ipfsHash}`)
+  const eventName = event.eventName
 
-  const network = await Network.findOne({ where: { active: true } })
-  const networkConfig = getConfig(network.config)
+  // Skip any event that is not offer related.
+  if (eventName.indexOf('Offer') < 0) {
+    console.log(`Not offer related. Ignoring event ${eventName}`)
+    return
+  }
 
+  // Load the DB order associated with the blockchain offer.
   let order = await Order.findOne({
     where: {
       networkId: event.networkId,
@@ -94,35 +115,51 @@ async function insertOrderFromEvent({ offerId, event, shop }) {
     }
   })
 
-  if (event.eventName.indexOf('Offer') < 0) {
-    console.log(`Ignoring event ${event.eventName}`)
+  // If the order was already recorded, only update its status and we are done.
+  if (order) {
+    console.log(`Updating status of DB order ${order.orderId} to ${eventName}`)
+    await order.update({
+      statusStr: eventName,
+      updatedBlock: event.blockNumber
+    })
     return
   }
 
-  if (order) {
-    console.log(`Order ${order.orderId} exists in DB.`)
-    // if (event.eventName !== 'OfferCreated') {
-    await order.update({ statusStr: event.eventName })
-    // }
+  // At this point we expect the event to be an offer creation since no existing
+  // order row was found in the DB.
+  if (eventName !== 'OfferCreated') {
+    console.log(
+      `Error: got event ${eventName} offerId ${offerId} but no order found in the DB.`
+    )
     return
   }
+
+  console.log(`${eventName} - ${event.offerId} by ${event.party}`)
+  console.log(`IPFS Hash: ${event.ipfsHash}`)
+
+  const network = await Network.findOne({ where: { active: true } })
+  const networkConfig = getConfig(network.config)
 
   try {
+    // Load the shop configuration to read things like PGP key and IPFS gateway to use.
     const shopConfig = getConfig(shop.config)
     const { dataUrl, pgpPrivateKey, pgpPrivateKeyPass } = shopConfig
     const ipfsGateway = await getIPFSGateway(dataUrl, event.networkId)
     console.log('IPFS Gateway', ipfsGateway)
 
+    // Load the offer data. The main thing we are looking for is the IPFS hash
+    // of the encrypted data.
     const offerData = await getText(ipfsGateway, event.ipfsHash, 10000)
     const offer = JSON.parse(offerData)
     console.log('Offer:', offer)
 
-    const encrypedHash = offer.encryptedData
-    if (!encrypedHash) {
+    const encryptedHash = offer.encryptedData
+    if (!encryptedHash) {
       throw new Error('No encrypted data found')
     }
 
-    const encryptedDataJson = await getText(ipfsGateway, encrypedHash, 10000)
+    // Load the encrypted data from IPFS and decrypt it.
+    const encryptedDataJson = await getText(ipfsGateway, encryptedHash, 10000)
     const encryptedData = JSON.parse(encryptedDataJson)
 
     const privateKey = await openpgp.key.readArmored(pgpPrivateKey)
@@ -137,35 +174,27 @@ async function insertOrderFromEvent({ offerId, event, shop }) {
     data.offerId = offerId
     data.tx = event.transactionHash
 
-    const fields = {
+    // Insert a new row in the orders DB table.
+    const orderObj = {
+      networkId: event.networkId,
+      shopId: shop.id,
+      orderId: offerId,
       data,
-      statusStr: event.eventName,
-      updatedBlock: event.blockNumber
+      statusStr: eventName,
+      updatedBlock: event.blockNumber,
+      createdAt: new Date(event.timestamp * 1000),
+      createdBlock: event.blockNumber,
+      ipfsHash: event.ipfsHash,
+      encryptedIpfsHash: encryptedHash
     }
-    if (event.eventName === 'OfferCreated') {
-      fields.createdAt = new Date(event.timestamp * 1000)
-      fields.createdBlock = event.blockNumber
-      fields.ipfsHash = event.ipfsHash
-      fields.encryptedIpfsHash = encrypedHash
-      if (data.referrer) {
-        fields.referrer = data.referrer
-        fields.commissionPending = Math.floor(data.subTotal / 200)
-      }
+    if (data.referrer) {
+      orderObj.referrer = data.referrer
+      orderObj.commissionPending = Math.floor(data.subTotal / 200)
     }
-    // console.log(data)
-    if (order) {
-      await order.update(fields)
-      console.log(`Updated order ${order.orderId}.`)
-    } else {
-      order = await Order.create({
-        networkId: event.networkId,
-        shopId: shop.id,
-        orderId: offerId,
-        ...fields
-      })
-      console.log(`Saved order ${order.orderId} to DB.`)
-    }
+    order = await Order.create(orderObj)
+    console.log(`Saved order ${order.orderId} to DB.`)
 
+    // Handle sending notifications via email and discord.
     console.log('sendMail', data)
     sendMail(shop.id, data)
     discordWebhook({
@@ -184,7 +213,7 @@ async function insertOrderFromEvent({ offerId, event, shop }) {
     if (order) {
       await order.update(fields)
     } else {
-      order = await Order.create({
+      await Order.create({
         networkId: event.networkId,
         shopId: shop.id,
         orderId: offerId,

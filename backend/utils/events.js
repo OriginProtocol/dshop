@@ -9,9 +9,8 @@ const abi = require('./_abi')
 const Marketplace = new w3.eth.Contract(abi)
 
 function getEventObj(event) {
-  let decodedLog = {},
-    eventAbi = {}
-  eventAbi = Marketplace._jsonInterface.find(
+  let decodedLog = {}
+  const eventAbi = Marketplace._jsonInterface.find(
     (i) => i.signature === event.topics[0]
   )
   if (eventAbi) {
