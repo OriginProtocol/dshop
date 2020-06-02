@@ -95,7 +95,7 @@ const AdminShop = () => {
           <SyncShop shop={shop} />
         </Route>
         <Route path={`${prefix}/files`}>
-          <FileEditor shop={shopId} />
+          <FileEditor shop={shop} />
         </Route>
         <Redirect to={`${prefix}/files`} />
       </Switch>

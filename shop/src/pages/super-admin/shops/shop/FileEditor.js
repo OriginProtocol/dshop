@@ -22,7 +22,7 @@ const AdminShop = ({ shop }) => {
   })
 
   useEffect(() => {
-    fetch(`/${shop}/${state.activeFile}`)
+    fetch(`/${shop.authToken}/${state.activeFile}`)
       .then((res) => (res.ok ? res.text() : new Promise(() => '')))
       .then((content) => {
         setState({ [state.activeFile]: content, valid: true })

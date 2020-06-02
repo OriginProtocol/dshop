@@ -8,7 +8,7 @@ const bodyParser = require('body-parser')
 const serveStatic = require('serve-static')
 const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
 const { findShopByHostname } = require('./utils/shop')
-const { sequelize } = require('./models')
+const { sequelize, Network } = require('./models')
 const encConf = require('./utils/encryptedConfig')
 const app = express()
 
@@ -121,14 +121,27 @@ app.get(
 )
 
 app.use(serveStatic(`${__dirname}/dist`, { index: false }))
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
   let html
   try {
     html = fs.readFileSync(`${__dirname}/dist/index.html`).toString()
   } catch (e) {
     return res.send('')
   }
-  html = html.replace('DATA_DIR', '').replace('TITLE', 'Origin Dshop')
+  const network = await Network.findOne({ where: { active: true } })
+  const NETWORK = !network
+    ? 'NETWORK'
+    : network.networkId === 1
+    ? 'mainnet'
+    : network.networkId === 4
+    ? 'rinkeby'
+    : 'localhost'
+
+  html = html
+    .replace('DATA_DIR', '')
+    .replace('TITLE', 'Origin Dshop')
+    .replace('NETWORK', NETWORK)
+
   res.send(html)
 })
 
