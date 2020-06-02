@@ -39,7 +39,7 @@
     invariant "^2.2.4"
     semver "^5.5.0"
 
-"@babel/core@>=7.0.0", "@babel/core@^7.0.0", "@babel/core@^7.9.6":
+"@babel/core@7.9.6", "@babel/core@>=7.0.0", "@babel/core@^7.0.0", "@babel/core@^7.9.6":
   version "7.9.6"
   resolved "https://registry.yarnpkg.com/@babel/core/-/core-7.9.6.tgz#d9aa1f580abf3b2286ef40b6904d390904c63376"
   integrity sha512-nD3deLvbsApbHAHttzIssYqgb883yU/d9roe4RZymBCDaZryMJDbptVpEpeQuRh4BJ+SYI8le9YGxKvFEvl1Wg==
@@ -5560,7 +5560,7 @@ chai-checkmark@^1.0.1:
   resolved "https://registry.yarnpkg.com/chai-checkmark/-/chai-checkmark-1.0.1.tgz#9fbb3c9ad9101f097ef288328d30f4227d74fffb"
   integrity sha1-n7s8mtkQHwl+8ogyjTD0In10//s=
 
-chai@^4.2.0:
+chai@4.2.0, chai@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/chai/-/chai-4.2.0.tgz#760aa72cf20e3795e84b12877ce0e83737aa29e5"
   integrity sha512-XQU3bhBukrOsQCuwZndwGcCVQHyZi53fQ6Ys1Fym7E4olpIqqZZhhoFJoaKVvV17lWQoXYwgWN2nF5crA8J2jw==
@@ -9671,7 +9671,7 @@ format-parser@0.0.2:
   resolved "https://registry.yarnpkg.com/format-parser/-/format-parser-0.0.2.tgz#4318822a8a9f1a29a0137253b908719c4f9222a2"
   integrity sha1-QxiCKoqfGimgE3JTuQhxnE+SIqI=
 
-formidable@^1.2.0:
+formidable@^1.2.0, formidable@^1.2.2:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/formidable/-/formidable-1.2.2.tgz#bf69aea2972982675f00865342b982986f6b8dd9"
   integrity sha512-V8gLm+41I/8kguQ4/o1D3RIHRmhYFG4pnNyonvua+40rqcEmT4+V71yaZ3B457xbbgCsCfjSPi65u/W6vK1U5Q==
@@ -15499,23 +15499,7 @@ mocha@7.1.2:
     yargs-parser "13.1.2"
     yargs-unparser "1.6.0"
 
-mocha@^4.0.1, mocha@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/mocha/-/mocha-4.1.0.tgz#7d86cfbcf35cb829e2754c32e17355ec05338794"
-  integrity sha512-0RVnjg1HJsXY2YFDoTNzcc1NKhYuXKRrBAG2gDygmJJA136Cs2QlRliZG1mA0ap7cuaT30mw16luAeln+4RiNA==
-  dependencies:
-    browser-stdout "1.3.0"
-    commander "2.11.0"
-    debug "3.1.0"
-    diff "3.3.1"
-    escape-string-regexp "1.0.5"
-    glob "7.1.2"
-    growl "1.10.3"
-    he "1.1.1"
-    mkdirp "0.5.1"
-    supports-color "4.4.0"
-
-mocha@^7.1.0:
+mocha@7.2.0:
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/mocha/-/mocha-7.2.0.tgz#01cc227b00d875ab1eed03a75106689cfed5a604"
   integrity sha512-O9CIypScywTVpNaRrCAgoUnJgozpIofjKUYmJhiCIJMiuYnLI6otcb1/kpW9/n/tJODHGZ7i8aLQoDVsMtOKQQ==
@@ -15544,6 +15528,22 @@ mocha@^7.1.0:
     yargs "13.3.2"
     yargs-parser "13.1.2"
     yargs-unparser "1.6.0"
+
+mocha@^4.0.1, mocha@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/mocha/-/mocha-4.1.0.tgz#7d86cfbcf35cb829e2754c32e17355ec05338794"
+  integrity sha512-0RVnjg1HJsXY2YFDoTNzcc1NKhYuXKRrBAG2gDygmJJA136Cs2QlRliZG1mA0ap7cuaT30mw16luAeln+4RiNA==
+  dependencies:
+    browser-stdout "1.3.0"
+    commander "2.11.0"
+    debug "3.1.0"
+    diff "3.3.1"
+    escape-string-regexp "1.0.5"
+    glob "7.1.2"
+    growl "1.10.3"
+    he "1.1.1"
+    mkdirp "0.5.1"
+    supports-color "4.4.0"
 
 mock-fs@^4.1.0:
   version "4.12.0"
@@ -16650,7 +16650,7 @@ openpgp@^4.10.4:
     node-fetch "^2.1.2"
     node-localstorage "~1.3.0"
 
-openzeppelin-solidity@^1.10.0:
+openzeppelin-solidity@1.12.0:
   version "1.12.0"
   resolved "https://registry.yarnpkg.com/openzeppelin-solidity/-/openzeppelin-solidity-1.12.0.tgz#7b9c55975e73370d4541e3442b30cb3d91ac973a"
   integrity sha512-WlorzMXIIurugiSdw121RVD5qA3EfSI7GybTn+/Du0mPNgairjt29NpVTAaH8eLjAeAwlw46y7uQKy0NYem/gA==
@@ -21732,7 +21732,7 @@ truffle-hdwallet-provider@0.0.6:
     web3 "^0.18.2"
     web3-provider-engine "^14.0.5"
 
-truffle-privatekey-provider@^0.1.0:
+truffle-privatekey-provider@0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/truffle-privatekey-provider/-/truffle-privatekey-provider-0.1.0.tgz#16a3ecbafc5d911dccc9850ba2aa413022c77009"
   integrity sha512-PGYFIv3n/RfMyJeiw7vxIz8VjsZxduvyVwg8OhsQodeAc/0aWbNJom4Og4rh9XWYB5kBg1bZ1rgNnpZbsZKWFw==
@@ -21741,7 +21741,7 @@ truffle-privatekey-provider@^0.1.0:
     web3 "^1.0.0-beta.34"
     web3-provider-engine "^14.0.5"
 
-truffle@^4.1.14:
+truffle@4.1.17:
   version "4.1.17"
   resolved "https://registry.yarnpkg.com/truffle/-/truffle-4.1.17.tgz#e74a9520324ab0fe094e555df826b8d0663d88de"
   integrity sha512-fS2K+atOogBL6VhB9A4/TSl97Mt2qaPuQMFd6UfvLQyNp1xBcXu/LQgudwX/Bdu8KGjGQuYLZiuUv0MzK+a74A==
@@ -23834,7 +23834,7 @@ webidl-conversions@^4.0.2:
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-4.0.2.tgz#a855980b1f0b6b359ba1d5d9fb39ae941faa63ad"
   integrity sha512-YQ+BmxuTgd6UXZW3+ICGfyqRyHXVlD5GtQr5+qjiNW7bF0cqrzX500HVXPBOvgXb5YnzDd+h0zqyv61KUD7+Sg==
 
-webpack-cli@^3.3.11:
+webpack-cli@3.3.11:
   version "3.3.11"
   resolved "https://registry.yarnpkg.com/webpack-cli/-/webpack-cli-3.3.11.tgz#3bf21889bf597b5d82c38f215135a411edfdc631"
   integrity sha512-dXlfuml7xvAFwYUPsrtQAA9e4DOe58gnzSxhgrO/ZM/gyXTBowrsYeubyN4mqGhYdpXMFNyQ6emjJS9M7OBd4g==
