@@ -54,6 +54,7 @@ const SignUp = () => {
       >
         <div className="form-group">
           <input
+            autoFocus
             className="form-control"
             placeholder="Name"
             value={state.name}

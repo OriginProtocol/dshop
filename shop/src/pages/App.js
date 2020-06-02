@@ -123,4 +123,6 @@ require('react-styl')(`
     top: 50%
     font-size: 2rem
     transform: translate(-50%, -50%)
+  .invalid-feedback
+    word-break: break-word
 `)

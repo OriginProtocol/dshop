@@ -77,7 +77,7 @@ const CreateShop = () => {
     pgpPrivateKey: '',
     pgpPrivateKeyPass: '',
     web3Pk: '',
-    shopType: localShops.length ? 'local-dir' : 'blank'
+    shopType: localShops.length ? 'local-dir' : 'multi-product'
   })
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
@@ -143,6 +143,8 @@ const CreateShop = () => {
         <div className="form-group col-md-6">
           <label>Shop type</label>
           <select {...input('shopType')}>
+            <option value="multi-product">New Multi Product</option>
+            <option value="single-product">New Single Product</option>
             <option value="blank">DB Entry Only</option>
             {localShops.length ? (
               <option value="local-dir">From Local Dir</option>
@@ -150,8 +152,6 @@ const CreateShop = () => {
             <option value="clone-url">Clone URL</option>
             {/* <option value="clone-ipfs">Clone IPFS Hash</option> */}
             <option value="printful">New Printful</option>
-            <option value="single-product">New Single Product</option>
-            <option value="multi-product">New Multi Product</option>
             <option value="affiliate">New Affiliate</option>
           </select>
         </div>
@@ -186,7 +186,7 @@ const CreateShop = () => {
         ) : (
           <div className="form-group col-md-6">
             <label>Shop Name</label>
-            <input {...input('name')} placeholder="eg My Store" />
+            <input {...input('name')} placeholder="eg My Store" autoFocus />
             {Feedback('name')}
           </div>
         )}
@@ -207,7 +207,9 @@ const CreateShop = () => {
           <div style={{ flex: 1 }}>
             <CreateListing
               className="btn btn-outline-primary w-100"
-              onCreated={(listingId) => setState({ ...state, listingId }, true)}
+              onCreated={(listingId) => {
+                setState({ listingId: String(listingId) })
+              }}
               onError={(createListingError) => setState({ createListingError })}
             >
               <span className="btn-content">Create Listing</span>
