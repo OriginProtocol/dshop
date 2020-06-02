@@ -6,7 +6,9 @@ import SyncToCacheButton from './_SyncToCacheButton'
 
 const SyncShop = ({ shop }) => {
   // const [hash, setHash] = useState('QmV1kPKTGF3zdvk3jFcJ29LNc65SS1ALBBGRbM47RRsH4Z')
-  const [hash, setHash] = useState('QmNbDv915ARFAcPHbhAi9k7bvNERRiZLw6gQP6DPeqN2vC')
+  const [hash, setHash] = useState(
+    'QmNbDv915ARFAcPHbhAi9k7bvNERRiZLw6gQP6DPeqN2vC'
+  )
   const [url, setUrl] = useState('')
   return (
     <div>
