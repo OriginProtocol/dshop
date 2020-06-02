@@ -35,7 +35,7 @@
     "format": "eslint **/**/*.js --quiet --fix",
     "test": "node scripts/test.js",
     "package-diffs": "find . -maxdepth 3 -name package.json -type f | grep -v node_modules | node scripts/package-versions.js",
-    "postinstall": "lerna run migrate --scope @origin/shop-backend --stream --no-prefix"
+    "postinstall": "lerna run migrate --scope @origin/shop-backend --stream --no-prefix && mkdir -p shop/public/dist && cp node_modules/openpgp/dist/openpgp.min.js node_modules/openpgp/dist/openpgp.worker.min.js shop/public/dist"
   },
   "husky": {
     "hooks": {

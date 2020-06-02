@@ -9,9 +9,6 @@ const DeployShop = ({ shop }) => {
   const { config } = useConfig()
   const [deployments, setDeployments] = useState([])
   useEffect(() => {
-    if (!config.backend) {
-      return
-    }
     fetch(`${config.backend}/shops/${shop.authToken}/deployments`, {
       credentials: 'include'
     })

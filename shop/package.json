@@ -12,8 +12,7 @@
     "lint": "eslint . && npm run prettier:check",
     "prettier": "prettier --write *.js \"{src,test}/**/*.js\"",
     "prettier:check": "prettier -c *.js \"src/**/*.js\"",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "shop:create": "node ../backend/scripts/createShop"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Nick Poulden <nick@originprotocol.com>",
   "license": "MIT",
@@ -30,7 +29,7 @@
     "babel-plugin-module-resolver": "^4.0.0",
     "chartist": "^0.11.4",
     "dayjs": "^1.8.27",
-    "ethers": "^5.0.0-beta.182",
+    "ethers": "^5.0.0-beta.190",
     "flexsearch": "^0.6.32",
     "openpgp": "^4.10.4",
     "prettier": "^2.0.5",

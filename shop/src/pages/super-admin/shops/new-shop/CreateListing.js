@@ -9,7 +9,7 @@ import { createListing } from 'utils/listing'
 const CreateListing = ({ className, children, onCreated, onError }) => {
   const { config } = useConfig()
   const [{ admin }] = useStateValue()
-  const { netId, provider } = useWallet()
+  const { netId, provider, status, enable } = useWallet()
 
   const activeNetId = String(get(admin, 'network.networkId'))
   useEffect(() => {
@@ -24,6 +24,10 @@ const CreateListing = ({ className, children, onCreated, onError }) => {
       className={className}
       onClick={(e) => {
         e.preventDefault()
+        if (status === 'disabled') {
+          enable()
+          return
+        }
         if (netId !== activeNetId) {
           onError(`Set network to ${activeNetId}`)
           return

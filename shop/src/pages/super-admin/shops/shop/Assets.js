@@ -10,9 +10,6 @@ const ShopAssets = ({ shop }) => {
   const { config } = useConfig()
   const [state, setState] = useSetState({ reload: 1, assets: [] })
   useEffect(() => {
-    if (!config.backend) {
-      return
-    }
     fetch(`${config.backend}/shops/${shop.authToken}/assets`, {
       credentials: 'include'
     })

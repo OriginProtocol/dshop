@@ -1,4 +1,4 @@
-import { spawn } from 'child_process'
+import { spawn, exec } from 'child_process'
 import fs from 'fs'
 
 import services from '@origin/services'
@@ -7,6 +7,17 @@ async function start() {
   // Make life easier by creating a .env if one doesn't exist
   if (!fs.existsSync(`${__dirname}/.env`)) {
     fs.copyFileSync(`${__dirname}/dev.env`, `${__dirname}/.env`)
+  }
+
+  // Create a backend dist if one doesn't exist
+  if (!fs.existsSync(`${__dirname}/../backend/dist/index.html`)) {
+    console.log('No backend dist found. Building...')
+    await new Promise((resolve, reject) => {
+      exec(`npm run build:dist`, (error, stdout) => {
+        if (error) reject(error)
+        else resolve(stdout)
+      })
+    })
   }
 
   let shuttingDown = false
