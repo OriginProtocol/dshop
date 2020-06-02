@@ -173,8 +173,7 @@ async function start() {
   console.log(`Starting listener on network ${network.networkId}.`)
   web3.setProvider(network.provider)
 
-  const listingIds = await getListingIds({ network })
-  connectWS({ network, listingIds })
+  connectWS({ network })
 }
 
 module.exports = start
