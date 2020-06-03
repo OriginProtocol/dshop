@@ -40,16 +40,20 @@ function getEventObj(event) {
 async function upsertEvent({ web3, event, shopId, networkId }) {
   console.log('Upsert event...')
   const eventObj = { ...getEventObj(event), shopId, networkId }
-  const block = await web3.eth.getBlock(eventObj.blockNumber)
-  eventObj.timestamp = block.timestamp
-  const { transactionHash } = event
 
+  // Make sure this event hasn't alredy been recorded in the DB.
+  const { transactionHash } = event
   const exists = await Event.findOne({ where: { transactionHash } })
   if (exists) {
     console.log('Event exists')
     return exists
   }
 
+  // Fetch the block to get its timestamp.
+  const block = await web3.eth.getBlock(eventObj.blockNumber)
+  eventObj.timestamp = block.timestamp
+
+  // Save the event in the DB.
   const record = await Event.create(eventObj)
   if (!record) {
     throw new Error('Could not save event')

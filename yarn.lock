@@ -8803,25 +8803,10 @@ ethers@4.0.0-beta.3:
     uuid "2.0.1"
     xmlhttprequest "1.8.0"
 
-ethers@^4.0.32:
-  version "4.0.47"
-  resolved "https://registry.yarnpkg.com/ethers/-/ethers-4.0.47.tgz#91b9cd80473b1136dd547095ff9171bd1fc68c85"
-  integrity sha512-hssRYhngV4hiDNeZmVU/k5/E8xmLG8UpcNUzg6mb7lqhgpFPH/t7nuv20RjRrEf0gblzvi2XwR5Te+V3ZFc9pQ==
-  dependencies:
-    aes-js "3.0.0"
-    bn.js "^4.4.0"
-    elliptic "6.5.2"
-    hash.js "1.1.3"
-    js-sha3 "0.5.7"
-    scrypt-js "2.0.4"
-    setimmediate "1.0.4"
-    uuid "2.0.1"
-    xmlhttprequest "1.8.0"
-
-ethers@^5.0.0-beta.182:
-  version "5.0.0-beta.188"
-  resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.0.0-beta.188.tgz#b33ebe333723013e4541fa97ff279ff578b9e1f3"
-  integrity sha512-pqVUPWvm2QP47p0IiLqfJ9awOE2F++yL1APK3x998QlZEtcQbs1nMAf99nzQKdD7ARESfil+MSbi+eFe229bcw==
+ethers@5.0.0-beta.189:
+  version "5.0.0-beta.189"
+  resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.0.0-beta.189.tgz#d347a33877a04c26c117074d9b68e569e7dd97af"
+  integrity sha512-KwOP0bpQmQRRL9RW/UrZjcoMMzKsAwBRP8Gx16nm85RlFyXqpKSgc/Kwn2oIzV9N8Sruul8tnqR/0Ve9q1idMg==
   dependencies:
     "@ethersproject/abi" ">=5.0.0-beta.153"
     "@ethersproject/abstract-provider" ">=5.0.0-beta.139"
@@ -8852,6 +8837,21 @@ ethers@^5.0.0-beta.182:
     "@ethersproject/wallet" ">=5.0.0-beta.140"
     "@ethersproject/web" ">=5.0.0-beta.138"
     "@ethersproject/wordlists" ">=5.0.0-beta.136"
+
+ethers@^4.0.32:
+  version "4.0.47"
+  resolved "https://registry.yarnpkg.com/ethers/-/ethers-4.0.47.tgz#91b9cd80473b1136dd547095ff9171bd1fc68c85"
+  integrity sha512-hssRYhngV4hiDNeZmVU/k5/E8xmLG8UpcNUzg6mb7lqhgpFPH/t7nuv20RjRrEf0gblzvi2XwR5Te+V3ZFc9pQ==
+  dependencies:
+    aes-js "3.0.0"
+    bn.js "^4.4.0"
+    elliptic "6.5.2"
+    hash.js "1.1.3"
+    js-sha3 "0.5.7"
+    scrypt-js "2.0.4"
+    setimmediate "1.0.4"
+    uuid "2.0.1"
+    xmlhttprequest "1.8.0"
 
 ethjs-unit@0.1.6:
   version "0.1.6"

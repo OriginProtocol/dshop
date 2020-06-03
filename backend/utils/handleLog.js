@@ -32,39 +32,45 @@ const handleLog = async ({
   web3,
   networkId,
   contractVersion,
+  address,
   data,
   topics,
   transactionHash,
   blockNumber,
+  blockHash,
   mockGetEventObj,
   mockUpsert
 }) => {
+  const isTest = process.env.NODE_ENV === 'test'
+
   const eventAbi = MarketplaceABI.find((i) => i.signature === topics[0])
   if (!eventAbi) {
     console.log('Unknown event')
     return
   }
 
-  const isTest = process.env.NODE_ENV === 'test'
-
-  const getEventObjFn =
-    isTest && mockGetEventObj ? mockGetEventObj : getEventObj
-  const eventObj = getEventObjFn({
+  const rawEvent = {
+    address,
     data,
     topics,
     transactionHash,
-    blockNumber
-  })
+    blockNumber,
+    blockHash
+  }
+
+  // Decorate the raw event with marketplace specific fields.
+  const getEventObjFn =
+    isTest && mockGetEventObj ? mockGetEventObj : getEventObj
+  const eventObj = getEventObjFn(rawEvent)
 
   const listingId = `${networkId}-${contractVersion}-${eventObj.listingId}`
+  console.log(`Event ${eventObj.eventName} for listing Id ${listingId}`)
 
-  // The listener calls handleLog with any event emitted by the marketplace.
+  // The listener calls handleLog for any event emitted by the marketplace.
   // Skip processing any event that is not dshop related.
   const shop = await Shop.findOne({ where: { listingId } })
   if (!shop) {
-    console.log(
-      `Event for listing Id ${listingId} is not dshop related. Skipping.`
-    )
+    console.log(`Event is not for a registered dshop. Skipping.`)
     return
   }
 
@@ -74,12 +80,7 @@ const handleLog = async ({
     web3,
     shopId: shop.id,
     networkId,
-    eventObj: {
-      data,
-      topics,
-      transactionHash,
-      blockNumber
-    }
+    event: rawEvent
   })
 
   // Process the order.

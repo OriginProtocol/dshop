@@ -7,7 +7,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "clean": "rm db/dshop.db && npm run migrate",
+    "clean": "rm db/dshop.db; rm -rf data/*; npm run migrate",
     "heroku-postbuild": "npm run migrate",
     "lint": "eslint . && npm run prettier:check",
     "migrate": "sequelize db:migrate --config db/config.js --migrations-path db/migrations",

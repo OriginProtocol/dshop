@@ -57,28 +57,27 @@ const GetPastLogs = ({ address, fromBlock, toBlock }) => {
   return JSON.stringify(rpc)
 }
 
+/**
+ * Listener main.
+ *
+ * @param {Network} network: Network db model.
+ * @returns {Promise<void>}
+ */
 async function connectWS({ network }) {
   let lastBlock, pingTimeout
-  const { networkId, providerWs } = network
-  const res = await Network.findOne({ where: { networkId } })
-  if (res) {
-    lastBlock = res.lastBlock
-    console.log(`Last recorded block: ${lastBlock}`)
-  } else {
-    console.log('No recorded block found')
-  }
 
-  const { contractVersion, address } = network
+  // Get the config from the network.
+  const { networkId, providerWs } = network
+  const address = network.marketplaceContract
+  const contractVersion = network.marketplaceVersion
+  lastBlock = network.lastBlock
   console.log(`Connecting to ${providerWs} (netId ${networkId})`)
   console.log(
-    `Watching events on contract version ${contractVersion} at address ${address}`
+    `Watching events on contract version ${contractVersion} at ${address}`
   )
+  console.log(`Last recorded block: ${lastBlock}`)
 
-  if (ws) {
-    clearTimeout(pingTimeout)
-    ws.close()
-  }
-
+  // Connect a web socket to the provider.
   ws = new ReconnectingWebSocket(providerWs, [], { WebSocket })
 
   function heartbeat() {
@@ -126,15 +125,21 @@ async function connectWS({ network }) {
       heads = data.result
     } else if (data.id === 3) {
       console.log(`Got ${data.result.length} unhandled logs`)
-      data.result.map((result) =>
-        handleLog({ ...result, web3, address, networkId, contractVersion })
-      )
+      for (const result of data.result) {
+        await handleLog({
+          ...result,
+          web3,
+          address,
+          networkId,
+          contractVersion
+        })
+      }
     } else if (get(data, 'params.subscription') === logs) {
-      handleLog({
+      await handleLog({
         ...data.params.result,
         web3,
-        networkId,
         address,
+        networkId,
         contractVersion
       })
     } else if (get(data, 'params.subscription') === heads) {
@@ -143,7 +148,9 @@ async function connectWS({ network }) {
       if (blockDiff > 500) {
         console.log('Too many new blocks. Skip past log fetch.')
       } else if (blockDiff > 1) {
-        console.log(`Fetching ${blockDiff} past logs...`)
+        console.log(
+          `Fetching ${blockDiff} past logs. Range ${lastBlock}-${number}...`
+        )
         ws.send(GetPastLogs({ fromBlock: lastBlock, toBlock: number }))
       }
       lastBlock = number
