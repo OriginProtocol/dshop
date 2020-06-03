@@ -143,7 +143,7 @@ require('react-styl')(`
       align-items: center
       margin: 0
       svg,img
-        width: 2rem
+        width: 12rem
         margin-right: 1rem
 
   main
