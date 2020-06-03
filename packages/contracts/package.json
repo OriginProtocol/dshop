@@ -20,9 +20,9 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@babel/core": "7.9.6",
-    "@babel/polyfill": "7.8.7",
-    "@babel/register": "7.9.0",
+    "@babel/core": "7.10.2",
+    "@babel/polyfill": "7.10.1",
+    "@babel/register": "7.10.1",
     "bs58": "4.0.1",
     "ethereumjs-abi": "0.6.8",
     "openzeppelin-solidity": "1.12.0",
@@ -33,10 +33,10 @@
     "web3": "1.2.8"
   },
   "devDependencies": {
-    "@babel/cli": "7.8.4",
-    "@babel/plugin-transform-runtime": "7.9.6",
-    "@babel/preset-env": "7.9.6",
-    "@babel/runtime": "7.9.6",
+    "@babel/cli": "7.10.1",
+    "@babel/plugin-transform-runtime": "7.10.1",
+    "@babel/preset-env": "7.10.2",
+    "@babel/runtime": "7.10.2",
     "mocha": "7.2.0",
     "prettier-eslint-cli": "5.0.0",
     "truffle": "4.1.17",

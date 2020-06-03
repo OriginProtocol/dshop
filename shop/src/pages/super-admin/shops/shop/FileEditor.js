@@ -18,7 +18,8 @@ const AdminShop = ({ shop }) => {
     [Files[0].path]: '',
     valid: true,
     save: 0,
-    activeFile: Files[0].path
+    activeFile: Files[0].path,
+    saving: false
   })
 
   useEffect(() => {
@@ -33,11 +34,22 @@ const AdminShop = ({ shop }) => {
     if (!state.save) {
       return
     }
+    setState({ saving: true })
     const body = new FormData()
     const file = new Blob([state[state.activeFile]])
     body.append('file', file, state.activeFile)
 
-    fetch(`/shops/${shop.authToken}/save-files`, { method: 'POST', body })
+    let timeout
+    fetch(`/shops/${shop.authToken}/save-files`, {
+      method: 'POST',
+      body
+    }).then(() => {
+      setState({ saving: false, saved: true })
+      timeout = setTimeout(() => setState({ saved: false }), 2000)
+    })
+    return function cleanup() {
+      clearTimeout(timeout)
+    }
   }, [state.save])
 
   function onSave(e) {
@@ -82,16 +94,38 @@ const AdminShop = ({ shop }) => {
 
         <div className="ml-auto d-flex align-items-center">
           {state.valid ? null : <div className="mr-3">Invalid JSON</div>}
+          {state.saved ? <div className="mr-3">Saved ✅</div> : null}
+          {state.saving ? <div className="mr-3">Saving...</div> : null}
           <button
             className={`btn btn-primary${state.valid ? '' : ' disabled'}`}
             children="Save"
+          />
+          <button
+            type="button"
+            className={`btn btn-outline-primary ml-2${
+              state.valid ? '' : ' disabled'
+            }`}
+            children="Prettify"
+            onClick={() => {
+              if (!state.valid) return
+              setState({
+                [state.activeFile]: JSON.stringify(
+                  JSON.parse(state[state.activeFile]),
+                  null,
+                  2
+                )
+              })
+            }}
           />
         </div>
       </div>
       <div className="form-group">
         <textarea
+          autoComplete="off"
+          spellCheck="false"
           className="form-control"
           value={state[state.activeFile]}
+          style={{ fontFamily: 'monospace', fontSize: 12 }}
           onChange={(e) => {
             let valid = true
             if (state.activeFile.indexOf('.json') > 0) {
@@ -114,6 +148,5 @@ export default AdminShop
 require('react-styl')(`
   .admin-shop-edit
     textarea
-      font-family: monospace
       height: 90vh
 `)

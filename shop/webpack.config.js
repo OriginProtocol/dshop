@@ -175,7 +175,7 @@ const webpackConfig = {
       WEBPACK_BUILD: true,
       NODE_ENV: process.env.NODE_ENV || 'development',
       MARKETPLACE_CONTRACT: localContractAddress,
-      NETWORK: process.env.NETWORK || 'localhost',
+      NETWORK: process.env.NETWORK || '',
       DATA_DIR: process.env.DATA_DIR || '',
       CONTENT_CDN: process.env.CONTENT_CDN || '',
       CONTENT_HASH: process.env.CONTENT_HASH || '',

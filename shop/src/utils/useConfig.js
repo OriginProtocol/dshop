@@ -17,7 +17,7 @@ const DefaultPaymentMethods = [
   { id: 'stripe', label: 'Credit Card' }
 ]
 
-const net = localStorage.ognNetwork || process.env.NETWORK || 'localhost'
+const net = localStorage.ognNetwork || 'localhost'
 const netId = net === 'mainnet' ? '1' : net === 'rinkeby' ? '4' : '999'
 const contracts = networks[net] || {}
 

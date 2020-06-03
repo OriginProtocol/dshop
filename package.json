@@ -2,7 +2,7 @@
   "name": "root",
   "private": true,
   "dependencies": {
-    "lerna": "3.21.0"
+    "lerna": "3.22.0"
   },
   "workspaces": {
     "packages": [
@@ -53,7 +53,13 @@
       "config:base"
     ],
     "groupName": "all",
-    "ignoreDeps": [],
+    "ignoreDeps": [
+      "openzeppelin-solidity",
+      "truffle",
+      "truffle-hdwallet-provider",
+      "truffle-privatekey-provider",
+      "solc"
+    ],
     "ignorePaths": [],
     "schedule": "before 2am",
     "rebaseStalePrs": false
