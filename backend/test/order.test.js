@@ -61,7 +61,7 @@ async function addData(data, { pgpPublicKey, ipfsApi }) {
 }
 
 describe('Orders', () => {
-  const listingId = '1-001-1'
+  const listingId = '999-001-1'
   let offerIpfsHash, shopId, data, offerId
 
   before(async () => {
@@ -192,7 +192,7 @@ describe('Orders', () => {
     offerIpfsHash = await post(config.ipfsApi, offer, true)
   })
 
-  it('It should ignore an event unrelated to dshop', async () => {
+  it('It should ignore an OfferCreated event unrelated to dshop', async () => {
     // Create a fake OfferCreated event for a listing that is not dshop related.
     const offerCreatedSignature =
       '0x6ee68cb753f284cf771c1a32c236d7ffcab6011345186a30e57837d761e86837'
@@ -222,16 +222,47 @@ describe('Orders', () => {
     expect(order).to.be.undefined
   })
 
+  it('It should ignore any non-Offer event on a dshop listing', async () => {
+    // Create a fake ListingUpdated event for a listing that is for dshop
+    const listingUpdatedSignature =
+      '0x470503ad37642fff73a57bac35e69733b6b38281a893f39b50c285aad1f040e0'
+    const event = {
+      eventName: 'ListingUpdated',
+      listingId: 1,
+      offerId: 1,
+      party: '0xabcdef',
+      ipfsHash: 'TESTHASH',
+      networkId: 999,
+      transactionHash: '0x12345',
+      blockNumber: 1,
+      timestamp: Date.now() / 1000
+    }
+
+    const order = await handleLog({
+      web3: null,
+      networkId: '999',
+      contractVersion: '001',
+      data: null,
+      topics: [listingUpdatedSignature],
+      transactionHash: '0x12345',
+      blockNumber: 1,
+      mockGetEventObj: () => event,
+      mockUpsert: () => event
+    })
+
+    expect(order).to.be.undefined
+  })
+
   it('It should insert an order from an event', async () => {
     const shop = await Shop.findByPk(shopId)
 
-    const uniqueId = Math.round(Date.now() / 1000) // Use timestamp in second as a unique offer id.
-    offerId = `${listingId}-${uniqueId}`
+    offerId = Math.round(Date.now() / 1000) // Use timestamp in second as a unique offer id.
+    const fullOfferId = `${listingId}-${offerId}`
 
     // Create a fake OfferCreated blockchain event.
     const event = {
       eventName: 'OfferCreated',
-      offerId: uniqueId,
+      offerId,
       party: '0xabcdef',
       ipfsHash: offerIpfsHash,
       networkId: 999,
@@ -241,10 +272,10 @@ describe('Orders', () => {
     }
 
     // Call the logic for inserting an order in the DB based on a OfferCreated blockchain event.
-    await processDShopEvent({ offerId, event, shop })
+    await processDShopEvent({ event, shop })
 
     // Check the order was inserted with the proper values.
-    const order = await Order.findOne({ where: { orderId: offerId } })
+    const order = await Order.findOne({ where: { orderId: fullOfferId } })
     expect(order).to.be.an('object')
     expect(order.networkId).to.equal(999)
     expect(order.shopId).to.equal(shopId)
@@ -254,7 +285,7 @@ describe('Orders', () => {
     expect(order.updatedBlock).to.equal(1)
     expect(order.data).to.eql({
       ...data,
-      ...{ offerId, tx: event.transactionHash }
+      ...{ offerId: fullOfferId, tx: event.transactionHash }
     })
   })
 
@@ -274,10 +305,11 @@ describe('Orders', () => {
     }
 
     // Call the logic for processing the event.
-    await processDShopEvent({ offerId, event, shop })
+    await processDShopEvent({ event, shop })
 
     // Check the order status and updateBlock were updated.
-    const order = await Order.findOne({ where: { orderId: offerId } })
+    const fullOfferId = `${listingId}-${offerId}`
+    const order = await Order.findOne({ where: { orderId: fullOfferId } })
     expect(order).to.be.an('object')
     expect(order.statusStr).to.equal('OfferAccepted')
     expect(order.updatedBlock).to.equal(2)

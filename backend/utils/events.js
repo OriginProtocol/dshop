@@ -51,7 +51,7 @@ async function upsertEvent({ web3, event, shopId, networkId }) {
   }
 
   const record = await Event.create(eventObj)
-  if (!record.id) {
+  if (!record) {
     throw new Error('Could not save event')
   }
   return record
@@ -60,7 +60,6 @@ async function upsertEvent({ web3, event, shopId, networkId }) {
 async function storeEvents({ web3, events, shopId, networkId }) {
   for (const event of events) {
     await upsertEvent({ web3, event, shopId, networkId })
-    // await handleLog(event)
   }
 }
 

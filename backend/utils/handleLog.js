@@ -36,7 +36,8 @@ const handleLog = async ({
   topics,
   transactionHash,
   blockNumber,
-  mockGetEventObj
+  mockGetEventObj,
+  mockUpsert
 }) => {
   const eventAbi = MarketplaceABI.find((i) => i.signature === topics[0])
   if (!eventAbi) {
@@ -44,10 +45,10 @@ const handleLog = async ({
     return
   }
 
+  const isTest = process.env.NODE_ENV === 'test'
+
   const getEventObjFn =
-    process.env.NODE_ENV === 'test' && mockGetEventObj
-      ? mockGetEventObj
-      : getEventObj
+    isTest && mockGetEventObj ? mockGetEventObj : getEventObj
   const eventObj = getEventObjFn({
     data,
     topics,
@@ -56,7 +57,6 @@ const handleLog = async ({
   })
 
   const listingId = `${networkId}-${contractVersion}-${eventObj.listingId}`
-  const offerId = `${listingId}-${eventObj.offerId}`
 
   // The listener calls handleLog with any event emitted by the marketplace.
   // Skip processing any event that is not dshop related.
@@ -69,11 +69,12 @@ const handleLog = async ({
   }
 
   // Persist the event in the database.
-  const event = await upsertEvent({
+  const upsertEventFn = isTest && mockUpsert ? mockUpsert : upsertEvent
+  const event = await upsertEventFn({
     web3,
     shopId: shop.id,
     networkId,
-    event: {
+    eventObj: {
       data,
       topics,
       transactionHash,
@@ -82,18 +83,17 @@ const handleLog = async ({
   })
 
   // Process the order.
-  await processDShopEvent({ offerId, event, shop })
+  await processDShopEvent({ event, shop })
 }
 
 /**
  * Processes a dshop event
- *
- * @param {string} offerId: format is <networkId>-<contract_version>-<listing_id>-<offer_id>
+ * @param {string} listingId: fully qualified listing id
  * @param {Event} event: Event DB model object.
  * @param {Shop} shop: Shop DB model object.
  * @returns {Promise<void>}
  */
-async function processDShopEvent({ offerId, event, shop }) {
+async function processDShopEvent({ event, shop }) {
   let data
   const eventName = event.eventName
 
@@ -102,6 +102,8 @@ async function processDShopEvent({ offerId, event, shop }) {
     console.log(`Not offer related. Ignoring event ${eventName}`)
     return
   }
+
+  const offerId = `${shop.listingId}-${event.offerId}`
 
   // Load the DB order associated with the blockchain offer.
   let order = await Order.findOne({

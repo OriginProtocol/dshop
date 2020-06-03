@@ -182,7 +182,6 @@ async function handleEvents(listingIdFull) {
   })
   for (const event of events) {
     await processDShopEvent({
-      offerId: `${listingIdFull}-${event.offerId}`,
       event,
       shop
     })
