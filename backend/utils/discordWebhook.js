@@ -2,6 +2,7 @@ const fetch = require('node-fetch')
 
 module.exports = function ({ url, shopName, orderId, total, items = [] }) {
   if (!url) {
+    console.log('Discord webhook URL not configured. Skipping.')
     return
   }
 
