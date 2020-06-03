@@ -53,7 +53,13 @@
       "config:base"
     ],
     "groupName": "all",
-    "ignoreDeps": [],
+    "ignoreDeps": [
+      "openzeppelin-solidity",
+      "truffle",
+      "truffle-hdwallet-provider",
+      "truffle-privatekey-provider",
+      "solc"
+    ],
     "ignorePaths": [],
     "schedule": "before 2am",
     "rebaseStalePrs": false
