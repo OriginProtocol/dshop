@@ -28,7 +28,7 @@ module.exports = function (app) {
 
   app.post('/superuser/users', authSuperUser, async (req, res) => {
     console.log(req.body)
-    createSeller(req.body).then(result => {
+    createSeller(req.body).then((result) => {
       res.json(result)
     })
   })
