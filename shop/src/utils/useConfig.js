@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import ethers from 'ethers'
 
+import { NetworksByIdStr } from 'data/Networks'
+
 const networks = {}
 try {
   networks.mainnet = require('@origin/contracts/build/contracts_mainnet.json')
@@ -15,10 +17,10 @@ const DefaultPaymentMethods = [
   { id: 'stripe', label: 'Credit Card' }
 ]
 
-let net = localStorage.ognNetwork
-if (!net.match(/^(mainnet|rinkeby)$/)) net = 'localhost'
-const netId = net === 'mainnet' ? '1' : net === 'rinkeby' ? '4' : '999'
-const contracts = networks[net] || {}
+const net = localStorage.ognNetwork
+const activeNetwork = NetworksByIdStr[net] || NetworksByIdStr['localhost']
+const netId = String(activeNetwork.id)
+const contracts = networks[activeNetwork.idStr] || {}
 
 const DefaultTokens = [
   { id: 'token-OGN', name: 'OGN', address: contracts.OGN },
@@ -49,6 +51,11 @@ function useConfig() {
       loaded = dataSrc
       config = { backend: '', firstTimeSetup: true, netId }
       setLoading(true)
+      if (dataSrc === 'DATA_DIR/') {
+        setLoading(false)
+        return
+      }
+
       try {
         const url = `${dataSrc}config.json`
         console.debug(`Loading config from ${url}...`)
@@ -83,20 +90,13 @@ function useConfig() {
           })
           .filter((token) => token.address)
 
-        const netName =
-          netId === '1'
-            ? 'Mainnet'
-            : netId === '4'
-            ? 'Rinkeby'
-            : `Net ID ${netId}`
-
         config = {
           ...config,
           ...netConfig,
           netId,
           contracts,
           acceptedTokens,
-          netName,
+          netName: activeNetwork.name,
           dataSrc
         }
         setLoading(false)

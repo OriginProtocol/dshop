@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Redirect, Switch, Route } from 'react-router-dom'
 import get from 'lodash/get'
-// import Styl from 'react-styl'
 import 'components/admin/Styles'
 
 import { useStateValue } from 'data/state'
@@ -11,12 +10,13 @@ import Login from './Login'
 import Menu from './_Menu'
 import FirstTime from './setup/FirstTime'
 
-import Shops from './shops/Shops'
-import Shop from './shops/shop/Shop'
-import NewShop from './shops/new-shop/NewShop'
+import Shops from './shops/List'
+import Shop from './shops/Show'
+import NewShop from './shops/NewShop'
 import Dashboard from './Dashboard'
-import Networks from './networks/Networks'
-import NewNetwork from './networks/CreateNetwork'
+import Networks from './networks/List'
+import NewNetwork from './networks/New'
+import EditNetwork from './networks/Edit'
 import Users from './users/Users'
 import User from './users/User'
 import NewUser from './users/NewUser'
@@ -29,11 +29,6 @@ const SuperAdmin = () => {
   const [{ admin, reload }, dispatch] = useStateValue()
 
   useEffect(() => {
-    // if (!window.backendAdminCss) {
-    //   // Need to re-add stylesheet as this component is lazy loaded
-    //   Styl.addStylesheet()
-    //   window.backendAdminCss = true
-    // }
     document.title = 'Origin Dshop Admin'
 
     fetch(`${config.backend}/superuser/auth`, { credentials: 'include' })
@@ -87,11 +82,15 @@ const SuperAdmin = () => {
               <Route path="/super-admin/shops/new" component={NewShop} />
               <Route path="/super-admin/shops/:shopId" component={Shop} />
               <Route path="/super-admin/shops" component={Shops} />
+
               <Route path="/super-admin/networks/new" component={NewNetwork} />
+              <Route path="/super-admin/networks/:id" component={EditNetwork} />
               <Route path="/super-admin/networks" component={Networks} />
+
               <Route path="/super-admin/users/new" component={NewUser} />
               <Route path="/super-admin/users/:userId" component={User} />
               <Route path="/super-admin/users" component={Users} />
+
               <Route path="/super-admin/dashboard" component={Dashboard} />
               <Redirect to="/super-admin/dashboard" />
             </Switch>

@@ -78,9 +78,13 @@ const Admin = () => {
       <div className="container">
         <div className="row">
           <div className="col-md-3">
-            <div className="mb-3">
-              <Link to="/super-admin/shops">&laquo; Back to Super Admin</Link>
-            </div>
+            {admin.role !== 'admin' ? null : (
+              <div className="mb-3">
+                <Link to={`/super-admin/shops/${config.backendAuthToken}`}>
+                  &laquo; Back to Super Admin
+                </Link>
+              </div>
+            )}
             <Menu />
           </div>
           <div className="col-md-9">

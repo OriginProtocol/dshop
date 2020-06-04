@@ -1,15 +1,22 @@
 import React from 'react'
-import { useHistory, Link, Switch, Route, useRouteMatch, Redirect } from 'react-router-dom'
+import {
+  useHistory,
+  Link,
+  Switch,
+  Route,
+  useRouteMatch,
+  Redirect
+} from 'react-router-dom'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 
-import SyncShop from './Sync'
-import DeleteShop from './_Delete'
-import DeployShop from './Deploy'
-import FileEditor from './FileEditor'
-import Assets from './Assets'
-import Settings from './Settings'
+import SyncShop from './shop/Sync'
+import DeleteShop from './shop/_Delete'
+import DeployShop from './shop/Deploy'
+import FileEditor from './shop/FileEditor'
+import Assets from './shop/Assets'
+import Settings from './shop/Settings'
 // import ServerSettings from 'pages/admin/settings/Server'
 
 const NavItem = ({ url, active, name }) => (
@@ -60,7 +67,10 @@ const AdminShop = () => {
             className="btn btn-outline-primary ml-2"
             onClick={() => {
               localStorage.activeShop = shop.authToken
-              history.push({ pathname: `/admin`, state: { scrollToTop: true } })
+              history.push({
+                pathname: `/admin/settings/server`,
+                state: { scrollToTop: true }
+              })
             }}
             children="Admin"
           />
@@ -69,11 +79,11 @@ const AdminShop = () => {
       </h3>
 
       <ul className="nav nav-tabs mt-3 mb-3">
-        <NavItem
+        {/* <NavItem
           active={tab === 'settings'}
           url={`${prefix}/settings`}
           name="Settings"
-        />
+        /> */}
         <NavItem
           active={tab === 'files'}
           url={`${prefix}/files`}
@@ -107,7 +117,8 @@ const AdminShop = () => {
         <Route path={`${prefix}/settings`}>
           <Settings shop={shop} />
         </Route>
-        <Redirect to={`${prefix}/settings`} />
+        {/* <Redirect to={`${prefix}/settings`} /> */}
+        <Redirect to={`${prefix}/files`} />
       </Switch>
     </>
   )

@@ -1,30 +1,32 @@
 import React, { useEffect } from 'react'
+import get from 'lodash/get'
+import pick from 'lodash/pick'
 
 import useSetState from 'utils/useSetState'
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
+import { NetworksById } from 'data/Networks'
 
 import Modal from 'components/Modal'
 
 import ShopReady from '../new-shop/ShopReady'
 
 const AdminDeployShop = ({ className = '', shop }) => {
-  const [{ admin }] = useStateValue()
+  const [{ admin }, dispatch] = useStateValue()
   const { config } = useConfig()
-  const [state, setState] = useSetState()
+  const [state, setState] = useSetState({ deploy: true })
   useEffect(() => {
     if (state.deployShop) {
       fetch(`${config.backend}/shops/${shop.authToken}/deploy`, {
-        headers: {
-          'content-type': 'application/json'
-        },
+        headers: { 'content-type': 'application/json' },
         credentials: 'include',
         method: 'POST',
-        body: JSON.stringify({ networkId: state.networkId })
+        body: JSON.stringify(pick(state, 'networkId', 'pinner', 'dnsProvider'))
       }).then((res) => {
         if (res.ok) {
           res.json().then(({ hash, domain, gateway }) => {
             setState({ deployed: true, hash, domain, gateway })
+            dispatch({ type: 'reload', target: 'deployments' })
           })
         }
       })
@@ -75,43 +77,74 @@ const Deploy = ({ state, setState, admin, shop }) => {
   return (
     <>
       <div className="text-lg">Deploy Shop</div>
-      <div className="d-flex align-items-center justify-content-center my-4">
-        <label className="mb-0">Network</label>
-        <select
-          value={state.networkId}
-          onChange={(e) => setState({ networkId: e.target.value })}
-          className="form-control w-auto ml-3"
-        >
-          <option>Choose...</option>
-          {admin.networks.map((network) => (
-            <option key={network.networkId} value={network.networkId}>
-              {network.networkId}
-            </option>
-          ))}
-        </select>
-      </div>
-      {!network ? null : (
-        <div className="deploy-network-details">
-          <div>IPFS</div>
-          <div>{network.ipfs}</div>
-          {/* <div>IPFS API</div>
-          <div>{network.ipfsApi}</div> */}
-          {!network.pinataKey ? null : (
-            <>
-              <div>Pinner</div>
-              <div>Pinata</div>
-            </>
-          )}
-          {!network.cloudflareEmail ? null : (
-            <>
-              <div>Domain</div>
-              <div>{`${shop.authToken}.${network.domain}`}</div>
-              <div>DNS</div>
-              <div>Cloudflare</div>
-            </>
-          )}
+      <div className="deploy-network-details mt-4">
+        <div>Network</div>
+        <div>
+          <select
+            value={state.networkId}
+            onChange={(e) =>
+              setState({
+                pinner: '',
+                dnsProvider: '',
+                networkId: e.target.value
+              })
+            }
+          >
+            <option>Choose...</option>
+            {admin.networks.map((network) => (
+              <option key={network.networkId} value={network.networkId}>
+                {get(NetworksById, `[${network.networkId}].name`)}
+              </option>
+            ))}
+          </select>
         </div>
-      )}
+        {!network ? null : (
+          <>
+            <div>IPFS</div>
+            <div>{network.ipfs}</div>
+            {!network.pinataKey ? null : (
+              <>
+                <div>IPFS Pinner</div>
+                <div>
+                  <select
+                    value={state.pinner}
+                    onChange={(e) => setState({ pinner: e.target.value })}
+                  >
+                    <option value="">None</option>
+                    <option value="pinata">Pinata</option>
+                  </select>
+                </div>
+              </>
+            )}
+            {!state.pinner ||
+            (!network.cloudflareEmail && !network.gcpCredentials) ? null : (
+              <>
+                <div>DNS Provider</div>
+                <div>
+                  <select
+                    value={state.dnsProvider}
+                    onChange={(e) => setState({ dnsProvider: e.target.value })}
+                  >
+                    <option value="">None</option>
+                    {network.cloudflareEmail ? (
+                      <option value="cloudflare">Cloudflare</option>
+                    ) : null}
+                    {network.gcpCredentials ? (
+                      <option value="gcp">GCP DNS</option>
+                    ) : null}
+                  </select>
+                </div>
+                {state.dnsProvider !== 'cloudflare' ? null : (
+                  <>
+                    <div>Domain</div>
+                    <div>{`${shop.authToken}.${network.domain}`}</div>
+                  </>
+                )}
+              </>
+            )}
+          </>
+        )}
+      </div>
 
       <div className="actions">
         <button

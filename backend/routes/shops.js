@@ -161,7 +161,9 @@ module.exports = function (app) {
       return res.json({ success: false, reason: 'no-hash-specified' })
     }
 
-    const network = await Network.findOne({ where: { active: true } })
+    const network = await Network.findOne({
+      where: { networkId: req.body.networkId }
+    })
     if (!network.ipfsApi) {
       return res.json({ success: false, reason: 'no-ipfs-api' })
     }
@@ -169,15 +171,20 @@ module.exports = function (app) {
     const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
 
     fs.mkdirSync(OutputDir, { recursive: true })
-    const url = `${network.ipfsApi}/api/v0/get?arg=${req.body.hash}&archive=true&compress=true`
+    console.log(
+      `Downloading archive of hash ${req.body.hash} from ${network.ipfsApi}`
+    )
+    const path = `/api/v0/get?arg=${req.body.hash}&archive=true&compress=true`
 
     await new Promise((resolve) => {
       const f = fs
         .createWriteStream(`${OutputDir}/data.tar.gz`)
         .on('finish', resolve)
-      const fetchLib = url.indexOf('https') === 0 ? https : http
-      const req = fetchLib.request(url, { method: 'POST' }, (response) =>
-        response.pipe(f)
+      const fetchLib = network.ipfsApi.indexOf('https') === 0 ? https : http
+      const hostname = network.ipfsApi.split('://')[1]
+
+      const req = fetchLib.request({ hostname, path, method: 'POST' }, (res) =>
+        res.pipe(f)
       )
       req.end()
     })
@@ -443,7 +450,9 @@ module.exports = function (app) {
         dataDir,
         network,
         subdomain: dataDir,
-        shop
+        shop,
+        pinner: req.body.pinner,
+        dnsProvider: req.body.dnsProvider
       }
       const { hash, domain } = await deployShop(deployOpts)
       return res.json({ success: true, hash, domain, gateway: network.ipfs })

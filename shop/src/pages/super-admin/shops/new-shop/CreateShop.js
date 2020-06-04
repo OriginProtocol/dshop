@@ -147,7 +147,7 @@ const CreateShop = () => {
             <option value="single-product">New Single Product</option>
             <option value="blank">DB Entry Only</option>
             {localShops.length ? (
-              <option value="local-dir">From Local Dir</option>
+              <option value="local-dir">From Cache</option>
             ) : null}
             <option value="clone-url">Clone URL</option>
             {/* <option value="clone-ipfs">Clone IPFS Hash</option> */}

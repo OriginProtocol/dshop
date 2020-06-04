@@ -78,6 +78,9 @@ const App = ({ location, config }) => {
       const favicon = document.querySelector('link[rel="icon"]')
       favicon.href = `${config.dataSrc}${config.favicon}`
     }
+    if (document.title === 'TITLE') {
+      document.title = 'Origin Dshop'
+    }
   }, [config])
 
   if (passwordLoading) {

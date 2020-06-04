@@ -5,7 +5,7 @@ import useConfig from 'utils/useConfig'
 
 import Modal from 'components/Modal'
 
-const AdminSyncToCache = ({ shop, className = '', hash }) => {
+const AdminSyncToCache = ({ shop, className = '', hash, networkId }) => {
   const { config } = useConfig()
   const [state, setState] = useSetState({ syncShop: 0 })
 
@@ -19,7 +19,7 @@ const AdminSyncToCache = ({ shop, className = '', hash }) => {
       },
       credentials: 'include',
       method: 'POST',
-      body: JSON.stringify({ hash })
+      body: JSON.stringify({ hash, networkId })
     })
       .then((res) => res.json())
       .then((data) => {

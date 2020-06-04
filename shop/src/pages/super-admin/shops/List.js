@@ -4,9 +4,15 @@ import get from 'lodash/get'
 import dayjs from 'dayjs'
 
 import { useStateValue } from 'data/state'
+import { NetworksById } from 'data/Networks'
 
 import Paginate from 'components/Paginate'
 import Link from 'components/Link'
+
+function networkName(shop) {
+  const network = get(NetworksById, shop.networkId, {})
+  return network.name
+}
 
 const AdminShops = () => {
   const [{ admin }] = useStateValue()
@@ -27,10 +33,10 @@ const AdminShops = () => {
       <table className="table admin-discounts table-hover">
         <thead>
           <tr>
-            <th className="text-center">Network</th>
             <th>Name</th>
             <th className="text-center">Listing ID</th>
             <th>Created</th>
+            <th className="text-center">Network</th>
             <th />
           </tr>
         </thead>
@@ -42,10 +48,10 @@ const AdminShops = () => {
                 history.push(`/super-admin/shops/${shop.authToken}`)
               }}
             >
-              <td className="text-center">{shop.networkId}</td>
               <td>{shop.name}</td>
               <td className="text-center">{shop.listingId}</td>
               <td>{dayjs(shop.createdAt).format('MMM D, h:mm A')}</td>
+              <td className="text-center">{networkName(shop)}</td>
               <td className="text-right">
                 {!shop.viewable ? null : (
                   <>

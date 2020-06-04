@@ -42,6 +42,8 @@ require('react-styl')(`
           margin-right: 0.5rem
           vertical-align: -3px
     .table
+      &.table-hover
+        cursor: pointer
       thead
         th
           background-color: #f8f8f8
