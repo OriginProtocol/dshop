@@ -20,10 +20,22 @@ module.exports = (sequelize, DataTypes) => {
   )
 
   Shop.associate = function (models) {
-    Shop.belongsToMany(models.Seller, { through: models.SellerShop })
-    Shop.hasMany(models.Order, { as: 'orders', targetKey: 'shopId' })
-    Shop.hasMany(models.Transaction, { as: 'transactions' })
-    Shop.hasMany(models.Discount, { as: 'discounts' })
+    Shop.belongsToMany(models.Seller, {
+      through: models.SellerShop,
+      onDelete: 'cascade'
+    })
+    Shop.hasMany(models.Order, {
+      as: 'orders',
+      targetKey: 'shopId',
+      onDelete: 'cascade',
+      hooks: true
+    })
+    Shop.hasMany(models.Transaction, {
+      as: 'transactions',
+      onDelete: 'cascade'
+    })
+    Shop.hasMany(models.Discount, { as: 'discounts', onDelete: 'cascade' })
+    Shop.hasMany(models.ShopDeployment, { as: 'shop_deployments', onDelete: 'cascade' })
   }
 
   return Shop

@@ -27,8 +27,9 @@ const AdminShops = () => {
       <table className="table admin-discounts table-hover">
         <thead>
           <tr>
+            <th className="text-center">Network</th>
             <th>Name</th>
-            <th>Listing ID</th>
+            <th className="text-center">Listing ID</th>
             <th>Created</th>
             <th />
           </tr>
@@ -41,8 +42,9 @@ const AdminShops = () => {
                 history.push(`/super-admin/shops/${shop.authToken}`)
               }}
             >
+              <td className="text-center">{shop.networkId}</td>
               <td>{shop.name}</td>
-              <td>{shop.listingId}</td>
+              <td className="text-center">{shop.listingId}</td>
               <td>{dayjs(shop.createdAt).format('MMM D, h:mm A')}</td>
               <td className="text-right">
                 {!shop.viewable ? null : (
@@ -52,7 +54,7 @@ const AdminShops = () => {
                       onClick={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
-                        sessionStorage.dataDir = shop.authToken
+                        localStorage.activeShop = shop.authToken
                         window.open(location.origin)
                       }}
                       children="Storefront"
@@ -64,10 +66,12 @@ const AdminShops = () => {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault()
-                        sessionStorage.dataDir = shop.authToken
-                        window.open(
-                          `${location.origin}/#/admin/settings/server`
-                        )
+                        e.stopPropagation()
+                        localStorage.activeShop = shop.authToken
+                        history.push({
+                          pathname: `/admin`,
+                          state: { scrollToTop: true }
+                        })
                       }}
                       children="Admin"
                     />

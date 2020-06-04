@@ -10,7 +10,6 @@ import Password from './Password'
 import Admin from './admin/Admin'
 import SuperAdmin from './super-admin/SuperAdmin'
 
-import dataUrl from 'utils/dataUrl'
 import { useStateValue } from 'data/state'
 
 const App = ({ location, config }) => {
@@ -77,7 +76,7 @@ const App = ({ location, config }) => {
     }
     if (config && config.favicon) {
       const favicon = document.querySelector('link[rel="icon"]')
-      favicon.href = `${dataUrl()}${config.favicon}`
+      favicon.href = `${config.dataSrc}${config.favicon}`
     }
   }, [config])
 

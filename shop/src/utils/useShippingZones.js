@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { useStateValue } from 'data/state'
 
 import useConfig from 'utils/useConfig'
-import dataUrl from 'utils/dataUrl'
 
 function useShippingZones() {
   const { config } = useConfig()
@@ -36,7 +35,7 @@ function useShippingZones() {
         }
 
         if (!zones.length) {
-          const raw = await fetch(`${dataUrl()}shipping.json`)
+          const raw = await fetch(`${config.dataSrc}shipping.json`)
           zones = await raw.json()
         }
 

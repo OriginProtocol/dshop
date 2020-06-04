@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 
 import useConfig from 'utils/useConfig'
-import dataUrl from 'utils/dataUrl'
 import { useStateValue } from 'data/state'
 
 const Password = () => {
@@ -14,7 +13,7 @@ const Password = () => {
     <div className="password container">
       <header className="justify-content-center">
         <h1>
-          {config.logo ? <img src={`${dataUrl()}${config.logo}`} /> : null}
+          {config.logo ? <img src={`${config.dataSrc}${config.logo}`} /> : null}
           {config.title}
         </h1>
       </header>

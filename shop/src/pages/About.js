@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react'
 
 import Link from 'components/Link'
-
 import useConfig from 'utils/useConfig'
-import dataUrl from 'utils/dataUrl'
 
 const About = () => {
   const { config } = useConfig()
@@ -12,7 +10,7 @@ const About = () => {
   useEffect(() => {
     if (config.about) {
       setLoading(true)
-      fetch(`${dataUrl()}${config.about}`).then((res) => {
+      fetch(`${config.dataSrc}${config.about}`).then((res) => {
         setLoading(false)
         if (res.ok) {
           res.text().then((body) => setAbout(body))

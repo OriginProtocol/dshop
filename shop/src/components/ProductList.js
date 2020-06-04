@@ -2,7 +2,6 @@ import React from 'react'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import get from 'lodash/get'
 
-import dataUrl from 'utils/dataUrl'
 import Link from 'components/Link'
 import formatPrice from 'utils/formatPrice'
 import useConfig from 'utils/useConfig'
@@ -22,7 +21,7 @@ const ProductList = ({ products }) => {
     <div className="products">
       {products.length ? null : <div>No Products!</div>}
       {products.map((product) => {
-        let img = `${dataUrl()}${product.id}/520/${product.image}`
+        let img = `${config.dataSrc}${product.id}/520/${product.image}`
         if (product.data) {
           img = `${config.ipfsGateway}${product.data}/520/${product.image}`
         }

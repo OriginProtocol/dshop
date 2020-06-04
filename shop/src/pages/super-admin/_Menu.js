@@ -39,7 +39,7 @@ const AdminMenu = () => {
           Users
         </Link>
       </li>
-      <li className="db">
+      <li>
         <a
           href="#logout"
           onClick={(e) => {

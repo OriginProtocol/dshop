@@ -33,6 +33,7 @@ const defaultState = {
 
 function getInitialState(key) {
   let initialState = cloneDeep(defaultState)
+
   try {
     initialState = {
       ...initialState,

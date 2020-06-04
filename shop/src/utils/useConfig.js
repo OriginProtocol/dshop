@@ -10,14 +10,13 @@ try {
   /* Ignore */
 }
 
-import dataUrl from 'utils/dataUrl'
-
 const DefaultPaymentMethods = [
   { id: 'crypto', label: 'Crypto Currency' },
   { id: 'stripe', label: 'Credit Card' }
 ]
 
-const net = localStorage.ognNetwork || 'localhost'
+let net = localStorage.ognNetwork
+if (!net.match(/^(mainnet|rinkeby)$/)) net = 'localhost'
 const netId = net === 'mainnet' ? '1' : net === 'rinkeby' ? '4' : '999'
 const contracts = networks[net] || {}
 
@@ -31,18 +30,27 @@ const DefaultTokens = [
   }
 ]
 
-let config
+let config, loaded
 
 function useConfig() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
+  let dataSrc =
+    localStorage.activeShop ||
+    document.querySelector('link[rel="data-dir"]').getAttribute('href')
+
+  if (!dataSrc.endsWith('/')) {
+    dataSrc += '/'
+  }
+
   useEffect(() => {
     async function fetchConfig() {
+      loaded = dataSrc
       config = { backend: '', firstTimeSetup: true, netId }
       setLoading(true)
       try {
-        const url = `${dataUrl()}config.json`
+        const url = `${dataSrc}config.json`
         console.debug(`Loading config from ${url}...`)
 
         config = await fetch(url).then((raw) => raw.json())
@@ -88,7 +96,8 @@ function useConfig() {
           netId,
           contracts,
           acceptedTokens,
-          netName
+          netName,
+          dataSrc
         }
         setLoading(false)
       } catch (e) {
@@ -97,10 +106,10 @@ function useConfig() {
         setError(true)
       }
     }
-    if (config === undefined) {
+    if (loaded !== dataSrc) {
       fetchConfig()
     }
-  }, [])
+  }, [dataSrc])
 
   return { config, loading, error }
 }

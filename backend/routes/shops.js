@@ -483,8 +483,9 @@ module.exports = function (app) {
   )
 
   app.delete('/shops/:shopId', authSuperUser, (req, res) => {
-    Shop.destroy({ where: { authToken: req.params.shopId } }).then(() => {
-      res.json({ success: true })
-    })
+    Shop.findOne({ where: { authToken: req.params.shopId } })
+      .then((shop) => ShopDeployment.destroy({ where: { shopId: shop.id } }))
+      .then(() => Shop.destroy({ where: { authToken: req.params.shopId } }))
+      .then(() => res.json({ success: true }))
   })
 }

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, Switch, Route, useRouteMatch, Redirect } from 'react-router-dom'
+import { useHistory, Link, Switch, Route, useRouteMatch, Redirect } from 'react-router-dom'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
@@ -9,6 +9,7 @@ import DeleteShop from './_Delete'
 import DeployShop from './Deploy'
 import FileEditor from './FileEditor'
 import Assets from './Assets'
+import Settings from './Settings'
 // import ServerSettings from 'pages/admin/settings/Server'
 
 const NavItem = ({ url, active, name }) => (
@@ -22,6 +23,7 @@ const NavItem = ({ url, active, name }) => (
 )
 
 const AdminShop = () => {
+  const history = useHistory()
   const [{ admin }] = useStateValue()
   const match = useRouteMatch('/super-admin/shops/:shopId/:tab?')
   const { shopId, tab } = match.params
@@ -49,7 +51,7 @@ const AdminShop = () => {
           <button
             className="btn btn-outline-primary"
             onClick={() => {
-              sessionStorage.dataDir = shop.authToken
+              localStorage.activeShop = shop.authToken
               window.open(location.origin)
             }}
             children="Storefront"
@@ -57,8 +59,8 @@ const AdminShop = () => {
           <button
             className="btn btn-outline-primary ml-2"
             onClick={() => {
-              sessionStorage.dataDir = shop.authToken
-              window.open(`${location.origin}/#/admin/settings/server`)
+              localStorage.activeShop = shop.authToken
+              history.push({ pathname: `/admin`, state: { scrollToTop: true } })
             }}
             children="Admin"
           />
@@ -67,6 +69,11 @@ const AdminShop = () => {
       </h3>
 
       <ul className="nav nav-tabs mt-3 mb-3">
+        <NavItem
+          active={tab === 'settings'}
+          url={`${prefix}/settings`}
+          name="Settings"
+        />
         <NavItem
           active={tab === 'files'}
           url={`${prefix}/files`}
@@ -97,7 +104,10 @@ const AdminShop = () => {
         <Route path={`${prefix}/files`}>
           <FileEditor shop={shop} />
         </Route>
-        <Redirect to={`${prefix}/files`} />
+        <Route path={`${prefix}/settings`}>
+          <Settings shop={shop} />
+        </Route>
+        <Redirect to={`${prefix}/settings`} />
       </Switch>
     </>
   )

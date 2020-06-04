@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { Switch, Route, Redirect } from 'react-router-dom'
 
 import useIsMobile from 'utils/useIsMobile'
-import dataUrl from 'utils/dataUrl'
 import useConfig from 'utils/useConfig'
 
 import Bars from 'components/icons/Bars.js'
@@ -86,7 +85,7 @@ const Main = () => {
             <Link to="/" onClick={() => setMenu(false)}>
               <h1>
                 {config.logo ? (
-                  <img src={`${dataUrl()}${config.logo}`} />
+                  <img src={`${config.dataSrc}${config.logo}`} />
                 ) : null}
                 {config.title}
               </h1>
@@ -109,7 +108,9 @@ const Main = () => {
         <header>
           <Link to="/">
             <h1>
-              {config.logo ? <img src={`${dataUrl()}${config.logo}`} /> : null}
+              {config.logo ? (
+                <img src={`${config.dataSrc}${config.logo}`} />
+              ) : null}
               {config.title}
             </h1>
           </Link>
