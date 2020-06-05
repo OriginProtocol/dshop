@@ -21,6 +21,9 @@ const Content = () => {
   const { config } = useConfig()
 
   useEffect(() => {
+    if (!window.BroadcastChannel) {
+      return
+    }
     const bc = new BroadcastChannel('dshop')
 
     bc.onmessage = function msg(ev) {

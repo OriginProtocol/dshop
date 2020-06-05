@@ -4,7 +4,7 @@ import get from 'lodash/get'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 
-function useWallet() {
+function useWallet({ needSigner = false } = {}) {
   const [{ admin }] = useStateValue()
   const { config } = useConfig()
   const [state, setStateRaw] = useState({ status: 'loading' })
@@ -16,7 +16,7 @@ function useWallet() {
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()
-      const mm = get(window, 'ethereum._metamask')
+      const mm = get(window, 'ethereum._metamask', {})
       if (mm.isEnabled) {
         Promise.all([mm.isEnabled(), mm.isUnlocked(), mm.isApproved()]).then(
           ([isEnabled, isUnlocked, isApproved]) => {
@@ -28,7 +28,7 @@ function useWallet() {
       } else {
         setState({ provider, signer, status: 'enabled' })
       }
-    } else if (providerUrl) {
+    } else if (providerUrl && !needSigner) {
       // Fall back to provider specified by Network
       const provider = new ethers.providers.JsonRpcProvider(providerUrl)
       const signer = provider.getSigner()
@@ -53,12 +53,12 @@ function useWallet() {
       setState({ signer, status: 'enabled' })
     }
 
-    if (window.ethereum) {
+    if (get(window, 'ethereum.on')) {
       window.ethereum.on('networkChanged', onNetChanged)
       window.ethereum.on('accountsChanged', onAccountsChanged)
     }
     return function cleanup() {
-      if (window.ethereum) {
+      if (get(window, 'ethereum.on')) {
         window.ethereum.off('networkChanged', onNetChanged)
         window.ethereum.off('accountsChanged', onAccountsChanged)
       }
@@ -79,7 +79,7 @@ function useWallet() {
     })
   }
 
-  return { enable, ...state, networkOk: config.netId === state.netId }
+  return { enable, ...state, networkOk: config.netId === state.netId, needSigner }
 }
 
 export default useWallet
