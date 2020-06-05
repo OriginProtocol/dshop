@@ -14,7 +14,7 @@ import ShopReady from '../new-shop/ShopReady'
 const AdminDeployShop = ({ className = '', shop }) => {
   const [{ admin }, dispatch] = useStateValue()
   const { config } = useConfig()
-  const [state, setState] = useSetState({ deploy: true })
+  const [state, setState] = useSetState()
   useEffect(() => {
     if (state.deployShop) {
       fetch(`${config.backend}/shops/${shop.authToken}/deploy`, {

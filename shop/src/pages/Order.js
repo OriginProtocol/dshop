@@ -106,6 +106,7 @@ const Order = () => {
   const { getOffer } = useOrigin()
   const [cart, setCart] = useState()
   const [error, setError] = useState()
+  const [loading, setLoading] = useState()
   const [, dispatch] = useStateValue()
   const match = useRouteMatch('/order/:tx')
   const location = useLocation()
@@ -122,11 +123,13 @@ const Order = () => {
       } else {
         setError(true)
       }
+      setLoading(false)
     }
-    if (getOffer) {
+    if (getOffer && !cart && !loading) {
+      setLoading(true)
       go()
     }
-  }, [match.params.tx, opts.auth, getOffer])
+  }, [match.params.tx, opts.auth, getOffer, status])
 
   useEffect(() => {
     if (!window.orderCss) {
@@ -136,6 +139,9 @@ const Order = () => {
     }
   }, [])
 
+  if (!cart || loading) {
+    return <div className="loading-fullpage">Loading</div>
+  }
   if (error) {
     console.error(error)
     return (
@@ -145,9 +151,6 @@ const Order = () => {
         <div className="order-summary-wrap"></div>
       </div>
     )
-  }
-  if (!cart) {
-    return <div className="loading-fullpage">Loading</div>
   }
 
   return (

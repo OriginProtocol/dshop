@@ -36,20 +36,21 @@ function useWallet() {
     } else {
       setState({ status: 'no-web3' })
     }
-  }, [providerUrl])
+  }, [providerUrl, state.status])
 
   useEffect(() => {
-    if (state.status !== 'enabled') {
-      return
+    if (state.provider && !state.netId) {
+      state.provider.send('net_version').then((netId) => setState({ netId }))
     }
-
-    state.provider.send('net_version').then((netId) => setState({ netId }))
 
     const onNetChanged = (netId) => {
-      setState({ netId })
+      setState({ status: 'loading' })
+      setState({ netId, status: 'enabled' })
     }
     const onAccountsChanged = (accounts) => {
-      setState({ signer: state.provider.getSigner(accounts[0]) })
+      setState({ status: 'loading' })
+      const signer = state.provider.getSigner(accounts[0])
+      setState({ signer, status: 'enabled' })
     }
 
     if (window.ethereum) {
@@ -57,10 +58,12 @@ function useWallet() {
       window.ethereum.on('accountsChanged', onAccountsChanged)
     }
     return function cleanup() {
-      window.ethereum.off('networkChanged', onNetChanged)
-      window.ethereum.off('accountsChanged', onAccountsChanged)
+      if (window.ethereum) {
+        window.ethereum.off('networkChanged', onNetChanged)
+        window.ethereum.off('accountsChanged', onAccountsChanged)
+      }
     }
-  }, [state.status, state.netId, state.provider])
+  })
 
   function enable() {
     if (!window.ethereum) {

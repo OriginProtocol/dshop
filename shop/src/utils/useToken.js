@@ -2,7 +2,6 @@ import ethers from 'ethers'
 import { useEffect, useState } from 'react'
 
 import usePrice from 'utils/usePrice'
-import useWallet from 'utils/useWallet'
 import useOrigin from 'utils/useOrigin'
 
 const tokenAbi = [
@@ -20,8 +19,8 @@ function useToken(activeToken = {}, totalUsd) {
     loading: true,
     hasAllowance: false
   })
-  const { status } = useWallet()
-  const { marketplace, provider, signer } = useOrigin()
+
+  const { marketplace, status, provider, signer } = useOrigin()
 
   const setState = (newState) => setStateRaw({ ...state, ...newState })
   const { exchangeRates } = usePrice()
@@ -31,10 +30,15 @@ function useToken(activeToken = {}, totalUsd) {
     async function getBalance() {
       setState({ loading: true })
       try {
-        // console.log('getBalance', activeToken)
         const walletAddress = await signer.getAddress()
-
-        if (activeToken.id === 'token-ETH') {
+        if (walletAddress === ethers.constants.AddressZero) {
+          setState({
+            hasBalance: false,
+            hasAllowance: false,
+            loading: false,
+            error: 'Active wallet not found'
+          })
+        } else if (activeToken.id === 'token-ETH') {
           const balance = await provider.getBalance(walletAddress)
           const balanceNum = ethers.utils.formatUnits(balance, 'ether')
           const balanceUSD = Math.floor(
@@ -88,6 +92,7 @@ function useToken(activeToken = {}, totalUsd) {
           })
         }
       } catch (e) {
+        console.error(e)
         setState({
           hasAllowance: false,
           hasBalance: false,
@@ -96,7 +101,14 @@ function useToken(activeToken = {}, totalUsd) {
         })
       }
     }
-    if (exchangeRate) {
+    if (!signer) {
+      setState({
+        hasAllowance: false,
+        hasBalance: false,
+        loading: false,
+        error: 'Active wallet not found'
+      })
+    } else if (exchangeRate) {
       getBalance()
     } else {
       setState({
@@ -106,7 +118,14 @@ function useToken(activeToken = {}, totalUsd) {
         error: 'No exchange rate for token'
       })
     }
-  }, [activeToken.name, state.shouldRefetchBalance, totalUsd, signer, status])
+  }, [
+    activeToken.name,
+    state.shouldRefetchBalance,
+    totalUsd,
+    signer,
+    status,
+    marketplace
+  ])
 
   return {
     ...state,

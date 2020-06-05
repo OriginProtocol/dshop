@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import ethers from 'ethers'
 import { get } from '@origin/ipfs'
 import _get from 'lodash/get'
@@ -71,6 +72,9 @@ const marketplaceAbi = [
 const marketplaceInterface = new ethers.utils.Interface(marketplaceAbi)
 
 async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
+  if (!marketplace) {
+    return null
+  }
   let encryptedHash, fullOfferId, offer
 
   if (tx.indexOf('0x') === 0) {
@@ -125,21 +129,27 @@ async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
 }
 
 function useOrigin() {
+  const [marketplace, setMarketplace] = useState()
   const { config } = useConfig()
   const { status, provider, signer } = useWallet()
-  if (status !== 'enabled') return {}
 
-  const marketplace = new ethers.Contract(
-    config.contracts.Marketplace_V01,
-    marketplaceAbi,
-    signer || provider
-  )
+  useEffect(() => {
+    if (status !== 'enabled') return
+    const marketplace = new ethers.Contract(
+      config.contracts.Marketplace_V01,
+      marketplaceAbi,
+      signer || provider
+    )
+    setMarketplace(marketplace)
+  }, [status])
+
+  if (status !== 'enabled') return {}
 
   function getOffer({ tx, password }) {
     return getOfferFromTx({ tx, password, config, provider, marketplace })
   }
 
-  return { provider, signer, marketplace, getOffer }
+  return { status, provider, signer, marketplace, getOffer }
 }
 
 export default useOrigin

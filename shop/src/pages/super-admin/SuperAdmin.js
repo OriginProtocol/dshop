@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { Redirect, Switch, Route } from 'react-router-dom'
 import get from 'lodash/get'
+
 import 'components/admin/Styles'
+import * as Icons from 'components/icons/Admin'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
@@ -17,9 +19,11 @@ import Dashboard from './Dashboard'
 import Networks from './networks/List'
 import NewNetwork from './networks/New'
 import EditNetwork from './networks/Edit'
-import Users from './users/Users'
-import User from './users/User'
-import NewUser from './users/NewUser'
+
+import Users from './users/List'
+import User from './users/Show'
+import NewUser from './users/New'
+import EditUser from './users/Edit'
 
 const SuperAdmin = () => {
   const { config } = useConfig()
@@ -69,7 +73,10 @@ const SuperAdmin = () => {
             <img src="images/dshop-logo.svg" />
             <div>Super Admin</div>
           </h1>
-          <div>{`Welcome, ${admin.email}`}</div>
+          <div className="user">
+            <Icons.User />
+            {admin.email}
+          </div>
         </div>
       </nav>
       <div className="container">
@@ -88,6 +95,10 @@ const SuperAdmin = () => {
               <Route path="/super-admin/networks" component={Networks} />
 
               <Route path="/super-admin/users/new" component={NewUser} />
+              <Route
+                path="/super-admin/users/:userId/edit"
+                component={EditUser}
+              />
               <Route path="/super-admin/users/:userId" component={User} />
               <Route path="/super-admin/users" component={Users} />
 

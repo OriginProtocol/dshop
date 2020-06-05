@@ -171,9 +171,7 @@ module.exports = function (app) {
     const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
 
     fs.mkdirSync(OutputDir, { recursive: true })
-    console.log(
-      `Downloading archive of hash ${req.body.hash} from ${network.ipfsApi}`
-    )
+    console.log(`Downloading ${req.body.hash} from ${network.ipfsApi}`)
     const path = `/api/v0/get?arg=${req.body.hash}&archive=true&compress=true`
 
     await new Promise((resolve) => {
@@ -208,14 +206,27 @@ module.exports = function (app) {
 
     fs.unlinkSync(`${OutputDir}/data.tar.gz`)
 
+    const indexRaw = fs.readFileSync(`${OutputDir}/${req.body.hash}/index.html`)
+    const match = indexRaw
+      .toString()
+      .match(/rel="data-dir" href="([0-9a-z-]+)"/)
+    const dataDir = match[1]
+
     await new Promise((resolve, reject) => {
       exec(
-        `mv ${OutputDir}/${req.body.hash} ${OutputDir}/data`,
+        `mv ${OutputDir}/${req.body.hash}/${dataDir} ${OutputDir}/data`,
         (error, stdout) => {
           if (error) reject(error)
           else resolve(stdout)
         }
       )
+    })
+
+    await new Promise((resolve, reject) => {
+      exec(`rm -rf ${OutputDir}/${req.body.hash}`, (error, stdout) => {
+        if (error) reject(error)
+        else resolve(stdout)
+      })
     })
 
     res.json({ success: true })
