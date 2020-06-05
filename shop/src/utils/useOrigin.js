@@ -72,12 +72,13 @@ const marketplaceAbi = [
 const marketplaceInterface = new ethers.utils.Interface(marketplaceAbi)
 
 async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
-  if (!marketplace) {
-    return null
-  }
   let encryptedHash, fullOfferId, offer
 
   if (tx.indexOf('0x') === 0) {
+    if (!marketplace) {
+      console.log('No marketplace contract found')
+      return null
+    }
     const ListingId = _get(config, `listingId`)
 
     const receipt = await provider.getTransactionReceipt(tx)
@@ -143,11 +144,11 @@ function useOrigin() {
     setMarketplace(marketplace)
   }, [status])
 
-  if (status !== 'enabled') return {}
-
   function getOffer({ tx, password }) {
     return getOfferFromTx({ tx, password, config, provider, marketplace })
   }
+
+  if (status !== 'enabled') return { getOffer }
 
   return { status, provider, signer, marketplace, getOffer }
 }
