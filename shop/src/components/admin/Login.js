@@ -1,18 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState } from 'react'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 
 const Login = () => {
   const { config } = useConfig()
-  const inputEl = useRef(null)
   const [state, setState] = useState({ email: '', password: '', error: '' })
   const [, dispatch] = useStateValue()
-  useEffect(() => {
-    if (inputEl.current) {
-      inputEl.current.focus()
-    }
-  }, [inputEl])
 
   return (
     <form
@@ -51,10 +45,11 @@ const Login = () => {
     >
       <div className="form-group">
         <input
-          ref={inputEl}
+          type="email"
           className="form-control"
           placeholder="E-mail"
           value={state.email}
+          autoFocus
           onChange={(e) => setState({ ...state, email: e.target.value })}
         />
       </div>
