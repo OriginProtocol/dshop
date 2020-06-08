@@ -42,6 +42,8 @@ function initialState() {
     providerWs: '',
     pinataKey: '',
     pinataSecret: '',
+    ipfsClusterUser: '',
+    ipfsClusterPassword: '',
     cloudflareEmail: '',
     cloudflareApiKey: '',
     gcpCredentials: '',
@@ -228,6 +230,21 @@ const CreateNetworkForm = ({ active = false }) => {
                   placeholder="eg https://ipfs-prod.ogn.app"
                 />
                 {Feedback('ipfsApi')}
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group col-md-6">
+                <label>IPFS Cluster User</label>
+                <input {...input('ipfsClusterUser')} />
+                {Feedback('ipfsClusterUser')}
+              </div>
+              <div className="form-group col-md-6">
+                <label>IPFS Cluster Password</label>
+                <input
+                  type="ipfsClusterPassword"
+                  {...input('ipfsClusterPassword')}
+                />
+                {Feedback('ipfsClusterPassword')}
               </div>
             </div>
             <div className="form-row">

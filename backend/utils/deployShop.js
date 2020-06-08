@@ -10,6 +10,30 @@ const prime = require('./primeIpfs')
 const setCloudflareRecords = require('./dns/cloudflare')
 const setCloudDNSRecords = require('./dns/clouddns')
 
+/**
+ * Convert an HTTP URL into a multiaddr
+ */
+function urlToMultiaddr(v) {
+  const url = new URL(v)
+  // TODO: ipv6?
+  const addrProto = url.host.match(/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/)
+    ? 'ip4'
+    : 'dns4'
+  let port = url.port
+  if (!url.port) {
+    if (url.protocol === 'https:') {
+      port = `443`
+    } else if (url.protocol === 'http:') {
+      port = 80
+    } else {
+      throw new Error(`Unsupoorted protocol ${url.protocol}!`)
+    }
+  }
+  return `/${addrProto}/${url.host}/tcp/${port}/${url.protocol.slice(0, -1)}${
+    url.pathname
+  }`
+}
+
 async function deployShop({ OutputDir, dataDir, network, subdomain, shop }) {
   const networkConfig = getConfig(network.config)
   const zone = networkConfig.domain
@@ -64,29 +88,54 @@ async function deployShop({ OutputDir, dataDir, network, subdomain, shop }) {
       .replace('FAVICON', publicShopConfig.favicon || 'favicon.ico')
   )
 
+  const remotePinners = []
+
+  const ipfsDeployCredentials = {}
+  if (network.ipfsApi && networkConfig.ipfsClusterPassword) {
+    const maddr = urlToMultiaddr(network.ipfsApi)
+    console.log(`Connecting to cluster ${maddr}`)
+    ipfsDeployCredentials['ipfsCluster'] = {
+      host: maddr,
+      username: networkConfig.ipfsClusterUser || 'dshop',
+      password: networkConfig.ipfsClusterPassword
+    }
+    remotePinners.push('ipfs-cluster')
+  }
+
+  if (networkConfig.pinataKey && networkConfig.pinataSecret) {
+    ipfsDeployCredentials['pinata'] = {
+      apiKey: networkConfig.pinataKey,
+      secretApiKey: networkConfig.pinataSecret
+    }
+    remotePinners.push('pinata')
+  }
+
   // Deploy the shop to IPFS.
   let hash, ipfsGateway
   const publicDirPath = `${OutputDir}/public`
-  if (networkConfig.pinataKey && networkConfig.pinataSecret) {
+  if (
+    (networkConfig.pinataKey && networkConfig.pinataSecret) ||
+    (network.ipfsApi && networkConfig.ipfsClusterPassword)
+  ) {
     ipfsGateway = 'https://gateway.pinata.cloud'
     hash = await deploy({
       publicDirPath,
-      remotePinners: ['pinata'],
+      remotePinners,
       siteDomain: dataDir,
-      credentials: {
-        pinata: {
-          apiKey: networkConfig.pinataKey,
-          secretApiKey: networkConfig.pinataSecret
-        }
-      }
+      credentials: ipfsDeployCredentials
     })
     if (!hash) {
       throw new Error('ipfs-errir')
     }
     console.log(`Deployed shop on Pinata. Hash=${hash}`)
-    await prime(`https://gateway.pinata.cloud/ipfs/${hash}`, publicDirPath)
     await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
     await prime(`https://ipfs-prod.ogn.app/ipfs/${hash}`, publicDirPath)
+    if (networkConfig.pinataKey) {
+      await prime(`https://gateway.pinata.cloud/ipfs/${hash}`, publicDirPath)
+    }
+    if (networkConfig.ipfsGateway) {
+      await prime(`${networkConfig.ipfsGateway}/ipfs/${hash}`, publicDirPath)
+    }
   } else if (network.ipfsApi.indexOf('localhost') > 0) {
     ipfsGateway = network.ipfsApi
     const ipfs = ipfsClient(network.ipfsApi)
@@ -99,7 +148,7 @@ async function deployShop({ OutputDir, dataDir, network, subdomain, shop }) {
     console.log(`Deployed shop on local IPFS. Hash=${hash}`)
   } else {
     console.log(
-      'Shop not deployed to IPFS: Pinata not configured and not a dev environment.'
+      'Shop not deployed to IPFS: Pinner service not configured and not a dev environment.'
     )
   }
 

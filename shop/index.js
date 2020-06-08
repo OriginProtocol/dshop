@@ -44,7 +44,7 @@ async function start() {
   const shutdown = await services({
     ganache: true,
     deployContracts: true,
-    ipfs: true,
+    ipfs: false,
     skipContractsIfExists: process.env.CLEAN ? false : true
   })
 

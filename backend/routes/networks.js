@@ -19,6 +19,8 @@ module.exports = function (app) {
       config: setConfig({
         pinataKey: req.body.pinataKey,
         pinataSecret: req.body.pinataSecret,
+        ipfsClusterUser: req.body.ipfsClusterUser,
+        ipfsClusterPassword: req.body.ipfsClusterPassword,
         cloudflareEmail: req.body.cloudflareEmail,
         cloudflareApiKey: req.body.cloudflareApiKey,
         gcpCredentials: req.body.gcpCredentials,
@@ -64,6 +66,8 @@ module.exports = function (app) {
     const config = pick(req.body, [
       'pinataKey',
       'pinataSecret',
+      'ipfsClusterUser',
+      'ipfsClusterPassword',
       'cloudflareEmail',
       'cloudflareApiKey',
       'domain',

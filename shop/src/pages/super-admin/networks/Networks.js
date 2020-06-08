@@ -24,6 +24,8 @@ function validate(state) {
 const defaultValues = {
   pinataKey: '',
   pinataSecret: '',
+  ipfsClusterUser: '',
+  ipfsClusterPassword: '',
   cloudflareEmail: '',
   cloudflareApiKey: '',
   gcpCredentials: '',
@@ -122,6 +124,18 @@ const SuperAdminSettings = () => {
                 <label>Pinata Secret</label>
                 <PasswordField field="pinataSecret" input={input} />
                 {Feedback('pinataSecret')}
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group col-md-6">
+                <label>IPFS Cluster User</label>
+                <input type="text" {...input('ipfsClusterUser')} />
+                {Feedback('ipfsClusterUser')}
+              </div>
+              <div className="form-group col-md-6">
+                <label>IPFS Cluster Password</label>
+                <PasswordField field="ipfsClusterPassword" input={input} />
+                {Feedback('ipfsClusterPassword')}
               </div>
             </div>
             <div className="form-row">
