@@ -2,14 +2,12 @@
 <html lang="en" dir="ltr">
 
 <head>
-  <title><%= htmlWebpackPlugin.options.title || 'Origin Protocol Store' %></title>
+  <title><%= htmlWebpackPlugin.options.title || 'TITLE' %></title>
   <meta charset="utf-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no, user-scalable=no">
   <meta http-equiv="Content-Language" content="en">
-  <% if (htmlWebpackPlugin.options.metaDescription) { %>
-  <meta name="description" content="<%= htmlWebpackPlugin.options.metaDescription %>">
-  <% } %>
+  <meta name="description" content="<%= htmlWebpackPlugin.options.metaDescription || 'META_DESC' %>">
 
   <% if (htmlWebpackPlugin.options.analytics) { %>
   <script async src="https://www.googletagmanager.com/gtag/js?id=<%= htmlWebpackPlugin.options.analytics %>"></script>
@@ -39,9 +37,9 @@
     /></noscript>
   <% } %>
 
-  <link rel="data-dir" href="<%= htmlWebpackPlugin.options.dataDir %>" />
+  <link rel="data-dir" href="<%= htmlWebpackPlugin.options.dataDir || 'DATA_DIR' %>" />
 
-  <link rel="icon" href="<%= htmlWebpackPlugin.options.absolute ? '/' : '' %>favicon.ico" />
+  <link rel="icon" href="FAVICON" />
   <% _.forEach(htmlWebpackPlugin.files.css, function(file, index) { %>
   <% if (htmlWebpackPlugin.files.cssIntegrity) { %>
   <link rel="stylesheet" href="<%- file %>"
@@ -65,11 +63,7 @@
     openpgp.config.show_version = false
     openpgp.initWorker({ path: '<%= htmlWebpackPlugin.options.absolute ? '/' : '' %>dist/openpgp.worker.min.js' })
   }
-</script>
-<script>
-  localStorage.metaMaskEnabled = true
-  localStorage.ognNetwork = "<%= htmlWebpackPlugin.options.network %>"
-  localStorage.customConfig = '{"performanceMode":false,"proxyAccountsEnabled":false,"relayerEnabled":false<% if (htmlWebpackPlugin.options.provider) { %>,"provider":"<%= htmlWebpackPlugin.options.provider %>"<% } %>}'
+  localStorage.ognNetwork = "NETWORK"
 </script>
 <% _.forEach(htmlWebpackPlugin.files.js, function(file, index) { %>
 <% if (htmlWebpackPlugin.files.jsIntegrity) { %>

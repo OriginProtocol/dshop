@@ -1,11 +1,12 @@
 import React from 'react'
 import get from 'lodash/get'
 
-import dataUrl from 'utils/dataUrl'
+import useConfig from 'utils/useConfig'
 
 const VariantPic = ({ product, variant }) => {
+  const { config } = useConfig()
   const image = get(variant, 'image') || get(product, 'images[0]')
-  const url = `${dataUrl()}${product.id}/orig/${image}`
+  const url = `${config.dataSrc}${product.id}/orig/${image}`
   return (
     <div className="product-pic" style={{ backgroundImage: `url(${url})` }} />
   )

@@ -1,6 +1,26 @@
 ---
+substitutions:
+    _NAMESPACE: experimental
+    _IMAGE_NAME: dshop-backend
+
 steps:
-  - id: 'Create tag'
+  - id: 'Configure network name'
+    name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        # Write network to file for future usage
+        case "$BRANCH_NAME" in
+          stable)
+            echo "mainnet" > .network
+            ;;
+          *)
+            echo "rinkeby" > .network
+            ;;
+        esac
+
+  - id: 'Create unique build tag'
     name: 'gcr.io/cloud-builders/docker'
     entrypoint: '/bin/bash'
     args:
@@ -15,7 +35,7 @@ steps:
       - |
         docker build \
             -f ./devops/Dockerfile \
-            -t "gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)" \
+            -t "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
             $(pwd)
 
   - id: 'Push the image to GCR'
@@ -25,17 +45,47 @@ steps:
       - '-c'
       - |
         docker push \
-          gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)
-  
-  - id: 'Tag the image latest'
+          gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)
+
+  - id: 'Tag the image'
     name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: '/bin/bash'
     args:
       - '-c'
       - |
         gcloud container images add-tag \
-          "gcr.io/${PROJECT_ID}/experimental/dshop-backend:$(cat .tag)" \
-          "gcr.io/${PROJECT_ID}/experimental/dshop-backend:latest" \
-          --quiet  
+          "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+          "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:latest" \
+          --quiet
+
+        if [[ "$BRANCH_NAME" == "stable" ]]; then
+          gcloud container images add-tag \
+            "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+            "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:mainnet" \
+            --quiet
+        fi
+
+  - id: 'Update the StatefulSet'
+    name: 'gcr.io/cloud-builders/kubectl'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-west1-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=origin'
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - |
+        gcloud container clusters get-credentials "$$CLOUDSDK_CONTAINER_CLUSTER" \
+          --project "$(gcloud config get-value core/project)" \
+          --zone "$(gcloud config get-value compute/zone)"
+
+        export STS_NAME="${_NAMESPACE}-${_IMAGE_NAME}-$(cat .network)"
+        export PATCH_JSON="[{ \
+          \"op\": \"replace\", \
+          \"path\": \"/spec/template/spec/containers/0/image\", \
+          \"value\": \"gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)\" \
+        }]"
+
+        kubectl -n ${_NAMESPACE} patch statefulset $$STS_NAME --type='json' \
+          -p="$$PATCH_JSON"
 
 timeout: '1800s'

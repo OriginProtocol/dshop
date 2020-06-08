@@ -33,6 +33,7 @@ const defaultState = {
 
 function getInitialState(key) {
   let initialState = cloneDeep(defaultState)
+
   try {
     initialState = {
       ...initialState,
@@ -199,8 +200,6 @@ function getReducer(key) {
       newState = set(newState, 'affiliate', action.affiliate)
     } else if (action.type === 'setReferrer') {
       newState = set(newState, 'referrer', action.referrer)
-    } else if (action.type === 'setNetwork') {
-      newState = set(newState, 'admin.network', action.network)
     } else if (action.type === 'reload') {
       const target = `reload.${action.target}`
       const reload = get(newState, target, 0)

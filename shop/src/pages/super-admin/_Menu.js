@@ -21,19 +21,25 @@ const AdminMenu = () => {
           Dashboard
         </Link>
       </li>
+      <li className={`settings ${active('/super-admin/networks')}`}>
+        <Link to="/super-admin/networks">
+          <Icons.Settings />
+          Networks
+        </Link>
+      </li>
       <li className={`orders ${active('/super-admin/shops')}`}>
         <Link to="/super-admin/shops">
           <Icons.Orders />
           Shops
         </Link>
       </li>
-      <li className={`settings ${active('/super-admin/settings')}`}>
-        <Link to="/super-admin/settings">
-          <Icons.Settings />
-          Settings
+      <li className={`settings ${active('/super-admin/users')}`}>
+        <Link to="/super-admin/users">
+          <Icons.User />
+          Users
         </Link>
       </li>
-      <li className="db">
+      <li>
         <a
           href="#logout"
           onClick={(e) => {

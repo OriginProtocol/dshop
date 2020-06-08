@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 
 import { useStateValue } from 'data/state'
+import useSetState from 'utils/useSetState'
 
 import Link from 'components/Link'
 import Toggle from 'components/Toggle'
@@ -12,10 +13,9 @@ import Landing from './Landing'
 
 const Affiliates = () => {
   const [{ affiliate }, dispatch] = useStateValue()
-  const [state, setStateRaw] = useState({
+  const [state, setState] = useSetState({
     mode: affiliate ? 'affiliate' : 'default'
   })
-  const setState = (newState) => setStateRaw({ ...state, ...newState })
   const { mode, account } = state
 
   const props = { setState, state, affiliate, dispatch, account }

@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 
 import useConfig from 'utils/useConfig'
-import dataUrl from 'utils/dataUrl'
 import { useStateValue } from 'data/state'
 
 const Password = () => {
@@ -14,19 +13,13 @@ const Password = () => {
     <div className="password container">
       <header className="justify-content-center">
         <h1>
-          {config.logo ? <img src={`${dataUrl()}${config.logo}`} /> : null}
+          {config.logo ? <img src={`${config.dataSrc}${config.logo}`} /> : null}
           {config.title}
         </h1>
       </header>
       <div className="bdr" />
       <h3>Opening Soon</h3>
-      <div className="description">
-        Dear Brave/BAT fans: our store will be back in the near future with more
-        awesome merch. In the meantime, join us on{' '}
-        <a href="https://community.brave.com">https://community.brave.com</a>{' '}
-        (Brave browser), <a href="https://batcommunity.org">batcommunity.org</a>{' '}
-        (BAT) or on <a href="https://reddit.com/r/BATProject">Reddit</a>!
-      </div>
+      <div className="description">Please check back soon!</div>
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -71,7 +64,7 @@ const Password = () => {
           Submit
         </button>
       </form>
-      <div className="footer">{`Copyright © ${now.getFullYear()} Brave Software.`}</div>
+      <div className="footer">{`Copyright © ${now.getFullYear()}.`}</div>
     </div>
   )
 }

@@ -13,6 +13,7 @@ const AdminConsole = () => {
   const [orderId, setOrderId] = useState('')
   const [readHash, setReadHash] = useState('')
   const [shopIpfsHash, setShopIpfsHash] = useState('')
+  const [printfulError, setPrintfulError] = useState('')
 
   return (
     <div className="mt-4">
@@ -105,16 +106,15 @@ const AdminConsole = () => {
             return
           }
 
-          const encryptedData = await get(config.ipfsGateway, readHash, 10000)
+          const { pgpPrivateKey, pgpPrivateKeyPass } = shopConfig
 
-          const privateKey = await openpgp.key.readArmored(
-            shopConfig.pgpPrivateKey
-          )
+          const encryptedData = await get(config.ipfsGateway, readHash, 10000)
+          const privateKey = await openpgp.key.readArmored(pgpPrivateKey)
           if (privateKey.err && privateKey.err.length) {
             throw privateKey.err[0]
           }
           const privateKeyObj = privateKey.keys[0]
-          await privateKeyObj.decrypt(shopConfig.pgpPrivateKeyPass)
+          await privateKeyObj.decrypt(pgpPrivateKeyPass)
 
           const message = await openpgp.message.readArmored(encryptedData.data)
           const options = { message, privateKeys: [privateKeyObj] }
@@ -170,6 +170,7 @@ const AdminConsole = () => {
         className="d-flex"
         onSubmit={async (e) => {
           e.preventDefault()
+          setPrintfulError('')
           fetch(`${config.backend}/shop/sync-printful`, {
             headers: {
               authorization: `bearer ${config.backendAuthToken}`,
@@ -182,13 +183,19 @@ const AdminConsole = () => {
               console.log('Not OK')
               return
             }
-            console.log('OK')
+            saveRes.json().then((json) => {
+              if (!json.success) {
+                setPrintfulError(json.reason)
+                return
+              }
+            })
           })
         }}
       >
         <button type="submit" className="btn btn-outline-primary">
           Sync
         </button>
+        {printfulError ? <div className="ml-3">{printfulError}</div> : null}
       </form>
     </div>
   )

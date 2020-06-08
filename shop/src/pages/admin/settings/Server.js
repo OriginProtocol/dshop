@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
+import useSetState from 'utils/useSetState'
 
 import PasswordField from 'components/admin/PasswordField'
 
@@ -73,14 +74,13 @@ async function testKey({ msg, pgpPublicKey, pgpPrivateKey, pass }) {
   return plaintext.data === msg ? '✅' : '❌'
 }
 
-const AdminSettings = () => {
-  const { config } = useConfig()
-  const { shopConfig } = useShopConfig()
+const AdminSettings = ({ shop }) => {
+  const { config } = useConfig(shop)
+  const { shopConfig } = useShopConfig(shop)
   const [saving, setSaving] = useState()
   const [keyFromDb, setKeyFromDb] = useState()
-  const [state, setStateRaw] = useState(defaultValues)
+  const [state, setState] = useSetState(defaultValues)
   const [keyValid, setKeyValid] = useState(false)
-  const setState = (newState) => setStateRaw({ ...state, ...newState })
 
   const pgpPublicKey = keyFromDb
     ? shopConfig.pgpPublicKey || ''
@@ -90,7 +90,7 @@ const AdminSettings = () => {
     if (shopConfig) {
       setState(shopConfig)
     } else {
-      setStateRaw(defaultValues)
+      setState(defaultValues, true)
     }
   }, [shopConfig])
 
@@ -133,18 +133,17 @@ const AdminSettings = () => {
         }
 
         if (valid) {
-          const headers = new Headers({
-            authorization: `bearer ${config.backendAuthToken}`,
-            'content-type': 'application/json'
-          })
-          const myRequest = new Request(`${config.backend}/config`, {
-            headers,
+          setSaving('saving')
+          const token = shop ? shop.authToken : config.backendAuthToken
+          const raw = await fetch(`${config.backend}/config`, {
+            headers: {
+              authorization: `bearer ${token}`,
+              'content-type': 'application/json'
+            },
             credentials: 'include',
             method: 'POST',
             body: JSON.stringify(newState)
           })
-          setSaving('saving')
-          const raw = await fetch(myRequest)
           if (raw.ok) {
             setSaving('ok')
             setTimeout(() => setSaving(null), 3000)
@@ -155,7 +154,7 @@ const AdminSettings = () => {
       }}
     >
       <div className="row">
-        <div className="form-group col-md-6">
+        {/* <div className="form-group col-md-6">
           <label>Listener</label>
           <div className="btn-group d-block">
             <button
@@ -171,7 +170,7 @@ const AdminSettings = () => {
               Off
             </button>
           </div>
-        </div>
+        </div> */}
 
         <div className="form-group col-md-6">
           <label>Password protect site</label>

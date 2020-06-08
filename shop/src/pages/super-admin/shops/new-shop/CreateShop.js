@@ -3,11 +3,13 @@ import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
+import useSetState from 'utils/useSetState'
 import CreateListing from './CreateListing'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import PasswordField from 'components/admin/PasswordField'
 
 import ShopReady from './ShopReady'
+import FetchShopConfig from './_FetchShopConfig'
 
 async function genPGP() {
   const randomArray = Array.from(crypto.getRandomValues(new Uint32Array(5)))
@@ -63,20 +65,20 @@ const CreateShop = () => {
   const [advanced, setAdvanced] = useState(false)
   const [ready, setReady] = useState()
   const [loading, setLoading] = useState(false)
-  const [state, setStateRaw] = useState({
+  const localShops = get(admin, 'localShops', [])
+  const [state, setState] = useSetState({
     listingId: '',
     name: '',
     backend: get(window, 'location.origin'),
-    dataDir: 'data',
+    dataDir: localShops.length ? localShops[0] : 'data',
     hostname: '',
     printfulApi: '',
     pgpPublicKey: '',
     pgpPrivateKey: '',
     pgpPrivateKeyPass: '',
     web3Pk: '',
-    shopType: 'blank'
+    shopType: localShops.length ? 'local-dir' : 'multi-product'
   })
-  const setState = (newState) => setStateRaw({ ...state, ...newState })
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
   useEffect(() => {
@@ -141,13 +143,15 @@ const CreateShop = () => {
         <div className="form-group col-md-6">
           <label>Shop type</label>
           <select {...input('shopType')}>
-            <option value="blank">Blank Template</option>
-            <option value="local-dir">From Local Dir</option>
-            <option value="clone-domain">Clone Domain</option>
-            <option value="clone-ipfs">Clone IPFS Hash</option>
-            <option value="printful">New Printful</option>
-            <option value="single-product">New Single Product</option>
             <option value="multi-product">New Multi Product</option>
+            <option value="single-product">New Single Product</option>
+            <option value="blank">DB Entry Only</option>
+            {localShops.length ? (
+              <option value="local-dir">From Cache</option>
+            ) : null}
+            <option value="clone-url">Clone URL</option>
+            {/* <option value="clone-ipfs">Clone IPFS Hash</option> */}
+            <option value="printful">New Printful</option>
             <option value="affiliate">New Affiliate</option>
           </select>
         </div>
@@ -155,15 +159,34 @@ const CreateShop = () => {
           <div className="form-group col-md-6">
             <label>Data dir</label>
             <select {...input('dataDir')}>
-              {get(admin, 'localShops', []).map((localShop) => (
+              {localShops.map((localShop) => (
                 <option key={localShop}>{localShop}</option>
               ))}
             </select>
           </div>
+        ) : state.shopType === 'clone-url' ? (
+          <div className="form-group col-md-6">
+            <label>URL</label>
+            <div className="input-group">
+              <input
+                {...input('cloneUrl')}
+                placeholder="eg https://originswag.eth.link"
+              />
+              <div className="input-group-append">
+                <FetchShopConfig
+                  onSuccess={(hash) => console.log(hash)}
+                  className="btn btn-outline-primary"
+                  url={state.cloneUrl}
+                  children="Go"
+                />
+              </div>
+            </div>
+            {Feedback('cloneUrl')}
+          </div>
         ) : (
           <div className="form-group col-md-6">
             <label>Shop Name</label>
-            <input {...input('name')} placeholder="eg My Store" />
+            <input {...input('name')} placeholder="eg My Store" autoFocus />
             {Feedback('name')}
           </div>
         )}
@@ -184,7 +207,9 @@ const CreateShop = () => {
           <div style={{ flex: 1 }}>
             <CreateListing
               className="btn btn-outline-primary w-100"
-              onCreated={(listingId) => setStateRaw({ ...state, listingId })}
+              onCreated={(listingId) => {
+                setState({ listingId: String(listingId) })
+              }}
               onError={(createListingError) => setState({ createListingError })}
             >
               <span className="btn-content">Create Listing</span>

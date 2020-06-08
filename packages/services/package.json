@@ -20,11 +20,11 @@
   "dependencies": {
     "commander": "^5.1.0",
     "ganache-core": "2.10.2",
-    "ipfs": "^0.44.0",
+    "ipfs": "^0.46.0",
     "memdown": "^5.1.0"
   },
   "devDependencies": {
-    "eslint": "7.0.0",
+    "eslint": "7.2.0",
     "prettier": "2.0.5"
   },
   "prettier": {

@@ -4,15 +4,16 @@ import dayjs from 'dayjs'
 
 import formatPrice from 'utils/formatPrice'
 
+import useConfig from 'utils/useConfig'
 import useOrders from 'utils/useOrders'
 import useProducts from 'utils/useProducts'
-import dataUrl from 'utils/dataUrl'
 
 import Chart from './_Chart'
 
 const AdminDashboard = () => {
   const { orders, loading } = useOrders()
   const { products } = useProducts()
+  const { config } = useConfig()
   const [sort, setSort] = useState('orders')
   const [range, setRange] = useState('all-time')
 
@@ -139,7 +140,7 @@ const AdminDashboard = () => {
                 <div
                   className="pic"
                   style={{
-                    backgroundImage: `url(${dataUrl()}${product.id}/520/${
+                    backgroundImage: `url(${config.dataSrc}${product.id}/520/${
                       product.image
                     })`
                   }}

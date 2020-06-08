@@ -1,5 +1,6 @@
-- Use contract addresses from json
 - Verify in other web3 wallets
-- Order detail page for users with web3
-- Keep local shop files in backend subdir
 - Fix up Uphold payment method
+
+- Validate listing exists / is owner on create shop
+- Default shop configs in network settings
+- 'Loading' for create listing

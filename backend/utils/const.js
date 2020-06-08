@@ -36,10 +36,11 @@ const CONTRACTS = {
 
 const NODE_ENV = process.env.NODE_ENV
 const IS_PROD = NODE_ENV === 'production'
+const IS_TEST = NODE_ENV === 'test'
 
 const {
   SESSION_SECRET = randomstring.generate(),
-  ENCRYPTION_KEY,
+  ENCRYPTION_KEY = IS_TEST ? 'abcdef' : undefined,
   NETWORK = IS_PROD ? 'rinkeby' : 'dev',
   WEB3_PK,
   PROVIDER,
@@ -56,6 +57,7 @@ const {
  */
 const DATA_URL = null
 const PRINTFUL_URL = 'https://api.printful.com'
+const DSHOP_CACHE = process.env.DSHOP_CACHE || `${__dirname}/../data`
 
 module.exports = {
   CONTRACTS,
@@ -72,5 +74,6 @@ module.exports = {
   NETWORK,
   NETWORK_ID: NETWORK_NAME_TO_ID[NETWORK] || 999,
   SUPPORT_EMAIL_OVERRIDE,
-  PRINTFUL_URL
+  PRINTFUL_URL,
+  DSHOP_CACHE
 }

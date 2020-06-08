@@ -2,25 +2,26 @@ const omit = require('lodash/omit')
 const {
   Seller,
   Shop,
-  ShopDeployment,
   SellerShop,
   Network,
-  Sequelize
+  Sequelize,
+  ShopDeployment
 } = require('../models')
 const { authSellerAndShop, authRole, authSuperUser } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
 const { getConfig, setConfig } = require('../utils/encryptedConfig')
 const { createShop } = require('../utils/shop')
-const setCloudflareRecords = require('../utils/dns/cloudflare')
-const setCloudDNSRecords = require('../utils/dns/clouddns')
 const get = require('lodash/get')
 const set = require('lodash/set')
 const fs = require('fs')
 const configs = require('../scripts/configs')
-const deploy = require('ipfs-deploy')
 const { exec } = require('child_process')
-const prime = require('../utils/primeIpfs')
-const ipfsClient = require('ipfs-http-client')
+const formidable = require('formidable')
+const https = require('https')
+const http = require('http')
+
+const { deployShop } = require('../utils/deployShop')
+const { DSHOP_CACHE } = require('../utils/const')
 
 const downloadProductData = require('../scripts/printful/downloadProductData')
 const downloadPrintfulMockups = require('../scripts/printful/downloadPrintfulMockups')
@@ -78,41 +79,175 @@ module.exports = function (app) {
     res.json({ success: true, shops })
   })
 
-  app.post(
-    '/shop/sync-printful',
-    authSuperUser,
-    authSellerAndShop,
-    async (req, res) => {
-      const shop = req.shop
-      const network = await Network.findOne({ where: { active: true } })
-      if (!network) {
-        return res.json({ success: false, reason: 'no-active-network' })
-      }
-
-      const { printful } = getConfig(shop.config)
-      if (!printful) {
-        return res.json({ success: false, reason: 'no-printful-api-key' })
-      }
-
-      const networkConfig = getConfig(network.config)
-      if (!networkConfig.deployDir) {
-        return res.json({ success: false, reason: 'no-local-deploy-dir' })
-      }
-      const OutputDir = `${networkConfig.deployDir}/${shop.authToken}`
-
-      await downloadProductData({ OutputDir, printfulApi: printful })
-      await writeProductData({ OutputDir })
-      await downloadPrintfulMockups({ OutputDir })
-      await resizePrintfulMockups({ OutputDir })
-
-      res.json({ success: true })
+  app.post('/shops/:shopId/sync-printful', authSuperUser, async (req, res) => {
+    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    if (!shop) {
+      return res.json({ success: false, reason: 'no-such-shop' })
     }
-  )
+
+    const network = await Network.findOne({ where: { active: true } })
+    if (!network) {
+      return res.json({ success: false, reason: 'no-active-network' })
+    }
+
+    const { printful } = getConfig(shop.config)
+    if (!printful) {
+      return res.json({ success: false, reason: 'no-printful-api-key' })
+    }
+
+    const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
+
+    await downloadProductData({ OutputDir, printfulApi: printful })
+    await writeProductData({ OutputDir })
+    await downloadPrintfulMockups({ OutputDir })
+    await resizePrintfulMockups({ OutputDir })
+
+    res.json({ success: true })
+  })
+
+  app.get('/shops/:shopId/deployments', authSuperUser, async (req, res) => {
+    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    if (!shop) {
+      return res.json({ success: false, reason: 'no-such-shop' })
+    }
+
+    const deployments = await ShopDeployment.findAll({
+      where: { shopId: shop.id },
+      order: [['createdAt', 'desc']]
+    })
+
+    res.json({ deployments })
+  })
+
+  app.get('/shops/:shopId/assets', authSuperUser, async (req, res) => {
+    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    if (!shop) {
+      return res.json({ success: false, reason: 'no-such-shop' })
+    }
+
+    const OutputDir = `${DSHOP_CACHE}/${shop.authToken}/data`
+    fs.readdir(OutputDir, (err, files) => {
+      res.json({
+        assets: err ? [] : files.filter((f) => f.match(/\.(png|svg|jpg|ico)$/))
+      })
+    })
+  })
+
+  app.delete('/shops/:shopId/assets', authSuperUser, async (req, res) => {
+    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    if (!shop) {
+      return res.json({ success: false, reason: 'no-such-shop' })
+    }
+    if (!req.body.file) {
+      return res.json({ success: false, reason: 'no-file-specified' })
+    }
+
+    const file = `${DSHOP_CACHE}/${shop.authToken}/data/${req.body.file}`
+    if (!file) {
+      return res.json({ success: false, reason: 'no-such-file' })
+    }
+
+    fs.unlink(file, (err) => {
+      res.json({ success: err ? false : true })
+    })
+  })
+
+  app.post('/shops/:shopId/sync-cache', authSuperUser, async (req, res) => {
+    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    if (!shop) {
+      return res.json({ success: false, reason: 'no-such-shop' })
+    }
+    if (!req.body.hash) {
+      return res.json({ success: false, reason: 'no-hash-specified' })
+    }
+
+    const network = await Network.findOne({
+      where: { networkId: req.body.networkId }
+    })
+    if (!network.ipfsApi) {
+      return res.json({ success: false, reason: 'no-ipfs-api' })
+    }
+
+    const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
+
+    fs.mkdirSync(OutputDir, { recursive: true })
+    console.log(`Downloading ${req.body.hash} from ${network.ipfsApi}`)
+    const path = `/api/v0/get?arg=${req.body.hash}&archive=true&compress=true`
+
+    await new Promise((resolve) => {
+      const f = fs
+        .createWriteStream(`${OutputDir}/data.tar.gz`)
+        .on('finish', resolve)
+      const fetchLib = network.ipfsApi.indexOf('https') === 0 ? https : http
+      const hostname = network.ipfsApi.split('://')[1]
+
+      const req = fetchLib.request({ hostname, path, method: 'POST' }, (res) =>
+        res.pipe(f)
+      )
+      req.end()
+    })
+
+    await new Promise((resolve, reject) => {
+      exec(`rm -rf ${OutputDir}/data`, (error, stdout) => {
+        if (error) reject(error)
+        else resolve(stdout)
+      })
+    })
+
+    await new Promise((resolve, reject) => {
+      exec(
+        `tar -xvzf ${OutputDir}/data.tar.gz -C ${OutputDir}`,
+        (error, stdout) => {
+          if (error) reject(error)
+          else resolve(stdout)
+        }
+      )
+    })
+
+    fs.unlinkSync(`${OutputDir}/data.tar.gz`)
+
+    const indexRaw = fs.readFileSync(`${OutputDir}/${req.body.hash}/index.html`)
+    const match = indexRaw
+      .toString()
+      .match(/rel="data-dir" href="([0-9a-z-]+)"/)
+    const dataDir = match[1]
+
+    await new Promise((resolve, reject) => {
+      exec(
+        `mv ${OutputDir}/${req.body.hash}/${dataDir} ${OutputDir}/data`,
+        (error, stdout) => {
+          if (error) reject(error)
+          else resolve(stdout)
+        }
+      )
+    })
+
+    await new Promise((resolve, reject) => {
+      exec(`rm -rf ${OutputDir}/${req.body.hash}`, (error, stdout) => {
+        if (error) reject(error)
+        else resolve(stdout)
+      })
+    })
+
+    res.json({ success: true })
+  })
 
   /**
    * Creates a new shop.
    */
   app.post('/shop', authSuperUser, async (req, res) => {
+    const { dataDir, pgpPublicKey, printfulApi, shopType, backend } = req.body
+    const OutputDir = `${DSHOP_CACHE}/${dataDir}`
+
+    if (fs.existsSync(OutputDir) && req.body.shopType !== 'local-dir') {
+      return res.json({
+        success: false,
+        reason: 'invalid',
+        field: 'dataDir',
+        message: 'Already exists'
+      })
+    }
+
     const existingShop = await Shop.findOne({
       where: {
         [Sequelize.Op.or]: [
@@ -145,9 +280,7 @@ module.exports = function (app) {
       })
     }
 
-    const { dataDir, pgpPublicKey, printfulApi, shopType } = req.body
     let name = req.body.name
-    const OutputDir = `${__dirname}/../data/${dataDir}`
 
     if (req.body.shopType === 'local-dir') {
       const existingData = fs
@@ -157,14 +290,20 @@ module.exports = function (app) {
       name = json.fullTitle || json.title
     }
 
+    const zone = networkConfig.domain
+    const subdomain = req.body.hostname
+    const isLocal = zone === 'localhost'
+    const publicUrl = isLocal ? backend : `https://${subdomain}.${zone}`
+    const dataUrl = `${publicUrl}/${req.body.dataDir}/`
+
     const shopResponse = await createShop({
       sellerId: req.session.sellerId,
       listingId: req.body.listingId,
       name,
       authToken: req.body.dataDir,
       config: setConfig({
-        dataUrl: `https://${req.body.hostname}/${req.body.dataDir}/`,
-        publicUrl: '',
+        dataUrl,
+        publicUrl,
         printful: req.body.printfulApi,
         stripeBackend: '',
         stripeWebhookSecret: '',
@@ -196,31 +335,12 @@ module.exports = function (app) {
     fs.mkdirSync(OutputDir, { recursive: true })
     console.log(`Outputting to ${OutputDir}`)
 
-    await new Promise((resolve, reject) => {
-      exec(
-        `cp -r ${__dirname}/../dist ${OutputDir}/public`,
-        (error, stdout) => {
-          if (error) reject(error)
-          else resolve(stdout)
-        }
-      )
-    })
-
-    const networkName =
-      network.networkId === 1
-        ? 'mainnet'
-        : network.networkId === 4
-        ? 'rinkeby'
-        : 'localhost'
-    const html = fs.readFileSync(`${OutputDir}/public/index.html`).toString()
-    fs.writeFileSync(
-      `${OutputDir}/public/index.html`,
-      html
-        .replace('TITLE', name)
-        .replace('DATA_DIR', dataDir)
-        .replace('PROVIDER', network.provider)
-        .replace('NETWORK', networkName)
-    )
+    if (shopType === 'printful' && printfulApi) {
+      await downloadProductData({ OutputDir, printfulApi })
+      await writeProductData({ OutputDir })
+      await downloadPrintfulMockups({ OutputDir })
+      await resizePrintfulMockups({ OutputDir })
+    }
 
     let shopConfig = { ...configs.shopConfig }
     const existingConfig = fs.existsSync(`${OutputDir}/data/config.json`)
@@ -232,12 +352,7 @@ module.exports = function (app) {
     console.log(`Shop type: ${shopType}`)
     const allowedTypes = ['single-product', 'multi-product', 'affiliate']
 
-    if (shopType === 'printful' && printfulApi) {
-      await downloadProductData({ OutputDir, printfulApi })
-      await writeProductData({ OutputDir })
-      await downloadPrintfulMockups({ OutputDir })
-      await resizePrintfulMockups({ OutputDir })
-    } else if (allowedTypes.indexOf(shopType) >= 0) {
+    if (allowedTypes.indexOf(shopType) >= 0) {
       const shopTpl = `${__dirname}/../db/shop-templates/${shopType}`
       const config = fs.readFileSync(`${shopTpl}/config.json`).toString()
       shopConfig = JSON.parse(config)
@@ -271,105 +386,90 @@ module.exports = function (app) {
     const shippingContent = JSON.stringify(configs.shipping, null, 2)
     fs.writeFileSync(`${OutputDir}/data/shipping.json`, shippingContent)
 
-    await new Promise((resolve, reject) => {
-      exec(
-        `cp -r ${OutputDir}/data ${OutputDir}/public/${dataDir}`,
-        (error, stdout) => {
-          if (error) reject(error)
-          else resolve(stdout)
+    try {
+      const deployOpts = {
+        OutputDir,
+        dataDir,
+        network,
+        subdomain,
+        shop: shopResponse.shop
+      }
+      const { hash, domain } = await deployShop(deployOpts)
+      return res.json({ success: true, hash, domain, gateway: network.ipfs })
+    } catch (e) {
+      return res.json({ success: false, reason: e.message })
+    }
+  })
+
+  app.post(
+    '/shops/:shopId/save-files',
+    authSuperUser,
+    async (req, res, next) => {
+      const shop = await Shop.findOne({
+        where: { authToken: req.params.shopId }
+      })
+      if (!shop) {
+        return res.json({ success: false, reason: 'shop-not-found' })
+      }
+
+      const dataDir = req.params.shopId
+      const uploadDir = `${DSHOP_CACHE}/${dataDir}/data`
+
+      if (!fs.existsSync(uploadDir)) {
+        return res.json({ success: false, reason: 'dir-not-found' })
+      }
+
+      const form = formidable({ multiples: true })
+
+      form.parse(req, (err, fields, files) => {
+        if (err) {
+          next(err)
+          return
         }
-      )
-    })
-
-    // if (networkConfig.deployDir) {
-    //   const rootPath = path.normalize(`${__dirname}/../../data/${dataDir}`)
-    //   if (!fs.existsSync(rootPath)) {
-    //     console.log('Creating symlink')
-    //     fs.symlinkSync(
-    //       path.normalize(`${networkConfig.deployDir}/${dataDir}/data`),
-    //       rootPath
-    //     )
-    //   }
-    // }
-
-    // Deploy the shop to IPFS.
-    let hash, ipfsGateway
-    const publicDirPath = `${OutputDir}/public`
-    if (networkConfig.pinataKey && networkConfig.pinataSecret) {
-      ipfsGateway = 'https://gateway.pinata.cloud'
-      hash = await deploy({
-        publicDirPath,
-        remotePinners: ['pinata'],
-        siteDomain: dataDir,
-        credentials: {
-          pinata: {
-            apiKey: networkConfig.pinataKey,
-            secretApiKey: networkConfig.pinataSecret
+        const allFiles = Array.isArray(files.file) ? files.file : [files.file]
+        try {
+          for (const file of allFiles) {
+            fs.renameSync(file.path, `${uploadDir}/${file.name}`)
           }
+          res.json({ fields, files })
+        } catch (e) {
+          console.log(e)
+          res.json({ success: false })
         }
       })
-      if (!hash) {
-        return res.json({ success: false, reason: 'ipfs-error' })
-      }
-      console.log(`Deployed shop on Pinata. Hash=${hash}`)
-      await prime(`https://gateway.pinata.cloud/ipfs/${hash}`, publicDirPath)
-      await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
-      await prime(`https://ipfs-prod.ogn.app/ipfs/${hash}`, publicDirPath)
-    } else if (network.ipfsApi.indexOf('localhost') > 0) {
-      ipfsGateway = network.ipfsApi
-      const ipfs = ipfsClient(network.ipfsApi)
-      const allFiles = []
-      const glob = ipfsClient.globSource(publicDirPath, { recursive: true })
-      for await (const file of ipfs.add(glob)) {
-        allFiles.push(file)
-      }
-      hash = String(allFiles[allFiles.length - 1].cid)
-      console.log(`Deployed shop on local IPFS. Hash=${hash}`)
-    } else {
-      console.log(
-        'Shop not deployed to IPFS: Pinata not configured and not a dev environment.'
-      )
     }
+  )
 
-    let domain
-    if (networkConfig.cloudflareApiKey || networkConfig.gcpCredentials) {
-      const subdomain = req.body.hostname
-      const zone = networkConfig.domain
-      domain = `https://${subdomain}.${zone}`
-
-      const opts = {
-        ipfsGateway: 'ipfs-prod.ogn.app',
-        zone,
-        subdomain,
-        hash
-      }
-
-      if (networkConfig.cloudflareApiKey) {
-        await setCloudflareRecords({
-          ...opts,
-          email: networkConfig.cloudflareEmail,
-          key: networkConfig.cloudflareApiKey
-        })
-      } else if (networkConfig.gcpCredentials) {
-        await setCloudDNSRecords({
-          ...opts,
-          credentials: networkConfig.gcpCredentials
-        })
-      }
+  app.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
+    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    if (!shop) {
+      return res.json({ success: false, reason: 'shop-not-found' })
     }
-
-    // Record the deployment in the DB.
-    const deployment = await ShopDeployment.create({
-      shopId,
-      domain,
-      ipfsGateway,
-      ipfsHash: hash
+    const network = await Network.findOne({
+      where: { networkId: req.body.networkId }
     })
-    console.log(
-      `Recorded shop deployment in the DB. id=${deployment.id} domain=${domain} ipfs=${ipfsGateway} hash=${hash}`
-    )
+    if (!network) {
+      return res.json({ success: false, reason: 'no-active-network' })
+    }
 
-    return res.json({ success: true, hash, domain, gateway: network.ipfs })
+    const dataDir = req.params.shopId
+    const OutputDir = `${DSHOP_CACHE}/${dataDir}`
+
+    try {
+      const deployOpts = {
+        OutputDir,
+        dataDir,
+        network,
+        subdomain: dataDir,
+        shop,
+        pinner: req.body.pinner,
+        dnsProvider: req.body.dnsProvider
+      }
+      const { hash, domain } = await deployShop(deployOpts)
+      return res.json({ success: true, hash, domain, gateway: network.ipfs })
+    } catch (e) {
+      return res.json({ success: false, reason: e.message })
+    }
   })
 
   app.post(
@@ -402,18 +502,10 @@ module.exports = function (app) {
     }
   )
 
-  app.delete(
-    '/shop',
-    authSellerAndShop,
-    authRole('admin'),
-    async (req, res) => {
-      await Shop.destroy({
-        where: {
-          id: req.body.id,
-          sellerId: req.session.sellerId
-        }
-      })
-      res.json({ success: true })
-    }
-  )
+  app.delete('/shops/:shopId', authSuperUser, (req, res) => {
+    Shop.findOne({ where: { authToken: req.params.shopId } })
+      .then((shop) => ShopDeployment.destroy({ where: { shopId: shop.id } }))
+      .then(() => Shop.destroy({ where: { authToken: req.params.shopId } }))
+      .then(() => res.json({ success: true }))
+  })
 }

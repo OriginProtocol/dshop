@@ -6,11 +6,11 @@ import { DshopLogo } from 'components/icons/Admin'
 
 import SignUp from './SignUp'
 import ServerSetup from './ServerSetup'
-import CreateShop from '../shops/CreateShop'
+import CreateShop from '../shops/new-shop/CreateShop'
 
 const FirstTime = () => {
   const [{ admin }] = useStateValue()
-  const [step, setStep] = useState('no-shops')
+  const [step, setStep] = useState()
 
   useEffect(() => {
     if (admin.reason === 'no-active-network') {
@@ -32,9 +32,9 @@ const FirstTime = () => {
     <div className="container admin-first-time">
       <DshopLogo />
       {step === 'sign-up' ? (
-        <SignUp next={() => setStep('server-setup')} />
+        <SignUp />
       ) : step === 'server-setup' ? (
-        <ServerSetup next={() => setStep('create-shop')} />
+        <ServerSetup />
       ) : (
         <>
           <div className="mb-4">Create a Shop:</div>

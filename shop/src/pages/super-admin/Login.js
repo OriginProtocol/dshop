@@ -45,6 +45,8 @@ const Login = ({ next }) => {
       >
         <div className="form-group">
           <input
+            autoFocus
+            type="email"
             className="form-control"
             placeholder="E-mail"
             value={state.email}

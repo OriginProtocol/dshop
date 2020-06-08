@@ -33,8 +33,7 @@ First create a listing on shoporigin.com and make a note of the listing ID.
    - Set DATABASE_URL to point to your newly created DB. For example:
    export DATABASE_URL="postgres://origin:origin@localhost/dshop"
    - Create the DB schema by running the migrations
-   cd backend
-   yarn run migration
+   cd backend; yarn run migration; cd..
 
    # The backend uses redis for queues. While you can skip this,
    # it's highly recommended to run a local redis so your testing
@@ -42,15 +41,17 @@ First create a listing on shoporigin.com and make a note of the listing ID.
    export REDIS_URL=redis://localhost:6379/
 
    # Optional: If you want to use the super-admin to create new shops, build the bundle.
-   yarn run build:dist
+   cd shop; yarn run build:dist; cd ..
 
-   # Start local
-   DATA_DIR=mystore yarn start
+   # Start the stack (IPFS, local ganache blockchain, back-end, front-end):
+   yarn start
 
-   # The following routes should be up:
-     - Shop: http://0.0.0.0:9000/#
-     - Admin: http://0.0.0.0:9000/#/admin
+   # This will start a browser pointing to the super-admin interface at:
      - Super admin: http://0.0.0.0:9000/#/super-admin
+
+   # Create a super-admin account
+
+   # Create a local shop
 ```
 
 ## Troubleshooting

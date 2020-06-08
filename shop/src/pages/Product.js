@@ -14,7 +14,6 @@ import formatPrice from 'utils/formatPrice'
 import useIsMobile from 'utils/useIsMobile'
 import useProducts from 'utils/useProducts'
 import useConfig from 'utils/useConfig'
-import dataUrl from 'utils/dataUrl'
 import { useStateValue } from 'data/state'
 import fetchProduct from 'data/fetchProduct'
 
@@ -78,7 +77,7 @@ const Product = ({ history, location, match }) => {
         })
       }
     } else {
-      fetchProduct(match.params.id).then(setData)
+      fetchProduct(config.dataSrc, match.params.id).then(setData)
     }
   }, [match.params.id, products.length])
 
@@ -141,7 +140,7 @@ const Product = ({ history, location, match }) => {
     )
   } else {
     pics = productData.images.map(
-      (i) => `${dataUrl()}${productData.id}/orig/${i}`
+      (i) => `${config.dataSrc}${productData.id}/orig/${i}`
     )
   }
   const lg = isMobile ? ' btn-lg' : ''

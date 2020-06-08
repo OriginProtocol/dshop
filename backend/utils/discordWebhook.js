@@ -1,15 +1,18 @@
 const fetch = require('node-fetch')
 
-const url = process.env.DISCORD_WEBHOOK
-
-module.exports = function ({ shopName, orderId, total, items = [] }) {
+module.exports = function ({ url, shopName, orderId, total, items = [] }) {
   if (!url) {
+    console.log('Discord webhook URL not configured. Skipping.')
     return
   }
 
   const allItems = items.join(', ')
   const content = `Order #${orderId} on '${shopName}' for ${total}: ${allItems}`
   console.log(`Discord webhook: ${content}`)
+  if (process.env.NODE_ENV === 'test') {
+    console.log('Test environment. Discord webhook not called.')
+    return
+  }
   fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -15,7 +15,7 @@
   "devDependencies": {
     "bs58": "4.0.1",
     "cross-fetch": "3.0.4",
-    "eslint": "7.0.0",
+    "eslint": "7.2.0",
     "prettier": "2.0.5",
     "form-data": "3.0.0"
   },

@@ -6,9 +6,9 @@ const SequelizeStore = require('connect-session-sequelize')(session.Store)
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const serveStatic = require('serve-static')
-const { IS_PROD } = require('./utils/const')
+const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
 const { findShopByHostname } = require('./utils/shop')
-const { sequelize } = require('./models')
+const { sequelize, Network } = require('./models')
 const encConf = require('./utils/encryptedConfig')
 const app = express()
 
@@ -70,6 +70,7 @@ app.use((err, req, res, next) => {
 
 require('./routes/networks')(app)
 require('./routes/auth')(app)
+require('./routes/users')(app)
 require('./routes/shops')(app)
 require('./routes/affiliate')(app)
 require('./routes/uphold')(app)
@@ -121,14 +122,27 @@ app.get(
 )
 
 app.use(serveStatic(`${__dirname}/dist`, { index: false }))
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
   let html
   try {
     html = fs.readFileSync(`${__dirname}/dist/index.html`).toString()
   } catch (e) {
     return res.send('')
   }
-  html = html.replace('DATA_DIR', '').replace('TITLE', 'Origin Dshop')
+  const network = await Network.findOne({ where: { active: true } })
+  const NETWORK = !network
+    ? 'NETWORK'
+    : network.networkId === 1
+    ? 'mainnet'
+    : network.networkId === 4
+    ? 'rinkeby'
+    : 'localhost'
+
+  html = html
+    .replace('DATA_DIR', '')
+    .replace('TITLE', 'Origin Dshop')
+    .replace('NETWORK', NETWORK)
+
   res.send(html)
 })
 
@@ -138,7 +152,7 @@ app.get('*', (req, res, next) => {
     return next()
   }
   const dataDir = split[1]
-  const dir = `${__dirname}/data/${dataDir}/data`
+  const dir = `${DSHOP_CACHE}/${dataDir}/data`
   req.url = split.slice(2).join('/')
   serveStatic(dir)(req, res, next)
 })
