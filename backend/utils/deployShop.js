@@ -122,7 +122,9 @@ async function deployShop({
   let hash, ipfsGateway
   const publicDirPath = `${OutputDir}/public`
   if (
-    (networkConfig.pinataKey && networkConfig.pinataSecret && pinner === 'pinata') ||
+    (networkConfig.pinataKey &&
+      networkConfig.pinataSecret &&
+      pinner === 'pinata') ||
     (network.ipfsApi && networkConfig.ipfsClusterPassword)
   ) {
     ipfsGateway = 'https://gateway.pinata.cloud'
