@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import dayjs from 'dayjs'
 
 import useConfig from 'utils/useConfig'
 
-import DeployButton from './_DeployButton'
-
 const ShopSettings = ({ shop }) => {
   const { config } = useConfig()
-  const [settings, setSettings] = useState({})
+  const [, setSettings] = useState({})
   useEffect(() => {
     fetch(`${config.backend}/shops/${shop.authToken}/settings`, {
       credentials: 'include'
@@ -31,9 +28,9 @@ const ShopSettings = ({ shop }) => {
         <label>Store Domain</label>
         <input className="form-control" />
         <div className="mt-1">
-        <a onClick={(e) => e.preventDefault()} href="#">
-          Add a custom domain
-        </a>
+          <a onClick={(e) => e.preventDefault()} href="#">
+            Add a custom domain
+          </a>
         </div>
       </div>
       <div className="form-group">

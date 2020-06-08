@@ -140,9 +140,7 @@ const AdminDashboard = () => {
                 <div
                   className="pic"
                   style={{
-                    backgroundImage: `url(${config.dataSrc}${product.id}/520/${
-                      product.image
-                    })`
+                    backgroundImage: `url(${config.dataSrc}${product.id}/520/${product.image})`
                   }}
                 />
               </td>
