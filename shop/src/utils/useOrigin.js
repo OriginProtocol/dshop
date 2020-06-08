@@ -66,6 +66,33 @@ const marketplaceAbi = [
     payable: false,
     stateMutability: 'view',
     type: 'function'
+  },
+  {
+    constant: true,
+    inputs: [
+      {
+        name: '',
+        type: 'uint256'
+      }
+    ],
+    name: 'listings',
+    outputs: [
+      {
+        name: 'seller',
+        type: 'address'
+      },
+      {
+        name: 'deposit',
+        type: 'uint256'
+      },
+      {
+        name: 'depositManager',
+        type: 'address'
+      }
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function'
   }
 ]
 
@@ -74,11 +101,17 @@ const marketplaceInterface = new ethers.utils.Interface(marketplaceAbi)
 async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
   let encryptedHash, fullOfferId, offer
 
-  if (tx.indexOf('0x') === 0) {
-    if (!marketplace) {
-      console.log('No marketplace contract found')
-      return null
-    }
+  if (!marketplace && tx.indexOf('0x') === 0) {
+    console.log(
+      'No marketplace contract found, or wrong network selected. Using backend.'
+    )
+
+    const event = await fetch(`${config.backend}/events/${tx}`).then((res) =>
+      res.json()
+    )
+    const ipfsData = await get(config.ipfsGateway, event.ipfsHash, 10000)
+    encryptedHash = ipfsData.encryptedData
+  } else if (tx.indexOf('0x') === 0) {
     const ListingId = _get(config, `listingId`)
 
     const receipt = await provider.getTransactionReceipt(tx)
@@ -125,32 +158,43 @@ async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
 
     return { cart, offer }
   } catch (err) {
+    console.log('Error fetching order', err)
     return null
   }
 }
 
 function useOrigin() {
+  const [loading, setLoading] = useState(true)
   const [marketplace, setMarketplace] = useState()
   const { config } = useConfig()
-  const { status, provider, signer } = useWallet()
+  const { status, provider, signer, networkOk } = useWallet()
 
   useEffect(() => {
-    if (status !== 'enabled') return
+    if (status === 'loading') return
+    if (status !== 'enabled' || !networkOk) {
+      setLoading(false)
+      return
+    }
     const marketplace = new ethers.Contract(
       config.contracts.Marketplace_V01,
       marketplaceAbi,
       signer || provider
     )
     setMarketplace(marketplace)
+    setLoading(false)
   }, [status])
 
   function getOffer({ tx, password }) {
     return getOfferFromTx({ tx, password, config, provider, marketplace })
   }
 
-  if (status !== 'enabled') return { getOffer }
-
-  return { status, provider, signer, marketplace, getOffer }
+  return {
+    status: loading ? 'loading' : status,
+    provider,
+    signer,
+    marketplace,
+    getOffer
+  }
 }
 
 export default useOrigin

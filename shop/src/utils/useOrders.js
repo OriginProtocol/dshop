@@ -14,17 +14,9 @@ function useOrders() {
       setLoading(true)
       const raw = await fetch(`${config.backend}/orders`, {
         credentials: 'include',
-        headers: {
-          authorization: `bearer ${config.backendAuthToken}`
-        }
+        headers: { authorization: `bearer ${config.backendAuthToken}` }
       })
-      const ordersRaw = await raw.json()
-      const orders = ordersRaw.map((order) => {
-        return {
-          ...order,
-          data: JSON.parse(order.data)
-        }
-      })
+      const orders = await raw.json()
       const sortedOrders = sortBy(orders, (order) => {
         return -Number(order.orderId.split('-')[3])
       })

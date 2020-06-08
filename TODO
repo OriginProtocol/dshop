@@ -1,4 +1,4 @@
-- Verify in other web3 wallets
+- Order details should work without web3 wallet
 - Fix up Uphold payment method
 
 - Validate listing exists / is owner on create shop
