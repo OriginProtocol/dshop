@@ -1,8 +1,7 @@
 import memoize from 'lodash/memoize'
-import dataUrl from 'utils/dataUrl'
 
-async function fetchProduct(id) {
-  const raw = await fetch(`${dataUrl()}${id}/data.json`)
+async function fetchProduct(dataSrc, id) {
+  const raw = await fetch(`${dataSrc}${id}/data.json`)
   if (raw.ok) {
     return await raw.json()
   } else {

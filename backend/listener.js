@@ -151,7 +151,7 @@ async function connectWS({ network }) {
         console.log(
           `Fetching ${blockDiff} past logs. Range ${lastBlock}-${number}...`
         )
-        ws.send(GetPastLogs({ fromBlock: lastBlock, toBlock: number }))
+        ws.send(GetPastLogs({ address, fromBlock: lastBlock, toBlock: number }))
       }
       lastBlock = number
     } else {

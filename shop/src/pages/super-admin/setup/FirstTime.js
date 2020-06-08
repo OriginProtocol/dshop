@@ -10,7 +10,7 @@ import CreateShop from '../shops/new-shop/CreateShop'
 
 const FirstTime = () => {
   const [{ admin }] = useStateValue()
-  const [step, setStep] = useState('no-shops')
+  const [step, setStep] = useState()
 
   useEffect(() => {
     if (admin.reason === 'no-active-network') {

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 
 import { useStateValue } from 'data/state'
 
-import dataUrl from 'utils/dataUrl'
 import useConfig from 'utils/useConfig'
 
 function useProducts() {
@@ -25,7 +24,7 @@ function useProducts() {
           })
           products = await raw.json()
         } else {
-          const raw = await fetch(`${dataUrl()}products.json`)
+          const raw = await fetch(`${config.dataSrc}products.json`)
           products = await raw.json()
         }
         setLoading(false)

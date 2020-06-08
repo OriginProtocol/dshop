@@ -6,11 +6,12 @@ import useSearchQuery from 'utils/useSearchQuery'
 
 import Paginate from 'components/Paginate'
 import SortBy from 'components/SortBy'
-import dataUrl from 'utils/dataUrl'
+import useConfig from 'utils/useConfig'
 import formatPrice from 'utils/formatPrice'
 import sortProducts from 'utils/sortProducts'
 
 const AdminProducts = () => {
+  const { config } = useConfig()
   const { products } = useProducts()
   const { start, end } = usePaginate()
   const opts = useSearchQuery()
@@ -32,9 +33,7 @@ const AdminProducts = () => {
                 <div
                   className="pic"
                   style={{
-                    backgroundImage: `url(${dataUrl()}${product.id}/520/${
-                      product.image
-                    })`
+                    backgroundImage: `url(${config.dataSrc}${product.id}/520/${product.image})`
                   }}
                 />
               </td>

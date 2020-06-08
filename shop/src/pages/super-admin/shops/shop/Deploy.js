@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react'
 import dayjs from 'dayjs'
 
 import useConfig from 'utils/useConfig'
+import { useStateValue } from 'data/state'
 
 import DeployButton from './_DeployButton'
 
 const DeployShop = ({ shop }) => {
   const { config } = useConfig()
+  const [{ reload }] = useStateValue()
   const [deployments, setDeployments] = useState([])
   useEffect(() => {
     fetch(`${config.backend}/shops/${shop.authToken}/deployments`, {
@@ -19,7 +21,7 @@ const DeployShop = ({ shop }) => {
       .catch((e) => {
         console.log(e)
       })
-  }, [config.backend])
+  }, [reload.deployments])
 
   return (
     <div>
@@ -40,16 +42,20 @@ const DeployShop = ({ shop }) => {
               <tr key={idx}>
                 <td>{dayjs(deployment.createdAt).format('MMM D, h:mm A')}</td>
                 <td>
-                  <a
-                    href={`${deployment.ipfsGateway}/ipfs/${deployment.ipfsHash}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ fontFamily: 'monospace' }}
-                  >
-                    {deployment.ipfsHash.substr(0, 6)}
-                    {'...'}
-                    {deployment.ipfsHash.substr(-6)}
-                  </a>
+                  {!deployment.ipfsHash ? (
+                    ''
+                  ) : (
+                    <a
+                      href={`${deployment.ipfsGateway}/ipfs/${deployment.ipfsHash}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ fontFamily: 'monospace' }}
+                    >
+                      {deployment.ipfsHash.substr(0, 6)}
+                      {'...'}
+                      {deployment.ipfsHash.substr(-6)}
+                    </a>
+                  )}
                 </td>
                 <td>
                   <a

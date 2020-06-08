@@ -19,7 +19,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
   const { exchangeRates, toTokenPrice } = usePrice()
   const [approveUnlockTx, setApproveUnlockTx] = useState(false)
   const [unlockTx, setUnlockTx] = useState(false)
-  const wallet = useWallet()
+  const wallet = useWallet({ needSigner: true })
 
   useMakeOffer({ submit, activeToken, encryptedData, onChange, buttonText })
 
@@ -76,7 +76,10 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
         <div className="mt-2">Loading Wallet Status...</div>
       </>
     )
-  } else if (wallet.status === 'disabled') {
+  } else if (
+    wallet.status === 'disabled' ||
+    wallet.signerStatus === 'disabled'
+  ) {
     return (
       <>
         {label}
@@ -85,6 +88,13 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
             Enable Crypto Wallet
           </button>
         </div>
+      </>
+    )
+  } else if (wallet.status === 'no-web3') {
+    return (
+      <>
+        {label}
+        <div className="mt-2">Sorry, no crypto wallet detected.</div>
       </>
     )
   } else if (!wallet.networkOk) {

@@ -21,16 +21,16 @@ const AdminMenu = () => {
           Dashboard
         </Link>
       </li>
-      <li className={`orders ${active('/super-admin/shops')}`}>
-        <Link to="/super-admin/shops">
-          <Icons.Orders />
-          Shops
-        </Link>
-      </li>
       <li className={`settings ${active('/super-admin/networks')}`}>
         <Link to="/super-admin/networks">
           <Icons.Settings />
           Networks
+        </Link>
+      </li>
+      <li className={`orders ${active('/super-admin/shops')}`}>
+        <Link to="/super-admin/shops">
+          <Icons.Orders />
+          Shops
         </Link>
       </li>
       <li className={`settings ${active('/super-admin/users')}`}>
@@ -39,7 +39,7 @@ const AdminMenu = () => {
           Users
         </Link>
       </li>
-      <li className="db">
+      <li>
         <a
           href="#logout"
           onClick={(e) => {

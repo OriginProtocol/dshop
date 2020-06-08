@@ -12,7 +12,6 @@ require('react-styl')(`
       font-size: 24px
     nav
       border-bottom: 1px solid #dfe2e6
-      padding: 1.25rem 0
       margin-bottom: 4rem
       color: #000
       > .container
@@ -20,6 +19,7 @@ require('react-styl')(`
         align-items: center
         justify-content: between
         flex-wrap: wrap
+        min-height: 4rem
       h1
         margin: 0
         display: flex
@@ -34,7 +34,16 @@ require('react-styl')(`
           margin-left: 1rem
           padding-left: 1rem
           border-left: 1px solid #5666
+      .user
+        color: #8293a4
+        font-size: 14px
+        svg
+          fill: #9faebd
+          margin-right: 0.5rem
+          vertical-align: -3px
     .table
+      &.table-hover
+        cursor: pointer
       thead
         th
           background-color: #f8f8f8

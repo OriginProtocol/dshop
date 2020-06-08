@@ -59,6 +59,9 @@ const AdminShop = ({ shop }) => {
   }
 
   useEffect(() => {
+    if (!window.BroadcastChannel) {
+      return
+    }
     bc = new BroadcastChannel('dshop')
     return function cleanup() {
       bc.close()

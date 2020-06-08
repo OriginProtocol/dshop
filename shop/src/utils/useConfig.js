@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import ethers from 'ethers'
 
+import { NetworksByIdStr } from 'data/Networks'
+
 const networks = {}
 try {
   networks.mainnet = require('@origin/contracts/build/contracts_mainnet.json')
@@ -10,16 +12,15 @@ try {
   /* Ignore */
 }
 
-import dataUrl from 'utils/dataUrl'
-
 const DefaultPaymentMethods = [
   { id: 'crypto', label: 'Crypto Currency' },
   { id: 'stripe', label: 'Credit Card' }
 ]
 
-const net = localStorage.ognNetwork || 'localhost'
-const netId = net === 'mainnet' ? '1' : net === 'rinkeby' ? '4' : '999'
-const contracts = networks[net] || {}
+const net = localStorage.ognNetwork
+const activeNetwork = NetworksByIdStr[net] || NetworksByIdStr['localhost']
+const netId = String(activeNetwork.id)
+const contracts = networks[activeNetwork.idStr] || {}
 
 const DefaultTokens = [
   { id: 'token-OGN', name: 'OGN', address: contracts.OGN },
@@ -31,18 +32,32 @@ const DefaultTokens = [
   }
 ]
 
-let config
+let config, loaded
 
 function useConfig() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
+  let dataSrc =
+    localStorage.activeShop ||
+    document.querySelector('link[rel="data-dir"]').getAttribute('href')
+
+  if (!dataSrc.endsWith('/')) {
+    dataSrc += '/'
+  }
+
   useEffect(() => {
     async function fetchConfig() {
+      loaded = dataSrc
       config = { backend: '', firstTimeSetup: true, netId }
       setLoading(true)
+      if (dataSrc === 'DATA_DIR/') {
+        setLoading(false)
+        return
+      }
+
       try {
-        const url = `${dataUrl()}config.json`
+        const url = `${dataSrc}config.json`
         console.debug(`Loading config from ${url}...`)
 
         config = await fetch(url).then((raw) => raw.json())
@@ -75,20 +90,14 @@ function useConfig() {
           })
           .filter((token) => token.address)
 
-        const netName =
-          netId === '1'
-            ? 'Mainnet'
-            : netId === '4'
-            ? 'Rinkeby'
-            : `Net ID ${netId}`
-
         config = {
           ...config,
           ...netConfig,
           netId,
           contracts,
           acceptedTokens,
-          netName
+          netName: activeNetwork.name,
+          dataSrc
         }
         setLoading(false)
       } catch (e) {
@@ -97,10 +106,10 @@ function useConfig() {
         setError(true)
       }
     }
-    if (config === undefined) {
+    if (loaded !== dataSrc) {
       fetchConfig()
     }
-  }, [])
+  }, [dataSrc])
 
   return { config, loading, error }
 }

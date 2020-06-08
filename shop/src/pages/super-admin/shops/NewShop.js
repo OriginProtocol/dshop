@@ -1,7 +1,7 @@
 import React from 'react'
 
 import Link from 'components/Link'
-import CreateShop from './CreateShop'
+import CreateShop from './new-shop/CreateShop'
 
 const NewShop = () => {
   return (
@@ -11,7 +11,7 @@ const NewShop = () => {
           Shops
         </Link>
         <span className="chevron" />
-        {'New'}
+        New
       </h3>
       <div style={{ maxWidth: 400 }}>
         <CreateShop />

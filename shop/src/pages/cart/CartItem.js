@@ -4,15 +4,17 @@ import Link from 'components/Link'
 import VariantPic from 'components/VariantPic'
 
 import fetchProduct from 'data/fetchProduct'
+import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 
 import formatPrice from 'utils/formatPrice'
 
 const CartItem = ({ item }) => {
+  const { config } = useConfig()
   const [product, setProduct] = useState()
   const [, dispatch] = useStateValue()
   useEffect(() => {
-    fetchProduct(item.product).then(setProduct)
+    fetchProduct(config.dataSrc, item.product).then(setProduct)
   }, [item.product])
 
   if (!product) return null

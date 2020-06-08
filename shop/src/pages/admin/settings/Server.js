@@ -154,7 +154,7 @@ const AdminSettings = ({ shop }) => {
       }}
     >
       <div className="row">
-        <div className="form-group col-md-6">
+        {/* <div className="form-group col-md-6">
           <label>Listener</label>
           <div className="btn-group d-block">
             <button
@@ -170,7 +170,7 @@ const AdminSettings = ({ shop }) => {
               Off
             </button>
           </div>
-        </div>
+        </div> */}
 
         <div className="form-group col-md-6">
           <label>Password protect site</label>

@@ -1,8 +1,7 @@
 import ethers from 'ethers'
-import { useEffect, useState } from 'react'
+import { useEffect, useReducer } from 'react'
 
 import usePrice from 'utils/usePrice'
-import useWallet from 'utils/useWallet'
 import useOrigin from 'utils/useOrigin'
 
 const tokenAbi = [
@@ -13,28 +12,34 @@ const tokenAbi = [
   'function symbol() view returns (string)'
 ]
 
+function reducer(state, newState) {
+  return { ...state, ...newState }
+}
+
 function useToken(activeToken = {}, totalUsd) {
-  const [state, setStateRaw] = useState({
+  const { marketplace, status, provider, signer, signerStatus } = useOrigin()
+  const { exchangeRates } = usePrice()
+  const [state, setState] = useReducer(reducer, {
     shouldRefetchBalance: 0,
     hasBalance: false,
     loading: true,
     hasAllowance: false
   })
-  const { status } = useWallet()
-  const { marketplace, provider, signer } = useOrigin()
-
-  const setState = (newState) => setStateRaw({ ...state, ...newState })
-  const { exchangeRates } = usePrice()
 
   useEffect(() => {
     const exchangeRate = exchangeRates[activeToken.name]
     async function getBalance() {
       setState({ loading: true })
       try {
-        // console.log('getBalance', activeToken)
         const walletAddress = await signer.getAddress()
-
-        if (activeToken.id === 'token-ETH') {
+        if (walletAddress === ethers.constants.AddressZero) {
+          setState({
+            hasBalance: false,
+            hasAllowance: false,
+            loading: false,
+            error: 'Active wallet not found'
+          })
+        } else if (activeToken.id === 'token-ETH') {
           const balance = await provider.getBalance(walletAddress)
           const balanceNum = ethers.utils.formatUnits(balance, 'ether')
           const balanceUSD = Math.floor(
@@ -88,6 +93,7 @@ function useToken(activeToken = {}, totalUsd) {
           })
         }
       } catch (e) {
+        console.error(e)
         setState({
           hasAllowance: false,
           hasBalance: false,
@@ -96,17 +102,32 @@ function useToken(activeToken = {}, totalUsd) {
         })
       }
     }
-    if (exchangeRate) {
-      getBalance()
-    } else {
+    if (!signer) {
+      setState({
+        hasAllowance: false,
+        hasBalance: false,
+        loading: false,
+        error: 'Active wallet not found'
+      })
+    } else if (!exchangeRate) {
       setState({
         hasAllowance: false,
         hasBalance: false,
         loading: false,
         error: 'No exchange rate for token'
       })
+    } else {
+      getBalance()
     }
-  }, [activeToken.name, state.shouldRefetchBalance, totalUsd, signer, status])
+  }, [
+    activeToken.name,
+    state.shouldRefetchBalance,
+    totalUsd,
+    signer,
+    status,
+    marketplace,
+    signerStatus
+  ])
 
   return {
     ...state,

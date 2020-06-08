@@ -4,9 +4,15 @@ import get from 'lodash/get'
 import dayjs from 'dayjs'
 
 import { useStateValue } from 'data/state'
+import { NetworksById } from 'data/Networks'
 
 import Paginate from 'components/Paginate'
 import Link from 'components/Link'
+
+function networkName(shop) {
+  const network = get(NetworksById, shop.networkId, {})
+  return network.name
+}
 
 const AdminShops = () => {
   const [{ admin }] = useStateValue()
@@ -28,8 +34,9 @@ const AdminShops = () => {
         <thead>
           <tr>
             <th>Name</th>
-            <th>Listing ID</th>
+            <th className="text-center">Listing ID</th>
             <th>Created</th>
+            <th className="text-center">Network</th>
             <th />
           </tr>
         </thead>
@@ -42,8 +49,9 @@ const AdminShops = () => {
               }}
             >
               <td>{shop.name}</td>
-              <td>{shop.listingId}</td>
+              <td className="text-center">{shop.listingId}</td>
               <td>{dayjs(shop.createdAt).format('MMM D, h:mm A')}</td>
+              <td className="text-center">{networkName(shop)}</td>
               <td className="text-right">
                 {!shop.viewable ? null : (
                   <>
@@ -52,7 +60,7 @@ const AdminShops = () => {
                       onClick={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
-                        sessionStorage.dataDir = shop.authToken
+                        localStorage.activeShop = shop.authToken
                         window.open(location.origin)
                       }}
                       children="Storefront"
@@ -64,10 +72,12 @@ const AdminShops = () => {
                       href="#"
                       onClick={(e) => {
                         e.preventDefault()
-                        sessionStorage.dataDir = shop.authToken
-                        window.open(
-                          `${location.origin}/#/admin/settings/server`
-                        )
+                        e.stopPropagation()
+                        localStorage.activeShop = shop.authToken
+                        history.push({
+                          pathname: `/admin`,
+                          state: { scrollToTop: true }
+                        })
                       }}
                       children="Admin"
                     />

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { Redirect, Switch, Route } from 'react-router-dom'
-import Styl from 'react-styl'
 import 'components/admin/Styles'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
-import dataUrl from 'utils/dataUrl'
 
+import * as Icons from 'components/icons/Admin'
+import Link from 'components/Link'
 import Login from 'components/admin/Login'
 import Products from './Products'
 import Collections from './Collections'
@@ -25,12 +25,6 @@ const Admin = () => {
   const [error, setError] = useState()
 
   useEffect(() => {
-    if (!window.adminCss) {
-      // Need to re-add stylesheet as this component is lazy loaded
-      Styl.addStylesheet()
-      window.adminCss = true
-    }
-
     fetch(`${config.backend}/auth`, {
       credentials: 'include',
       headers: {
@@ -66,19 +60,31 @@ const Admin = () => {
       <nav>
         <div className="container">
           <h1>
-            {config.logo ? (
-              <img src={`${dataUrl()}${config.logo}`} />
-            ) : (
-              config.title
-            )}
-            <div>Admin</div>
+            <img src="images/dshop-logo.svg" />
+            <div>
+              {config.logo ? (
+                <img src={`${config.dataSrc}${config.logo}`} />
+              ) : (
+                config.title
+              )}
+            </div>
           </h1>
-          <div>{`Welcome, ${admin.email}`}</div>
+          <div className="user">
+            <Icons.User />
+            {admin.email}
+          </div>
         </div>
       </nav>
       <div className="container">
         <div className="row">
           <div className="col-md-3">
+            {admin.role !== 'admin' ? null : (
+              <div className="mb-3">
+                <Link to={`/super-admin/shops/${config.backendAuthToken}`}>
+                  &laquo; Back to Super Admin
+                </Link>
+              </div>
+            )}
             <Menu />
           </div>
           <div className="col-md-9">

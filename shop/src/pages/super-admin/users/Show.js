@@ -10,11 +10,11 @@ import Link from 'components/Link'
 const AdminUser = () => {
   const { config } = useConfig()
   const match = useRouteMatch('/super-admin/users/:userId')
-  console.log(match)
+  const { userId } = match.params
   const [state, setState] = useSetState({ user: {}, loading: true })
 
   useEffect(() => {
-    const url = `${config.backend}/superuser/users/${match.params.userId}`
+    const url = `${config.backend}/superuser/users/${userId}`
     fetch(url, { credentials: 'include' })
       .then((res) => res.json())
       .then(({ user, shops }) => setState({ user, shops, loading: false }))
@@ -34,6 +34,13 @@ const AdminUser = () => {
         </Link>
         <span className="chevron" />
         {user.name}
+        <div className="ml-auto">
+          <Link
+            to={`/super-admin/users/${userId}/edit`}
+            className="btn btn-outline-primary"
+            children="Edit"
+          />
+        </div>
       </h3>
       <div className="d-flex">
         <div className="grid-table">
