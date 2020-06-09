@@ -125,7 +125,9 @@ async function deployShop({
     (networkConfig.pinataKey &&
       networkConfig.pinataSecret &&
       pinner === 'pinata') ||
-    (network.ipfsApi && networkConfig.ipfsClusterPassword)
+    (network.ipfsApi &&
+      networkConfig.ipfsClusterPassword &&
+      pinner === 'ipfs-cluster')
   ) {
     ipfsGateway = 'https://gateway.pinata.cloud'
     hash = await deploy({
