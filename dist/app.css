@@ -114,6 +114,7 @@
   display: flex;
   align-items: center;
   justify-content: between;
+  min-height: 4rem;
   -ms-flex-wrap: wrap;
   -moz-flex-wrap: wrap;
   -webkit-flex-wrap: wrap;
@@ -143,11 +144,25 @@
   flex: 1;
 }
 
+.admin nav .user svg {
+  fill: #9faebd;
+  margin-right: 0.5rem;
+  vertical-align: -3px;
+}
+
+.admin nav .user {
+  color: #8293a4;
+  font-size: 14px;
+}
+
 .admin nav {
   border-bottom: 1px solid #dfe2e6;
-  padding: 1.25rem 0;
   margin-bottom: 4rem;
   color: #000;
+}
+
+.admin .table.table-hover {
+  cursor: pointer;
 }
 
 .admin .table thead th {
@@ -2381,7 +2396,7 @@ header > a {
 
 header h1 svg,
 header h1 img {
-  width: 2rem;
+  width: 12rem;
   margin-right: 1rem;
 }
 
@@ -2484,7 +2499,6 @@ main {
 }
 
 .admin-shop-edit textarea {
-  font-family: monospace;
   height: 90vh;
 }
 
@@ -2507,9 +2521,49 @@ main {
   text-align: left;
 }
 
+.shop-settings label > span {
+  font-size: 14px;
+  font-weight: normal;
+  color: #8293a4;
+  margin-left: 0.25rem;
+}
+
+.shop-settings label {
+  margin-top: 0.5rem;
+}
+
+.shop-settings a {
+  color: #3b80ee;
+  font-size: 14px;
+}
+
+.upload-image {
+  border: 1px dashed #3b80ee;
+  background-color: f8fbff;
+  height: 175px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+}
+
 table.shop-assets img {
   max-width: 12rem;
   max-height: 2rem;
+}
+
+.grid-table {
+  display: grid;
+  grid-template-columns: auto auto;
+  row-gap: 0.5rem;
+  -ms-column-gap: 1rem;
+  -moz-column-gap: 1rem;
+  -webkit-column-gap: 1rem;
+  column-gap: 1rem;
+}
+
+.grid-table > div:nth-child(odd) {
+  font-weight: bold;
 }
 
 .cart {
@@ -3081,6 +3135,10 @@ a:focus {
   -moz-transform: translate(-50%, -50%);
   -webkit-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
+}
+
+.invalid-feedback {
+  word-break: break-word;
 }
 
 @-ms-keyframes spin {

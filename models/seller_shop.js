@@ -18,5 +18,16 @@ module.exports = (sequelize, DataTypes) => {
     }
   )
 
+  SellerShop.associate = function (models) {
+    SellerShop.belongsTo(models.Shop, {
+      as: 'shop',
+      foreignKey: { name: 'shopId' }
+    })
+    SellerShop.belongsTo(models.Seller, {
+      as: 'seller',
+      foreignKey: { name: 'sellerId' }
+    })
+  }
+
   return SellerShop
 }

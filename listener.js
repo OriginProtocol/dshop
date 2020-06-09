@@ -5,9 +5,8 @@ const WebSocket = require('ws')
 
 const Web3 = require('web3')
 const get = require('lodash/get')
-const isEqual = require('lodash/isEqual')
 
-const { Op, Network, Shop } = require('./models')
+const { Network } = require('./models')
 const { handleLog } = require('./utils/handleLog')
 
 const web3 = new Web3()
@@ -21,23 +20,28 @@ const SubscribeToNewHeads = JSON.stringify({
   params: ['newHeads']
 })
 
-const SubscribeToLogs = ({ address, listingIds }) => {
-  const listingTopics = listingIds.map((listingId) => {
-    return web3.utils.padLeft(web3.utils.numberToHex(listingId), 64)
-  })
-
+/**
+ * Prepares a request to subscribe to all events emitted by the marketplace contract.
+ * @param {string} address: Marketplace contract's address.
+ * @returns {string} The request to send to the provider.
+ */
+const SubscribeToLogs = ({ address }) => {
   return JSON.stringify({
     jsonrpc: '2.0',
     id: 1,
     method: 'eth_subscribe',
-    params: ['logs', { address, topics: [null, null, listingTopics] }]
+    params: ['logs', { address }]
   })
 }
 
-const GetPastLogs = ({ address, fromBlock, toBlock, listingIds }) => {
-  const listingTopics = listingIds.map((listingId) => {
-    return web3.utils.padLeft(web3.utils.numberToHex(listingId), 64)
-  })
+/**
+ * Prepares a request to fetch past events emitted by the marketplace contract.
+ * @param {string} address: Marketplace contract's address.
+ * @param {Integer} fromBlock: Block range start.
+ * @param {Integer} toBlock: Block range end.
+ * @returns {string} The request to send to the provider.
+ */
+const GetPastLogs = ({ address, fromBlock, toBlock }) => {
   const rpc = {
     jsonrpc: '2.0',
     id: 3,
@@ -45,7 +49,6 @@ const GetPastLogs = ({ address, fromBlock, toBlock, listingIds }) => {
     params: [
       {
         address,
-        topics: [null, null, listingTopics],
         fromBlock: web3.utils.numberToHex(fromBlock),
         toBlock: web3.utils.numberToHex(toBlock)
       }
@@ -54,29 +57,27 @@ const GetPastLogs = ({ address, fromBlock, toBlock, listingIds }) => {
   return JSON.stringify(rpc)
 }
 
-async function connectWS({ network, listingIds }) {
+/**
+ * Listener main.
+ *
+ * @param {Network} network: Network db model.
+ * @returns {Promise<void>}
+ */
+async function connectWS({ network }) {
   let lastBlock, pingTimeout
+
+  // Get the config from the network.
   const { networkId, providerWs } = network
-  const res = await Network.findOne({ where: { networkId } })
-  if (res) {
-    lastBlock = res.lastBlock
-    console.log(`Last recorded block: ${lastBlock}`)
-  } else {
-    console.log('No recorded block found')
-  }
-
-  const contractVersion = network.marketplaceVersion
   const address = network.marketplaceContract
-
-  const allListings = listingIds.join(', ')
+  const contractVersion = network.marketplaceVersion
+  lastBlock = network.lastBlock
   console.log(`Connecting to ${providerWs} (netId ${networkId})`)
-  console.log(`Watching listings ${allListings} on contract ${address}`)
+  console.log(
+    `Watching events on contract version ${contractVersion} at ${address}`
+  )
+  console.log(`Last recorded block: ${lastBlock}`)
 
-  if (ws) {
-    clearTimeout(pingTimeout)
-    ws.close()
-  }
-
+  // Connect a web socket to the provider.
   ws = new ReconnectingWebSocket(providerWs, [], { WebSocket })
 
   function heartbeat() {
@@ -100,7 +101,7 @@ async function connectWS({ network, listingIds }) {
       console.log('WS ping.')
       heartbeat()
     })
-    ws.send(SubscribeToLogs({ address, listingIds }))
+    ws.send(SubscribeToLogs({ address }))
     ws.send(SubscribeToNewHeads)
   })
 
@@ -112,15 +113,9 @@ async function connectWS({ network, listingIds }) {
     const hash = web3.utils.sha3(raw)
     if (handled[hash]) {
       console.log('Ignoring repeated ws message')
-    }
-    handled[hash] = true
-
-    const latestListings = await getListingIds({ network })
-    if (!isEqual(latestListings, listingIds)) {
-      console.log('Change in listings detected. Restarting listener...')
-      connectWS({ listingIds: latestListings, network })
       return
     }
+    handled[hash] = true
 
     const data = JSON.parse(raw)
     if (data.id === 1) {
@@ -130,15 +125,21 @@ async function connectWS({ network, listingIds }) {
       heads = data.result
     } else if (data.id === 3) {
       console.log(`Got ${data.result.length} unhandled logs`)
-      data.result.map((result) =>
-        handleLog({ ...result, web3, address, networkId, contractVersion })
-      )
+      for (const result of data.result) {
+        await handleLog({
+          ...result,
+          web3,
+          address,
+          networkId,
+          contractVersion
+        })
+      }
     } else if (get(data, 'params.subscription') === logs) {
-      handleLog({
+      await handleLog({
         ...data.params.result,
         web3,
-        networkId,
         address,
+        networkId,
         contractVersion
       })
     } else if (get(data, 'params.subscription') === heads) {
@@ -147,10 +148,10 @@ async function connectWS({ network, listingIds }) {
       if (blockDiff > 500) {
         console.log('Too many new blocks. Skip past log fetch.')
       } else if (blockDiff > 1) {
-        console.log(`Fetching ${blockDiff} past logs...`)
-        ws.send(
-          GetPastLogs({ fromBlock: lastBlock, toBlock: number, listingIds })
+        console.log(
+          `Fetching ${blockDiff} past logs. Range ${lastBlock}-${number}...`
         )
+        ws.send(GetPastLogs({ address, fromBlock: lastBlock, toBlock: number }))
       }
       lastBlock = number
     } else {
@@ -169,16 +170,6 @@ const handleNewHead = (head, networkId) => {
   return number
 }
 
-async function getListingIds({ network }) {
-  const shops = await Shop.findAll({
-    attributes: ['listingId'],
-    group: ['listingId'],
-    where: { networkId: network.networkId, listingId: { [Op.ne]: null } }
-  })
-
-  return shops.map((shop) => shop.listingId.split('-')[2])
-}
-
 async function start() {
   const network = await Network.findOne({ where: { active: true } })
   if (!network) {
@@ -189,8 +180,7 @@ async function start() {
   console.log(`Starting listener on network ${network.networkId}.`)
   web3.setProvider(network.provider)
 
-  const listingIds = await getListingIds({ network })
-  connectWS({ network, listingIds })
+  connectWS({ network })
 }
 
 module.exports = start

@@ -10,7 +10,15 @@ const prime = require('./primeIpfs')
 const setCloudflareRecords = require('./dns/cloudflare')
 const setCloudDNSRecords = require('./dns/clouddns')
 
-async function deployShop({ OutputDir, dataDir, network, subdomain, shop }) {
+async function deployShop({
+  OutputDir,
+  dataDir,
+  network,
+  subdomain,
+  shop,
+  pinner,
+  dnsProvider
+}) {
   const networkConfig = getConfig(network.config)
   const zone = networkConfig.domain
 
@@ -38,6 +46,14 @@ async function deployShop({ OutputDir, dataDir, network, subdomain, shop }) {
     )
   })
 
+  let publicShopConfig = {}
+  try {
+    const raw = fs.readFileSync(`${OutputDir}/data/config.json`)
+    publicShopConfig = JSON.parse(raw.toString())
+  } catch (e) {
+    /* Ignore */
+  }
+
   const networkName =
     network.networkId === 1
       ? 'mainnet'
@@ -49,15 +65,21 @@ async function deployShop({ OutputDir, dataDir, network, subdomain, shop }) {
   fs.writeFileSync(
     `${OutputDir}/public/index.html`,
     html
-      .replace('TITLE', shop.name)
+      .replace('TITLE', publicShopConfig.fullTitle)
+      .replace('META_DESC', publicShopConfig.metaDescription || '')
       .replace('DATA_DIR', dataDir)
       .replace('NETWORK', networkName)
+      .replace('FAVICON', publicShopConfig.favicon || 'favicon.ico')
   )
 
   // Deploy the shop to IPFS.
   let hash, ipfsGateway
   const publicDirPath = `${OutputDir}/public`
-  if (networkConfig.pinataKey && networkConfig.pinataSecret) {
+  if (
+    networkConfig.pinataKey &&
+    networkConfig.pinataSecret &&
+    pinner === 'pinata'
+  ) {
     ipfsGateway = 'https://gateway.pinata.cloud'
     hash = await deploy({
       publicDirPath,
@@ -78,7 +100,7 @@ async function deployShop({ OutputDir, dataDir, network, subdomain, shop }) {
     await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
     await prime(`https://ipfs-prod.ogn.app/ipfs/${hash}`, publicDirPath)
   } else if (network.ipfsApi.indexOf('localhost') > 0) {
-    ipfsGateway = network.ipfsApi
+    ipfsGateway = network.ipfs
     const ipfs = ipfsClient(network.ipfsApi)
     const allFiles = []
     const glob = ipfsClient.globSource(publicDirPath, { recursive: true })
@@ -93,42 +115,40 @@ async function deployShop({ OutputDir, dataDir, network, subdomain, shop }) {
     )
   }
 
-  let domain
-  if (networkConfig.cloudflareApiKey || networkConfig.gcpCredentials) {
-    domain = `https://${subdomain}.${zone}`
-
-    const opts = {
+  const domain = dnsProvider ? `https://${subdomain}.${zone}` : null
+  if (dnsProvider === 'cloudflare' && networkConfig.cloudflareApiKey) {
+    await setCloudflareRecords({
       ipfsGateway: 'ipfs-prod.ogn.app',
       zone,
       subdomain,
-      hash
-    }
-
-    if (networkConfig.cloudflareApiKey) {
-      await setCloudflareRecords({
-        ...opts,
-        email: networkConfig.cloudflareEmail,
-        key: networkConfig.cloudflareApiKey
-      })
-    } else if (networkConfig.gcpCredentials) {
-      await setCloudDNSRecords({
-        ...opts,
-        credentials: networkConfig.gcpCredentials
-      })
-    }
+      hash,
+      email: networkConfig.cloudflareEmail,
+      key: networkConfig.cloudflareApiKey
+    })
+  }
+  if (dnsProvider === 'gcp' && networkConfig.gcpCredentials) {
+    await setCloudDNSRecords({
+      ipfsGateway: 'ipfs-prod.ogn.app',
+      zone,
+      subdomain,
+      hash,
+      credentials: networkConfig.gcpCredentials
+    })
   }
 
-  // Record the deployment in the DB.
-  const deployment = await ShopDeployment.create({
-    shopId: shop.id,
-    domain,
-    ipfsGateway,
-    ipfsHash: hash
-  })
+  if (hash) {
+    // Record the deployment in the DB.
+    const deployment = await ShopDeployment.create({
+      shopId: shop.id,
+      domain,
+      ipfsGateway,
+      ipfsHash: hash
+    })
 
-  console.log(
-    `Recorded shop deployment in the DB. id=${deployment.id} domain=${domain} ipfs=${ipfsGateway} hash=${hash}`
-  )
+    console.log(
+      `Recorded shop deployment in the DB. id=${deployment.id} domain=${domain} ipfs=${ipfsGateway} hash=${hash}`
+    )
+  }
 
   return { hash, domain }
 }

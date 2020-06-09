@@ -7,7 +7,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "clean": "rm db/dshop.db && npm run migrate",
+    "clean": "rm db/dshop.db; rm -rf data/*; npm run migrate",
     "heroku-postbuild": "npm run migrate",
     "lint": "eslint . && npm run prettier:check",
     "migrate": "sequelize db:migrate --config db/config.js --migrations-path db/migrations",
@@ -22,12 +22,12 @@
     "@google-cloud/bigquery": "^4.7.0",
     "@google-cloud/dns": "^2.0.0",
     "aws-sdk": "^2.680.0",
-    "bcrypt": "^4.0.1",
+    "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "bottleneck": "^2.19.5",
     "bs58": "^4.0.1",
     "bull": "^3.14.0",
-    "bull-board": "^0.7.0",
+    "bull-board": "^0.9.0",
     "cids": "^0.8.0",
     "cloudflare": "^2.7.0",
     "commander": "^5.1.0",
@@ -58,13 +58,13 @@
     "sharp": "0.25.3",
     "sqlite3": "^4.2.0",
     "stripe": "^8.53.0",
-    "web3": "1.2.7",
+    "web3": "1.2.8",
     "ws": "^7.3.0"
   },
   "devDependencies": {
-    "chai": "^4.2.0",
-    "eslint": "6.8.0",
-    "mocha": "^7.1.0",
+    "chai": "4.2.0",
+    "eslint": "7.2.0",
+    "mocha": "7.2.0",
     "prettier": "2.0.5"
   },
   "eslintIgnore": [
