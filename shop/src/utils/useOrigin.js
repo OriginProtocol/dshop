@@ -11,6 +11,10 @@ const marketplaceAbi = [
   'function acceptOffer(uint listingID, uint offerID, bytes32 ipfsHash) public',
   'function withdrawOffer(uint listingID, uint offerID, bytes32 ipfsHash) public',
   'function finalize(uint listingID, uint offerID, bytes32 ipfsHash) public',
+  'function createListing(bytes32, uint256, address)',
+  'function updateListing(uint256, bytes32, uint256)',
+  'event ListingCreated (address indexed party, uint indexed listingID, bytes32 ipfsHash)',
+  'event ListingUpdated (address indexed party, uint indexed listingID, bytes32 ipfsHash)',
   'event OfferCreated (address indexed party, uint indexed listingID, uint indexed offerID, bytes32 ipfsHash)',
   {
     constant: true,
@@ -163,20 +167,23 @@ async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
   }
 }
 
-function useOrigin() {
+function useOrigin({ marketplaceAddress, targetNetworkId }) {
   const [loading, setLoading] = useState(true)
   const [marketplace, setMarketplace] = useState()
   const { config } = useConfig()
-  const { status, provider, signer, networkOk } = useWallet()
+  const { status, provider, signer, netId } = useWallet()
+
+  targetNetworkId = String(targetNetworkId) || String(config.netId)
+  marketplaceAddress = marketplaceAddress || config.contracts.Marketplace_V01
 
   useEffect(() => {
     if (status === 'loading') return
-    if (status !== 'enabled' || !networkOk) {
+    if (status !== 'enabled' || netId !== targetNetworkId) {
       setLoading(false)
       return
     }
     const marketplace = new ethers.Contract(
-      config.contracts.Marketplace_V01,
+      marketplaceAddress,
       marketplaceAbi,
       signer || provider
     )

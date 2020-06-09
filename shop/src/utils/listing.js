@@ -98,14 +98,12 @@ export async function getListingLatestIpfsHash(
  *   Format is <network id>-<contract version>-<listing id>
  *   For example: 1-001-123
  */
-export async function createListing({ title, network, provider }) {
-  const signer = provider.getSigner()
-  const address = await signer.getAddress()
+export async function createListing({ marketplace, title, network, signer }) {
+  const address = signer.getAddress()
 
   const bytes32Hash = await post(network.ipfsApi, { ...baseListing, title })
-  const contract = new ethers.Contract(network.marketplaceContract, abi, signer)
 
-  const tx = await contract.createListing(bytes32Hash, 0, address)
+  const tx = await marketplace.createListing(bytes32Hash, 0, address)
   const receipt = await tx.wait()
 
   const listingCreated = receipt.events.find(
