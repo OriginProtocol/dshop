@@ -63,6 +63,10 @@ module.exports = function (app) {
       return res.sendStatus(400)
     }
 
+    // Save initial data into external payment.
+    // We save this "raw" state for debugging purposes.
+    // If anything goes wrong with the rest of this, we'll still be able
+    // to look up the originaly posted JSON and see what happened.
     const externalPayment = await ExternalPayment.create({
       payment_at: new Date(json.created * 1000), // created is a unix timestamp
       external_id: json.id,
@@ -89,7 +93,7 @@ module.exports = function (app) {
       return res.sendStatus(400)
     }
 
-    // Save externalPayment
+    // Save parsed data into the external_payment table.
     externalPayment.authenticated = true
     externalPayment.type = get(event, 'type')
     externalPayment.payment_code = get(
@@ -112,6 +116,7 @@ module.exports = function (app) {
     await externalPayment.save()
 
     console.log(JSON.stringify(event, null, 4))
+
     if (event.type !== 'payment_intent.succeeded') {
       console.log(`Ignoring event ${event.type}`)
       return res.sendStatus(200)
