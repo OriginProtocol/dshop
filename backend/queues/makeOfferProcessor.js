@@ -42,7 +42,8 @@ async function processor(job) {
 
   log(20, 'Submitting Offer')
   const web3 = new Web3(network.provider)
-  const account = web3.eth.accounts.wallet.add(networkConfig.web3Pk)
+  const backendPk = networkConfig.web3Pk || shopConfig.web3Pk
+  const account = web3.eth.accounts.wallet.add(backendPk)
   const walletAddress = account.address
   log(22, `using walletAddress ${walletAddress}`)
   log(25, 'Sending to marketplace')
