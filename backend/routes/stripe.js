@@ -124,6 +124,7 @@ module.exports = function (app) {
 
     req.body.data = get(event, 'data.object.metadata.encryptedData')
     req.amount = externalPayment.amount
+    req.paymentCode = externalPayment.payment_code
     next()
   }
 

@@ -28,7 +28,7 @@ async function processor(job) {
     job.progress(progress)
   }
 
-  const { shopId, amount, encryptedData } = job.data
+  const { shopId, encryptedData, paymentCode } = job.data
   const shop = await getShop(shopId)
   log(5, 'Load encrypted shop config')
   const shopConfig = getShopConfig(shop)
@@ -37,7 +37,7 @@ async function processor(job) {
 
   log(10, 'Creating offer')
   const lid = ListingID.fromFQLID(shop.listingId)
-  const offer = createOfferJson(lid, amount, encryptedData)
+  const offer = createOfferJson(lid, encryptedData, paymentCode)
   const ires = await postOfferIPFS(network, offer)
 
   log(20, 'Submitting Offer')
@@ -99,7 +99,7 @@ function getShopConfig(shop) {
   return shopConfig
 }
 
-function createOfferJson(lid, amount, encryptedData) {
+function createOfferJson(lid, encryptedData, paymentCode) {
   return {
     schemaId: 'https://schema.originprotocol.com/offer_2.0.0.json',
     listingId: lid.toString(),
@@ -111,7 +111,8 @@ function createOfferJson(lid, amount, encryptedData) {
     },
     commission: { currency: 'OGN', amount: '0' },
     finalizes: 60 * 60 * 24 * 14, // 2 weeks after offer accepted
-    encryptedData: encryptedData
+    encryptedData: encryptedData,
+    paymentCode: paymentCode
   }
 }
 
