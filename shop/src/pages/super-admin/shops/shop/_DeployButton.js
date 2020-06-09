@@ -109,7 +109,7 @@ const Deploy = ({ state, setState, admin, shop }) => {
           <>
             <div>IPFS</div>
             <div>{network.ipfs}</div>
-            {!network.pinataKey ? null : (
+            {!network.pinataKey && !network.ipfsClusterPassword ? null : (
               <>
                 <div>IPFS Pinner</div>
                 <div>
@@ -118,7 +118,15 @@ const Deploy = ({ state, setState, admin, shop }) => {
                     onChange={(e) => setState({ pinner: e.target.value })}
                   >
                     <option value="">None</option>
-                    <option value="pinata">Pinata</option>
+                    <option value="pinata" disabled={!network.pinataKey}>
+                      Pinata
+                    </option>
+                    <option
+                      value="ipfs-cluster"
+                      disabled={!network.ipfsClusterPassword}
+                    >
+                      IPFS Cluster
+                    </option>
                   </select>
                 </div>
               </>
