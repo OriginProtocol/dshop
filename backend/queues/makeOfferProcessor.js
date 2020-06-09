@@ -33,7 +33,7 @@ async function processor(job) {
   log(5, 'Load encrypted shop config')
   const shopConfig = getShopConfig(shop)
   const network = await getNetwork(shop.networkId)
-  const networkConfig = await getNetworkConfig(network)
+  const networkConfig = encConf.getConfig(network.config)
 
   log(10, 'Creating offer')
   const lid = ListingID.fromFQLID(shop.listingId)
@@ -42,6 +42,10 @@ async function processor(job) {
 
   log(20, 'Submitting Offer')
   const web3 = new Web3(network.provider)
+  // The plan per Nick is to begin using a network level web3PK
+  // for submitting offers, while stores use their own PK for any further
+  // crypto payment activity. If we have a network config, we use it for
+  // submitting, and fall back to the store PK.
   const backendPk = networkConfig.web3Pk || shopConfig.web3Pk
   const account = web3.eth.accounts.wallet.add(backendPk)
   const walletAddress = account.address
@@ -95,13 +99,6 @@ function getShopConfig(shop) {
   return shopConfig
 }
 
-function getNetworkConfig(network) {
-  const shopConfig = encConf.getConfig(network.config)
-  if (!shopConfig.web3Pk) {
-    throw new Error('No PK configured for shop')
-  }
-  return shopConfig
-}
 
 function createOfferJson(lid, amount, encryptedData) {
   return {
