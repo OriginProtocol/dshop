@@ -76,7 +76,10 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
         <div className="mt-2">Loading Wallet Status...</div>
       </>
     )
-  } else if (wallet.status === 'disabled') {
+  } else if (
+    wallet.status === 'disabled' ||
+    wallet.signerStatus === 'disabled'
+  ) {
     return (
       <>
         {label}

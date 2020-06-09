@@ -19,6 +19,8 @@ module.exports = function (app) {
       config: setConfig({
         pinataKey: req.body.pinataKey,
         pinataSecret: req.body.pinataSecret,
+        ipfsClusterUser: req.body.ipfsClusterUser,
+        ipfsClusterPassword: req.body.ipfsClusterPassword,
         cloudflareEmail: req.body.cloudflareEmail,
         cloudflareApiKey: req.body.cloudflareApiKey,
         gcpCredentials: req.body.gcpCredentials,
@@ -65,6 +67,8 @@ module.exports = function (app) {
     const config = pick(req.body, [
       'pinataKey',
       'pinataSecret',
+      'ipfsClusterUser',
+      'ipfsClusterPassword',
       'cloudflareEmail',
       'cloudflareApiKey',
       'domain',
@@ -81,6 +85,23 @@ module.exports = function (app) {
       },
       { where }
     )
+
+    if (!result || result[0] < 1) {
+      return res.json({ success: false })
+    }
+
+    res.json({ success: true })
+  })
+
+  app.post('/networks/:netId/make-active', authSuperUser, async (req, res) => {
+    const where = { networkId: req.params.netId }
+    const network = await Network.findOne({ where })
+    if (!network) {
+      return res.json({ success: false, reason: 'no-network' })
+    }
+
+    await Network.update({ active: false }, { where: {} })
+    const result = await Network.update({ active: true }, { where })
 
     if (!result || result[0] < 1) {
       return res.json({ success: false })

@@ -1,6 +1,6 @@
-# Dshop Backend
+# Origin Protocol Dshop Backend
 
-This is the supporting backend for Origin Shop. It's primary functions are:
+This is the supporting backend for Origin DShop. It's primary functions are:
 
 - Handling off-chain payments, such as credit card transactions
 - Sending out confirmation emails
@@ -14,9 +14,10 @@ in a Postgres database.
 - [Test Data](docs/index.md#manual-testing)
 - [Backend Web API](docs/api.md)
 
-## Deploy to Heroku
+## Local development
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+Follow the steps on the [Front-end README](../shop/README.md) to start a local
+back-end.
 
 ## Manual Deploy
 
@@ -77,4 +78,4 @@ Add new migration:
 ## Sync Repos
 
     npm run build:dist
-    rsync -rv --exclude=.git --exclude=.gitignore --exclude=scripts/output --exclude=backend/db/dshop.db --exclude=/node_modules --delete backend/ DESTINATION
+    rsync -rv --exclude=.git --exclude=.gitignore --exclude=/db/dshop.db --exclude=/node_modules --exclude=/data --delete backend/ DESTINATION

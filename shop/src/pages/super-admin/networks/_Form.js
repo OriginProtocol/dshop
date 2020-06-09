@@ -42,6 +42,8 @@ function initialState() {
     providerWs: '',
     pinataKey: '',
     pinataSecret: '',
+    ipfsClusterUser: '',
+    ipfsClusterPassword: '',
     cloudflareEmail: '',
     cloudflareApiKey: '',
     gcpCredentials: '',
@@ -186,6 +188,18 @@ const NetworkForm = ({ onSave, network, feedback }) => {
           <label>Pinata Secret</label>
           <PasswordField field="pinataSecret" input={input} />
           {Feedback('pinataSecret')}
+        </div>
+      </div>
+      <div className="form-row">
+        <div className="form-group col-md-6">
+          <label>IPFS Cluster User</label>
+          <input {...input('ipfsClusterUser')} />
+          {Feedback('ipfsClusterUser')}
+        </div>
+        <div className="form-group col-md-6">
+          <label>IPFS Cluster Password</label>
+          <PasswordField field="ipfsClusterPassword" input={input} />
+          {Feedback('ipfsClusterPassword')}
         </div>
       </div>
       <div className="form-row">

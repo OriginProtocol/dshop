@@ -72,9 +72,7 @@ module.exports = function (app) {
     }
 
     const shopDataDir = DSHOP_CACHE
-    const { networkId } = network
     const shops = await Shop.findAll({
-      where: { networkId },
       order: [['createdAt', 'desc']]
     }).map((s) => ({
       ...s.dataValues,
