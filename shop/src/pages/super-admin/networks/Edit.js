@@ -8,6 +8,7 @@ import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
 import NetworkForm from './_Form'
+import MakeActiveButton from './_MakeActiveButton'
 
 const EditNetwork = () => {
   const { config } = useConfig()
@@ -55,6 +56,11 @@ const EditNetwork = () => {
         </Link>
         <span className="chevron" />
         Edit
+        {network.active ? null : (
+          <div className="ml-auto">
+            <MakeActiveButton network={network} />
+          </div>
+        )}
       </h3>
       <div className="row">
         <div className="col-md-8">

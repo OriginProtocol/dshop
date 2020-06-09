@@ -86,4 +86,21 @@ module.exports = function (app) {
 
     res.json({ success: true })
   })
+
+  app.post('/networks/:netId/make-active', authSuperUser, async (req, res) => {
+    const where = { networkId: req.params.netId }
+    const network = await Network.findOne({ where })
+    if (!network) {
+      return res.json({ success: false, reason: 'no-network' })
+    }
+
+    await Network.update({ active: false }, { where: {} })
+    const result = await Network.update({ active: true }, { where })
+
+    if (!result || result[0] < 1) {
+      return res.json({ success: false })
+    }
+
+    res.json({ success: true })
+  })
 }

@@ -24,9 +24,13 @@ const AdminDeployShop = ({ className = '', shop }) => {
         body: JSON.stringify(pick(state, 'networkId', 'pinner', 'dnsProvider'))
       }).then((res) => {
         if (res.ok) {
-          res.json().then(({ hash, domain, gateway }) => {
-            setState({ deployed: true, hash, domain, gateway })
-            dispatch({ type: 'reload', target: 'deployments' })
+          res.json().then(({ success, reason, hash, domain, gateway }) => {
+            if (success === false) {
+              setState({ error: reason })
+            } else {
+              setState({ deployed: true, hash, domain, gateway })
+              dispatch({ type: 'reload', target: 'deployments' })
+            }
           })
         }
       })
@@ -45,17 +49,20 @@ const AdminDeployShop = ({ className = '', shop }) => {
       {!state.deploy ? null : (
         <Modal
           shouldClose={state.shouldClose}
-          onClose={() => {
-            setState({
-              shouldClose: false,
-              deploy: false,
-              deployed: false,
-              deployShop: false
-            })
-          }}
+          onClose={() => setState({}, true)}
         >
           <div className="modal-body text-center p-5">
-            {state.deployed ? (
+            {state.error ? (
+              <>
+                <div className="text-lg">Error</div>
+                <div className="alert alert-danger mt-3">{state.error}</div>
+                <button
+                  className="btn btn-outline-primary px-5"
+                  onClick={() => setState({ shouldClose: true })}
+                  children="OK"
+                />
+              </>
+            ) : state.deployed ? (
               <Deployed {...{ state, setState }} />
             ) : (
               <Deploy {...{ state, setState, admin, shop }} />
