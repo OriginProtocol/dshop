@@ -7,17 +7,24 @@ module.exports = (sequelize, DataTypes) => {
       id: {
         type: DataTypes.INTEGER,
         unique: true,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
       },
       created_at: DataTypes.DATE,
       updated_at: DataTypes.DATE,
-      ordered_at: DataTypes.DATE,
+      payment_at: DataTypes.DATE,
       external_id: DataTypes.STRING,
-      order_id: DataTypes.STRING,
       // Note: Postgres supports JSONB while sqlite only supports JSON.
       data: isPostgres ? DataTypes.JSONB : DataTypes.JSON,
       amount: DataTypes.INTEGER,
-      accepted: DataTypes.BOOLEAN
+      fee: DataTypes.INTEGER,
+      net: DataTypes.INTEGER,
+      currency: DataTypes.STRING,
+      // Was this a valid transaction from the payment processor
+      authenticated: DataTypes.BOOLEAN,
+      payment_intent: DataTypes.STRING,
+      payment_code: DataTypes.STRING,
+      type: DataTypes.STRING,
     },
     {
       underscored: true,

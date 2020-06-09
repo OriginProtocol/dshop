@@ -33,6 +33,7 @@ async function processor(job) {
   log(5, 'Load encrypted shop config')
   const shopConfig = getShopConfig(shop)
   const network = await getNetwork(shop.networkId)
+  const networkConfig = await getNetworkConfig(network)
 
   log(10, 'Creating offer')
   const lid = ListingID.fromFQLID(shop.listingId)
@@ -41,7 +42,7 @@ async function processor(job) {
 
   log(20, 'Submitting Offer')
   const web3 = new Web3(network.provider)
-  const account = web3.eth.accounts.wallet.add(shopConfig.web3Pk)
+  const account = web3.eth.accounts.wallet.add(networkConfig.web3Pk)
   const walletAddress = account.address
   log(22, `using walletAddress ${walletAddress}`)
   log(25, 'Sending to marketplace')
@@ -87,6 +88,14 @@ async function getNetwork(networkId) {
 
 function getShopConfig(shop) {
   const shopConfig = encConf.getConfig(shop.config)
+  if (!shopConfig.web3Pk) {
+    throw new Error('No PK configured for shop')
+  }
+  return shopConfig
+}
+
+function getNetworkConfig(network) {
+  const shopConfig = encConf.getConfig(network.config)
   if (!shopConfig.web3Pk) {
     throw new Error('No PK configured for shop')
   }
