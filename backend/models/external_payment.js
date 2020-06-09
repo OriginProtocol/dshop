@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       authenticated: DataTypes.BOOLEAN,
       payment_intent: DataTypes.STRING,
       payment_code: DataTypes.STRING,
-      type: DataTypes.STRING,
+      type: DataTypes.STRING
     },
     {
       underscored: true,

@@ -54,7 +54,7 @@ module.exports = function (app) {
 
   async function handleWebhook(req, res, next) {
     let json
-    console.log("🚖 STARTING WEBHOOK")
+    console.log('🚖 STARTING WEBHOOK')
     try {
       json = JSON.parse(req.body.toString())
       const id = get(json, 'data.object.metadata.shopId')
@@ -64,22 +64,25 @@ module.exports = function (app) {
       return res.sendStatus(400)
     }
 
-    console.log(" 🚜 PARSED")
-    const externalPayment = await ExternalPayment.create({
-      payment_at: new Date(json.created * 1000), // created is a unix timestamp
-      external_id: json.id,
-      data: json,
-      accepted: false
-    },{logging: console.log})
+    console.log(' 🚜 PARSED')
+    const externalPayment = await ExternalPayment.create(
+      {
+        payment_at: new Date(json.created * 1000), // created is a unix timestamp
+        external_id: json.id,
+        data: json,
+        accepted: false
+      },
+      { logging: console.log }
+    )
 
     if (!req.shop) {
       console.debug('Missing shopId from /webhook request')
       return res.sendStatus(400)
     }
-    console.log(" 🚞 Wrote initial")
+    console.log(' 🚞 Wrote initial')
     const shopConfig = getConfig(req.shop.config)
     const stripe = Stripe(shopConfig.stripeBackend)
-    console.log("🚟 Got config and stripe")
+    console.log('🚟 Got config and stripe')
     let event
     const sig = req.headers['stripe-signature']
     try {
@@ -90,29 +93,38 @@ module.exports = function (app) {
       console.error(err)
       return res.sendStatus(400)
     }
-    console.log("🌲 Decoded webhook")
+    console.log('🌲 Decoded webhook')
 
     // Save global payment data
     externalPayment.authenticated = true
     externalPayment.type = get(event, 'type')
-    externalPayment.payment_code = get(event, 'data.object.metadata.payment_code')
+    externalPayment.payment_code = get(
+      event,
+      'data.object.metadata.payment_code'
+    )
     externalPayment.amount = get(event, 'data.object.amount')
     externalPayment.currency = get(event, 'data.object.currency')
-    externalPayment.fee = get(event, 'data.object.fee') || get(event, 'data.object.charges.data[0].fee')
-    externalPayment.payment_intent = get(event, 'type').startsWith('payment_intent') ? get(event, 'data.object.id') : get(event, 'data.object.payment_intent')
-    if(externalPayment.fee !== undefined){
+    externalPayment.fee =
+      get(event, 'data.object.fee') ||
+      get(event, 'data.object.charges.data[0].fee')
+    externalPayment.payment_intent = get(event, 'type').startsWith(
+      'payment_intent'
+    )
+      ? get(event, 'data.object.id')
+      : get(event, 'data.object.payment_intent')
+    if (externalPayment.fee !== undefined) {
       externalPayment.net = externalPayment.amount - externalPayment.fee
     }
     await externalPayment.save()
-    console.log("🏓 saved payment data",externalPayment.id)
+    console.log('🏓 saved payment data', externalPayment.id)
 
     if (event.type !== 'payment_intent.succeeded') {
       console.log(`Ignoring event ${event.type}`)
       return res.sendStatus(200)
     }
-    console.log("🌲🌲🌲 Not ignoring this one!")
+    console.log('🌲🌲🌲 Not ignoring this one!')
     console.log(JSON.stringify(event, null, 4))
-    console.log("🍷 Loaded Data")
+    console.log('🍷 Loaded Data')
 
     req.body.data = get(event, 'data.object.metadata.encryptedData')
     req.amount = externalPayment.amount
