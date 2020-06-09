@@ -99,7 +99,6 @@ function getShopConfig(shop) {
   return shopConfig
 }
 
-
 function createOfferJson(lid, amount, encryptedData) {
   return {
     schemaId: 'https://schema.originprotocol.com/offer_2.0.0.json',

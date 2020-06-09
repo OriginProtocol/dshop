@@ -63,23 +63,21 @@ module.exports = function (app) {
       return res.sendStatus(400)
     }
 
-    const externalPayment = await ExternalPayment.create(
-      {
-        payment_at: new Date(json.created * 1000), // created is a unix timestamp
-        external_id: json.id,
-        data: json,
-        accepted: false
-      }
-    )
+    const externalPayment = await ExternalPayment.create({
+      payment_at: new Date(json.created * 1000), // created is a unix timestamp
+      external_id: json.id,
+      data: json,
+      accepted: false
+    })
 
     if (!req.shop) {
       console.debug('Missing shopId from /webhook request')
       return res.sendStatus(400)
     }
-    
+
     const shopConfig = getConfig(req.shop.config)
     const stripe = Stripe(shopConfig.stripeBackend)
-    
+
     let event
     const sig = req.headers['stripe-signature']
     try {
@@ -90,7 +88,7 @@ module.exports = function (app) {
       console.error(err)
       return res.sendStatus(400)
     }
-    
+
     // Save externalPayment
     externalPayment.authenticated = true
     externalPayment.type = get(event, 'type')
@@ -112,13 +110,13 @@ module.exports = function (app) {
       externalPayment.net = externalPayment.amount - externalPayment.fee
     }
     await externalPayment.save()
-    
+
     console.log(JSON.stringify(event, null, 4))
     if (event.type !== 'payment_intent.succeeded') {
       console.log(`Ignoring event ${event.type}`)
       return res.sendStatus(200)
     }
-    
+
     req.body.data = get(event, 'data.object.metadata.encryptedData')
     req.amount = externalPayment.amount
     next()
