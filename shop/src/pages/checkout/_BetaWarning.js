@@ -12,7 +12,7 @@ const BetaWarning = () => {
   return (
     <div className="alert alert-warning beta-warning">
       <b>Note:</b> This site is in Beta and not yet accepting real credit cards
-      or crypto currency. Please use Rinkeby for crypto transactions or click{' '}
+      or cryptocurrency. Please use Rinkeby for crypto transactions or click{' '}
       <a
         href="#test"
         onClick={(e) => {

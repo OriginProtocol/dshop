@@ -63,7 +63,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
           })
         }}
       />
-      Crypto Currency
+      Cryptocurrency
     </label>
   )
 
