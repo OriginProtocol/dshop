@@ -114,7 +114,7 @@ async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
       res.json()
     )
     const ipfsData = await get(config.ipfsGateway, event.ipfsHash, 10000)
-    encryptedHash = ipfsData.encryptedData
+    encryptedHash = get(ipfsData, 'encryptedData')
   } else if (tx.indexOf('0x') === 0) {
     const ListingId = _get(config, `listingId`)
 

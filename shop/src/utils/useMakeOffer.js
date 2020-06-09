@@ -62,11 +62,12 @@ function useMakeOffer({
         )
         .then((tx) => {
           onChange({ disabled: true, buttonText: 'Confirming transaction...' })
-          tx.wait().then(() => {
+          tx.wait(1).then(() => {
             onChange({ tx: tx.hash })
           })
         })
-        .catch(() => {
+        .catch((err) => {
+          console.error(err)
           onChange({ disabled: false, buttonText: initialButtonText })
         })
     }
