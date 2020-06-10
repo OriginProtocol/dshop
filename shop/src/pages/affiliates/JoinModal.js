@@ -47,7 +47,7 @@ const ConnectWallet = ({ setState }) => (
   </div>
 )
 
-const Login = ({
+const Join = ({
   setState,
   dispatch,
   state,
@@ -129,6 +129,7 @@ const Login = ({
               if (!req.ok) {
                 console.error('Affiliate account creation failed')
                 setError('An error occurred. Please try again.')
+                return
               }
               const json = await req.json()
               if (!json.success) {
@@ -185,7 +186,7 @@ const JoinModal = ({ setState, dispatch, state }) => {
       {!hasEthereum ? (
         <NoWeb3 {...{ setShouldClose }} />
       ) : account ? (
-        <Login
+        <Join
           {...{ setState, dispatch, state, config, account, setError, error }}
         />
       ) : (
