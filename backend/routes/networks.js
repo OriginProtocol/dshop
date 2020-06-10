@@ -17,7 +17,8 @@ function pickConfig(body) {
     'deployDir',
     'discordWebhook',
     'gcpCredentials',
-    'defaultShopConfig'
+    'defaultShopConfig',
+    'web3Pk'
   ])
 }
 
