@@ -5,7 +5,8 @@ const {
   SellerShop,
   Network,
   Sequelize,
-  ShopDeployment
+  ShopDeployment,
+  ShopDeploymentNames
 } = require('../models')
 const { authSellerAndShop, authRole, authSuperUser } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
@@ -20,8 +21,9 @@ const formidable = require('formidable')
 const https = require('https')
 const http = require('http')
 
-const { deployShop } = require('../utils/deployShop')
+const { configureShopDNS, deployShop } = require('../utils/deployShop')
 const { DSHOP_CACHE } = require('../utils/const')
+const { isPublicDNSName } = require('../utils/dns')
 
 const downloadProductData = require('../scripts/printful/downloadProductData')
 const downloadPrintfulMockups = require('../scripts/printful/downloadPrintfulMockups')
@@ -395,7 +397,13 @@ module.exports = function (app) {
         shop: shopResponse.shop
       }
       const { hash, domain } = await deployShop(deployOpts)
-      return res.json({ success: true, hash, domain, gateway: network.ipfs })
+      return res.json({
+        success: true,
+        shopId: shopResponse.shop.id,
+        hash,
+        domain,
+        gateway: network.ipfs
+      })
     } catch (e) {
       return res.json({ success: false, reason: e.message })
     }
@@ -508,4 +516,98 @@ module.exports = function (app) {
       .then(() => Shop.destroy({ where: { authToken: req.params.shopId } }))
       .then(() => res.json({ success: true }))
   })
+
+  app.post(
+    '/shops/:shopId/create-deployment',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      // Only used for testing
+      if (process.env.NODE_ENV !== 'test') {
+        return res.status(404).json({ success: false })
+      }
+
+      const shopId = req.shop.id
+      const { ipfsHash, ipfsGateway } = req.body
+
+      let deployment = await ShopDeployment.findOne({
+        where: {
+          shopId: shopId,
+          ipfsHash
+        },
+        order: [['createdAt', 'desc']]
+      })
+
+      if (deployment) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Deployment exists' })
+      }
+
+      deployment = await ShopDeployment.create({
+        shopId: shopId,
+        ipfsGateway,
+        ipfsHash
+      })
+
+      return res.status(200).json({ success: true, deployment })
+    }
+  )
+
+  app.post(
+    '/shops/:shopId/set-names',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const { ipfsHash, hostnames, dnsProvider } = req.body
+
+      if (!ipfsHash || !hostnames || !ipfsHash || !hostnames) {
+        return res.status(400).json({ success: false })
+      }
+
+      const deployment = await ShopDeployment.findOne({
+        where: {
+          shopId: req.shop.id,
+          ipfsHash
+        },
+        order: [['createdAt', 'desc']]
+      })
+
+      if (!deployment) {
+        return res.status(404).json({ success: false })
+      }
+
+      for (const hostname of hostnames) {
+        if (isPublicDNSName(hostname)) {
+          if (!dnsProvider) {
+            return res.status(400).json({
+              success: false,
+              message: 'No DNS provider selected for public DNS name'
+            })
+          }
+
+          const parts = hostname.split('.')
+          const subdomain = parts.shift()
+          const zone = parts.join('.')
+          const network = await Network.findOne({ where: { active: true } })
+          await configureShopDNS({
+            network,
+            subdomain,
+            zone,
+            hash: ipfsHash,
+            dnsProvider
+          })
+        }
+
+        console.log(`Adding ${hostname} association to ${ipfsHash}`)
+        await ShopDeploymentNames.create({
+          ipfsHash,
+          hostname
+        })
+        return res.json({ success: true, ipfsHash, names: hostnames })
+      }
+
+      return res.status(500).json({ success: false })
+    }
+  )
 }

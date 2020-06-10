@@ -34,6 +34,36 @@ function urlToMultiaddr(v) {
   }`
 }
 
+async function configureShopDNS({
+  network,
+  subdomain,
+  zone,
+  hash,
+  dnsProvider
+}) {
+  const networkConfig = getConfig(network.config)
+
+  if (dnsProvider === 'cloudflare' && networkConfig.cloudflareApiKey) {
+    await setCloudflareRecords({
+      ipfsGateway: 'ipfs-prod.ogn.app',
+      zone,
+      subdomain,
+      hash,
+      email: networkConfig.cloudflareEmail,
+      key: networkConfig.cloudflareApiKey
+    })
+  }
+  if (dnsProvider === 'gcp' && networkConfig.gcpCredentials) {
+    await setCloudDNSRecords({
+      ipfsGateway: 'ipfs-prod.ogn.app',
+      zone,
+      subdomain,
+      hash,
+      credentials: networkConfig.gcpCredentials
+    })
+  }
+}
+
 async function deployShop({
   OutputDir,
   dataDir,
@@ -165,25 +195,7 @@ async function deployShop({
   }
 
   const domain = dnsProvider ? `https://${subdomain}.${zone}` : null
-  if (dnsProvider === 'cloudflare' && networkConfig.cloudflareApiKey) {
-    await setCloudflareRecords({
-      ipfsGateway: 'ipfs-prod.ogn.app',
-      zone,
-      subdomain,
-      hash,
-      email: networkConfig.cloudflareEmail,
-      key: networkConfig.cloudflareApiKey
-    })
-  }
-  if (dnsProvider === 'gcp' && networkConfig.gcpCredentials) {
-    await setCloudDNSRecords({
-      ipfsGateway: 'ipfs-prod.ogn.app',
-      zone,
-      subdomain,
-      hash,
-      credentials: networkConfig.gcpCredentials
-    })
-  }
+  await configureShopDNS({ network, subdomain, zone, hash, dnsProvider })
 
   if (hash) {
     // Record the deployment in the DB.
@@ -202,4 +214,4 @@ async function deployShop({
   return { hash, domain }
 }
 
-module.exports = { deployShop }
+module.exports = { configureShopDNS, deployShop }

@@ -53,7 +53,6 @@ module.exports = function (app) {
     if (!req.session.sellerId) {
       return res.json({ success: false, reason: 'not-logged-in' })
     }
-
     const user = await Seller.findOne({ where: { id: req.session.sellerId } })
     if (!user) {
       return res.json({ success: false, reason: 'not-logged-in' })
