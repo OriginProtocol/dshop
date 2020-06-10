@@ -10,6 +10,7 @@ const { upsertEvent, getEventObj } = require('./events')
 const { getConfig } = require('./encryptedConfig')
 const discordWebhook = require('./discordWebhook')
 const { Network, Order, Shop } = require('../models')
+const util = require('ethereumjs-util')
 
 const web3 = new Web3()
 const Marketplace = new web3.eth.Contract(abi)
@@ -188,7 +189,7 @@ async function processDShopEvent({ event, shop }) {
       encryptedIpfsHash: encryptedHash
     }
     if (data.referrer) {
-      orderObj.referrer = data.referrer
+      orderObj.referrer = util.toChecksumAddress(data.referrer)
       orderObj.commissionPending = Math.floor(data.subTotal / 200)
     }
     order = await Order.create(orderObj)
