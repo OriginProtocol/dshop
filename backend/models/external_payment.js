@@ -22,8 +22,8 @@ module.exports = (sequelize, DataTypes) => {
       currency: DataTypes.STRING,
       // Was this a valid transaction from the payment processor
       authenticated: DataTypes.BOOLEAN,
-      payment_intent: DataTypes.STRING,
-      payment_code: DataTypes.STRING,
+      paymentIntent: DataTypes.STRING,
+      paymentCode: DataTypes.STRING,
       type: DataTypes.STRING
     },
     {

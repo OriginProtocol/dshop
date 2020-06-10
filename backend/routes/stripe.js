@@ -44,7 +44,7 @@ module.exports = function (app) {
         shopStr: req.shop.authToken,
         listingId: req.shop.listingId,
         encryptedData: req.body.data,
-        payment_code: randomstring.generate()
+        paymentCode: randomstring.generate()
       }
     })
     console.log('Payment request sent to Stripe')
@@ -96,16 +96,13 @@ module.exports = function (app) {
     // Save parsed data into the external_payment table.
     externalPayment.authenticated = true
     externalPayment.type = get(event, 'type')
-    externalPayment.payment_code = get(
-      event,
-      'data.object.metadata.payment_code'
-    )
+    externalPayment.paymentCode = get(event, 'data.object.metadata.paymentCode')
     externalPayment.amount = get(event, 'data.object.amount')
     externalPayment.currency = get(event, 'data.object.currency')
     externalPayment.fee =
       get(event, 'data.object.fee') ||
       get(event, 'data.object.charges.data[0].fee')
-    externalPayment.payment_intent = get(event, 'type').startsWith(
+    externalPayment.paymentIntent = get(event, 'type').startsWith(
       'payment_intent'
     )
       ? get(event, 'data.object.id')
@@ -124,7 +121,7 @@ module.exports = function (app) {
 
     req.body.data = get(event, 'data.object.metadata.encryptedData')
     req.amount = externalPayment.amount
-    req.paymentCode = externalPayment.payment_code
+    req.paymentCode = externalPayment.paymentCode
     next()
   }
 
