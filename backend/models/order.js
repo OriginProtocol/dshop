@@ -44,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
       // Details about the order: Item bought, Buyer address, phone and email, etc...
       // Note: Postgres supports JSONB while sqlite only supports JSON.
       data: isPostgres ? DataTypes.JSONB : DataTypes.JSON,
-      // Eth address of the referrer.
+      // Checksummed ETH address of the referrer.
       referrer: DataTypes.TEXT,
       // Amount of OGN commission owed to the referrer.
       commissionPending: DataTypes.INTEGER,
