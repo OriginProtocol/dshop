@@ -3,6 +3,7 @@ import get from 'lodash/get'
 import dayjs from 'dayjs'
 
 import Modal from 'components/Modal'
+import useConfig from 'utils/useConfig'
 
 const NoWeb3 = ({ setShouldClose }) => (
   <div className="affiliate-modal">
@@ -46,14 +47,51 @@ const ConnectWallet = ({ setState }) => (
   </div>
 )
 
-const Login = ({ setState, dispatch, account }) => (
+const Login = ({ setState, dispatch, state, config, account, setError, error }) => (
   <div className="affiliate-modal sign-request">
-    <h3>Please sign the request</h3>
+    <h3>Please provide your contact information</h3>
+
+    {!error ? null : (
+      <div className="invalid-feedback" style={{ display: 'block' }}>
+      {error}
+    </div>
+    )}
+
+    <div className="form-group">
+      <input
+        type="text"
+        placeholder="John"
+        value={state.firstName || ''}
+        className="form-control"
+        onChange={(e) => setState({ ...state, firstName: e.target.value })}
+      />
+    </div>
+    <div className="form-group">
+      <input
+        type="text"
+        placeholder="Deer"
+        value={state.lastName || ''}
+        className="form-control"
+        onChange={(e) => setState({ ...state, lastName: e.target.value })}
+      />
+    </div>
+    <div className="form-group">
+      <input
+        autoFocus
+        type="email"
+        placeholder="me@email.com"
+        className="form-control"
+        value={state.email || ''}
+        onChange={(e) => setState({ ...state, email: e.target.value })}
+      />
+    </div>
+
     <div className="description">
       You will be asked to sign a message in order to enable Origin Affiliates.
     </div>
     <button
-      onClick={() => {
+      onClick={() =>
+      {
         const date = dayjs().toISOString()
         const msg = `OGN Affiliate Login ${date}`
         window.ethereum.send(
@@ -63,13 +101,45 @@ const Login = ({ setState, dispatch, account }) => (
             params: [msg, account],
             id: 1
           },
-          (err, res) => {
-            if (res.result) {
+          async (err, res) => {
+            const sig = res.result
+            if (sig) {
+              // Register the affiliate account with the backend.
+              const req = await fetch(`${config.backend}/affiliate/join`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `bearer ${config.backendAuthToken}`
+                },
+                body: JSON.stringify({
+                  msg,
+                  sig,
+                  firstName: state.firstName,
+                  lastName: state.lastName,
+                  email: state.email
+                })
+              })
+              if (!req.ok) {
+                console.error('Affiliate account creation failed')
+                setError('An error occurred. Please try again.')
+              }
+              const json = await req.json()
+              if (!json.success) {
+                const reason = json.reason || 'reason unknown'
+                console.error('Affiliate account creation failed:', reason)
+                setError(reason)
+                return
+              }
+              // Account was created, go to the affiliate dashboard page.
+              setError(null)
               dispatch({
                 type: 'setAffiliate',
                 affiliate: {
                   account,
-                  sig: res.result,
+                  firstName: state.firstName,
+                  lastName: state.lastName,
+                  email: state.email,
+                  sig,
                   msg,
                   toolbar: true
                 }
@@ -80,7 +150,7 @@ const Login = ({ setState, dispatch, account }) => (
         )
       }}
       className="btn btn-primary btn-lg"
-    >
+      >
       Sign and Enable
     </button>
   </div>
@@ -91,6 +161,8 @@ const JoinModal = ({ setState, dispatch, state }) => {
   const selectedAccount = get(window, 'ethereum.selectedAddress')
   const [account, setAccount] = useState(selectedAccount)
   const [shouldClose, setShouldClose] = useState()
+  const [error, setError] = useState('')
+  const { config } = useConfig()
 
   useEffect(() => {
     if (state.account) {
@@ -106,7 +178,7 @@ const JoinModal = ({ setState, dispatch, state }) => {
       {!hasEthereum ? (
         <NoWeb3 {...{ setShouldClose }} />
       ) : account ? (
-        <Login {...{ setState, account, dispatch, state }} />
+        <Login {...{ setState, dispatch, state, config, account, setError, error }} />
       ) : (
         <ConnectWallet {...{ setState }} />
       )}

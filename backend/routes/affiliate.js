@@ -1,10 +1,14 @@
 const { BigQuery } = require('@google-cloud/bigquery')
 const util = require('ethereumjs-util')
 const dayjs = require('dayjs')
+const get = require('lodash/get')
 
 const { authShop } = require('./_auth')
-const { Order } = require('../models')
+const { Affiliate, Order } = require('../models')
 const { getConfig } = require('../utils/encryptedConfig')
+const { apiLogger } = require('../utils/logger')
+
+const log = apiLogger
 
 function authAffiliate(req, res, next) {
   try {
@@ -99,6 +103,57 @@ async function fetchAffiliateProducts({ listingId, credentials, table }) {
 }
 
 module.exports = function (app) {
+  /**
+   * Creates or updates an affiliate account.
+   */
+  app.post('/affiliate/join', authShop, authAffiliate, async (req, res) => {
+    let account = req.affiliate
+    const firstName = get(req, 'body.firstName', '').trim()
+    const lastName = get(req, 'body.lastName', '').trim()
+    const email = get(req, 'body.email', '').trim()
+
+    // Validate and normalize the account to a checksummed address.
+    let validAccount = false
+    try {
+      if (util.isValidAddress(account)) {
+        account = util.toChecksumAddress(account)
+        validAccount = true
+      }
+    } catch (err) { }
+    if (!validAccount) {
+      return res.json({ success: false, reason: `Invalid ETH address ${account}`})
+    }
+
+    // Validate the email.
+    const emailRegex = /^[a-z0-9-._+]+@[a-z0-9-]+(\.[a-z]+)*(\.[a-z]{2,})$/i
+    if (!emailRegex.test(email)) {
+      return res.json({ success: false, reason: `Invalid email address ${email}`})
+    }
+
+    // Validate first/last name.
+    if (!firstName) {
+      return res.json({ success: false, reason: 'First name is empty'})
+    }
+    if (!lastName) {
+      return res.json({ success: false, reason: 'Last name is empty'})
+    }
+
+    // Lookup the account to see if it already exists.
+    const a = await Affiliate.findOne({ where: { account }})
+    if (a) {
+      // This is an update.
+      log.info(`Updating affiliate account ${account}`)
+      if (a.firstName !== firstName || a.lastName !== lastName || a.email !== email) {
+        await a.update({ firstName, lastName, email })
+      }
+    } else {
+      // New affiliate. Create a new row.
+      log.info(`Creating new affiliate account ${account}`)
+      await Affiliate.create({ account, firstName, lastName, email })
+    }
+    res.json({ success: true })
+  })
+
   app.post('/affiliate/login', authShop, authAffiliate, async (req, res) => {
     res.json({ authed: true, account: req.affiliate })
   })

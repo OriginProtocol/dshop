@@ -1,8 +1,11 @@
 import React from 'react'
 
+import useConfig from 'utils/useConfig'
 import JoinModal from './JoinModal'
 
 const AffiliatesLanding = ({ state, setState, account, dispatch }) => {
+  const { config } = useConfig()
+
   return (
     <div className="affiliate-landing">
       {!state.modal ? null : (
@@ -10,27 +13,16 @@ const AffiliatesLanding = ({ state, setState, account, dispatch }) => {
       )}
       <div className="affiliates-header" />
       <h2>
-        Invite anyone to check out the Stay At Home Shop and we’ll give you 1
-        OGN for every $2 they spend!
+        Invite anyone to check out the {config.title} shop and you will earn OGN for every order!
       </h2>
       <div className="description">
-        All you need is a <b>web3 wallet</b> and an{' '}
-        <b>Origin Rewards account</b> to join the Affiliate program and activate
-        your Affiliate toolbar.
+        All you need is a <b>web3 wallet</b> to join the Affiliate program and activate your Affiliate toolbar.
       </div>
       <button
         onClick={() => setState({ modal: true })}
         className="btn btn-dark btn-lg"
         children="Join Origin Affiliates"
       />
-      <a
-        className="btn btn-link"
-        href="https://www.shoporigin.com/#/welcome"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        I don&apos;t have an Origin Rewards account
-      </a>
       <a
         className="btn btn-link mt-2"
         href="https://ethereum.org/wallets/"
