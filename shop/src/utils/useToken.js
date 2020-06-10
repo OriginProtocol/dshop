@@ -1,5 +1,5 @@
 import ethers from 'ethers'
-import { useEffect, useState } from 'react'
+import { useEffect, useReducer } from 'react'
 
 import usePrice from 'utils/usePrice'
 import useOrigin from 'utils/useOrigin'
@@ -12,18 +12,19 @@ const tokenAbi = [
   'function symbol() view returns (string)'
 ]
 
+function reducer(state, newState) {
+  return { ...state, ...newState }
+}
+
 function useToken(activeToken = {}, totalUsd) {
-  const [state, setStateRaw] = useState({
+  const { marketplace, status, provider, signer, signerStatus } = useOrigin()
+  const { exchangeRates } = usePrice()
+  const [state, setState] = useReducer(reducer, {
     shouldRefetchBalance: 0,
     hasBalance: false,
     loading: true,
     hasAllowance: false
   })
-
-  const { marketplace, status, provider, signer } = useOrigin()
-
-  const setState = (newState) => setStateRaw({ ...state, ...newState })
-  const { exchangeRates } = usePrice()
 
   useEffect(() => {
     const exchangeRate = exchangeRates[activeToken.name]
@@ -108,15 +109,15 @@ function useToken(activeToken = {}, totalUsd) {
         loading: false,
         error: 'Active wallet not found'
       })
-    } else if (exchangeRate) {
-      getBalance()
-    } else {
+    } else if (!exchangeRate) {
       setState({
         hasAllowance: false,
         hasBalance: false,
         loading: false,
         error: 'No exchange rate for token'
       })
+    } else {
+      getBalance()
     }
   }, [
     activeToken.name,
@@ -124,7 +125,8 @@ function useToken(activeToken = {}, totalUsd) {
     totalUsd,
     signer,
     status,
-    marketplace
+    marketplace,
+    signerStatus
   ])
 
   return {

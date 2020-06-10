@@ -110,30 +110,35 @@ async function writeProductData({ OutputDir, png }) {
       options.push('Size')
     }
 
-    const variants = syncProduct.sync_variants.map((variant, idx) => {
-      const id = variant.product.variant_id
-      const v = product.variants.find((v) => v.id === id)
-      const options = []
-      if (colors.length > 1) {
-        options.push(v.color)
-      }
-      if (sizes.length > 1) {
-        options.push(v.size)
-      }
-      return {
-        id,
-        externalId: variant.id,
-        title: variant.name,
-        option1: options[0] || null,
-        option2: options[1] || null,
-        option3: null,
-        image: variantImages[idx],
-        available: true,
-        name: variant.name,
-        options,
-        price: Number(variant.retail_price.replace('.', ''))
-      }
-    })
+    const variants = syncProduct.sync_variants
+      .map((variant, idx) => {
+        const id = variant.product.variant_id
+        const v = product.variants.find((v) => v.id === id)
+        if (!v) {
+          return
+        }
+        const options = []
+        if (colors.length > 1) {
+          options.push(v.color)
+        }
+        if (sizes.length > 1) {
+          options.push(v.size)
+        }
+        return {
+          id,
+          externalId: variant.id,
+          title: variant.name,
+          option1: options[0] || null,
+          option2: options[1] || null,
+          option3: null,
+          image: variantImages[idx],
+          available: true,
+          name: variant.name,
+          options,
+          price: Number(variant.retail_price.replace('.', ''))
+        }
+      })
+      .filter((v) => v)
 
     printfulIds[handle] = printfulSyncIds
 

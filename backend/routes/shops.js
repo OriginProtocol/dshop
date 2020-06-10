@@ -19,6 +19,7 @@ const { exec } = require('child_process')
 const formidable = require('formidable')
 const https = require('https')
 const http = require('http')
+const mv = require('mv')
 
 const { deployShop } = require('../utils/deployShop')
 const { DSHOP_CACHE } = require('../utils/const')
@@ -421,7 +422,7 @@ module.exports = function (app) {
 
       const form = formidable({ multiples: true })
 
-      form.parse(req, (err, fields, files) => {
+      form.parse(req, async (err, fields, files) => {
         if (err) {
           next(err)
           return
@@ -429,7 +430,11 @@ module.exports = function (app) {
         const allFiles = Array.isArray(files.file) ? files.file : [files.file]
         try {
           for (const file of allFiles) {
-            fs.renameSync(file.path, `${uploadDir}/${file.name}`)
+            await new Promise((resolve, reject) => {
+              mv(file.path, `${uploadDir}/${file.name}`, (err) => {
+                return err ? reject(err) : resolve()
+              })
+            })
           }
           res.json({ fields, files })
         } catch (e) {

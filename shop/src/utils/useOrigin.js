@@ -11,6 +11,10 @@ const marketplaceAbi = [
   'function acceptOffer(uint listingID, uint offerID, bytes32 ipfsHash) public',
   'function withdrawOffer(uint listingID, uint offerID, bytes32 ipfsHash) public',
   'function finalize(uint listingID, uint offerID, bytes32 ipfsHash) public',
+  'function createListing(bytes32, uint256, address)',
+  'function updateListing(uint256, bytes32, uint256)',
+  'event ListingCreated (address indexed party, uint indexed listingID, bytes32 ipfsHash)',
+  'event ListingUpdated (address indexed party, uint indexed listingID, bytes32 ipfsHash)',
   'event OfferCreated (address indexed party, uint indexed listingID, uint indexed offerID, bytes32 ipfsHash)',
   {
     constant: true,
@@ -66,18 +70,52 @@ const marketplaceAbi = [
     payable: false,
     stateMutability: 'view',
     type: 'function'
+  },
+  {
+    constant: true,
+    inputs: [
+      {
+        name: '',
+        type: 'uint256'
+      }
+    ],
+    name: 'listings',
+    outputs: [
+      {
+        name: 'seller',
+        type: 'address'
+      },
+      {
+        name: 'deposit',
+        type: 'uint256'
+      },
+      {
+        name: 'depositManager',
+        type: 'address'
+      }
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function'
   }
 ]
 
 const marketplaceInterface = new ethers.utils.Interface(marketplaceAbi)
 
 async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
-  if (!marketplace) {
-    return null
-  }
   let encryptedHash, fullOfferId, offer
 
-  if (tx.indexOf('0x') === 0) {
+  if (!marketplace && tx.indexOf('0x') === 0) {
+    console.log(
+      'No marketplace contract found, or wrong network selected. Using backend.'
+    )
+
+    const event = await fetch(`${config.backend}/events/${tx}`).then((res) =>
+      res.json()
+    )
+    const ipfsData = await get(config.ipfsGateway, event.ipfsHash, 10000)
+    encryptedHash = get(ipfsData, 'encryptedData')
+  } else if (tx.indexOf('0x') === 0) {
     const ListingId = _get(config, `listingId`)
 
     const receipt = await provider.getTransactionReceipt(tx)
@@ -124,32 +162,50 @@ async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
 
     return { cart, offer }
   } catch (err) {
+    console.log('Error fetching order', err)
     return null
   }
 }
 
-function useOrigin() {
+function useOrigin({ marketplaceAddress, targetNetworkId } = {}) {
+  const [loading, setLoading] = useState(true)
   const [marketplace, setMarketplace] = useState()
   const { config } = useConfig()
-  const { status, provider, signer } = useWallet()
+  const { status, provider, signer, netId } = useWallet()
+
+  targetNetworkId = targetNetworkId
+    ? String(targetNetworkId)
+    : String(config.netId)
+  marketplaceAddress = marketplaceAddress
+    ? marketplaceAddress
+    : config.contracts.Marketplace_V01
 
   useEffect(() => {
-    if (status !== 'enabled') return
+    if (status === 'loading') return
+    if (status !== 'enabled' || netId !== targetNetworkId) {
+      setLoading(false)
+      return
+    }
     const marketplace = new ethers.Contract(
-      config.contracts.Marketplace_V01,
+      marketplaceAddress,
       marketplaceAbi,
       signer || provider
     )
     setMarketplace(marketplace)
+    setLoading(false)
   }, [status])
-
-  if (status !== 'enabled') return {}
 
   function getOffer({ tx, password }) {
     return getOfferFromTx({ tx, password, config, provider, marketplace })
   }
 
-  return { status, provider, signer, marketplace, getOffer }
+  return {
+    status: loading ? 'loading' : status,
+    provider,
+    signer,
+    marketplace,
+    getOffer
+  }
 }
 
 export default useOrigin

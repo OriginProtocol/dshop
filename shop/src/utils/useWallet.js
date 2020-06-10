@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useReducer } from 'react'
 import ethers from 'ethers'
 import get from 'lodash/get'
+
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 
-function useWallet({ needSigner = false } = {}) {
-  const [{ admin }] = useStateValue()
+function reducer(state, newState) {
+  return { ...state, ...newState }
+}
+
+function useWallet() {
+  const [{ admin, reload }, dispatch] = useStateValue()
   const { config } = useConfig()
-  const [state, setStateRaw] = useState({ status: 'loading' })
-  const setState = (newState) => setStateRaw({ ...state, ...newState })
+  const [state, setState] = useReducer(reducer, { status: 'loading' })
 
   const providerUrl = get(admin, 'network.provider', config.provider)
   useEffect(() => {
@@ -17,69 +21,93 @@ function useWallet({ needSigner = false } = {}) {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()
       const mm = get(window, 'ethereum._metamask', {})
-      if (mm.isEnabled) {
-        Promise.all([mm.isEnabled(), mm.isUnlocked(), mm.isApproved()]).then(
-          ([isEnabled, isUnlocked, isApproved]) => {
-            const enabled = isEnabled && isUnlocked && isApproved
-            const status = enabled ? 'enabled' : 'disabled'
-            setState({ provider, signer, status })
-          }
-        )
-      } else {
-        setState({ provider, signer, status: 'enabled' })
-      }
-    } else if (providerUrl && !needSigner) {
+      provider.send('net_version').then((netId) => {
+        if (mm.isEnabled) {
+          Promise.all([mm.isEnabled(), mm.isUnlocked(), mm.isApproved()]).then(
+            ([isEnabled, isUnlocked, isApproved]) => {
+              const enabled = isEnabled && isUnlocked && isApproved
+              const signerStatus = enabled ? 'enabled' : 'disabled'
+              setState({
+                provider,
+                signer: enabled ? signer : null,
+                status: 'enabled',
+                signerStatus,
+                netId
+              })
+            }
+          )
+        } else {
+          setState({
+            provider,
+            signer,
+            status: 'enabled',
+            signerStatus: 'enabled',
+            netId
+          })
+        }
+      })
+    } else if (providerUrl) {
       // Fall back to provider specified by Network
       const provider = new ethers.providers.JsonRpcProvider(providerUrl)
       const signer = provider.getSigner()
-      setState({ provider, signer, status: 'enabled' })
+      provider.send('net_version').then((netId) =>
+        setState({
+          provider,
+          signer,
+          status: 'enabled',
+          signerStatus: 'disabled',
+          netId
+        })
+      )
     } else {
       setState({ status: 'no-web3' })
     }
-  }, [providerUrl, state.status])
+  }, [providerUrl, reload.provider])
 
   useEffect(() => {
-    if (state.provider && !state.netId) {
-      state.provider.send('net_version').then((netId) => setState({ netId }))
+    if (state.status !== 'enabled' || state.signerStatus !== 'enabled') {
+      return
     }
 
-    const onNetChanged = (netId) => {
-      setState({ status: 'loading' })
-      setState({ netId, status: 'enabled' })
-    }
-    const onAccountsChanged = (accounts) => {
-      setState({ status: 'loading' })
-      const signer = state.provider.getSigner(accounts[0])
-      setState({ signer, status: 'enabled' })
-    }
+    const onReload = () => dispatch({ type: 'reload', target: 'provider' })
 
     if (get(window, 'ethereum.on')) {
-      window.ethereum.on('networkChanged', onNetChanged)
-      window.ethereum.on('accountsChanged', onAccountsChanged)
+      window.ethereum.on('networkChanged', onReload)
+      window.ethereum.on('accountsChanged', onReload)
     }
     return function cleanup() {
       if (get(window, 'ethereum.on')) {
-        window.ethereum.off('networkChanged', onNetChanged)
-        window.ethereum.off('accountsChanged', onAccountsChanged)
+        window.ethereum.off('networkChanged', onReload)
+        window.ethereum.off('accountsChanged', onReload)
       }
     }
   })
 
   function enable() {
-    if (!window.ethereum) {
-      return
-    }
-
-    window.ethereum.enable().then((enabled) => {
-      if (enabled) {
-        setState({ status: 'enabled' })
-      } else {
-        setState({ status: 'disabled' })
+    return new Promise((resolve) => {
+      if (!window.ethereum) {
+        return resolve(false)
       }
+
+      window.ethereum.enable().then((enabled) => {
+        if (enabled) {
+          // Short timeout to let MetaMask catch up
+          setTimeout(function () {
+            dispatch({ type: 'reload', target: 'provider' })
+            resolve(true)
+          }, 100)
+        } else {
+          resolve(false)
+        }
+      })
     })
   }
 
-  return { enable, ...state, networkOk: config.netId === state.netId, needSigner }
+  return {
+    enable,
+    ...state,
+    networkOk: String(config.netId) === String(state.netId)
+  }
 }
 
 export default useWallet

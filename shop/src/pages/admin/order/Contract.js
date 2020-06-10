@@ -19,6 +19,7 @@ function status(id) {
 const AdminContract = () => {
   const { config } = useConfig()
   const [offer, setOffer] = useState()
+  const [listing, setListing] = useState()
   const { marketplace } = useOrigin()
   const match = useRouteMatch('/admin/orders/:orderId')
   const { orderId } = match.params
@@ -47,6 +48,13 @@ const AdminContract = () => {
         token: config.acceptedTokens.find(
           (t) => t.address.toLowerCase() === offer.currency.toLowerCase()
         )
+      })
+    })
+    marketplace.listings(splitOrder[2]).then((listing) => {
+      setListing({
+        seller: listing.seller,
+        deposit: ethers.utils.formatUnits(listing.deposit, 'ether'),
+        depositManager: listing.depositManager
       })
     })
   }, [marketplace])
@@ -96,6 +104,8 @@ const AdminContract = () => {
         </div>
         <div>Buyer</div>
         <div>{offer.buyer}</div>
+        <div>Seller</div>
+        <div>{listing ? listing.seller : ''}</div>
         <div>Arbitrator</div>
         <div>{offer.arbitrator}</div>
         <div>Affiliate</div>

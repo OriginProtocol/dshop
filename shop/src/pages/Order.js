@@ -103,7 +103,7 @@ const OrderDetails = ({ cart }) => {
 
 const Order = () => {
   const { config } = useConfig()
-  const { getOffer } = useOrigin()
+  const { getOffer, status } = useOrigin()
   const [cart, setCart] = useState()
   const [error, setError] = useState()
   const [loading, setLoading] = useState()
@@ -125,11 +125,11 @@ const Order = () => {
       }
       setLoading(false)
     }
-    if (getOffer && !cart && !loading) {
+    if (getOffer && !cart && !loading && status !== 'loading') {
       setLoading(true)
       go()
     }
-  }, [match.params.tx, opts.auth, getOffer, status])
+  }, [match.params.tx, opts.auth, status])
 
   useEffect(() => {
     if (!window.orderCss) {
@@ -139,11 +139,9 @@ const Order = () => {
     }
   }, [])
 
-  if (!cart || loading) {
+  if (loading || status === 'loading') {
     return <div className="loading-fullpage">Loading</div>
-  }
-  if (error) {
-    console.error(error)
+  } else if (error) {
     return (
       <div className="checkout">
         <h3 className="d-md-none my-4 ml-4">{config.title}</h3>

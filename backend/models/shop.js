@@ -35,7 +35,10 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'cascade'
     })
     Shop.hasMany(models.Discount, { as: 'discounts', onDelete: 'cascade' })
-    Shop.hasMany(models.ShopDeployment, { as: 'shop_deployments', onDelete: 'cascade' })
+    Shop.hasMany(models.ShopDeployment, {
+      as: 'shop_deployments',
+      onDelete: 'cascade'
+    })
   }
 
   return Shop

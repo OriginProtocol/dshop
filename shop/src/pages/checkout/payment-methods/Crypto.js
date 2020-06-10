@@ -63,7 +63,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
           })
         }}
       />
-      Crypto Currency
+      Cryptocurrency
     </label>
   )
 
@@ -76,7 +76,10 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
         <div className="mt-2">Loading Wallet Status...</div>
       </>
     )
-  } else if (wallet.status === 'disabled') {
+  } else if (
+    wallet.status === 'disabled' ||
+    wallet.signerStatus === 'disabled'
+  ) {
     return (
       <>
         {label}
@@ -161,7 +164,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
                     .then((tx) => {
                       setUnlockTx(true)
                       setApproveUnlockTx(false)
-                      return tx.wait()
+                      return tx.wait(1)
                     })
                     .then(() => {
                       token.refetchBalance()
