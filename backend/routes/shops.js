@@ -297,22 +297,32 @@ module.exports = function (app) {
     const publicUrl = isLocal ? backend : `https://${subdomain}.${zone}`
     const dataUrl = `${publicUrl}/${req.body.dataDir}/`
 
+    let defaultShopConfig = {}
+    if (networkConfig.defaultShopConfig) {
+      try {
+        defaultShopConfig = JSON.parse(networkConfig.defaultShopConfig)
+      } catch (e) {
+        console.log('Error parsing default shop config')
+      }
+    }
+    const config = {
+      ...defaultShopConfig,
+      dataUrl,
+      publicUrl,
+      printful: req.body.printfulApi,
+      pgpPublicKey: req.body.pgpPublicKey,
+      pgpPrivateKey: req.body.pgpPrivateKey,
+      pgpPrivateKeyPass: req.body.pgpPrivateKeyPass
+    }
+    if (req.body.web3Pk && !config.web3Pk) {
+      config.web3Pk = req.body.web3Pk
+    }
     const shopResponse = await createShop({
       sellerId: req.session.sellerId,
       listingId: req.body.listingId,
       name,
       authToken: req.body.dataDir,
-      config: setConfig({
-        dataUrl,
-        publicUrl,
-        printful: req.body.printfulApi,
-        stripeBackend: '',
-        stripeWebhookSecret: '',
-        pgpPublicKey: req.body.pgpPublicKey,
-        pgpPrivateKey: req.body.pgpPrivateKey,
-        pgpPrivateKeyPass: req.body.pgpPrivateKeyPass,
-        web3Pk: req.body.web3Pk
-      })
+      config: setConfig(config)
     })
 
     if (!shopResponse.shop) {

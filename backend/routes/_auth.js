@@ -19,7 +19,7 @@ async function checkPassword(password, passwordHash) {
 
 function authRole(role) {
   return function (req, res, next) {
-    if (req.sellerShop.role !== role) {
+    if (!req.seller.superuser && get(req, 'sellerShop.role') !== role) {
       return res.json({ success: false, error: 'Unauthorized' })
     }
     next()
@@ -32,24 +32,40 @@ async function authSellerAndShop(req, res, next) {
     return res.status(401).json({ success: false, message: 'Not logged in' })
   }
 
-  req.sellerId = sellerId
-
   const authToken = String(req.headers.authorization).split(' ')[1]
   if (!authToken) {
     return res.status(401).json({ success: false, message: 'No auth token' })
   }
 
-  const include = { model: Seller, where: { id: sellerId } }
-  Shop.findOne({ where: { authToken }, include }).then((shop) => {
-    if (!shop) {
-      return res.status(401).json({ success: false, message: 'Unauthorized' })
-    }
+  req.sellerId = sellerId
+  req.seller = await Seller.findOne({ where: { id: sellerId } })
+  if (!req.seller) {
+    return res.status(401).json({ success: false, message: 'No such user' })
+  }
 
-    req.shop = shop
-    req.sellerShop = get(shop, 'Sellers[0].SellerShop.dataValues')
+  if (req.seller.superuser) {
+    Shop.findOne({ where: { authToken } }).then((shop) => {
+      if (!shop) {
+        return res.status(401).json({ success: false, message: 'No such shop' })
+      }
 
-    next()
-  })
+      req.shop = shop
+
+      next()
+    })
+  } else {
+    const include = { model: Seller, where: { id: sellerId } }
+    Shop.findOne({ where: { authToken }, include }).then((shop) => {
+      if (!shop) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' })
+      }
+
+      req.shop = shop
+      req.sellerShop = get(shop, 'Sellers[0].SellerShop.dataValues')
+
+      next()
+    })
+  }
 }
 
 async function authSuperUser(req, res, next) {
