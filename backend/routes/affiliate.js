@@ -119,7 +119,9 @@ module.exports = function (app) {
         account = util.toChecksumAddress(account)
         validAccount = true
       }
-    } catch (err) {}
+    } catch {
+      // eslint-disable-next-line
+    }
     if (!validAccount) {
       return res.json({
         success: false,
