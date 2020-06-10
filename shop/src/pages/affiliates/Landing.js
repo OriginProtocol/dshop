@@ -13,10 +13,12 @@ const AffiliatesLanding = ({ state, setState, account, dispatch }) => {
       )}
       <div className="affiliates-header" />
       <h2>
-        Invite anyone to check out the {config.title} shop and you will earn OGN for every order!
+        Invite anyone to check out the {config.title} shop and you will earn OGN
+        for every order!
       </h2>
       <div className="description">
-        All you need is a <b>web3 wallet</b> to join the Affiliate program and activate your Affiliate toolbar.
+        All you need is a <b>web3 wallet</b> to join the Affiliate program and
+        activate your Affiliate toolbar.
       </div>
       <button
         onClick={() => setState({ modal: true })}

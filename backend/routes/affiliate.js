@@ -119,31 +119,41 @@ module.exports = function (app) {
         account = util.toChecksumAddress(account)
         validAccount = true
       }
-    } catch (err) { }
+    } catch (err) {}
     if (!validAccount) {
-      return res.json({ success: false, reason: `Invalid ETH address ${account}`})
+      return res.json({
+        success: false,
+        reason: `Invalid ETH address ${account}`
+      })
     }
 
     // Validate the email.
     const emailRegex = /^[a-z0-9-._+]+@[a-z0-9-]+(\.[a-z]+)*(\.[a-z]{2,})$/i
     if (!emailRegex.test(email)) {
-      return res.json({ success: false, reason: `Invalid email address ${email}`})
+      return res.json({
+        success: false,
+        reason: `Invalid email address ${email}`
+      })
     }
 
     // Validate first/last name.
     if (!firstName) {
-      return res.json({ success: false, reason: 'First name is empty'})
+      return res.json({ success: false, reason: 'First name is empty' })
     }
     if (!lastName) {
-      return res.json({ success: false, reason: 'Last name is empty'})
+      return res.json({ success: false, reason: 'Last name is empty' })
     }
 
     // Lookup the account to see if it already exists.
-    const a = await Affiliate.findOne({ where: { account }})
+    const a = await Affiliate.findOne({ where: { account } })
     if (a) {
       // This is an update.
       log.info(`Updating affiliate account ${account}`)
-      if (a.firstName !== firstName || a.lastName !== lastName || a.email !== email) {
+      if (
+        a.firstName !== firstName ||
+        a.lastName !== lastName ||
+        a.email !== email
+      ) {
         await a.update({ firstName, lastName, email })
       }
     } else {

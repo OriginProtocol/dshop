@@ -47,14 +47,22 @@ const ConnectWallet = ({ setState }) => (
   </div>
 )
 
-const Login = ({ setState, dispatch, state, config, account, setError, error }) => (
+const Login = ({
+  setState,
+  dispatch,
+  state,
+  config,
+  account,
+  setError,
+  error
+}) => (
   <div className="affiliate-modal sign-request">
     <h3>Please provide your contact information</h3>
 
     {!error ? null : (
       <div className="invalid-feedback" style={{ display: 'block' }}>
-      {error}
-    </div>
+        {error}
+      </div>
     )}
 
     <div className="form-group">
@@ -90,8 +98,7 @@ const Login = ({ setState, dispatch, state, config, account, setError, error }) 
       You will be asked to sign a message in order to enable Origin Affiliates.
     </div>
     <button
-      onClick={() =>
-      {
+      onClick={() => {
         const date = dayjs().toISOString()
         const msg = `OGN Affiliate Login ${date}`
         window.ethereum.send(
@@ -150,7 +157,7 @@ const Login = ({ setState, dispatch, state, config, account, setError, error }) 
         )
       }}
       className="btn btn-primary btn-lg"
-      >
+    >
       Sign and Enable
     </button>
   </div>
@@ -178,7 +185,9 @@ const JoinModal = ({ setState, dispatch, state }) => {
       {!hasEthereum ? (
         <NoWeb3 {...{ setShouldClose }} />
       ) : account ? (
-        <Login {...{ setState, dispatch, state, config, account, setError, error }} />
+        <Login
+          {...{ setState, dispatch, state, config, account, setError, error }}
+        />
       ) : (
         <ConnectWallet {...{ setState }} />
       )}
