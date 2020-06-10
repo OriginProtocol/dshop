@@ -25,7 +25,8 @@ module.exports = function (app) {
         cloudflareApiKey: req.body.cloudflareApiKey,
         gcpCredentials: req.body.gcpCredentials,
         domain: req.body.domain,
-        deployDir: req.body.deployDir
+        deployDir: req.body.deployDir,
+        web3Pk: req.body.web3Pk
       })
     }
 
@@ -72,7 +73,8 @@ module.exports = function (app) {
       'cloudflareApiKey',
       'domain',
       'deployDir',
-      'discordWebhook'
+      'discordWebhook',
+      'web3Pk'
     ])
 
     const result = await Network.update(
