@@ -5,6 +5,23 @@ const startListener = require('../listener')
 const omit = require('lodash/omit')
 const pick = require('lodash/pick')
 
+function pickConfig(body) {
+  return pick(body, [
+    'pinataKey',
+    'pinataSecret',
+    'ipfsClusterUser',
+    'ipfsClusterPassword',
+    'cloudflareEmail',
+    'cloudflareApiKey',
+    'domain',
+    'deployDir',
+    'discordWebhook',
+    'gcpCredentials',
+    'defaultShopConfig',
+    'web3Pk'
+  ])
+}
+
 module.exports = function (app) {
   app.post('/networks', authSuperUser, async (req, res) => {
     const networkObj = {
@@ -16,17 +33,7 @@ module.exports = function (app) {
       marketplaceContract: req.body.marketplaceContract,
       marketplaceVersion: req.body.marketplaceVersion,
       active: req.body.active ? true : false,
-      config: setConfig({
-        pinataKey: req.body.pinataKey,
-        pinataSecret: req.body.pinataSecret,
-        ipfsClusterUser: req.body.ipfsClusterUser,
-        ipfsClusterPassword: req.body.ipfsClusterPassword,
-        cloudflareEmail: req.body.cloudflareEmail,
-        cloudflareApiKey: req.body.cloudflareApiKey,
-        gcpCredentials: req.body.gcpCredentials,
-        domain: req.body.domain,
-        deployDir: req.body.deployDir
-      })
+      config: setConfig(pickConfig(req.body))
     }
 
     const existing = await Network.findOne({
@@ -63,18 +70,7 @@ module.exports = function (app) {
       return res.json({ success: false, reason: 'no-network' })
     }
 
-    const config = pick(req.body, [
-      'pinataKey',
-      'pinataSecret',
-      'ipfsClusterUser',
-      'ipfsClusterPassword',
-      'cloudflareEmail',
-      'cloudflareApiKey',
-      'domain',
-      'deployDir',
-      'discordWebhook'
-    ])
-
+    const config = pickConfig(req.body)
     const result = await Network.update(
       {
         config: setConfig(config, network.dataValues.config),

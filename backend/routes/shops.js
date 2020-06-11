@@ -20,6 +20,7 @@ const { exec } = require('child_process')
 const formidable = require('formidable')
 const https = require('https')
 const http = require('http')
+const mv = require('mv')
 
 const { configureShopDNS, deployShop } = require('../utils/deployShop')
 const { DSHOP_CACHE } = require('../utils/const')
@@ -298,22 +299,32 @@ module.exports = function (app) {
     const publicUrl = isLocal ? backend : `https://${subdomain}.${zone}`
     const dataUrl = `${publicUrl}/${req.body.dataDir}/`
 
+    let defaultShopConfig = {}
+    if (networkConfig.defaultShopConfig) {
+      try {
+        defaultShopConfig = JSON.parse(networkConfig.defaultShopConfig)
+      } catch (e) {
+        console.log('Error parsing default shop config')
+      }
+    }
+    const config = {
+      ...defaultShopConfig,
+      dataUrl,
+      publicUrl,
+      printful: req.body.printfulApi,
+      pgpPublicKey: req.body.pgpPublicKey,
+      pgpPrivateKey: req.body.pgpPrivateKey,
+      pgpPrivateKeyPass: req.body.pgpPrivateKeyPass
+    }
+    if (req.body.web3Pk && !config.web3Pk) {
+      config.web3Pk = req.body.web3Pk
+    }
     const shopResponse = await createShop({
       sellerId: req.session.sellerId,
       listingId: req.body.listingId,
       name,
       authToken: req.body.dataDir,
-      config: setConfig({
-        dataUrl,
-        publicUrl,
-        printful: req.body.printfulApi,
-        stripeBackend: '',
-        stripeWebhookSecret: '',
-        pgpPublicKey: req.body.pgpPublicKey,
-        pgpPrivateKey: req.body.pgpPrivateKey,
-        pgpPrivateKeyPass: req.body.pgpPrivateKeyPass,
-        web3Pk: req.body.web3Pk
-      })
+      config: setConfig(config)
     })
 
     if (!shopResponse.shop) {
@@ -429,7 +440,7 @@ module.exports = function (app) {
 
       const form = formidable({ multiples: true })
 
-      form.parse(req, (err, fields, files) => {
+      form.parse(req, async (err, fields, files) => {
         if (err) {
           next(err)
           return
@@ -437,7 +448,11 @@ module.exports = function (app) {
         const allFiles = Array.isArray(files.file) ? files.file : [files.file]
         try {
           for (const file of allFiles) {
-            fs.renameSync(file.path, `${uploadDir}/${file.name}`)
+            await new Promise((resolve, reject) => {
+              mv(file.path, `${uploadDir}/${file.name}`, (err) => {
+                return err ? reject(err) : resolve()
+              })
+            })
           }
           res.json({ fields, files })
         } catch (e) {

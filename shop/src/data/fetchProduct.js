@@ -9,4 +9,4 @@ async function fetchProduct(dataSrc, id) {
   }
 }
 
-export default memoize(fetchProduct)
+export default memoize(fetchProduct, (...args) => args.join('-'))

@@ -45,7 +45,7 @@ module.exports = function (app) {
       })
     }
 
-    const fields = pick(req.body, 'name', 'email')
+    const fields = pick(req.body, 'name', 'email', 'superuser')
     const passwordPlain = req.body.password
     if (passwordPlain) {
       const salt = await createSalt()

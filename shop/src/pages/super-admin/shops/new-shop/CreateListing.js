@@ -1,38 +1,37 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import useWallet from 'utils/useWallet'
+import useOrigin from 'utils/useOrigin'
 import { createListing } from 'utils/listing'
 
 const CreateListing = ({ className, children, onCreated, onError }) => {
   const { config } = useConfig()
   const [{ admin }] = useStateValue()
-  const { netId, provider, status, enable } = useWallet()
-
-  const activeNetId = String(get(admin, 'network.networkId'))
-  useEffect(() => {
-    if (netId === activeNetId) {
-      onError()
-    }
-  }, [netId, activeNetId])
+  const { marketplace } = useOrigin({
+    marketplaceAddress: get(admin, 'network.marketplaceContract'),
+    targetNetworkId: get(admin, 'network.networkId')
+  })
+  const { status, signerStatus, signer, ...wallet } = useWallet()
+  const isDisabled = status === 'disabled' || signerStatus === 'disabled'
+  const activeNetworkId = get(admin, 'network.networkId', '').toString()
 
   return (
     <button
       type="button"
       className={className}
-      onClick={(e) => {
+      onClick={async (e) => {
         e.preventDefault()
-        if (status === 'disabled') {
-          enable()
+        if (isDisabled) {
+          await wallet.enable()
+        }
+        if (wallet.netId !== activeNetworkId) {
+          onError(`Set network to ${activeNetworkId}`)
           return
         }
-        if (netId !== activeNetId) {
-          onError(`Set network to ${activeNetId}`)
-          return
-        }
-        createListing({ config, network: admin.network, provider })
+        createListing({ marketplace, config, network: admin.network, signer })
           .then(onCreated)
           .catch((err) => onError(err.message))
       }}

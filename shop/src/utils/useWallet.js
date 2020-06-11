@@ -84,17 +84,22 @@ function useWallet() {
   })
 
   function enable() {
-    if (!window.ethereum) {
-      return
-    }
-
-    window.ethereum.enable().then((enabled) => {
-      if (enabled) {
-        // Short timeout to let MetaMask catch up
-        setTimeout(function () {
-          dispatch({ type: 'reload', target: 'provider' })
-        }, 100)
+    return new Promise((resolve) => {
+      if (!window.ethereum) {
+        return resolve(false)
       }
+
+      window.ethereum.enable().then((enabled) => {
+        if (enabled) {
+          // Short timeout to let MetaMask catch up
+          setTimeout(function () {
+            dispatch({ type: 'reload', target: 'provider' })
+            resolve(true)
+          }, 100)
+        } else {
+          resolve(false)
+        }
+      })
     })
   }
 

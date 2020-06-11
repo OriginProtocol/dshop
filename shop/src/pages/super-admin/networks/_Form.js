@@ -33,6 +33,32 @@ const Defaults = {
   }
 }
 
+const defaultShopConfig = JSON.stringify(
+  {
+    web3Pk: '',
+    stripeBackend: '',
+    stripeWebhookSecret: '',
+    email: 'disabled',
+    sendgridApiKey: '',
+    sendgridUsername: '',
+    sendgridPassword: '',
+    mailgunSmtpServer: '',
+    mailgunSmtpPort: '',
+    mailgunSmtpLogin: '',
+    mailgunSmtpPassword: '',
+    awsRegion: '',
+    awsAccessKey: '',
+    awsAccessSecret: '',
+    upholdApi: '',
+    upholdClient: '',
+    upholdSecret: '',
+    bigQueryCredentials: '',
+    bigQueryTable: ''
+  },
+  null,
+  2
+)
+
 function initialState() {
   const networkId = window.location.href.indexOf('https') === 0 ? '1' : '999'
   return {
@@ -47,6 +73,7 @@ function initialState() {
     cloudflareEmail: '',
     cloudflareApiKey: '',
     gcpCredentials: '',
+    defaultShopConfig,
     ipfs: '',
     ipfsApi: '',
     marketplaceContract: '',
@@ -85,6 +112,9 @@ function validate(state) {
 
 const NetworkForm = ({ onSave, network, feedback }) => {
   const [advanced, setAdvanced] = useState(false)
+  if (network && !network.defaultShopConfig) {
+    network.defaultShopConfig = defaultShopConfig
+  }
   const [state, setState] = useSetState(network || initialState())
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
@@ -241,6 +271,13 @@ const NetworkForm = ({ onSave, network, feedback }) => {
       </div>
       {!advanced ? null : (
         <>
+          <div className="form-row">
+            <div className="form-group col-md-12">
+              <label>Default Shop Config</label>
+              <textarea {...input('defaultShopConfig')}></textarea>
+              {Feedback('defaultShopConfig')}
+            </div>
+          </div>
           <div className="form-row">
             <div className="form-group col-md-6">
               <label>Marketplace Contract</label>

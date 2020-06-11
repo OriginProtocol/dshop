@@ -34,10 +34,14 @@ module.exports = function (app) {
       }))
 
       Seller.findOne({ where: { id } }).then((seller) => {
+        let role = req.sellerShop ? req.sellerShop.role : ''
+        if (seller.superuser) {
+          role = 'admin'
+        }
         res.json({
           success: true,
           email: seller.email,
-          role: req.sellerShop ? req.sellerShop.role : '',
+          role,
           shops
         })
       })
