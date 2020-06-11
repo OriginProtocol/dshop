@@ -275,7 +275,7 @@ async function processEvents(listingIdFull, doIt) {
 }
 
 async function run(listingId, doIt) {
-  //await fetchEvents(listingId, doIt)
+  await fetchEvents(listingId, doIt)
   await processEvents(listingId, doIt)
 }
 
