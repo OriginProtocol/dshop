@@ -48,7 +48,9 @@ const { storeEvents, getEventObj } = require('../utils/events')
 const { processDShopEvent } = require('../utils/handleLog')
 
 const limiter = new Bottleneck({ maxConcurrent: 10 })
-const batchSize = 5000
+
+// Note: Alchemy max allowed block size is 1k
+const batchSize = 1000
 
 async function getLogs({ provider, listingId, address, fromBlock, toBlock }) {
   const listingTopic = web3.utils.padLeft(web3.utils.numberToHex(listingId), 64)
