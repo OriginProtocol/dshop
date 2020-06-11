@@ -10,13 +10,16 @@ const prime = require('./primeIpfs')
 const setCloudflareRecords = require('./dns/cloudflare')
 const setCloudDNSRecords = require('./dns/clouddns')
 
+const LOCAL_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+
 /**
  * Convert an HTTP URL into a multiaddr
  */
-function urlToMultiaddr(v) {
+function urlToMultiaddr(v, opts) {
+  const { translateLocalhostPort = null } = opts
   const url = new URL(v)
   // TODO: ipv6?
-  const addrProto = url.host.match(/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/)
+  const addrProto = url.hostname.match(/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/)
     ? 'ip4'
     : 'dns4'
   let port = url.port
@@ -28,10 +31,15 @@ function urlToMultiaddr(v) {
     } else {
       throw new Error(`Unsupoorted protocol ${url.protocol}!`)
     }
+  } else {
+    if (translateLocalhostPort && LOCAL_HOSTS.includes(url.hostname)) {
+      port = translateLocalhostPort
+    }
   }
-  return `/${addrProto}/${url.host}/tcp/${port}/${url.protocol.slice(0, -1)}${
-    url.pathname
-  }`
+  return `/${addrProto}/${url.hostname}/tcp/${port}/${url.protocol.slice(
+    0,
+    -1
+  )}${url.pathname}`
 }
 
 async function configureShopDNS({
@@ -130,7 +138,9 @@ async function deployShop({
 
   const ipfsDeployCredentials = {}
   if (network.ipfsApi && networkConfig.ipfsClusterPassword) {
-    const maddr = urlToMultiaddr(network.ipfsApi)
+    const maddr = urlToMultiaddr(network.ipfsApi, {
+      translateLocalhostPort: 9094
+    })
     console.log(`Connecting to cluster ${maddr}`)
     ipfsDeployCredentials['ipfsCluster'] = {
       host: maddr,
