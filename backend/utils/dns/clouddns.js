@@ -147,7 +147,7 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
     records.length > 0 &&
     records[0].some((rec) => rec.name === fqSubdomain)
   ) {
-    console.warning(`${fqSubdomain} already exists`)
+    console.warn(`${fqSubdomain} already exists`)
     return
   }
 

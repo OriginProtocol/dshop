@@ -8,6 +8,7 @@ import Bars from 'components/icons/Bars.js'
 import Link from 'components/Link'
 
 import Nav from './_Nav'
+import Notice from './_Notice'
 import Categories from './_Categories'
 import MobileMenu from './_MobileMenu'
 import Products from './Products'
@@ -83,6 +84,7 @@ const Main = () => {
   if (isMobile) {
     return (
       <>
+        <Notice />
         <div className="container">
           <header>
             <Link to="/" onClick={() => setMenu(false)}>
@@ -106,6 +108,7 @@ const Main = () => {
   }
   return (
     <>
+      <Notice />
       <Nav />
       <div className="container">
         <header>
