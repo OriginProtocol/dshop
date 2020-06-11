@@ -1,10 +1,12 @@
 /**
- * A tool for re-reprocessing a shop's order data in the database.
+ * A tool for re-reprocessing a shop's blockchain events.
  *
  * It fetches events from the marketplace contract that are related to
- * the listings associated with the shop. The events data are written to the DB.
- * If the event is for an Offer, it gets processed and data is written
- * in the orders DB table.
+ * the listings associated with the shop.
+ *  - All events are persisted in the events table in the DB
+ *  - In addition, processing is done depending on the event type. Currently
+ *  only "Offer" events are handled and other event types are skipped
+ *  but this may change in the future.
  *
  * Depending on the value of the field "lastBlock" on the row associated with
  * the shop in the table "shops" in the DB, the tool does either a full or partial backfill:
