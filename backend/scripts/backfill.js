@@ -1,3 +1,27 @@
+/**
+ * A tool for re-reprocessing a shop's order data in the database.
+ *
+ * It fetches events from the marketplace contract that are related to
+ * the listings associated with the shop. The events data are written to the DB.
+ * If the event is for an Offer, it gets processed and data is written
+ * in the orders DB table.
+ *
+ * Depending on the value of the field "lastBlock" on the row associated with
+ * the shop in the table "shops" in the DB, the tool does either a full or partial backfill:
+ *  - full backfill if "lastBlock" is empty.
+ *  - partial backfill starting at block number "startBlock" + 1 if "startBlock" is populated.
+ *
+ * Note: when processing an order, the tool does NOT send any email or discord
+ * messages in order to avoid sending duplicates in case those had already been sent.
+ *
+ * Usage example:
+ *  - Dry run mode (does not persist to the DB):
+ *    #> node backfill.js --listingId 1-001-81 --doIt
+ *
+ *  - Run for real (persists data in the events and order DB tables):
+ *    #> node backfill.js --listingId 1-001-81
+ */
+
 require('dotenv').config()
 const program = require('commander')
 
@@ -17,10 +41,6 @@ const { processDShopEvent } = require('../utils/handleLog')
 
 const limiter = new Bottleneck({ maxConcurrent: 10 })
 const batchSize = 5000
-
-program.requiredOption('-l, --listing <listingId>', 'Listing ID')
-
-program.parse(process.argv)
 
 async function getLogs({ provider, listingId, address, fromBlock, toBlock }) {
   const listingTopic = web3.utils.padLeft(web3.utils.numberToHex(listingId), 64)
@@ -55,7 +75,12 @@ function extractListing(listingIdFull) {
   return { networkId, contractId, listingId }
 }
 
-async function extractVars(listingIdFull) {
+/**
+ * Loads the Shop and Network from the DB.
+ * @param {string} listingIdFull
+ * @returns {Promise<{shop: Shop, network: Network}>}
+ */
+async function loadShopAndNetwork(listingIdFull) {
   const [networkId] = listingIdFull.split('-')
   const network = await Network.findOne({ where: { networkId } })
   if (!network) {
@@ -75,10 +100,18 @@ async function extractVars(listingIdFull) {
   return { network, shop }
 }
 
-async function fetchEvents(listingIdFull) {
+/**
+ * Fetches all events for a shop, from the time the listing was created until now.
+ * @param {string} listingIdFull
+ * @param {boolean} doIt: if true, events are persisted in the DB.
+ * @returns {Promise<void>}
+ */
+async function fetchEvents(listingIdFull, doIt) {
   const { networkId, contractId, listingId } = extractListing(listingIdFull)
-  const { network, shop } = await extractVars(listingIdFull)
+  const { network, shop } = await loadShopAndNetwork(listingIdFull)
 
+  // Query recorded events in the DB to determine the range of blocks
+  // that have already been processed.
   const { minBlock, maxBlock } = await Event.findOne({
     raw: true,
     where: { shopId: shop.id },
@@ -115,10 +148,12 @@ async function fetchEvents(listingIdFull) {
   const latestBlock = await web3.eth.getBlockNumber()
   console.log(`Latest block is ${latestBlock}`)
 
-  // Fetch all events from inspected block until latest block
+  // Fetch all events from last block indexed + 1 until latest block.
   if (listingCreatedEvent) {
     const toBlock = latestBlock
     const fromBlock = maxBlock + 1
+
+    // Prepare concurrent requests to fetch logs.
     const requests = range(fromBlock, toBlock + 1, batchSize).map((start) =>
       limiter.schedule((args) => getLogs(args), {
         fromBlock: start,
@@ -130,23 +165,34 @@ async function fetchEvents(listingIdFull) {
     )
 
     const numBlocks = toBlock - fromBlock + 1
-    console.log(`Get ${numBlocks} blocks in ${requests.length} requests`)
+    console.log(`Querying ${numBlocks} blocks in ${requests.length} requests`)
 
-    if (!numBlocks) return
+    if (!numBlocks) {
+      console.log('No blocks to query.')
+      return
+    }
 
+    // Issues the requests to the blockchain.
     const eventsChunks = await Promise.all(requests)
     events = flattenDeep(eventsChunks)
-    console.log(`Got ${events.length} new events`)
 
-    storeEvents({ web3, events, shopId: shop.id, networkId })
+    // Store the events in the DB.
+    if (doIt) {
+      console.log(`Storing ${events.length} events in the DB`)
+      await storeEvents({ web3, events, shopId: shop.id, networkId })
+    } else {
+      console.log(`Would store ${events.length} events in the DB`)
+    }
   } else {
-    // Fetch all events from current block going back until we find ListingCreated event
+    // Fetch all events from current block going back until we find
+    // the initial ListingCreated event.
     console.log(`Fetching all events ending block ${latestBlock}`)
     let listingCreatedEvent
     let fromBlock = minBlock || latestBlock
     do {
       const toBlock = fromBlock - 1
       fromBlock -= batchSize
+      console.log(`Querying blocks ${fromBlock}-${toBlock}`)
       const batchEvents = await getLogs({
         fromBlock,
         toBlock,
@@ -157,44 +203,98 @@ async function fetchEvents(listingIdFull) {
 
       console.log(`Found ${batchEvents.length} events`)
 
-      storeEvents({ web3, events: batchEvents, shopId: shop.id, networkId })
+      if (doIt) {
+        console.log(`Storing ${batchEvents.length} in the DB`)
+        await storeEvents({
+          web3,
+          events: batchEvents,
+          shopId: shop.id,
+          networkId
+        })
+      } else {
+        console.log('Would store ${events.length} in the DB')
+      }
 
       listingCreatedEvent = batchEvents
         .map((e) => getEventObj(e))
         .find((o) => o.eventName === 'ListingCreated')
     } while (!listingCreatedEvent)
 
-    if (listingCreatedEvent) {
-      shop.firstBlock = listingCreatedEvent.blockNumber
-      shop.lastBlock = latestBlock
+    shop.firstBlock = listingCreatedEvent.blockNumber
+    shop.lastBlock = latestBlock
+
+    if (doIt) {
       await shop.save()
-      console.log('Saved shop')
+      console.log(
+        `Updated shop in the DB: firstBlock=${shop.firstBlock} lastBlock=${shop.lastBlock}`
+      )
+    } else {
+      console.log(
+        `Would update shop in the DB: firstBlock=${shop.firstBlock} lastBlock=${shop.lastBlock}`
+      )
     }
   }
 }
 
-async function handleEvents(listingIdFull) {
-  const { shop } = await extractVars(listingIdFull)
+/**
+ * Update the orders data in the DB by re-processing all the events for a shop.
+ *
+ * @param {string} listingIdFull
+ * @param {boolean} doIt: if true, orders are persisted in the DB.
+ * @returns {Promise<void>}
+ */
+async function processEvents(listingIdFull, doIt) {
+  const { shop } = await loadShopAndNetwork(listingIdFull)
 
+  // Load all the events from the DB.
   const events = await Event.findAll({
     where: { shopId: shop.id },
     order: [['block_number', 'ASC']]
   })
+  console.log(`Loaded ${events.length} from the DB for re-processing.`)
+
+  // Process each event in order, older first.
   for (const event of events) {
-    await processDShopEvent({
-      event,
-      shop
-    })
+    if (doIt) {
+      // Note: we skip sending email and calling discord since we are
+      // re-processing the events and don't want to send duplicate messages.
+      try {
+        await processDShopEvent({
+          event,
+          shop,
+          skipEmail: true,
+          skipDiscord: true
+        })
+      } catch (err) {
+        console.log(`Skipping processing event with id ${event.id}.`, err)
+      }
+    } else {
+      console.log(`Would re-process event ${event.eventName}`)
+    }
   }
 }
 
-function go() {
-  fetchEvents(program.listing)
-  handleEvents(program.listing)
+async function run(listingId, doIt) {
+  //await fetchEvents(listingId, doIt)
+  await processEvents(listingId, doIt)
 }
 
-module.exports = {
-  go,
-  fetchEvents,
-  handleEvents
-}
+// Main
+program
+  .requiredOption(
+    '-l, --listingId <listingId>',
+    'Fully qualified listing ID. For ex: 1-001-123'
+  )
+  .option('-d, --doIt', 'Non dry-run mode. Persists the data in the DB.')
+program.parse(process.argv)
+
+run(program.listingId, program.doIt)
+  .then(() => {
+    console.log('Finished')
+    process.exit()
+  })
+  .catch((err) => {
+    console.log('Failure: ', err)
+    console.log('Exiting')
+    process.exit(-1)
+  })
