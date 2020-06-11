@@ -578,7 +578,8 @@ module.exports = function (app) {
       }
 
       for (const hostname of hostnames) {
-        if (isPublicDNSName(hostname)) {
+        const fqn = `${hostname.name}.${hostname.zone}`
+        if (isPublicDNSName(fqn)) {
           if (!dnsProvider) {
             return res.status(400).json({
               success: false,
@@ -586,23 +587,20 @@ module.exports = function (app) {
             })
           }
 
-          const parts = hostname.split('.')
-          const subdomain = parts.shift()
-          const zone = parts.join('.')
           const network = await Network.findOne({ where: { active: true } })
           await configureShopDNS({
             network,
-            subdomain,
-            zone,
+            subdomain: hostname.name,
+            hostname: hostname.zone,
             hash: ipfsHash,
             dnsProvider
           })
         }
 
-        console.log(`Adding ${hostname} association to ${ipfsHash}`)
+        console.log(`Adding ${fqn} association to ${ipfsHash}`)
         await ShopDeploymentNames.create({
           ipfsHash,
-          hostname
+          fqn
         })
         return res.json({ success: true, ipfsHash, names: hostnames })
       }
