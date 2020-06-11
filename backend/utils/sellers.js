@@ -1,10 +1,11 @@
 const { Seller } = require('../models')
 const { createSalt, hashPassword, checkPassword } = require('../routes/_auth')
 
-async function createSeller({ name, email, password, superuser }) {
+async function createSeller({ name, email, password }, opts) {
   if (!name || !email || !password) {
     return { status: 400, error: 'Invalid registration' }
   }
+  const { superuser } = opts || {} // Superuser creation must be done explicitly
 
   const sellerCheck = await Seller.findOne({
     where: { email: email.toLowerCase() }
@@ -14,7 +15,6 @@ async function createSeller({ name, email, password, superuser }) {
     return { status: 409, error: 'Registration exists' }
   }
 
-  const numSellers = await Seller.count()
   const salt = await createSalt()
   const passwordHash = await hashPassword(salt, password)
 
@@ -22,10 +22,14 @@ async function createSeller({ name, email, password, superuser }) {
     name,
     email,
     password: passwordHash,
-    superuser: superuser || (numSellers === 0 ? true : false) // First seller is superUser
+    superuser: superuser
   })
 
   return { seller }
+}
+
+async function numSellers() {
+  return await Seller.count()
 }
 
 async function findSeller(email) {
@@ -38,4 +42,4 @@ async function authSeller(email, password) {
   return await checkPassword(password, seller.password)
 }
 
-module.exports = { findSeller, createSeller, authSeller }
+module.exports = { findSeller, createSeller, authSeller, numSellers }
