@@ -23,11 +23,11 @@
  *  - ENCRYPTION_KEY
  *
  * Usage example:
- *  - Dry run mode (does not persist to the DB):
- *    #> node backfill.js --listingId 1-001-81 --doIt
- *
- *  - Run for real (persists data in the events and order DB tables):
+ *  - Dry run mode (does not write any data to the DB):
  *    #> node backfill.js --listingId 1-001-81
+ *
+ *  - Run for real (writes data to the DB):
+ *    #> node backfill.js --listingId 1-001-81 --doIt
  */
 
 require('dotenv').config()
