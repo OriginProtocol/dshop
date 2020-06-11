@@ -14,6 +14,12 @@
  * Note: when processing an order, the tool does NOT send any email or discord
  * messages in order to avoid sending duplicates in case those had already been sent.
  *
+ * Setup: The tool can either be run from a local host with a proxy to the
+ * production database, or directly from a production host. It requires
+ * the following environment variables to be set:
+ *  - DATABASE_URL
+ *  - ENCRYPTION_KEY
+ *
  * Usage example:
  *  - Dry run mode (does not persist to the DB):
  *    #> node backfill.js --listingId 1-001-81 --doIt
