@@ -7,6 +7,8 @@ import useConfig from 'utils/useConfig'
 import useRest from 'utils/useRest'
 import useSetState from 'utils/useSetState'
 import Link from 'components/Link'
+import DeleteModal from '../../../components/_DeleteModal'
+import { deleteDiscount } from '../../../data/api'
 
 const times = Array(48)
   .fill(0)
@@ -70,15 +72,22 @@ const AdminEditDiscount = () => {
   const Feedback = formFeedback(state)
   const title = `${discountId === 'new' ? 'Create' : 'Edit'} Discount`
 
+  const onDelete = async () => {
+    const resp = await deleteDiscount({ config, discount })
+
+    if (resp.ok) {
+      history.push({
+        pathname: '/admin/discounts',
+        state: { scrollToTop: true }
+      })
+    } else {
+      setDelete(false)
+    }
+  }
+
   return (
     <>
-      <h3 className="admin-title with-border">
-        <Link to="/admin/discounts" className="muted">
-          Discounts
-        </Link>
-        <span className="chevron" />
-        {title}
-      </h3>
+
       <form
         onSubmit={async (e) => {
           e.preventDefault()
@@ -127,6 +136,27 @@ const AdminEditDiscount = () => {
           }
         }}
       >
+        <h3 className="admin-title with-border with-actions">
+          <Link to="/admin/discounts" className="muted">
+            Discounts
+          </Link>
+          <span className="chevron" />
+          {title}
+          <div className="actions ml-auto">
+            {!discount ? null : (
+              <button
+                type="button"
+                className="btn btn-outline-danger ml-2 mr-3"
+                onClick={() => setDelete(true)}
+              >
+                Delete
+              </button>
+            )}
+            <button type="submit" className="btn btn-primary">
+              Save
+            </button>
+          </div>
+        </h3>
         <div className="form-row">
           <div className="form-group col-md-6" style={{ maxWidth: '15rem' }}>
             <label>Discount Code</label>
@@ -178,7 +208,7 @@ const AdminEditDiscount = () => {
                   <span className="input-group-text">$</span>
                 </div>
               )}
-              <input type="text" {...input('value')} />
+              <input type="number" {...input('value')} />
               {state.discountType === 'fixed' ? null : (
                 <div className="input-group-append">
                   <span className="input-group-text">%</span>
@@ -263,59 +293,14 @@ const AdminEditDiscount = () => {
             </div>
           </div>
         )}
-        <div className="actions">
-          <button type="submit" className="btn btn-primary">
-            Save
-          </button>
-          {!discount ? null : (
-            <>
-              <button
-                type="button"
-                className="btn btn-outline-danger ml-2 mr-3"
-                onClick={() => setDelete(true)}
-              >
-                Delete
-              </button>
-              {!shouldDelete ? null : (
-                <>
-                  Are you sure?
-                  <button
-                    type="button"
-                    className="btn btn-danger ml-2"
-                    onClick={async () => {
-                      const headers = new Headers({
-                        authorization: `bearer ${config.backendAuthToken}`,
-                        'content-type': 'application/json'
-                      })
-                      const url = `${config.backend}/discounts/${discount.id}`
-                      const myRequest = new Request(url, {
-                        headers,
-                        credentials: 'include',
-                        method: 'DELETE'
-                      })
-                      const raw = await fetch(myRequest)
-                      if (raw.ok) {
-                        history.push({
-                          pathname: '/admin/discounts',
-                          state: { scrollToTop: true }
-                        })
-                      }
-                    }}
-                  >
-                    Yes
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary ml-2"
-                    onClick={() => setDelete(false)}
-                  >
-                    Cancel
-                  </button>
-                </>
-              )}
-            </>
-          )}
-        </div>
+        {!shouldDelete ? null : (
+          <DeleteModal 
+            onConfirm={() => onDelete()}
+            onClose={() => setDelete(false)}
+          >
+            Are you sure you want to<br/>delete this discount?
+          </DeleteModal>
+        )}
       </form>
     </>
   )
@@ -324,4 +309,6 @@ const AdminEditDiscount = () => {
 export default AdminEditDiscount
 
 require('react-styl')(`
+  .admin-title .actions button  
+    min-width: 150px
 `)

@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 import { spawn, exec } from 'child_process'
 import fs from 'fs'
 
@@ -55,6 +57,9 @@ async function start() {
   if (process.env.NOOPENER !== 'true') {
     devServerArgs.push('--open')
   }
+  if (process.env.WATCH === 'true') {
+    devServerArgs.push('--watch')
+  }
   const webpackDevServer = spawn(
     './node_modules/.bin/webpack-dev-server',
     devServerArgs,
@@ -63,13 +68,16 @@ async function start() {
       env: process.env
     }
   )
+  
   let backend
   if (process.env.BACKEND !== 'false') {
     const Addresses = require(`@origin/contracts/build/contracts.json`)
     const localContractAddress = Addresses.Marketplace_V01
     console.log(`Starting backend with local contract ${localContractAddress}`)
 
-    backend = spawn('node', ['../backend'], {
+    const backendProcessName = process.env.USE_NODEMON === 'true' ? 'nodemon' : 'node'
+
+    backend = spawn(backendProcessName, ['../backend'], {
       stdio: 'inherit',
       env: {
         ...process.env,

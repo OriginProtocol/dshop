@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import dayjs from 'dayjs'
 
@@ -6,6 +6,9 @@ import Paginate from 'components/Paginate'
 import Link from 'components/Link'
 
 import useRest from 'utils/useRest'
+import useConfig from 'utils/useConfig'
+import { deleteDiscount } from '../../../data/api'
+import DeleteModal from '../../../components/_DeleteModal'
 
 function description(discount) {
   let str = `$${discount.value} off entire order`
@@ -30,6 +33,9 @@ function active(discount) {
 const AdminDiscounts = () => {
   const history = useHistory()
   const { data: discounts = [], loading } = useRest('/discounts')
+  const { config } = useConfig()
+  const [showDeleteModal, setShowDeleteModal] = useState(null)
+
   return (
     <>
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -41,45 +47,88 @@ const AdminDiscounts = () => {
       {loading ? (
         'Loading...'
       ) : (
-        <table className="table admin-discounts table-hover">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Status</th>
-              <th>Used</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {discounts.map((discount) => (
-              <tr
-                key={discount.id}
-                onClick={() => {
-                  history.push(`/admin/discounts/${discount.id}`)
-                }}
-              >
-                {/* <td>{dayjs(discount.createdAt).format('MMM D, h:mm A')}</td> */}
-                <td>
-                  <div className="font-weight-bold">
-                    {discount.code.toUpperCase()}
-                  </div>
-                  <div className="text-muted">{description(discount)}</div>
-                </td>
-                <td>
-                  {discount.status === 'inactive' ? (
-                    <span className="badge badge-danger">Inactive</span>
-                  ) : (
-                    <span className="badge badge-success">Active</span>
-                  )}
-                </td>
-                <td>{`${discount.used || '0'}${
-                  discount.maxUses ? `/${discount.maxUses}` : ''
-                } used`}</td>
-                <td>{active(discount)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <>
+          {discounts.length ? (
+            <table className="table admin-discounts table-hover">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Status</th>
+                  <th>Used</th>
+                  <th></th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {discounts.map((discount) => (
+                  <tr
+                    key={discount.id}
+                    onClick={e => {
+                      if (e.target.matches('.action-icon, .action-icon *')) {
+                        return
+                      }
+                      history.push(`/admin/discounts/${discount.id}`)
+                    }}
+                  >
+                    {/* <td>{dayjs(discount.createdAt).format('MMM D, h:mm A')}</td> */}
+                    <td>
+                      <div className="font-weight-bold">
+                        {discount.code.toUpperCase()}
+                      </div>
+                      <div className="text-muted">{description(discount)}</div>
+                    </td>
+                    <td>
+                      <span className={`discount-status ${discount.status}`}>
+                        {discount.status === 'inactive' ? 'Inactive' : 'Active'}
+                      </span>
+                    </td>
+                    <td>{`${discount.used || '0'}${
+                      discount.maxUses ? `/${discount.maxUses}` : ''
+                    } used`}</td>
+                    <td>{active(discount)}</td>
+                    <td>
+                      <div className="actions">
+                        <div className="action-icon">
+                          <Link to={`/admin/discounts/${discount.id}`}>
+                            <img src="/images/green-checkmark.svg" />
+                          </Link>
+                        </div>
+
+                        <div className="action-icon" onClick={async e => {
+                            e.preventDefault()
+                            setShowDeleteModal(discount)
+                          }}>
+                          <img src="/images/green-checkmark.svg" />
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <h5 className="text-center my-5">
+              You have no discounts yet.
+              <Link to="/admin/discounts/new" className="btn btn-link">
+                <h5>Create one now</h5>
+              </Link>
+            </h5>
+          )}
+          {!showDeleteModal ? null : (
+            <DeleteModal 
+              onConfirm={async () => {
+                const resp = await deleteDiscount({ config, discount: showDeleteModal })
+                if (resp.ok) {
+                  history.go()
+                }
+                setShowDeleteModal(false)
+              }}
+              onClose={() => setShowDeleteModal(false)}
+            >
+              Are you sure you want to<br/>delete this discount?
+            </DeleteModal>
+          )}
+        </>
       )}
 
       <Paginate total={discounts.length} />
@@ -93,4 +142,33 @@ require('react-styl')(`
   .admin-orders
     tbody tr
       cursor: pointer
+  .discount-status
+    font-size: 1rem
+    color: #000
+    display: flex
+    align-items: center
+    &:before
+      content: ''
+      display: inline-block
+      height: 8px
+      width: 8px
+      margin-right: 7px
+      border-radius: 50%
+      background-color: #44c94a
+    &.inactive:before
+      background-color: #c9444a
+
+  .admin-discounts
+    tbody 
+      tr
+        td .actions
+          display: flex
+          visibility: hidden
+          .action-icon
+            margin-right: 10px
+        &:hover .actions
+          visibility: visible
+        
+
+
 `)

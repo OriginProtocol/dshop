@@ -113,32 +113,41 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
       {label}
       {!cryptoSelected ? null : (
         <div className="pay-with-crypto pl-4 pt-2">
-          <div className="tokens">
-            {acceptedTokens.map((token) => (
-              <div
-                key={token.id}
-                className={activeToken.id === token.id ? 'active' : ''}
-                onClick={() => setActiveToken(token)}
-              >
-                <div>{`Pay with ${token.name}`}</div>
-                {!exchangeRates[token.name] ? (
-                  <>
-                    <div>Loading</div>
-                    <div className="sm">Loading</div>
-                  </>
-                ) : (
-                  <>
-                    <div>{`${toTokenPrice(cart.total, token.name)} ${
-                      token.name
-                    }`}</div>
-                    <div className="sm">{`1 ${token.name} = $${(
+          <table>
+            <thead>
+              <tr>
+                <th>Cryptocurrency</th>
+                <th>Amount</th>
+                <th>Exchange Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+            {acceptedTokens.map(token => {
+              const isActive = activeToken.id === token.id
+              return (
+                <tr key={token.id} onClick={() => setActiveToken(token)}>
+                  <td className="input-container">
+                    <input 
+                      type="radio" 
+                      value={token.id} 
+                      checked={isActive}
+                      onChange={() => setActiveToken(token)} />
+                    <div className={`token-logo${isActive ? ' active' : ''}`}>
+                      <img src={`/images/payment/${token.name.toLowerCase()}.svg`} />
+                    </div>
+                    <div>{token.name}</div>
+                  </td>
+                  <td>{toTokenPrice(cart.total, token.name)}</td>
+                  <td>
+                    {`1 ${token.name} = $${(
                       1 / exchangeRates[token.name]
-                    ).toFixed(2)}`}</div>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
+                    ).toFixed(2)}`}
+                  </td>
+                </tr>
+              )
+            })}
+            </tbody>
+          </table>
           {!activeToken.id || token.loading ? null : token.error ? (
             <div className="alert alert-danger mt-3 mb-0">{token.error}</div>
           ) : !token.hasBalance ? (
@@ -147,7 +156,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
             </div>
           ) : !token.hasAllowance ? (
             <div className="alert alert-info mt-3 mb-0 d-flex align-items-center">
-              {`Please unlock your ${activeToken.name} to continue`}
+              {`Please approve this ${activeToken.name} transaction to continue`}
               <button
                 className={`btn btn-primary btn-sm ml-3${
                   approveUnlockTx || unlockTx ? ' disabled' : ''
@@ -181,7 +190,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
                   ? 'Waiting'
                   : approveUnlockTx
                   ? 'Awaiting approval...'
-                  : 'Unlock'}
+                  : 'Approve'}
               </button>
             </div>
           ) : null}
@@ -195,24 +204,53 @@ export default PayWithCrypto
 
 require('react-styl')(`
   .pay-with-crypto
-    .tokens
-      display: flex
-      > div
-        border: 1px solid #eee
-        padding: 1rem
-        border-radius: 0.5rem
-        margin-right: 1rem
-        cursor: pointer
-        text-align: center
-        opacity: 0.75
-        &:hover
-          opacity: 1
-        &.active
-          opacity: 1
-          border-color: #007bff
-        .sm
+    table 
+      width: 100%
+      margin-top: 0.75rem
+      thead 
+        tr
+          background-color: #fafbfc
+          border-top: 1px solid #cdd7e0
+          border-bottom: 1px solid #cdd7e0
+        th
+          background-color: #fafbfc
           font-size: 0.75rem
-          margin-top: 0.25rem
+          font-weight: normal
+          color: #9faebd
+          padding: 0.5rem
+      tbody
+        tr
+          border-bottom: 1px solid #cdd7e0
+          cursor: pointer
+        td
+          font-size: 0.75rem
+          color: #000
+          padding: 0.5rem
+
+          &.input-container
+            display: flex
+            align-items: center
+            .token-logo
+              width: 15px
+              height: 15px
+              display: flex
+              align-items: center
+              justify-content: center
+              border-radius: 50%
+              background-color: #cdd7e0
+              margin-right: 5px
+
+              &.active
+                background-color: #000
+
+            img 
+              height: 9px
+              width: 9px
+              object-fit: contain
+
+            input 
+              margin-right: 10px
+
 
   @media (max-width: 767.98px)
     .pay-with-crypto
