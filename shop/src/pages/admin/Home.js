@@ -39,19 +39,28 @@ const AdminHome = () => {
       <div className="new-shop-hero">
         <h1>Congratulations on your first shop</h1>
         <div className="desc">
-          Discover how Dshop can help you get started building<br/> your business on the decentralized web.
+          Discover how Dshop can help you get started building
+          <br /> your business on the decentralized web.
         </div>
       </div>
 
       <div className="new-shop-tasks">
         <div className="subtitle">Get your store up and running!</div>
         <div className="tasks-lists">
-          {tasks.map(task => {
+          {tasks.map((task) => {
             return (
-              <div className={`task-item${task.completed ? ' completed' : ''}`} key={task.id}>
+              <div
+                className={`task-item${task.completed ? ' completed' : ''}`}
+                key={task.id}
+              >
                 <img className="task-icon" src={task.icon} />
                 <div className="task-name">{task.name}</div>
-                {task.completed && <img className="completed-icon" src="/images/green-checkmark-circle.svg" />}
+                {task.completed && (
+                  <img
+                    className="completed-icon"
+                    src="/images/green-checkmark-circle.svg"
+                  />
+                )}
               </div>
             )
           })}

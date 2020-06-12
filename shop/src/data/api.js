@@ -1,4 +1,3 @@
-
 export const deleteDiscount = async ({ config, discount }) => {
   const headers = new Headers({
     authorization: `bearer ${config.backendAuthToken}`,

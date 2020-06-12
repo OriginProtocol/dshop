@@ -152,10 +152,9 @@ const AdminDashboard = () => {
           ))}
         </tbody>
       </table>
-        <div className="mt-4">
-          <Chart orders={orders} />
-        </div>
-
+      <div className="mt-4">
+        <Chart orders={orders} />
+      </div>
     </>
   )
 }

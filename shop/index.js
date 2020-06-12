@@ -68,14 +68,15 @@ async function start() {
       env: process.env
     }
   )
-  
+
   let backend
   if (process.env.BACKEND !== 'false') {
     const Addresses = require(`@origin/contracts/build/contracts.json`)
     const localContractAddress = Addresses.Marketplace_V01
     console.log(`Starting backend with local contract ${localContractAddress}`)
 
-    const backendProcessName = process.env.USE_NODEMON === 'true' ? 'nodemon' : 'node'
+    const backendProcessName =
+      process.env.USE_NODEMON === 'true' ? 'nodemon' : 'node'
 
     backend = spawn(backendProcessName, ['../backend'], {
       stdio: 'inherit',

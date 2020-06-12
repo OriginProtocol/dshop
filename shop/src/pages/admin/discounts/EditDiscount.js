@@ -87,7 +87,6 @@ const AdminEditDiscount = () => {
 
   return (
     <>
-
       <form
         onSubmit={async (e) => {
           e.preventDefault()
@@ -294,11 +293,13 @@ const AdminEditDiscount = () => {
           </div>
         )}
         {!shouldDelete ? null : (
-          <DeleteModal 
+          <DeleteModal
             onConfirm={() => onDelete()}
             onClose={() => setDelete(false)}
           >
-            Are you sure you want to<br/>delete this discount?
+            Are you sure you want to
+            <br />
+            delete this discount?
           </DeleteModal>
         )}
       </form>

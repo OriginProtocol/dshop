@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import Modal from 'react-bootstrap/Modal'
+// import Modal from 'react-bootstrap/Modal'
+import Modal from 'components/Modal'
 
 const DeleteModal = ({ onConfirm, onClose, children }) => {
   const [hideModal, setHideModal] = useState(false)
@@ -15,12 +16,17 @@ const DeleteModal = ({ onConfirm, onClose, children }) => {
       onHide={() => setHideModal(true)}
     >
       <Modal.Body>
-        <div className="delete-content">
-          {children}
-        </div>
+        <div className="delete-content">{children}</div>
         <div className="actions">
-          <button className="btn btn-outline-primary mr-2" onClick={() => setHideModal(true)}>No</button>
-          <button className="btn btn-primary" onClick={() => onConfirm()}>Yes</button>
+          <button
+            className="btn btn-outline-primary mr-2"
+            onClick={() => setHideModal(true)}
+          >
+            No
+          </button>
+          <button className="btn btn-primary" onClick={() => onConfirm()}>
+            Yes
+          </button>
         </div>
       </Modal.Body>
     </Modal>
@@ -42,7 +48,7 @@ require('react-styl')(`
       margin: 2rem auto
       display: flex
       justify-content: center
-      button 
+      button
         width: 120px
 
 `)

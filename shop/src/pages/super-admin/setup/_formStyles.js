@@ -1,4 +1,4 @@
-export const formGroupStyles = styleSelector => `
+export const formGroupStyles = (styleSelector) => `
   ${styleSelector}
     margin-bottom: 1.5rem
 
@@ -35,14 +35,14 @@ export const formGroupStyles = styleSelector => `
 
 `
 
-export const buttonBgStyle = styleSelector => `
+export const buttonBgStyle = (styleSelector) => `
   ${styleSelector}
     box-shadow: 5px 5px 8px 0 #0065d2, -3px -3px 6px 0 #2a92ff, inset 3px 3px 2px 0 #0e4d90, inset -3px -3px 2px 0 #021d3a
     background-image: linear-gradient(289deg, #02203f, #053c77 6%)
     color: #fff
 `
 
-export const buttonStyle = styleSelector => `
+export const buttonStyle = (styleSelector) => `
   ${styleSelector}
     ${buttonBgStyle('')}
     border-radius: 5px

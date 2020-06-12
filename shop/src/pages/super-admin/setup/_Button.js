@@ -3,12 +3,11 @@ import { buttonStyle } from './_formStyles'
 
 const Button = (props) => {
   return (
-    <button 
-      {...props} 
+    <button
+      {...props}
       className={`btn btn-primary generic-button${
-          props.className ? ' ' + props.className : ''
-        }`
-      } 
+        props.className ? ' ' + props.className : ''
+      }`}
     />
   )
 }
