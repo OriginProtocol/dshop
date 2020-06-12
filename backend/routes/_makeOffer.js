@@ -9,12 +9,14 @@ async function makeOffer(req, res) {
   const shop = req.shop
   const amount = req.amount
   const encryptedData = req.body.data
+  const paymentCode = req.paymentCode
 
   await makeOfferQueue.add(
     {
       shopId: shop.id,
       amount: amount,
-      encryptedData: encryptedData
+      encryptedData: encryptedData,
+      paymentCode: paymentCode
     },
     { attempts: 6 }
   ) // Allow up to six attempts

@@ -57,7 +57,8 @@ const SuperAdmin = () => {
   }
 
   if (!get(admin, 'success')) {
-    if (!admin || admin.reason === 'not-logged-in') {
+    const reason = get(admin, 'reason', '')
+    if (!admin || reason.match(/^(not-logged-in|not-superuser)$/)) {
       return <Login next={() => dispatch({ type: 'reload', target: 'auth' })} />
     }
     return (

@@ -28,20 +28,26 @@ async function processor(job) {
     job.progress(progress)
   }
 
-  const { shopId, amount, encryptedData } = job.data
+  const { shopId, encryptedData, paymentCode } = job.data
   const shop = await getShop(shopId)
   log(5, 'Load encrypted shop config')
   const shopConfig = getShopConfig(shop)
   const network = await getNetwork(shop.networkId)
+  const networkConfig = encConf.getConfig(network.config)
 
   log(10, 'Creating offer')
   const lid = ListingID.fromFQLID(shop.listingId)
-  const offer = createOfferJson(lid, amount, encryptedData)
+  const offer = createOfferJson(lid, encryptedData, paymentCode)
   const ires = await postOfferIPFS(network, offer)
 
   log(20, 'Submitting Offer')
   const web3 = new Web3(network.provider)
-  const account = web3.eth.accounts.wallet.add(shopConfig.web3Pk)
+  // The plan per Nick is to begin using a network level web3PK
+  // for submitting offers, while stores use their own PK for any further
+  // crypto payment activity. If we have a network config, we use it for
+  // submitting, and fall back to the store PK.
+  const backendPk = networkConfig.web3Pk || shopConfig.web3Pk
+  const account = web3.eth.accounts.wallet.add(backendPk)
   const walletAddress = account.address
   log(22, `using walletAddress ${walletAddress}`)
   log(25, 'Sending to marketplace')
@@ -93,7 +99,7 @@ function getShopConfig(shop) {
   return shopConfig
 }
 
-function createOfferJson(lid, amount, encryptedData) {
+function createOfferJson(lid, encryptedData, paymentCode) {
   return {
     schemaId: 'https://schema.originprotocol.com/offer_2.0.0.json',
     listingId: lid.toString(),
@@ -105,7 +111,8 @@ function createOfferJson(lid, amount, encryptedData) {
     },
     commission: { currency: 'OGN', amount: '0' },
     finalizes: 60 * 60 * 24 * 14, // 2 weeks after offer accepted
-    encryptedData: encryptedData
+    encryptedData: encryptedData,
+    paymentCode: paymentCode
   }
 }
 

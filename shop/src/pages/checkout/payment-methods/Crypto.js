@@ -173,7 +173,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
                     .then((tx) => {
                       setUnlockTx(true)
                       setApproveUnlockTx(false)
-                      return tx.wait(1)
+                      return tx.wait(2)
                     })
                     .then(() => {
                       token.refetchBalance()

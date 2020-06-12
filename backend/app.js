@@ -55,19 +55,6 @@ app.use((req, res, next) => {
   return jsonBodyParser(req, res, next)
 })
 
-// Error handler (needs 4 arg signature apparently)
-// eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
-  console.trace(err)
-  return res.status(err.status || 500).json({
-    error: {
-      name: err.name,
-      message: err.message,
-      text: err.toString()
-    }
-  })
-})
-
 require('./routes/networks')(app)
 require('./routes/auth')(app)
 require('./routes/users')(app)
@@ -157,9 +144,19 @@ app.get('*', (req, res, next) => {
   serveStatic(dir)(req, res, next)
 })
 
-// app.get('*', (req, res, next) => {
-//   serveStatic(`${__dirname}/public/${req.hostname}`)(req, res, next)
-// })
+// The custom error handler must be defined last.
+// Note that it does need 4 args signature otherwise it does not get invoked.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.trace(err)
+  return res.status(err.status || 500).json({
+    error: {
+      name: err.name,
+      message: err.message,
+      text: err.toString()
+    }
+  })
+})
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {

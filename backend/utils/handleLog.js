@@ -10,6 +10,7 @@ const { upsertEvent, getEventObj } = require('./events')
 const { getConfig } = require('./encryptedConfig')
 const discordWebhook = require('./discordWebhook')
 const { Network, Order, Shop } = require('../models')
+const util = require('ethereumjs-util')
 
 const web3 = new Web3()
 const Marketplace = new web3.eth.Contract(abi)
@@ -92,9 +93,13 @@ const handleLog = async ({
  * @param {string} listingId: fully qualified listing id
  * @param {Event} event: Event DB model object.
  * @param {Shop} shop: Shop DB model object.
+ * @param {boolean} skipEmail: do not send any email. Useful for ex. when
+ *   reprocessing events, to avoid sending duplicate emails to the users.
+ * @param {boolean} skipDiscord: do not call the Discord webhook. Useful
+ *   for ex. when reprocessing events.
  * @returns {Promise<void>}
  */
-async function processDShopEvent({ event, shop }) {
+async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
   let data
   const eventName = event.eventName
 
@@ -188,7 +193,7 @@ async function processDShopEvent({ event, shop }) {
       encryptedIpfsHash: encryptedHash
     }
     if (data.referrer) {
-      orderObj.referrer = data.referrer
+      orderObj.referrer = util.toChecksumAddress(data.referrer)
       orderObj.commissionPending = Math.floor(data.subTotal / 200)
     }
     order = await Order.create(orderObj)
@@ -201,21 +206,28 @@ async function processDShopEvent({ event, shop }) {
       shopId: shop.id,
       orderId: offerId,
       statusStr: 'error',
-      data: { error: e.message }
+      data: { error: e.message },
+      updatedBlock: event.blockNumber,
+      createdAt: new Date(event.timestamp * 1000),
+      createdBlock: event.blockNumber,
+      ipfsHash: event.ipfsHash
     })
     return order
   }
 
   // Send notifications via email and discord.
-  console.log('sendMail', data)
-  await sendMail(shop.id, data)
-  await discordWebhook({
-    url: networkConfig.discordWebhook,
-    orderId: offerId,
-    shopName: shop.name,
-    total: `$${(data.total / 100).toFixed(2)}`,
-    items: data.items.map((i) => i.title).filter((t) => t)
-  })
+  if (!skipEmail) {
+    await sendMail(shop.id, data)
+  }
+  if (!skipDiscord) {
+    await discordWebhook({
+      url: networkConfig.discordWebhook,
+      orderId: offerId,
+      shopName: shop.name,
+      total: `$${(data.total / 100).toFixed(2)}`,
+      items: data.items.map((i) => i.title).filter((t) => t)
+    })
+  }
 
   return order
 }
