@@ -75,6 +75,15 @@ async function addCNAME(zone, name, target) {
   return await zone.addRecords(rec)
 }
 
+async function updateCNAME(existing, zone, name, target) {
+  const addRec = zone.record('CNAME', {
+    name,
+    data: target,
+    ttl: DEFAULT_TTL
+  })
+  return await zone.createChange({ add: addRec, delete: existing })
+}
+
 /**
  * add a TXT record
  *
@@ -95,6 +104,15 @@ async function addTXT(zone, name, txt) {
   return await zone.addRecords(rec)
 }
 
+async function updateTXT(existing, zone, name, txt) {
+  const addRec = zone.record('TXT', {
+    name,
+    data: txt,
+    ttl: DEFAULT_TTL
+  })
+  return await zone.createChange({ add: addRec, delete: existing })
+}
+
 /**
  * add a DNSLink TXT record
  *
@@ -108,6 +126,15 @@ async function addTXT(zone, name, txt) {
  */
 async function addDNSLink(zone, name, ipfsHash) {
   return await addTXT(zone, `_dnslink.${name}`, `dnslink=/ipfs/${ipfsHash}`)
+}
+
+async function updateDNSLink(existing, zone, name, ipfsHash) {
+  return await updateTXT(
+    existing,
+    zone,
+    `_dnslink.${name}`,
+    `dnslink=/ipfs/${ipfsHash}`
+  )
 }
 
 /**
@@ -140,24 +167,34 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
     return
   }
 
-  const records = await zoneObj.getRecords({ maxResults: 250 })
-
-  if (
-    records &&
-    records.length > 0 &&
-    records[0].some((rec) => rec.name === fqSubdomain)
-  ) {
-    console.warn(`${fqSubdomain} already exists`)
-    return
-  }
+  const recordsRaw = await zoneObj.getRecords({ maxResults: 250 })
+  const records = recordsRaw ? recordsRaw[0] : []
 
   const changes = []
 
-  // Add CNAME record pointing to the IPFS gateway
-  changes.push(await addCNAME(zoneObj, fqSubdomain, ipfsGateway))
+  const existingCNAME = records.find(
+    (rec) => rec.name === fqSubdomain && rec.type === 'CNAME'
+  )
+  const existingTXT = records.find(
+    (rec) => rec.name === `_dnslink.${fqSubdomain}` && rec.type === 'TXT'
+  )
 
-  // Add the DNSLink record pointing at the IPFS hash
-  changes.push(await addDNSLink(zoneObj, fqSubdomain, hash))
+  if (existingCNAME) {
+    // Update CNAME record pointing to the IPFS gateway
+    changes.push(
+      await updateCNAME(existingCNAME, zoneObj, fqSubdomain, ipfsGateway)
+    )
+  } else {
+    // Add CNAME record pointing to the IPFS gateway
+    changes.push(await addCNAME(zoneObj, fqSubdomain, ipfsGateway))
+  }
+  if (existingTXT) {
+    // Update the DNSLink record pointing at the IPFS hash
+    changes.push(await updateDNSLink(existingTXT, zoneObj, fqSubdomain, hash))
+  } else {
+    // Add the DNSLink record pointing at the IPFS hash
+    changes.push(await addDNSLink(zoneObj, fqSubdomain, hash))
+  }
 
   return changes
 }
