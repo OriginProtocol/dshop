@@ -310,6 +310,7 @@ module.exports = function (app) {
       dataUrl,
       publicUrl,
       printful: req.body.printfulApi,
+      deliveryApi: req.body.printfulApi ? true : false,
       pgpPublicKey: req.body.pgpPublicKey,
       pgpPrivateKey: req.body.pgpPrivateKey,
       pgpPrivateKeyPass: req.body.pgpPrivateKeyPass
