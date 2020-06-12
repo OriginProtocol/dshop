@@ -10,7 +10,7 @@ const AdminDeleteAsset = ({ file, shop, className = '', onSuccess }) => {
   return (
     <ConfirmationModal
       className={`btn btn-outline-danger ${className}`}
-      children="Delete"
+      buttonText="Delete"
       confirmText="Are you sure you want to delete this asset?"
       confirmedText="Asset deleted"
       onConfirm={() =>

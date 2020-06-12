@@ -11,7 +11,7 @@ const AdminDeleteUser = ({ userId }) => {
   return (
     <ConfirmationModal
       className="btn btn-outline-danger ml-2"
-      children="Delete"
+      buttonText="Delete"
       confirmText="Are you sure you wish to delete this user?"
       confirmedText="User deleted successfully"
       onConfirm={() => post(`/superuser/users/${userId}`, { method: 'DELETE' })}

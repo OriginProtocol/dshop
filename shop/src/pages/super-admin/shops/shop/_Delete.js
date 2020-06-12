@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { useStateValue } from 'data/state'
@@ -8,16 +8,24 @@ import ConfirmationModal from 'components/ConfirmationModal'
 const AdminDeleteShop = ({ shop, className = '' }) => {
   const history = useHistory()
   const [, dispatch] = useStateValue()
+  const [deleteCache, setDeleteCache] = useState(false)
 
   const { post } = useBackendApi()
 
   return (
     <ConfirmationModal
       className={`btn btn-outline-danger ${className}`}
-      children="Delete"
+      buttonText="Delete"
       confirmText="Are you sure you want to delete this shop?"
       confirmedText="Shop deleted"
-      onConfirm={() => post(`/shops/${shop.authToken}`, { method: 'DELETE' })}
+      onConfirm={() =>
+        post(`/shops/${shop.authToken}`, {
+          method: 'DELETE',
+          body: JSON.stringify({
+            deleteCache
+          })
+        })
+      }
       onSuccess={() => {
         history.push({
           pathname: '/super-admin/shops',
@@ -25,7 +33,19 @@ const AdminDeleteShop = ({ shop, className = '' }) => {
         })
         dispatch({ type: 'reload', target: 'auth' })
       }}
-    />
+    >
+      <div className="mt-4">
+        <label className="m-0">
+          <input
+            checked={deleteCache}
+            onChange={(e) => setDeleteCache(e.target.checked)}
+            type="checkbox"
+            className="mr-2"
+          />{' '}
+          Delete data from cache
+        </label>
+      </div>
+    </ConfirmationModal>
   )
 }
 

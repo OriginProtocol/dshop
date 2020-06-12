@@ -9,6 +9,7 @@ const AdminConfirmationModal = ({
   confirmText = 'Are you sure?',
   onConfirm,
   onSuccess,
+  buttonText,
   children
 }) => {
   const [state, setState] = useSetState()
@@ -32,7 +33,7 @@ const AdminConfirmationModal = ({
         className={className}
         onClick={() => setState({ showModal: true })}
       >
-        {children}
+        {buttonText}
       </button>
       {!state.showModal ? null : (
         <Modal
@@ -72,7 +73,7 @@ const AdminConfirmationModal = ({
             ) : (
               <>
                 <div className="text-lg">{confirmText}</div>
-
+                {children}
                 <div className="actions">
                   <button
                     className="btn btn-outline-primary px-5"

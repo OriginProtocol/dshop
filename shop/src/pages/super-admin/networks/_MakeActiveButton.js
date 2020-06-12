@@ -12,7 +12,7 @@ const AdminMakeActiveNetwork = ({ network }) => {
 
   return (
     <ConfirmationModal
-      children="Make Active"
+      buttonText="Make Active"
       confirmText="Are you sure you want to make this network active?"
       confirmedText="Network Active"
       onConfirm={() =>
