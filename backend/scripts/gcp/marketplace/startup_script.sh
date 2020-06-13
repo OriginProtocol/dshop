@@ -34,22 +34,32 @@ openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 \
 ###############
 # Install dshop
 ###############
+APP_PATH="/app/dshop"
 BACKEND_PATH="/app/dshop/backend"
+SHOP_PATH="/app/dshop/shop"
+
 useradd dshop
 mkdir /home/dshop
 chown dshop:dshop /home/dshop
 mkdir /app
-cd /app
-git clone https://github.com/OriginProtocol/dshop.git
-cd $BACKEND_PATH
-echo ENCRYPTION_KEY="\"`openssl rand -base64 48`\"" > .env
-yarn install
-npm run migrate
-chown -R dshop:dshop .
+chown dshop:dshop /app
 
-##########################
-# PM2 to run dshop process
-##########################
+cd /app
+sudo -u dshop git clone https://github.com/OriginProtocol/dshop.git
+
+cd $APP_PATH
+sudo -u dshop yarn install
+
+cd $SHOP_PATH
+sudo -u dshop yarn build:dist
+
+cd $BACKEND_PATH
+sudo -u dshop sh -c 'echo ENCRYPTION_KEY="\"`openssl rand -base64 48`\"" > .env'
+
+##################################
+# PM2 to run dshop backend process
+##################################
+cd $BACKEND_PATH
 sudo -u dshop pm2 start app.js 
 sudo -u dshop pm2 save
 sudo env PATH="$PATH:/usr/bin" pm2 startup systemd -u dshop --hp /home/dshop
