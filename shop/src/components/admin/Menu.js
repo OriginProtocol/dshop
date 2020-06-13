@@ -12,17 +12,18 @@ require('react-styl')(`
     margin: 0 0.5rem 0 0
     padding: 0.875rem 0
     height: 100%
+    border-right: 1px solid #e9f0f3
     li
       margin: 0.5rem 0
       a
         display: flex
         align-items: center
-        padding: 0.675rem 0.5rem
+        padding: 0.75rem 0.5rem 0.75rem 1rem
         color: #666
         line-height: 0
         svg
           margin-right: 0.5rem
-          fill: #666
+          fill: #8293a4
           display: inline-block
           min-width: 20px
       &.active a

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useRouteMatch, useHistory } from 'react-router-dom'
 import dayjs from 'dayjs'
 
@@ -7,8 +7,7 @@ import useConfig from 'utils/useConfig'
 import useRest from 'utils/useRest'
 import useSetState from 'utils/useSetState'
 import Link from 'components/Link'
-import DeleteModal from '../../../components/_DeleteModal'
-import { deleteDiscount } from '../../../data/api'
+import DeleteButton from './_Delete'
 
 const times = Array(48)
   .fill(0)
@@ -46,7 +45,6 @@ const defaultValues = {
 const AdminEditDiscount = () => {
   const { config } = useConfig()
   const history = useHistory()
-  const [shouldDelete, setDelete] = useState()
   const match = useRouteMatch('/admin/discounts/:discountId')
   const { discountId } = match.params
   const { data: discount } = useRest(`/discounts/${discountId}`, {
@@ -71,19 +69,6 @@ const AdminEditDiscount = () => {
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
   const title = `${discountId === 'new' ? 'Create' : 'Edit'} Discount`
-
-  const onDelete = async () => {
-    const resp = await deleteDiscount({ config, discount })
-
-    if (resp.ok) {
-      history.push({
-        pathname: '/admin/discounts',
-        state: { scrollToTop: true }
-      })
-    } else {
-      setDelete(false)
-    }
-  }
 
   return (
     <>
@@ -143,13 +128,7 @@ const AdminEditDiscount = () => {
           {title}
           <div className="actions ml-auto">
             {!discount ? null : (
-              <button
-                type="button"
-                className="btn btn-outline-danger ml-2 mr-3"
-                onClick={() => setDelete(true)}
-              >
-                Delete
-              </button>
+              <DeleteButton className="mr-2" discount={discount} />
             )}
             <button type="submit" className="btn btn-primary">
               Save
@@ -292,16 +271,6 @@ const AdminEditDiscount = () => {
             </div>
           </div>
         )}
-        {!shouldDelete ? null : (
-          <DeleteModal
-            onConfirm={() => onDelete()}
-            onClose={() => setDelete(false)}
-          >
-            Are you sure you want to
-            <br />
-            delete this discount?
-          </DeleteModal>
-        )}
       </form>
     </>
   )
@@ -310,6 +279,6 @@ const AdminEditDiscount = () => {
 export default AdminEditDiscount
 
 require('react-styl')(`
-  .admin-title .actions button  
+  .admin-title .actions button
     min-width: 150px
 `)

@@ -167,7 +167,6 @@ require('react-styl')(`
     color: #000
     .stat-item
       flex: 1
-      border: 1px solid #dfe2e6
       border-radius: 10px
       padding: 0.875rem 1.25rem
       background-image: linear-gradient(to right, #007cff, #0072ea 100%)
@@ -188,7 +187,7 @@ require('react-styl')(`
       .stat-value
         font-size: 2.125rem
         font-weight: 600
-  .admin .table 
+  .admin .table
     thead th
       font-weight: bold
       a
