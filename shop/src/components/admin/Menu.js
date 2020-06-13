@@ -9,7 +9,6 @@ export default Menu
 require('react-styl')(`
   .admin-menu
     background-color: #f8f8f8
-    margin: 0 0.5rem 0 0
     padding: 0.875rem 0
     height: 100%
     border-right: 1px solid #e9f0f3

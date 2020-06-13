@@ -189,7 +189,6 @@ require('react-styl')(`
         font-weight: 600
   .admin .table
     thead th
-      font-weight: bold
       a
         color: #9faebd
         font-weight: bold

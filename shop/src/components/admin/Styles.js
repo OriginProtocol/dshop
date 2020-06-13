@@ -66,9 +66,9 @@ require('react-styl')(`
         cursor: pointer
       thead
         th
-          background-color: #f8f8f8
+          background-color: #fafbfc
           font-size: 14px
-          color: #666
+          color: #9faebd
           font-weight: normal
           border-bottom-width: 1px
           padding: 0.5rem 0.75rem
