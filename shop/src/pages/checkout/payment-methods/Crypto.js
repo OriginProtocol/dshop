@@ -122,30 +122,33 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
               </tr>
             </thead>
             <tbody>
-            {acceptedTokens.map(token => {
-              const isActive = activeToken.id === token.id
-              return (
-                <tr key={token.id} onClick={() => setActiveToken(token)}>
-                  <td className="input-container">
-                    <input 
-                      type="radio" 
-                      value={token.id} 
-                      checked={isActive}
-                      onChange={() => setActiveToken(token)} />
-                    <div className={`token-logo${isActive ? ' active' : ''}`}>
-                      <img src={`/images/payment/${token.name.toLowerCase()}.svg`} />
-                    </div>
-                    <div>{token.name}</div>
-                  </td>
-                  <td>{toTokenPrice(cart.total, token.name)}</td>
-                  <td>
-                    {`1 ${token.name} = $${(
-                      1 / exchangeRates[token.name]
-                    ).toFixed(2)}`}
-                  </td>
-                </tr>
-              )
-            })}
+              {acceptedTokens.map((token) => {
+                const isActive = activeToken.id === token.id
+                return (
+                  <tr key={token.id} onClick={() => setActiveToken(token)}>
+                    <td className="input-container">
+                      <input
+                        type="radio"
+                        value={token.id}
+                        checked={isActive}
+                        onChange={() => setActiveToken(token)}
+                      />
+                      <div className={`token-logo${isActive ? ' active' : ''}`}>
+                        <img
+                          src={`/images/payment/${token.name.toLowerCase()}.svg`}
+                        />
+                      </div>
+                      <div>{token.name}</div>
+                    </td>
+                    <td>{toTokenPrice(cart.total, token.name)}</td>
+                    <td>
+                      {`1 ${token.name} = $${(
+                        1 / exchangeRates[token.name]
+                      ).toFixed(2)}`}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
           {!activeToken.id || token.loading ? null : token.error ? (
@@ -173,7 +176,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
                     .then((tx) => {
                       setUnlockTx(true)
                       setApproveUnlockTx(false)
-                      return tx.wait(1)
+                      return tx.wait(2)
                     })
                     .then(() => {
                       token.refetchBalance()

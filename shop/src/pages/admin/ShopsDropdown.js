@@ -11,7 +11,10 @@ const ShopsDropdown = () => {
 
   return (
     <div className="shops-title-wrapper">
-      <div className="shop-title" onClick={() => setShowDropdown(!showDropdown)}>
+      <div
+        className="shop-title"
+        onClick={() => setShowDropdown(!showDropdown)}
+      >
         {config.logo ? (
           <img src={`${config.dataSrc}${config.logo}`} />
         ) : (
@@ -21,10 +24,12 @@ const ShopsDropdown = () => {
       </div>
       {showDropdown && (
         <div className="shops-dropdown">
-          {admin.shops.map(shop => {
+          {admin.shops.map((shop) => {
             return (
-              <div 
-                className={`shop-el${shop.authToken === config.activeShop ? ' selected' : ''}`} 
+              <div
+                className={`shop-el${
+                  shop.authToken === config.activeShop ? ' selected' : ''
+                }`}
                 key={shop.id}
                 onClick={() => {
                   setShowDropdown(false)
@@ -35,7 +40,8 @@ const ShopsDropdown = () => {
                     pathname: `/admin`,
                     state: { scrollToTop: true }
                   })
-                }}>
+                }}
+              >
                 <img src="/images/green-checkmark.svg" />
                 {shop.name}
               </div>

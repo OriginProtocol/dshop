@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useHistory } from 'react-router-dom'
 import dayjs from 'dayjs'
 
@@ -6,9 +6,6 @@ import Paginate from 'components/Paginate'
 import Link from 'components/Link'
 
 import useRest from 'utils/useRest'
-import useConfig from 'utils/useConfig'
-import { deleteDiscount } from '../../../data/api'
-import DeleteModal from '../../../components/_DeleteModal'
 
 function description(discount) {
   let str = `$${discount.value} off entire order`
@@ -33,8 +30,6 @@ function active(discount) {
 const AdminDiscounts = () => {
   const history = useHistory()
   const { data: discounts = [], loading } = useRest('/discounts')
-  const { config } = useConfig()
-  const [showDeleteModal, setShowDeleteModal] = useState(null)
 
   return (
     <>
@@ -63,7 +58,7 @@ const AdminDiscounts = () => {
                 {discounts.map((discount) => (
                   <tr
                     key={discount.id}
-                    onClick={e => {
+                    onClick={(e) => {
                       if (e.target.matches('.action-icon, .action-icon *')) {
                         return
                       }
@@ -94,10 +89,12 @@ const AdminDiscounts = () => {
                           </Link>
                         </div>
 
-                        <div className="action-icon" onClick={async e => {
+                        <div
+                          className="action-icon"
+                          onClick={async (e) => {
                             e.preventDefault()
-                            setShowDeleteModal(discount)
-                          }}>
+                          }}
+                        >
                           <img src="/images/green-checkmark.svg" />
                         </div>
                       </div>
@@ -113,20 +110,6 @@ const AdminDiscounts = () => {
                 <h5>Create one now</h5>
               </Link>
             </h5>
-          )}
-          {!showDeleteModal ? null : (
-            <DeleteModal 
-              onConfirm={async () => {
-                const resp = await deleteDiscount({ config, discount: showDeleteModal })
-                if (resp.ok) {
-                  history.go()
-                }
-                setShowDeleteModal(false)
-              }}
-              onClose={() => setShowDeleteModal(false)}
-            >
-              Are you sure you want to<br/>delete this discount?
-            </DeleteModal>
           )}
         </>
       )}
@@ -159,7 +142,7 @@ require('react-styl')(`
       background-color: #c9444a
 
   .admin-discounts
-    tbody 
+    tbody
       tr
         td .actions
           display: flex
@@ -168,7 +151,7 @@ require('react-styl')(`
             margin-right: 10px
         &:hover .actions
           visibility: visible
-        
+
 
 
 `)

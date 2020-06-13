@@ -6,6 +6,7 @@ import useConfig from 'utils/useConfig'
 import useSetState from 'utils/useSetState'
 
 import Link from 'components/Link'
+import DeleteUser from './_Delete'
 
 const AdminUser = () => {
   const { config } = useConfig()
@@ -40,6 +41,7 @@ const AdminUser = () => {
             className="btn btn-outline-primary"
             children="Edit"
           />
+          <DeleteUser userId={userId} />
         </div>
       </h3>
       <div className="d-flex">

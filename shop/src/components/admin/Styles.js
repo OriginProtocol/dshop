@@ -17,7 +17,7 @@ require('react-styl')(`
       width: 100%
       flex: 1
       padding: 0 1.125rem
-      .row 
+      .row
         margin: 0
 
     .flex-1
@@ -30,7 +30,7 @@ require('react-styl')(`
         align-items: center
         justify-content: between
         flex-wrap: wrap
-        min-height: 4rem
+        min-height: 4.5rem
       h1
         margin: 0
         display: flex
@@ -39,6 +39,8 @@ require('react-styl')(`
         img
           max-height: 2.5rem
           max-width: 12rem
+        .shops-title-wrapper
+          display: flex
         .shop-title
           display: flex
           align-items: center
@@ -64,9 +66,9 @@ require('react-styl')(`
         cursor: pointer
       thead
         th
-          background-color: #f8f8f8
+          background-color: #fafbfc
           font-size: 14px
-          color: #666
+          color: #9faebd
           font-weight: normal
           border-bottom-width: 1px
           padding: 0.5rem 0.75rem

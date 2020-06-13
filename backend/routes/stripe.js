@@ -1,9 +1,10 @@
 const get = require('lodash/get')
 
 const bodyParser = require('body-parser')
+const randomstring = require('randomstring')
 const Stripe = require('stripe')
 
-const { Shop } = require('../models')
+const { Shop, ExternalPayment } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
 const makeOffer = require('./_makeOffer')
@@ -42,22 +43,36 @@ module.exports = function (app) {
         shopId: req.shop.id,
         shopStr: req.shop.authToken,
         listingId: req.shop.listingId,
-        encryptedData: req.body.data
+        encryptedData: req.body.data,
+        paymentCode: randomstring.generate()
       }
     })
+    console.log('Payment request sent to Stripe')
 
     res.send({ success: true, client_secret: paymentIntent.client_secret })
   })
 
   async function handleWebhook(req, res, next) {
+    let json
     try {
-      const json = JSON.parse(req.body.toString())
+      json = JSON.parse(req.body.toString())
       const id = get(json, 'data.object.metadata.shopId')
       req.shop = await Shop.findOne({ where: { id } })
     } catch (err) {
       console.error('Error parsing body: ', err)
       return res.sendStatus(400)
     }
+
+    // Save initial data into external payment.
+    // We save this "raw" state for debugging purposes.
+    // If anything goes wrong with the rest of this, we'll still be able
+    // to look up the originaly posted JSON and see what happened.
+    const externalPayment = await ExternalPayment.create({
+      payment_at: new Date(json.created * 1000), // created is a unix timestamp
+      external_id: json.id,
+      data: json,
+      accepted: false
+    })
 
     if (!req.shop) {
       console.debug('Missing shopId from /webhook request')
@@ -78,16 +93,35 @@ module.exports = function (app) {
       return res.sendStatus(400)
     }
 
+    // Save parsed data into the external_payment table.
+    externalPayment.authenticated = true
+    externalPayment.type = get(event, 'type')
+    externalPayment.paymentCode = get(event, 'data.object.metadata.paymentCode')
+    externalPayment.amount = get(event, 'data.object.amount')
+    externalPayment.currency = get(event, 'data.object.currency')
+    externalPayment.fee =
+      get(event, 'data.object.fee') ||
+      get(event, 'data.object.charges.data[0].fee')
+    externalPayment.paymentIntent = get(event, 'type').startsWith(
+      'payment_intent'
+    )
+      ? get(event, 'data.object.id')
+      : get(event, 'data.object.payment_intent')
+    if (externalPayment.fee !== undefined) {
+      externalPayment.net = externalPayment.amount - externalPayment.fee
+    }
+    await externalPayment.save()
+
+    console.log(JSON.stringify(event, null, 4))
+
     if (event.type !== 'payment_intent.succeeded') {
       console.log(`Ignoring event ${event.type}`)
       return res.sendStatus(200)
     }
 
-    console.log(JSON.stringify(event, null, 4))
-
     req.body.data = get(event, 'data.object.metadata.encryptedData')
-    req.amount = get(event, 'data.object.amount')
-
+    req.amount = externalPayment.amount
+    req.paymentCode = externalPayment.paymentCode
     next()
   }
 

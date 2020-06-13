@@ -61,7 +61,7 @@ const Admin = () => {
       <nav>
         <div className="fullwidth-container">
           <h1>
-            <img src="images/dshop-logo.svg" />
+            <img src="images/dshop-logo-blue.svg" />
             <ShopsDropdown />
           </h1>
           <div className="mr-4">
