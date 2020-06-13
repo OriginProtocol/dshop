@@ -127,4 +127,8 @@ require('react-styl')(`
     transform: translate(-50%, -50%)
   .invalid-feedback
     word-break: break-word
+  .btn-rounded
+    border-radius: 10rem
+    padding-left: 1rem
+    padding-right: 1rem
 `)

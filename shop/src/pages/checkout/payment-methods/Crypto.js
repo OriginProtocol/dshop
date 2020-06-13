@@ -83,7 +83,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
     return (
       <>
         {label}
-        <div className="mt-2">
+        <div style={{ marginLeft: '2.25rem' }} className="mb-3">
           <button className="btn btn-primary" onClick={() => wallet.enable()}>
             Enable Crypto Wallet
           </button>
@@ -112,7 +112,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
     <>
       {label}
       {!cryptoSelected ? null : (
-        <div className="pay-with-crypto pl-4 pt-2">
+        <div className="pay-with-crypto">
           <table>
             <thead>
               <tr>
@@ -140,7 +140,9 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
                       </div>
                       <div>{token.name}</div>
                     </td>
-                    <td>{toTokenPrice(cart.total, token.name)}</td>
+                    <td>{`${toTokenPrice(cart.total, token.name)} ${
+                      token.name
+                    }`}</td>
                     <td>
                       {`1 ${token.name} = $${(
                         1 / exchangeRates[token.name]
@@ -152,16 +154,14 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
             </tbody>
           </table>
           {!activeToken.id || token.loading ? null : token.error ? (
-            <div className="alert alert-danger mt-3 mb-0">{token.error}</div>
+            <div className="alert alert-danger">{token.error}</div>
           ) : !token.hasBalance ? (
-            <div className="alert alert-danger mt-3 mb-0">
-              Insufficient balance
-            </div>
+            <div className="alert alert-danger">Insufficient balance</div>
           ) : !token.hasAllowance ? (
-            <div className="alert alert-info mt-3 mb-0 d-flex align-items-center">
+            <div className="alert alert-info d-flex align-items-center justify-content-center">
               {`Please approve this ${activeToken.name} transaction to continue`}
               <button
-                className={`btn btn-primary btn-sm ml-3${
+                className={`btn btn-outline-primary btn-rounded btn-sm ml-3${
                   approveUnlockTx || unlockTx ? ' disabled' : ''
                 }`}
                 onClick={async () => {
@@ -207,10 +207,23 @@ export default PayWithCrypto
 
 require('react-styl')(`
   .pay-with-crypto
-    table 
+    padding-left: 2.25rem
+    padding-right: 0.5rem
+    padding-bottom: 0.75rem
+    .alert
+      &.alert-danger
+        background-color: #ffeeee
+        border-color: #ff0000
+        color: #ff0000
+      text-align: center
+      font-size: 0.75rem
+      padding-top: 0.375rem
+      padding-bottom: 0.375rem
+      margin-top: 0.5rem
+      margin-bottom: 0.25rem
+    table
       width: 100%
-      margin-top: 0.75rem
-      thead 
+      thead
         tr
           background-color: #fafbfc
           border-top: 1px solid #cdd7e0
@@ -225,34 +238,38 @@ require('react-styl')(`
         tr
           border-bottom: 1px solid #cdd7e0
           cursor: pointer
-        td
-          font-size: 0.75rem
-          color: #000
-          padding: 0.5rem
+          td
+            font-size: 0.75rem
+            color: #000
+            padding: 0.5rem
 
-          &.input-container
-            display: flex
-            align-items: center
-            .token-logo
-              width: 15px
-              height: 15px
+            &.input-container
               display: flex
               align-items: center
-              justify-content: center
-              border-radius: 50%
-              background-color: #cdd7e0
-              margin-right: 5px
+              .token-logo
+                width: 15px
+                height: 15px
+                display: flex
+                align-items: center
+                justify-content: center
+                border-radius: 50%
+                background-color: #cdd7e0
+                margin-right: 5px
 
-              &.active
-                background-color: #000
+                &.active
+                  background-color: #000
 
-            img 
-              height: 9px
-              width: 9px
-              object-fit: contain
+              img
+                height: 9px
+                width: 9px
+                object-fit: contain
 
-            input 
-              margin-right: 10px
+              input
+                margin-right: 10px
+          &:last-child
+            border-bottom: 0
+            td
+              border-bottom: 0
 
 
   @media (max-width: 767.98px)
