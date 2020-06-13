@@ -156,7 +156,7 @@ module.exports = function (app) {
       res.json({
         success: true,
         email: req.seller.email,
-        role: req.sellerShop.role
+        role: req.seller.superuser ? 'admin' : get(req, 'sellerShop.role')
       })
     }
   )

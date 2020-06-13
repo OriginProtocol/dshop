@@ -97,7 +97,8 @@ function useConfig() {
           contracts,
           acceptedTokens,
           netName: activeNetwork.name,
-          dataSrc
+          dataSrc,
+          activeShop: localStorage.activeShop
         }
         setLoading(false)
       } catch (e) {

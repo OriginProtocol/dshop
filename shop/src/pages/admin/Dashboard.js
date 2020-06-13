@@ -91,20 +91,18 @@ const AdminDashboard = () => {
         </div>
       </div>
       <div className="admin-dashboard-stats">
-        <div>
-          <div>Total orders</div>
-          <div>{filteredSales.length}</div>
+        <div className="stat-item">
+          <img src="/images/box.svg" className="stat-image" />
+          <div className="stat-name">Total orders</div>
+          <div className="stat-value">{filteredSales.length}</div>
         </div>
-        <div>
-          <div>Total revenue</div>
-          <div>{formatPrice(totalSales)}</div>
+        <div className="stat-item">
+          <img src="/images/coins.svg" className="stat-image" />
+          <div className="stat-name">Total revenue</div>
+          <div className="stat-value">{formatPrice(totalSales)}</div>
         </div>
         {/* <h5 className="ml-4">{`${formatPrice(totalSales * 0.05)} profit`}</h5> */}
       </div>
-      <div className="mt-4">
-        <Chart orders={orders} />
-      </div>
-
       <table className="table admin-products mt-4">
         <thead>
           <tr>
@@ -154,6 +152,9 @@ const AdminDashboard = () => {
           ))}
         </tbody>
       </table>
+      <div className="mt-4">
+        <Chart orders={orders} />
+      </div>
     </>
   )
 }
@@ -164,17 +165,31 @@ require('react-styl')(`
   .admin-dashboard-stats
     display: flex
     color: #000
-    max-width: 600px
-    > div
+    .stat-item
       flex: 1
-      border: 1px solid #dfe2e6
       border-radius: 10px
-      padding: 0.875rem 1.5rem
+      padding: 0.875rem 1.25rem
+      background-image: linear-gradient(to right, #007cff, #0072ea 100%)
+      color: #fff
+
+      display: flex
+      align-items: center
+
       &:not(:last-child)
         margin-right: 1.5rem
-      > div:nth-child(1)
-        font-size: 16px
-      > div:nth-child(2)
-        font-size: 36px
+      .stat-image
+        height: 26px
+        width: 26px
+        margin-right: 1rem
+      .stat-name
+        font-size: 1rem
+        flex: 1
+      .stat-value
+        font-size: 2.125rem
         font-weight: 600
+  .admin .table
+    thead th
+      a
+        color: #9faebd
+        font-weight: bold
 `)

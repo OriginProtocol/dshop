@@ -105,7 +105,7 @@ const CreateShop = () => {
 
   return (
     <form
-      className="sign-up"
+      className="create-shop"
       onSubmit={async (e) => {
         e.preventDefault()
 
@@ -254,6 +254,7 @@ const CreateShop = () => {
             e.preventDefault()
             setAdvanced(!advanced)
           }}
+          className="advanced-link"
         >
           {advanced ? 'Hide advanced settings' : 'Show advanced settings'}
         </a>

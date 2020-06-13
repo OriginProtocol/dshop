@@ -110,7 +110,7 @@ function validate(state) {
   return { valid, newState: { ...state, ...newState } }
 }
 
-const NetworkForm = ({ onSave, network, feedback }) => {
+const NetworkForm = ({ onSave, network, feedback, className }) => {
   const [advanced, setAdvanced] = useState(false)
   if (network && !network.defaultShopConfig) {
     network.defaultShopConfig = defaultShopConfig
@@ -127,7 +127,7 @@ const NetworkForm = ({ onSave, network, feedback }) => {
 
   return (
     <form
-      className="sign-up"
+      className={`sign-up${className ? ' ' + className : ''}`}
       onSubmit={(e) => {
         e.preventDefault()
 
@@ -258,7 +258,7 @@ const NetworkForm = ({ onSave, network, feedback }) => {
           {Feedback('discordWebhook')}
         </div>
       </div>
-      <div className="mb-2 justify-content-center d-flex">
+      <div className="mb-2 justify-content-center d-flex advanced-settings-link">
         <a
           href="#"
           onClick={(e) => {

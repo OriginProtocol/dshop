@@ -141,9 +141,9 @@ require('react-styl')(`
   .checkout-payment-method
     border: 1px solid #eee
     border-radius: 0.5rem
-    padding: 1rem
     label
       margin-bottom: 0
+      padding: 1rem
     label .description
       font-size: 0.875rem
       color: #666
@@ -153,7 +153,6 @@ require('react-styl')(`
         color: #666
     label:not(:first-child)
       border-top: 1px solid #eee
-      margin-top: 1rem
       padding-top: 1rem
     .radio
       display: flex
@@ -161,6 +160,7 @@ require('react-styl')(`
       input
         margin-right: 0.5rem
         margin-bottom: 3px
+        transform: scale(1.25)
       .cards
         margin-left: auto
         display: flex

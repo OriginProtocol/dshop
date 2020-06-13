@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { useRouteMatch, useHistory } from 'react-router-dom'
 import dayjs from 'dayjs'
 
@@ -7,6 +7,7 @@ import useConfig from 'utils/useConfig'
 import useRest from 'utils/useRest'
 import useSetState from 'utils/useSetState'
 import Link from 'components/Link'
+import DeleteButton from './_Delete'
 
 const times = Array(48)
   .fill(0)
@@ -44,7 +45,6 @@ const defaultValues = {
 const AdminEditDiscount = () => {
   const { config } = useConfig()
   const history = useHistory()
-  const [shouldDelete, setDelete] = useState()
   const match = useRouteMatch('/admin/discounts/:discountId')
   const { discountId } = match.params
   const { data: discount } = useRest(`/discounts/${discountId}`, {
@@ -72,13 +72,6 @@ const AdminEditDiscount = () => {
 
   return (
     <>
-      <h3 className="admin-title with-border">
-        <Link to="/admin/discounts" className="muted">
-          Discounts
-        </Link>
-        <span className="chevron" />
-        {title}
-      </h3>
       <form
         onSubmit={async (e) => {
           e.preventDefault()
@@ -127,6 +120,21 @@ const AdminEditDiscount = () => {
           }
         }}
       >
+        <h3 className="admin-title with-border with-actions">
+          <Link to="/admin/discounts" className="muted">
+            Discounts
+          </Link>
+          <span className="chevron" />
+          {title}
+          <div className="actions ml-auto">
+            {!discount ? null : (
+              <DeleteButton className="mr-2" discount={discount} />
+            )}
+            <button type="submit" className="btn btn-primary">
+              Save
+            </button>
+          </div>
+        </h3>
         <div className="form-row">
           <div className="form-group col-md-6" style={{ maxWidth: '15rem' }}>
             <label>Discount Code</label>
@@ -178,7 +186,7 @@ const AdminEditDiscount = () => {
                   <span className="input-group-text">$</span>
                 </div>
               )}
-              <input type="text" {...input('value')} />
+              <input type="number" {...input('value')} />
               {state.discountType === 'fixed' ? null : (
                 <div className="input-group-append">
                   <span className="input-group-text">%</span>
@@ -263,59 +271,6 @@ const AdminEditDiscount = () => {
             </div>
           </div>
         )}
-        <div className="actions">
-          <button type="submit" className="btn btn-primary">
-            Save
-          </button>
-          {!discount ? null : (
-            <>
-              <button
-                type="button"
-                className="btn btn-outline-danger ml-2 mr-3"
-                onClick={() => setDelete(true)}
-              >
-                Delete
-              </button>
-              {!shouldDelete ? null : (
-                <>
-                  Are you sure?
-                  <button
-                    type="button"
-                    className="btn btn-danger ml-2"
-                    onClick={async () => {
-                      const headers = new Headers({
-                        authorization: `bearer ${config.backendAuthToken}`,
-                        'content-type': 'application/json'
-                      })
-                      const url = `${config.backend}/discounts/${discount.id}`
-                      const myRequest = new Request(url, {
-                        headers,
-                        credentials: 'include',
-                        method: 'DELETE'
-                      })
-                      const raw = await fetch(myRequest)
-                      if (raw.ok) {
-                        history.push({
-                          pathname: '/admin/discounts',
-                          state: { scrollToTop: true }
-                        })
-                      }
-                    }}
-                  >
-                    Yes
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary ml-2"
-                    onClick={() => setDelete(false)}
-                  >
-                    Cancel
-                  </button>
-                </>
-              )}
-            </>
-          )}
-        </div>
       </form>
     </>
   )
@@ -324,4 +279,6 @@ const AdminEditDiscount = () => {
 export default AdminEditDiscount
 
 require('react-styl')(`
+  .admin-title .actions button
+    min-width: 150px
 `)
