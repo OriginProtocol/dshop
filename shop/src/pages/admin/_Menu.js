@@ -16,7 +16,7 @@ const AdminMenu = () => {
   return (
     <Menu>
       {admin.role !== 'admin' ? null : (
-        <li className={`dashboard back-link ${active('/admin/dashboard')}`}>
+        <li className="dashboard back-link">
           <Link to={`/super-admin/shops/${config.backendAuthToken}`}>
             &laquo; Back to Super Admin
           </Link>

@@ -91,7 +91,7 @@ require('react-styl')(`
 
       .desc
         color: #e0efff
-    
+
     .new-shop-tasks
       max-width: 650px
       margin: 0 auto

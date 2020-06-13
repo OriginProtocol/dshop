@@ -17,7 +17,7 @@ require('react-styl')(`
       a
         display: flex
         align-items: center
-        padding: 0.75rem 0.5rem 0.75rem 1rem
+        padding: 0.75rem 0.5rem 0.75rem 1.25rem
         color: #666
         line-height: 0
         svg
