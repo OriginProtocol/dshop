@@ -18,7 +18,7 @@ function useBackendApi(opts = {}) {
       })
         .then((res) => res.json())
         .then((json) => {
-          json.success ? resolve() : reject(new Error(json.reason))
+          json.success ? resolve(json) : reject(new Error(json.reason))
         })
         .catch(reject)
     })

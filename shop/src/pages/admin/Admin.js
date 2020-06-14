@@ -7,7 +7,7 @@ import useConfig from 'utils/useConfig'
 
 import * as Icons from 'components/icons/Admin'
 import Login from 'components/admin/Login'
-import Products from './Products'
+import Products from './products/Products'
 import Collections from './Collections'
 import Dashboard from './Dashboard'
 import Orders from './Orders'
@@ -18,7 +18,8 @@ import Settings from './settings/Settings'
 import Events from './Events'
 import Menu from './_Menu'
 import ShopsDropdown from './ShopsDropdown'
-import AdminHome from './Home'
+import Onboarding from './Onboarding'
+import EditProduct from './products/EditProduct'
 
 const Admin = () => {
   const { config } = useConfig()
@@ -81,6 +82,7 @@ const Admin = () => {
           <Switch>
             <Route path="/admin/discounts/:id" component={EditDiscount} />
             <Route path="/admin/discounts" component={Discounts} />
+            <Route path="/admin/products/:id" component={EditProduct} />
             <Route path="/admin/products" component={Products} />
             <Route path="/admin/collections" component={Collections} />
             <Route path="/admin/settings" component={Settings} />
@@ -88,7 +90,7 @@ const Admin = () => {
             <Route path="/admin/orders/:id" component={Order} />
             <Route path="/admin/orders" component={Orders} />
             <Route path="/admin/dashboard" component={Dashboard} />
-            <Route path="/admin/home" component={AdminHome} />
+            <Route path="/admin/onboarding" component={Onboarding} />
             <Redirect to="/admin/dashboard" />
           </Switch>
         </div>

@@ -22,8 +22,8 @@ const AdminMenu = () => {
           </Link>
         </li>
       )}
-      <li className={`dashboard ${active('/admin/home')}`}>
-        <Link to="/admin/home">
+      <li className={`dashboard ${active('/admin/onboarding')}`}>
+        <Link to="/admin/onboarding">
           <Icons.Home />
           Home
         </Link>

@@ -24,7 +24,7 @@ const ShopsDropdown = () => {
       </div>
       {showDropdown && (
         <div className="shops-dropdown">
-          {admin.shops.map((shop) => {
+          {!admin.shops || !admin.shops.length ? null : admin.shops.map((shop) => {
             return (
               <div
                 className={`shop-el${
@@ -77,13 +77,14 @@ require('react-styl')(`
     padding: 1.5rem
 
     .new-shop-link
-      border-top: 1px solid #cdd7e0
-      padding-top: 1rem
-      margin-top: 1rem
       display: flex
       align-items: center
       font-size: 0.75rem
       color: #3b80ee
+      &:not(:first-child)
+        border-top: 1px solid #cdd7e0
+        padding-top: 1rem
+        margin-top: 1rem
       .add-shop-icon
         border: solid 1px #3b80ee
         border-radius: 50%

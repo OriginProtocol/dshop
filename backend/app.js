@@ -67,6 +67,7 @@ require('./routes/stripe')(app)
 require('./routes/discounts')(app)
 require('./routes/tx')(app)
 require('./queues/ui')(app)
+require('./routes/products')(app)
 
 app.get(
   '(/collections/:collection)?/products/:product',

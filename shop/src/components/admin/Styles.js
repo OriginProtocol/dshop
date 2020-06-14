@@ -64,6 +64,13 @@ require('react-styl')(`
     .table
       &.table-hover
         cursor: pointer
+        td .actions
+          display: flex
+          visibility: hidden
+          .action-icon
+            margin-right: 10px
+        &:hover .actions
+          visibility: visible
       thead
         th
           background-color: #fafbfc
