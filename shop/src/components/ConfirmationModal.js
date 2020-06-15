@@ -10,7 +10,10 @@ const AdminConfirmationModal = ({
   onConfirm,
   onSuccess,
   buttonText,
-  children
+  children,
+  proceedText = 'Yes',
+  cancelText = 'No',
+  validate = () => true
 }) => {
   const [state, setState] = useSetState()
 
@@ -41,9 +44,8 @@ const AdminConfirmationModal = ({
           onClose={() => {
             if (state.confirmed) {
               onSuccess()
-            } else {
-              setState({}, true)
             }
+            setState({}, true)
           }}
         >
           <div className="modal-body text-center p-5">
@@ -78,12 +80,16 @@ const AdminConfirmationModal = ({
                   <button
                     className="btn btn-outline-primary px-5"
                     onClick={() => setState({ shouldClose: true })}
-                    children="No"
+                    children={cancelText}
                   />
                   <button
                     className="btn btn-primary px-5 ml-3"
-                    onClick={() => setState({ doConfirm: true })}
-                    children="Yes"
+                    onClick={() => {
+                      if (validate()) {
+                        setState({ doConfirm: true })
+                      }
+                    }}
+                    children={proceedText}
                   />
                 </div>
               </>

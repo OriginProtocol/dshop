@@ -4,6 +4,9 @@ import { useHistory } from 'react-router-dom'
 import Paginate from 'components/Paginate'
 import SortableTable from 'components/SortableTable'
 import useCollections from 'utils/useCollections'
+import useBackendApi from 'utils/useBackendApi'
+
+import CreateCollection from './_New'
 
 function reducer(state, newState) {
   return { ...state, ...newState }
@@ -11,6 +14,7 @@ function reducer(state, newState) {
 
 const AdminCollections = () => {
   const history = useHistory()
+  const { post } = useBackendApi({ authToken: true })
   const { collections } = useCollections()
   const [state, setState] = useReducer(reducer, {
     collections: []
@@ -29,15 +33,23 @@ const AdminCollections = () => {
 
   return (
     <>
-      <h3 className="mb-3">Collections</h3>
+      <h3 className="admin-title">
+        Collections
+        <div className="ml-auto">
+          <CreateCollection />
+        </div>
+      </h3>
       <SortableTable
         items={collections}
         onClick={(collection) => {
           history.push(`/admin/collections/${collection.id}`)
         }}
-        onChange={(collections) => {
-          console.log(collections)
-        }}
+        onChange={(collections) =>
+          post('/collections', {
+            method: 'PUT',
+            body: JSON.stringify({ collections })
+          })
+        }
       >
         {(item, DragTarget) => (
           <>
