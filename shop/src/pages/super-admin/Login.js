@@ -1,10 +1,7 @@
 import React, { useState } from 'react'
 
-import { DshopLogo } from 'components/icons/Admin'
-
 import useConfig from 'utils/useConfig'
 import SetupLayout from './setup/_SetupLayout'
-import Button from './setup/_Button'
 import ErrorText from './setup/_ErrorText'
 
 const Login = ({ next }) => {

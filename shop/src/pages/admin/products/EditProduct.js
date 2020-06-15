@@ -14,15 +14,15 @@ const EditProduct = () => {
   const { post } = useBackendApi({ authToken: true })
 
   const [submitting, setSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState(null)
-  
+  const [, setSubmitError] = useState(null)
+
   const isNewProduct = productId === 'new'
-  
+
   const title = `${isNewProduct ? 'Add' : 'Edit'} product`
 
   const product = useMemo(() => {
     if (!products) return null
-    return products.find(p => p.id === productId)
+    return products.find((p) => p.id === productId)
   }, [productId, products])
 
   const createProduct = async () => {
@@ -37,7 +37,7 @@ const EditProduct = () => {
           //  TODO: from input state
           title: 'New product',
           price: 20000,
-          image:"img-0.png"
+          image: 'img-0.png'
         })
       })
 
@@ -54,19 +54,33 @@ const EditProduct = () => {
 
   return (
     <div className="admin-edit-product">
-      <form onSubmit={e => {
-        e.preventDefault()
-        createProduct()
-      }}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          createProduct()
+        }}
+      >
         <div className="title-section d-flex justify-content-between mb-3">
           <h3 className="m-0">{title}</h3>
           <div className="actions">
-              {isNewProduct ? (
-                <button className="btn btn-outline-primary" type="button" onClick={() => {
+            {isNewProduct ? (
+              <button
+                className="btn btn-outline-primary"
+                type="button"
+                onClick={() => {
                   history.push('/admin/products')
-                }}>Discard</button>
-              ) : <DeleteButton type="button" product={product}>Delete</DeleteButton>}
-            <button className="btn btn-primary ml-2" type="submit">Save</button>
+                }}
+              >
+                Discard
+              </button>
+            ) : (
+              <DeleteButton type="button" product={product}>
+                Delete
+              </DeleteButton>
+            )}
+            <button className="btn btn-primary ml-2" type="submit">
+              Save
+            </button>
           </div>
         </div>
         <div className="form-section">

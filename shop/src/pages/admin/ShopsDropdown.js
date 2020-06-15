@@ -26,29 +26,31 @@ const ShopsDropdown = () => {
       </div>
       {showDropdown && (
         <div className="shops-dropdown">
-          {!admin.shops || !admin.shops.length ? null : admin.shops.map((shop) => {
-            return (
-              <div
-                className={`shop-el${
-                  shop.authToken === config.activeShop ? ' selected' : ''
-                }`}
-                key={shop.id}
-                onClick={() => {
-                  setShowDropdown(false)
+          {!admin.shops || !admin.shops.length
+            ? null
+            : admin.shops.map((shop) => {
+                return (
+                  <div
+                    className={`shop-el${
+                      shop.authToken === config.activeShop ? ' selected' : ''
+                    }`}
+                    key={shop.id}
+                    onClick={() => {
+                      setShowDropdown(false)
 
-                  if (localStorage.activeShop === shop.authToken) return
-                  localStorage.activeShop = shop.authToken
-                  history.push({
-                    pathname: `/admin`,
-                    state: { scrollToTop: true }
-                  })
-                }}
-              >
-                <img src="/images/green-checkmark.svg" />
-                {shop.name}
-              </div>
-            )
-          })}
+                      if (localStorage.activeShop === shop.authToken) return
+                      localStorage.activeShop = shop.authToken
+                      history.push({
+                        pathname: `/admin`,
+                        state: { scrollToTop: true }
+                      })
+                    }}
+                  >
+                    <img src="/images/green-checkmark.svg" />
+                    {shop.name}
+                  </div>
+                )
+              })}
           <div className="new-shop-link">
             <div className="add-shop-icon">+</div>
             Add a shop

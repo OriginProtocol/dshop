@@ -140,7 +140,7 @@ module.exports = function (app) {
     async (req, res, next) => {
       const seller = await Seller.findOne({ where: { email: req.body.email } })
       if (!seller) {
-        return res.status(404).send({ 
+        return res.status(404).send({
           success: false,
           message: 'Invalid email'
         })
@@ -151,7 +151,7 @@ module.exports = function (app) {
         req.seller = seller
         next()
       } else {
-        return res.status(404).send({ 
+        return res.status(404).send({
           success: false,
           message: 'Invalid password'
         })

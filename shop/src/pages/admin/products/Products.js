@@ -28,7 +28,7 @@ const AdminProducts = () => {
   const hasNoProducts = !loading && pagedProducts.length === 0
 
   const sortByColumnCallback = (column) => {
-    return e => {
+    return (e) => {
       e.preventDefault()
 
       let newSort = `${column}-ascending`
@@ -38,7 +38,7 @@ const AdminProducts = () => {
           ? `${column}-descending`
           : `${column}-ascending`
       }
-  
+
       history.replace({
         pathname: location.pathname,
         search: `?sort=${newSort}`
@@ -51,21 +51,24 @@ const AdminProducts = () => {
       return null
     }
 
-    return opts.sort.endsWith('-ascending')
-      ? <> &#8593;</>
-      : <> &#8595;</>
+    return opts.sort.endsWith('-ascending') ? <> &#8593;</> : <> &#8595;</>
   }
 
-  const getCollection = product => {
-    const collection = collections.find(c => c.products.includes(product.id))
+  const getCollection = (product) => {
+    const collection = collections.find((c) => c.products.includes(product.id))
 
     return collection ? collection.title : null
   }
 
   return (
-    <div className={`admin-products-page${hasNoProducts ? ' no-products' : ''}`}>
+    <div
+      className={`admin-products-page${hasNoProducts ? ' no-products' : ''}`}
+    >
       <div className="d-flex justify-content-between mb-3">
-        <h3 className="m-0">Products {hasNoProducts ? null : <span>({sortedProducts.length})</span>}</h3>
+        <h3 className="m-0">
+          Products{' '}
+          {hasNoProducts ? null : <span>({sortedProducts.length})</span>}
+        </h3>
         {hasNoProducts ? null : (
           <Link to="/admin/products/new">
             <button className="btn btn-primary ml-3">Add Product</button>
@@ -77,23 +80,30 @@ const AdminProducts = () => {
         <table className="table admin-products table-hover">
           <thead>
             <tr>
-            <th onClick={sortByColumnCallback('title')}>Name {getSortIcon('title')}</th>
+              <th onClick={sortByColumnCallback('title')}>
+                Name {getSortIcon('title')}
+              </th>
               <th onClick={sortByColumnCallback('title')}></th>
               <th>Quantity</th>
-              <th onClick={sortByColumnCallback('price')}>Price {getSortIcon('price')}</th>
+              <th onClick={sortByColumnCallback('price')}>
+                Price {getSortIcon('price')}
+              </th>
               <th>Collection</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             {pagedProducts.map((product) => (
-              <tr key={product.id} onClick={e => {
-                if (e.target.matches('.action-icon, .action-icon *')) {
-                  return
-                }
+              <tr
+                key={product.id}
+                onClick={(e) => {
+                  if (e.target.matches('.action-icon, .action-icon *')) {
+                    return
+                  }
 
-                history.push(`/admin/products/${product.id}`)
-              }}>
+                  history.push(`/admin/products/${product.id}`)
+                }}
+              >
                 <td>
                   <div
                     className="pic"
@@ -102,14 +112,14 @@ const AdminProducts = () => {
                     }}
                   />
                 </td>
-                <td><div className="title">{product.title}</div></td>
+                <td>
+                  <div className="title">{product.title}</div>
+                </td>
                 <td>{product.quantity}</td>
                 <td>
                   <div className="price">{formatPrice(product.price)}</div>
                 </td>
-                <td>
-                  {getCollection(product)}
-                </td>
+                <td>{getCollection(product)}</td>
                 <td>
                   <div className="actions">
                     <div className="action-icon">
@@ -117,7 +127,10 @@ const AdminProducts = () => {
                         <img src="/images/green-checkmark.svg" />
                       </Link>
                     </div>
-                    <div className="action-icon" onClick={e => e.preventDefault()}>
+                    <div
+                      className="action-icon"
+                      onClick={(e) => e.preventDefault()}
+                    >
                       <img src="/images/green-checkmark.svg" />
                     </div>
                   </div>
@@ -130,7 +143,11 @@ const AdminProducts = () => {
         <div className="no-products-banner">
           <div className="add-product-cta">
             <h3>Add your products</h3>
-            <div className="desc">Get closer to your first sale by adding products.<br />Click the button below to get started.</div>
+            <div className="desc">
+              Get closer to your first sale by adding products.
+              <br />
+              Click the button below to get started.
+            </div>
             <Link to="/admin/products/new">
               <button className="btn btn-primary">Add Product</button>
             </Link>

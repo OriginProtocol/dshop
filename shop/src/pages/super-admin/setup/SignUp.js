@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
-import Button from './_Button'
 import ErrorText from './_ErrorText'
 
 const SignUp = () => {

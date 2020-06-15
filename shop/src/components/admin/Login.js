@@ -3,7 +3,6 @@ import React, { useState } from 'react'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import SetupLayout from '../../pages/super-admin/setup/_SetupLayout'
-import Button from '../../pages/super-admin/setup/_Button'
 import ErrorText from '../../pages/super-admin/setup/_ErrorText'
 
 const Login = () => {
@@ -43,7 +42,10 @@ const Login = () => {
                 dispatch({ type: 'setAuth', auth })
               } else {
                 const resJson = await res.json()
-                setState({ ...state, error: (resJson.message || 'Something went wrong') })
+                setState({
+                  ...state,
+                  error: resJson.message || 'Something went wrong'
+                })
               }
             })
             .catch((err) => {
@@ -73,9 +75,7 @@ const Login = () => {
         </div>
         <ErrorText>{state.error}</ErrorText>
         <div className="form-group">
-          <button type="submit">
-            Login
-          </button>
+          <button type="submit">Login</button>
         </div>
       </form>
     </SetupLayout>

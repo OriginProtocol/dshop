@@ -12,11 +12,12 @@ const validProductFields = [
   'quantity',
   'sku',
   'description',
-  'variants',
+  'variants'
 ]
 
 function generateUrlFriendlyId(title) {
-  return title.replace(/[^a-z0-9 -]/gi, '')
+  return title
+    .replace(/[^a-z0-9 -]/gi, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .toLowerCase()
@@ -25,12 +26,13 @@ function generateUrlFriendlyId(title) {
 function getUniqueID(title, products) {
   const rawId = generateUrlFriendlyId(title)
 
-  const existingProductIds = products.map(p => p.id)
+  const existingProductIds = products.map((p) => p.id)
 
   if (!existingProductIds.includes(rawId)) return rawId
 
   let suffix = 1
 
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     const fullID = `${rawId}-${suffix}`
 
@@ -60,7 +62,7 @@ async function upsertProduct(shop, productData) {
   let existingIndex = allProducts.length
 
   if (productData.id) {
-    existingIndex = allProducts.findIndex(p => p.id === productData.id)
+    existingIndex = allProducts.findIndex((p) => p.id === productData.id)
     if (existingIndex < 0) {
       return {
         status: 404,
@@ -69,7 +71,8 @@ async function upsertProduct(shop, productData) {
     }
   }
 
-  const newProductId = productData.id || getUniqueID(productData.title, allProducts)
+  const newProductId =
+    productData.id || getUniqueID(productData.title, allProducts)
 
   const product = {
     ...pick(productData, validProductFields),
@@ -90,7 +93,7 @@ async function upsertProduct(shop, productData) {
 async function deleteProduct(shop, productId) {
   const allProducts = readProductsFile(shop)
 
-  const existingIndex = allProducts.findIndex(p => p.id === productId)
+  const existingIndex = allProducts.findIndex((p) => p.id === productId)
 
   if (existingIndex < 0) {
     return {
@@ -108,7 +111,6 @@ async function deleteProduct(shop, productId) {
     error: null,
     product
   }
-
 }
 
 module.exports = { upsertProduct, deleteProduct }

@@ -9,7 +9,6 @@ const {
 } = require('../models')
 const { authSellerAndShop, authRole, authSuperUser } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
-const { upsertProduct } = require('../utils/products')
 const { getConfig, setConfig } = require('../utils/encryptedConfig')
 const { createShop } = require('../utils/shop')
 const get = require('lodash/get')

@@ -22,7 +22,10 @@ module.exports = function (app) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      const { product, status, error } = await deleteProduct(req.shop, req.params.productId)
+      const { product, status, error } = await deleteProduct(
+        req.shop,
+        req.params.productId
+      )
 
       return res.status(status).send({
         success: !error,
@@ -31,5 +34,4 @@ module.exports = function (app) {
       })
     }
   )
-
 }
