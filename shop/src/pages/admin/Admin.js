@@ -8,7 +8,8 @@ import useConfig from 'utils/useConfig'
 import * as Icons from 'components/icons/Admin'
 import Login from 'components/admin/Login'
 import Products from './products/Products'
-import Collections from './Collections'
+import Collections from './collections/List'
+import Collection from './collections/Show'
 import Dashboard from './Dashboard'
 import Orders from './Orders'
 import Discounts from './discounts/Discounts'
@@ -84,6 +85,7 @@ const Admin = () => {
             <Route path="/admin/discounts" component={Discounts} />
             <Route path="/admin/products/:id" component={EditProduct} />
             <Route path="/admin/products" component={Products} />
+            <Route path="/admin/collections/:id" component={Collection} />
             <Route path="/admin/collections" component={Collections} />
             <Route path="/admin/settings" component={Settings} />
             <Route path="/admin/events" component={Events} />

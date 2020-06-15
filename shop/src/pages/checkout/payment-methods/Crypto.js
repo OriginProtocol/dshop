@@ -73,7 +73,9 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
     return (
       <>
         {label}
-        <div className="mt-2">Loading Wallet Status...</div>
+        <div style={{ marginLeft: '2.25rem' }} className="mb-3">
+          Loading Wallet Status...
+        </div>
       </>
     )
   } else if (
@@ -94,14 +96,16 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
     return (
       <>
         {label}
-        <div className="mt-2">Sorry, no crypto wallet detected.</div>
+        <div style={{ marginLeft: '2.25rem' }} className="mb-3">
+          Sorry, no crypto wallet detected.
+        </div>
       </>
     )
   } else if (!wallet.networkOk) {
     return (
       <>
         {label}
-        <div className="mt-2">
+        <div style={{ marginLeft: '2.25rem' }} className="mb-3">
           {`Please switch your wallet to ${config.netName} to continue`}
         </div>
       </>
@@ -135,7 +139,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
                       />
                       <div className={`token-logo${isActive ? ' active' : ''}`}>
                         <img
-                          src={`/images/payment/${token.name.toLowerCase()}.svg`}
+                          src={`images/payment/${token.name.toLowerCase()}.svg`}
                         />
                       </div>
                       <div>{token.name}</div>

@@ -98,7 +98,7 @@ function useToken(activeToken = {}, totalUsd) {
           hasAllowance: false,
           hasBalance: false,
           loading: false,
-          error: 'Token Error'
+          error: 'Please refresh the page to continue'
         })
       }
     }

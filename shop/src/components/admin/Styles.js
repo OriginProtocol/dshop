@@ -73,6 +73,8 @@ require('react-styl')(`
             margin-right: 10px
         &:hover .actions
           visibility: visible
+        tbody tr:hover
+          background-color: #f3f8ff
       thead
         th
           background-color: #fafbfc
