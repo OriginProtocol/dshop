@@ -8,7 +8,6 @@ import SignUp from './SignUp'
 import ServerSetup from './ServerSetup'
 import CreateShop from '../shops/new-shop/CreateShop'
 import SetupLayout from './_SetupLayout'
-import { formGroupStyles, buttonBgStyle, buttonStyle } from './_formStyles'
 
 const FirstTime = () => {
   const [{ admin }] = useStateValue()
@@ -51,11 +50,6 @@ const FirstTime = () => {
 export default FirstTime
 
 require('react-styl')(`
-  ${formGroupStyles('.admin-first-time .create-shop .form-group')}
-
-  ${buttonBgStyle('.admin-first-time .create-shop button')}
-
-  ${buttonStyle('.admin-first-time .create-shop button[type=submit]')}
 
   .admin-first-time
     display: flex

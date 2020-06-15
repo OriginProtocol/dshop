@@ -3,7 +3,6 @@ import React, { useState } from 'react'
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 import Button from './_Button'
-import { formGroupStyles } from './_formStyles'
 import ErrorText from './_ErrorText'
 
 const SignUp = () => {
@@ -83,7 +82,7 @@ const SignUp = () => {
           />
         </div>
         <ErrorText>{state.error}</ErrorText>
-        <Button type="submit">Submit</Button>
+        <button type="submit">Submit</button>
       </form>
     </div>
   )
@@ -92,7 +91,6 @@ const SignUp = () => {
 export default SignUp
 
 require('react-styl')(`
-  ${formGroupStyles('.signup-form .form-group')}
   .signup-form
     .desc 
       font-size: 1.125rem

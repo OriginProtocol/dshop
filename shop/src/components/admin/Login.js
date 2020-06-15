@@ -4,7 +4,6 @@ import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import SetupLayout from '../../pages/super-admin/setup/_SetupLayout'
 import Button from '../../pages/super-admin/setup/_Button'
-import { formGroupStyles } from '../../pages/super-admin/setup/_formStyles'
 import ErrorText from '../../pages/super-admin/setup/_ErrorText'
 
 const Login = () => {
@@ -74,9 +73,9 @@ const Login = () => {
         </div>
         <ErrorText>{state.error}</ErrorText>
         <div className="form-group">
-          <Button type="submit">
+          <button type="submit">
             Login
-          </Button>
+          </button>
         </div>
       </form>
     </SetupLayout>
@@ -86,7 +85,6 @@ const Login = () => {
 export default Login
 
 require('react-styl')(`
-  ${formGroupStyles('.admin.login .form-group')}
   .admin.login
     width: 500px
     border-radius: 5px

@@ -4,7 +4,6 @@ import { DshopLogo } from 'components/icons/Admin'
 
 import useConfig from 'utils/useConfig'
 import SetupLayout from './setup/_SetupLayout'
-import { formGroupStyles } from './setup/_formStyles'
 import Button from './setup/_Button'
 import ErrorText from './setup/_ErrorText'
 
@@ -66,9 +65,9 @@ const Login = ({ next }) => {
             />
             <ErrorText>{state.error}</ErrorText>
           </div>
-          <Button type="submit" className="btn btn-primary mt-2 px-4">
+          <button type="submit" className="btn btn-primary mt-2 px-4">
             Login
-          </Button>
+          </button>
         </form>
       </div>
     </SetupLayout>
@@ -78,7 +77,6 @@ const Login = ({ next }) => {
 export default Login
 
 require('react-styl')(`
-  ${formGroupStyles('.login-form .form-group')}
   .login-form
     .desc 
       font-size: 1.125rem
