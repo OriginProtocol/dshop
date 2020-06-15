@@ -1,16 +1,18 @@
-import React, { useMemo, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import useProducts from 'utils/useProducts'
 import { useRouteMatch, useHistory } from 'react-router'
 import useBackendApi from 'utils/useBackendApi'
+import ImagePicker from 'components/ImagePicker'
 
 import DeleteButton from './_Delete'
+import useProduct from 'utils/useProduct'
 
 const EditProduct = () => {
   const history = useHistory()
   const match = useRouteMatch('/admin/products/:productId')
   const { productId } = match.params
-  const { products, refetch } = useProducts()
+  const { refetch } = useProducts()
   const { post } = useBackendApi({ authToken: true })
 
   const [submitting, setSubmitting] = useState(false)
@@ -20,10 +22,29 @@ const EditProduct = () => {
 
   const title = `${isNewProduct ? 'Add' : 'Edit'} product`
 
-  const product = useMemo(() => {
-    if (!products) return null
-    return products.find((p) => p.id === productId)
-  }, [productId, products])
+  const { product } = useProduct(productId)
+
+  const [media, setMedia] = useState([])
+
+  useEffect(() => {
+    if (product) {
+      let imageArray = product.images
+      if (!imageArray && product.image) {
+        imageArray = [product.image]
+      } else if (!imageArray) {
+        imageArray = []
+      }
+
+      const mappedImages = imageArray.map((image) => ({
+        src: image.includes('/__tmp/')
+          ? image
+          : `/${localStorage.activeShop}/${product.id}/orig/${image}`,
+        path: image
+      }))
+
+      setMedia(mappedImages)
+    }
+  }, [product])
 
   const createProduct = async () => {
     if (submitting) return
@@ -35,9 +56,10 @@ const EditProduct = () => {
         method: 'POST',
         body: JSON.stringify({
           //  TODO: from input state
+          ...product,
           title: 'New product',
           price: 20000,
-          image: 'img-0.png'
+          images: media.map((file) => file.path)
         })
       })
 
@@ -89,6 +111,8 @@ const EditProduct = () => {
             {/* <input type="text" value="" /> */}
             {product && product.title}
           </div>
+
+          <ImagePicker images={media} onChange={(media) => setMedia(media)} />
         </div>
       </form>
     </div>

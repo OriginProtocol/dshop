@@ -1,19 +1,26 @@
 const path = require('path')
 const fs = require('fs')
+const mv = require('mv')
+const sharp = require('sharp')
+
+const { exec } = require('child_process')
 
 const pick = require('lodash/pick')
 const { DSHOP_CACHE } = require('./const')
 
 const validProductFields = [
+  'id',
   'title',
+  'description',
   'price',
   'image',
-  'gallery',
+  'images',
   'quantity',
   'sku',
-  'description',
   'variants'
 ]
+
+const minimalistProductFields = ['id', 'title', 'description', 'price', 'image']
 
 function generateUrlFriendlyId(title) {
   return title
@@ -23,10 +30,15 @@ function generateUrlFriendlyId(title) {
     .toLowerCase()
 }
 
-function getUniqueID(title, products) {
+function getUniqueID(title, shop) {
   const rawId = generateUrlFriendlyId(title)
 
+  const products = readProductsFile(shop)
+
   const existingProductIds = products.map((p) => p.id)
+
+  // Blacklisting new keyword
+  existingProductIds.push('new')
 
   if (!existingProductIds.includes(rawId)) return rawId
 
@@ -56,7 +68,8 @@ function writeProductsFile(shop, data) {
   fs.writeFileSync(productsPath, JSON.stringify(data, undefined, 2))
 }
 
-async function upsertProduct(shop, productData) {
+// Appends to products.json and returns an id
+function appendToProductsFile(shop, productData) {
   const allProducts = readProductsFile(shop)
 
   let existingIndex = allProducts.length
@@ -64,6 +77,109 @@ async function upsertProduct(shop, productData) {
   if (productData.id) {
     existingIndex = allProducts.findIndex((p) => p.id === productData.id)
     if (existingIndex < 0) {
+      // Should never happen, but just because
+      existingIndex = allProducts.length
+    }
+  }
+
+  allProducts[existingIndex] = pick(productData, minimalistProductFields)
+
+  writeProductsFile(shop, allProducts)
+}
+
+function writeProductData(shop, productId, data) {
+  const outDir = path.resolve(
+    `${DSHOP_CACHE}/${shop.authToken}/data/${productId}`
+  )
+  if (!fs.existsSync(outDir)) {
+    fs.mkdirSync(outDir, { recursive: true })
+  }
+
+  const dataFilePath = `${outDir}/data.json`
+  fs.writeFileSync(dataFilePath, JSON.stringify(data, undefined, 2))
+}
+
+async function removeProductData(shop, productId) {
+  const outDir = path.resolve(
+    `${DSHOP_CACHE}/${shop.authToken}/data/${productId}`
+  )
+  if (fs.existsSync(outDir)) {
+    // fs.rmdirSync(outDir, { recursive: true })
+    // TODO: How safe is this?
+    await new Promise((resolve, reject) => {
+      exec(`rm -rf ${outDir}`, (err) => {
+        if (err) return reject(err)
+        resolve()
+      })
+    })
+  }
+}
+
+async function moveProductImages(shop, productId, productData) {
+  const dataDir = shop.authToken
+  const tmpDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/__tmp`)
+  const targetDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/${productId}`)
+
+  const supportedSizes = [520, 'orig']
+
+  const out = []
+  for (const filePath of productData.images || []) {
+    if (filePath.includes('/__tmp/')) {
+      const fileName = filePath.split('/__tmp/', 2)[1]
+      const tmpFilePath = `${tmpDir}/${fileName}`
+
+      for (const supportedSize of supportedSizes) {
+        const sizeDir = `${targetDir}/${supportedSize}`
+        const targetPath = `${sizeDir}/${fileName}`
+
+        if (!fs.existsSync(sizeDir)) {
+          fs.mkdirSync(sizeDir, { recursive: true })
+        }
+
+        if (supportedSize === 'orig') {
+          // Move from temp dir in case of original size
+          await new Promise((resolve) => {
+            mv(tmpFilePath, targetPath, (err) => {
+              if (err) {
+                // TODO: better error handling
+                // Just push the original temp path for now
+                console.error(
+                  `Couldn't move file`,
+                  tmpFilePath,
+                  targetPath,
+                  err
+                )
+              } else {
+                out.push(fileName)
+              }
+              resolve()
+            })
+          })
+        } else {
+          // resize otherwise
+          const resizedImage = await sharp(tmpFilePath)
+            .resize(supportedSize)
+            .toBuffer()
+
+          fs.writeFileSync(targetPath, resizedImage)
+        }
+      }
+    } else {
+      // Leave if it is already out of temp dir
+      // Could be the case in case of updates
+      out.push(filePath)
+    }
+  }
+
+  return out
+}
+
+async function upsertProduct(shop, productData) {
+  if (productData.id) {
+    const dataDir = path.resolve(
+      `${DSHOP_CACHE}/${shop.authToken}/data/${productData.id}/data.json`
+    )
+    if (!fs.existsSync(dataDir)) {
       return {
         status: 404,
         error: 'No such product'
@@ -71,17 +187,20 @@ async function upsertProduct(shop, productData) {
     }
   }
 
-  const newProductId =
-    productData.id || getUniqueID(productData.title, allProducts)
+  const newProductId = productData.id || getUniqueID(productData.title, shop)
+
+  const productImages = await moveProductImages(shop, newProductId, productData)
 
   const product = {
     ...pick(productData, validProductFields),
-    id: newProductId
+    id: newProductId,
+    images: productImages,
+    image: productImages[0]
   }
 
-  allProducts[existingIndex] = product
+  writeProductData(shop, newProductId, product)
 
-  writeProductsFile(shop, allProducts)
+  appendToProductsFile(shop, product)
 
   return {
     status: 200,
@@ -104,6 +223,7 @@ async function deleteProduct(shop, productId) {
 
   const [product] = allProducts.splice(existingIndex, 1)
 
+  await removeProductData(shop, productId)
   writeProductsFile(shop, allProducts)
 
   return {
