@@ -3,6 +3,8 @@ import { useHistory } from 'react-router-dom'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 
+import Caret from 'components/icons/Caret'
+
 const ShopsDropdown = () => {
   const [showDropdown, setShowDropdown] = useState(false)
   const { config } = useConfig()
@@ -20,33 +22,35 @@ const ShopsDropdown = () => {
         ) : (
           config.title
         )}
-        <img className="dropdown-cog" src="images/right-arrow-large.svg" />
+        <Caret />
       </div>
       {showDropdown && (
         <div className="shops-dropdown">
-          {admin.shops.map((shop) => {
-            return (
-              <div
-                className={`shop-el${
-                  shop.authToken === config.activeShop ? ' selected' : ''
-                }`}
-                key={shop.id}
-                onClick={() => {
-                  setShowDropdown(false)
+          {!admin.shops || !admin.shops.length
+            ? null
+            : admin.shops.map((shop) => {
+                return (
+                  <div
+                    className={`shop-el${
+                      shop.authToken === config.activeShop ? ' selected' : ''
+                    }`}
+                    key={shop.id}
+                    onClick={() => {
+                      setShowDropdown(false)
 
-                  if (localStorage.activeShop === shop.authToken) return
-                  localStorage.activeShop = shop.authToken
-                  history.push({
-                    pathname: `/admin`,
-                    state: { scrollToTop: true }
-                  })
-                }}
-              >
-                <img src="/images/green-checkmark.svg" />
-                {shop.name}
-              </div>
-            )
-          })}
+                      if (localStorage.activeShop === shop.authToken) return
+                      localStorage.activeShop = shop.authToken
+                      history.push({
+                        pathname: `/admin`,
+                        state: { scrollToTop: true }
+                      })
+                    }}
+                  >
+                    <img src="/images/green-checkmark.svg" />
+                    {shop.name}
+                  </div>
+                )
+              })}
           <div className="new-shop-link">
             <div className="add-shop-icon">+</div>
             Add a shop
@@ -63,6 +67,9 @@ require('react-styl')(`
   .shops-title-wrapper
     position: relative
 
+    .icon.icon-caret
+      fill: #3b80ee
+      margin-left: 0.75rem
   .shops-dropdown
     position: absolute
     width: 250px
@@ -77,13 +84,14 @@ require('react-styl')(`
     padding: 1.5rem
 
     .new-shop-link
-      border-top: 1px solid #cdd7e0
-      padding-top: 1rem
-      margin-top: 1rem
       display: flex
       align-items: center
       font-size: 0.75rem
       color: #3b80ee
+      &:not(:first-child)
+        border-top: 1px solid #cdd7e0
+        padding-top: 1rem
+        margin-top: 1rem
       .add-shop-icon
         border: solid 1px #3b80ee
         border-radius: 50%
@@ -106,6 +114,6 @@ require('react-styl')(`
         width: 14px
         object-fit: contain
         margin-right: 10px
-      &:not(.selected) img 
+      &:not(.selected) img
         visibility: hidden
 `)

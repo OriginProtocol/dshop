@@ -4,7 +4,10 @@ function useBackendApi(opts = {}) {
   const { authToken } = opts
   const { config } = useConfig()
 
-  const headers = { 'content-type': 'application/json' }
+  const headers = {
+    'content-type': 'application/json',
+    ...opts.headers
+  }
   if (authToken) {
     headers.authorization = `bearer ${config.backendAuthToken}`
   }
@@ -12,13 +15,13 @@ function useBackendApi(opts = {}) {
   function post(url, opts = {}) {
     return new Promise((resolve, reject) => {
       fetch(`${config.backend}${url}`, {
-        headers,
         credentials: 'include',
-        ...opts
+        ...opts,
+        headers
       })
         .then((res) => res.json())
         .then((json) => {
-          json.success ? resolve() : reject(new Error(json.reason))
+          json.success ? resolve(json) : reject(new Error(json.reason))
         })
         .catch(reject)
     })

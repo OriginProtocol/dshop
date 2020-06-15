@@ -103,55 +103,57 @@ const AdminDashboard = () => {
         </div>
         {/* <h5 className="ml-4">{`${formatPrice(totalSales * 0.05)} profit`}</h5> */}
       </div>
-      <table className="table admin-products mt-4">
-        <thead>
-          <tr>
-            <th colSpan="2">Top Products</th>
-            <th className="text-center">
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault()
-                  setSort('orders')
-                }}
-              >
-                Sales{sort === 'orders' ? <> &#8595;</> : null}
-              </a>
-            </th>
-            <th className="text-center">
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault()
-                  setSort('revenue')
-                }}
-              >
-                Revenue{sort === 'revenue' ? <> &#8595;</> : null}
-              </a>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {topProducts.map((product) => (
-            <tr key={product.id}>
-              <td>
-                <div
-                  className="pic"
-                  style={{
-                    backgroundImage: `url(${config.dataSrc}${product.id}/520/${product.image})`
+      {topProducts.length === 0 ? null : (
+        <table className="table admin-products mt-4">
+          <thead>
+            <tr>
+              <th colSpan="2">Top Products</th>
+              <th className="text-center">
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setSort('orders')
                   }}
-                />
-              </td>
-              <td>
-                <div className="title">{product.title}</div>
-                <div className="price">{formatPrice(product.price)}</div>
-              </td>
-              <td className="text-center">{product.orders}</td>
-              <td className="text-center">{formatPrice(product.revenue)}</td>
+                >
+                  Sales{sort === 'orders' ? <> &#8595;</> : null}
+                </a>
+              </th>
+              <th className="text-center">
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setSort('revenue')
+                  }}
+                >
+                  Revenue{sort === 'revenue' ? <> &#8595;</> : null}
+                </a>
+              </th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {topProducts.map((product) => (
+              <tr key={product.id}>
+                <td>
+                  <div
+                    className="pic"
+                    style={{
+                      backgroundImage: `url(${config.dataSrc}${product.id}/520/${product.image})`
+                    }}
+                  />
+                </td>
+                <td>
+                  <div className="title">{product.title}</div>
+                  <div className="price">{formatPrice(product.price)}</div>
+                </td>
+                <td className="text-center">{product.orders}</td>
+                <td className="text-center">{formatPrice(product.revenue)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
       <div className="mt-4">
         <Chart orders={orders} />
       </div>

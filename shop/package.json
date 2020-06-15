@@ -36,6 +36,7 @@
     "query-string": "^6.12.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-image-crop": "^8.6.4",
     "react-spring": "^8.0.27",
     "react-stripe-elements": "^6.1.2",
     "react-styl": "^0.0.3",

@@ -71,7 +71,7 @@ const SuperAdmin = () => {
       <nav>
         <div className="fullwidth-container">
           <h1>
-            <img src="images/dshop-logo-blue.svg" />
+            <img className="dshop-logo" src="images/dshop-logo-blue.svg" />
             <div className="shops-title-wrapper">
               <div className="shop-title">Super Admin</div>
             </div>

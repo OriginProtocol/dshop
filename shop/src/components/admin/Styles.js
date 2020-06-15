@@ -39,6 +39,8 @@ require('react-styl')(`
         img
           max-height: 2.5rem
           max-width: 12rem
+          &.dshop-logo
+            transform: translateY(3.5px)
         .shops-title-wrapper
           display: flex
         .shop-title
@@ -64,6 +66,13 @@ require('react-styl')(`
     .table
       &.table-hover
         cursor: pointer
+        td .actions
+          display: flex
+          visibility: hidden
+          .action-icon
+            margin-right: 10px
+        &:hover .actions
+          visibility: visible
       thead
         th
           background-color: #fafbfc

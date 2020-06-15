@@ -17,7 +17,7 @@ const AdminMenu = () => {
     <Menu>
       <li className={`dashboard ${active('/super-admin/dashboard')}`}>
         <Link to="/super-admin/dashboard">
-          <Icons.Dashboard />
+          <Icons.Home />
           Dashboard
         </Link>
       </li>

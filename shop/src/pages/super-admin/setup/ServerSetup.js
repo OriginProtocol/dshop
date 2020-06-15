@@ -4,7 +4,6 @@ import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 
 import NetworkForm from '../networks/_Form'
-import { buttonBgStyle, buttonStyle, formGroupStyles } from './_formStyles'
 
 const ServerSetup = () => {
   const { config } = useConfig()
@@ -38,11 +37,21 @@ const ServerSetup = () => {
 export default ServerSetup
 
 require('react-styl')(`
-  ${formGroupStyles('.server-setup-form form .form-group')}
+  .server-setup-form button
+    box-shadow: 5px 5px 8px 0 #0065d2, -3px -3px 6px 0 #2a92ff, inset 3px 3px 2px 0 #0e4d90, inset -3px -3px 2px 0 #021d3a
+    background-image: linear-gradient(289deg, #02203f, #053c77 6%)
+    color: #fff
 
-  ${buttonBgStyle('.server-setup-form button')}
-
-  ${buttonStyle('.server-setup-form button[type=submit]')}
+  .server-setup-form button[type=submit]
+    box-shadow: 5px 5px 8px 0 #0065d2, -3px -3px 6px 0 #2a92ff, inset 3px 3px 2px 0 #0e4d90, inset -3px -3px 2px 0 #021d3a
+    background-image: linear-gradient(289deg, #02203f, #053c77 6%)
+    color: #fff
+    border-radius: 5px
+    width: auto
+    margin: 0.75rem auto
+    display: inline-block
+    padding: 0.5rem 1.75rem
+    font-size: 1.125rem
 
   .server-setup-form
     width: 100%

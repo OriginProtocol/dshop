@@ -141,17 +141,4 @@ require('react-styl')(`
     &.inactive:before
       background-color: #c9444a
 
-  .admin-discounts
-    tbody
-      tr
-        td .actions
-          display: flex
-          visibility: hidden
-          .action-icon
-            margin-right: 10px
-        &:hover .actions
-          visibility: visible
-
-
-
 `)

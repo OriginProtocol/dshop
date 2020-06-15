@@ -140,7 +140,10 @@ module.exports = function (app) {
     async (req, res, next) => {
       const seller = await Seller.findOne({ where: { email: req.body.email } })
       if (!seller) {
-        return res.status(404).send({ success: false })
+        return res.status(404).send({
+          success: false,
+          message: 'Invalid email'
+        })
       }
       const check = await checkPassword(req.body.password, seller.password)
       if (check === true) {
@@ -148,7 +151,10 @@ module.exports = function (app) {
         req.seller = seller
         next()
       } else {
-        next()
+        return res.status(404).send({
+          success: false,
+          message: 'Invalid password'
+        })
       }
     },
     authSellerAndShop,

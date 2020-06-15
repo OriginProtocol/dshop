@@ -12,6 +12,7 @@ require('react-styl')(`
     padding: 0.875rem 0
     height: 100%
     border-right: 1px solid #e9f0f3
+    margin-bottom: 0
     li
       margin: 0.5rem 0
       a
