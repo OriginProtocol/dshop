@@ -68,12 +68,12 @@ const ImagePicker = (props) => {
         key={image.src}
         className={`preview-row${dragTarget === idx ? ' dragging' : ''}`}
         draggable
-        onDragEnd={e => {
+        onDragEnd={(e) => {
           if (e.dataTransfer.items.length > 0) return
           setState({ dragging: null, dragTarget: null })
           onChange(images)
         }}
-        onDragEnter={e => {
+        onDragEnter={(e) => {
           if (e.dataTransfer.items.length > 0) return
           setState({ dragTarget: idx })
         }}
@@ -92,9 +92,7 @@ const ImagePicker = (props) => {
       >
         <div className="img" style={{ backgroundImage: `url(${image.src})` }} />
         <div className="info">
-          <div className="img-title">
-            {image.name || image.path}
-          </div>
+          <div className="img-title">{image.name || image.path}</div>
           <div className="img-subtitle">
             {idx === 0 ? 'Cover image' : `Image ${idx}`}
           </div>
@@ -114,7 +112,7 @@ const ImagePicker = (props) => {
     ))
   }
 
-  const filesAdded = async files => {
+  const filesAdded = async (files) => {
     setState({ uploading: true })
     let newImages = await uploadImages(files)
     newImages = newImages.map((image) => ({
@@ -128,13 +126,13 @@ const ImagePicker = (props) => {
   }
 
   return (
-    <div 
+    <div
       className="image-picker"
-      onDragEnter={e => {
+      onDragEnter={(e) => {
         if (e.dataTransfer.items.length === 0) return
         e.preventDefault()
         e.stopPropagation()
-        
+
         if (e.currentTarget.matches('.image-picker, .image-picker *')) {
           clearTimeout(window.__dragLeaveTimeout)
           setState({
@@ -142,7 +140,7 @@ const ImagePicker = (props) => {
           })
         }
       }}
-      onDragLeave={e => {
+      onDragLeave={(e) => {
         // if (e.dataTransfer.items.length === 0) return
         if (e.currentTarget.matches('.image-picker *')) return
 
@@ -155,7 +153,7 @@ const ImagePicker = (props) => {
           })
         }, 300)
       }}
-      onDrop={async e => {
+      onDrop={async (e) => {
         if (e.dataTransfer.items.length === 0) return
         e.preventDefault()
         e.stopPropagation()
@@ -164,10 +162,10 @@ const ImagePicker = (props) => {
           externalDrop: false
         })
 
-        const files = Array.from(e.dataTransfer.items).map(x => x.getAsFile())
+        const files = Array.from(e.dataTransfer.items).map((x) => x.getAsFile())
         await filesAdded(files)
       }}
-      onDragOver={e => {
+      onDragOver={(e) => {
         if (e.dataTransfer.items.length === 0) return
         if (e.currentTarget.matches('.image-picker, .image-picker *')) {
           clearTimeout(window.__dragLeaveTimeout)

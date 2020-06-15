@@ -63,6 +63,14 @@ const EditProduct = () => {
 
   const createProduct = async () => {
     if (submitting) return
+    const { valid, newState } = validate(formState)
+
+    setFormState(newState)
+
+    if (!valid) {
+      return
+    }
+
     setSubmitting(true)
     setSubmitError(null)
 
@@ -120,7 +128,6 @@ const EditProduct = () => {
         </div>
         <div className="row">
           <div className="col-md-9">
-
             <div className="form-section">
               <div className="form-group">
                 <label>Title</label>
@@ -135,8 +142,13 @@ const EditProduct = () => {
               </div>
 
               <div className="media-uploader">
-                <label>Photos <span>(add as many as you like)</span></label>
-                <ImagePicker images={media} onChange={(media) => setMedia(media)} />
+                <label>
+                  Photos <span>(add as many as you like)</span>
+                </label>
+                <ImagePicker
+                  images={media}
+                  onChange={(media) => setMedia(media)}
+                />
               </div>
 
               <div className="row">
@@ -153,7 +165,9 @@ const EditProduct = () => {
                   </div>
 
                   <div className="form-group">
-                    <label>SKU <span>(Stock Keeping Unit)</span></label>
+                    <label>
+                      SKU <span>(Stock Keeping Unit)</span>
+                    </label>
                     <input type="text" {...input('sku')} />
                     {Feedback('sku')}
                   </div>
@@ -167,13 +181,22 @@ const EditProduct = () => {
               </div>
             </div>
 
-
             <div className="row">
               <div className="col-md-6">
                 <label>Vairants</label>
                 <div className="form-check">
-                  <input {...input('variants')} id="variantsCheckbox" type="checkbox" className="form-check-input" />
-                  <label className="form-check-label" htmlFor="variantsCheckbox">This product has multiple options, like different sizes</label>
+                  <input
+                    {...input('variants')}
+                    id="variantsCheckbox"
+                    type="checkbox"
+                    className="form-check-input"
+                  />
+                  <label
+                    className="form-check-label"
+                    htmlFor="variantsCheckbox"
+                  >
+                    This product has multiple options, like different sizes
+                  </label>
                   {Feedback('variants')}
                 </div>
               </div>
@@ -182,8 +205,15 @@ const EditProduct = () => {
             <div>
               <label>Shipping</label>
               <div className="form-check">
-                <input {...input('shipping')} id="shippingCheckbox" type="checkbox" className="form-check-input" />
-                <label className="form-check-label" htmlFor="shippingCheckbox">Products ship internationally</label>
+                <input
+                  {...input('shipping')}
+                  id="shippingCheckbox"
+                  type="checkbox"
+                  className="form-check-input"
+                />
+                <label className="form-check-label" htmlFor="shippingCheckbox">
+                  Products ship internationally
+                </label>
                 {Feedback('shipping')}
               </div>
             </div>
@@ -209,7 +239,6 @@ const EditProduct = () => {
                 </div>
               </div>
             </div>
-
           </div>
           <div className="col-md-2"></div>
         </div>
