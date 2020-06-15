@@ -1,7 +1,5 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useReducer } from 'react'
 import useConfig from 'utils/useConfig'
-import useSetState from 'utils/useSetState'
-
 
 const acceptedFileTypes = [
   'image/jpeg',
@@ -10,9 +8,13 @@ const acceptedFileTypes = [
   'image/webp'
 ]
 
+function reducer(state, newState) {
+  return { ...state, ...newState }
+}
+
 const ImagePicker = (props) => {
   const { onChange } = props
-  const [state, setState] = useSetState({})
+  const [state, setState] = useReducer(reducer, {})
 
   const { config } = useConfig()
 
@@ -133,22 +135,25 @@ const ImagePicker = (props) => {
         e.preventDefault()
         e.stopPropagation()
         
-        if (e.target.matches('.image-picker, .image-picker *')) {
+        if (e.currentTarget.matches('.image-picker, .image-picker *')) {
+          clearTimeout(window.__dragLeaveTimeout)
           setState({
             externalDrop: true
           })
         }
       }}
       onDragLeave={e => {
-        if (e.dataTransfer.items.length === 0) return
-        if (!e.target.matches('image-picker')) return
+        // if (e.dataTransfer.items.length === 0) return
+        if (e.currentTarget.matches('.image-picker *')) return
 
         e.preventDefault()
         e.stopPropagation()
 
-        setState({
-          externalDrop: false
-        })
+        window.__dragLeaveTimeout = setTimeout(() => {
+          setState({
+            externalDrop: false
+          })
+        }, 300)
       }}
       onDrop={async e => {
         if (e.dataTransfer.items.length === 0) return
@@ -164,6 +169,10 @@ const ImagePicker = (props) => {
       }}
       onDragOver={e => {
         if (e.dataTransfer.items.length === 0) return
+        if (e.currentTarget.matches('.image-picker, .image-picker *')) {
+          clearTimeout(window.__dragLeaveTimeout)
+        }
+
         e.preventDefault()
         e.stopPropagation()
       }}
@@ -186,7 +195,7 @@ const ImagePicker = (props) => {
         )}
         <div className={`add-photos${state.uploading ? ' uploading' : ''}`} />
       </label>
-      {state.externalDrop === false ? null : (
+      {!state.externalDrop ? null : (
         <div className="external-drop-hover">
           <h4>Drop here to upload</h4>
         </div>
