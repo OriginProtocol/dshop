@@ -7,6 +7,8 @@ import { DshopLogo } from 'components/icons/Admin'
 import SignUp from './SignUp'
 import ServerSetup from './ServerSetup'
 import CreateShop from '../shops/new-shop/CreateShop'
+import SetupLayout from './_SetupLayout'
+import { formGroupStyles, buttonBgStyle, buttonStyle } from './_formStyles'
 
 const FirstTime = () => {
   const [{ admin }] = useStateValue()
@@ -29,25 +31,32 @@ const FirstTime = () => {
   }
 
   return (
-    <div className="container admin-first-time">
-      <DshopLogo />
-      {step === 'sign-up' ? (
-        <SignUp />
-      ) : step === 'server-setup' ? (
-        <ServerSetup />
-      ) : (
-        <>
-          <div className="mb-4">Create a Shop:</div>
-          <CreateShop />
-        </>
-      )}
-    </div>
+    <SetupLayout>
+      <div className="admin-first-time">
+        {step === 'sign-up' ? (
+          <SignUp />
+        ) : step === 'server-setup' ? (
+          <ServerSetup />
+        ) : (
+          <>
+            <div className="desc">Create your shop</div>
+            <CreateShop />
+          </>
+        )}
+      </div>
+    </SetupLayout>
   )
 }
 
 export default FirstTime
 
 require('react-styl')(`
+  ${formGroupStyles('.admin-first-time .create-shop .form-group')}
+
+  ${buttonBgStyle('.admin-first-time .create-shop button')}
+
+  ${buttonStyle('.admin-first-time .create-shop button[type=submit]')}
+
   .admin-first-time
     display: flex
     flex-direction: column
@@ -55,6 +64,13 @@ require('react-styl')(`
     align-items: center
     margin-top: 4rem
     margin-bottom: 4rem
+
+    .desc 
+      font-size: 1.125rem
+      text-align: center
+      color: #ffffff
+      margin-bottom: 1.5rem
+
     a
       color: #3b80ee
     svg
@@ -64,5 +80,15 @@ require('react-styl')(`
     .sign-up
       display: flex
       flex-direction: column
-      max-width: 400px
+
+    .create-shop 
+      .advanced-link
+        color: #fff
+
+      .form-group
+        color: #fff
+
+`)
+
+require('react-styl')(`
 `)

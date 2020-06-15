@@ -8,6 +8,7 @@ import useConfig from 'utils/useConfig'
 import useOrigin from 'utils/useOrigin'
 import usePrice from 'utils/usePrice'
 import useAcceptOffer from 'utils/useAcceptOffer'
+import IdentityProxyAbi from 'utils/abis/IdentityProxy'
 
 function status(id) {
   if (id === 1) return 'Created'
@@ -20,7 +21,8 @@ const AdminContract = () => {
   const { config } = useConfig()
   const [offer, setOffer] = useState()
   const [listing, setListing] = useState()
-  const { marketplace } = useOrigin()
+  const [sellerProxy, setSellerProxy] = useState()
+  const { marketplace, provider, signer } = useOrigin()
   const match = useRouteMatch('/admin/orders/:orderId')
   const { orderId } = match.params
   const splitOrder = orderId.split('-')
@@ -28,7 +30,7 @@ const AdminContract = () => {
   const onChange = (newState) => setState({ ...state, ...newState })
   const { toFiatPrice } = usePrice()
 
-  useAcceptOffer({ offerId: orderId, onChange, ...state })
+  useAcceptOffer({ offerId: orderId, onChange, sellerProxy, ...state })
 
   useEffect(() => {
     if (!marketplace || !orderId) {
@@ -55,6 +57,18 @@ const AdminContract = () => {
         seller: listing.seller,
         deposit: ethers.utils.formatUnits(listing.deposit, 'ether'),
         depositManager: listing.depositManager
+      })
+      provider.getCode(listing.seller).then((code) => {
+        if (code && code.length > 2) {
+          const contract = new ethers.Contract(
+            listing.seller,
+            IdentityProxyAbi,
+            signer || provider
+          )
+          contract.owner().then((address) => {
+            setSellerProxy({ address, contract })
+          })
+        }
       })
     })
   }, [marketplace])
@@ -104,8 +118,20 @@ const AdminContract = () => {
         </div>
         <div>Buyer</div>
         <div>{offer.buyer}</div>
-        <div>Seller</div>
-        <div>{listing ? listing.seller : ''}</div>
+
+        {sellerProxy ? (
+          <>
+            <div>Seller</div>
+            <div>{sellerProxy.address}</div>
+            <div>Proxy</div>
+            <div>{listing.seller}</div>
+          </>
+        ) : (
+          <>
+            <div>Seller</div>
+            <div>{listing ? listing.seller : ''}</div>
+          </>
+        )}
         <div>Arbitrator</div>
         <div>{offer.arbitrator}</div>
         <div>Affiliate</div>

@@ -18,7 +18,7 @@
 echo "Writing packer.json..."
 
 BUILD_ID=$(date +%Y%m%d%H%M%S)
-SOURCE_IMAGE="debian-10-buster-v20200413"
+SOURCE_IMAGE="debian-10-buster-v20200521"
 IMAGE_FAMILY="origin-dshop"
 IMAGE_NAME="$IMAGE_FAMILY-$BUILD_ID"
 PACKER_ZONE="us-west2-b"

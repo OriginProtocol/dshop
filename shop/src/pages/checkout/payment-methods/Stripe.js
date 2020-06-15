@@ -159,13 +159,13 @@ const PayWithStripe = injectStripe(
           )}
         </label>
         {!stripeSelected ? null : (
-          <div className="pl-4 pb-3 pt-3">
-            <div className="form-row">
-              <CardElement
-                className="form-control"
-                style={{ base: { fontSize: '16px', lineHeight: '24px' } }}
-              />
-              {Feedback('card')}
+          <div className="pb-3 pr-2" style={{ marginLeft: '2.25rem' }}>
+            <CardElement
+              className="form-control"
+              style={{ base: { fontSize: '16px', lineHeight: '24px' } }}
+            />
+            {Feedback('card')}
+            <div className="d-flex">
               <img
                 src="images/powered_by_stripe.svg"
                 className="ml-auto mt-2"

@@ -95,7 +95,7 @@ function useWallet() {
           setTimeout(function () {
             dispatch({ type: 'reload', target: 'provider' })
             resolve(true)
-          }, 100)
+          }, 250)
         } else {
           resolve(false)
         }

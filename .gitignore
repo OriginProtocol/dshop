@@ -89,3 +89,5 @@ Thumbs.db
 devops/github
 devops/kubernetes/values/origin/secrets-*.enc.yaml
 devops/kubernetes/values/origin-monitoring/secrets
+
+dshop_setup

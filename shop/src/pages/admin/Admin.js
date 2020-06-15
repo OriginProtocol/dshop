@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { Redirect, Switch, Route } from 'react-router-dom'
+import { Redirect, Switch, Route, Link } from 'react-router-dom'
 import 'components/admin/Styles'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 
 import * as Icons from 'components/icons/Admin'
-import Link from 'components/Link'
 import Login from 'components/admin/Login'
 import Products from './Products'
 import Collections from './Collections'
@@ -18,6 +17,8 @@ import Order from './order/Order'
 import Settings from './settings/Settings'
 import Events from './Events'
 import Menu from './_Menu'
+import ShopsDropdown from './ShopsDropdown'
+import AdminHome from './Home'
 
 const Admin = () => {
   const { config } = useConfig()
@@ -58,49 +59,38 @@ const Admin = () => {
   return (
     <div className="admin">
       <nav>
-        <div className="container">
+        <div className="fullwidth-container">
           <h1>
-            <img src="images/dshop-logo.svg" />
-            <div>
-              {config.logo ? (
-                <img src={`${config.dataSrc}${config.logo}`} />
-              ) : (
-                config.title
-              )}
-            </div>
+            <img src="images/dshop-logo-blue.svg" />
+            <ShopsDropdown />
           </h1>
+          <div className="mr-4">
+            <Link to="/about">FAQ</Link>
+          </div>
           <div className="user">
             <Icons.User />
             {admin.email}
           </div>
         </div>
       </nav>
-      <div className="container">
-        <div className="row">
-          <div className="col-md-3">
-            {admin.role !== 'admin' ? null : (
-              <div className="mb-3">
-                <Link to={`/super-admin/shops/${config.backendAuthToken}`}>
-                  &laquo; Back to Super Admin
-                </Link>
-              </div>
-            )}
-            <Menu />
-          </div>
-          <div className="col-md-9">
-            <Switch>
-              <Route path="/admin/discounts/:id" component={EditDiscount} />
-              <Route path="/admin/discounts" component={Discounts} />
-              <Route path="/admin/products" component={Products} />
-              <Route path="/admin/collections" component={Collections} />
-              <Route path="/admin/settings" component={Settings} />
-              <Route path="/admin/events" component={Events} />
-              <Route path="/admin/orders/:id" component={Order} />
-              <Route path="/admin/orders" component={Orders} />
-              <Route path="/admin/dashboard" component={Dashboard} />
-              <Redirect to="/admin/dashboard" />
-            </Switch>
-          </div>
+      <div className="sidebar-layout">
+        <div className="sidebar-container">
+          <Menu />
+        </div>
+        <div className="main-content-container">
+          <Switch>
+            <Route path="/admin/discounts/:id" component={EditDiscount} />
+            <Route path="/admin/discounts" component={Discounts} />
+            <Route path="/admin/products" component={Products} />
+            <Route path="/admin/collections" component={Collections} />
+            <Route path="/admin/settings" component={Settings} />
+            <Route path="/admin/events" component={Events} />
+            <Route path="/admin/orders/:id" component={Order} />
+            <Route path="/admin/orders" component={Orders} />
+            <Route path="/admin/dashboard" component={Dashboard} />
+            <Route path="/admin/home" component={AdminHome} />
+            <Redirect to="/admin/dashboard" />
+          </Switch>
         </div>
       </div>
     </div>

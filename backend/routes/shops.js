@@ -310,6 +310,7 @@ module.exports = function (app) {
       dataUrl,
       publicUrl,
       printful: req.body.printfulApi,
+      deliveryApi: req.body.printfulApi ? true : false,
       pgpPublicKey: req.body.pgpPublicKey,
       pgpPrivateKey: req.body.pgpPrivateKey,
       pgpPrivateKeyPass: req.body.pgpPrivateKeyPass
@@ -517,10 +518,27 @@ module.exports = function (app) {
     }
   )
 
-  app.delete('/shops/:shopId', authSuperUser, (req, res) => {
-    Shop.findOne({ where: { authToken: req.params.shopId } })
-      .then((shop) => ShopDeployment.destroy({ where: { shopId: shop.id } }))
-      .then(() => Shop.destroy({ where: { authToken: req.params.shopId } }))
-      .then(() => res.json({ success: true }))
+  app.delete('/shops/:shopId', authSuperUser, async (req, res) => {
+    try {
+      const shop = await Shop.findOne({
+        where: { authToken: req.params.shopId }
+      })
+
+      await ShopDeployment.destroy({ where: { shopId: shop.id } })
+      await Shop.destroy({ where: { authToken: req.params.shopId } })
+
+      if (req.body.deleteCache) {
+        await new Promise((resolve, reject) => {
+          exec(`rm -rf ${DSHOP_CACHE}/${shop.authToken}`, (error, stdout) => {
+            if (error) reject(error)
+            else resolve(stdout)
+          })
+        })
+      }
+
+      res.json({ success: true })
+    } catch (err) {
+      res.json({ success: false, reason: err.toString() })
+    }
   })
 }

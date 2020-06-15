@@ -1,11 +1,9 @@
 const shopConfig = {
   title: '',
   fullTitle: '',
-  byline: 'Free shipping on all orders! 🚚💨',
+  byline: '',
   logo: '',
   css: '',
-  footer:
-    '© 2019 <a href="https://www.originprotocol.com">Origin Protocol</a>. <span class="ml-1">Learn more about this <a class="ul" href="https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0">decentralized e-commerce store</a>.</span>',
   backendAuthToken: '',
   favicon: 'favicon.png',
 
@@ -15,7 +13,7 @@ const shopConfig = {
   medium: '',
   facebook: '',
 
-  stripe: false,
+  stripe: true,
   beta: false,
   discountCodes: true,
 

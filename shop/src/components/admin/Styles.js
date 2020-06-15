@@ -4,22 +4,33 @@
 
 require('react-styl')(`
   .admin
-    margin-bottom: 5rem
     -webkit-font-smoothing: antialiased
+    min-height: 100vh
+    display: flex
+    flex-direction: column
+
     h1,h2,h3
       color: #000
     h1
       font-size: 24px
+    .fullwidth-container
+      width: 100%
+      flex: 1
+      padding: 0 1.125rem
+      .row
+        margin: 0
+
+    .flex-1
+      flex: 1
     nav
       border-bottom: 1px solid #dfe2e6
-      margin-bottom: 4rem
       color: #000
-      > .container
+      > .fullwidth-container
         display: flex
         align-items: center
         justify-content: between
         flex-wrap: wrap
-        min-height: 4rem
+        min-height: 4.5rem
       h1
         margin: 0
         display: flex
@@ -28,12 +39,21 @@ require('react-styl')(`
         img
           max-height: 2.5rem
           max-width: 12rem
-        div
+        .shops-title-wrapper
+          display: flex
+        .shop-title
           display: flex
           align-items: center
           margin-left: 1rem
           padding-left: 1rem
           border-left: 1px solid #5666
+          position: relative
+          cursor: pointer
+        .dropdown-cog
+          width: 16px
+          height: 16px
+          margin-left: 10px
+
       .user
         color: #8293a4
         font-size: 14px
@@ -46,9 +66,9 @@ require('react-styl')(`
         cursor: pointer
       thead
         th
-          background-color: #f8f8f8
+          background-color: #fafbfc
           font-size: 14px
-          color: #666
+          color: #9faebd
           font-weight: normal
           border-bottom-width: 1px
           padding: 0.5rem 0.75rem
@@ -74,5 +94,16 @@ require('react-styl')(`
           border-width: 0 2px 2px 0
           border-style: solid
           border-color: #3b80ee
-          transform: rotate(-45deg) translateY(-4px);
+          transform: rotate(-45deg) translateY(-4px)
+
+    .sidebar-layout
+      display: flex
+      flex-direction: row
+      flex: 1
+      .sidebar-container
+        flex: auto 0 0
+        min-width: 220px
+      .main-content-container
+        flex: 1
+        padding: 1.875rem 2.5rem
 `)
