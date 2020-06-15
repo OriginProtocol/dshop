@@ -3,6 +3,8 @@ import { useHistory } from 'react-router-dom'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 
+import Caret from 'components/icons/Caret'
+
 const ShopsDropdown = () => {
   const [showDropdown, setShowDropdown] = useState(false)
   const { config } = useConfig()
@@ -20,7 +22,7 @@ const ShopsDropdown = () => {
         ) : (
           config.title
         )}
-        <img className="dropdown-cog" src="images/right-arrow-large.svg" />
+        <Caret />
       </div>
       {showDropdown && (
         <div className="shops-dropdown">
@@ -63,6 +65,9 @@ require('react-styl')(`
   .shops-title-wrapper
     position: relative
 
+    .icon.icon-caret
+      fill: #3b80ee
+      margin-left: 0.75rem
   .shops-dropdown
     position: absolute
     width: 250px
@@ -107,6 +112,6 @@ require('react-styl')(`
         width: 14px
         object-fit: contain
         margin-right: 10px
-      &:not(.selected) img 
+      &:not(.selected) img
         visibility: hidden
 `)

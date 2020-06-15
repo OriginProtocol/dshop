@@ -39,6 +39,8 @@ require('react-styl')(`
         img
           max-height: 2.5rem
           max-width: 12rem
+          &.dshop-logo
+            transform: translateY(3.5px)
         .shops-title-wrapper
           display: flex
         .shop-title
