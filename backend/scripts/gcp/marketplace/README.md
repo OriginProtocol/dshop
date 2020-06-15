@@ -9,6 +9,8 @@ You will need [packer](https://www.packer.io/downloads/) installed, and
 
     ./build.sh
 
+If you run into gcloud permission issues, read the section below to configure credentials to use for the build by providing an accounts.json
+
 ## Building Google VM Images 
 
 In theory, building a VM image for Google compute instances is as simple as:
@@ -32,11 +34,18 @@ You will also need an account to build this from. While it's possible there's a 
 - Service Account User
 - Storage Admin
 
-The documenation says that only the first two permissions are needed, but I wasn't able to get it to work without it. After you create the user, you need to download a json formatted key file, and call it accounts.json.
+The [documentation](https://www.packer.io/docs/builders/googlecompute/) says that only the first two permissions are needed, but I wasn't able to get it to work without it. After you create the user, you need to download a json formatted key file, and call it accounts.json. You will also need to set the GOOGLE_APPLICATION_CREDENTIALS env var to the location of the accounts.json file.
+
+    export GOOGLE_APPLICATION_CREDENTIALS=<path>/accounts.json
+
 
 To build, just run:
-    
+
     packer build packer.json
+
+Or using the script, run:
+
+    ./build.sh
 
 Which takes me about 8 eight minutes.
 
