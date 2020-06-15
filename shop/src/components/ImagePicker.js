@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react'
-
+import React, { useEffect, useRef } from 'react'
 import useConfig from 'utils/useConfig'
+import useSetState from 'utils/useSetState'
+
 
 const acceptedFileTypes = [
   'image/jpeg',
@@ -11,8 +12,7 @@ const acceptedFileTypes = [
 
 const ImagePicker = (props) => {
   const { onChange } = props
-  const [state, _setState] = useState({})
-  const setState = (newState) => _setState({ ...state, ...newState })
+  const [state, setState] = useSetState({})
 
   const { config } = useConfig()
 
@@ -63,16 +63,24 @@ const ImagePicker = (props) => {
 
     return images.map((image, idx) => (
       <div
-        key={idx}
+        key={image.src}
         className={`preview-row${dragTarget === idx ? ' dragging' : ''}`}
         draggable
-        onDragEnd={() => {
+        onDragEnd={e => {
+          if (e.dataTransfer.items.length > 0) return
           setState({ dragging: null, dragTarget: null })
           onChange(images)
         }}
-        onDragEnter={() => setState({ dragTarget: idx })}
-        onDragOver={(e) => e.preventDefault()}
+        onDragEnter={e => {
+          if (e.dataTransfer.items.length > 0) return
+          setState({ dragTarget: idx })
+        }}
+        onDragOver={(e) => {
+          if (e.dataTransfer.items.length > 0) return
+          e.preventDefault()
+        }}
         onDragStart={(e) => {
+          if (e.dataTransfer.items.length > 0) return
           if (e.target.className.match(/preview-row/)) {
             setTimeout(() => setState({ dragging: idx }))
           } else {
@@ -82,6 +90,14 @@ const ImagePicker = (props) => {
       >
         <div className="img" style={{ backgroundImage: `url(${image.src})` }} />
         <div className="info">
+          <div className="img-title">
+            {image.name || image.path}
+          </div>
+          <div className="img-subtitle">
+            {idx === 0 ? 'Cover image' : `Image ${idx}`}
+          </div>
+        </div>
+        <div className="actions">
           <a
             href="#"
             title="Remove"
@@ -96,8 +112,62 @@ const ImagePicker = (props) => {
     ))
   }
 
+  const filesAdded = async files => {
+    setState({ uploading: true })
+    let newImages = await uploadImages(files)
+    newImages = newImages.map((image) => ({
+      src: image.path,
+      path: image.path,
+      name: image.name
+    }))
+    setState({ uploading: false })
+    onChange([...state.images, ...newImages].slice(0, 50))
+    uploadRef.current.value = ''
+  }
+
   return (
-    <div className="image-picker">
+    <div 
+      className="image-picker"
+      onDragEnter={e => {
+        if (e.dataTransfer.items.length === 0) return
+        e.preventDefault()
+        e.stopPropagation()
+        
+        if (e.target.matches('.image-picker, .image-picker *')) {
+          setState({
+            externalDrop: true
+          })
+        }
+      }}
+      onDragLeave={e => {
+        if (e.dataTransfer.items.length === 0) return
+        if (!e.target.matches('image-picker')) return
+
+        e.preventDefault()
+        e.stopPropagation()
+
+        setState({
+          externalDrop: false
+        })
+      }}
+      onDrop={async e => {
+        if (e.dataTransfer.items.length === 0) return
+        e.preventDefault()
+        e.stopPropagation()
+
+        setState({
+          externalDrop: false
+        })
+
+        const files = Array.from(e.dataTransfer.items).map(x => x.getAsFile())
+        await filesAdded(files)
+      }}
+      onDragOver={e => {
+        if (e.dataTransfer.items.length === 0) return
+        e.preventDefault()
+        e.stopPropagation()
+      }}
+    >
       {renderPreview()}
       <label htmlFor="upload">
         {state.open ? null : (
@@ -109,21 +179,18 @@ const ImagePicker = (props) => {
             multiple={true}
             onChange={async (e) => {
               const { files } = e.currentTarget
-              setState({ uploading: true })
-              let newImages = await uploadImages(files)
-              newImages = newImages.map((image) => ({
-                src: image.path,
-                path: image.path
-              }))
-              setState({ uploading: false })
-              onChange([...state.images, ...newImages].slice(0, 50))
-              uploadRef.current.value = ''
+              await filesAdded(files)
             }}
             style={{ display: 'none' }}
           />
         )}
         <div className={`add-photos${state.uploading ? ' uploading' : ''}`} />
       </label>
+      {state.externalDrop === false ? null : (
+        <div className="external-drop-hover">
+          <h4>Drop here to upload</h4>
+        </div>
+      )}
     </div>
   )
 }
@@ -135,49 +202,66 @@ require('react-styl')(`
     margin-bottom: 1rem
     display: flex
     flex-wrap: wrap
-    justify-content: center
+
+    border-radius: 5px
+    border: dashed 1px #3b80ee
+    background-color: #f8fbff
+
+    padding: 10px
+
+    position: relative
+
     > label
       cursor: pointer
       margin: 0
     .preview-row
       display: flex
+      flex-direction: column
       justofy-content: center
       margin: 0.5rem
-      min-width: 9rem
-      min-height: 9rem
+      width: 9rem
+      height: 9rem
+
       position: relative
       background: var(--white)
       cursor: move
-      border: 2px dashed transparent
-      border: 1px solid var(--light)
-      border-radius: 10px
-      overflow: hidden
+
+      border-radius: 2px
+      border: solid 1px #cdd7e0
+      background-color: #ffffff
+      padding: 10px
+
       .info
+        font-size: 0.875rem
+        color: #000
+        width: 100%
+
+        .img-subtitle, .img-title
+          width: 100%
+          overflow: hidden
+          text-overflow: ellipsis
+        .img-subtitle
+          font-size: 0.75rem
+          color: #8293a4
+
+      .actions
         position: absolute
-        top: 0
-        right: 0
+        top: -8px
+        right: -8px
         background: rgba(255, 255, 255, 0.75)
         line-height: normal
         border-radius: 0 0 0 2px
         > a
-          padding: 0 0.25rem
-          font-weight: bold
-          color: var(--dusk)
-          &.crop
-            opacity: 0.6;
-            &::after
-              content: ""
-              width: 12px;
-              height: 12px
-              background: url(images/crop.svg) no-repeat center
-              vertical-align: 0px;
-              background-size: contain
-              display: inline-block
-            &:hover
-              opacity: 1
-          &:hover
-            color: #000
-            background: rgba(255, 255, 255, 0.85)
+          height: 1rem
+          width: 1rem
+          display: flex
+          align-items: center
+          justify-content: center
+          border-radius: 50%
+          border: solid 1px #1c7ef6
+          background-color: #3b80ee
+          color: #fff
+          font-size: 0.75rem
       .img
         background-position: center
         width: 100%
@@ -186,7 +270,7 @@ require('react-styl')(`
         background-repeat: no-repeat
 
       &.dragging
-        .info
+        .actions
           visibility: hidden
         .img
           visibility: hidden
@@ -194,18 +278,20 @@ require('react-styl')(`
 
     .add-photos
       margin: 0.5rem
-      border: 1px solid var(--light)
-      border-radius: 10px
       overflow: hidden
       font-size: 14px
       font-weight: normal
       color: var(--bluey-grey)
-      min-height: 9rem
-      min-width: 9rem
+      height: 9rem
+      width: 9rem
       display: flex
       align-items: center
       justify-content: center
       flex-direction: column
+
+      border-radius: 2px
+      border: solid 1px #cdd7e0
+      background-color: #ffffff
 
       &::before
         content: ""
@@ -219,4 +305,16 @@ require('react-styl')(`
 
       &.uploading::before
         background: url(images/spinner-animation-dark.svg) no-repeat
+
+    .external-drop-hover
+      position: absolute
+      left: 0
+      right: 0
+      top: 0
+      bottom: 0
+      opacity: 0.9
+      display: flex
+      align-items: center
+      justify-content: center
+      background-color: #fff
 `)

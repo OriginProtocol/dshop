@@ -1,12 +1,21 @@
 import React, { useState, useEffect } from 'react'
+import { useRouteMatch, useHistory } from 'react-router'
 
 import useProducts from 'utils/useProducts'
-import { useRouteMatch, useHistory } from 'react-router'
-import useBackendApi from 'utils/useBackendApi'
-import ImagePicker from 'components/ImagePicker'
-
-import DeleteButton from './_Delete'
 import useProduct from 'utils/useProduct'
+import useBackendApi from 'utils/useBackendApi'
+import useSetState from 'utils/useSetState'
+import { formInput, formFeedback } from 'utils/formHelpers'
+
+import ImagePicker from 'components/ImagePicker'
+import DeleteButton from './_Delete'
+
+function validate(state) {
+  const newState = {}
+
+  const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
+  return { valid, newState: { ...state, ...newState } }
+}
 
 const EditProduct = () => {
   const history = useHistory()
@@ -18,8 +27,12 @@ const EditProduct = () => {
   const [submitting, setSubmitting] = useState(false)
   const [, setSubmitError] = useState(null)
 
+  const [formState, setFormState] = useSetState({})
+
   const isNewProduct = productId === 'new'
 
+  const input = formInput(formState, (newState) => setFormState(newState))
+  const Feedback = formFeedback(formState)
   const title = `${isNewProduct ? 'Add' : 'Edit'} product`
 
   const { product } = useProduct(productId)
@@ -43,6 +56,8 @@ const EditProduct = () => {
       }))
 
       setMedia(mappedImages)
+
+      setFormState(product)
     }
   }, [product])
 
@@ -56,9 +71,7 @@ const EditProduct = () => {
         method: 'POST',
         body: JSON.stringify({
           //  TODO: from input state
-          ...product,
-          title: 'New product',
-          price: 20000,
+          ...formState,
           images: media.map((file) => file.path)
         })
       })
@@ -105,14 +118,100 @@ const EditProduct = () => {
             </button>
           </div>
         </div>
-        <div className="form-section">
-          <div className="form-group">
-            <label>Title</label>
-            {/* <input type="text" value="" /> */}
-            {product && product.title}
-          </div>
+        <div className="row">
+          <div className="col-md-9">
 
-          <ImagePicker images={media} onChange={(media) => setMedia(media)} />
+            <div className="form-section">
+              <div className="form-group">
+                <label>Title</label>
+                <input type="text" {...input('title')} />
+                {Feedback('title')}
+              </div>
+
+              <div className="form-group">
+                <label>Description</label>
+                <textarea {...input('description')} />
+                {Feedback('description')}
+              </div>
+
+              <div className="media-uploader">
+                <label>Photos <span>(add as many as you like)</span></label>
+                <ImagePicker images={media} onChange={(media) => setMedia(media)} />
+              </div>
+
+              <div className="row">
+                <div className="col-md-6">
+                  <div className="form-group">
+                    <label>Price</label>
+                    <div className="input-group">
+                      <div className="input-group-prepend">
+                        <span className="input-group-text">$</span>
+                      </div>
+                      <input type="number" {...input('price')} />
+                    </div>
+                    {Feedback('price')}
+                  </div>
+
+                  <div className="form-group">
+                    <label>SKU <span>(Stock Keeping Unit)</span></label>
+                    <input type="text" {...input('sku')} />
+                    {Feedback('sku')}
+                  </div>
+
+                  <div className="form-group">
+                    <label>Quantity</label>
+                    <input type="number" {...input('quantity')} />
+                    {Feedback('quantity')}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div className="row">
+              <div className="col-md-6">
+                <label>Vairants</label>
+                <div className="form-check">
+                  <input {...input('variants')} id="variantsCheckbox" type="checkbox" className="form-check-input" />
+                  <label className="form-check-label" htmlFor="variantsCheckbox">This product has multiple options, like different sizes</label>
+                  {Feedback('variants')}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label>Shipping</label>
+              <div className="form-check">
+                <input {...input('shipping')} id="shippingCheckbox" type="checkbox" className="form-check-input" />
+                <label className="form-check-label" htmlFor="shippingCheckbox">Products ship internationally</label>
+                {Feedback('shipping')}
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-6">
+                <div className="form-group">
+                  <label>Dispatch Origin</label>
+                  <select {...input('origin')}>
+                    <option value="value-1">Value 1</option>
+                    <option value="value-1">Value 2</option>
+                  </select>
+                  {Feedback('origin')}
+                </div>
+
+                <div className="form-group">
+                  <label>Processing Time</label>
+                  <select {...input('processingTime')}>
+                    <option value="value-1">Value 1</option>
+                    <option value="value-1">Value 2</option>
+                  </select>
+                  {Feedback('processingTime')}
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div className="col-md-2"></div>
         </div>
       </form>
     </div>
@@ -131,4 +230,10 @@ require('react-styl')(`
     .title-section
       border-bottom: 1px solid #dfe2e6
       padding-bottom: 1rem
+
+    .form-group, .form-check
+      margin-bottom: 1rem
+    
+    textarea
+      height: 150px
 `)
