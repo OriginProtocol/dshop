@@ -20,7 +20,7 @@ async function createSeller({ name, email, password }, opts) {
 
   const seller = await Seller.create({
     name,
-    email,
+    email: email.toLowerCase(),
     password: passwordHash,
     superuser: superuser
   })
@@ -33,12 +33,12 @@ async function numSellers() {
 }
 
 async function findSeller(email) {
-  const seller = await Seller.findOne({ where: { email } })
+  const seller = await Seller.findOne({ where: { email: email.toLowerCase() } })
   return seller
 }
 
 async function authSeller(email, password) {
-  const seller = await Seller.findOne({ where: { email } })
+  const seller = await Seller.findOne({ where: { email: email.toLowerCase() } })
   return await checkPassword(password, seller.password)
 }
 

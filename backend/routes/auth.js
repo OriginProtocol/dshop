@@ -175,7 +175,7 @@ module.exports = function (app) {
 
   app.post('/auth/registration', async (req, res) => {
     if ((await numSellers()) > 0) {
-      return res.status(status).json({
+      return res.status(409).json({
         success: false,
         message: 'An initial user has already been setup'
       })
