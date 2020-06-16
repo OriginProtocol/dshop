@@ -204,6 +204,10 @@ function getReducer(key) {
       const target = `reload.${action.target}`
       const reload = get(newState, target, 0)
       newState = set(newState, target, reload + 1)
+    } else if (action.type === 'reset') {
+      const oldAdmin = cloneDeep(state.admin)
+      newState = cloneDeep(getInitialState(action.dataDir))
+      newState = set(newState, 'admin', oldAdmin)
     }
 
     newState.cart.subTotal = newState.cart.items.reduce((total, item) => {

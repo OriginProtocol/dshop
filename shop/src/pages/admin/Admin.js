@@ -7,7 +7,8 @@ import useConfig from 'utils/useConfig'
 
 import * as Icons from 'components/icons/Admin'
 import Login from 'components/admin/Login'
-import Products from './products/Products'
+import Products from './products/List'
+import EditProduct from './products/EditProduct'
 import Collections from './collections/List'
 import Collection from './collections/Show'
 import Dashboard from './Dashboard'
@@ -18,9 +19,8 @@ import Order from './order/Order'
 import Settings from './settings/Settings'
 import Events from './Events'
 import Menu from './_Menu'
-import ShopsDropdown from './ShopsDropdown'
+import AccountSelector from './_AccountSelector'
 import Onboarding from './Onboarding'
-import EditProduct from './products/EditProduct'
 
 const Admin = () => {
   const { config } = useConfig()
@@ -64,7 +64,7 @@ const Admin = () => {
         <div className="fullwidth-container">
           <h1>
             <img className="dshop-logo" src="images/dshop-logo-blue.svg" />
-            <ShopsDropdown />
+            <AccountSelector />
           </h1>
           <div className="mr-4">
             <Link to="/about">FAQ</Link>

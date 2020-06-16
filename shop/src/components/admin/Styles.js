@@ -71,10 +71,10 @@ require('react-styl')(`
           visibility: hidden
           .action-icon
             margin-right: 10px
-        &:hover .actions
-          visibility: visible
         tbody tr:hover
           background-color: #f3f8ff
+          .actions
+            visibility: visible
       thead
         th
           background-color: #fafbfc
@@ -89,6 +89,7 @@ require('react-styl')(`
     .admin-title
       display: flex
       align-items: center
+      min-height: 2.5rem
       &.with-border
         padding-bottom: 1rem
         border-bottom: 1px solid #dfe2e6

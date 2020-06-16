@@ -150,14 +150,14 @@ async function deployShop({
       throw new Error('ipfs-errir')
     }
     console.log(`Deployed shop on Pinata. Hash=${hash}`)
-    await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
-    await prime(`https://ipfs-prod.ogn.app/ipfs/${hash}`, publicDirPath)
-    if (networkConfig.pinataKey) {
-      await prime(`https://gateway.pinata.cloud/ipfs/${hash}`, publicDirPath)
-    }
     if (networkConfig.ipfsGateway) {
       await prime(`${networkConfig.ipfsGateway}/ipfs/${hash}`, publicDirPath)
     }
+    if (networkConfig.pinataKey) {
+      await prime(`https://gateway.pinata.cloud/ipfs/${hash}`, publicDirPath)
+    }
+    await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
+    await prime(`https://ipfs-prod.ogn.app/ipfs/${hash}`, publicDirPath)
   } else if (network.ipfsApi.indexOf('localhost') > 0) {
     ipfsGateway = network.ipfs
     const ipfs = ipfsClient(network.ipfsApi)

@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
+import memoize from 'lodash/memoize'
 
 import { useStateValue } from 'data/state'
-
 import useConfig from 'utils/useConfig'
+import useBackendApi from 'utils/useBackendApi'
+
+const getProducts = memoize((url) => fetch(url).then((r) => r.json()))
 
 function useProducts() {
   const [{ products, productIndex }, dispatch] = useStateValue()
   const { config } = useConfig()
+  const { get } = useBackendApi()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
 
@@ -15,30 +19,23 @@ function useProducts() {
     try {
       let products = []
       if (config.isAffiliate) {
-        const raw = await fetch(`${config.backend}/affiliate/products`, {
-          headers: {
-            authorization: `bearer ${config.backendAuthToken}`
-          },
-          credentials: 'include'
-        })
-        products = await raw.json()
+        products = await get('/affiliate/products')
       } else {
-        const raw = await fetch(`${config.dataSrc}products.json`)
-        products = await raw.json()
+        products = await getProducts(`${config.dataSrc}products.json`)
       }
-      setLoading(false)
       dispatch({ type: 'setProducts', products })
-    } catch (e) {
       setLoading(false)
+    } catch (e) {
       setError(true)
+      setLoading(false)
     }
   }
 
   useEffect(() => {
-    if (!products.length) {
+    if (config.dataSrc) {
       fetchProducts()
     }
-  }, [])
+  }, [config.dataSrc])
 
   return { products, productIndex, loading, error, refetch: fetchProducts }
 }

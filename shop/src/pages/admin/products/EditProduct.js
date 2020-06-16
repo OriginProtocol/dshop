@@ -149,6 +149,29 @@ const EditProduct = () => {
     }
   }
 
+  const actions = (
+    <div className="actions">
+      {isNewProduct ? (
+        <button
+          className="btn btn-outline-primary"
+          type="button"
+          onClick={() => {
+            history.push('/admin/products')
+          }}
+        >
+          Discard
+        </button>
+      ) : (
+        <DeleteButton type="button" product={product}>
+          Delete
+        </DeleteButton>
+      )}
+      <button className="btn btn-primary ml-2" type="submit">
+        Save
+      </button>
+    </div>
+  )
+
   return (
     <div className="admin-edit-product">
       <form
@@ -159,26 +182,7 @@ const EditProduct = () => {
       >
         <div className="title-section d-flex justify-content-between mb-3">
           <h3 className="m-0">{title}</h3>
-          <div className="actions">
-            {isNewProduct ? (
-              <button
-                className="btn btn-outline-primary"
-                type="button"
-                onClick={() => {
-                  history.push('/admin/products')
-                }}
-              >
-                Discard
-              </button>
-            ) : (
-              <DeleteButton type="button" product={product}>
-                Delete
-              </DeleteButton>
-            )}
-            <button className="btn btn-primary ml-2" type="submit">
-              Save
-            </button>
-          </div>
+          {actions}
         </div>
         <div className="row">
           <div className="col-md-9">
@@ -342,6 +346,7 @@ const EditProduct = () => {
           </div>
           <div className="col-md-2"></div>
         </div>
+        <div className="footer-actions">{actions}</div>
       </form>
     </div>
   )
@@ -353,6 +358,13 @@ require('react-styl')(`
   .admin-edit-product
     display: block
 
+    .footer-actions
+      border-top: 1px solid #cdd7e0
+      margin-top: 1rem
+      padding-top: 2rem
+      margin-bottom: 5rem
+      display: flex
+      justify-content: flex-end
     .actions .btn
       width: 120px
 
@@ -362,7 +374,7 @@ require('react-styl')(`
 
     .form-group, .form-check
       margin-bottom: 1rem
-    
+
     textarea
       height: 150px
 `)

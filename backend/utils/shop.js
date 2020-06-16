@@ -1,6 +1,13 @@
 const { Shop } = require('../models')
 
-async function createShop({ name, listingId, authToken, config, sellerId }) {
+async function createShop({
+  name,
+  listingId,
+  authToken,
+  config,
+  sellerId,
+  hostname
+}) {
   if (!name) {
     return { status: 400, error: 'Provide a shop name' }
   }
@@ -28,7 +35,8 @@ async function createShop({ name, listingId, authToken, config, sellerId }) {
     listingId,
     authToken,
     config,
-    sellerId
+    sellerId,
+    hostname
   })
 
   return { shop }

@@ -85,7 +85,7 @@ const AdminDiscounts = () => {
                       <div className="actions">
                         <div className="action-icon">
                           <Link to={`/admin/discounts/${discount.id}`}>
-                            <img src="/images/green-checkmark.svg" />
+                            <img src="/images/edit-icon.svg" />
                           </Link>
                         </div>
 
@@ -95,7 +95,7 @@ const AdminDiscounts = () => {
                             e.preventDefault()
                           }}
                         >
-                          <img src="/images/green-checkmark.svg" />
+                          <img src="/images/delete-icon.svg" />
                         </div>
                       </div>
                     </td>

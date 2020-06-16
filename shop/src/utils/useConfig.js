@@ -34,85 +34,95 @@ const DefaultTokens = [
 
 let config, loaded
 
+let dataSrc =
+  localStorage.activeShop ||
+  document.querySelector('link[rel="data-dir"]').getAttribute('href')
+
+if (!dataSrc.endsWith('/')) {
+  dataSrc += '/'
+}
+
 function useConfig() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [reload, setReload] = useState(0)
 
-  let dataSrc =
-    localStorage.activeShop ||
-    document.querySelector('link[rel="data-dir"]').getAttribute('href')
+  async function fetchConfig() {
+    loaded = dataSrc
+    config = { backend: '', firstTimeSetup: true, netId }
+    setLoading(true)
+    if (dataSrc === 'DATA_DIR/') {
+      setLoading(false)
+      return
+    }
 
-  if (!dataSrc.endsWith('/')) {
-    dataSrc += '/'
+    try {
+      const url = `${dataSrc}config.json`
+      console.debug(`Loading config from ${url}...`)
+
+      config = await fetch(url).then((raw) => raw.json())
+      if (!config.paymentMethods) {
+        config.paymentMethods = DefaultPaymentMethods
+      }
+      let supportEmailPlain = config.supportEmail
+      if (supportEmailPlain.match(/<([^>]+)>/)[1]) {
+        supportEmailPlain = supportEmailPlain.match(/<([^>]+)>/)[1]
+      }
+
+      config.supportEmailPlain = supportEmailPlain
+      const netConfig = config.networks[netId] || {}
+      if (netId === '999' && process.env.MARKETPLACE_CONTRACT) {
+        // Use the address of the marketplace contract deployed on the local test network.
+        netConfig.marketplaceContract = process.env.MARKETPLACE_CONTRACT
+      }
+      const acceptedTokens = (
+        netConfig.acceptedTokens ||
+        config.acceptedTokens ||
+        DefaultTokens
+      )
+        .map((token) => {
+          if (token.name === 'ETH') {
+            token.address = ethers.constants.AddressZero
+          } else if (!token.address && contracts[token.name]) {
+            token.address = contracts[token.name]
+          }
+          return token
+        })
+        .filter((token) => token.address)
+
+      config = {
+        ...config,
+        ...netConfig,
+        netId,
+        contracts,
+        acceptedTokens,
+        netName: activeNetwork.name,
+        dataSrc,
+        activeShop: localStorage.activeShop
+      }
+      setLoading(false)
+    } catch (e) {
+      console.error(e)
+      setLoading(false)
+      setError(true)
+    }
   }
 
   useEffect(() => {
-    async function fetchConfig() {
-      loaded = dataSrc
-      config = { backend: '', firstTimeSetup: true, netId }
-      setLoading(true)
-      if (dataSrc === 'DATA_DIR/') {
-        setLoading(false)
-        return
-      }
-
-      try {
-        const url = `${dataSrc}config.json`
-        console.debug(`Loading config from ${url}...`)
-
-        config = await fetch(url).then((raw) => raw.json())
-        if (!config.paymentMethods) {
-          config.paymentMethods = DefaultPaymentMethods
-        }
-        let supportEmailPlain = config.supportEmail
-        if (supportEmailPlain.match(/<([^>]+)>/)[1]) {
-          supportEmailPlain = supportEmailPlain.match(/<([^>]+)>/)[1]
-        }
-
-        config.supportEmailPlain = supportEmailPlain
-        const netConfig = config.networks[netId] || {}
-        if (netId === '999' && process.env.MARKETPLACE_CONTRACT) {
-          // Use the address of the marketplace contract deployed on the local test network.
-          netConfig.marketplaceContract = process.env.MARKETPLACE_CONTRACT
-        }
-        const acceptedTokens = (
-          netConfig.acceptedTokens ||
-          config.acceptedTokens ||
-          DefaultTokens
-        )
-          .map((token) => {
-            if (token.name === 'ETH') {
-              token.address = ethers.constants.AddressZero
-            } else if (!token.address && contracts[token.name]) {
-              token.address = contracts[token.name]
-            }
-            return token
-          })
-          .filter((token) => token.address)
-
-        config = {
-          ...config,
-          ...netConfig,
-          netId,
-          contracts,
-          acceptedTokens,
-          netName: activeNetwork.name,
-          dataSrc,
-          activeShop: localStorage.activeShop
-        }
-        setLoading(false)
-      } catch (e) {
-        console.error(e)
-        setLoading(false)
-        setError(true)
-      }
-    }
     if (loaded !== dataSrc) {
       fetchConfig()
     }
-  }, [dataSrc])
+  }, [reload])
 
-  return { config, loading, error }
+  return {
+    config,
+    loading,
+    error,
+    setDataSrc: (src) => {
+      dataSrc = src
+      setReload(reload + 1)
+    }
+  }
 }
 
 export default useConfig

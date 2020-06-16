@@ -124,14 +124,14 @@ const AdminProducts = () => {
                   <div className="actions">
                     <div className="action-icon">
                       <Link to={`/admin/products/${product.id}`}>
-                        <img src="/images/green-checkmark.svg" />
+                        <img src="images/edit-icon.svg" />
                       </Link>
                     </div>
                     <div
                       className="action-icon"
                       onClick={(e) => e.preventDefault()}
                     >
-                      <img src="/images/green-checkmark.svg" />
+                      <img src="images/delete-icon.svg" />
                     </div>
                   </div>
                 </td>
@@ -185,7 +185,7 @@ require('react-styl')(`
   .admin-products-page
     .btn.btn-primary
       width: 175px
-    
+
     h3 span
       color: #9faebd
 

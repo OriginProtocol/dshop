@@ -4,15 +4,12 @@ function useBackendApi(opts = {}) {
   const { authToken } = opts
   const { config } = useConfig()
 
-  const headers = {
-    'content-type': 'application/json',
-    ...opts.headers
-  }
-  if (authToken) {
-    headers.authorization = `bearer ${config.backendAuthToken}`
-  }
+  function postRaw(url, opts = {}) {
+    const headers = { ...opts.headers }
+    if (authToken) {
+      headers.authorization = `bearer ${config.backendAuthToken}`
+    }
 
-  function post(url, opts = {}) {
     return new Promise((resolve, reject) => {
       fetch(`${config.backend}${url}`, {
         credentials: 'include',
@@ -24,6 +21,16 @@ function useBackendApi(opts = {}) {
           json.success ? resolve(json) : reject(new Error(json.reason))
         })
         .catch(reject)
+    })
+  }
+
+  function post(url, opts = {}) {
+    return post(url, {
+      ...opts,
+      headers: {
+        ...opts.headers,
+        'content-type': 'application/json'
+      }
     })
   }
 
@@ -41,7 +48,7 @@ function useBackendApi(opts = {}) {
     })
   }
 
-  return { post, get }
+  return { post, postRaw, get }
 }
 
 export default useBackendApi

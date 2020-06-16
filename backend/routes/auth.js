@@ -12,6 +12,7 @@ const { validateConfig } = require('../utils/validators')
 const { DSHOP_CACHE } = require('../utils/const')
 const get = require('lodash/get')
 const omit = require('lodash/omit')
+const pick = require('lodash/pick')
 
 module.exports = function (app) {
   app.get('/auth', authSellerAndShop, (req, res) => {
@@ -222,7 +223,13 @@ module.exports = function (app) {
 
   app.get('/config', authSellerAndShop, authRole('admin'), async (req, res) => {
     const config = await encConf.dump(req.shop.id)
-    return res.json({ success: true, config })
+    return res.json({
+      success: true,
+      config: {
+        ...config,
+        ...pick(req.shop.dataValues, 'hostname')
+      }
+    })
   })
 
   app.post(

@@ -25,8 +25,9 @@ function useOrders() {
 
       dispatch({ type: 'setOrders', orders: sortedOrders })
     }
-
-    fetchOrders()
+    if (config.backendAuthToken) {
+      fetchOrders()
+    }
   }, [shouldReload])
 
   return { orders, loading, reload: () => setReload(shouldReload + 1) }

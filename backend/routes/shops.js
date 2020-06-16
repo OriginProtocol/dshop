@@ -456,6 +456,57 @@ module.exports = function (app) {
     }
   )
 
+  app.put(
+    '/shop/assets',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res, next) => {
+      const uploadDir = `${DSHOP_CACHE}/${req.shop.authToken}/data`
+
+      if (!fs.existsSync(uploadDir)) {
+        return res.json({ success: false, reason: 'dir-not-found' })
+      }
+
+      const form = formidable({ multiples: true })
+      form.parse(req, async (err, fields, files) => {
+        if (err) {
+          next(err)
+          return
+        }
+
+        if (!String(fields.type).match(/^(logo|favicon)$/)) {
+          return res.json({ success: false, reason: 'invalid-type' })
+        }
+
+        const { file } = files
+        if (Array.isArray(file)) {
+          return res.json({ success: false, reason: 'too-many-files' })
+        }
+
+        try {
+          await new Promise((resolve, reject) => {
+            mv(file.path, `${uploadDir}/${file.name}`, (err) => {
+              return err ? reject(err) : resolve()
+            })
+          })
+
+          const raw = fs.readFileSync(`${uploadDir}/config.json`).toString()
+          const config = JSON.parse(raw)
+          config[fields.type] = file.name
+          fs.writeFileSync(
+            `${uploadDir}/config.json`,
+            JSON.stringify(config, null, 2)
+          )
+
+          res.json({ success: true, path: file.name })
+        } catch (e) {
+          console.log(e)
+          res.json({ success: false })
+        }
+      })
+    }
+  )
+
   app.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {

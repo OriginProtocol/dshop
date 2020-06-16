@@ -4,6 +4,8 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useSetState from 'utils/useSetState'
 
+import Tabs from './_Tabs'
+
 function validate(state) {
   const newState = {}
 
@@ -60,6 +62,8 @@ const AdminUsers = () => {
 
   return (
     <>
+      <h3 className="admin-title">Settings</h3>
+      <Tabs />
       {state.loading ? (
         'Loading...'
       ) : (

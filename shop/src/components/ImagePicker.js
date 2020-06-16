@@ -273,6 +273,7 @@ require('react-styl')(`
           width: 100%
           overflow: hidden
           text-overflow: ellipsis
+          white-space: nowrap
         .img-subtitle
           font-size: 0.75rem
           color: #8293a4
@@ -295,6 +296,7 @@ require('react-styl')(`
           background-color: #3b80ee
           color: #fff
           font-size: 0.75rem
+          line-height: 0
       .img
         background-position: center
         width: 100%
@@ -350,7 +352,7 @@ require('react-styl')(`
       align-items: center
       justify-content: center
       background-color: #fff
-    
+
     label.empty-state
       width: 100%
 
