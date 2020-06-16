@@ -6,7 +6,7 @@ const {
   authRole
 } = require('./_auth')
 const fs = require('fs')
-const { createSeller } = require('../utils/sellers')
+const { createSeller, numSellers } = require('../utils/sellers')
 const encConf = require('../utils/encryptedConfig')
 const { validateConfig } = require('../utils/validators')
 const { DSHOP_CACHE } = require('../utils/const')
@@ -179,9 +179,17 @@ module.exports = function (app) {
 
   app.post('/auth/logout', logoutHandler)
 
-  // TODO: Should this at least use API key auth?
   app.post('/auth/registration', async (req, res) => {
-    const { seller, status, error } = await createSeller(req.body)
+    if ((await numSellers()) > 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'An initial user has already been setup'
+      })
+    }
+
+    const { seller, status, error } = await createSeller(req.body, {
+      superuser: true
+    })
 
     if (error) {
       return res.status(status).json({ success: false, message: error })
