@@ -28,7 +28,7 @@ function validate(state, { validateVariants }) {
   }
 
   if (validateVariants) {
-    newState.variants = state.variants.map(variant => {
+    newState.variants = state.variants.map((variant) => {
       const out = { ...variant }
       if (!variant.title || !variant.title.trim().length) {
         out.titleError = 'Variant name is required'
@@ -41,13 +41,15 @@ function validate(state, { validateVariants }) {
       return out
     })
 
-    variantsError = newState.variants.map(v => Object.keys(v).every((f) => f.indexOf('Error') < 0))
+    variantsError = newState.variants.map((v) =>
+      Object.keys(v).every((f) => f.indexOf('Error') < 0)
+    )
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
-  return { 
-    valid: !variantsError && valid, 
-    newState: { ...state, ...newState } 
+  return {
+    valid: !variantsError && valid,
+    newState: { ...state, ...newState }
   }
 }
 
@@ -112,7 +114,9 @@ const EditProduct = () => {
 
   const createProduct = async () => {
     if (submitting) return
-    const { valid, newState } = validate(formState, { validateVariants: hasVariants })
+    const { valid, newState } = validate(formState, {
+      validateVariants: hasVariants
+    })
 
     setFormState(newState)
 
@@ -256,9 +260,9 @@ const EditProduct = () => {
               <>
                 {(formState.variants || []).map((variant, index) => {
                   return (
-                    <EditProductVariant 
+                    <EditProductVariant
                       formState={variant}
-                      setFormState={newState => {
+                      setFormState={(newState) => {
                         const variantsArray = [...formState.variants]
                         variantsArray[index] = {
                           ...variant,
@@ -283,15 +287,14 @@ const EditProduct = () => {
                   )
                 })}
                 <div className="mb-5">
-                  <button 
-                    className="btn btn-outline-primary" 
+                  <button
+                    className="btn btn-outline-primary"
                     type="button"
-                    onClick={() => setFormState({
-                      variants: [
-                        ...formState.variants,
-                        {}
-                      ]
-                    })}
+                    onClick={() =>
+                      setFormState({
+                        variants: [...formState.variants, {}]
+                      })
+                    }
                   >
                     Add option
                   </button>

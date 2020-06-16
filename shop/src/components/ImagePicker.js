@@ -183,13 +183,13 @@ const ImagePicker = (props) => {
       }}
     >
       {!hasImages ? null : (
-        <PreviewImages 
-          images={state.images} 
+        <PreviewImages
+          images={state.images}
           dragging={state.dragging}
           dragTarget={state.dragTarget}
           onDragStateChange={setState}
           onChange={onChange}
-          />
+        />
       )}
       <label htmlFor="upload" className={!hasImages ? 'empty-state' : ''}>
         {state.open ? null : (
@@ -208,10 +208,16 @@ const ImagePicker = (props) => {
         )}
         {!hasImages ? (
           <div className="add-first-photo">
-            <div>Drag files here to upload<br />or select a photo from your computer</div>
+            <div>
+              Drag files here to upload
+              <br />
+              or select a photo from your computer
+            </div>
             <div className="btn btn-outline-primary">Select photo</div>
           </div>
-        ) : <div className={`add-photos${state.uploading ? ' uploading' : ''}`} />}
+        ) : (
+          <div className={`add-photos${state.uploading ? ' uploading' : ''}`} />
+        )}
       </label>
       {!state.externalDrop ? null : (
         <div className="external-drop-hover">

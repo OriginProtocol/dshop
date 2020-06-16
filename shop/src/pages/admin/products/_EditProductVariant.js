@@ -1,12 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react'
-import useSetState from 'utils/useSetState'
+import React, { useRef, useState } from 'react'
 import { formInput, formFeedback } from 'utils/formHelpers'
 
 const TokenComponent = ({ values, onChange, validationError }) => {
   const inputRef = useRef()
   const [newValue, setNewValue] = useState('')
 
-  const onClickListener = e => {
+  const onClickListener = (e) => {
     if (e.target.matches('.variant-token-comp')) {
       inputRef.current.focus()
     }
@@ -14,13 +13,14 @@ const TokenComponent = ({ values, onChange, validationError }) => {
 
   return (
     <>
-      <div 
-        className={`variant-token-comp${validationError ? ' is-invalid' : ''}`} 
-        onClick={onClickListener}>
+      <div
+        className={`variant-token-comp${validationError ? ' is-invalid' : ''}`}
+        onClick={onClickListener}
+      >
         {values.map((v, index) => {
           return (
-            <div 
-              className="token" 
+            <div
+              className="token"
               onClick={() => {
                 const updatedValues = [...values]
                 updatedValues.splice(index, 1)
@@ -33,18 +33,15 @@ const TokenComponent = ({ values, onChange, validationError }) => {
             </div>
           )
         })}
-        <input 
+        <input
           placeholder="Add a new value"
           ref={inputRef}
           value={newValue}
-          onChange={e => setNewValue(e.target.value)}
-          onKeyDown={e => {
+          onChange={(e) => setNewValue(e.target.value)}
+          onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault()
-              onChange([
-                ...values,
-                newValue
-              ])
+              onChange([...values, newValue])
               setNewValue('')
             } else if (e.key === 'Backspace' && newValue.length === 0) {
               onChange(values.slice(0, -1))
@@ -52,7 +49,11 @@ const TokenComponent = ({ values, onChange, validationError }) => {
           }}
         />
       </div>
-      {validationError && <div className="invalid-feedback" style={{ display: 'block '}}>{validationError}</div>}
+      {validationError && (
+        <div className="invalid-feedback" style={{ display: 'block ' }}>
+          {validationError}
+        </div>
+      )}
     </>
   )
 }
@@ -60,7 +61,7 @@ const TokenComponent = ({ values, onChange, validationError }) => {
 const EditProductVariant = ({ formState, setFormState, label, onRemove }) => {
   const input = formInput(formState, (newState) => setFormState(newState))
   const Feedback = formFeedback(formState)
-  
+
   return (
     <div className="edit-product-variant row">
       <>
@@ -71,13 +72,17 @@ const EditProductVariant = ({ formState, setFormState, label, onRemove }) => {
         </div>
         <div className="col-md-6">
           <div className="d-flex">
-            <button type="button" className="remove-link btn btn-link ml-auto" onClick={onRemove}>
+            <button
+              type="button"
+              className="remove-link btn btn-link ml-auto"
+              onClick={onRemove}
+            >
               Remove
             </button>
           </div>
-          <TokenComponent 
-            values={formState.options || []} 
-            onChange={newOptions => setFormState({ options: newOptions })}
+          <TokenComponent
+            values={formState.options || []}
+            onChange={(newOptions) => setFormState({ options: newOptions })}
             validationError={formState.optionsError}
           />
         </div>
