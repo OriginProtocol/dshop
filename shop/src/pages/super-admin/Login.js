@@ -1,7 +1,5 @@
 import React, { useState } from 'react'
 
-import { DshopLogo } from 'components/icons/Admin'
-
 import useConfig from 'utils/useConfig'
 import SetupLayout from './setup/_SetupLayout'
 import { formGroupStyles } from './setup/_formStyles'

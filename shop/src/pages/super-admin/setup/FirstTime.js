@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react'
 
 import { useStateValue } from 'data/state'
 
-import { DshopLogo } from 'components/icons/Admin'
-
 import SignUp from './SignUp'
 import ServerSetup from './ServerSetup'
 import CreateShop from '../shops/new-shop/CreateShop'
