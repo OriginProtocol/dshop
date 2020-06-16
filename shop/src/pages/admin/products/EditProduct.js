@@ -9,12 +9,48 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 
 import ImagePicker from 'components/ImagePicker'
 import DeleteButton from './_Delete'
+import EditProductVariant from './_EditProductVariant'
 
-function validate(state) {
+function validate(state, { validateVariants }) {
   const newState = {}
+  let variantsError = false
+
+  if (!state.title || !state.title.trim().length) {
+    newState.titleError = 'Title is required'
+  }
+
+  if (!state.description || !state.description.trim().length) {
+    newState.descriptionError = 'Description is required'
+  }
+
+  if (!state.price || !state.price < 0) {
+    newState.descriptionError = 'Price is required'
+  }
+
+  if (validateVariants) {
+    newState.variants = state.variants.map((variant) => {
+      const out = { ...variant }
+      if (!variant.title || !variant.title.trim().length) {
+        out.titleError = 'Variant name is required'
+      }
+
+      if (!variant.options || !variant.options.length) {
+        out.optionsError = 'At least one value is required'
+      }
+
+      return out
+    })
+
+    variantsError = newState.variants.map((v) =>
+      Object.keys(v).every((f) => f.indexOf('Error') < 0)
+    )
+  }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
-  return { valid, newState: { ...state, ...newState } }
+  return {
+    valid: !variantsError && valid,
+    newState: { ...state, ...newState }
+  }
 }
 
 const EditProduct = () => {
@@ -28,6 +64,8 @@ const EditProduct = () => {
   const [, setSubmitError] = useState(null)
 
   const [formState, setFormState] = useSetState({})
+
+  const [hasVariants, setHasVariants] = useState(false)
 
   const isNewProduct = productId === 'new'
 
@@ -57,13 +95,28 @@ const EditProduct = () => {
 
       setMedia(mappedImages)
 
-      setFormState(product)
+      setFormState({
+        ...product,
+        price: product.price / 100
+      })
+
+      setHasVariants(!!product.variants && product.variants.length > 0)
     }
   }, [product])
 
+  useEffect(() => {
+    if (hasVariants && (!formState.variants || !formState.variants.length)) {
+      setFormState({
+        variants: [{}]
+      })
+    }
+  }, [hasVariants, formState])
+
   const createProduct = async () => {
     if (submitting) return
-    const { valid, newState } = validate(formState)
+    const { valid, newState } = validate(formState, {
+      validateVariants: hasVariants
+    })
 
     setFormState(newState)
 
@@ -80,6 +133,7 @@ const EditProduct = () => {
         body: JSON.stringify({
           //  TODO: from input state
           ...formState,
+          price: formState.price * 100,
           images: media.map((file) => file.path)
         })
       })
@@ -182,14 +236,15 @@ const EditProduct = () => {
             </div>
 
             <div className="row">
-              <div className="col-md-6">
+              <div className="col-md-12">
                 <label>Vairants</label>
                 <div className="form-check">
                   <input
-                    {...input('variants')}
                     id="variantsCheckbox"
                     type="checkbox"
                     className="form-check-input"
+                    checked={hasVariants}
+                    onChange={() => setHasVariants(true)}
                   />
                   <label
                     className="form-check-label"
@@ -197,10 +252,55 @@ const EditProduct = () => {
                   >
                     This product has multiple options, like different sizes
                   </label>
-                  {Feedback('variants')}
                 </div>
               </div>
             </div>
+
+            {!hasVariants ? null : (
+              <>
+                {(formState.variants || []).map((variant, index) => {
+                  return (
+                    <EditProductVariant
+                      formState={variant}
+                      setFormState={(newState) => {
+                        const variantsArray = [...formState.variants]
+                        variantsArray[index] = {
+                          ...variant,
+                          ...newState
+                        }
+
+                        setFormState({
+                          variants: variantsArray
+                        })
+                      }}
+                      label={`Option ${index + 1}`}
+                      key={index}
+                      onRemove={() => {
+                        const variantsArray = [...formState.variants]
+                        variantsArray.splice(index, 1)
+
+                        setFormState({
+                          variants: variantsArray
+                        })
+                      }}
+                    />
+                  )
+                })}
+                <div className="mb-5">
+                  <button
+                    className="btn btn-outline-primary"
+                    type="button"
+                    onClick={() =>
+                      setFormState({
+                        variants: [...formState.variants, {}]
+                      })
+                    }
+                  >
+                    Add option
+                  </button>
+                </div>
+              </>
+            )}
 
             <div>
               <label>Shipping</label>

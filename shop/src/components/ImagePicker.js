@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useReducer } from 'react'
+import React, { useEffect, useRef, useReducer, useMemo } from 'react'
 import useConfig from 'utils/useConfig'
 
 const acceptedFileTypes = [
@@ -10,6 +10,71 @@ const acceptedFileTypes = [
 
 function reducer(state, newState) {
   return { ...state, ...newState }
+}
+
+const PreviewImages = (props) => {
+  const { dragging, dragTarget, onChange, onDragStateChange } = props
+
+  const images = useMemo(() => {
+    const a = [...(props.images || [])]
+
+    if (typeof dragging === 'number' && typeof dragTarget === 'number') {
+      a.splice(dragging, 1)
+      a.splice(dragTarget, 0, props.images[dragging])
+    }
+
+    return a
+  }, [props.images, dragging, dragTarget])
+
+  if (images.length === 0) return null
+
+  return images.map((image, idx) => (
+    <div
+      key={image.src}
+      className={`preview-row${dragTarget === idx ? ' dragging' : ''}`}
+      draggable
+      onDragEnd={(e) => {
+        if (e.dataTransfer.items.length > 0) return
+        onDragStateChange({ dragging: null, dragTarget: null })
+        onChange(images)
+      }}
+      onDragEnter={(e) => {
+        if (e.dataTransfer.items.length > 0) return
+        onDragStateChange({ dragTarget: idx })
+      }}
+      onDragOver={(e) => {
+        if (e.dataTransfer.items.length > 0) return
+        e.preventDefault()
+      }}
+      onDragStart={(e) => {
+        if (e.dataTransfer.items.length > 0) return
+        if (e.target.className.match(/preview-row/)) {
+          setTimeout(() => onDragStateChange({ dragging: idx }))
+        } else {
+          e.preventDefault()
+        }
+      }}
+    >
+      <div className="img" style={{ backgroundImage: `url(${image.src})` }} />
+      <div className="info">
+        <div className="img-title">{image.name || image.path}</div>
+        <div className="img-subtitle">
+          {idx === 0 ? 'Cover image' : `Image ${idx}`}
+        </div>
+      </div>
+      <div className="actions">
+        <a
+          href="#"
+          title="Remove"
+          onClick={(e) => {
+            e.preventDefault()
+            onChange(images.filter((i, offset) => idx !== offset))
+          }}
+          children={<>&times;</>}
+        />
+      </div>
+    </div>
+  ))
 }
 
 const ImagePicker = (props) => {
@@ -52,66 +117,6 @@ const ImagePicker = (props) => {
     return []
   }
 
-  const renderPreview = () => {
-    const images = [...(state.images || [])]
-    if (images.length === 0) return null
-
-    const { dragging, dragTarget } = state
-
-    if (typeof dragging === 'number' && typeof dragTarget === 'number') {
-      images.splice(dragging, 1)
-      images.splice(dragTarget, 0, state.images[dragging])
-    }
-
-    return images.map((image, idx) => (
-      <div
-        key={image.src}
-        className={`preview-row${dragTarget === idx ? ' dragging' : ''}`}
-        draggable
-        onDragEnd={(e) => {
-          if (e.dataTransfer.items.length > 0) return
-          setState({ dragging: null, dragTarget: null })
-          onChange(images)
-        }}
-        onDragEnter={(e) => {
-          if (e.dataTransfer.items.length > 0) return
-          setState({ dragTarget: idx })
-        }}
-        onDragOver={(e) => {
-          if (e.dataTransfer.items.length > 0) return
-          e.preventDefault()
-        }}
-        onDragStart={(e) => {
-          if (e.dataTransfer.items.length > 0) return
-          if (e.target.className.match(/preview-row/)) {
-            setTimeout(() => setState({ dragging: idx }))
-          } else {
-            e.preventDefault()
-          }
-        }}
-      >
-        <div className="img" style={{ backgroundImage: `url(${image.src})` }} />
-        <div className="info">
-          <div className="img-title">{image.name || image.path}</div>
-          <div className="img-subtitle">
-            {idx === 0 ? 'Cover image' : `Image ${idx}`}
-          </div>
-        </div>
-        <div className="actions">
-          <a
-            href="#"
-            title="Remove"
-            onClick={(e) => {
-              e.preventDefault()
-              onChange(images.filter((i, offset) => idx !== offset))
-            }}
-            children={<>&times;</>}
-          />
-        </div>
-      </div>
-    ))
-  }
-
   const filesAdded = async (files) => {
     setState({ uploading: true })
     let newImages = await uploadImages(files)
@@ -124,6 +129,8 @@ const ImagePicker = (props) => {
     onChange([...state.images, ...newImages].slice(0, 50))
     uploadRef.current.value = ''
   }
+
+  const hasImages = !!(state.images && state.images.length > 0)
 
   return (
     <div
@@ -175,8 +182,16 @@ const ImagePicker = (props) => {
         e.stopPropagation()
       }}
     >
-      {renderPreview()}
-      <label htmlFor="upload">
+      {!hasImages ? null : (
+        <PreviewImages
+          images={state.images}
+          dragging={state.dragging}
+          dragTarget={state.dragTarget}
+          onDragStateChange={setState}
+          onChange={onChange}
+        />
+      )}
+      <label htmlFor="upload" className={!hasImages ? 'empty-state' : ''}>
         {state.open ? null : (
           <input
             id="upload"
@@ -191,7 +206,18 @@ const ImagePicker = (props) => {
             style={{ display: 'none' }}
           />
         )}
-        <div className={`add-photos${state.uploading ? ' uploading' : ''}`} />
+        {!hasImages ? (
+          <div className="add-first-photo">
+            <div>
+              Drag files here to upload
+              <br />
+              or select a photo from your computer
+            </div>
+            <div className="btn btn-outline-primary">Select photo</div>
+          </div>
+        ) : (
+          <div className={`add-photos${state.uploading ? ' uploading' : ''}`} />
+        )}
       </label>
       {!state.externalDrop ? null : (
         <div className="external-drop-hover">
@@ -324,4 +350,20 @@ require('react-styl')(`
       align-items: center
       justify-content: center
       background-color: #fff
+    
+    label.empty-state
+      width: 100%
+
+    .add-first-photo
+      display: flex
+      flex-direction: column
+      justify-content: center
+      align-items: center
+      padding: 2rem
+
+      text-align: center
+
+      .btn
+        border-radius: 17.5px
+        margin-top: 1rem
 `)
