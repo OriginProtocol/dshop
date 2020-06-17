@@ -59,6 +59,7 @@ const SignUp = () => {
           <input
             autoFocus
             className="form-control"
+            name="name"
             value={state.name}
             onChange={(e) => setState({ ...state, name: e.target.value })}
           />
@@ -67,6 +68,7 @@ const SignUp = () => {
           <label>Email</label>
           <input
             className="form-control"
+            name="email"
             value={state.email}
             onChange={(e) => setState({ ...state, email: e.target.value })}
           />
@@ -76,6 +78,7 @@ const SignUp = () => {
           <input
             value={state.password}
             onChange={(e) => setState({ ...state, password: e.target.value })}
+            name="password"
             type="password"
             className="form-control"
           />
