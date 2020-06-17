@@ -10,11 +10,13 @@ import useBackendApi from 'utils/useBackendApi'
 import useSetState from 'utils/useSetState'
 import { formInput, formFeedback } from 'utils/formHelpers'
 
+import  fetchProduct from 'data/fetchProduct'
+import { Countries } from 'data/Countries'
+
 import ImagePicker from 'components/ImagePicker'
 import DeleteButton from './_Delete'
 import EditProductVariant from './_EditProductVariant'
 
-import { Countries } from 'data/Countries'
 import LinkCollections from './_LinkCollections'
 
 const predefinedProcessingTimes = [
@@ -207,6 +209,11 @@ const EditProduct = () => {
           images: media.map((file) => file.path)
         })
       })
+
+      if (newState.id) {
+        // Clear memoize cache for existing product
+        fetchProduct.cache.delete(`${localStorage.activeShop}/-${newState.id}`)
+      }
 
       await refetch()
       history.push('/admin/products')
