@@ -107,7 +107,7 @@ async function removeProductData(shop, productId) {
     // fs.rmdirSync(outDir, { recursive: true })
     // TODO: How safe is this?
     await new Promise((resolve, reject) => {
-      execFile(rm, ['-rf', outDir], (err) => {
+      execFile('rm', ['-rf', outDir], (err) => {
         if (err) return reject(err)
         resolve()
       })

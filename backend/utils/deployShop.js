@@ -75,7 +75,7 @@ async function deployShop({
   await new Promise((resolve, reject) => {
     execFile(
       'cp',
-      ['-r', `${OutputDir}/data`,`${OutputDir}/public/${dataDir}`],
+      ['-r', `${OutputDir}/data`, `${OutputDir}/public/${dataDir}`],
       (error, stdout) => {
         if (error) reject(error)
         else resolve(stdout)
