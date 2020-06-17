@@ -1,43 +1,55 @@
 import React from 'react'
+import { useHistory } from 'react-router-dom'
+
+import useConfig from 'utils/useConfig'
+import useProducts from 'utils/useProducts'
 
 const AdminHome = () => {
-  // TODO: Fetch from
+  const { config } = useConfig()
+  const { products } = useProducts()
+  const history = useHistory()
+
   const tasks = [
     {
       id: 'new_product',
-      completed: true,
+      completed: products.length ? true : false,
       icon: '/images/new-shop/box.svg',
-      name: 'Add your first product'
+      name: 'Add your first product',
+      link: '/admin/products/new'
     },
     {
       id: 'custom_domain',
       completed: false,
       icon: '/images/new-shop/globe.svg',
-      name: 'Add a custom domain name'
+      name: 'Add a custom domain name',
+      link: '/admin/settings'
     },
     {
       id: 'store_logo',
-      completed: false,
+      completed: config.logo ? true : false,
       icon: '/images/new-shop/photo.svg',
-      name: 'Add a store logo and favicon'
+      name: 'Add a store logo and favicon',
+      link: '/admin/settings'
     },
     {
       id: 'store_info',
       completed: false,
       icon: '/images/new-shop/text.svg',
-      name: 'Tell us a bit about your store'
+      name: 'Tell us a bit about your store',
+      link: '/admin/settings'
     },
     {
       id: 'sm_links',
       completed: false,
       icon: '/images/new-shop/link.svg',
-      name: 'Add social media links'
+      name: 'Add social media links',
+      link: '/admin/settings'
     }
   ]
   return (
     <div className="admin-home">
       <div className="new-shop-hero">
-        <h1>Congratulations on your first shop</h1>
+        <h1>Congratulations on your new shop!</h1>
         <div className="desc">
           Discover how Dshop can help you get started building
           <br /> your business on the decentralized web.
@@ -45,13 +57,21 @@ const AdminHome = () => {
       </div>
 
       <div className="new-shop-tasks">
-        <div className="subtitle">Get your store up and running!</div>
+        <div className="subtitle">Get your store up and running</div>
         <div className="tasks-lists">
           {tasks.map((task) => {
             return (
               <div
                 className={`task-item${task.completed ? ' completed' : ''}`}
                 key={task.id}
+                onClick={() => {
+                  if (task.link) {
+                    history.push({
+                      pathname: task.link,
+                      state: { scrollToTop: true }
+                    })
+                  }
+                }}
               >
                 <img className="task-icon" src={task.icon} />
                 <div className="task-name">{task.name}</div>

@@ -8,13 +8,16 @@ import useConfig from 'utils/useConfig'
 import Caret from 'components/icons/Caret'
 import Popover from 'components/Popover'
 
-const ShopsDropdown = () => {
+const ShopsDropdown = ({ onNewShop }) => {
   const [shouldClose, setShouldClose] = useState(0)
   const { config, setDataSrc } = useConfig()
   const [{ admin }, dispatch] = useStateValue()
   const history = useHistory()
-
   const shops = get(admin, 'shops', [])
+
+  const logo = config.logo ? `${config.dataSrc}${config.logo}` : ''
+  const isSVG = logo.match(/.svg$/i) ? 'svg' : ''
+
   return (
     <Popover
       el="div"
@@ -24,11 +27,7 @@ const ShopsDropdown = () => {
       shouldClose={shouldClose}
       button={
         <>
-          {config.logo ? (
-            <img src={`${config.dataSrc}${config.logo}`} />
-          ) : (
-            config.title
-          )}
+          {logo ? <img src={logo} className={isSVG} /> : config.title}
           <Caret />
         </>
       }
@@ -56,7 +55,27 @@ const ShopsDropdown = () => {
             {shop.name}
           </div>
         ))}
-        <div className="new-shop-link">
+        {admin.role !== 'admin' ? null : (
+          <div
+            className="shop-el bt"
+            onClick={() => {
+              history.push({
+                pathname: `/super-admin`,
+                state: { scrollToTop: true }
+              })
+            }}
+          >
+            <img src="/images/green-checkmark.svg" />
+            Super Admin
+          </div>
+        )}
+        <div
+          className="new-shop-link"
+          onClick={() => {
+            setShouldClose(shouldClose + 1)
+            onNewShop()
+          }}
+        >
           <div className="add-shop-icon">+</div>
           Add a shop
         </div>
@@ -81,13 +100,16 @@ require('react-styl')(`
     box-shadow: 0 2px 11px 0 rgba(0, 0, 0, 0.2)
     border: solid 1px #cdd7e0
     background-color: #ffffff
+    overflow: auto
+    max-height: calc(100vh - 5rem)
 
     padding: 1.5rem
 
     .new-shop-link
+      cursor: pointer
       display: flex
       align-items: center
-      font-size: 0.75rem
+      font-size: 14px
       color: #3b80ee
       &:not(:first-child)
         border-top: 1px solid #cdd7e0
@@ -108,6 +130,9 @@ require('react-styl')(`
       align-items: center
       font-size: 1rem
       cursor: pointer
+      &.bt
+        border-top: solid 1px #cdd7e0
+        padding-top: 0.75rem
       &:not(:last-child)
         margin-bottom: 1rem
       img

@@ -49,7 +49,9 @@ function useConfig() {
 
   async function fetchConfig() {
     loaded = dataSrc
-    config = { backend: '', firstTimeSetup: true, netId }
+    if (!config) {
+      config = { backend: '', firstTimeSetup: true, netId }
+    }
     setLoading(true)
     if (dataSrc === 'DATA_DIR/') {
       setLoading(false)
@@ -61,6 +63,7 @@ function useConfig() {
       console.debug(`Loading config from ${url}...`)
 
       config = await fetch(url).then((raw) => raw.json())
+      if (!config.backend) config.backend = ''
       if (!config.paymentMethods) {
         config.paymentMethods = DefaultPaymentMethods
       }

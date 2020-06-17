@@ -1,13 +1,13 @@
 import React from 'react'
 
-import { DshopLogo } from 'components/icons/Admin'
+import { DshopLogoWhite } from 'components/icons/Admin'
 
 const SetupLayout = ({ children }) => {
   return (
     <div className="setup-layout">
       <div className="container">
         <div className="logo">
-          <DshopLogo />
+          <DshopLogoWhite />
         </div>
         {children}
       </div>
@@ -26,7 +26,7 @@ require('react-styl')(`
     padding-top: 4rem
     overflow: scroll
 
-    .logo 
+    .logo
       margin: 0 auto
       text-align: center
       svg
@@ -56,7 +56,7 @@ require('react-styl')(`
 
         &:disabled
           color: #a3a3a3
-        
+
         &::placeholder
           color: #a3a3a3
 

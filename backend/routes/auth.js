@@ -36,15 +36,11 @@ module.exports = function (app) {
 
       Seller.findOne({ where: { id } }).then((seller) => {
         let role = req.sellerShop ? req.sellerShop.role : ''
-        if (seller.superuser) {
+        const { superuser, email } = seller
+        if (superuser) {
           role = 'admin'
         }
-        res.json({
-          success: true,
-          email: seller.email,
-          role,
-          shops
-        })
+        res.json({ success: true, email, role, shops })
       })
     })
   })
@@ -61,7 +57,7 @@ module.exports = function (app) {
 
     const user = await Seller.findOne({ where: { id: req.session.sellerId } })
     if (!user) {
-      return res.json({ success: false, reason: 'not-logged-in' })
+      return res.json({ success: false, reason: 'no-such-user' })
     } else if (!user.superuser) {
       return res.json({ success: false, reason: 'not-superuser' })
     }

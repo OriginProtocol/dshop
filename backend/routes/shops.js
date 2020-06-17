@@ -4,13 +4,13 @@ const {
   Shop,
   SellerShop,
   Network,
-  Sequelize,
   ShopDeployment
 } = require('../models')
 const { authSellerAndShop, authRole, authSuperUser } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
 const { getConfig, setConfig } = require('../utils/encryptedConfig')
 const { createShop } = require('../utils/shop')
+const genPGP = require('../utils/pgp')
 const get = require('lodash/get')
 const set = require('lodash/set')
 const fs = require('fs')
@@ -243,7 +243,7 @@ module.exports = function (app) {
    * Creates a new shop.
    */
   app.post('/shop', authSuperUser, async (req, res) => {
-    const { dataDir, pgpPublicKey, printfulApi, shopType, backend } = req.body
+    const { dataDir, printfulApi, shopType, backend } = req.body
     const OutputDir = `${DSHOP_CACHE}/${dataDir}`
 
     if (fs.existsSync(OutputDir) && req.body.shopType !== 'local-dir') {
@@ -255,22 +255,14 @@ module.exports = function (app) {
       })
     }
 
-    const existingShop = await Shop.findOne({
-      where: {
-        [Sequelize.Op.or]: [
-          { listingId: req.body.listingId },
-          { authToken: req.body.dataDir }
-        ]
-      }
+    const existingShopWithAuthToken = await Shop.findOne({
+      where: { authToken: req.body.dataDir }
     })
-
-    if (existingShop) {
-      const field =
-        existingShop.listingId === req.body.listingId ? 'listingId' : 'dataDir'
+    if (existingShopWithAuthToken) {
       return res.json({
         success: false,
         reason: 'invalid',
-        field,
+        field: 'dataDir',
         message: 'Already exists'
       })
     }
@@ -278,13 +270,27 @@ module.exports = function (app) {
     const network = await Network.findOne({ where: { active: true } })
     const networkConfig = getConfig(network.config)
     const netAndVersion = `${network.networkId}-${network.marketplaceVersion}`
-    if (req.body.listingId.indexOf(netAndVersion) !== 0) {
-      return res.json({
-        success: false,
-        reason: 'invalid',
-        field: 'listingId',
-        message: `Must start with ${netAndVersion}`
+
+    if (req.body.listingId) {
+      const existingShopWithListing = await Shop.findOne({
+        where: { listingId: req.body.listingId }
       })
+      if (existingShopWithListing) {
+        return res.json({
+          success: false,
+          reason: 'invalid',
+          field: 'listingId',
+          message: 'Already exists'
+        })
+      }
+      if (req.body.listingId.indexOf(netAndVersion) !== 0) {
+        return res.json({
+          success: false,
+          reason: 'invalid',
+          field: 'listingId',
+          message: `Must start with ${netAndVersion}`
+        })
+      }
     }
 
     let name = req.body.name
@@ -311,20 +317,20 @@ module.exports = function (app) {
         console.log('Error parsing default shop config')
       }
     }
+    const pgpKeys = await genPGP()
     const config = {
       ...defaultShopConfig,
+      ...pgpKeys,
       dataUrl,
       publicUrl,
       printful: req.body.printfulApi,
-      deliveryApi: req.body.printfulApi ? true : false,
-      pgpPublicKey: req.body.pgpPublicKey,
-      pgpPrivateKey: req.body.pgpPrivateKey,
-      pgpPrivateKeyPass: req.body.pgpPrivateKeyPass
+      deliveryApi: req.body.printfulApi ? true : false
     }
     if (req.body.web3Pk && !config.web3Pk) {
       config.web3Pk = req.body.web3Pk
     }
     const shopResponse = await createShop({
+      networkId: network.networkId,
       sellerId: req.session.sellerId,
       listingId: req.body.listingId,
       name,
@@ -368,7 +374,12 @@ module.exports = function (app) {
     }
 
     console.log(`Shop type: ${shopType}`)
-    const allowedTypes = ['single-product', 'multi-product', 'affiliate']
+    const allowedTypes = [
+      'single-product',
+      'multi-product',
+      'affiliate',
+      'empty'
+    ]
 
     if (allowedTypes.indexOf(shopType) >= 0) {
       const shopTpl = `${__dirname}/../db/shop-templates/${shopType}`
@@ -394,13 +405,15 @@ module.exports = function (app) {
         backendAuthToken: dataDir,
         supportEmail: `${name} Store <${dataDir}@ogn.app>`,
         emailSubject: `Your ${name} Order`,
-        pgpPublicKey: pgpPublicKey.replace(/\\r/g, '')
+        pgpPublicKey: pgpKeys.pgpPublicKey.replace(/\\r/g, '')
       }
     }
 
     const netPath = `networks[${network.networkId}]`
     shopConfig = set(shopConfig, `${netPath}.backend`, req.body.backend)
-    shopConfig = set(shopConfig, `${netPath}.listingId`, req.body.listingId)
+    if (req.body.listingId) {
+      shopConfig = set(shopConfig, `${netPath}.listingId`, req.body.listingId)
+    }
 
     const shopConfigPath = `${OutputDir}/data/config.json`
     fs.writeFileSync(shopConfigPath, JSON.stringify(shopConfig, null, 2))
@@ -408,19 +421,7 @@ module.exports = function (app) {
     const shippingContent = JSON.stringify(configs.shipping, null, 2)
     fs.writeFileSync(`${OutputDir}/data/shipping.json`, shippingContent)
 
-    try {
-      const deployOpts = {
-        OutputDir,
-        dataDir,
-        network,
-        subdomain,
-        shop: shopResponse.shop
-      }
-      const { hash, domain } = await deployShop(deployOpts)
-      return res.json({ success: true, hash, domain, gateway: network.ipfs })
-    } catch (e) {
-      return res.json({ success: false, reason: e.message })
-    }
+    return res.json({ success: true, slug: dataDir })
   })
 
   app.post(
@@ -503,6 +504,9 @@ module.exports = function (app) {
           const raw = fs.readFileSync(`${uploadDir}/config.json`).toString()
           const config = JSON.parse(raw)
           config[fields.type] = file.name
+          if (fields.type === 'logo') {
+            config.title = ''
+          }
           fs.writeFileSync(
             `${uploadDir}/config.json`,
             JSON.stringify(config, null, 2)

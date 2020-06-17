@@ -208,6 +208,12 @@ function getReducer(key) {
       const oldAdmin = cloneDeep(state.admin)
       newState = cloneDeep(getInitialState(action.dataDir))
       newState = set(newState, 'admin', oldAdmin)
+    } else if (action.type === 'hasChanges') {
+      newState = set(
+        newState,
+        'hasChanges',
+        action.value === false ? false : true
+      )
     }
 
     newState.cart.subTotal = newState.cart.items.reduce((total, item) => {

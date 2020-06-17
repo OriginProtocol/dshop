@@ -13,15 +13,19 @@ const AdminConfirmationModal = ({
   children,
   proceedText = 'Yes',
   cancelText = 'No',
-  validate = () => true
+  validate = () => true,
+  customEl,
+  modalOnly,
+  shouldShow,
+  onClose
 }) => {
   const [state, setState] = useSetState()
 
   useEffect(() => {
     if (state.doConfirm) {
       onConfirm()
-        .then(() => {
-          setState({ confirmed: true })
+        .then((response) => {
+          setState({ response, confirmed: true })
         })
         .catch((err) => {
           setState({ error: err.toString() })
@@ -29,8 +33,22 @@ const AdminConfirmationModal = ({
     }
   }, [state.doConfirm])
 
-  return (
-    <>
+  useEffect(() => {
+    if (shouldShow) {
+      setState({ showModal: true })
+    }
+  }, [shouldShow])
+
+  let btn
+  if (customEl) {
+    btn = React.cloneElement(customEl, {
+      onClick: (e) => {
+        e.preventDefault()
+        setState({ showModal: true })
+      }
+    })
+  } else if (!modalOnly) {
+    btn = (
       <button
         type="button"
         className={className}
@@ -38,12 +56,21 @@ const AdminConfirmationModal = ({
       >
         {buttonText}
       </button>
+    )
+  }
+
+  return (
+    <>
+      {btn}
       {!state.showModal ? null : (
         <Modal
           shouldClose={state.shouldClose}
           onClose={() => {
             if (state.confirmed) {
-              onSuccess()
+              onSuccess(state.response)
+            }
+            if (onClose) {
+              onClose()
             }
             setState({}, true)
           }}

@@ -78,7 +78,9 @@ const AdminProducts = () => {
         )}
       </div>
 
-      {!hasNoProducts ? (
+      {hasNoProducts ? (
+        <NoProductsBanner />
+      ) : (
         <table className="table admin-products table-hover">
           <thead>
             <tr>
@@ -102,7 +104,6 @@ const AdminProducts = () => {
                   if (e.target.matches('.action-icon, .action-icon *')) {
                     return
                   }
-
                   history.push(`/admin/products/${product.id}`)
                 }}
               >
@@ -110,7 +111,9 @@ const AdminProducts = () => {
                   <div
                     className="pic"
                     style={{
-                      backgroundImage: `url(${config.dataSrc}${product.id}/520/${product.image})`
+                      backgroundImage: product.image
+                        ? `url(${config.dataSrc}${product.id}/520/${product.image})`
+                        : null
                     }}
                   />
                 </td>
@@ -138,26 +141,28 @@ const AdminProducts = () => {
             ))}
           </tbody>
         </table>
-      ) : (
-        <div className="no-products-banner">
-          <div className="add-product-cta">
-            <h3>Add your products</h3>
-            <div className="desc">
-              Get closer to your first sale by adding products.
-              <br />
-              Click the button below to get started.
-            </div>
-            <Link to="/admin/products/new">
-              <button className="btn btn-primary">Add Product</button>
-            </Link>
-          </div>
-        </div>
       )}
 
       <Paginate total={products.length} />
     </div>
   )
 }
+
+const NoProductsBanner = () => (
+  <div className="no-products-banner">
+    <div className="add-product-cta">
+      <h3>Add your products</h3>
+      <div className="desc">
+        Get closer to your first sale by adding products.
+        <br />
+        Click the button below to get started.
+      </div>
+      <Link to="/admin/products/new">
+        <button className="btn btn-primary">Add Product</button>
+      </Link>
+    </div>
+  </div>
+)
 
 export default AdminProducts
 
@@ -198,7 +203,11 @@ require('react-styl')(`
       height: 100%
       .no-products-banner
         flex: 1
-        background-image: url('/images/cart-graphic.svg')
+        max-height: 450px
+        background-image: url('images/cart-graphic.svg')
+        background-position: bottom right
+        background-size: contain
+        background-repeat: no-repeat
         display: flex
         align-items: center
 

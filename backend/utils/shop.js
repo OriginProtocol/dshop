@@ -1,6 +1,7 @@
 const { Shop } = require('../models')
 
 async function createShop({
+  networkId,
   name,
   listingId,
   authToken,
@@ -11,10 +12,7 @@ async function createShop({
   if (!name) {
     return { status: 400, error: 'Provide a shop name' }
   }
-  if (!listingId) {
-    return { status: 400, error: 'Provide a listing ID' }
-  }
-  if (!String(listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
+  if (listingId && !String(listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
     return {
       status: 400,
       error: 'Listing ID must be of form xxx-xxx-xxx eg 1-001-123'
@@ -26,8 +24,6 @@ async function createShop({
   if (!sellerId) {
     return { status: 400, error: 'Provide a seller ID' }
   }
-
-  const networkId = Number(listingId.split('-')[0])
 
   const shop = await Shop.create({
     name,

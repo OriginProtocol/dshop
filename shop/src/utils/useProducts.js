@@ -8,7 +8,7 @@ import useBackendApi from 'utils/useBackendApi'
 const getProducts = memoize((url) => fetch(url).then((r) => r.json()))
 
 function useProducts() {
-  const [{ products, productIndex }, dispatch] = useStateValue()
+  const [{ products, productIndex, reload }, dispatch] = useStateValue()
   const { config } = useConfig()
   const { get } = useBackendApi()
   const [loading, setLoading] = useState(false)
@@ -32,12 +32,15 @@ function useProducts() {
   }
 
   useEffect(() => {
+    if (reload.products) {
+      getProducts.cache.clear()
+    }
     if (config.dataSrc) {
       fetchProducts()
     }
-  }, [config.dataSrc])
+  }, [config.dataSrc, reload.products])
 
-  return { products, productIndex, loading, error, refetch: fetchProducts }
+  return { products, productIndex, loading, error }
 }
 
 export default useProducts

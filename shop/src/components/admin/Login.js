@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 
 import { useStateValue } from 'data/state'
-import useConfig from 'utils/useConfig'
-import SetupLayout from '../../pages/super-admin/setup/_SetupLayout'
-import ErrorText from '../../pages/super-admin/setup/_ErrorText'
+import useBackendApi from 'utils/useBackendApi'
+import SetupLayout from 'pages/super-admin/setup/_SetupLayout'
+import ErrorText from 'pages/super-admin/setup/_ErrorText'
 
 const Login = () => {
-  const { config } = useConfig()
   const [state, setState] = useState({ email: '', password: '', error: '' })
   const [, dispatch] = useStateValue()
+  const { post } = useBackendApi({ authToken: true })
 
   return (
     <SetupLayout>
@@ -16,25 +16,12 @@ const Login = () => {
         className="admin login"
         onSubmit={(e) => {
           e.preventDefault()
-          setState({
-            ...state,
-            error: ''
-          })
+          setState({ ...state, error: '' })
           const body = JSON.stringify({
             email: state.email,
             password: state.password
           })
-
-          const myRequest = new Request(`${config.backend}/auth/login`, {
-            method: 'POST',
-            headers: {
-              authorization: `bearer ${config.backendAuthToken}`,
-              'content-type': 'application/json'
-            },
-            credentials: 'include',
-            body
-          })
-          fetch(myRequest)
+          post('/auth/login', { body })
             .then(async (res) => {
               if (res.ok) {
                 setState({ ...state, error: '' })
@@ -93,5 +80,4 @@ require('react-styl')(`
     background-image: linear-gradient(313deg, #007cff 100%, #0076f4 7%)
     padding: 2rem 2.5rem
     min-height: auto
-
 `)

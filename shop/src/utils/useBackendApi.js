@@ -35,11 +35,12 @@ function useBackendApi(opts = {}) {
   }
 
   function get(url) {
+    const headers = { 'content-type': 'application/json' }
+    if (authToken) {
+      headers.authorization = `bearer ${config.backendAuthToken}`
+    }
     return new Promise((resolve, reject) => {
-      fetch(`${config.backend}${url}`, {
-        headers: { 'content-type': 'application/json' },
-        credentials: 'include'
-      })
+      fetch(`${config.backend}${url}`, { headers, credentials: 'include' })
         .then((res) => res.json())
         .then((json) => {
           json.success ? resolve(json) : reject(new Error(json.reason))

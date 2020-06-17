@@ -18,14 +18,10 @@ const AdminDeleteShop = ({ shop, className = '' }) => {
       buttonText="Delete"
       confirmText="Are you sure you want to delete this shop?"
       confirmedText="Shop deleted"
-      onConfirm={() =>
-        post(`/shops/${shop.authToken}`, {
-          method: 'DELETE',
-          body: JSON.stringify({
-            deleteCache
-          })
-        })
-      }
+      onConfirm={() => {
+        const body = JSON.stringify({ deleteCache })
+        return post(`/shops/${shop.authToken}`, { method: 'DELETE', body })
+      }}
       onSuccess={() => {
         history.push({
           pathname: '/super-admin/shops',

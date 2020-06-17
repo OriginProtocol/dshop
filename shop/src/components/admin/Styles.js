@@ -51,6 +51,11 @@ require('react-styl')(`
           border-left: 1px solid #5666
           position: relative
           cursor: pointer
+          img.svg
+            width: 100%
+            height: 100%
+            object-position: left
+            object-fit: contain
         .dropdown-cog
           width: 16px
           height: 16px

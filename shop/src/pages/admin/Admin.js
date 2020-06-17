@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Redirect, Switch, Route, Link } from 'react-router-dom'
+import { Redirect, Switch, Route } from 'react-router-dom'
 import 'components/admin/Styles'
 
 import { useStateValue } from 'data/state'
-import useConfig from 'utils/useConfig'
+import useBackendApi from 'utils/useBackendApi'
 
 import * as Icons from 'components/icons/Admin'
 import Login from 'components/admin/Login'
@@ -21,32 +21,26 @@ import Events from './Events'
 import Menu from './_Menu'
 import AccountSelector from './_AccountSelector'
 import Onboarding from './Onboarding'
+import NewShop from './_NewShop'
+import PublishChanges from './_PublishChanges'
 
 const Admin = () => {
-  const { config } = useConfig()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState()
+  const [newShop, setNewShop] = useState()
+  const { get } = useBackendApi({ authToken: true })
+  const [{ admin, reload }, dispatch] = useStateValue()
 
   useEffect(() => {
-    fetch(`${config.backend}/auth`, {
-      credentials: 'include',
-      headers: {
-        authorization: `bearer ${config.backendAuthToken}`
-      }
-    })
-      .then(async (response) => {
-        if (response.status === 200) {
-          const auth = await response.json()
-          dispatch({ type: 'setAuth', auth })
-        }
+    get('/auth')
+      .then((auth) => {
+        dispatch({ type: 'setAuth', auth })
         setLoading(false)
       })
       .catch(() => {
         setError(true)
       })
-  }, [])
-
-  const [{ admin }, dispatch] = useStateValue()
+  }, [reload.auth])
 
   if (error) {
     return <div className="fixed-loader">Admin Connection Error</div>
@@ -64,11 +58,9 @@ const Admin = () => {
         <div className="fullwidth-container">
           <h1>
             <img className="dshop-logo" src="images/dshop-logo-blue.svg" />
-            <AccountSelector />
+            <AccountSelector onNewShop={() => setNewShop(true)} />
+            <NewShop shouldShow={newShop} onClose={() => setNewShop(false)} />
           </h1>
-          <div className="mr-4">
-            <Link to="/about">FAQ</Link>
-          </div>
           <div className="user">
             <Icons.User />
             {admin.email}
@@ -80,6 +72,7 @@ const Admin = () => {
           <Menu />
         </div>
         <div className="main-content-container">
+          <PublishChanges />
           <Switch>
             <Route path="/admin/discounts/:id" component={EditDiscount} />
             <Route path="/admin/discounts" component={Discounts} />

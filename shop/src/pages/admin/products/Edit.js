@@ -4,7 +4,7 @@ import { useRouteMatch, useHistory } from 'react-router'
 import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
 
-import useProducts from 'utils/useProducts'
+import { useStateValue } from 'data/state'
 import useProduct from 'utils/useProduct'
 import useBackendApi from 'utils/useBackendApi'
 import useSetState from 'utils/useSetState'
@@ -113,8 +113,8 @@ function validate(state, { hasVariants }) {
 const EditProduct = () => {
   const history = useHistory()
   const match = useRouteMatch('/admin/products/:productId')
+  const [, dispatch] = useStateValue()
   const { productId } = match.params
-  const { refetch } = useProducts()
   const { post } = useBackendApi({ authToken: true })
 
   const [submitting, setSubmitting] = useState(false)
@@ -216,7 +216,8 @@ const EditProduct = () => {
         fetchProduct.cache.delete(`${localStorage.activeShop}/-${newState.id}`)
       }
 
-      await refetch()
+      dispatch({ type: 'reload', target: 'products' })
+      dispatch({ type: 'hasChanges' })
       history.push('/admin/products')
       return
     } catch (error) {
@@ -253,6 +254,7 @@ const EditProduct = () => {
   return (
     <div className="admin-edit-product">
       <form
+        autoComplete="off"
         onSubmit={(e) => {
           e.preventDefault()
           createProduct()
@@ -267,7 +269,7 @@ const EditProduct = () => {
             <div className="form-section">
               <div className="form-group">
                 <label>Title</label>
-                <input type="text" {...input('title')} />
+                <input type="text" {...input('title')} autoFocus />
                 {Feedback('title')}
               </div>
 
