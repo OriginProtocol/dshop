@@ -53,7 +53,7 @@ function validate(state, { hasVariants }) {
   }
 
   if (!state.price || !state.price < 0) {
-    newState.descriptionError = 'Price is required'
+    newState.priceError = 'Price is required'
   }
 
   if (hasVariants) {
@@ -75,13 +75,14 @@ function validate(state, { hasVariants }) {
     )
   }
 
-  if (!state.dispatchOrigin) {
-    newState.dispatchOriginError = 'Select a dispatch origin'
-  }
+  // if (!state.dispatchOrigin) {
+  //   newState.dispatchOriginError = 'Select a dispatch origin'
+  // }
 
-  if (!state.processingTime) {
-    newState.processingTimeError = 'Select a processing time'
-  } else if (state.processingTime === 'custom') {
+  // if (!state.processingTime) {
+  //   newState.processingTimeError = 'Select a processing time'
+  // } else
+  if (state.processingTime === 'custom') {
     newState.processingTimeOpts = {
       ...removeErrorKeys(state.processingTimeOpts)
     }
@@ -318,7 +319,7 @@ const EditProduct = () => {
 
             <div className="row">
               <div className="col-md-12">
-                <label>Vairants</label>
+                <label>Variants</label>
                 <div className="form-check">
                   <input
                     id="variantsCheckbox"
@@ -342,27 +343,18 @@ const EditProduct = () => {
                 {(formState.variants || []).map((variant, index) => {
                   return (
                     <EditProductVariant
+                      key={index}
+                      label={`Option ${index + 1}`}
                       formState={variant}
                       setFormState={(newState) => {
-                        const variantsArray = [...formState.variants]
-                        variantsArray[index] = {
-                          ...variant,
-                          ...newState
-                        }
-
-                        setFormState({
-                          variants: variantsArray
-                        })
+                        const variants = [...formState.variants]
+                        variants[index] = { ...variant, ...newState }
+                        setFormState({ variants })
                       }}
-                      label={`Option ${index + 1}`}
-                      key={index}
                       onRemove={() => {
-                        const variantsArray = [...formState.variants]
-                        variantsArray.splice(index, 1)
-
-                        setFormState({
-                          variants: variantsArray
-                        })
+                        const variants = [...formState.variants]
+                        variants.splice(index, 1)
+                        setFormState({ variants })
                       }}
                     />
                   )

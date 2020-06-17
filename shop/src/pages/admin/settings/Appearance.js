@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useRef } from 'react'
+import React, { useReducer, useEffect } from 'react'
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
@@ -6,6 +6,7 @@ import useShopConfig from 'utils/useShopConfig'
 import useBackendApi from 'utils/useBackendApi'
 import { formInput, formFeedback } from 'utils/formHelpers'
 
+import UploadFile from './_UploadFile'
 import Tabs from './_Tabs'
 
 function reducer(state, newState) {
@@ -19,19 +20,8 @@ const PlusIcon = () => (
   </svg>
 )
 
-const UploadIcon = () => (
-  <svg width="38" height="47" viewBox="0 0 38 47">
-    <path
-      fill="#3B80EE"
-      d="M27.162 35.863V19.291H38L19 0 0 19.29h10.838v16.573h16.324zM38 47v-5.568H0V47h38z"
-    />
-  </svg>
-)
-
 const ShopAppearance = () => {
   const { config } = useConfig()
-  const logoRef = useRef()
-  const faviconRef = useRef()
   const { shopConfig } = useShopConfig()
   const { postRaw } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, {
@@ -100,34 +90,16 @@ const ShopAppearance = () => {
               />
             </div>
           ) : null}
-          <div className="upload-image">
-            <UploadIcon />
-            <input
-              type="file"
-              ref={logoRef}
-              className="form-control d-none"
-              accept=".png, .jpeg, .svg"
-              onChange={(e) => {
-                setState({ assets: e.target.files })
-                const body = new FormData()
-                body.append('type', 'logo')
-                for (const file of e.target.files) {
-                  body.append('file', file)
-                }
-
-                postRaw('/shop/assets', { method: 'PUT', body }).then((res) => {
-                  setState({ logo: res.path })
-                })
-              }}
-            />
-            <button
-              type="button"
-              className="btn btn-outline-primary btn-rounded px-4"
-              onClick={() => logoRef.current.click()}
-            >
-              {`${state.logo ? 'Replace' : 'Add'} Image`}
-            </button>
-          </div>
+          <UploadFile
+            accept=".png, .jpeg, .svg"
+            replace={state.logo ? true : false}
+            onUpload={(body) => {
+              body.append('type', 'logo')
+              postRaw('/shop/assets', { method: 'PUT', body }).then((res) => {
+                setState({ logo: res.path })
+              })
+            }}
+          />
         </div>
         <div className="form-group">
           <label>
@@ -145,34 +117,16 @@ const ShopAppearance = () => {
               />
             </div>
           ) : null}
-          <div className="upload-image">
-            <UploadIcon />
-            <input
-              type="file"
-              ref={faviconRef}
-              className="form-control d-none"
-              accept=".png, .ico"
-              onChange={(e) => {
-                setState({ assets: e.target.files })
-                const body = new FormData()
-                body.append('type', 'favicon')
-                for (const file of e.target.files) {
-                  body.append('file', file)
-                }
-
-                postRaw('/shop/assets', { method: 'PUT', body }).then((res) => {
-                  setState({ favicon: res.path })
-                })
-              }}
-            />
-            <button
-              type="button"
-              className="btn btn-outline-primary btn-rounded px-4"
-              onClick={() => faviconRef.current.click()}
-            >
-              {`${state.favicon ? 'Replace' : 'Add'} Image`}
-            </button>
-          </div>
+          <UploadFile
+            accept=".png, .ico"
+            replace={state.favicon ? true : false}
+            onUpload={(body) => {
+              body.append('type', 'favicon')
+              postRaw('/shop/assets', { method: 'PUT', body }).then((res) => {
+                setState({ favicon: res.path })
+              })
+            }}
+          />
         </div>
         <div className="form-group">
           <label>
@@ -213,19 +167,7 @@ require('react-styl')(`
       .suffix
         position: absolute
         color: #9faebd
-        margin: 7px 0 0 15px
+        margin: 8px 0 0 15px
         > span
           visibility: hidden
-  .upload-image
-    border: 1px dashed #3b80ee
-    background-color: #f8fbff
-    flex-direction: column
-    height: 175px
-    display: flex
-    align-items: center
-    justify-content: center
-    border-radius: 5px
-    max-width: 650px
-    svg
-      margin-bottom: 1.5rem
 `)

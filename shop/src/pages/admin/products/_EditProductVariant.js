@@ -50,9 +50,7 @@ const TokenComponent = ({ values, onChange, validationError }) => {
         />
       </div>
       {validationError && (
-        <div className="invalid-feedback" style={{ display: 'block ' }}>
-          {validationError}
-        </div>
+        <div className="invalid-feedback d-block">{validationError}</div>
       )}
     </>
   )
@@ -97,7 +95,7 @@ require('react-styl')(`
   .edit-product-variant
     margin-bottom: 1rem
 
-    .remove-link 
+    .remove-link
       font-size: 0.8rem
       padding: 0
       margin-bottom: 0.625rem
@@ -143,7 +141,7 @@ require('react-styl')(`
         color: #3b80ee
         font-size: 1rem
 
-    input 
+    input
       padding: 0.25rem 0.5rem
       height: 1.75rem
       font-size: 0.75rem
