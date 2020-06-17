@@ -1,7 +1,7 @@
 const deploy = require('ipfs-deploy')
 const ipfsClient = require('ipfs-http-client')
 const fs = require('fs')
-const { exec } = require('child_process')
+const { execFile } = require('child_process')
 
 const { ShopDeployment } = require('../models')
 
@@ -55,22 +55,27 @@ async function deployShop({
   const zone = networkConfig.domain
 
   await new Promise((resolve, reject) => {
-    exec(`rm -rf ${OutputDir}/public`, (error, stdout) => {
+    execFile('rm', ['-rf', `${OutputDir}/public`], (error, stdout) => {
       if (error) reject(error)
       else resolve(stdout)
     })
   })
 
   await new Promise((resolve, reject) => {
-    exec(`cp -r ${__dirname}/../dist ${OutputDir}/public`, (error, stdout) => {
-      if (error) reject(error)
-      else resolve(stdout)
-    })
+    execFile(
+      'cp',
+      ['-r', `${__dirname}/../dist`, `${OutputDir}/public`],
+      (error, stdout) => {
+        if (error) reject(error)
+        else resolve(stdout)
+      }
+    )
   })
 
   await new Promise((resolve, reject) => {
-    exec(
-      `cp -r ${OutputDir}/data ${OutputDir}/public/${dataDir}`,
+    execFile(
+      'cp',
+      ['-r', `${OutputDir}/data`,`${OutputDir}/public/${dataDir}`],
       (error, stdout) => {
         if (error) reject(error)
         else resolve(stdout)
