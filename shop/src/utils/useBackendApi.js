@@ -23,7 +23,7 @@ function useBackendApi(opts = {}) {
         .catch(reject)
     })
   }
-  
+
   function post(url, opts = {}) {
     return postRaw(url, {
       ...opts,

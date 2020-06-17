@@ -10,7 +10,7 @@ import useBackendApi from 'utils/useBackendApi'
 import useSetState from 'utils/useSetState'
 import { formInput, formFeedback } from 'utils/formHelpers'
 
-import  fetchProduct from 'data/fetchProduct'
+import fetchProduct from 'data/fetchProduct'
 import { Countries } from 'data/Countries'
 
 import ImagePicker from 'components/ImagePicker'
