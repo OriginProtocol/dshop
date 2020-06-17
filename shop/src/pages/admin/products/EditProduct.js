@@ -15,6 +15,7 @@ import DeleteButton from './_Delete'
 import EditProductVariant from './_EditProductVariant'
 
 import { Countries } from 'data/Countries'
+import LinkCollections from './_LinkCollections'
 
 const predefinedProcessingTimes = [
   { value: '1 business day', label: '1 business day' },
@@ -115,6 +116,7 @@ const EditProduct = () => {
   const [, setSubmitError] = useState(null)
 
   const [formState, setFormState] = useSetState({})
+  const [selectedCollections, setSelectedCollections] = useState([])
 
   const [hasVariants, setHasVariants] = useState(false)
 
@@ -488,7 +490,9 @@ const EditProduct = () => {
               </div>
             </div>
           </div>
-          <div className="col-md-2"></div>
+          <div className="col-md-3">
+            <LinkCollections selectedValues={selectedCollections} onChange={setSelectedCollections} />
+          </div>
         </div>
         <div className="footer-actions">{actions}</div>
       </form>

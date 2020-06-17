@@ -5,15 +5,15 @@ import useProducts from 'utils/useProducts'
 import useBackendApi from 'utils/useBackendApi'
 import ConfirmationModal from 'components/ConfirmationModal'
 
-const DeleteProduct = ({ product, className = '' }) => {
+const DeleteProduct = ({ product, className = '', children }) => {
   const history = useHistory()
   const { post } = useBackendApi({ authToken: true })
   const { refetch } = useProducts()
 
   return (
     <ConfirmationModal
-      className={`btn btn-outline-danger ${className}`}
-      buttonText="Delete"
+      className={`${className || 'btn btn-outline-danger'}`}
+      buttonText={<>{children || "Delete"}</>}
       confirmText="Are you sure you want to delete this product?"
       confirmedText="Product deleted"
       onConfirm={() => post(`/products/${product.id}`, { method: 'DELETE' })}
