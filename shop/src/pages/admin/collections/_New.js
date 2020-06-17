@@ -34,7 +34,7 @@ const AdminCreateCollection = ({ className = '', children, onSuccess }) => {
   return (
     <ConfirmationModal
       className={children ? className : `btn btn-outline-primary ${className}`}
-      buttonText={<>{children || "Create"}</>}
+      buttonText={<>{children || 'Create'}</>}
       confirmText="Add a Collection"
       confirmedText="Collection created"
       proceedText="Add"

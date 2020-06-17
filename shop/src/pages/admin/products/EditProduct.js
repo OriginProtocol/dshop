@@ -31,7 +31,7 @@ const predefinedProcessingTimes = [
   { value: 'unknown', label: 'Unknown' }
 ]
 
-const removeErrorKeys = obj => {
+const removeErrorKeys = (obj) => {
   return {
     ...pickBy(obj, (v, k) => !k.endsWith('Error'))
   }
@@ -92,15 +92,17 @@ function validate(state, { hasVariants }) {
       newState.processingTimeOpts.toValError = 'Select a value'
     }
 
-    validCustomProcTime = Object.keys(newState.processingTimeOpts).every((f) => f.indexOf('Error') < 0)
+    validCustomProcTime = Object.keys(newState.processingTimeOpts).every(
+      (f) => f.indexOf('Error') < 0
+    )
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
   return {
     valid: validVariants && validCustomProcTime && valid,
-    newState: { 
-      ...removeErrorKeys(state), 
-      ...newState 
+    newState: {
+      ...removeErrorKeys(state),
+      ...newState
     }
   }
 }
@@ -124,7 +126,7 @@ const EditProduct = () => {
 
   const input = formInput(formState, (newState) => setFormState(newState))
   const Feedback = formFeedback(formState)
-  
+
   const procTimeState = get(formState, 'processingTimeOpts', {})
 
   const customProcTimeInput = formInput(procTimeState, (newState) => {
@@ -180,9 +182,9 @@ const EditProduct = () => {
 
   const createProduct = async () => {
     if (submitting) return
-    
+
     setSubmitError(null)
-    
+
     const { valid, newState } = validate(formState, {
       hasVariants: hasVariants
     })
@@ -316,7 +318,7 @@ const EditProduct = () => {
                     type="checkbox"
                     className="form-check-input"
                     checked={hasVariants}
-                    onChange={e => setHasVariants(e.target.checked)}
+                    onChange={(e) => setHasVariants(e.target.checked)}
                   />
                   <label
                     className="form-check-label"
@@ -396,8 +398,10 @@ const EditProduct = () => {
                   <label>Dispatch Origin</label>
                   <select {...input('dispatchOrigin')}>
                     <option>Please choose one...</option>
-                    {Object.keys(Countries).map(country => (
-                      <option key={country} value={country}>{country}</option>
+                    {Object.keys(Countries).map((country) => (
+                      <option key={country} value={country}>
+                        {country}
+                      </option>
                     ))}
                   </select>
                   {Feedback('dispatchOrigin')}
@@ -407,8 +411,10 @@ const EditProduct = () => {
                   <label>Processing Time</label>
                   <select {...input('processingTime')}>
                     <option>Please choose one...</option>
-                    {predefinedProcessingTimes.map(t => (
-                      <option key={t.value} value={t.value}>{t.label}</option>
+                    {predefinedProcessingTimes.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
                     ))}
                   </select>
                   {Feedback('processingTime')}
@@ -418,13 +424,12 @@ const EditProduct = () => {
                   <div className="row">
                     <div className="col-6">
                       <div className="form-group">
-                        <select  {...customProcTimeInput('fromVal')}>
+                        <select {...customProcTimeInput('fromVal')}>
                           <option>From...</option>
-                          {(new Array(10)).fill(0).map((_, index) => (
-                            <option 
-                              key={index} 
-                              value={index + 1}
-                            >{index + 1}</option>
+                          {new Array(10).fill(0).map((_, index) => (
+                            <option key={index} value={index + 1}>
+                              {index + 1}
+                            </option>
                           ))}
                         </select>
                         {customProcTimeFeedback('fromVal')}
@@ -435,11 +440,10 @@ const EditProduct = () => {
                       <div className="form-group">
                         <select {...customProcTimeInput('toVal')}>
                           <option>To...</option>
-                          {(new Array(10)).fill(0).map((_, index) => (
-                            <option 
-                              key={index} 
-                              value={index + 1}
-                            >{index + 1}</option>
+                          {new Array(10).fill(0).map((_, index) => (
+                            <option key={index} value={index + 1}>
+                              {index + 1}
+                            </option>
                           ))}
                         </select>
                         {customProcTimeFeedback('toVal')}
@@ -448,11 +452,13 @@ const EditProduct = () => {
 
                     <div className="col-6">
                       <div className="form-check">
-                        <input 
-                          className="form-check-input" 
-                          type="radio" 
-                          checked={get(procTimeState, 'interval', 'days') === 'days'} 
-                          onChange={e => {
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          checked={
+                            get(procTimeState, 'interval', 'days') === 'days'
+                          }
+                          onChange={(e) => {
                             setFormState({
                               processingTimeOpts: {
                                 ...procTimeState,
@@ -461,17 +467,25 @@ const EditProduct = () => {
                             })
                           }}
                           value="days"
-                          id="procTimeDays" />
-                        <label htmlFor="procTimeDays" className="form-check-label">Business days</label>
+                          id="procTimeDays"
+                        />
+                        <label
+                          htmlFor="procTimeDays"
+                          className="form-check-label"
+                        >
+                          Business days
+                        </label>
                       </div>
                     </div>
                     <div className="col-6">
                       <div className="form-check">
-                        <input 
-                          className="form-check-input" 
-                          type="radio" 
-                          checked={get(procTimeState, 'interval', 'days') === 'weeks'} 
-                          onChange={e => {
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          checked={
+                            get(procTimeState, 'interval', 'days') === 'weeks'
+                          }
+                          onChange={(e) => {
                             setFormState({
                               processingTimeOpts: {
                                 ...procTimeState,
@@ -480,18 +494,26 @@ const EditProduct = () => {
                             })
                           }}
                           value="weeks"
-                          id="procTimeWeeks" />
-                        <label htmlFor="procTimeWeeks" className="form-check-label">Weeks</label>
+                          id="procTimeWeeks"
+                        />
+                        <label
+                          htmlFor="procTimeWeeks"
+                          className="form-check-label"
+                        >
+                          Weeks
+                        </label>
                       </div>
                     </div>
                   </div>
                 )}
-
               </div>
             </div>
           </div>
           <div className="col-md-3">
-            <LinkCollections selectedValues={selectedCollections} onChange={setSelectedCollections} />
+            <LinkCollections
+              selectedValues={selectedCollections}
+              onChange={setSelectedCollections}
+            />
           </div>
         </div>
         <div className="footer-actions">{actions}</div>

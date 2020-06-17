@@ -13,7 +13,7 @@ const DeleteProduct = ({ product, className = '', children }) => {
   return (
     <ConfirmationModal
       className={`${className || 'btn btn-outline-danger'}`}
-      buttonText={<>{children || "Delete"}</>}
+      buttonText={<>{children || 'Delete'}</>}
       confirmText="Are you sure you want to delete this product?"
       confirmedText="Product deleted"
       onConfirm={() => post(`/products/${product.id}`, { method: 'DELETE' })}

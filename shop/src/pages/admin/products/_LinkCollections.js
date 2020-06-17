@@ -3,32 +3,38 @@ import React, { useState, useMemo } from 'react'
 import useCollections from 'utils/useCollections'
 import CreateCollection from '../collections/_New'
 
-const CollectionItemCheckboxes = ({ collections, onChange, selectedValues, uniquePrefix }) => {
-  const onInputChange = e => {
+const CollectionItemCheckboxes = ({
+  collections,
+  onChange,
+  selectedValues,
+  uniquePrefix
+}) => {
+  const onInputChange = (e) => {
     if (e.target.checked) {
-      onChange(Array.from(new Set([
-        ...selectedValues,
-        e.target.value
-      ])))
+      onChange(Array.from(new Set([...selectedValues, e.target.value])))
     } else {
-      onChange(selectedValues.filter(x => x !== e.target.value))
+      onChange(selectedValues.filter((x) => x !== e.target.value))
     }
   }
 
-  return (
-    collections.map((collection, index) => (
-      <div className="form-check" key={collection.id} tabIndex={index}>
-        <input 
-          type="checkbox" 
-          checked={selectedValues.includes(collection.id)}
-          onChange={onInputChange}
-          value={collection.id}
-          id={`${uniquePrefix}${collection.id}`}
-          className="form-check-input" />
-        <label className="form-check-label" htmlFor={`${uniquePrefix}${collection.id}`}>{collection.title}</label>
-      </div>
-    ))
-  )
+  return collections.map((collection, index) => (
+    <div className="form-check" key={collection.id} tabIndex={index}>
+      <input
+        type="checkbox"
+        checked={selectedValues.includes(collection.id)}
+        onChange={onInputChange}
+        value={collection.id}
+        id={`${uniquePrefix}${collection.id}`}
+        className="form-check-input"
+      />
+      <label
+        className="form-check-label"
+        htmlFor={`${uniquePrefix}${collection.id}`}
+      >
+        {collection.title}
+      </label>
+    </div>
+  ))
 }
 
 const LinkCollections = ({ selectedValues, onChange }) => {
@@ -43,10 +49,9 @@ const LinkCollections = ({ selectedValues, onChange }) => {
 
     if (val.trim().length === 0) return []
 
-    return collections.filter(x => {
+    return collections.filter((x) => {
       return (
-        x.title.toLowerCase().includes(val) || 
-        x.id.toLowerCase().includes(val)
+        x.title.toLowerCase().includes(val) || x.id.toLowerCase().includes(val)
       )
     })
   }, [searchVal, collections, loading])
@@ -54,40 +59,47 @@ const LinkCollections = ({ selectedValues, onChange }) => {
   const selectedCollections = useMemo(() => {
     if (!collections) return []
 
-    return collections.filter(x => selectedValues.includes(x.id))
+    return collections.filter((x) => selectedValues.includes(x.id))
   }, [collections, selectedValues])
 
   return (
     <div className="link-collections">
       <div className="form-group">
         <label>Collections</label>
-        <input 
+        <input
           value={searchVal}
-          onChange={e => setSearchVal(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && e.preventDefault()}
+          onChange={(e) => setSearchVal(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
           placeholder="Search collections"
           className="form-control"
-          type="text" />
+          type="text"
+        />
         {searchResults.length === 0 ? null : (
           <div className="search-results">
-            {loading ? 'Loading...' : (
-              <CollectionItemCheckboxes 
+            {loading ? (
+              'Loading...'
+            ) : (
+              <CollectionItemCheckboxes
                 uniquePrefix="coll-search-result"
-                collections={searchResults} 
-                onChange={onChange} 
-                selectedValues={selectedValues} />
+                collections={searchResults}
+                onChange={onChange}
+                selectedValues={selectedValues}
+              />
             )}
           </div>
         )}
       </div>
       <div className="selected-values">
-        {loading ? 'Loading...' : (
-          <CollectionItemCheckboxes 
+        {loading ? (
+          'Loading...'
+        ) : (
+          <CollectionItemCheckboxes
             uniquePrefix="coll-selected-val-"
-            collections={selectedCollections} 
-            onChange={onChange} 
-            selectedValues={selectedValues} />
-          )}
+            collections={selectedCollections}
+            onChange={onChange}
+            selectedValues={selectedValues}
+          />
+        )}
       </div>
 
       <CreateCollection className="new-coll-link" onSuccess={() => {}}>
