@@ -25,7 +25,7 @@ function useBackendApi(opts = {}) {
   }
 
   function post(url, opts = {}) {
-    return post(url, {
+    return postRaw(url, {
       ...opts,
       headers: {
         ...opts.headers,

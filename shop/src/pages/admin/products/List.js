@@ -11,6 +11,8 @@ import sortProducts from 'utils/sortProducts'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import useCollections from 'utils/useCollections'
 
+import DeleteButton from './_Delete'
+
 const AdminProducts = () => {
   const { config } = useConfig()
   const { products, loading: productsLoading } = useProducts()
@@ -127,12 +129,9 @@ const AdminProducts = () => {
                         <img src="images/edit-icon.svg" />
                       </Link>
                     </div>
-                    <div
-                      className="action-icon"
-                      onClick={(e) => e.preventDefault()}
-                    >
+                    <DeleteButton product={product} className="action-icon">
                       <img src="images/delete-icon.svg" />
-                    </div>
+                    </DeleteButton>
                   </div>
                 </td>
               </tr>
@@ -188,6 +187,10 @@ require('react-styl')(`
 
     h3 span
       color: #9faebd
+
+    .action-icon
+      border: 0
+      background-color: transparent
 
     &.no-products
       display: flex

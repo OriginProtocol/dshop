@@ -22,7 +22,7 @@ function validate(state) {
   return { valid, newState: { ...state, ...newState } }
 }
 
-const AdminCreateCollection = ({ className = '' }) => {
+const AdminCreateCollection = ({ className = '', children, onSuccess }) => {
   const history = useHistory()
   const [, dispatch] = useStateValue()
   const { collections } = useCollections()
@@ -33,8 +33,8 @@ const AdminCreateCollection = ({ className = '' }) => {
 
   return (
     <ConfirmationModal
-      className={`btn btn-outline-primary ${className}`}
-      buttonText="Create"
+      className={children ? className : `btn btn-outline-primary ${className}`}
+      buttonText={<>{children || 'Create'}</>}
       confirmText="Add a Collection"
       confirmedText="Collection created"
       proceedText="Add"
@@ -62,10 +62,14 @@ const AdminCreateCollection = ({ className = '' }) => {
       onSuccess={() => {
         setState({}, true)
         dispatch({ type: 'reload', target: 'collections' })
-        history.push({
-          pathname: '/admin/collections',
-          state: { scrollToTop: true }
-        })
+        if (onSuccess) {
+          onSuccess()
+        } else {
+          history.push({
+            pathname: '/admin/collections',
+            state: { scrollToTop: true }
+          })
+        }
       }}
     >
       <div className="form-row mt-3">

@@ -1,19 +1,48 @@
 import React, { useState, useEffect } from 'react'
 import { useRouteMatch, useHistory } from 'react-router'
 
+import get from 'lodash/get'
+import pickBy from 'lodash/pickBy'
+
 import useProducts from 'utils/useProducts'
 import useProduct from 'utils/useProduct'
 import useBackendApi from 'utils/useBackendApi'
 import useSetState from 'utils/useSetState'
 import { formInput, formFeedback } from 'utils/formHelpers'
 
+import fetchProduct from 'data/fetchProduct'
+import { Countries } from 'data/Countries'
+
 import ImagePicker from 'components/ImagePicker'
 import DeleteButton from './_Delete'
 import EditProductVariant from './_EditProductVariant'
 
-function validate(state, { validateVariants }) {
+import LinkCollections from './_LinkCollections'
+
+const predefinedProcessingTimes = [
+  { value: '1 business day', label: '1 business day' },
+  { value: '1-2 business days', label: '1-2 business days' },
+  { value: '1-3 business days', label: '1-3 business days' },
+  { value: '3-5 business days', label: '3-5 business days' },
+  { value: '1-2 weeks', label: '1-2 weeks' },
+  { value: '2-3 weeks', label: '2-3 weeks' },
+  { value: '3-4 weeks', label: '3-4 weeks' },
+  { value: '4-6 weeks', label: '4-6 weeks' },
+  { value: '6-8 weeks', label: '6-8 weeks' },
+  { value: 'custom', label: 'Custom' },
+  { value: 'unknown', label: 'Unknown' }
+]
+
+const removeErrorKeys = (obj) => {
+  return {
+    ...pickBy(obj, (v, k) => !k.endsWith('Error'))
+  }
+}
+
+function validate(state, { hasVariants }) {
   const newState = {}
-  let variantsError = false
+  let validVariants = true
+  let validCustomProcTime = true
 
   if (!state.title || !state.title.trim().length) {
     newState.titleError = 'Title is required'
@@ -27,9 +56,9 @@ function validate(state, { validateVariants }) {
     newState.descriptionError = 'Price is required'
   }
 
-  if (validateVariants) {
+  if (hasVariants) {
     newState.variants = state.variants.map((variant) => {
-      const out = { ...variant }
+      const out = removeErrorKeys(variant)
       if (!variant.title || !variant.title.trim().length) {
         out.titleError = 'Variant name is required'
       }
@@ -41,15 +70,42 @@ function validate(state, { validateVariants }) {
       return out
     })
 
-    variantsError = newState.variants.map((v) =>
+    validVariants = newState.variants.every((v) =>
       Object.keys(v).every((f) => f.indexOf('Error') < 0)
+    )
+  }
+
+  if (!state.dispatchOrigin) {
+    newState.dispatchOriginError = 'Select a dispatch origin'
+  }
+
+  if (!state.processingTime) {
+    newState.processingTimeError = 'Select a processing time'
+  } else if (state.processingTime === 'custom') {
+    newState.processingTimeOpts = {
+      ...removeErrorKeys(state.processingTimeOpts)
+    }
+
+    if (!state.processingTimeOpts || !state.processingTimeOpts.fromVal) {
+      newState.processingTimeOpts.fromValError = 'Select a value'
+    }
+
+    if (!state.processingTimeOpts || !state.processingTimeOpts.toVal) {
+      newState.processingTimeOpts.toValError = 'Select a value'
+    }
+
+    validCustomProcTime = Object.keys(newState.processingTimeOpts).every(
+      (f) => f.indexOf('Error') < 0
     )
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
   return {
-    valid: !variantsError && valid,
-    newState: { ...state, ...newState }
+    valid: validVariants && validCustomProcTime && valid,
+    newState: {
+      ...removeErrorKeys(state),
+      ...newState
+    }
   }
 }
 
@@ -64,6 +120,7 @@ const EditProduct = () => {
   const [, setSubmitError] = useState(null)
 
   const [formState, setFormState] = useSetState({})
+  const [selectedCollections, setSelectedCollections] = useState([])
 
   const [hasVariants, setHasVariants] = useState(false)
 
@@ -71,6 +128,19 @@ const EditProduct = () => {
 
   const input = formInput(formState, (newState) => setFormState(newState))
   const Feedback = formFeedback(formState)
+
+  const procTimeState = get(formState, 'processingTimeOpts', {})
+
+  const customProcTimeInput = formInput(procTimeState, (newState) => {
+    setFormState({
+      processingTimeOpts: {
+        ...formState.processingTimeOpts,
+        ...newState
+      }
+    })
+  })
+  const customProcTimeFeedback = formFeedback(procTimeState)
+
   const title = `${isNewProduct ? 'Add' : 'Edit'} product`
 
   const { product } = useProduct(productId)
@@ -114,29 +184,36 @@ const EditProduct = () => {
 
   const createProduct = async () => {
     if (submitting) return
+
+    setSubmitError(null)
+
     const { valid, newState } = validate(formState, {
-      validateVariants: hasVariants
+      hasVariants: hasVariants
     })
 
     setFormState(newState)
 
     if (!valid) {
+      setSubmitError('Please fill in all required fields')
       return
     }
 
     setSubmitting(true)
-    setSubmitError(null)
 
     try {
       await post(`/products`, {
         method: 'POST',
         body: JSON.stringify({
-          //  TODO: from input state
-          ...formState,
-          price: formState.price * 100,
+          ...newState,
+          price: newState.price * 100,
           images: media.map((file) => file.path)
         })
       })
+
+      if (newState.id) {
+        // Clear memoize cache for existing product
+        fetchProduct.cache.delete(`${localStorage.activeShop}/-${newState.id}`)
+      }
 
       await refetch()
       history.push('/admin/products')
@@ -248,7 +325,7 @@ const EditProduct = () => {
                     type="checkbox"
                     className="form-check-input"
                     checked={hasVariants}
-                    onChange={() => setHasVariants(true)}
+                    onChange={(e) => setHasVariants(e.target.checked)}
                   />
                   <label
                     className="form-check-label"
@@ -310,7 +387,7 @@ const EditProduct = () => {
               <label>Shipping</label>
               <div className="form-check">
                 <input
-                  {...input('shipping')}
+                  {...input('shipInternational')}
                   id="shippingCheckbox"
                   type="checkbox"
                   className="form-check-input"
@@ -326,25 +403,125 @@ const EditProduct = () => {
               <div className="col-md-6">
                 <div className="form-group">
                   <label>Dispatch Origin</label>
-                  <select {...input('origin')}>
-                    <option value="value-1">Value 1</option>
-                    <option value="value-1">Value 2</option>
+                  <select {...input('dispatchOrigin')}>
+                    <option>Please choose one...</option>
+                    {Object.keys(Countries).map((country) => (
+                      <option key={country} value={country}>
+                        {country}
+                      </option>
+                    ))}
                   </select>
-                  {Feedback('origin')}
+                  {Feedback('dispatchOrigin')}
                 </div>
 
                 <div className="form-group">
                   <label>Processing Time</label>
                   <select {...input('processingTime')}>
-                    <option value="value-1">Value 1</option>
-                    <option value="value-1">Value 2</option>
+                    <option>Please choose one...</option>
+                    {predefinedProcessingTimes.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
                   </select>
                   {Feedback('processingTime')}
                 </div>
+
+                {formState.processingTime !== 'custom' ? null : (
+                  <div className="row">
+                    <div className="col-6">
+                      <div className="form-group">
+                        <select {...customProcTimeInput('fromVal')}>
+                          <option>From...</option>
+                          {new Array(10).fill(0).map((_, index) => (
+                            <option key={index} value={index + 1}>
+                              {index + 1}
+                            </option>
+                          ))}
+                        </select>
+                        {customProcTimeFeedback('fromVal')}
+                      </div>
+                    </div>
+
+                    <div className="col-6">
+                      <div className="form-group">
+                        <select {...customProcTimeInput('toVal')}>
+                          <option>To...</option>
+                          {new Array(10).fill(0).map((_, index) => (
+                            <option key={index} value={index + 1}>
+                              {index + 1}
+                            </option>
+                          ))}
+                        </select>
+                        {customProcTimeFeedback('toVal')}
+                      </div>
+                    </div>
+
+                    <div className="col-6">
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          checked={
+                            get(procTimeState, 'interval', 'days') === 'days'
+                          }
+                          onChange={(e) => {
+                            setFormState({
+                              processingTimeOpts: {
+                                ...procTimeState,
+                                interval: e.target.value
+                              }
+                            })
+                          }}
+                          value="days"
+                          id="procTimeDays"
+                        />
+                        <label
+                          htmlFor="procTimeDays"
+                          className="form-check-label"
+                        >
+                          Business days
+                        </label>
+                      </div>
+                    </div>
+                    <div className="col-6">
+                      <div className="form-check">
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          checked={
+                            get(procTimeState, 'interval', 'days') === 'weeks'
+                          }
+                          onChange={(e) => {
+                            setFormState({
+                              processingTimeOpts: {
+                                ...procTimeState,
+                                interval: e.target.value
+                              }
+                            })
+                          }}
+                          value="weeks"
+                          id="procTimeWeeks"
+                        />
+                        <label
+                          htmlFor="procTimeWeeks"
+                          className="form-check-label"
+                        >
+                          Weeks
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-          <div className="col-md-2"></div>
+          <div className="col-md-3">
+            <LinkCollections
+              selectedValues={selectedCollections}
+              onChange={setSelectedCollections}
+            />
+          </div>
         </div>
         <div className="footer-actions">{actions}</div>
       </form>
@@ -377,4 +554,9 @@ require('react-styl')(`
 
     textarea
       height: 150px
+
+    label span
+      color: #8293a4
+      font-size: 0.875rem
+      font-weight: normal
 `)
