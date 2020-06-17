@@ -3,7 +3,7 @@ const fs = require('fs')
 const mv = require('mv')
 const sharp = require('sharp')
 
-const { exec } = require('child_process')
+const { execFile } = require('child_process')
 
 const pick = require('lodash/pick')
 const { DSHOP_CACHE } = require('./const')
@@ -107,7 +107,7 @@ async function removeProductData(shop, productId) {
     // fs.rmdirSync(outDir, { recursive: true })
     // TODO: How safe is this?
     await new Promise((resolve, reject) => {
-      exec(`rm -rf ${outDir}`, (err) => {
+      execFile('rm', ['-rf', outDir], (err) => {
         if (err) return reject(err)
         resolve()
       })

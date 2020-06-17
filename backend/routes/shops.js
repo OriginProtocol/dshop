@@ -15,7 +15,7 @@ const get = require('lodash/get')
 const set = require('lodash/set')
 const fs = require('fs')
 const configs = require('../scripts/configs')
-const { exec } = require('child_process')
+const { execFile } = require('child_process')
 const formidable = require('formidable')
 const https = require('https')
 const http = require('http')
@@ -189,15 +189,16 @@ module.exports = function (app) {
     })
 
     await new Promise((resolve, reject) => {
-      exec(`rm -rf ${OutputDir}/data`, (error, stdout) => {
+      execFile('rm', ['-rf', `${OutputDir}/data`], (error, stdout) => {
         if (error) reject(error)
         else resolve(stdout)
       })
     })
 
     await new Promise((resolve, reject) => {
-      exec(
-        `tar -xvzf ${OutputDir}/data.tar.gz -C ${OutputDir}`,
+      execFile(
+        'tar',
+        ['-xvzf', `${OutputDir}/data.tar.gz`, '-C', OutputDir],
         (error, stdout) => {
           if (error) reject(error)
           else resolve(stdout)
@@ -214,8 +215,9 @@ module.exports = function (app) {
     const dataDir = match[1]
 
     await new Promise((resolve, reject) => {
-      exec(
-        `mv ${OutputDir}/${req.body.hash}/${dataDir} ${OutputDir}/data`,
+      execFile(
+        'mv',
+        [`${OutputDir}/${req.body.hash}/${dataDir}`, `${OutputDir}/data`],
         (error, stdout) => {
           if (error) reject(error)
           else resolve(stdout)
@@ -224,10 +226,14 @@ module.exports = function (app) {
     })
 
     await new Promise((resolve, reject) => {
-      exec(`rm -rf ${OutputDir}/${req.body.hash}`, (error, stdout) => {
-        if (error) reject(error)
-        else resolve(stdout)
-      })
+      execFile(
+        'rm',
+        ['-rf', `${OutputDir}/${req.body.hash}`],
+        (error, stdout) => {
+          if (error) reject(error)
+          else resolve(stdout)
+        }
+      )
     })
 
     res.json({ success: true })
@@ -369,10 +375,14 @@ module.exports = function (app) {
       const config = fs.readFileSync(`${shopTpl}/config.json`).toString()
       shopConfig = JSON.parse(config)
       await new Promise((resolve, reject) => {
-        exec(`cp -r ${shopTpl} ${OutputDir}/data`, (error, stdout) => {
-          if (error) reject(error)
-          else resolve(stdout)
-        })
+        execFile(
+          'cp',
+          ['-r', shopTpl, `${OutputDir}/data`],
+          (error, stdout) => {
+            if (error) reject(error)
+            else resolve(stdout)
+          }
+        )
       })
     }
 
@@ -580,10 +590,14 @@ module.exports = function (app) {
 
       if (req.body.deleteCache) {
         await new Promise((resolve, reject) => {
-          exec(`rm -rf ${DSHOP_CACHE}/${shop.authToken}`, (error, stdout) => {
-            if (error) reject(error)
-            else resolve(stdout)
-          })
+          execFile(
+            'rm',
+            ['-rf', `${DSHOP_CACHE}/${shop.authToken}`],
+            (error, stdout) => {
+              if (error) reject(error)
+              else resolve(stdout)
+            }
+          )
         })
       }
 
