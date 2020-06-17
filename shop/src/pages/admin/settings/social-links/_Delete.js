@@ -1,10 +1,10 @@
 import React from 'react'
 
-import useBackendApi from 'utils/useBackendApi'
+// import useBackendApi from 'utils/useBackendApi'
 import ConfirmationModal from 'components/ConfirmationModal'
 
-const AdminDeleteSocialLink = ({ link, className = '' }) => {
-  const { post } = useBackendApi({ authToken: true })
+const AdminDeleteSocialLink = ({ className = '' }) => {
+  // const { post } = useBackendApi({ authToken: true })
 
   return (
     <ConfirmationModal
