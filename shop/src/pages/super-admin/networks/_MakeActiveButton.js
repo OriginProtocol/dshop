@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 
 import { useStateValue } from 'data/state'
-import { NetworksById } from 'data/Networks'
 import useSetState from 'utils/useSetState'
 import useConfig from 'utils/useConfig'
 
@@ -15,18 +14,14 @@ const AdminMakeActiveNetwork = ({ network, className = '' }) => {
   const [state, setState] = useSetState()
   useEffect(() => {
     if (state.doMakeActive) {
-      const net = NetworksById[network.networkId]
-      if (net) {
-        localStorage.ognNetwork = net.idStr
-        fetch(`${config.backend}/networks/${network.networkId}/make-active`, {
-          credentials: 'include',
-          method: 'POST'
-        }).then((res) => {
-          if (res.ok) {
-            setState({ madeActive: true })
-          }
-        })
-      }
+      fetch(`${config.backend}/networks/${network.networkId}/make-active`, {
+        credentials: 'include',
+        method: 'POST'
+      }).then((res) => {
+        if (res.ok) {
+          setState({ madeActive: true })
+        }
+      })
     }
   }, [state.doMakeActive])
 
