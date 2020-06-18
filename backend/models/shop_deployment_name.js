@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
-  const ShopDeploymentNames = sequelize.define(
-    'ShopDeploymentNames',
+  const ShopDeploymentName = sequelize.define(
+    'ShopDeploymentName',
     {
       ipfsHash: DataTypes.STRING,
       hostname: DataTypes.STRING
@@ -11,12 +11,13 @@ module.exports = (sequelize, DataTypes) => {
     }
   )
 
-  ShopDeploymentNames.associate = function (models) {
-    ShopDeploymentNames.belongsTo(models.ShopDeployment, {
-      as: 'names',
-      foreignKey: 'shopDeploymentId'
+  ShopDeploymentName.associate = function (models) {
+    ShopDeploymentName.belongsTo(models.ShopDeployment, {
+      as: 'shopDeployments',
+      foreignKey: 'ipfsHash',
+      targetKey: 'ipfsHash'
     })
   }
 
-  return ShopDeploymentNames
+  return ShopDeploymentName
 }

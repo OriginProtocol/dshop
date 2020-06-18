@@ -48,7 +48,7 @@ const shopConfig = {
       listingId: '999-001-2',
       backend: 'http://0.0.0.0:3000',
       ipfsGateway: 'http://localhost:8080',
-      ipfsApi: 'http://localhost:5002'
+      ipfsApi: `http://localhost:${process.env.IPFS_API_PORT || 5002}`
     }
   }
 }

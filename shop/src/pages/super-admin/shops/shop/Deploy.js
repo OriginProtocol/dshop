@@ -5,6 +5,7 @@ import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 
 import DeployButton from './_DeployButton'
+import ActivateBuild from './_ActivateBuild'
 
 const DeployShop = ({ shop }) => {
   const { config } = useConfig()
@@ -35,6 +36,7 @@ const DeployShop = ({ shop }) => {
               <th>Deployments</th>
               <th>IFPS</th>
               <th>Domain</th>
+              <th>-</th>
             </tr>
           </thead>
           <tbody>
@@ -58,12 +60,22 @@ const DeployShop = ({ shop }) => {
                   )}
                 </td>
                 <td>
-                  <a
-                    href={`${deployment.domain}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    children={deployment.domain}
-                  />
+                  {!deployment.domains
+                    ? null
+                    : deployment.domains.map((dom, idx) => (
+                        <>
+                          {idx < 1 ? null : ', '}
+                          <a
+                            href={`http://${dom}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            children={dom}
+                          />
+                        </>
+                      ))}
+                </td>
+                <td>
+                  <ActivateBuild shop={shop} ipfsHash={deployment.ipfsHash} />
                 </td>
               </tr>
             ))}

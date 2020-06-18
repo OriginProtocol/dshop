@@ -63,7 +63,9 @@
     openpgp.config.show_version = false
     openpgp.initWorker({ path: '<%= htmlWebpackPlugin.options.absolute ? '/' : '' %>dist/openpgp.worker.min.js' })
   }
-  localStorage.ognNetwork = "NETWORK"
+  if (!localStorage.ognNetwork) {
+    localStorage.ognNetwork = "NETWORK"
+  }
 </script>
 <% _.forEach(htmlWebpackPlugin.files.js, function(file, index) { %>
 <% if (htmlWebpackPlugin.files.jsIntegrity) { %>

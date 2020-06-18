@@ -18,8 +18,10 @@ module.exports = (sequelize, DataTypes) => {
       as: 'shopDeployments',
       foreignKey: 'shopId'
     })
-    ShopDeployment.hasMany(models.ShopDeploymentNames, {
-      as: 'shop_deployment_names',
+    ShopDeployment.hasMany(models.ShopDeploymentName, {
+      as: 'names',
+      foreignKey: 'ipfsHash',
+      sourceKey: 'ipfsHash',
       onDelete: 'cascade'
     })
   }

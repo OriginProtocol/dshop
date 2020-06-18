@@ -1,4 +1,5 @@
 const omit = require('lodash/omit')
+const pick = require('lodash/pick')
 const {
   Seller,
   Shop,
@@ -6,7 +7,7 @@ const {
   Network,
   Sequelize,
   ShopDeployment,
-  ShopDeploymentNames
+  ShopDeploymentName
 } = require('../models')
 const { authSellerAndShop, authRole, authSuperUser } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
@@ -114,10 +115,30 @@ module.exports = function (app) {
       return res.json({ success: false, reason: 'no-such-shop' })
     }
 
-    const deployments = await ShopDeployment.findAll({
+    const deploymentResult = await ShopDeployment.findAll({
       where: { shopId: shop.id },
+      include: [
+        {
+          model: ShopDeploymentName,
+          as: 'names'
+        }
+      ],
       order: [['createdAt', 'desc']]
     })
+
+    const deployments = deploymentResult.map((row) => ({
+      ...pick(
+        row.dataValues,
+        'id',
+        'shopId',
+        'domain',
+        'ipfsGateway',
+        'ipfsHash',
+        'createdAt',
+        'updatedAt'
+      ),
+      domains: row.dataValues.names.map((nam) => nam.hostname)
+    }))
 
     res.json({ deployments })
   })
@@ -569,6 +590,40 @@ module.exports = function (app) {
     }
   )
 
+  app.get(
+    '/shops/:shopId/get-names',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const names = await ShopDeploymentName.findAll({
+        include: [
+          {
+            model: ShopDeployment,
+            as: 'shopDeployments',
+            where: {
+              shopId: req.shop.id
+            }
+          }
+        ],
+        order: [['createdAt', 'desc']]
+      })
+
+      if (!names) {
+        return res.status(404).json({ success: false })
+      }
+
+      return res.json({
+        success: true,
+        names: names.reduce((acc, nam) => {
+          if (!acc.includes(nam.hostname)) {
+            acc.push(nam.hostname)
+          }
+          return acc
+        }, [])
+      })
+    }
+  )
+
   app.post(
     '/shops/:shopId/set-names',
     authSellerAndShop,
@@ -576,7 +631,7 @@ module.exports = function (app) {
     async (req, res) => {
       const { ipfsHash, hostnames, dnsProvider } = req.body
 
-      if (!ipfsHash || !hostnames || !ipfsHash || !hostnames) {
+      if (!ipfsHash || !hostnames) {
         return res.status(400).json({ success: false })
       }
 
@@ -592,30 +647,32 @@ module.exports = function (app) {
         return res.status(404).json({ success: false })
       }
 
-      for (const hostname of hostnames) {
-        const fqn = `${hostname.name}.${hostname.zone}`
+      for (const fqn of hostnames) {
+        const parts = fqn.split('.')
+        const hostname = parts.shift()
+        const zone = parts.join('.')
         if (isPublicDNSName(fqn)) {
           if (!dnsProvider) {
             return res.status(400).json({
               success: false,
-              message: 'No DNS provider selected for public DNS name'
+              message: `No DNS provider selected for public DNS name ${fqn}`
             })
           }
 
           const network = await Network.findOne({ where: { active: true } })
           await configureShopDNS({
             network,
-            subdomain: hostname.name,
-            hostname: hostname.zone,
+            subdomain: hostname,
+            hostname: zone,
             hash: ipfsHash,
             dnsProvider
           })
         }
 
         console.log(`Adding ${fqn} association to ${ipfsHash}`)
-        await ShopDeploymentNames.create({
+        await ShopDeploymentName.create({
           ipfsHash,
-          fqn
+          hostname: fqn
         })
         return res.json({ success: true, ipfsHash, names: hostnames })
       }

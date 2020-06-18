@@ -3,7 +3,7 @@ const ipfsClient = require('ipfs-http-client')
 const fs = require('fs')
 const { exec } = require('child_process')
 
-const { ShopDeployment } = require('../models')
+const { ShopDeployment, ShopDeploymentName } = require('../models')
 
 const { getConfig } = require('./encryptedConfig')
 const prime = require('./primeIpfs')
@@ -179,7 +179,7 @@ async function deployShop({
     if (!hash) {
       throw new Error('ipfs-errir')
     }
-    console.log(`Deployed shop on Pinata. Hash=${hash}`)
+    console.log(`Deployed shop on ${pinner}. Hash=${hash}`)
     await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
     await prime(`https://ipfs-prod.ogn.app/ipfs/${hash}`, publicDirPath)
     if (networkConfig.pinataKey) {
@@ -214,6 +214,11 @@ async function deployShop({
       domain,
       ipfsGateway,
       ipfsHash: hash
+    })
+
+    await ShopDeploymentName.create({
+      ipfsHash: hash,
+      hostname: `${subdomain}.${zone}`
     })
 
     console.log(
