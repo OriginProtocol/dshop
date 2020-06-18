@@ -3,17 +3,22 @@ import React, { useState } from 'react'
 import Modal from 'components/Modal'
 
 const SelectVariantImage = ({ selection, media, onChange }) => {
-
   const [showModal, setShowModal] = useState(false)
   const [shouldClose, setShouldClose] = useState(false)
 
   return (
     <>
-      <div className="select-variant-image selectbox" onClick={e => setShowModal(true)}>
+      <div
+        className="select-variant-image selectbox"
+        onClick={() => setShowModal(true)}
+      >
         <img src={selection.src} />
-        <a className="btn btn-link" onClick={e => {
-          e.preventDefault()
-        }}>
+        <a
+          className="btn btn-link"
+          onClick={(e) => {
+            e.preventDefault()
+          }}
+        >
           Change
         </a>
       </div>
@@ -31,20 +36,26 @@ const SelectVariantImage = ({ selection, media, onChange }) => {
             <img src={selection.src} />
           </div>
           <div className="variant-media">
-            {media.map(m => (
-              <img 
-                key={m.src} 
-                src={m.src} 
-                className={selection.src === m.src ? 'selected' : ''} 
+            {media.map((m) => (
+              <img
+                key={m.src}
+                src={m.src}
+                className={selection.src === m.src ? 'selected' : ''}
                 onClick={() => onChange(m)}
-                />
+              />
             ))}
           </div>
           <div className="actions">
-            <a className="btn btn-link" href="#" onClick={e => {
-              e.preventDefault()
-              setShouldClose(true)
-            }}>Close</a>
+            <a
+              className="btn btn-link"
+              href="#"
+              onClick={(e) => {
+                e.preventDefault()
+                setShouldClose(true)
+              }}
+            >
+              Close
+            </a>
           </div>
         </Modal>
       )}

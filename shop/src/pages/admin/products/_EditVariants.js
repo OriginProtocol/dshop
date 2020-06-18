@@ -19,7 +19,8 @@ const EditVariants = ({ options, variants, media, onChange }) => {
       </thead>
       <tbody>
         {variants.map((variant, index) => {
-          const variantImage = media.find(m => m.path === variant.image) || media[0]
+          const variantImage =
+            media.find((m) => m.path === variant.image) || media[0]
           return (
             <tr key={variant.name}>
               <td>
@@ -27,12 +28,12 @@ const EditVariants = ({ options, variants, media, onChange }) => {
                   <input
                     type="checkbox"
                     checked={variant.available}
-                    onChange={e => {
+                    onChange={(e) => {
                       const updatedVariants = [...variants]
                       updatedVariants[index].available = e.target.checked
                       onChange(updatedVariants)
                     }}
-                    />
+                  />
                 </div>
               </td>
               {variant.options.map((opt) => (
@@ -54,15 +55,15 @@ const EditVariants = ({ options, variants, media, onChange }) => {
                 </div>
               </td>
               <td>
-                <SelectVariantImage 
+                <SelectVariantImage
                   selection={variantImage}
                   media={media}
-                  onChange={selectedMedia => {
+                  onChange={(selectedMedia) => {
                     const updatedVariants = [...variants]
                     updatedVariants[index].image = selectedMedia.path
                     onChange(updatedVariants)
                   }}
-                  />
+                />
               </td>
             </tr>
           )
