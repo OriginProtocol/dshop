@@ -52,9 +52,9 @@ const Product = ({ history, location, match }) => {
 
   useEffect(() => {
     async function setData(data) {
+      const variants = get(data, 'variants', [])
       const variant =
-        data.variants.find((v) => String(v.id) === opts.variant) ||
-        data.variants[0]
+        variants.find((v) => String(v.id) === opts.variant) || variants[0]
       const newState = {
         productData: data,
         activeImage: 0,
@@ -107,7 +107,8 @@ const Product = ({ history, location, match }) => {
   const collection = collections.find((c) => c.id === collectionParam)
   const urlPrefix = collectionParam ? `/collections/${collectionParam}` : ''
 
-  const variant = productData.variants.find((v) =>
+  const variants = get(productData, 'variants', [])
+  const variant = variants.find((v) =>
     isEqual(options, pick(v, 'option1', 'option2', 'option3'))
   )
 
