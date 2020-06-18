@@ -204,8 +204,11 @@ async function deployShop({
     )
   }
 
-  const domain = dnsProvider ? `https://${subdomain}.${zone}` : null
-  await configureShopDNS({ network, subdomain, zone, hash, dnsProvider })
+  let domain
+  if (subdomain) {
+    domain = dnsProvider ? `https://${subdomain}.${zone}` : null
+    await configureShopDNS({ network, subdomain, zone, hash, dnsProvider })
+  }
 
   if (hash) {
     // Record the deployment in the DB.
