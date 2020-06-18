@@ -78,10 +78,10 @@ export async function getOwner(providerOrSigner, name) {
   if (await checkAvailability(providerOrSigner, name)) {
     throw new Error('Domain not registered')
   }
-  console.log('getOwner, name:', name)
+
   const token = namehash(name)
-  console.log('getOwner, token:', token)
   const registry = getRegistry(providerOrSigner)
+
   return await registry.ownerOf(token)
 }
 
@@ -98,6 +98,7 @@ export async function resolveIPFS(providerOrSigner, name) {
 
   const token = namehash(name)
   const resolver = await getResolver(providerOrSigner, token)
+
   return await resolver.get(IPFS_CONTENT_HASH_KEY, token)
 }
 
