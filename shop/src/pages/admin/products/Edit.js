@@ -170,18 +170,25 @@ const EditProduct = () => {
 
       newFormState.price = product.price / 100
 
-      const shouldBackfillOptions = newFormState.options && (!newFormState.availableOptions || newFormState.availableOptions.length !== product.options.length)
+      const shouldBackfillOptions =
+        newFormState.options &&
+        (!newFormState.availableOptions ||
+          newFormState.availableOptions.length !== product.options.length)
 
       if (shouldBackfillOptions) {
         // While editing existing products
-        newFormState.availableOptions = newFormState.options.map((option, index) => {
-          // Parse possible values from generated variants
-          return Array.from(new Set(
-            (product.variants || [])
-              .map(v => v.options[index])
-              .filter(o => !!o)
-          ))
-        })
+        newFormState.availableOptions = newFormState.options.map(
+          (option, index) => {
+            // Parse possible values from generated variants
+            return Array.from(
+              new Set(
+                (product.variants || [])
+                  .map((v) => v.options[index])
+                  .filter((o) => !!o)
+              )
+            )
+          }
+        )
       }
 
       setMedia(mappedImages)
@@ -197,9 +204,7 @@ const EditProduct = () => {
       setFormState({
         // Enforce at least one option if checkbox is selected
         options: [''],
-        availableOptions: [
-          []
-        ]
+        availableOptions: [[]]
       })
     }
   }, [hasOptions, formState])
@@ -373,8 +378,10 @@ const EditProduct = () => {
                         options: formState.availableOptions[index]
                       }}
                       setFormState={(newState) => {
-                        const updatedOptions = [...formState.options] 
-                        const updatedAvailableOptions = [...formState.availableOptions]
+                        const updatedOptions = [...formState.options]
+                        const updatedAvailableOptions = [
+                          ...formState.availableOptions
+                        ]
 
                         const keysToUpdate = Object.keys(newState)
 
