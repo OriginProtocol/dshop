@@ -100,7 +100,10 @@ const ActivateBuild = ({ className = '', shop, ipfsHash }) => {
       (!state.hostname || ['-', 'new'].includes(state.hostname)) &&
       !state.newhostname
     ) {
-      console.warn('Hostname must be chosen')
+      setState({
+        feedback: `Hostname must be set`,
+        feedbackClass: 'alert alert-danger'
+      })
       return
     }
 

@@ -63,10 +63,10 @@ const AdminDeployShop = ({ className = '', shop }) => {
                   children="OK"
                 />
               </>
-            ) : state.deployed ? (
-              <Deployed {...{ state, setState }} />
             ) : state.activateBuild ? (
               <ActivateBuild {...state} />
+            ) : state.deployed ? (
+              <Deployed {...{ state, setState }} />
             ) : (
               <Deploy {...{ state, setState, admin, shop }} />
             )}
@@ -195,7 +195,6 @@ const Deployed = ({ state, setState }) => (
         className="btn btn-secondary px-5"
         onClick={() =>
           setState({
-            shouldClose: true,
             activateBuild: state.hash
           })
         }

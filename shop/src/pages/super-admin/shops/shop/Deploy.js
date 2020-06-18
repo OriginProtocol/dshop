@@ -62,16 +62,16 @@ const DeployShop = ({ shop }) => {
                 <td>
                   {!deployment.domains
                     ? null
-                    : deployment.domains.map((dom, idx) => (
-                        <>
-                          {idx < 1 ? null : ', '}
+                    : deployment.domains.map((dom, domIdx) => (
+                        <span key={domIdx}>
+                          {domIdx < 1 ? null : ', '}
                           <a
                             href={`http://${dom}`}
                             target="_blank"
                             rel="noreferrer"
                             children={dom}
                           />
-                        </>
+                        </span>
                       ))}
                 </td>
                 <td>
