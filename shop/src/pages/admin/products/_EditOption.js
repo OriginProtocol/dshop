@@ -41,7 +41,7 @@ const TokenComponent = ({ values, onChange, validationError }) => {
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault()
-              onChange([...values, newValue])
+              onChange(Array.from(new Set([...values, newValue])))
               setNewValue('')
             } else if (e.key === 'Backspace' && newValue.length === 0) {
               onChange(values.slice(0, -1))

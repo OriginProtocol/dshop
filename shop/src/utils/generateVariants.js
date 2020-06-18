@@ -1,25 +1,29 @@
 import flatMap from 'lodash/flatMap'
 
 export const getAllCombinations = (array1, ...arrays) => {
-  const combinationsOf2Array = (a, b) => a
-    .reduce((combinations, v1) => [...combinations, ...b.map(v2 => flatMap([v1, v2]))], [])
+  const combinationsOf2Array = (a, b) =>
+    a.reduce(
+      (combinations, v1) => [
+        ...combinations,
+        ...b.map((v2) => flatMap([v1, v2]))
+      ],
+      []
+    )
 
   if (arrays.length === 1) {
     return combinationsOf2Array(array1, arrays[0])
   } else if (arrays.length >= 2) {
     return getAllCombinations(
-      array1, 
+      array1,
       getAllCombinations(arrays[0], ...arrays.slice(1))
     )
   }
 
-  return array1.map(x => [x])
+  return array1.map((x) => [x])
 }
 
-export const generateVariants = product => {
-  const { options, availableOptions, variants } = product 
-
-  console.log(options, availableOptions, variants)
+export const generateVariants = (product) => {
+  const { options, availableOptions, variants } = product
 
   if (!options || !availableOptions) return []
 
@@ -31,8 +35,8 @@ export const generateVariants = product => {
     }
   }, {})
 
-  const newVariants = getAllCombinations(...availableOptions)
-    .map((optionCombo, index) => {
+  const newVariants = getAllCombinations(...availableOptions).map(
+    (optionCombo, index) => {
       const comboTitle = `${product.title} - ${optionCombo.join(' / ')}`
 
       return {
@@ -46,15 +50,19 @@ export const generateVariants = product => {
         ...existingVairants[optionCombo.join('|||')],
 
         // Set {option1, option2, ...} values
-        ...optionCombo.reduce((optsObj, opt, optIndex) => ({ 
-          ...optsObj, 
-          [`option${optIndex + 1}`]: opt 
-        }), {}),
+        ...optionCombo.reduce(
+          (optsObj, opt, optIndex) => ({
+            ...optsObj,
+            [`option${optIndex + 1}`]: opt
+          }),
+          {}
+        ),
 
         // Set options array
         options: optionCombo
       }
-    })
+    }
+  )
 
   return newVariants
 }

@@ -3,7 +3,6 @@ import { useRouteMatch, useHistory } from 'react-router'
 
 import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
-import flatMap from 'lodash/flatMap'
 
 import { useStateValue } from 'data/state'
 import useProduct from 'utils/useProduct'
@@ -35,22 +34,6 @@ const predefinedProcessingTimes = [
   { value: 'custom', label: 'Custom' },
   { value: 'unknown', label: 'Unknown' }
 ]
-
-const getAllCombinations = (array1, ...arrays) => {
-  const combinationsOf2Array = (a, b) => a
-    .reduce((combinations, v1) => [...combinations, ...b.map(v2 => flatMap([v1, v2]))], [])
-
-  if (arrays.length === 1) {
-    return combinationsOf2Array(array1, arrays[0])
-  } else if (arrays.length >= 2) {
-    return getAllCombinations(
-      array1, 
-      getAllCombinations(arrays[0], ...arrays.slice(1))
-    )
-  }
-
-  return array1
-}
 
 const removeErrorKeys = (obj) => {
   return {
@@ -208,10 +191,9 @@ const EditProduct = () => {
         )
       }
 
-      
       // Regenerate variants
       newFormState.variants = generateVariants(newFormState)
-      console.log({ ...newFormState})
+      console.log({ ...newFormState })
 
       setMedia(mappedImages)
 
@@ -402,9 +384,7 @@ const EditProduct = () => {
                       setFormState={(newState) => {
                         const updatedState = {
                           options: [...formState.options],
-                          availableOptions: [
-                            ...formState.availableOptions
-                          ],
+                          availableOptions: [...formState.availableOptions]
                         }
 
                         const keysToUpdate = Object.keys(newState)
@@ -414,7 +394,8 @@ const EditProduct = () => {
                         }
 
                         if (keysToUpdate.includes('options')) {
-                          updatedState.availableOptions[index] = newState.options
+                          updatedState.availableOptions[index] =
+                            newState.options
 
                           updatedState.variants = generateVariants({
                             ...formState,
@@ -450,14 +431,15 @@ const EditProduct = () => {
                     </button>
                   )}
                 </div>
-                <EditVariants 
-                  options={formState.options} 
-                  variants={formState.variants} 
-                  onChange={updatedVariants => {
+                <EditVariants
+                  options={formState.options}
+                  variants={formState.variants}
+                  onChange={(updatedVariants) => {
                     setFormState({
                       variants: updatedVariants
                     })
-                  }} />
+                  }}
+                />
               </>
             )}
 
