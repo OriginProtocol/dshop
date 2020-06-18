@@ -17,7 +17,9 @@ const validProductFields = [
   'images',
   'quantity',
   'sku',
-  'variants'
+  'variants',
+  'options',
+  'availableOptions'
 ]
 
 const minimalistProductFields = ['id', 'title', 'description', 'price', 'image']
@@ -123,6 +125,7 @@ async function moveProductImages(shop, productId, productData) {
   const supportedSizes = [520, 'orig']
 
   const out = []
+  const imageMap = new Map()
   for (const filePath of productData.images || []) {
     if (filePath.includes('/__tmp/')) {
       const fileName = filePath.split('/__tmp/', 2)[1]
@@ -151,6 +154,7 @@ async function moveProductImages(shop, productId, productData) {
                 )
               } else {
                 out.push(fileName)
+                imageMap.set(filePath, fileName)
               }
               resolve()
             })
@@ -168,10 +172,17 @@ async function moveProductImages(shop, productId, productData) {
       // Leave if it is already out of temp dir
       // Could be the case in case of updates
       out.push(filePath)
+      imageMap.set(filePath, filePath)
     }
   }
 
-  return out
+  return {
+    images: out,
+    variants: productData.variants.map(v => ({
+      ...v,
+      image: imageMap.get(v.image) || v.image
+    }))
+  }
 }
 
 async function upsertProduct(shop, productData) {
@@ -189,13 +200,14 @@ async function upsertProduct(shop, productData) {
 
   const newProductId = productData.id || getUniqueID(productData.title, shop)
 
-  const productImages = await moveProductImages(shop, newProductId, productData)
+  const { images: productImages, variants } = await moveProductImages(shop, newProductId, productData)
 
   const product = {
     ...pick(productData, validProductFields),
     id: newProductId,
     images: productImages,
-    image: productImages[0]
+    image: productImages[0],
+    variants
   }
 
   writeProductData(shop, newProductId, product)

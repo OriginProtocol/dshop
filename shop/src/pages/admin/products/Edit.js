@@ -9,13 +9,15 @@ import useProduct from 'utils/useProduct'
 import useBackendApi from 'utils/useBackendApi'
 import useSetState from 'utils/useSetState'
 import { formInput, formFeedback } from 'utils/formHelpers'
+import { generateVariants } from 'utils/generateVariants'
 
 import fetchProduct from 'data/fetchProduct'
 import { Countries } from 'data/Countries'
 
 import ImagePicker from 'components/ImagePicker'
 import DeleteButton from './_Delete'
-import EditProductVariant from './_EditProductVariant'
+import EditOption from './_EditOption'
+import EditVariants from './_EditVariants'
 
 import LinkCollections from './_LinkCollections'
 
@@ -39,7 +41,7 @@ const removeErrorKeys = (obj) => {
   }
 }
 
-function validate(state, { hasVariants }) {
+function validate(state, { hasOptions }) {
   const newState = {}
   let validVariants = true
   let validCustomProcTime = true
@@ -56,7 +58,7 @@ function validate(state, { hasVariants }) {
     newState.priceError = 'Price is required'
   }
 
-  if (hasVariants) {
+  if (hasOptions) {
     newState.variants = state.variants.map((variant) => {
       const out = removeErrorKeys(variant)
       if (!variant.title || !variant.title.trim().length) {
@@ -123,7 +125,7 @@ const EditProduct = () => {
   const [formState, setFormState] = useSetState({})
   const [selectedCollections, setSelectedCollections] = useState([])
 
-  const [hasVariants, setHasVariants] = useState(false)
+  const [hasOptions, setHasOptions] = useState(false)
 
   const isNewProduct = productId === 'new'
 
@@ -150,6 +152,8 @@ const EditProduct = () => {
 
   useEffect(() => {
     if (product) {
+      const newFormState = { ...product }
+
       let imageArray = product.images
       if (!imageArray && product.image) {
         imageArray = [product.image]
@@ -164,24 +168,49 @@ const EditProduct = () => {
         path: image
       }))
 
+      newFormState.price = product.price / 100
+
+      const shouldBackfillOptions =
+        newFormState.options &&
+        (!newFormState.availableOptions ||
+          newFormState.availableOptions.length !== product.options.length)
+
+      if (shouldBackfillOptions) {
+        // While editing existing products
+        newFormState.availableOptions = newFormState.options.map(
+          (option, index) => {
+            // Parse possible values from generated variants
+            return Array.from(
+              new Set(
+                (product.variants || [])
+                  .map((v) => v.options[index])
+                  .filter((o) => !!o)
+              )
+            )
+          }
+        )
+      }
+
+      // Regenerate variants
+      newFormState.variants = generateVariants(newFormState)
+
       setMedia(mappedImages)
 
-      setFormState({
-        ...product,
-        price: product.price / 100
-      })
+      setFormState(newFormState)
 
-      setHasVariants(!!product.variants && product.variants.length > 0)
+      setHasOptions(!!product.options && product.options.length > 0)
     }
   }, [product])
 
   useEffect(() => {
-    if (hasVariants && (!formState.variants || !formState.variants.length)) {
+    if (hasOptions && (!formState.options || !formState.options.length)) {
       setFormState({
-        variants: [{}]
+        // Enforce at least one option if checkbox is selected
+        options: [''],
+        availableOptions: [[]]
       })
     }
-  }, [hasVariants, formState])
+  }, [hasOptions, formState])
 
   const createProduct = async () => {
     if (submitting) return
@@ -189,7 +218,7 @@ const EditProduct = () => {
     setSubmitError(null)
 
     const { valid, newState } = validate(formState, {
-      hasVariants: hasVariants
+      hasOptions: hasOptions
     })
 
     setFormState(newState)
@@ -327,8 +356,8 @@ const EditProduct = () => {
                     id="variantsCheckbox"
                     type="checkbox"
                     className="form-check-input"
-                    checked={hasVariants}
-                    onChange={(e) => setHasVariants(e.target.checked)}
+                    checked={hasOptions}
+                    onChange={(e) => setHasOptions(e.target.checked)}
                   />
                   <label
                     className="form-check-label"
@@ -340,40 +369,77 @@ const EditProduct = () => {
               </div>
             </div>
 
-            {!hasVariants ? null : (
+            {!hasOptions ? null : (
               <>
-                {(formState.variants || []).map((variant, index) => {
+                {(formState.options || []).map((option, index) => {
                   return (
-                    <EditProductVariant
+                    <EditOption
                       key={index}
                       label={`Option ${index + 1}`}
-                      formState={variant}
+                      formState={{
+                        title: option,
+                        options: formState.availableOptions[index]
+                      }}
                       setFormState={(newState) => {
-                        const variants = [...formState.variants]
-                        variants[index] = { ...variant, ...newState }
-                        setFormState({ variants })
+                        const updatedState = {
+                          options: [...formState.options],
+                          availableOptions: [...formState.availableOptions]
+                        }
+
+                        const keysToUpdate = Object.keys(newState)
+
+                        if (keysToUpdate.includes('title')) {
+                          updatedState.options[index] = newState.title
+                        }
+
+                        if (keysToUpdate.includes('options')) {
+                          updatedState.availableOptions[index] =
+                            newState.options
+
+                          updatedState.variants = generateVariants({
+                            ...formState,
+                            ...updatedState
+                          })
+                        }
+
+                        setFormState(updatedState)
                       }}
                       onRemove={() => {
-                        const variants = [...formState.variants]
-                        variants.splice(index, 1)
-                        setFormState({ variants })
+                        const options = [...formState.options]
+                        const availableOptions = [...formState.availableOptions]
+                        options.splice(index, 1)
+                        availableOptions.splice(index, 1)
+                        setFormState({ options, availableOptions })
                       }}
                     />
                   )
                 })}
                 <div className="mb-5">
-                  <button
-                    className="btn btn-outline-primary"
-                    type="button"
-                    onClick={() =>
-                      setFormState({
-                        variants: [...formState.variants, {}]
-                      })
-                    }
-                  >
-                    Add option
-                  </button>
+                  {formState.options && formState.options.length >= 3 ? null : (
+                    <button
+                      className="btn btn-outline-primary"
+                      type="button"
+                      onClick={() =>
+                        setFormState({
+                          options: [...formState.options, ''],
+                          availableOptions: [...formState.availableOptions, []]
+                        })
+                      }
+                    >
+                      Add option
+                    </button>
+                  )}
                 </div>
+                <EditVariants
+                  options={formState.options}
+                  variants={formState.variants}
+                  media={media}
+                  onChange={(updatedVariants) => {
+                    setFormState({
+                      variants: updatedVariants
+                    })
+                  }}
+                />
               </>
             )}
 
