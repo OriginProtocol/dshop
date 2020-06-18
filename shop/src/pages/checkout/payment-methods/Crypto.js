@@ -180,7 +180,27 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
                     .then((tx) => {
                       setUnlockTx(true)
                       setApproveUnlockTx(false)
-                      return tx.wait(2)
+                      return tx.wait()
+                    })
+                    .then(() => {
+                      return new Promise((resolve, reject) => {
+                        wallet.signer.getAddress().then((address) => {
+                          let i = 0
+                          const int = setInterval(() => {
+                            token.contract
+                              .allowance(marketplace.address, address)
+                              .then((amount) => {
+                                console.log({ amount })
+                                if (i > 2) {
+                                  clearInterval(int)
+                                  resolve()
+                                }
+                                i += 1
+                              })
+                              .catch(reject)
+                          }, 5000)
+                        })
+                      })
                     })
                     .then(() => {
                       token.refetchBalance()

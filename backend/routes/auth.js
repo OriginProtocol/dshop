@@ -15,33 +15,41 @@ const omit = require('lodash/omit')
 const pick = require('lodash/pick')
 
 module.exports = function (app) {
-  app.get('/auth', authSellerAndShop, (req, res) => {
+  app.get('/auth', (req, res) => {
     if (!req.session.sellerId) {
       return res.json({ success: false })
     }
 
     const id = req.session.sellerId
 
-    Shop.findAll({
-      attributes: ['name', 'id', 'authToken', 'hostname'],
-      include: { model: Seller, where: { id } }
-    }).then((allShops) => {
-      const shops = allShops.map((s) => ({
-        id: s.dataValues.id,
-        name: s.dataValues.name,
-        authToken: s.dataValues.authToken,
-        hostname: s.dataValues.hostname,
-        role: get(s, 'Sellers[0].SellerShop.dataValues.role')
-      }))
+    Seller.findOne({ where: { id } }).then((seller) => {
+      if (!seller) {
+        return res
+          .status(401)
+          .json({ success: false, message: 'Not logged in' })
+      }
+      const { superuser, email } = seller
+      const attributes = ['name', 'id', 'authToken', 'hostname']
+      const include = { model: Seller, where: { id } }
 
-      Seller.findOne({ where: { id } }).then((seller) => {
-        let role = req.sellerShop ? req.sellerShop.role : ''
-        const { superuser, email } = seller
-        if (superuser) {
-          role = 'admin'
-        }
-        res.json({ success: true, email, role, shops })
-      })
+      if (superuser) {
+        Shop.findAll({ attributes }).then((allShops) => {
+          const shops = allShops.map((s) => ({
+            ...s.dataValues,
+            role: 'admin'
+          }))
+          res.json({ success: true, email, role: 'admin', shops })
+        })
+      } else {
+        Shop.findAll({ attributes, include }).then((allShops) => {
+          const shops = allShops.map((s) => ({
+            ...s.dataValues,
+            role: get(s, 'Sellers[0].SellerShop.dataValues.role')
+          }))
+          const role = req.sellerShop ? req.sellerShop.role : ''
+          res.json({ success: true, email, role, shops })
+        })
+      }
     })
   })
 
