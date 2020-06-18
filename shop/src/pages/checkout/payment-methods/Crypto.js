@@ -10,6 +10,28 @@ import useWallet from 'utils/useWallet'
 import useOrigin from 'utils/useOrigin'
 import { useStateValue } from 'data/state'
 
+// Check allowance every 5 seconds
+const waitForAllowance = ({ wallet, marketplace, amount, token }) => {
+  return new Promise((resolve, reject) => {
+    wallet.signer.getAddress().then((address) => {
+      function checkAllowance() {
+        token.contract
+          .allowance(address, marketplace.address)
+          .then((allowance) => {
+            const allowanceEth = ethers.utils.formatUnits(allowance, 'ether')
+            if (allowanceEth >= amount) {
+              resolve()
+            } else {
+              setTimeout(checkAllowance, 5000)
+            }
+          })
+          .catch(reject)
+      }
+      checkAllowance()
+    })
+  })
+}
+
 const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
   const { config } = useConfig()
   const { marketplace } = useOrigin()
@@ -183,23 +205,11 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
                       return tx.wait()
                     })
                     .then(() => {
-                      return new Promise((resolve, reject) => {
-                        wallet.signer.getAddress().then((address) => {
-                          let i = 0
-                          const int = setInterval(() => {
-                            token.contract
-                              .allowance(marketplace.address, address)
-                              .then((amount) => {
-                                console.log({ amount })
-                                if (i > 2) {
-                                  clearInterval(int)
-                                  resolve()
-                                }
-                                i += 1
-                              })
-                              .catch(reject)
-                          }, 5000)
-                        })
+                      return waitForAllowance({
+                        wallet,
+                        marketplace,
+                        amount,
+                        token
                       })
                     })
                     .then(() => {
