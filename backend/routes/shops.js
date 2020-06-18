@@ -553,6 +553,9 @@ module.exports = function (app) {
       .then(() => res.json({ success: true }))
   })
 
+  /**
+   * Create a shop deployment record
+   */
   app.post(
     '/shops/:shopId/create-deployment',
     authSellerAndShop,
@@ -590,6 +593,9 @@ module.exports = function (app) {
     }
   )
 
+  /**
+   * Get names (DNS names, crypto names, etc) for a shop
+   */
   app.get(
     '/shops/:shopId/get-names',
     authSellerAndShop,
@@ -624,6 +630,9 @@ module.exports = function (app) {
     }
   )
 
+  /**
+   * Set names (DNS names, crypto names, etc) for a shop deployment
+   */
   app.post(
     '/shops/:shopId/set-names',
     authSellerAndShop,

@@ -216,10 +216,12 @@ async function deployShop({
       ipfsHash: hash
     })
 
-    await ShopDeploymentName.create({
-      ipfsHash: hash,
-      hostname: `${subdomain}.${zone}`
-    })
+    if (subdomain) {
+      await ShopDeploymentName.create({
+        ipfsHash: hash,
+        hostname: `${subdomain}.${zone}`
+      })
+    }
 
     console.log(
       `Recorded shop deployment in the DB. id=${deployment.id} domain=${domain} ipfs=${ipfsGateway} hash=${hash}`

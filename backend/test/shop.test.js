@@ -96,6 +96,12 @@ describe('Orders', () => {
     })
 
     expect(jason.success).to.be.true
+    expect(jason.deployment.id).to.be.a('number')
+    expect(jason.deployment.shopId).to.be.a('number')
+    expect(jason.deployment.ipfsGateway).to.be.a('string')
+    expect(jason.deployment.ipfsGateway).to.be.equal(IPFS_GATEWAY)
+    expect(jason.deployment.ipfsHash).to.be.a('string')
+    expect(jason.deployment.ipfsHash).to.be.equal(TEST_HASH_1)
   })
 
   it('should set a name for a deployment', async () => {
@@ -112,5 +118,23 @@ describe('Orders', () => {
     })
 
     expect(jason.success).to.be.true
+    expect(jason.ipfsHash).to.be.equal(TEST_HASH_1)
+    expect(jason.names).to.be.an('array')
+    expect(jason.names).to.have.lengthOf(1)
+    expect(jason.names[0]).to.be.equal(TEST_UNSTOPPABLE_DOMAIN_1)
+  })
+
+  it('should get a names for a shop', async () => {
+    const jason = await apiRequest({
+      endpoint: `/shops/${shopId}/get-names`,
+      headers: {
+        Authorization: `Bearer ${TEST_SHOP_TOKEN_1}`
+      }
+    })
+
+    expect(jason.success).to.be.true
+    expect(jason.names).to.be.an('array')
+    expect(jason.names).to.have.lengthOf(1)
+    expect(jason.names[0]).to.be.equal(TEST_UNSTOPPABLE_DOMAIN_1)
   })
 })
