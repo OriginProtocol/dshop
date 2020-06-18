@@ -193,7 +193,6 @@ const EditProduct = () => {
 
       // Regenerate variants
       newFormState.variants = generateVariants(newFormState)
-      console.log({ ...newFormState })
 
       setMedia(mappedImages)
 
@@ -434,6 +433,7 @@ const EditProduct = () => {
                 <EditVariants
                   options={formState.options}
                   variants={formState.variants}
+                  media={media}
                   onChange={(updatedVariants) => {
                     setFormState({
                       variants: updatedVariants
