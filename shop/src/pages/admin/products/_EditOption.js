@@ -6,7 +6,7 @@ const TokenComponent = ({ values, onChange, validationError }) => {
   const [newValue, setNewValue] = useState('')
 
   const onClickListener = (e) => {
-    if (e.target.matches('.variant-token-comp')) {
+    if (e.target.matches('.option-token-comp')) {
       inputRef.current.focus()
     }
   }
@@ -14,7 +14,7 @@ const TokenComponent = ({ values, onChange, validationError }) => {
   return (
     <>
       <div
-        className={`variant-token-comp${validationError ? ' is-invalid' : ''}`}
+        className={`option-token-comp${validationError ? ' is-invalid' : ''}`}
         onClick={onClickListener}
       >
         {values.map((v, index) => {
@@ -56,12 +56,12 @@ const TokenComponent = ({ values, onChange, validationError }) => {
   )
 }
 
-const EditProductVariant = ({ formState, setFormState, label, onRemove }) => {
+const EditOptions = ({ formState, setFormState, label, onRemove }) => {
   const input = formInput(formState, (newState) => setFormState(newState))
   const Feedback = formFeedback(formState)
 
   return (
-    <div className="edit-product-variant row">
+    <div className="edit-product-option row">
       <>
         <div className="col-md-6">
           <label>{label}</label>
@@ -89,10 +89,10 @@ const EditProductVariant = ({ formState, setFormState, label, onRemove }) => {
   )
 }
 
-export default EditProductVariant
+export default EditOptions
 
 require('react-styl')(`
-  .edit-product-variant
+  .edit-product-option
     margin-bottom: 1rem
 
     .remove-link
@@ -101,7 +101,7 @@ require('react-styl')(`
       margin-bottom: 0.625rem
 
 
-  .variant-token-comp
+  .option-token-comp
     border-radius: 5px
     border: solid 1px #cdd7e0
     background-color: #fafbfc
