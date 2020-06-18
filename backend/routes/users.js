@@ -57,8 +57,25 @@ module.exports = function (app) {
   })
 
   app.post('/superuser/users', authSuperUser, async (req, res) => {
-    createSeller(req.body).then((result) => {
+    createSeller(req.body, { superuser: req.body.superuser }).then((result) => {
       res.json(result)
     })
+  })
+
+  app.delete('/superuser/users/:userId', authSuperUser, async (req, res) => {
+    const { userId } = req.params
+    if (String(userId) === String(req.session.sellerId)) {
+      return res.json({ success: false, reason: 'cannot-delete-self' })
+    }
+
+    const user = await Seller.findOne({ where: { id: req.params.userId } })
+    if (!user) {
+      return res.json({ success: false, reason: 'no-such-user' })
+    }
+
+    SellerShop.destroy({ where: { sellerId: userId } })
+      .then(() => Seller.destroy({ where: { id: userId } }))
+      .then(() => res.json({ success: true }))
+      .catch((err) => res.json({ success: false, reason: err.toString() }))
   })
 }

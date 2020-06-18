@@ -4,8 +4,9 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
 import useSetState from 'utils/useSetState'
-
 import PasswordField from 'components/admin/PasswordField'
+
+import Tabs from './_Tabs'
 
 function validate(state) {
   const newState = {}
@@ -115,46 +116,50 @@ const AdminSettings = ({ shop }) => {
   const Feedback = formFeedback(state)
 
   return (
-    <form
-      className="mt-3"
-      onSubmit={async (e) => {
-        e.preventDefault()
-        const { valid, newState } = validate(state)
-        setState(newState)
+    <>
+      <h3 className="admin-title">Settings</h3>
+      <Tabs />
 
-        const cfgOk = await new Promise((resolve) => {
-          fetch(`${state.dataUrl}config.json`)
-            .then((res) => resolve(res.ok ? true : false))
-            .catch(() => resolve(false))
-        })
-        if (!cfgOk) {
-          setState({ dataUrlError: 'Could not fetch config.json' })
-          return
-        }
+      <form
+        className="mt-3"
+        onSubmit={async (e) => {
+          e.preventDefault()
+          const { valid, newState } = validate(state)
+          setState(newState)
 
-        if (valid) {
-          setSaving('saving')
-          const token = shop ? shop.authToken : config.backendAuthToken
-          const raw = await fetch(`${config.backend}/config`, {
-            headers: {
-              authorization: `bearer ${token}`,
-              'content-type': 'application/json'
-            },
-            credentials: 'include',
-            method: 'POST',
-            body: JSON.stringify(newState)
+          const cfgOk = await new Promise((resolve) => {
+            fetch(`${state.dataUrl}config.json`)
+              .then((res) => resolve(res.ok ? true : false))
+              .catch(() => resolve(false))
           })
-          if (raw.ok) {
-            setSaving('ok')
-            setTimeout(() => setSaving(null), 3000)
+          if (!cfgOk) {
+            setState({ dataUrlError: 'Could not fetch config.json' })
+            return
           }
-        } else {
-          window.scrollTo(0, 0)
-        }
-      }}
-    >
-      <div className="row">
-        {/* <div className="form-group col-md-6">
+
+          if (valid) {
+            setSaving('saving')
+            const token = shop ? shop.authToken : config.backendAuthToken
+            const raw = await fetch(`${config.backend}/config`, {
+              headers: {
+                authorization: `bearer ${token}`,
+                'content-type': 'application/json'
+              },
+              credentials: 'include',
+              method: 'POST',
+              body: JSON.stringify(newState)
+            })
+            if (raw.ok) {
+              setSaving('ok')
+              setTimeout(() => setSaving(null), 3000)
+            }
+          } else {
+            window.scrollTo(0, 0)
+          }
+        }}
+      >
+        <div className="row">
+          {/* <div className="form-group col-md-6">
           <label>Listener</label>
           <div className="btn-group d-block">
             <button
@@ -172,237 +177,238 @@ const AdminSettings = ({ shop }) => {
           </div>
         </div> */}
 
-        <div className="form-group col-md-6">
-          <label>Password protect site</label>
-          <PasswordField field="password" input={input} />
-          {Feedback('password')}
+          <div className="form-group col-md-6">
+            <label>Password protect site</label>
+            <PasswordField field="password" input={input} />
+            {Feedback('password')}
+          </div>
         </div>
-      </div>
-      <div className="row">
-        <div className="col-md-6">
-          <div className="form-group">
-            <label>Data URL</label>
-            <input type="text" {...input('dataUrl')} />
-            {Feedback('dataUrl')}
-          </div>
-          <div className="form-group">
-            <label>Public URL</label>
-            <input type="text" {...input('publicUrl')} />
-            {Feedback('publicUrl')}
-          </div>
-          <div className="form-group">
-            <label>Email Notifications</label>
-            <select {...input('email')}>
-              <option value="disabled">Disabled</option>
-              <option value="sendgrid">Sendgrid</option>
-              <option value="mailgun">Mailgun</option>
-              <option value="aws">AWS SES</option>
-            </select>
-            {Feedback('email')}
-          </div>
-          {state.email !== 'sendgrid' ? null : (
-            <>
-              <div className="form-group">
-                <label>Sendgrid API Key</label>
-                <PasswordField field="sendgridApiKey" input={input} />
-                {Feedback('sendgridApiKey')}
-              </div>
-              <div className="row">
-                <div className="form-group col-6">
-                  <label>Username</label>
-                  <input type="text" {...input('sendgridUsername')} />
-                  {Feedback('sendgridUsername')}
-                </div>
-                <div className="form-group col-6">
-                  <label>Password</label>
-                  <PasswordField field="sendgridPassword" input={input} />
-                  {Feedback('sendgridPassword')}
-                </div>
-              </div>
-            </>
-          )}
-          {state.email !== 'mailgun' ? null : (
-            <>
-              <div className="row">
-                <div className="form-group col-8">
-                  <label>Host</label>
-                  <input type="text" {...input('mailgunSmtpServer')} />
-                  {Feedback('mailgunSmtpServer')}
-                </div>
-                <div className="form-group col-4">
-                  <label>Port</label>
-                  <input type="text" {...input('mailgunSmtpPort')} />
-                  {Feedback('mailgunSmtpPort')}
-                </div>
-              </div>
-              <div className="row">
-                <div className="form-group col-6">
-                  <label>Login</label>
-                  <input type="text" {...input('mailgunSmtpLogin')} />
-                  {Feedback('mailgunSmtpLogin')}
-                </div>
-                <div className="form-group col-6">
-                  <label>Password</label>
-                  <PasswordField field="mailgunSmtpPassword" input={input} />
-                  {Feedback('mailgunSmtpPassword')}
-                </div>
-              </div>
-            </>
-          )}
-          {state.email !== 'aws' ? null : (
-            <>
-              <div className="form-group">
-                <label>AWS Region</label>
-                <input type="text" {...input('awsRegion')} />
-                {Feedback('awsRegion')}
-              </div>
-              <div className="row">
-                <div className="form-group col-6">
-                  <label>Access Key</label>
-                  <input type="text" {...input('awsAccessKey')} />
-                  {Feedback('awsAccessKey')}
-                </div>
-                <div className="form-group col-6">
-                  <label>Secret</label>
-                  <PasswordField field="awsAccessSecret" input={input} />
-                  {Feedback('awsAccessSecret')}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-        <div className="col-md-6">
-          <div className="row">
-            <div className="form-group col-md-6">
-              <label>Stripe Backend</label>
-              <PasswordField field="stripeBackend" input={input} />
-              {Feedback('stripeBackend')}
+        <div className="row">
+          <div className="col-md-6">
+            <div className="form-group">
+              <label>Data URL</label>
+              <input type="text" {...input('dataUrl')} />
+              {Feedback('dataUrl')}
             </div>
-            <div className="form-group col-md-6">
-              <label>Webhook Secret</label>
-              <PasswordField field="stripeWebhookSecret" input={input} />
-              {Feedback('stripeWebhookSecret')}
+            <div className="form-group">
+              <label>Public URL</label>
+              <input type="text" {...input('publicUrl')} />
+              {Feedback('publicUrl')}
             </div>
+            <div className="form-group">
+              <label>Email Notifications</label>
+              <select {...input('email')}>
+                <option value="disabled">Disabled</option>
+                <option value="sendgrid">Sendgrid</option>
+                <option value="mailgun">Mailgun</option>
+                <option value="aws">AWS SES</option>
+              </select>
+              {Feedback('email')}
+            </div>
+            {state.email !== 'sendgrid' ? null : (
+              <>
+                <div className="form-group">
+                  <label>Sendgrid API Key</label>
+                  <PasswordField field="sendgridApiKey" input={input} />
+                  {Feedback('sendgridApiKey')}
+                </div>
+                <div className="row">
+                  <div className="form-group col-6">
+                    <label>Username</label>
+                    <input type="text" {...input('sendgridUsername')} />
+                    {Feedback('sendgridUsername')}
+                  </div>
+                  <div className="form-group col-6">
+                    <label>Password</label>
+                    <PasswordField field="sendgridPassword" input={input} />
+                    {Feedback('sendgridPassword')}
+                  </div>
+                </div>
+              </>
+            )}
+            {state.email !== 'mailgun' ? null : (
+              <>
+                <div className="row">
+                  <div className="form-group col-8">
+                    <label>Host</label>
+                    <input type="text" {...input('mailgunSmtpServer')} />
+                    {Feedback('mailgunSmtpServer')}
+                  </div>
+                  <div className="form-group col-4">
+                    <label>Port</label>
+                    <input type="text" {...input('mailgunSmtpPort')} />
+                    {Feedback('mailgunSmtpPort')}
+                  </div>
+                </div>
+                <div className="row">
+                  <div className="form-group col-6">
+                    <label>Login</label>
+                    <input type="text" {...input('mailgunSmtpLogin')} />
+                    {Feedback('mailgunSmtpLogin')}
+                  </div>
+                  <div className="form-group col-6">
+                    <label>Password</label>
+                    <PasswordField field="mailgunSmtpPassword" input={input} />
+                    {Feedback('mailgunSmtpPassword')}
+                  </div>
+                </div>
+              </>
+            )}
+            {state.email !== 'aws' ? null : (
+              <>
+                <div className="form-group">
+                  <label>AWS Region</label>
+                  <input type="text" {...input('awsRegion')} />
+                  {Feedback('awsRegion')}
+                </div>
+                <div className="row">
+                  <div className="form-group col-6">
+                    <label>Access Key</label>
+                    <input type="text" {...input('awsAccessKey')} />
+                    {Feedback('awsAccessKey')}
+                  </div>
+                  <div className="form-group col-6">
+                    <label>Secret</label>
+                    <PasswordField field="awsAccessSecret" input={input} />
+                    {Feedback('awsAccessSecret')}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-          <div className="form-group">
-            <label>Printful API Key</label>
-            <PasswordField field="printful" input={input} />
-            {Feedback('printful')}
-          </div>
-          <div className="form-group">
-            <label>Uphold payments</label>
-            <select {...input('upholdApi')}>
-              <option value="">Disabled</option>
-              <option value="production">Production</option>
-              <option value="sandbox">Sandbox</option>
-            </select>
-            {Feedback('upholdApi')}
-          </div>
-          {!state.upholdApi ? null : (
+          <div className="col-md-6">
             <div className="row">
               <div className="form-group col-md-6">
-                <label>Uphold Client</label>
-                <input type="text" {...input('upholdClient')} />
-                {Feedback('upholdClient')}
+                <label>Stripe Backend</label>
+                <PasswordField field="stripeBackend" input={input} />
+                {Feedback('stripeBackend')}
               </div>
               <div className="form-group col-md-6">
-                <label>Uphold Secret</label>
-                <PasswordField field="upholdSecret" input={input} />
-                {Feedback('upholdSecret')}
+                <label>Webhook Secret</label>
+                <PasswordField field="stripeWebhookSecret" input={input} />
+                {Feedback('stripeWebhookSecret')}
               </div>
             </div>
-          )}
-        </div>
-      </div>
-
-      <div className="row">
-        <div className="col-md-6">
-          <div className="form-group">
-            <label className="d-flex justify-content-between">
-              <div>PGP Public Key</div>
-              <div>
-                <a
-                  href="#"
-                  className={keyFromDb ? '' : 'font-weight-bold'}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    setKeyFromDb(false)
-                  }}
-                >
-                  config.json
-                </a>
-                {' | '}
-                <a
-                  href="#"
-                  className={keyFromDb ? 'font-weight-bold' : ''}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    setKeyFromDb(true)
-                  }}
-                >
-                  DB
-                </a>
+            <div className="form-group">
+              <label>Printful API Key</label>
+              <PasswordField field="printful" input={input} />
+              {Feedback('printful')}
+            </div>
+            <div className="form-group">
+              <label>Uphold payments</label>
+              <select {...input('upholdApi')}>
+                <option value="">Disabled</option>
+                <option value="production">Production</option>
+                <option value="sandbox">Sandbox</option>
+              </select>
+              {Feedback('upholdApi')}
+            </div>
+            {!state.upholdApi ? null : (
+              <div className="row">
+                <div className="form-group col-md-6">
+                  <label>Uphold Client</label>
+                  <input type="text" {...input('upholdClient')} />
+                  {Feedback('upholdClient')}
+                </div>
+                <div className="form-group col-md-6">
+                  <label>Uphold Secret</label>
+                  <PasswordField field="upholdSecret" input={input} />
+                  {Feedback('upholdSecret')}
+                </div>
               </div>
-            </label>
-            <textarea
-              className="form-control"
-              value={pgpPublicKey}
-              rows={5}
-              readOnly
-            />
+            )}
           </div>
         </div>
-        <div className="col-md-6">
-          <div className="form-group">
-            <label>PGP Private Key</label>
-            <textarea rows="5" {...input('pgpPrivateKey')} />
-            {Feedback('pgpPrivateKey')}
-          </div>
-        </div>
-      </div>
-      <div className="form-group">
-        <label>PGP Public Key String</label>
-        <input
-          className="form-control"
-          readOnly
-          value={pgpPublicKey.replace(/\n/g, '\\n')}
-        />
-      </div>
-      <div className="form-group">
-        <label>PGP Private Key Password</label>
-        <PasswordField field="pgpPrivateKeyPass" input={input} />
-        {Feedback('pgpPrivateKeyPass')}
-      </div>
-      <div className="form-group">{`Keys match: ${keyValid}`}</div>
-      <div className="form-group">
-        <label>Web3 PK (used to make offers for non-crypto payments)</label>
-        <PasswordField field="web3Pk" input={input} />
-        {Feedback('web3Pk')}
-      </div>
-      <div className="form-row">
-        <div className="form-group col-md-6">
-          <label>Big Query Table</label>
-          <input {...input('bigQueryTable')} />
-        </div>
-        <div className="form-group col-md-6">
-          <label>Big Query Credentials</label>
-          <textarea rows="4" {...input('bigQueryCredentials')} />
-        </div>
-      </div>
 
-      <div className="actions">
-        <button type="submit" className="btn btn-primary">
-          Save
-        </button>
-        <span className="ml-2">
-          {saving === 'saving'
-            ? 'Saving...'
-            : saving === 'ok'
-            ? 'Saved OK ✅'
-            : null}
-        </span>
-      </div>
-    </form>
+        <div className="row">
+          <div className="col-md-6">
+            <div className="form-group">
+              <label className="d-flex justify-content-between">
+                <div>PGP Public Key</div>
+                <div>
+                  <a
+                    href="#"
+                    className={keyFromDb ? '' : 'font-weight-bold'}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setKeyFromDb(false)
+                    }}
+                  >
+                    config.json
+                  </a>
+                  {' | '}
+                  <a
+                    href="#"
+                    className={keyFromDb ? 'font-weight-bold' : ''}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setKeyFromDb(true)
+                    }}
+                  >
+                    DB
+                  </a>
+                </div>
+              </label>
+              <textarea
+                className="form-control"
+                value={pgpPublicKey}
+                rows={5}
+                readOnly
+              />
+            </div>
+          </div>
+          <div className="col-md-6">
+            <div className="form-group">
+              <label>PGP Private Key</label>
+              <textarea rows="5" {...input('pgpPrivateKey')} />
+              {Feedback('pgpPrivateKey')}
+            </div>
+          </div>
+        </div>
+        <div className="form-group">
+          <label>PGP Public Key String</label>
+          <input
+            className="form-control"
+            readOnly
+            value={pgpPublicKey.replace(/\n/g, '\\n')}
+          />
+        </div>
+        <div className="form-group">
+          <label>PGP Private Key Password</label>
+          <PasswordField field="pgpPrivateKeyPass" input={input} />
+          {Feedback('pgpPrivateKeyPass')}
+        </div>
+        <div className="form-group">{`Keys match: ${keyValid}`}</div>
+        <div className="form-group">
+          <label>Web3 PK (used to make offers for non-crypto payments)</label>
+          <PasswordField field="web3Pk" input={input} />
+          {Feedback('web3Pk')}
+        </div>
+        <div className="form-row">
+          <div className="form-group col-md-6">
+            <label>Big Query Table</label>
+            <input {...input('bigQueryTable')} />
+          </div>
+          <div className="form-group col-md-6">
+            <label>Big Query Credentials</label>
+            <textarea rows="4" {...input('bigQueryCredentials')} />
+          </div>
+        </div>
+
+        <div className="actions">
+          <button type="submit" className="btn btn-primary">
+            Save
+          </button>
+          <span className="ml-2">
+            {saving === 'saving'
+              ? 'Saving...'
+              : saving === 'ok'
+              ? 'Saved OK ✅'
+              : null}
+          </span>
+        </div>
+      </form>
+    </>
   )
 }
 

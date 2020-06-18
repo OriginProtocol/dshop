@@ -69,10 +69,12 @@ const SuperAdmin = () => {
   return (
     <div className="admin">
       <nav>
-        <div className="container">
+        <div className="fullwidth-container">
           <h1>
-            <img src="images/dshop-logo.svg" />
-            <div>Super Admin</div>
+            <img className="dshop-logo" src="images/dshop-logo-blue.svg" />
+            <div className="shops-title-wrapper">
+              <div className="shop-title">Super Admin</div>
+            </div>
           </h1>
           <div className="user">
             <Icons.User />
@@ -80,33 +82,31 @@ const SuperAdmin = () => {
           </div>
         </div>
       </nav>
-      <div className="container">
-        <div className="row">
-          <div className="col-md-3">
-            <Menu />
-          </div>
-          <div className="col-md-9">
-            <Switch>
-              <Route path="/super-admin/shops/new" component={NewShop} />
-              <Route path="/super-admin/shops/:shopId" component={Shop} />
-              <Route path="/super-admin/shops" component={Shops} />
+      <div className="sidebar-layout">
+        <div className="sidebar-container">
+          <Menu />
+        </div>
+        <div className="main-content-container">
+          <Switch>
+            <Route path="/super-admin/shops/new" component={NewShop} />
+            <Route path="/super-admin/shops/:shopId" component={Shop} />
+            <Route path="/super-admin/shops" component={Shops} />
 
-              <Route path="/super-admin/networks/new" component={NewNetwork} />
-              <Route path="/super-admin/networks/:id" component={EditNetwork} />
-              <Route path="/super-admin/networks" component={Networks} />
+            <Route path="/super-admin/networks/new" component={NewNetwork} />
+            <Route path="/super-admin/networks/:id" component={EditNetwork} />
+            <Route path="/super-admin/networks" component={Networks} />
 
-              <Route path="/super-admin/users/new" component={NewUser} />
-              <Route
-                path="/super-admin/users/:userId/edit"
-                component={EditUser}
-              />
-              <Route path="/super-admin/users/:userId" component={User} />
-              <Route path="/super-admin/users" component={Users} />
+            <Route path="/super-admin/users/new" component={NewUser} />
+            <Route
+              path="/super-admin/users/:userId/edit"
+              component={EditUser}
+            />
+            <Route path="/super-admin/users/:userId" component={User} />
+            <Route path="/super-admin/users" component={Users} />
 
-              <Route path="/super-admin/dashboard" component={Dashboard} />
-              <Redirect to="/super-admin/dashboard" />
-            </Switch>
-          </div>
+            <Route path="/super-admin/dashboard" component={Dashboard} />
+            <Redirect to="/super-admin/dashboard" />
+          </Switch>
         </div>
       </div>
     </div>

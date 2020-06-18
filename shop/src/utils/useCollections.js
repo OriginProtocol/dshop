@@ -6,7 +6,7 @@ import useConfig from 'utils/useConfig'
 
 function useCollections() {
   const { config } = useConfig()
-  const [{ collections }, dispatch] = useStateValue()
+  const [{ collections, reload }, dispatch] = useStateValue()
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -17,10 +17,8 @@ function useCollections() {
       setLoading(false)
       dispatch({ type: 'setCollections', collections })
     }
-    if (!collections.length) {
-      fetchCollections()
-    }
-  }, [])
+    fetchCollections()
+  }, [reload.collections])
 
   return { collections, loading }
 }

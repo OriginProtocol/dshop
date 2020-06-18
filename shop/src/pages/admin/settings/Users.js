@@ -4,6 +4,8 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useSetState from 'utils/useSetState'
 
+import Tabs from './_Tabs'
+
 function validate(state) {
   const newState = {}
 
@@ -29,8 +31,7 @@ const AdminUsers = () => {
   const { config } = useConfig()
   const [state, setState] = useSetState({ loading: false, users: [] })
 
-  useEffect(() => {
-    setState({ loading: true })
+  const loadUsers = () => {
     fetch(`${config.backend}/shop/users`, {
       headers: {
         authorization: `bearer ${config.backendAuthToken}`,
@@ -40,9 +41,20 @@ const AdminUsers = () => {
     }).then(async (res) => {
       if (res.ok) {
         const json = await res.json()
-        setState({ loading: false, users: json.users })
+        setState({
+          loading: false,
+          users: json.users,
+          name: undefined,
+          email: undefined,
+          password: undefined
+        })
       }
     })
+  }
+
+  useEffect(() => {
+    setState({ loading: true })
+    loadUsers()
   }, [])
 
   const input = formInput(state, (newState) => setState(newState))
@@ -50,6 +62,8 @@ const AdminUsers = () => {
 
   return (
     <>
+      <h3 className="admin-title">Settings</h3>
+      <Tabs />
       {state.loading ? (
         'Loading...'
       ) : (
@@ -96,8 +110,8 @@ const AdminUsers = () => {
             })
           }).then(async (res) => {
             if (res.ok) {
-              const json = await res.json()
-              console.log(json)
+              await res.json()
+              loadUsers()
             }
           })
         }}

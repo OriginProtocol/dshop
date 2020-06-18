@@ -12,7 +12,7 @@ import Modal from 'components/Modal'
 import ShopReady from '../new-shop/ShopReady'
 import ActivateBuild from './_ActivateBuild'
 
-const AdminDeployShop = ({ className = '', shop }) => {
+const AdminDeployShop = ({ className = '', shop, buttonText = 'Deploy' }) => {
   const [{ admin }, dispatch] = useStateValue()
   const { config } = useConfig()
   const [state, setState] = useSetState()
@@ -45,7 +45,7 @@ const AdminDeployShop = ({ className = '', shop }) => {
         className={`btn btn-outline-primary ${className}`}
         onClick={() => setState({ deploy: true })}
       >
-        Deploy
+        {buttonText}
       </button>
       {!state.deploy ? null : (
         <Modal

@@ -6,12 +6,13 @@ const {
   authRole
 } = require('./_auth')
 const fs = require('fs')
-const { createSeller } = require('../utils/sellers')
+const { createSeller, numSellers } = require('../utils/sellers')
 const encConf = require('../utils/encryptedConfig')
 const { validateConfig } = require('../utils/validators')
 const { DSHOP_CACHE } = require('../utils/const')
 const get = require('lodash/get')
 const omit = require('lodash/omit')
+const pick = require('lodash/pick')
 
 module.exports = function (app) {
   app.get('/auth', authSellerAndShop, (req, res) => {
@@ -35,15 +36,11 @@ module.exports = function (app) {
 
       Seller.findOne({ where: { id } }).then((seller) => {
         let role = req.sellerShop ? req.sellerShop.role : ''
-        if (seller.superuser) {
+        const { superuser, email } = seller
+        if (superuser) {
           role = 'admin'
         }
-        res.json({
-          success: true,
-          email: seller.email,
-          role,
-          shops
-        })
+        res.json({ success: true, email, role, shops })
       })
     })
   })
@@ -59,7 +56,7 @@ module.exports = function (app) {
     }
     const user = await Seller.findOne({ where: { id: req.session.sellerId } })
     if (!user) {
-      return res.json({ success: false, reason: 'not-logged-in' })
+      return res.json({ success: false, reason: 'no-such-user' })
     } else if (!user.superuser) {
       return res.json({ success: false, reason: 'not-superuser' })
     }
@@ -139,7 +136,10 @@ module.exports = function (app) {
     async (req, res, next) => {
       const seller = await Seller.findOne({ where: { email: req.body.email } })
       if (!seller) {
-        return res.status(404).send({ success: false })
+        return res.status(404).send({
+          success: false,
+          message: 'Invalid email'
+        })
       }
       const check = await checkPassword(req.body.password, seller.password)
       if (check === true) {
@@ -147,7 +147,10 @@ module.exports = function (app) {
         req.seller = seller
         next()
       } else {
-        next()
+        return res.status(404).send({
+          success: false,
+          message: 'Invalid password'
+        })
       }
     },
     authSellerAndShop,
@@ -155,7 +158,7 @@ module.exports = function (app) {
       res.json({
         success: true,
         email: req.seller.email,
-        role: req.sellerShop.role
+        role: req.seller.superuser ? 'admin' : get(req, 'sellerShop.role')
       })
     }
   )
@@ -172,9 +175,17 @@ module.exports = function (app) {
 
   app.post('/auth/logout', logoutHandler)
 
-  // TODO: Should this at least use API key auth?
   app.post('/auth/registration', async (req, res) => {
-    const { seller, status, error } = await createSeller(req.body)
+    if ((await numSellers()) > 0) {
+      return res.status(409).json({
+        success: false,
+        message: 'An initial user has already been setup'
+      })
+    }
+
+    const { seller, status, error } = await createSeller(req.body, {
+      superuser: true
+    })
 
     if (error) {
       return res.status(status).json({ success: false, message: error })
@@ -207,7 +218,13 @@ module.exports = function (app) {
 
   app.get('/config', authSellerAndShop, authRole('admin'), async (req, res) => {
     const config = await encConf.dump(req.shop.id)
-    return res.json({ success: true, config })
+    return res.json({
+      success: true,
+      config: {
+        ...config,
+        ...pick(req.shop.dataValues, 'hostname')
+      }
+    })
   })
 
   app.post(

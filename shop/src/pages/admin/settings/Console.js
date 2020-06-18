@@ -6,6 +6,8 @@ import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
 import { updateListing } from 'utils/listing'
 
+import Tabs from './_Tabs'
+
 const AdminConsole = () => {
   const { config } = useConfig()
   const { shopConfig } = useShopConfig()
@@ -16,188 +18,207 @@ const AdminConsole = () => {
   const [printfulError, setPrintfulError] = useState('')
 
   return (
-    <div className="mt-4">
-      <label className="font-weight-bold">Create order via IPFS hash</label>
-      <form
-        className="d-flex"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (!encryptedData) {
-            return
-          }
+    <>
+      <h3 className="admin-title">Settings</h3>
+      <Tabs />
 
-          fetch(`${config.ipfsGateway}/ipfs/${encryptedData}`).then((res) => {
-            if (!res.ok) {
-              console.log('Not OK')
+      <div className="mt-4">
+        <label className="font-weight-bold">Create order via IPFS hash</label>
+        <form
+          className="d-flex"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!encryptedData) {
               return
             }
 
-            fetch(`${config.backend}/orders/create`, {
+            fetch(`${config.ipfsGateway}/ipfs/${encryptedData}`).then((res) => {
+              if (!res.ok) {
+                console.log('Not OK')
+                return
+              }
+
+              fetch(`${config.backend}/orders/create`, {
+                headers: {
+                  authorization: `bearer ${config.backendAuthToken}`,
+                  'content-type': 'application/json'
+                },
+                credentials: 'include',
+                method: 'POST',
+                body: JSON.stringify({ encryptedData })
+              }).then((saveRes) => {
+                if (!saveRes.ok) {
+                  console.log('Not OK')
+                  return
+                }
+                console.log('Saved OK')
+              })
+            })
+          }}
+        >
+          <input
+            className="form-control"
+            placeholder="Encrypted IPFS Hash"
+            style={{ maxWidth: 300 }}
+            value={encryptedData}
+            onChange={(e) => setEncryptedData(e.target.value)}
+          />
+          <button type="submit" className="btn btn-outline-primary ml-3">
+            Submit
+          </button>
+        </form>
+        <label className="mt-4 font-weight-bold">Send confirmation email</label>
+        <form
+          className="d-flex"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!orderId) {
+              return
+            }
+
+            fetch(`${config.backend}/orders/${orderId}/email`, {
               headers: {
                 authorization: `bearer ${config.backendAuthToken}`,
                 'content-type': 'application/json'
               },
               credentials: 'include',
-              method: 'POST',
-              body: JSON.stringify({ encryptedData })
+              method: 'POST'
             }).then((saveRes) => {
               if (!saveRes.ok) {
                 console.log('Not OK')
                 return
               }
-              console.log('Saved OK')
+              console.log('OK')
             })
-          })
-        }}
-      >
-        <input
-          className="form-control"
-          placeholder="Encrypted IPFS Hash"
-          style={{ maxWidth: 300 }}
-          value={encryptedData}
-          onChange={(e) => setEncryptedData(e.target.value)}
-        />
-        <button type="submit" className="btn btn-outline-primary ml-3">
-          Submit
-        </button>
-      </form>
-      <label className="mt-4 font-weight-bold">Send confirmation email</label>
-      <form
-        className="d-flex"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (!orderId) {
-            return
-          }
-
-          fetch(`${config.backend}/orders/${orderId}/email`, {
-            headers: {
-              authorization: `bearer ${config.backendAuthToken}`,
-              'content-type': 'application/json'
-            },
-            credentials: 'include',
-            method: 'POST'
-          }).then((saveRes) => {
-            if (!saveRes.ok) {
-              console.log('Not OK')
+          }}
+        >
+          <input
+            className="form-control"
+            placeholder="Order ID"
+            style={{ maxWidth: 300 }}
+            value={orderId}
+            onChange={(e) => setOrderId(e.target.value)}
+          />
+          <button type="submit" className="btn btn-outline-primary ml-3">
+            Submit
+          </button>
+        </form>
+        <label className="mt-4 font-weight-bold">Read encrypted hash</label>
+        <form
+          className="d-flex"
+          onSubmit={async (e) => {
+            e.preventDefault()
+            if (!readHash) {
               return
             }
-            console.log('OK')
-          })
-        }}
-      >
-        <input
-          className="form-control"
-          placeholder="Order ID"
-          style={{ maxWidth: 300 }}
-          value={orderId}
-          onChange={(e) => setOrderId(e.target.value)}
-        />
-        <button type="submit" className="btn btn-outline-primary ml-3">
-          Submit
-        </button>
-      </form>
-      <label className="mt-4 font-weight-bold">Read encrypted hash</label>
-      <form
-        className="d-flex"
-        onSubmit={async (e) => {
-          e.preventDefault()
-          if (!readHash) {
-            return
-          }
 
-          const { pgpPrivateKey, pgpPrivateKeyPass } = shopConfig
+            const { pgpPrivateKey, pgpPrivateKeyPass } = shopConfig
 
-          const encryptedData = await get(config.ipfsGateway, readHash, 10000)
-          const privateKey = await openpgp.key.readArmored(pgpPrivateKey)
-          if (privateKey.err && privateKey.err.length) {
-            throw privateKey.err[0]
-          }
-          const privateKeyObj = privateKey.keys[0]
-          await privateKeyObj.decrypt(pgpPrivateKeyPass)
+            const encryptedData = await get(config.ipfsGateway, readHash, 10000)
+            const privateKey = await openpgp.key.readArmored(pgpPrivateKey)
+            if (privateKey.err && privateKey.err.length) {
+              throw privateKey.err[0]
+            }
+            const privateKeyObj = privateKey.keys[0]
+            await privateKeyObj.decrypt(pgpPrivateKeyPass)
 
-          const message = await openpgp.message.readArmored(encryptedData.data)
-          const options = { message, privateKeys: [privateKeyObj] }
+            const message = await openpgp.message.readArmored(
+              encryptedData.data
+            )
+            const options = { message, privateKeys: [privateKeyObj] }
 
-          const decrypted = await openpgp.decrypt(options)
+            const decrypted = await openpgp.decrypt(options)
 
-          console.log(JSON.parse(decrypted.data))
-        }}
-      >
-        <input
-          className="form-control"
-          placeholder="IPFS Hash"
-          style={{ maxWidth: 300 }}
-          value={readHash}
-          onChange={(e) => setReadHash(e.target.value)}
-        />
-        <button type="submit" className="btn btn-outline-primary ml-3">
-          Submit
-        </button>
-      </form>
+            console.log(JSON.parse(decrypted.data))
+          }}
+        >
+          <input
+            className="form-control"
+            placeholder="IPFS Hash"
+            style={{ maxWidth: 300 }}
+            value={readHash}
+            onChange={(e) => setReadHash(e.target.value)}
+          />
+          <button type="submit" className="btn btn-outline-primary ml-3">
+            Submit
+          </button>
+        </form>
 
-      <label className="mt-4 font-weight-bold">Emit ListingUpdated event</label>
-      <form
-        className="d-flex"
-        onSubmit={async (e) => {
-          e.preventDefault()
-          if (!shopIpfsHash) {
-            return
-          }
-          {
-            /* TODO: add UI feedback (a toast?) to show success/error. */
-          }
-          console.log('Calling ListingUpdated...')
-          updateListing({ config, shopIpfsHash })
-            .then(() => console.log('Listing updated successfully'))
-            .catch((err) => console.error('Listing update failed', err.message))
-        }}
-      >
-        <input
-          className="form-control"
-          placeholder="IPFS Hash"
-          style={{ maxWidth: 300 }}
-          value={shopIpfsHash}
-          onChange={(e) => setShopIpfsHash(e.target.value)}
-        />
-        <button type="submit" className="btn btn-outline-primary ml-3">
-          Submit
-        </button>
-      </form>
-
-      <label className="mt-4 font-weight-bold">Sync Printful</label>
-      <form
-        className="d-flex"
-        onSubmit={async (e) => {
-          e.preventDefault()
-          setPrintfulError('')
-          fetch(`${config.backend}/shop/sync-printful`, {
-            headers: {
-              authorization: `bearer ${config.backendAuthToken}`,
-              'content-type': 'application/json'
-            },
-            credentials: 'include',
-            method: 'POST'
-          }).then((saveRes) => {
-            if (!saveRes.ok) {
-              console.log('Not OK')
+        <label className="mt-4 font-weight-bold">
+          Emit ListingUpdated event
+        </label>
+        <form
+          className="d-flex"
+          onSubmit={async (e) => {
+            e.preventDefault()
+            if (!shopIpfsHash) {
               return
             }
-            saveRes.json().then((json) => {
-              if (!json.success) {
-                setPrintfulError(json.reason)
+            {
+              /* TODO: add UI feedback (a toast?) to show success/error. */
+            }
+            console.log('Calling ListingUpdated...')
+            updateListing({ config, shopIpfsHash })
+              .then(() => console.log('Listing updated successfully'))
+              .catch((err) =>
+                console.error('Listing update failed', err.message)
+              )
+          }}
+        >
+          <input
+            className="form-control"
+            placeholder="IPFS Hash"
+            style={{ maxWidth: 300 }}
+            value={shopIpfsHash}
+            onChange={(e) => setShopIpfsHash(e.target.value)}
+          />
+          <button type="submit" className="btn btn-outline-primary ml-3">
+            Submit
+          </button>
+        </form>
+
+        <label className="mt-4 font-weight-bold">Sync Printful</label>
+        <form
+          className="d-flex"
+          onSubmit={async (e) => {
+            e.preventDefault()
+            setPrintfulError('')
+            fetch(`${config.backend}/shop/sync-printful`, {
+              headers: {
+                authorization: `bearer ${config.backendAuthToken}`,
+                'content-type': 'application/json'
+              },
+              credentials: 'include',
+              method: 'POST'
+            }).then((saveRes) => {
+              if (!saveRes.ok) {
+                console.log('Not OK')
                 return
               }
+              saveRes.json().then((json) => {
+                if (!json.success) {
+                  setPrintfulError(json.reason)
+                  return
+                }
+              })
             })
-          })
-        }}
-      >
-        <button type="submit" className="btn btn-outline-primary">
-          Sync
-        </button>
-        {printfulError ? <div className="ml-3">{printfulError}</div> : null}
-      </form>
-    </div>
+          }}
+        >
+          <button type="submit" className="btn btn-outline-primary">
+            Sync
+          </button>
+          {printfulError ? <div className="ml-3">{printfulError}</div> : null}
+        </form>
+
+        <h4 className="mt-3">Contents of config.json on IPFS</h4>
+        <textarea
+          className="form-control"
+          readOnly
+          style={{ minHeight: '90vh', fontFamily: 'monospace' }}
+          value={JSON.stringify(config, null, 2)}
+        ></textarea>
+      </div>
+    </>
   )
 }
 

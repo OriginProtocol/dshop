@@ -16,7 +16,7 @@ require('./queues').runProcessors()
 
 const ORIGIN_WHITELIST_ENABLED = false
 const ORIGIN_WHITELIST = []
-const BODYPARSER_EXCLUDES = ['/webhook']
+const BODYPARSER_EXCLUDES = ['/webhook', '/products/upload-images']
 
 // TODO: Restrict this more? See: https://expressjs.com/en/guide/behind-proxies.html
 app.set('trust proxy', true)
@@ -67,6 +67,8 @@ require('./routes/stripe')(app)
 require('./routes/discounts')(app)
 require('./routes/tx')(app)
 require('./queues/ui')(app)
+require('./routes/products')(app)
+require('./routes/collections')(app)
 
 app.get(
   '(/collections/:collection)?/products/:product',

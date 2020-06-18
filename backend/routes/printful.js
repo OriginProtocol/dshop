@@ -153,21 +153,20 @@ module.exports = function (app) {
       body: JSON.stringify(query)
     })
     const json = await shippingRatesResponse.json()
-    if (json.result) {
-      res.json(
-        json.result.map((rate) => {
-          const [, label] = rate.name.match(/^(.*) \((.*)\)/)
-          const min = rate.minDeliveryDays + 1
-          const max = rate.maxDeliveryDays + 2
-          return {
-            id: rate.id,
-            label,
-            detail: `${min}-${max} business days`,
-            amount: Number(rate.rate) * 100,
-            countries: [recipient.countryCode]
-          }
-        })
-      )
+    if (json.result && Array.isArray(json.result)) {
+      const shipping = json.result.map((rate) => {
+        const [, label] = rate.name.match(/^(.*) \((.*)\)/)
+        const min = rate.minDeliveryDays + 1
+        const max = rate.maxDeliveryDays + 2
+        return {
+          id: rate.id,
+          label,
+          detail: `${min}-${max} business days`,
+          amount: Number(rate.rate) * 100,
+          countries: [recipient.countryCode]
+        }
+      })
+      res.json(shipping)
     } else {
       res.json({ success: false })
     }

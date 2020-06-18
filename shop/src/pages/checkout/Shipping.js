@@ -73,7 +73,7 @@ const CheckoutShipping = () => {
       </div>
       <div className="checkout-payment-method">
         {unshippableItems.length ? (
-          <div>
+          <div className="p-3">
             {`Sorry, these items cannot be shipped to ${country}:`}
             <ul className="mt-2">
               {unshippableItems.map((item, idx) => (
@@ -82,9 +82,11 @@ const CheckoutShipping = () => {
             </ul>
           </div>
         ) : loading ? (
-          <div>Loading shipping costs...</div>
+          <div className="p-3">Loading shipping costs...</div>
         ) : !filteredShippingZones.length ? (
-          <div>Sorry, there was an error calculating shipping costs.</div>
+          <div className="p-3">
+            Sorry, there was an error calculating shipping costs.
+          </div>
         ) : (
           filteredShippingZones.map((zone) => (
             <label key={zone.id} className={`radio ${isActive(zone, cart)}`}>

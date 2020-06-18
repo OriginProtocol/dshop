@@ -1,43 +1,44 @@
 import { useEffect, useState } from 'react'
+import memoize from 'lodash/memoize'
 
 import { useStateValue } from 'data/state'
-
 import useConfig from 'utils/useConfig'
+import useBackendApi from 'utils/useBackendApi'
+
+const getProducts = memoize((url) => fetch(url).then((r) => r.json()))
 
 function useProducts() {
-  const [{ products, productIndex }, dispatch] = useStateValue()
+  const [{ products, productIndex, reload }, dispatch] = useStateValue()
   const { config } = useConfig()
+  const { get } = useBackendApi()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
 
-  useEffect(() => {
-    async function fetchProducts() {
-      setLoading(true)
-      try {
-        let products = []
-        if (config.isAffiliate) {
-          const raw = await fetch(`${config.backend}/affiliate/products`, {
-            headers: {
-              authorization: `bearer ${config.backendAuthToken}`
-            },
-            credentials: 'include'
-          })
-          products = await raw.json()
-        } else {
-          const raw = await fetch(`${config.dataSrc}products.json`)
-          products = await raw.json()
-        }
-        setLoading(false)
-        dispatch({ type: 'setProducts', products })
-      } catch (e) {
-        setLoading(false)
-        setError(true)
+  async function fetchProducts() {
+    setLoading(true)
+    try {
+      let products = []
+      if (config.isAffiliate) {
+        products = await get('/affiliate/products')
+      } else {
+        products = await getProducts(`${config.dataSrc}products.json`)
       }
+      dispatch({ type: 'setProducts', products })
+      setLoading(false)
+    } catch (e) {
+      setError(true)
+      setLoading(false)
     }
-    if (!products.length) {
+  }
+
+  useEffect(() => {
+    if (reload.products) {
+      getProducts.cache.clear()
+    }
+    if (config.dataSrc) {
       fetchProducts()
     }
-  }, [])
+  }, [config.dataSrc, reload.products])
 
   return { products, productIndex, loading, error }
 }

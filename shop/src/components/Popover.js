@@ -7,14 +7,20 @@ const Popover = ({
   children,
   className,
   onClose = () => {},
-  onOpen = () => {}
+  onOpen = () => {},
+  el = 'button',
+  contentClassName = 'popover bs-popover-bottom m-0',
+  shouldClose,
+  placement = 'bottom',
+  arrow = true
 }) => {
   const [open, setOpen] = useState(false)
   const [popper, setPopper] = useState()
 
   const btn = useRef()
   const popover = useRef()
-  const arrow = useRef()
+  const arrowRef = useRef()
+  const El = el
 
   useEffect(() => {
     const listener = (event) => {
@@ -39,13 +45,22 @@ const Popover = ({
 
   useEffect(() => {
     if (open) {
-      const instance = createPopper(btn.current, popover.current, {
-        placement: 'bottom',
-        modifiers: [
-          { name: 'offset', options: { offset: [0, 8] } },
-          { name: 'arrow', options: { element: arrow.current } }
-        ]
-      })
+      const modifiers = [
+        { name: 'offset', options: { offset: [0, 8] } },
+        {
+          enabled: true,
+          phase: 'beforeWrite',
+          fn: ({ state }) => {
+            state.styles.popper.visibility = 'visible'
+          }
+        }
+      ]
+      if (arrow) {
+        const options = { element: arrowRef.current }
+        modifiers.push({ name: 'arrow', options })
+      }
+      const opts = { placement, modifiers }
+      const instance = createPopper(btn.current, popover.current, opts)
       setPopper(instance)
     } else if (popper) {
       popper.destroy()
@@ -56,9 +71,16 @@ const Popover = ({
       }
     }
   }, [open, popover])
+
+  useEffect(() => {
+    if (shouldClose) {
+      setOpen(false)
+    }
+  }, [shouldClose])
+
   return (
     <>
-      <button
+      <El
         ref={btn}
         className={className}
         onClick={() => {
@@ -67,10 +89,14 @@ const Popover = ({
         }}
       >
         {button}
-      </button>
+      </El>
       {!open ? null : (
-        <div ref={popover} className="popover bs-popover-bottom m-0">
-          <div ref={arrow} className="arrow"></div>
+        <div
+          ref={popover}
+          className={contentClassName}
+          style={{ visibility: 'hidden' }}
+        >
+          {arrow ? <div ref={arrowRef} className="arrow" /> : null}
           {children}
         </div>
       )}
