@@ -63,10 +63,8 @@ const AdminDeployShop = ({ className = '', shop, buttonText = 'Deploy' }) => {
                   children="OK"
                 />
               </>
-            ) : state.activateBuild ? (
-              <ActivateBuild {...state} />
             ) : state.deployed ? (
-              <Deployed {...{ state, setState }} />
+              <Deployed {...{ state, setState, shop }} />
             ) : (
               <Deploy {...{ state, setState, admin, shop }} />
             )}
@@ -186,21 +184,12 @@ const Deploy = ({ state, setState, admin, shop }) => {
   )
 }
 
-const Deployed = ({ state, setState }) => (
+const Deployed = ({ state, setState, shop }) => (
   <>
     <div className="text-lg">Shop deployed!</div>
     <ShopReady {...state} actions={false} />
     {state.dnsProvider === 'unstoppable' ? (
-      <button
-        className="btn btn-secondary px-5"
-        onClick={() =>
-          setState({
-            activateBuild: state.hash
-          })
-        }
-      >
-        Set Unstoppable
-      </button>
+      <ActivateBuild {...state} shop={shop} ipfsHash={state.hash} />
     ) : null}
     <div className="actions mt-4">
       <button

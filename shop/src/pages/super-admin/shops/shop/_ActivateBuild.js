@@ -170,6 +170,14 @@ const ActivateBuild = ({ className = '', shop, ipfsHash }) => {
     state.hostname == 'new' ? state.newhostname : state.hostname
   )
 
+  const defaultDNSProvider = isUnstoppable
+    ? 'unstoppable'
+    : network.cloudflareEmail && !network.gcpCredentials
+    ? 'cloudflare'
+    : network.gcpCredentials && !network.cloudflareEmail
+    ? 'gcp'
+    : ''
+
   return (
     <>
       <button
@@ -226,7 +234,11 @@ const ActivateBuild = ({ className = '', shop, ipfsHash }) => {
                     <label>DNS Provider</label>
 
                     <select
-                      value={state.dnsProvider}
+                      value={
+                        state.dnsProvider
+                          ? state.dnsProvider
+                          : defaultDNSProvider
+                      }
                       onChange={(e) =>
                         setState({ dnsProvider: e.target.value })
                       }
@@ -234,22 +246,13 @@ const ActivateBuild = ({ className = '', shop, ipfsHash }) => {
                     >
                       <option value="">None</option>
                       {network.cloudflareEmail ? (
-                        <option
-                          value="cloudflare"
-                          selected={!network.gcpCredentials}
-                        >
-                          Cloudflare
-                        </option>
+                        <option value="cloudflare">Cloudflare</option>
                       ) : null}
                       {network.gcpCredentials ? (
-                        <option value="gcp" selected={!network.cloudflareEmail}>
-                          GCP DNS
-                        </option>
+                        <option value="gcp">GCP DNS</option>
                       ) : null}
                       {!isUnstoppable ? null : (
-                        <option value="unstoppable" selected={true}>
-                          Unstoppable Domains
-                        </option>
+                        <option value="unstoppable">Unstoppable Domains</option>
                       )}
                     </select>
                   </div>
@@ -260,7 +263,7 @@ const ActivateBuild = ({ className = '', shop, ipfsHash }) => {
                 <div className="form-row">
                   <div
                     className={
-                      state.feedbackClass ? state.feedbackClass : 'feedbac'
+                      state.feedbackClass ? state.feedbackClass : 'feedback'
                     }
                   >
                     {state.feedback}
