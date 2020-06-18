@@ -3,12 +3,14 @@ import { useRouteMatch, useHistory } from 'react-router'
 
 import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
+import flatMap from 'lodash/flatMap'
 
 import { useStateValue } from 'data/state'
 import useProduct from 'utils/useProduct'
 import useBackendApi from 'utils/useBackendApi'
 import useSetState from 'utils/useSetState'
 import { formInput, formFeedback } from 'utils/formHelpers'
+import { generateVariants } from 'utils/generateVariants'
 
 import fetchProduct from 'data/fetchProduct'
 import { Countries } from 'data/Countries'
@@ -16,6 +18,7 @@ import { Countries } from 'data/Countries'
 import ImagePicker from 'components/ImagePicker'
 import DeleteButton from './_Delete'
 import EditOption from './_EditOption'
+import EditVariants from './_EditVariants'
 
 import LinkCollections from './_LinkCollections'
 
@@ -32,6 +35,22 @@ const predefinedProcessingTimes = [
   { value: 'custom', label: 'Custom' },
   { value: 'unknown', label: 'Unknown' }
 ]
+
+const getAllCombinations = (array1, ...arrays) => {
+  const combinationsOf2Array = (a, b) => a
+    .reduce((combinations, v1) => [...combinations, ...b.map(v2 => flatMap([v1, v2]))], [])
+
+  if (arrays.length === 1) {
+    return combinationsOf2Array(array1, arrays[0])
+  } else if (arrays.length >= 2) {
+    return getAllCombinations(
+      array1, 
+      getAllCombinations(arrays[0], ...arrays.slice(1))
+    )
+  }
+
+  return array1
+}
 
 const removeErrorKeys = (obj) => {
   return {
@@ -148,8 +167,6 @@ const EditProduct = () => {
 
   const [media, setMedia] = useState([])
 
-  console.log(formState)
-
   useEffect(() => {
     if (product) {
       const newFormState = { ...product }
@@ -190,6 +207,11 @@ const EditProduct = () => {
           }
         )
       }
+
+      
+      // Regenerate variants
+      newFormState.variants = generateVariants(newFormState)
+      console.log({ ...newFormState})
 
       setMedia(mappedImages)
 
@@ -378,25 +400,29 @@ const EditProduct = () => {
                         options: formState.availableOptions[index]
                       }}
                       setFormState={(newState) => {
-                        const updatedOptions = [...formState.options]
-                        const updatedAvailableOptions = [
-                          ...formState.availableOptions
-                        ]
+                        const updatedState = {
+                          options: [...formState.options],
+                          availableOptions: [
+                            ...formState.availableOptions
+                          ],
+                        }
 
                         const keysToUpdate = Object.keys(newState)
 
                         if (keysToUpdate.includes('title')) {
-                          updatedOptions[index] = newState.title
+                          updatedState.options[index] = newState.title
                         }
 
                         if (keysToUpdate.includes('options')) {
-                          updatedAvailableOptions[index] = newState.options
+                          updatedState.availableOptions[index] = newState.options
+
+                          updatedState.variants = generateVariants({
+                            ...formState,
+                            ...updatedState
+                          })
                         }
 
-                        setFormState({
-                          options: updatedOptions,
-                          availableOptions: updatedAvailableOptions
-                        })
+                        setFormState(updatedState)
                       }}
                       onRemove={() => {
                         const options = [...formState.options]
@@ -424,6 +450,14 @@ const EditProduct = () => {
                     </button>
                   )}
                 </div>
+                <EditVariants 
+                  options={formState.options} 
+                  variants={formState.variants} 
+                  onChange={updatedVariants => {
+                    setFormState({
+                      variants: updatedVariants
+                    })
+                  }} />
               </>
             )}
 

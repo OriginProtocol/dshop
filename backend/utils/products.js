@@ -17,7 +17,9 @@ const validProductFields = [
   'images',
   'quantity',
   'sku',
-  'variants'
+  'variants',
+  'options',
+  'availableOptions'
 ]
 
 const minimalistProductFields = ['id', 'title', 'description', 'price', 'image']
