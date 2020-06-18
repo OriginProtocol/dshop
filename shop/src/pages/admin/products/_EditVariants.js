@@ -27,7 +27,7 @@ const EditVariants = ({ options, variants, media, onChange }) => {
                 <div className="form-check m-0">
                   <input
                     type="checkbox"
-                    checked={variant.available}
+                    checked={variant.available || false}
                     onChange={(e) => {
                       const updatedVariants = [...variants]
                       updatedVariants[index].available = e.target.checked

@@ -6,6 +6,10 @@ const SelectVariantImage = ({ selection, media, onChange }) => {
   const [showModal, setShowModal] = useState(false)
   const [shouldClose, setShouldClose] = useState(false)
 
+  if (!selection) {
+    return <div>No images</div>
+  }
+
   return (
     <>
       <div
@@ -83,7 +87,7 @@ require('react-styl')(`
         display: flex
         flex-wrap: wrap
         margin-top: 1rem
-        img 
+        img
           margin-right: 10px
           margin-bottom: 10px
           cursor: pointer
@@ -101,7 +105,7 @@ require('react-styl')(`
       align-items: center
       justify-content: center
 
-    img 
+    img
       width: 50px
       height: 50px
       object-fit: contain
