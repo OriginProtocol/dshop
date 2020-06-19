@@ -8,7 +8,7 @@ import useConfig from 'utils/useConfig'
 import Caret from 'components/icons/Caret'
 import Popover from 'components/Popover'
 
-const ShopsDropdown = ({ onNewShop }) => {
+const ShopsDropdown = ({ onNewShop, pathname = '/admin', forceTitle }) => {
   const [shouldClose, setShouldClose] = useState(0)
   const { config, setDataSrc } = useConfig()
   const [{ admin }, dispatch] = useStateValue()
@@ -27,7 +27,11 @@ const ShopsDropdown = ({ onNewShop }) => {
       shouldClose={shouldClose}
       button={
         <>
-          {logo ? <img src={logo} className={isSVG} /> : config.title}
+          {logo && !forceTitle ? (
+            <img src={logo} className={isSVG} />
+          ) : (
+            config.fullTitle
+          )}
           <Caret />
         </>
       }
@@ -43,11 +47,13 @@ const ShopsDropdown = ({ onNewShop }) => {
               if (localStorage.activeShop === shop.authToken) return
               localStorage.activeShop = shop.authToken
               setDataSrc(`${shop.authToken}/`)
-              dispatch({ type: 'reset', dataDir: shop.authToken })
               history.push({
-                pathname: `/admin`,
+                pathname,
                 state: { scrollToTop: true }
               })
+              setTimeout(() => {
+                dispatch({ type: 'reset', dataDir: shop.authToken })
+              }, 50)
               setShouldClose(shouldClose + 1)
             }}
           >
@@ -88,12 +94,17 @@ export default ShopsDropdown
 
 require('react-styl')(`
   .shop-title
+    max-width: 14rem
+    cursor: pointer
     .icon.icon-caret
       fill: #3b80ee
       margin-left: 0.75rem
+    img
+      width: 85%
 
   .shops-dropdown
     position: absolute
+    color: #000
     z-index: 1
     min-width: 250px
     border-radius: 10px

@@ -15,10 +15,15 @@ import { useStateValue } from 'data/state'
 const App = ({ location, config }) => {
   const history = useHistory()
   const [passwordLoading, setPasswordLoading] = useState(false)
-  const [{ affiliate, passwordAuthed }, dispatch] = useStateValue()
+  const [, setReset] = useState(false)
+  const [{ affiliate, passwordAuthed, resetBit }, dispatch] = useStateValue()
   const q = queryString.parse(location.search)
   const isAdmin = location.pathname.indexOf('/admin') === 0
   const isOrder = location.pathname.indexOf('/order') === 0
+
+  useEffect(() => {
+    setReset(resetBit)
+  }, [resetBit])
 
   // Redirect to HTTPS if URL is not local
   useEffect(() => {
@@ -70,9 +75,15 @@ const App = ({ location, config }) => {
   // Add custom CSS
   useEffect(() => {
     if (config && config.css) {
-      const css = document.createElement('style')
-      css.appendChild(document.createTextNode(config.css))
-      document.head.appendChild(css)
+      const existingCss = document.querySelector('#custom-css')
+      if (existingCss) {
+        existingCss.textContent = config.css
+      } else {
+        const css = document.createElement('style')
+        css.id = 'custom-css'
+        css.appendChild(document.createTextNode(config.css))
+        document.head.appendChild(css)
+      }
     }
     if (config && config.favicon) {
       const favicon = document.querySelector('link[rel="icon"]')
@@ -81,7 +92,7 @@ const App = ({ location, config }) => {
     if (document.title === 'TITLE') {
       document.title = 'Origin Dshop'
     }
-  }, [config])
+  }, [config, resetBit])
 
   if (passwordLoading) {
     return null

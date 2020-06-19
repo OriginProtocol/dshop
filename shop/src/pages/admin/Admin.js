@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { Redirect, Switch, Route } from 'react-router-dom'
+import { Link, Redirect, Switch, Route } from 'react-router-dom'
 import 'components/admin/Styles'
+import _get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 import useBackendApi from 'utils/useBackendApi'
+import useAuth from 'utils/useAuth'
 
 import * as Icons from 'components/icons/Admin'
 import Login from 'components/admin/Login'
@@ -25,22 +27,9 @@ import NewShop from './_NewShop'
 import PublishChanges from './_PublishChanges'
 
 const Admin = () => {
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState()
+  const { loading, error } = useAuth()
   const [newShop, setNewShop] = useState()
-  const { get } = useBackendApi({ authToken: true })
-  const [{ admin, reload }, dispatch] = useStateValue()
-
-  useEffect(() => {
-    get('/auth')
-      .then((auth) => {
-        dispatch({ type: 'setAuth', auth })
-        setLoading(false)
-      })
-      .catch(() => {
-        setError(true)
-      })
-  }, [reload.auth])
+  const [{ admin }] = useStateValue()
 
   if (error) {
     return <div className="fixed-loader">Admin Connection Error</div>
@@ -61,6 +50,9 @@ const Admin = () => {
             <AccountSelector onNewShop={() => setNewShop(true)} />
             <NewShop shouldShow={newShop} onClose={() => setNewShop(false)} />
           </h1>
+          <div className="nav-preview">
+            <Link to="/">Storefront</Link>
+          </div>
           <div className="user">
             <Icons.User />
             {admin.email}
@@ -95,3 +87,10 @@ const Admin = () => {
 }
 
 export default Admin
+
+require('react-styl')(`
+  .nav-preview
+    margin-right: 2rem
+    font-size: 14px
+    vertical-align: 3px
+`)
