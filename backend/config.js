@@ -7,7 +7,7 @@ const { PROVIDER, NETWORK_ID } = require('./utils/const')
 const Defaults = {
   '999': {
     ipfsGateway: 'http://localhost:8080',
-    ipfsApi: 'http://localhost:5002',
+    ipfsApi: `http://localhost:${process.env.IPFS_API_PORT || 5002}`,
     provider: 'http://localhost:8545',
     providerWs: 'ws://localhost:8545',
     marketplaceContract: process.env.MARKETPLACE_CONTRACT

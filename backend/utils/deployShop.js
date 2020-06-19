@@ -3,7 +3,7 @@ const ipfsClient = require('ipfs-http-client')
 const fs = require('fs')
 const { execFile } = require('child_process')
 
-const { ShopDeployment } = require('../models')
+const { ShopDeployment, ShopDeploymentName } = require('../models')
 
 const { getConfig } = require('./encryptedConfig')
 const prime = require('./primeIpfs')
@@ -40,6 +40,51 @@ function urlToMultiaddr(v, opts) {
     0,
     -1
   )}${url.pathname}`
+}
+
+async function configureShopDNS({
+  network,
+  subdomain,
+  zone,
+  hash,
+  dnsProvider
+}) {
+  const networkConfig = getConfig(network.config)
+
+  if (dnsProvider === 'cloudflare') {
+    if (!networkConfig.cloudflareApiKey) {
+      console.warn(
+        'Cloudflare DNS Proider selected but no credentials configured!'
+      )
+    } else {
+      await setCloudflareRecords({
+        ipfsGateway: 'ipfs-prod.ogn.app',
+        zone,
+        subdomain,
+        hash,
+        email: networkConfig.cloudflareEmail,
+        key: networkConfig.cloudflareApiKey
+      })
+    }
+  }
+
+  if (dnsProvider === 'gcp') {
+    if (!networkConfig.gcpCredentials) {
+      console.warn('GCP DNS Proider selected but no credentials configured!')
+    } else {
+      await setCloudDNSRecords({
+        ipfsGateway: 'ipfs-prod.ogn.app',
+        zone,
+        subdomain,
+        hash,
+        credentials: networkConfig.gcpCredentials
+      })
+    }
+  }
+
+  if (!['cloudflare', 'gcp'].includes(dnsProvider)) {
+    console.error('Unknown DNS provider selected.  Will not configure DNS')
+  }
 }
 
 async function deployShop({
@@ -154,15 +199,15 @@ async function deployShop({
     if (!hash) {
       throw new Error('ipfs-errir')
     }
-    console.log(`Deployed shop on Pinata. Hash=${hash}`)
-    if (networkConfig.ipfsGateway) {
-      await prime(`${networkConfig.ipfsGateway}/ipfs/${hash}`, publicDirPath)
-    }
+    console.log(`Deployed shop on ${pinner}. Hash=${hash}`)
+    await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
+    await prime(`https://ipfs-prod.ogn.app/ipfs/${hash}`, publicDirPath)
     if (networkConfig.pinataKey) {
       await prime(`https://gateway.pinata.cloud/ipfs/${hash}`, publicDirPath)
     }
-    await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
-    await prime(`https://ipfs-prod.ogn.app/ipfs/${hash}`, publicDirPath)
+    if (networkConfig.ipfsGateway) {
+      await prime(`${networkConfig.ipfsGateway}/ipfs/${hash}`, publicDirPath)
+    }
   } else if (network.ipfsApi.indexOf('localhost') > 0) {
     ipfsGateway = network.ipfs
     const ipfs = ipfsClient(network.ipfsApi)
@@ -179,25 +224,10 @@ async function deployShop({
     )
   }
 
-  const domain = dnsProvider ? `https://${subdomain}.${zone}` : null
-  if (dnsProvider === 'cloudflare' && networkConfig.cloudflareApiKey) {
-    await setCloudflareRecords({
-      ipfsGateway: 'ipfs-prod.ogn.app',
-      zone,
-      subdomain,
-      hash,
-      email: networkConfig.cloudflareEmail,
-      key: networkConfig.cloudflareApiKey
-    })
-  }
-  if (dnsProvider === 'gcp' && networkConfig.gcpCredentials) {
-    await setCloudDNSRecords({
-      ipfsGateway: 'ipfs-prod.ogn.app',
-      zone,
-      subdomain,
-      hash,
-      credentials: networkConfig.gcpCredentials
-    })
+  let domain
+  if (subdomain) {
+    domain = dnsProvider ? `https://${subdomain}.${zone}` : null
+    await configureShopDNS({ network, subdomain, zone, hash, dnsProvider })
   }
 
   if (hash) {
@@ -209,6 +239,13 @@ async function deployShop({
       ipfsHash: hash
     })
 
+    if (subdomain) {
+      await ShopDeploymentName.create({
+        ipfsHash: hash,
+        hostname: `${subdomain}.${zone}`
+      })
+    }
+
     console.log(
       `Recorded shop deployment in the DB. id=${deployment.id} domain=${domain} ipfs=${ipfsGateway} hash=${hash}`
     )
@@ -217,4 +254,4 @@ async function deployShop({
   return { hash, domain }
 }
 
-module.exports = { deployShop }
+module.exports = { configureShopDNS, deployShop }

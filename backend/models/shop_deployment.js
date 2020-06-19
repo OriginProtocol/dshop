@@ -3,6 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     'ShopDeployment',
     {
       shopId: DataTypes.INTEGER,
+      // Depreciated.  should be added to shop_deployment_names
       domain: DataTypes.STRING,
       ipfsGateway: DataTypes.STRING,
       ipfsHash: DataTypes.STRING
@@ -17,6 +18,12 @@ module.exports = (sequelize, DataTypes) => {
     ShopDeployment.belongsTo(models.Shop, {
       as: 'shopDeployments',
       foreignKey: 'shopId'
+    })
+    ShopDeployment.hasMany(models.ShopDeploymentName, {
+      as: 'names',
+      foreignKey: 'ipfsHash',
+      sourceKey: 'ipfsHash',
+      onDelete: 'cascade'
     })
   }
 
