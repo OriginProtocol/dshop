@@ -5,7 +5,11 @@ const memoize = require('lodash/memoize')
 
 require('dotenv').config()
 const config = require('../config')
+const { getLogger } = require('../utils/logger')
+
 const { DATA_URL, IPFS_GATEWAY } = require('./const')
+
+const log = getLogger('utils.handleLog')
 
 /**
  * Resolve an IPFS gateway from whatever's available.  Either a provided config
@@ -174,7 +178,7 @@ async function getTextFn(gateway, hashAsBytes, timeoutMS) {
           reject(error)
         }
       })
-    if (didTimeOut) console.log(`Timeout when fetching ${hash}`)
+    if (didTimeOut) log.warn(`Timeout when fetching ${hash}`)
   })
   if (!response) {
     return '{}'

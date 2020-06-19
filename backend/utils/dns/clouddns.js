@@ -4,6 +4,10 @@
 
 const { DNS } = require('@google-cloud/dns')
 
+const { getLogger } = require('../utils/logger')
+
+const log = getLogger('utils.dns.clouddns')
+
 let CACHED_CLIENT
 const DEFAULT_TTL = 300 // 5 minutes
 
@@ -163,7 +167,7 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
   const zoneObj = await getZone(zone)
 
   if (!zoneObj || !(await zoneObj.exists())) {
-    console.error(`Zone ${zone} not found.`)
+    log.error(`Zone ${zone} not found.`)
     return
   }
 

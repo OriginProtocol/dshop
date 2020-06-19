@@ -23,11 +23,14 @@ const mv = require('mv')
 
 const { deployShop } = require('../utils/deployShop')
 const { DSHOP_CACHE } = require('../utils/const')
+const { getLogger } = require('../utils/logger')
 
 const downloadProductData = require('../scripts/printful/downloadProductData')
 const downloadPrintfulMockups = require('../scripts/printful/downloadPrintfulMockups')
 const resizePrintfulMockups = require('../scripts/printful/resizePrintfulMockups')
 const writeProductData = require('../scripts/printful/writeProductData')
+
+const log = getLogger('routes.shops')
 
 module.exports = function (app) {
   app.get(
@@ -172,7 +175,7 @@ module.exports = function (app) {
     const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
 
     fs.mkdirSync(OutputDir, { recursive: true })
-    console.log(`Downloading ${req.body.hash} from ${network.ipfsApi}`)
+    log.info(`Downloading ${req.body.hash} from ${network.ipfsApi}`)
     const path = `/api/v0/get?arg=${req.body.hash}&archive=true&compress=true`
 
     await new Promise((resolve) => {
@@ -314,7 +317,7 @@ module.exports = function (app) {
       try {
         defaultShopConfig = JSON.parse(networkConfig.defaultShopConfig)
       } catch (e) {
-        console.log('Error parsing default shop config')
+        log.error('Error parsing default shop config')
       }
     }
     const pgpKeys = await genPGP()
@@ -339,25 +342,25 @@ module.exports = function (app) {
     })
 
     if (!shopResponse.shop) {
-      console.log(`Error creating shop: ${shopResponse.error}`)
+      log.error(`Error creating shop: ${shopResponse.error}`)
       return res
         .status(400)
         .json({ success: false, message: 'Invalid shop data' })
     }
 
     const shopId = shopResponse.shop.id
-    console.log(`Created shop ${shopId}`)
+    log.info(`Created shop ${shopId}`)
 
     const role = 'admin'
     await SellerShop.create({ sellerId: req.session.sellerId, shopId, role })
-    console.log(`Added role OK`)
+    log.info(`Added role OK`)
 
     if (shopType === 'blank' || shopType === 'local-dir') {
       return res.json({ success: true })
     }
 
     fs.mkdirSync(OutputDir, { recursive: true })
-    console.log(`Outputting to ${OutputDir}`)
+    log.info(`Outputting to ${OutputDir}`)
 
     if (shopType === 'printful' && printfulApi) {
       await downloadProductData({ OutputDir, printfulApi })
@@ -373,7 +376,7 @@ module.exports = function (app) {
       shopConfig = JSON.parse(config)
     }
 
-    console.log(`Shop type: ${shopType}`)
+    log.info(`Shop type: ${shopType}`)
     const allowedTypes = [
       'single-product',
       'multi-product',
@@ -460,7 +463,7 @@ module.exports = function (app) {
           }
           res.json({ fields, files })
         } catch (e) {
-          console.log(e)
+          log.error(e)
           res.json({ success: false })
         }
       })
@@ -514,7 +517,7 @@ module.exports = function (app) {
 
           res.json({ success: true, path: file.name })
         } catch (e) {
-          console.log(e)
+          log.error(e)
           res.json({ success: false })
         }
       })
@@ -577,7 +580,7 @@ module.exports = function (app) {
           res.json({ success: true })
         })
         .catch((err) => {
-          console.error(err)
+          log.error(err)
           next(err)
         })
     }

@@ -4,12 +4,14 @@ const fs = require('fs')
 const { execFile } = require('child_process')
 
 const { ShopDeployment } = require('../models')
+const { getLogger } = require('../utils/logger')
 
 const { getConfig } = require('./encryptedConfig')
 const prime = require('./primeIpfs')
 const setCloudflareRecords = require('./dns/cloudflare')
 const setCloudDNSRecords = require('./dns/clouddns')
 
+const log = getLogger('utils.handleLog')
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 /**
@@ -116,7 +118,7 @@ async function deployShop({
     const maddr = urlToMultiaddr(network.ipfsApi, {
       translateLocalhostPort: 9094
     })
-    console.log(`Connecting to cluster ${maddr}`)
+    log.info(`Connecting to cluster ${maddr}`)
     ipfsDeployCredentials['ipfsCluster'] = {
       host: maddr,
       username: networkConfig.ipfsClusterUser || 'dshop',
@@ -154,7 +156,7 @@ async function deployShop({
     if (!hash) {
       throw new Error('ipfs-errir')
     }
-    console.log(`Deployed shop on Pinata. Hash=${hash}`)
+    log.info(`Deployed shop on Pinata. Hash=${hash}`)
     if (networkConfig.ipfsGateway) {
       await prime(`${networkConfig.ipfsGateway}/ipfs/${hash}`, publicDirPath)
     }
@@ -172,9 +174,9 @@ async function deployShop({
       allFiles.push(file)
     }
     hash = String(allFiles[allFiles.length - 1].cid)
-    console.log(`Deployed shop on local IPFS. Hash=${hash}`)
+    log.info(`Deployed shop on local IPFS. Hash=${hash}`)
   } else {
-    console.log(
+    log.warn(
       'Shop not deployed to IPFS: Pinner service not configured and not a dev environment.'
     )
   }
@@ -209,7 +211,7 @@ async function deployShop({
       ipfsHash: hash
     })
 
-    console.log(
+    log.info(
       `Recorded shop deployment in the DB. id=${deployment.id} domain=${domain} ipfs=${ipfsGateway} hash=${hash}`
     )
   }

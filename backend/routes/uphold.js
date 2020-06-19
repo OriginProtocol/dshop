@@ -1,10 +1,15 @@
 const fetch = require('node-fetch')
-const { authShop } = require('./_auth')
-const { getConfig } = require('../utils/encryptedConfig')
-const makeOffer = require('./_makeOffer')
-const { Shop } = require('../models')
 const sortBy = require('lodash/sortBy')
 const get = require('lodash/get')
+
+const { Shop } = require('../models')
+const { getConfig } = require('../utils/encryptedConfig')
+const { getLogger } = require('../utils/logger')
+
+const { authShop } = require('./_auth')
+const makeOffer = require('./_makeOffer')
+
+const log = getLogger('routes.uphold')
 
 const UpholdEndpoints = {
   production: {
@@ -56,27 +61,27 @@ module.exports = function (app) {
     const { upholdAuth } = req.session
     const { code, state } = req.query
     if (!upholdAuth) {
-      console.log('No upholdAuth in session')
+      log.error('No upholdAuth in session')
       res.send(`<script>window.opener.postMessage('error', '*')</script>Err`)
       return
     }
 
     if (state !== String(upholdAuth.state)) {
-      console.log('Incorrect upholdAuth state', state, upholdAuth.state)
+      log.error('Incorrect upholdAuth state', state, upholdAuth.state)
       res.send(`<script>window.opener.postMessage('error', '*')</script>Err`)
       return
     }
 
     const shop = await Shop.findOne({ where: { id: upholdAuth.shop } })
     if (!shop) {
-      console.log('No shop')
+      log.error('No shop')
       res.send(`<script>window.opener.postMessage('error', '*')</script>Err`)
       return
     }
     const shopConfig = getConfig(shop.config)
     const apiEndpoint = get(UpholdEndpoints, `[${shopConfig.upholdApi}].api`)
     if (!apiEndpoint) {
-      console.log('Uphold not configured')
+      log.error('Uphold not configured')
       res.send(`<script>window.opener.postMessage('error', '*')</script>Err`)
     }
 
@@ -107,7 +112,7 @@ module.exports = function (app) {
       return res.json({ success: false, message: 'Uphold not configured' })
     }
     const authToken = req.session.upholdAccessToken
-    // console.log('Token', authToken)
+    // log.debug('Token', authToken)
     if (!authToken) {
       return res.json({ success: false })
     }
@@ -177,7 +182,7 @@ module.exports = function (app) {
       })
 
       const json = await response.json()
-      // console.log(JSON.stringify(json, null, 2))
+      // log.debug(JSON.stringify(json, null, 2))
 
       if (json.errors) {
         return res.json({ error: 'Error' })

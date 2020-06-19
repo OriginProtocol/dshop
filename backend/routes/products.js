@@ -5,6 +5,9 @@ const path = require('path')
 const { authSellerAndShop, authRole } = require('./_auth')
 const { upsertProduct, deleteProduct } = require('../utils/products')
 const { DSHOP_CACHE } = require('../utils/const')
+const { getLogger } = require('../utils/logger')
+
+const log = getLogger('routes.products')
 
 module.exports = function (app) {
   app.post(
@@ -62,7 +65,7 @@ module.exports = function (app) {
         form.parse(req, async (err, fields, files) => {
           if (err) {
             // next(err)
-            console.error(err)
+            log.error(err)
             return res.status(500).send({
               reason: 'Upload failed'
             })
@@ -79,7 +82,7 @@ module.exports = function (app) {
           })
         })
       } catch (err) {
-        console.error(err)
+        log.error(err)
         res.status(500).send({
           reason: 'Some unknown error occured'
         })
