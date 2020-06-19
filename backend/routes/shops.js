@@ -764,10 +764,9 @@ module.exports = function (app) {
           ipfsHash,
           hostname: fqn
         })
-        return res.json({ success: true, ipfsHash, names: hostnames })
       }
 
-      return res.status(500).json({ success: false })
+      return res.json({ success: true, ipfsHash, names: hostnames })
     }
   )
 }
