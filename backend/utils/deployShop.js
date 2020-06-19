@@ -51,24 +51,39 @@ async function configureShopDNS({
 }) {
   const networkConfig = getConfig(network.config)
 
-  if (dnsProvider === 'cloudflare' && networkConfig.cloudflareApiKey) {
-    await setCloudflareRecords({
-      ipfsGateway: 'ipfs-prod.ogn.app',
-      zone,
-      subdomain,
-      hash,
-      email: networkConfig.cloudflareEmail,
-      key: networkConfig.cloudflareApiKey
-    })
+  if (dnsProvider === 'cloudflare') {
+    if (!networkConfig.cloudflareApiKey) {
+      console.warn(
+        'Cloudflare DNS Proider selected but no credentials configured!'
+      )
+    } else {
+      await setCloudflareRecords({
+        ipfsGateway: 'ipfs-prod.ogn.app',
+        zone,
+        subdomain,
+        hash,
+        email: networkConfig.cloudflareEmail,
+        key: networkConfig.cloudflareApiKey
+      })
+    }
   }
-  if (dnsProvider === 'gcp' && networkConfig.gcpCredentials) {
-    await setCloudDNSRecords({
-      ipfsGateway: 'ipfs-prod.ogn.app',
-      zone,
-      subdomain,
-      hash,
-      credentials: networkConfig.gcpCredentials
-    })
+
+  if (dnsProvider === 'gcp') {
+    if (!networkConfig.gcpCredentials) {
+      console.warn('GCP DNS Proider selected but no credentials configured!')
+    } else {
+      await setCloudDNSRecords({
+        ipfsGateway: 'ipfs-prod.ogn.app',
+        zone,
+        subdomain,
+        hash,
+        credentials: networkConfig.gcpCredentials
+      })
+    }
+  }
+
+  if (!['cloudflare', 'gcp'].includes(dnsProvider)) {
+    console.error('Unknown DNS provider selected.  Will not configure DNS')
   }
 }
 

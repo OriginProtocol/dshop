@@ -1,5 +1,5 @@
-const UNSOPPABLE_TLDS = ['crypto']
-const CRYPTO_DOMAINS = [...UNSOPPABLE_TLDS]
+const UNSTOPPABLE_TLDS = ['crypto']
+const CRYPTO_DOMAINS = [...UNSTOPPABLE_TLDS]
 
 /**
  * Is the given hostname a crypto name?
@@ -22,7 +22,7 @@ function isCryptoName(v, tlds = CRYPTO_DOMAINS) {
  * @returns {boolean} - if the given name is a crypto domain
  */
 function isUnsoppableName(v) {
-  return isCryptoName(v, UNSOPPABLE_TLDS)
+  return isCryptoName(v, UNSTOPPABLE_TLDS)
 }
 
 /**
