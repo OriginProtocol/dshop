@@ -4,7 +4,8 @@ const {
   Shop,
   SellerShop,
   Network,
-  ShopDeployment
+  ShopDeployment,
+  ShopDeploymentName
 } = require('../models')
 const { authSellerAndShop, authRole, authSuperUser } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
@@ -21,8 +22,9 @@ const https = require('https')
 const http = require('http')
 const mv = require('mv')
 
-const { deployShop } = require('../utils/deployShop')
+const { configureShopDNS, deployShop } = require('../utils/deployShop')
 const { DSHOP_CACHE } = require('../utils/const')
+const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
 
 const downloadProductData = require('../scripts/printful/downloadProductData')
@@ -613,4 +615,140 @@ module.exports = function (app) {
       res.json({ success: false, reason: err.toString() })
     }
   })
+
+  /**
+   * Create a shop deployment record
+   */
+  app.post(
+    '/shops/:shopId/create-deployment',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      // Only used for testing
+      if (process.env.NODE_ENV !== 'test') {
+        return res.status(404).json({ success: false })
+      }
+
+      const shopId = req.shop.id
+      const { ipfsHash, ipfsGateway } = req.body
+
+      let deployment = await ShopDeployment.findOne({
+        where: {
+          shopId: shopId,
+          ipfsHash
+        },
+        order: [['createdAt', 'desc']]
+      })
+
+      if (deployment) {
+        return res
+          .status(400)
+          .json({ success: false, message: 'Deployment exists' })
+      }
+
+      deployment = await ShopDeployment.create({
+        shopId: shopId,
+        ipfsGateway,
+        ipfsHash
+      })
+
+      return res.status(200).json({ success: true, deployment })
+    }
+  )
+
+  /**
+   * Get names (DNS names, crypto names, etc) for a shop
+   */
+  app.get(
+    '/shops/:shopId/get-names',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const names = await ShopDeploymentName.findAll({
+        include: [
+          {
+            model: ShopDeployment,
+            as: 'shopDeployments',
+            where: {
+              shopId: req.shop.id
+            }
+          }
+        ],
+        order: [['createdAt', 'desc']]
+      })
+
+      if (!names) {
+        return res.status(404).json({ success: false })
+      }
+
+      return res.json({
+        success: true,
+        names: names.reduce((acc, nam) => {
+          if (!acc.includes(nam.hostname)) {
+            acc.push(nam.hostname)
+          }
+          return acc
+        }, [])
+      })
+    }
+  )
+
+  /**
+   * Set names (DNS names, crypto names, etc) for a shop deployment
+   */
+  app.post(
+    '/shops/:shopId/set-names',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const { ipfsHash, hostnames, dnsProvider } = req.body
+
+      if (!ipfsHash || !hostnames) {
+        return res.status(400).json({ success: false })
+      }
+
+      const deployment = await ShopDeployment.findOne({
+        where: {
+          shopId: req.shop.id,
+          ipfsHash
+        },
+        order: [['createdAt', 'desc']]
+      })
+
+      if (!deployment) {
+        return res.status(404).json({ success: false })
+      }
+
+      for (const fqn of hostnames) {
+        const parts = fqn.split('.')
+        const hostname = parts.shift()
+        const zone = parts.join('.')
+        if (isPublicDNSName(fqn)) {
+          if (!dnsProvider) {
+            return res.status(400).json({
+              success: false,
+              message: `No DNS provider selected for public DNS name ${fqn}`
+            })
+          }
+
+          const network = await Network.findOne({ where: { active: true } })
+          await configureShopDNS({
+            network,
+            subdomain: hostname,
+            hostname: zone,
+            hash: ipfsHash,
+            dnsProvider
+          })
+        }
+
+        log.info(`Adding ${fqn} association to ${ipfsHash}`)
+        await ShopDeploymentName.create({
+          ipfsHash,
+          hostname: fqn
+        })
+      }
+
+      return res.json({ success: true, ipfsHash, names: hostnames })
+    }
+  )
 }

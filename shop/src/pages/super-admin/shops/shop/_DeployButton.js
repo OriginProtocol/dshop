@@ -10,6 +10,7 @@ import { NetworksById } from 'data/Networks'
 import Modal from 'components/Modal'
 
 import ShopReady from '../new-shop/ShopReady'
+import ActivateBuild from './_ActivateBuild'
 
 const AdminDeployShop = ({ className = '', shop, buttonText = 'Deploy' }) => {
   const [{ admin }, dispatch] = useStateValue()
@@ -63,7 +64,7 @@ const AdminDeployShop = ({ className = '', shop, buttonText = 'Deploy' }) => {
                 />
               </>
             ) : state.deployed ? (
-              <Deployed {...{ state, setState }} />
+              <Deployed {...{ state, setState, shop }} />
             ) : (
               <Deploy {...{ state, setState, admin, shop }} />
             )}
@@ -147,6 +148,7 @@ const Deploy = ({ state, setState, admin, shop }) => {
                     {network.gcpCredentials ? (
                       <option value="gcp">GCP DNS</option>
                     ) : null}
+                    <option value="unstoppable">Unstoppable Domains</option>
                   </select>
                 </div>
                 {state.dnsProvider !== 'cloudflare' ? null : (
@@ -182,10 +184,13 @@ const Deploy = ({ state, setState, admin, shop }) => {
   )
 }
 
-const Deployed = ({ state, setState }) => (
+const Deployed = ({ state, setState, shop }) => (
   <>
     <div className="text-lg">Shop deployed!</div>
     <ShopReady {...state} actions={false} />
+    {state.dnsProvider === 'unstoppable' ? (
+      <ActivateBuild {...state} shop={shop} ipfsHash={state.hash} />
+    ) : null}
     <div className="actions mt-4">
       <button
         className="btn btn-primary px-5"
