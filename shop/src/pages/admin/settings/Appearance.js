@@ -1,5 +1,7 @@
-import React, { useReducer, useEffect } from 'react'
+import React, { useReducer, useEffect, useState } from 'react'
 import get from 'lodash/get'
+import pick from 'lodash/pick'
+import pickBy from 'lodash/pickBy'
 
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
@@ -15,41 +17,81 @@ function reducer(state, newState) {
   return { ...state, ...newState }
 }
 
+const socialLinkKeys = ['facebook', 'twitter', 'instagram', 'medium', 'youtube']
+
 const ShopAppearance = () => {
   const { config } = useConfig()
   const { shopConfig } = useShopConfig()
-  const { postRaw } = useBackendApi({ authToken: true })
+  const { postRaw, post } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, {
     domain: ''
   })
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
 
+  const [saving, setSaving] = useState(false)
+
   useEffect(() => {
     setState({
       title: get(config, 'fullTitle'),
+      aboutStore: get(shopConfig, 'aboutStore'),
       domain: get(shopConfig, 'domain'),
       logo: get(config, 'logo'),
-      favicon: get(config, 'favicon')
+      favicon: get(config, 'favicon'),
+      ...(socialLinkKeys.reduce((socialLinks, key) => ({ ...socialLinks, [key]: get(config, key, '') }), {})),
     })
   }, [shopConfig, config])
 
   return (
-    <>
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault()
+
+        if (saving) return
+
+        setSaving('saving')
+
+        try {
+          await post('/config', {
+            method: 'POST',
+            body: JSON.stringify(pickBy(state, (v, k) => !k.endsWith('Error') && !socialLinkKeys.includes(k)))
+          })
+  
+          const hasChange = socialLinkKeys.some(s => get(state, s, '') !== get(config, s, ''))
+  
+          if (hasChange) {
+            await post('/shop/social-links', {
+              method: 'PUT',
+              body: JSON.stringify(pick(state, socialLinkKeys))
+            })
+          }
+  
+          setSaving('ok')
+          setTimeout(() => setSaving(null), 3000)
+        } catch (err) {
+          console.error(err)
+          setSaving(false)
+        }
+      }}
+    >
       <h3 className="admin-title with-actions">
         Settings
         <div className="actions ml-auto">
           <button type="submit" className="btn btn-outline-primary mr-2">
             Cancel
           </button>
-          <button type="submit" className="btn btn-primary">
-            Update
+          <button type="submit" className="btn btn-primary" disabled={saving}>
+            {saving === 'saving'
+              ? 'Updating...'
+              : saving === 'ok'
+              ? 'Updated ✅'
+              : 'Update'}
           </button>
         </div>
       </h3>
       <Tabs />
       <div className="row mt-4">
-        <form className="shop-settings col-md-8 col-lg-9">
+        <div className="shop-settings col-md-8 col-lg-9">
           <div className="form-group">
             <label>Store Name</label>
             <input {...input('title')} />
@@ -131,14 +173,14 @@ const ShopAppearance = () => {
                 (visible on your About page to buyers browsing your store)
               </span>
             </label>
-            <textarea className="form-control" style={{ minHeight: '20vh' }} />
+            <textarea style={{ minHeight: '20vh' }} {...input('aboutStore')} />
           </div>
-        </form>
+        </div>
         <div className="col-lg-3 col-md-4">
-          <SocialLinks />
+          <SocialLinks socialLinks={state} setSocialLinks={setState} />
         </div>
       </div>
-    </>
+    </form>
   )
 }
 

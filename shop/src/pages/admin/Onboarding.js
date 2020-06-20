@@ -2,52 +2,59 @@ import React from 'react'
 import { useHistory } from 'react-router-dom'
 
 import useConfig from 'utils/useConfig'
+import useShopConfig from 'utils/useShopConfig'
 import useProducts from 'utils/useProducts'
 
-const AdminHome = () => {
+import * as Icons from 'components/icons/Admin'
+
+const Onboarding = () => {
   const { config } = useConfig()
+  const { shopConfig } = useShopConfig()
   const { products } = useProducts()
   const history = useHistory()
+
+  const hasSocialLinks = !!(config && (config.facebook || config.twitter || config.instagram || config.medium || config.youtube))
 
   const tasks = [
     {
       id: 'new_product',
-      completed: products.length ? true : false,
-      icon: '/images/new-shop/box.svg',
+      completed: !!(products && products.length > 0),
+      icon: <Icons.Box />,
       name: 'Add your first product',
       link: '/admin/products/new'
     },
     {
       id: 'custom_domain',
-      completed: false,
-      icon: '/images/new-shop/globe.svg',
+      completed: !!(shopConfig && shopConfig.domain),
+      icon: <Icons.Globe />,
       name: 'Add a custom domain name',
       link: '/admin/settings'
     },
     {
       id: 'store_logo',
-      completed: config.logo ? true : false,
-      icon: '/images/new-shop/photo.svg',
+      completed: !!(config && config.logo) && !!(config && config.favicon),
+      icon: <Icons.Photo />,
       name: 'Add a store logo and favicon',
       link: '/admin/settings'
     },
     {
       id: 'store_info',
-      completed: false,
-      icon: '/images/new-shop/text.svg',
+      completed: !!(shopConfig && shopConfig.aboutStore),
+      icon: <Icons.Text />,
       name: 'Tell us a bit about your store',
       link: '/admin/settings'
     },
     {
       id: 'sm_links',
-      completed: false,
-      icon: '/images/new-shop/link.svg',
+      completed: hasSocialLinks,
+      icon: <Icons.Link />,
       name: 'Add social media links',
       link: '/admin/settings'
     }
   ]
+
   return (
-    <div className="admin-home">
+    <div className="onboarding">
       <div className="new-shop-hero">
         <h1>Congratulations on your new shop!</h1>
         <div className="desc">
@@ -73,7 +80,7 @@ const AdminHome = () => {
                   }
                 }}
               >
-                <img className="task-icon" src={task.icon} />
+                {task.icon}
                 <div className="task-name">{task.name}</div>
                 {task.completed && (
                   <img
@@ -90,10 +97,10 @@ const AdminHome = () => {
   )
 }
 
-export default AdminHome
+export default Onboarding
 
 require('react-styl')(`
-  .admin-home
+  .onboarding
     .new-shop-hero
       margin: -1.875rem -2.5rem 1.875rem -2.5rem
       background-image: url('/images/background-graphic.svg')
@@ -135,7 +142,7 @@ require('react-styl')(`
             flex: 1
             font-size: 1.125rem
 
-          .task-icon
+          .icon
             height: 48px
             width: 48px
             object-fit: contain
@@ -149,5 +156,8 @@ require('react-styl')(`
           &.completed
             .task-name
               color: #8293a4
+            .icon
+              path
+                fill: #8493A3 !important
 
 `)
