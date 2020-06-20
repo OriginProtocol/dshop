@@ -8,7 +8,7 @@ const get = require('lodash/get')
 
 const { Network } = require('./models')
 const { handleLog } = require('./utils/handleLog')
-const { getLogger } = require('../utils/logger')
+const { getLogger } = require('./utils/logger')
 
 const log = getLogger('listener')
 

@@ -4,7 +4,7 @@
 
 const { DNS } = require('@google-cloud/dns')
 
-const { getLogger } = require('../utils/logger')
+const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('utils.dns.clouddns')
 
