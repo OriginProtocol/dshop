@@ -120,7 +120,7 @@ module.exports = function (app) {
 
     const deploymentResult = await ShopDeployment.findAll({
       where: { shopId: shop.id },
-       include: [
+      include: [
         {
           model: ShopDeploymentName,
           as: 'names'
@@ -129,7 +129,7 @@ module.exports = function (app) {
       order: [['createdAt', 'desc']]
     })
 
-     const deployments = deploymentResult.map((row) => ({
+    const deployments = deploymentResult.map((row) => ({
       ...pick(
         row.dataValues,
         'id',
