@@ -9,7 +9,7 @@ import PlusIcon from 'components/icons/Plus'
 
 import Delete from './_Delete'
 
-const SocialLinks = ({ socialLinks, setSocialLinks }) => {
+const SocialLinks = ({ socialLinks }) => {
   return (
     <div className="social-links">
       <div className="title">Social Media Links</div>
@@ -23,13 +23,18 @@ const SocialLinks = ({ socialLinks, setSocialLinks }) => {
         {!socialLinks.instagram ? null : (
           <SocialLink icon={<Instagram />} name="Instagram" />
         )}
-        {!socialLinks.medium ? null : <SocialLink icon={<Medium />} name="Medium" />}
+        {!socialLinks.medium ? null : (
+          <SocialLink icon={<Medium />} name="Medium" />
+        )}
         {!socialLinks.youtube ? null : (
           <SocialLink icon={<YouTube />} name="YouTube" />
         )}
       </div>
       <div className="mt-3">
-        <button type="button" className="btn btn-outline-primary d-flex align-items-center w-100">
+        <button
+          type="button"
+          className="btn btn-outline-primary d-flex align-items-center w-100"
+        >
           <PlusIcon className="mr-2" /> Add Link
         </button>
       </div>

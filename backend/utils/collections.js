@@ -9,24 +9,18 @@ const addToCollections = (shop, productId, collectionIds) => {
     const collectionsPath = `${outDir}/collections.json`
     const data = require(collectionsPath)
 
-    const updatedData = data.map(collection => {
+    const updatedData = data.map((collection) => {
       if (collectionIds.includes(collection.id)) {
         return {
           ...collection,
-          products: Array.from(new Set([
-            ...collection.products,
-            productId
-          ]))
+          products: Array.from(new Set([...collection.products, productId]))
         }
       }
 
       return collection
     })
 
-    fs.writeFileSync(
-      collectionsPath,
-      JSON.stringify(updatedData, undefined, 2)
-    )
+    fs.writeFileSync(collectionsPath, JSON.stringify(updatedData, undefined, 2))
 
     return true
   } catch (e) {

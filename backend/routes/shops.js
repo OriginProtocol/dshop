@@ -539,16 +539,20 @@ module.exports = function (app) {
 
         fs.writeFileSync(
           configFile,
-          JSON.stringify({
-            ...config,
-            ...pick(req.body, [
-              'facebook',
-              'twitter',
-              'instagram',
-              'medium',
-              'youtube'
-            ])
-          }, null, 2)
+          JSON.stringify(
+            {
+              ...config,
+              ...pick(req.body, [
+                'facebook',
+                'twitter',
+                'instagram',
+                'medium',
+                'youtube'
+              ])
+            },
+            null,
+            2
+          )
         )
 
         res.json({ success: true })

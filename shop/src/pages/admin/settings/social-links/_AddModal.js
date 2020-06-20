@@ -1,9 +1,7 @@
 import React from 'react'
 
 const AddModal = () => {
-  return (
-    <div className="add-moodal"></div>
-  )
+  return <div className="add-moodal"></div>
 }
 
 export default AddModal

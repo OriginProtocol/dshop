@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 
 import ethers from 'ethers'
 
 import useShopConfig from 'utils/useShopConfig'
 import Tabs from './_Tabs'
 
-const maskSecret = secret => {
+const maskSecret = (secret) => {
   // Mask everything other than last 4 characters
   return (secret || '').replace(/^.*.{4}$/gi, 'x')
 }
@@ -16,7 +16,13 @@ const PaymentSettings = () => {
   const Processors = useMemo(() => {
     if (!shopConfig) return []
 
-    const { stripeBackend, upholdApi, upholdClient, upholdSecret, web3Pk } = shopConfig
+    const {
+      stripeBackend,
+      upholdApi,
+      upholdClient,
+      upholdSecret,
+      web3Pk
+    } = shopConfig
     const stripeEnabled = !!stripeBackend
     const upholdEnabled = !!upholdApi && !!upholdClient && !!upholdSecret
     const web3Enabled = !!web3Pk
@@ -32,13 +38,12 @@ const PaymentSettings = () => {
       }
     }
 
-
     return [
       {
         id: 'stripe',
         title: 'Stripe',
         description: stripeEnabled
-          ? '' 
+          ? ''
           : 'Use Stripe to easily accept Visa, MasterCard, American Express and almost any other kind of credit or debit card in your shop.',
         icon: (
           <svg width="50" height="71" viewBox="0 0 50 71">
@@ -54,8 +59,8 @@ const PaymentSettings = () => {
       {
         id: 'uphold',
         title: 'Uphold',
-        description: upholdEnabled 
-          ? `API Key: ${maskSecret(upholdApi)}` 
+        description: upholdEnabled
+          ? `API Key: ${maskSecret(upholdApi)}`
           : 'Use Uphold to easily accept crypto payments in your shop.',
         icon: (
           <svg width="62" height="82" viewBox="0 0 62 82">
@@ -71,7 +76,9 @@ const PaymentSettings = () => {
       {
         id: 'web3',
         title: 'Web3 Wallet',
-        description: web3Enabled ? `Address: ${walletAddress}` : 'You have not connected a wallet',
+        description: web3Enabled
+          ? `Address: ${walletAddress}`
+          : 'You have not connected a wallet',
         icon: (
           <svg width="56" height="51" viewBox="0 0 56 51">
             <path

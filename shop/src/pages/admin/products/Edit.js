@@ -209,8 +209,8 @@ const EditProduct = () => {
     if (collections && collections.length) {
       setSelectedCollections(
         collections
-          .filter(c => c.products.includes(productId))
-          .map(c => c.id)
+          .filter((c) => c.products.includes(productId))
+          .map((c) => c.id)
       )
     }
   }, [collections, productId])

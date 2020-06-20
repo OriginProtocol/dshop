@@ -13,7 +13,14 @@ const Onboarding = () => {
   const { products } = useProducts()
   const history = useHistory()
 
-  const hasSocialLinks = !!(config && (config.facebook || config.twitter || config.instagram || config.medium || config.youtube))
+  const hasSocialLinks = !!(
+    config &&
+    (config.facebook ||
+      config.twitter ||
+      config.instagram ||
+      config.medium ||
+      config.youtube)
+  )
 
   const tasks = [
     {

@@ -38,7 +38,10 @@ const ShopAppearance = () => {
       domain: get(shopConfig, 'domain'),
       logo: get(config, 'logo'),
       favicon: get(config, 'favicon'),
-      ...(socialLinkKeys.reduce((socialLinks, key) => ({ ...socialLinks, [key]: get(config, key, '') }), {})),
+      ...socialLinkKeys.reduce(
+        (socialLinks, key) => ({ ...socialLinks, [key]: get(config, key, '') }),
+        {}
+      )
     })
   }, [shopConfig, config])
 
@@ -54,18 +57,25 @@ const ShopAppearance = () => {
         try {
           await post('/config', {
             method: 'POST',
-            body: JSON.stringify(pickBy(state, (v, k) => !k.endsWith('Error') && !socialLinkKeys.includes(k)))
+            body: JSON.stringify(
+              pickBy(
+                state,
+                (v, k) => !k.endsWith('Error') && !socialLinkKeys.includes(k)
+              )
+            )
           })
-  
-          const hasChange = socialLinkKeys.some(s => get(state, s, '') !== get(config, s, ''))
-  
+
+          const hasChange = socialLinkKeys.some(
+            (s) => get(state, s, '') !== get(config, s, '')
+          )
+
           if (hasChange) {
             await post('/shop/social-links', {
               method: 'PUT',
               body: JSON.stringify(pick(state, socialLinkKeys))
             })
           }
-  
+
           setSaving('ok')
           setTimeout(() => setSaving(null), 3000)
         } catch (err) {
