@@ -1,4 +1,5 @@
 const omit = require('lodash/omit')
+const pick = require('lodash/pick')
 const {
   Seller,
   Shop,
@@ -117,10 +118,30 @@ module.exports = function (app) {
       return res.json({ success: false, reason: 'no-such-shop' })
     }
 
-    const deployments = await ShopDeployment.findAll({
+    const deploymentResult = await ShopDeployment.findAll({
       where: { shopId: shop.id },
+       include: [
+        {
+          model: ShopDeploymentName,
+          as: 'names'
+        }
+      ],
       order: [['createdAt', 'desc']]
     })
+
+     const deployments = deploymentResult.map((row) => ({
+      ...pick(
+        row.dataValues,
+        'id',
+        'shopId',
+        'domain',
+        'ipfsGateway',
+        'ipfsHash',
+        'createdAt',
+        'updatedAt'
+      ),
+      domains: row.dataValues.names.map((nam) => nam.hostname)
+    }))
 
     res.json({ deployments })
   })
