@@ -71,6 +71,7 @@ const AdminMenu = () => {
             }).then(async (response) => {
               if (response.status === 200) {
                 dispatch({ type: 'logout' })
+                delete localStorage.isAdmin
               }
             })
           }}

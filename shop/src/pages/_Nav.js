@@ -15,12 +15,14 @@ const Nav = () => {
     return <div className="nav-border" />
   }
 
+  const noBorder = affiliate || config.notice || localStorage.isAdmin
+
   return (
     <>
       <AffiliateNav />
       <nav
         className={`navbar navbar-expand-md${
-          affiliate || config.notice ? ' border-top-0' : ''
+          noBorder ? ' border-top-0' : ''
         }`}
       >
         <div className="container bb">

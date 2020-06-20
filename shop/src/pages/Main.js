@@ -6,6 +6,7 @@ import useConfig from 'utils/useConfig'
 
 import Bars from 'components/icons/Bars.js'
 import Link from 'components/Link'
+import AdminNav from 'components/admin/NavBar'
 
 import Nav from './_Nav'
 import Notice from './_Notice'
@@ -108,6 +109,7 @@ const Main = () => {
   }
   return (
     <>
+      <AdminNav />
       <Notice />
       <Nav />
       <div className="container">

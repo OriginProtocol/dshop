@@ -208,6 +208,7 @@ function getReducer(key) {
       const oldAdmin = cloneDeep(state.admin)
       newState = cloneDeep(getInitialState(action.dataDir))
       newState = set(newState, 'admin', oldAdmin)
+      newState = set(newState, 'resetBit', !state.resetBit)
     } else if (action.type === 'hasChanges') {
       newState = set(
         newState,
