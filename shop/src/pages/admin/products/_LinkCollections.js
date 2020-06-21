@@ -95,7 +95,7 @@ const LinkCollections = ({ selectedValues, onChange }) => {
         ) : (
           <CollectionItemCheckboxes
             uniquePrefix="coll-selected-val-"
-            collections={selectedCollections}
+            collections={collections}
             onChange={onChange}
             selectedValues={selectedValues}
           />
