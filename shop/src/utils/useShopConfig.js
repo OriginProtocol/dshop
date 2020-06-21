@@ -19,20 +19,27 @@ function useShopConfig() {
   const [loading, setLoading] = useState(false)
   const [shopConfig, setShopConfig] = useState()
 
+  async function fetchConfig() {
+    setLoading(true)
+    const shopConfig = await getShopConfig(
+      config.backend,
+      config.backendAuthToken
+    )
+    setLoading(false)
+    setShopConfig(shopConfig)
+  }
+
+  const refetch = async () => {
+    getShopConfig.cache.clear()
+
+    await fetchConfig()
+  }
+
   useEffect(() => {
-    async function fetchConfig() {
-      setLoading(true)
-      const shopConfig = await getShopConfig(
-        config.backend,
-        config.backendAuthToken
-      )
-      setLoading(false)
-      setShopConfig(shopConfig)
-    }
     fetchConfig()
   }, [])
 
-  return { loading, shopConfig }
+  return { loading, shopConfig, refetch }
 }
 
 export default useShopConfig
