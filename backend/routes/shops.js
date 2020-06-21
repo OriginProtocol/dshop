@@ -544,6 +544,47 @@ module.exports = function (app) {
     }
   )
 
+  app.put(
+    '/shop/social-links',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const configFile = `${DSHOP_CACHE}/${req.shop.authToken}/data/config.json`
+
+      if (!fs.existsSync(configFile)) {
+        return res.json({ success: false, reason: 'dir-not-found' })
+      }
+
+      try {
+        const raw = fs.readFileSync(configFile).toString()
+        const config = JSON.parse(raw)
+
+        fs.writeFileSync(
+          configFile,
+          JSON.stringify(
+            {
+              ...config,
+              ...pick(req.body, [
+                'facebook',
+                'twitter',
+                'instagram',
+                'medium',
+                'youtube'
+              ])
+            },
+            null,
+            2
+          )
+        )
+
+        res.json({ success: true })
+      } catch (e) {
+        console.log(e)
+        res.json({ success: false })
+      }
+    }
+  )
+
   app.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {

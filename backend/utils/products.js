@@ -9,6 +9,8 @@ const { execFile } = require('child_process')
 const pick = require('lodash/pick')
 const { DSHOP_CACHE } = require('./const')
 
+const { addToCollections } = require('./collections')
+
 const validProductFields = [
   'id',
   'title',
@@ -216,6 +218,12 @@ async function upsertProduct(shop, productData) {
   writeProductData(shop, newProductId, product)
 
   appendToProductsFile(shop, product)
+
+  addToCollections(shop, newProductId, productData.collections)
+
+  if (productData.collections) {
+    addToCollections(shop, productData.id, productData.collections)
+  }
 
   return {
     status: 200,
