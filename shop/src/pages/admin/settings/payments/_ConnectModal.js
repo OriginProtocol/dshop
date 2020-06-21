@@ -32,7 +32,7 @@ const ConnectModal = ({ children, title, validate, onCancel, onClose }) => {
       })
       setTimeout(() => {
         setState({ saving: '', shouldClose: true })
-      }, 3000)
+      }, 1500)
     } catch (err) {
       console.error(err)
       setState({

@@ -1,6 +1,6 @@
 import React, { useReducer } from 'react'
 
-import ethers from 'ethers'
+import pickBy from 'lodash/pickBy'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConnectModal from './_ConnectModal'
@@ -8,21 +8,14 @@ import ConnectModal from './_ConnectModal'
 const reducer = (state, newState) => ({ ...state, ...newState })
 
 const initialState = {
-  web3Pk: ''
+  stripeBackend: ''
 }
 
 const validate = (state) => {
   const newState = {}
 
-  if (!state.web3Pk) {
-    newState.web3PkError = 'Private key is required'
-  } else {
-    try {
-      new ethers.Wallet('0x' + state.web3Pk)
-    } catch (err) {
-      console.error(err)
-      newState.web3PkError = 'Invalid private key'
-    }
+  if (!state.stripeBackend) {
+    newState.stripeBackendError = 'Secret key is required'
   }
 
   const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
@@ -30,13 +23,13 @@ const validate = (state) => {
   return {
     valid,
     newState: {
-      web3Pk: '0x' + state.web3Pk,
+      ...pickBy(state, (v, k) => !k.endsWith('Error')),
       ...newState
     }
   }
 }
 
-const Web3Modal = ({ onClose }) => {
+const StripeModal = ({ onClose }) => {
   const [state, setState] = useReducer(reducer, initialState)
 
   const input = formInput(state, (newState) => setState(newState))
@@ -44,7 +37,7 @@ const Web3Modal = ({ onClose }) => {
 
   return (
     <ConnectModal
-      title="Connect Web3 Wallet"
+      title="Connect to Stripe"
       validate={() => {
         const validateResponse = validate(state)
         setState(validateResponse.newState)
@@ -54,20 +47,15 @@ const Web3Modal = ({ onClose }) => {
       onClose={onClose}
     >
       <div className="form-group">
-        <label>Private Key</label>
-        <div className="input-group">
-          <div className="input-group-prepend">
-            <span className="input-group-text">0x</span>
-          </div>
-          <input {...input('web3Pk')} />
-        </div>
-        {Feedback('web3Pk')}
+        <label>Stripe Secret Key</label>
+        <input {...input('stripeBackend')} />
+        {Feedback('stripeBackend')}
       </div>
     </ConnectModal>
   )
 }
 
-export default Web3Modal
+export default StripeModal
 
 require('react-styl')(`
 `)

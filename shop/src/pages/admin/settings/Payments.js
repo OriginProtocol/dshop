@@ -7,11 +7,8 @@ import useShopConfig from 'utils/useShopConfig'
 import * as Icons from 'components/icons/Admin'
 import Tabs from './_Tabs'
 import Web3Modal from './payments/Web3Modal'
-
-const maskSecret = (secret) => {
-  // Mask everything other than last 4 characters
-  return (secret || '').replace(/^.*.{4}$/gi, 'x')
-}
+import StripeModal from './payments/StripeModal'
+import UpholdModal from './payments/UpholdModal'
 
 const PaymentSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
@@ -50,7 +47,7 @@ const PaymentSettings = () => {
 
     if (web3Enabled) {
       try {
-        const wallet = ethers.Wallet(web3Pk)
+        const wallet = new ethers.Wallet(web3Pk)
         walletAddress = wallet.address
       } catch (err) {
         console.error(err)
@@ -62,7 +59,7 @@ const PaymentSettings = () => {
         id: 'stripe',
         title: 'Stripe',
         description: stripeEnabled
-          ? ''
+          ? 'Your stripe account has been connected'
           : 'Use Stripe to easily accept Visa, MasterCard, American Express and almost any other kind of credit or debit card in your shop.',
         icon: <Icons.Stripe />,
         enabled: stripeEnabled,
@@ -75,7 +72,7 @@ const PaymentSettings = () => {
         id: 'uphold',
         title: 'Uphold',
         description: upholdEnabled
-          ? `API Key: ${maskSecret(upholdApi)}`
+          ? `Environment: ${upholdApi}`
           : 'Use Uphold to easily accept crypto payments in your shop.',
         icon: <Icons.Uphold />,
         enabled: upholdEnabled,
@@ -147,6 +144,22 @@ const PaymentSettings = () => {
           }}
         />
       )}
+      {activeModal === 'stripe' && (
+        <StripeModal
+          onClose={() => {
+            setActiveModal(null)
+            refetch()
+          }}
+        />
+      )}
+      {activeModal === 'uphold' && (
+        <UpholdModal
+          onClose={() => {
+            setActiveModal(null)
+            refetch()
+          }}
+        />
+      )}
     </>
   )
 }
@@ -183,6 +196,7 @@ require('react-styl')(`
           flex: 1
           margin: 0.5rem 0
           .connected-text
+            margin-top: 0.5rem
             display: flex
             align-items: center
             &:before
