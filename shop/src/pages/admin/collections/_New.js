@@ -1,5 +1,6 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
+import kebabCase from 'lodash/kebabCase'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConfirmationModal from 'components/ConfirmationModal'
@@ -46,7 +47,7 @@ const AdminCreateCollection = ({ className = '', children, onSuccess }) => {
             collections: [
               ...collections,
               {
-                id: state.title.toLowerCase(),
+                id: kebabCase(state.title),
                 title: state.title,
                 products: []
               }

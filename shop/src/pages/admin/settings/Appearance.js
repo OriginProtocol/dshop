@@ -2,6 +2,7 @@ import React, { useReducer, useEffect, useState } from 'react'
 import get from 'lodash/get'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
+import kebabCase from 'lodash/kebabCase'
 
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
@@ -104,16 +105,27 @@ const ShopAppearance = () => {
         <div className="shop-settings col-md-8 col-lg-9">
           <div className="form-group">
             <label>Store Name</label>
-            <input {...input('title')} />
+            <input
+              {...input('title')}
+              onChange={(e) => {
+                const existing = kebabCase(state.title)
+                const hostname = kebabCase(e.target.value)
+                if (state.hostname === existing || !state.hostname) {
+                  setState({ title: e.target.value, hostname })
+                } else {
+                  setState({ title: e.target.value })
+                }
+              }}
+            />
             {Feedback('title')}
           </div>
           <div className="form-group">
             <label>Store Domain</label>
             <div className="suffix-wrap">
+              <input {...input('hostname')} />
               <div className="suffix">
                 <span>{state.hostname}</span>.ogn.app
               </div>
-              <input {...input('hostname')} />
             </div>
             {Feedback('hostname')}
             <div className="mt-1">
@@ -214,10 +226,12 @@ require('react-styl')(`
       color: #3b80ee
       font-size: 14px
     .suffix-wrap
+      position: relative
       input.form-control
         background-color: transparent
       .suffix
         position: absolute
+        top: 0
         color: #9faebd
         margin: 8px 0 0 15px
         > span

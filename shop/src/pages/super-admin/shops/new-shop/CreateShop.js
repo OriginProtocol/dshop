@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import get from 'lodash/get'
+import kebabCase from 'lodash/kebabCase'
 
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
@@ -85,11 +86,7 @@ const CreateShop = () => {
     genPGP().then((pgpKeys) => setState(pgpKeys))
   }, [])
   useEffect(() => {
-    const hostname = state.name
-      .toLowerCase()
-      .replace(/[^a-z0-9- ]/g, '')
-      .replace(/ +/g, '-')
-      .replace(/-$/, '')
+    const hostname = kebabCase(state.name)
     setState({ hostname, dataDir: hostname })
   }, [state.name])
 

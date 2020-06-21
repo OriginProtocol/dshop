@@ -9,6 +9,7 @@ import useOrders from 'utils/useOrders'
 import useProducts from 'utils/useProducts'
 
 import Chart from './_Chart'
+import Loading from 'components/Loading'
 
 const AdminDashboard = () => {
   const { orders, loading } = useOrders()
@@ -18,7 +19,7 @@ const AdminDashboard = () => {
   const [range, setRange] = useState('all-time')
 
   if (loading) {
-    return 'Loading...'
+    return <Loading />
   }
 
   const startOfDay = dayjs().startOf('day')

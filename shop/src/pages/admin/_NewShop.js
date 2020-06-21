@@ -1,6 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
+import kebabCase from 'lodash/kebabCase'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConfirmationModal from 'components/ConfirmationModal'
@@ -53,11 +54,7 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
             shopType: 'empty',
             name: state.name,
             backend: get(window, 'location.origin'),
-            dataDir: state.name
-              .toLowerCase()
-              .trim()
-              .replace(/[^0-9a-z- ]/g, '')
-              .replace(/ +/g, '-')
+            dataDir: kebabCase(state.name)
           })
         })
       }

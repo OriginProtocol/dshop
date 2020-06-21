@@ -1,10 +1,11 @@
-import React, { useEffect, useReducer } from 'react'
+import React, { useEffect, useReducer, useState } from 'react'
 import queryString from 'query-string'
 import pick from 'lodash/pick'
 import isEqual from 'lodash/isEqual'
 import get from 'lodash/get'
 import dayjs from 'dayjs'
 
+import Loading from 'components/Loading'
 import Link from 'components/Link'
 import GalleryScroll from 'components/GalleryScroll'
 import Gallery from 'components/Gallery'
@@ -100,7 +101,7 @@ const Product = ({ history, location, match }) => {
   }
 
   if (!productData) {
-    return <div className="product-detail">Loading...</div>
+    return <div className="product-detail"><Loading /></div>
   }
 
   const collectionParam = get(match, 'params.collection')
