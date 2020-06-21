@@ -88,7 +88,7 @@ const ShopAppearance = () => {
       <h3 className="admin-title with-actions">
         Settings
         <div className="actions ml-auto">
-          <button type="submit" className="btn btn-outline-primary mr-2">
+          <button type="button" className="btn btn-outline-primary mr-2">
             Cancel
           </button>
           <button type="submit" className="btn btn-primary" disabled={saving}>
