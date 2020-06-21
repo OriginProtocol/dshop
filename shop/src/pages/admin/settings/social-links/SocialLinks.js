@@ -1,7 +1,5 @@
 import React from 'react'
 
-import useConfig from 'utils/useConfig'
-
 import Facebook from 'components/icons/Facebook'
 import Twitter from 'components/icons/Twitter'
 import Instagram from 'components/icons/Instagram'
@@ -11,28 +9,32 @@ import PlusIcon from 'components/icons/Plus'
 
 import Delete from './_Delete'
 
-const SocialLinks = () => {
-  const { config } = useConfig()
+const SocialLinks = ({ socialLinks }) => {
   return (
     <div className="social-links">
       <div className="title">Social Media Links</div>
       <div className="links">
-        {!config.facebook ? null : (
+        {!socialLinks.facebook ? null : (
           <SocialLink icon={<Facebook />} name="Facebook" />
         )}
-        {!config.twitter ? null : (
+        {!socialLinks.twitter ? null : (
           <SocialLink icon={<Twitter />} name="Twitter" />
         )}
-        {!config.instagram ? null : (
+        {!socialLinks.instagram ? null : (
           <SocialLink icon={<Instagram />} name="Instagram" />
         )}
-        {!config.medium ? null : <SocialLink icon={<Medium />} name="Medium" />}
-        {!config.youtube ? null : (
+        {!socialLinks.medium ? null : (
+          <SocialLink icon={<Medium />} name="Medium" />
+        )}
+        {!socialLinks.youtube ? null : (
           <SocialLink icon={<YouTube />} name="YouTube" />
         )}
       </div>
       <div className="mt-3">
-        <button className="btn btn-outline-primary d-flex align-items-center">
+        <button
+          type="button"
+          className="btn btn-outline-primary d-flex align-items-center w-100"
+        >
           <PlusIcon className="mr-2" /> Add Link
         </button>
       </div>
