@@ -10,11 +10,6 @@ import Web3Modal from './payments/Web3Modal'
 import StripeModal from './payments/StripeModal'
 import UpholdModal from './payments/UpholdModal'
 
-const maskSecret = (secret) => {
-  // Mask everything other than last 4 characters
-  return (secret || '').replace(/^.*.{4}$/gi, 'x')
-}
-
 const PaymentSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
 

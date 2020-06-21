@@ -1,6 +1,5 @@
 import React, { useReducer } from 'react'
 
-import pickBy from 'lodash/pickBy'
 import ethers from 'ethers'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
@@ -32,7 +31,7 @@ const validate = (state) => {
     valid,
     newState: {
       web3Pk: '0x' + state.web3Pk,
-      ...newState,
+      ...newState
     }
   }
 }

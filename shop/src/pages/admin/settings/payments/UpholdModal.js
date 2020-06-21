@@ -10,7 +10,7 @@ const reducer = (state, newState) => ({ ...state, ...newState })
 const initialState = {
   upholdApi: '',
   upholdClient: '',
-  upholdSecret: '',
+  upholdSecret: ''
 }
 
 const validate = (state) => {
