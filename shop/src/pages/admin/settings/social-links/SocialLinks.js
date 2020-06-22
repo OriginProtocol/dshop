@@ -1,105 +1,13 @@
 import React, { useReducer } from 'react'
 
-import pickBy from 'lodash/pickBy'
-
-import Modal from 'components/Modal'
-
-import Facebook from 'components/icons/Facebook'
-import Twitter from 'components/icons/Twitter'
-import Instagram from 'components/icons/Instagram'
-import Medium from 'components/icons/Medium'
-import YouTube from 'components/icons/YouTube'
-import PlusIcon from 'components/icons/Plus'
-
-import { formInput, formFeedback } from 'utils/formHelpers'
+import Tooltip from 'components/Tooltip'
 
 import Delete from './_Delete'
+import EditModal from './_Edit'
 
-const networks = [
-  {
-    value: 'facebook',
-    name: 'Facebook',
-    icon: <Facebook />
-  },
-  {
-    value: 'twitter',
-    name: 'Twitter',
-    icon: <Twitter />
-  },
-  {
-    value: 'instagram',
-    name: 'Instagram',
-    icon: <Instagram />
-  },
-  {
-    value: 'medium',
-    name: 'Medium',
-    icon: <Medium />
-  },
-  {
-    value: 'youtube',
-    name: 'YouTube',
-    icon: <YouTube />
-  }
-]
-
-const validate = (state) => {
-  const newState = {}
-
-  if (!state.network) {
-    newState.networkError = 'Select a network'
-  }
-
-  if (!state.link) {
-    newState.linkError = 'Link is required'
-  } else {
-    try {
-      new URL(state.link)
-    } catch (err) {
-      newState.linkError = 'Not a valid URL'
-    }
-  }
-
-  const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
-
-  return {
-    valid,
-    newState: {
-      ...pickBy(state, (v, k) => !k.endsWith('Error')),
-      ...newState
-    }
-  }
-}
-
-const reducer = (state, newState) => ({ ...state, ...newState })
+import networks from './_networks'
 
 const SocialLinks = ({ socialLinks, setSocialLinks }) => {
-  const [state, setState] = useReducer(reducer, {
-    showModal: false,
-    shouldClose: false
-  })
-
-  const input = formInput(state, (newState) => setState(newState))
-  const Feedback = formFeedback(state)
-
-  const addLink = async () => {
-    const { valid, newState } = validate(state)
-
-    setState(newState)
-
-    if (!valid) return
-
-    setSocialLinks({
-      [state.network]: state.link
-    })
-
-    setState({
-      shouldClose: true,
-      link: '',
-      network: ''
-    })
-  }
-
   return (
     <>
       <div className="social-links">
@@ -113,97 +21,39 @@ const SocialLinks = ({ socialLinks, setSocialLinks }) => {
                 icon={network.icon}
                 name={network.name}
                 key={network.value}
+                networkId={network.value}
+                linkUrl={socialLinks[network.value]}
                 removeLink={() =>
                   setSocialLinks({
                     [network.value]: ''
                   })
                 }
+                onChange={newVal => setSocialLinks(newVal)}
               />
             )
           })}
         </div>
         <div className="mt-3">
-          <button
-            type="button"
-            className="btn btn-outline-primary d-flex align-items-center w-100"
-            onClick={() => setState({ showModal: true })}
-          >
-            <PlusIcon className="mr-2" /> Add Link
-          </button>
+          <EditModal onChange={newVal => setSocialLinks(newVal)} />
         </div>
       </div>
-      {!state.showModal ? null : (
-        <Modal
-          shouldClose={state.shouldClose}
-          onClose={() => {
-            setState({
-              shouldClose: false,
-              showModal: false
-            })
-          }}
-        >
-          <div className="modal-body add-social-link-modal">
-            <h5>Add a Social Media Link</h5>
-            <div className="form-group">
-              <label>Network</label>
-              <select {...input('network')}>
-                <option>Select one</option>
-                {networks.map((network) => (
-                  <option key={network.value} value={network.value}>
-                    {network.name}
-                  </option>
-                ))}
-              </select>
-              {Feedback('network')}
-            </div>
-            <div className="form-group">
-              <label>Link URL</label>
-              <input
-                {...input('link')}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    addLink()
-                  }
-                }}
-              />
-              {Feedback('link')}
-            </div>
-
-            <div className="actions">
-              <button
-                className="btn btn-outline-primary mr-2"
-                type="button"
-                onClick={() =>
-                  setState({
-                    shouldClose: true,
-                    link: '',
-                    network: ''
-                  })
-                }
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-primary"
-                type="button"
-                onClick={addLink}
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
     </>
   )
 }
 
-const SocialLink = ({ icon, name, removeLink }) => (
+const SocialLink = ({ icon, name, networkId, removeLink, linkUrl, onChange }) => (
   <div>
-    <div className="icon">{icon}</div>
-    {name}
-    <Delete className="ml-auto" onConfirm={removeLink} />
+    <Tooltip text={linkUrl} placement="left">
+      <div className="d-flex">
+        <div className="icon">{icon}</div>
+        {name}
+      </div>
+    </Tooltip>
+    <EditModal editMode={true} defaultValues={{
+      network: networkId,
+      link: linkUrl
+    }} onChange={onChange} />
+    <Delete className="ml-2" onConfirm={removeLink} />
   </div>
 )
 
@@ -223,6 +73,7 @@ require('react-styl')(`
       > div
         a
           visibility: hidden
+          cursor: pointer
         &:hover a
           visibility: visible
         .icon
@@ -241,23 +92,10 @@ require('react-styl')(`
             fill: #fff
         display: flex
         align-items: center
+        padding: 0.5rem 0
         &:first-child
           margin-top: 0.5rem
-        &:not(:last-child)
-          border-bottom: 1px solid #cdd7e0
-        padding: 0.5rem 0
-  .add-social-link-modal
-    h5
-      margin-top: 1rem
-      text-align: center
-    .actions
-      border-top: 1px solid #cdd7e0
-      padding-top: 1.25rem
-      margin-top: 1.5rem
-      display: flex
-      justify-content: center
-
-      .btn
-        width: 120px
+        &:not(:first-child)
+          border-top: 1px solid #cdd7e0
 
 `)

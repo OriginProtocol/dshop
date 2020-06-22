@@ -77,7 +77,7 @@ const AdminDiscounts = () => {
                         {discount.status === 'inactive' ? 'Inactive' : 'Active'}
                       </span>
                     </td>
-                    <td>{`${discount.used || '0'}${
+                    <td>{`${discount.uses || '0'}${
                       discount.maxUses ? `/${discount.maxUses}` : ''
                     } used`}</td>
                     <td>{active(discount)}</td>

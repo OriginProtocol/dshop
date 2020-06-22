@@ -9,25 +9,14 @@ import Tabs from './_Tabs'
 import Web3Modal from './payments/Web3Modal'
 import StripeModal from './payments/StripeModal'
 import UpholdModal from './payments/UpholdModal'
+import DisconnectModal from './payments/_DisconnectModal'
 
 const PaymentSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
 
-  const [activeModal, setActiveModal] = useState()
+  const [connectModal, setShowConnectModal] = useState(false)
 
   const { post } = useBackendApi({ authToken: true })
-
-  const updateConfig = async (body) => {
-    try {
-      await post('/config', {
-        method: 'POST',
-        body: JSON.stringify(body)
-      })
-      await refetch()
-    } catch (err) {
-      console.error(err)
-    }
-  }
 
   const Processors = useMemo(() => {
     if (!shopConfig) return []
@@ -62,11 +51,7 @@ const PaymentSettings = () => {
           ? 'Your stripe account has been connected'
           : 'Use Stripe to easily accept Visa, MasterCard, American Express and almost any other kind of credit or debit card in your shop.',
         icon: <Icons.Stripe />,
-        enabled: stripeEnabled,
-        disconnect: () =>
-          updateConfig({
-            stripeBackend: ''
-          })
+        enabled: stripeEnabled
       },
       {
         id: 'uphold',
@@ -75,13 +60,7 @@ const PaymentSettings = () => {
           ? `Environment: ${upholdApi}`
           : 'Use Uphold to easily accept crypto payments in your shop.',
         icon: <Icons.Uphold />,
-        enabled: upholdEnabled,
-        disconnect: () =>
-          updateConfig({
-            upholdApi: '',
-            upholdClient: '',
-            upholdSecret: ''
-          })
+        enabled: upholdEnabled
       },
       {
         id: 'web3',
@@ -90,11 +69,7 @@ const PaymentSettings = () => {
           ? `Address: ${walletAddress}`
           : 'You have not connected a wallet',
         icon: <Icons.Web3 />,
-        enabled: web3Enabled,
-        disconnect: () =>
-          updateConfig({
-            web3Pk: ''
-          })
+        enabled: web3Enabled
       }
     ]
   }, [shopConfig])
@@ -118,44 +93,47 @@ const PaymentSettings = () => {
                 )}
               </div>
               <div className="actions">
-                <button
-                  className="btn btn-outline-primary px-4"
-                  type="button"
-                  onClick={() => {
-                    if (processor.enabled) {
-                      processor.disconnect()
-                    } else {
-                      setActiveModal(processor.id)
-                    }
-                  }}
-                >
-                  {processor.enabled ? 'Disconnect' : 'Connect'}
-                </button>
+                {processor.enabled ? (
+                  <DisconnectModal 
+                    processor={processor}
+                    afterDelete={() => refetch()}
+                  />
+                ) : (
+                  <button
+                    className="btn btn-outline-primary px-4"
+                    type="button"
+                    onClick={() => {
+                      setShowConnectModal(processor.id)
+                    }}
+                  >
+                    Connect
+                  </button>
+                )}
               </div>
             </div>
           </div>
         ))}
       </div>
-      {activeModal === 'web3' && (
+      {connectModal === 'web3' && (
         <Web3Modal
           onClose={() => {
-            setActiveModal(null)
+            setShowConnectModal(null)
             refetch()
           }}
         />
       )}
-      {activeModal === 'stripe' && (
+      {connectModal === 'stripe' && (
         <StripeModal
           onClose={() => {
-            setActiveModal(null)
+            setShowConnectModal(null)
             refetch()
           }}
         />
       )}
-      {activeModal === 'uphold' && (
+      {connectModal === 'uphold' && (
         <UpholdModal
           onClose={() => {
-            setActiveModal(null)
+            setShowConnectModal(null)
             refetch()
           }}
         />
@@ -185,6 +163,9 @@ require('react-styl')(`
         background-color: #00cc58
       &.web3 .icon
         background-color: #3b80ee
+      &.printful .icon
+        border: 1px solid #cdd7e0
+
       > div:nth-child(2)
         display: flex
         flex-direction: column

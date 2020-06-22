@@ -13,12 +13,30 @@ module.exports = function (app) {
             Sequelize.fn('lower', code)
           )
         ],
-        shopId: req.shop.id
+        shopId: req.shop.id,
+        startTime: {
+          [Sequelize.Op.lte]: Date.now()
+        },
+        endTime: {
+          [Sequelize.Op.or]: [
+            { [Sequelize.Op.gt]: Date.now() },
+            { [Sequelize.Op.eq]: null }
+          ]
+        }
       }
     })
 
     if (discounts.length > 0) {
-      const discount = discounts[0]
+      const discount = discounts.find(d => {
+        return Number(d.maxUses) > 0 && (Number(d.uses) < Number(d.maxUses))
+      })
+
+      if (!discount) {
+        return res.json({
+          reason: 'Discount code has expired'
+        })
+      }
+
       res.json({
         code: discount.code,
         value: discount.value,
@@ -27,7 +45,9 @@ module.exports = function (app) {
       return
     }
 
-    res.json({})
+    res.json({
+      reason: 'Invalid discount code'
+    })
   })
 
   app.get('/discounts', authSellerAndShop, async (req, res) => {

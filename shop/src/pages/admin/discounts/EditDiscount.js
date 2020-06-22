@@ -24,10 +24,19 @@ function validate(state) {
   } else if (state.code.length < 3) {
     newState.codeError = 'Code is too short'
   }
+
   if (!state.value) {
     newState.valueError = 'Enter a value'
   } else if (Number(state.value) <= 0) {
     newState.valueError = 'Value must be greater than zero'
+  }
+
+  if (state.discountType === 'percentage' && state.value > 100) {
+    newState.valueError = 'Discount cannot be greater than 100%'
+  }
+
+  if (state.maxUses && state.maxUses.length && Number(state.maxUses) <= 0) {
+    newState.maxUsesError = 'Max usage must be greater than zero'
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
@@ -207,9 +216,9 @@ const AdminEditDiscount = () => {
             Exclude shipping price from discount
           </label>
         </div>
-        {/* <div className="form-group" style={{ maxWidth: '15rem' }}>
+        <div className="form-group" style={{ maxWidth: '15rem' }}>
           <label>Max Uses</label>
-          <input type="text" {...input('maxUses')} />
+          <input type="number" {...input('maxUses')} />
           {Feedback('maxUses')}
         </div>
         <div className="form-check mb-3">
@@ -222,7 +231,7 @@ const AdminEditDiscount = () => {
             />
             One Per Customer
           </label>
-        </div> */}
+        </div>
         <div className="form-row mb-3" style={{ maxWidth: '30rem' }}>
           <div className="col-6">
             <label>Start Date</label>
