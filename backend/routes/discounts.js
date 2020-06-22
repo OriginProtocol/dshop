@@ -27,8 +27,8 @@ module.exports = function (app) {
     })
 
     if (discounts.length > 0) {
-      const discount = discounts.find(d => {
-        return Number(d.maxUses) > 0 && (Number(d.uses) < Number(d.maxUses))
+      const discount = discounts.find((d) => {
+        return Number(d.maxUses) > 0 && Number(d.uses) < Number(d.maxUses)
       })
 
       if (!discount) {
