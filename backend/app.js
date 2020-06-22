@@ -10,6 +10,9 @@ const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
 const { findShopByHostname } = require('./utils/shop')
 const { sequelize, Network } = require('./models')
 const encConf = require('./utils/encryptedConfig')
+const { getLogger } = require('./utils/logger')
+
+const log = getLogger('app')
 const app = express()
 
 require('./queues').runProcessors()
@@ -29,7 +32,7 @@ app.use(
       if (ORIGIN_WHITELIST_ENABLED && !ORIGIN_WHITELIST.includes(origin)) {
         cb(new Error('Not allowed by CORS'))
       }
-      // if (!origin) console.debug('No Origin header provided')
+      // if (!origin) log.debug('No Origin header provided')
       cb(null, origin || '*')
     },
     credentials: true
@@ -150,7 +153,7 @@ app.get('*', (req, res, next) => {
 // Note that it does need 4 args signature otherwise it does not get invoked.
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  console.trace(err)
+  log.error(err)
   return res.status(err.status || 500).json({
     error: {
       name: err.name,
@@ -162,5 +165,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
-  console.log(`\nListening on port ${PORT}\n`)
+  log.info(`\nListening on port ${PORT}\n`)
 })

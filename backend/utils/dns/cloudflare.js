@@ -1,6 +1,10 @@
 const cloudflare = require('cloudflare')
 const find = require('lodash/find')
 
+const { getLogger } = require('../../utils/logger')
+
+const log = getLogger('utils.dns.cloudflare')
+
 async function findZone(cf, conditions) {
   const data = { page: 1, per_page: 100 }
   let response, found
@@ -34,30 +38,30 @@ async function setRecords({ email, key, zone, subdomain, ipfsGateway, hash }) {
 
   const zoneObj = await findZone(cf, { name: zone })
   if (!zoneObj) {
-    console.log(`Zone ${zone} not found.`)
+    log.warn(`Zone ${zone} not found.`)
     return
   }
   const zoneId = zoneObj.id
-  console.log(`Found zone ${zoneObj.name} ID ${zoneObj.id}`)
+  log.info(`Found zone ${zoneObj.name} ID ${zoneObj.id}`)
 
   const record = `${subdomain}.${zone}`
   const cname = await findRecord(cf, zoneId, { type: 'CNAME', name: record })
   if (!cname) {
-    console.log(`Adding CNAME ${record}`)
+    log.info(`Adding CNAME ${record}`)
     await cf.dnsRecords.add(zoneId, {
       type: 'CNAME',
       name: record,
       content: ipfsGateway
     })
   } else {
-    console.log(`CNAME ${record} exists pointing to ${cname.content}`)
+    log.info(`CNAME ${record} exists pointing to ${cname.content}`)
   }
 
   const dnslink = `_dnslink.${record}`
   const txt = await findRecord(cf, zoneObj.id, { type: 'TXT', name: dnslink })
   const content = `dnslink=/ipfs/${hash}`
   if (!txt) {
-    console.log(`Adding TXT ${dnslink} to ${content}`)
+    log.info(`Adding TXT ${dnslink} to ${content}`)
     await cf.dnsRecords.add(zoneObj.id, {
       type: 'TXT',
       name: dnslink,
@@ -65,10 +69,10 @@ async function setRecords({ email, key, zone, subdomain, ipfsGateway, hash }) {
       ttl: 120
     })
   } else {
-    console.log(`TXT ${dnslink} exists pointing to ${txt.content}`)
+    log.info(`TXT ${dnslink} exists pointing to ${txt.content}`)
     if (txt.content !== content) {
       txt.content = content
-      console.log(`Updating TXT to ${content}`)
+      log.debug(`Updating TXT to ${content}`)
       await cf.dnsRecords.edit(zoneObj.id, txt.id, txt)
     }
   }

@@ -4,6 +4,9 @@ const fetch = require('node-fetch')
 const { authSellerAndShop, authShop } = require('./_auth')
 const encConf = require('../utils/encryptedConfig')
 const { findOrder } = require('../utils/orders')
+const { getLogger } = require('../utils/logger')
+
+const log = getLogger('routes.printful')
 
 const PrintfulURL = 'https://api.printful.com'
 
@@ -65,11 +68,11 @@ module.exports = function (app) {
 
       const json = await newOrderResponse.json()
 
-      console.log(json)
+      log.debug(json)
 
       if (!newOrderResponse.ok) {
-        console.error('Attempt to create Printful order failed!')
-        if (json && json.error) console.error(json.error.message)
+        log.error('Attempt to create Printful order failed!')
+        if (json && json.error) log.error(json.error.message)
         return res.status(json.code).json({
           success: false,
           message: json.error.message
@@ -104,7 +107,7 @@ module.exports = function (app) {
         method: 'POST'
       })
       const json = await confirmOrderResponse.json()
-      console.log(json)
+      log.debug(json)
 
       res.json({ success: true })
     }

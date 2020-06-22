@@ -6,9 +6,9 @@ const get = require('lodash/get')
 const { authShop } = require('./_auth')
 const { Affiliate, Order } = require('../models')
 const { getConfig } = require('../utils/encryptedConfig')
-const { apiLogger } = require('../utils/logger')
+const { getLogger } = require('../utils/logger')
 
-const log = apiLogger
+const log = getLogger('routes.affiliate')
 
 function authAffiliate(req, res, next) {
   try {
@@ -195,12 +195,12 @@ module.exports = function (app) {
     try {
       credentials = JSON.parse(shopConfig.bigQueryCredentials)
     } catch (e) {
-      console.log('No BigQuery credentials found in shop config')
+      log.warn('No BigQuery credentials found in shop config')
     }
 
     const table = shopConfig.bigQueryTable || process.env.BIG_QUERY_TABLE
     if (!table) {
-      console.log('No BigQuery table configured')
+      log.warn('No BigQuery table configured')
       return res.json([])
     }
 

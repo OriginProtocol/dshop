@@ -7,7 +7,11 @@ const Stripe = require('stripe')
 const { Shop, ExternalPayment } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
+const { getLogger } = require('../utils/logger')
+
 const makeOffer = require('./_makeOffer')
+
+const log = getLogger('routes.stripe')
 
 const rawJson = bodyParser.raw({ type: 'application/json' })
 
@@ -33,7 +37,7 @@ module.exports = function (app) {
       })
     }
 
-    console.log('Trying to make payment...')
+    log.info('Trying to make payment...')
     const stripe = Stripe(shopConfig.stripeBackend)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: req.body.amount,
@@ -47,7 +51,7 @@ module.exports = function (app) {
         paymentCode: randomstring.generate()
       }
     })
-    console.log('Payment request sent to Stripe')
+    log.info('Payment request sent to Stripe')
 
     res.send({ success: true, client_secret: paymentIntent.client_secret })
   })
@@ -59,7 +63,7 @@ module.exports = function (app) {
       const id = get(json, 'data.object.metadata.shopId')
       req.shop = await Shop.findOne({ where: { id } })
     } catch (err) {
-      console.error('Error parsing body: ', err)
+      log.error('Error parsing body: ', err)
       return res.sendStatus(400)
     }
 
@@ -75,7 +79,7 @@ module.exports = function (app) {
     })
 
     if (!req.shop) {
-      console.debug('Missing shopId from /webhook request')
+      log.warning('Missing shopId from /webhook request')
       return res.sendStatus(400)
     }
 
@@ -88,8 +92,7 @@ module.exports = function (app) {
       const secret = shopConfig.stripeWebhookSecret
       event = stripe.webhooks.constructEvent(req.body, sig, secret)
     } catch (err) {
-      console.log(`⚠️  Webhook signature verification failed.`)
-      console.error(err)
+      log.error(`⚠️  Webhook signature verification failed:`, err)
       return res.sendStatus(400)
     }
 
@@ -112,10 +115,10 @@ module.exports = function (app) {
     }
     await externalPayment.save()
 
-    console.log(JSON.stringify(event, null, 4))
+    log.debug(JSON.stringify(event, null, 4))
 
     if (event.type !== 'payment_intent.succeeded') {
-      console.log(`Ignoring event ${event.type}`)
+      log.debug(`Ignoring event ${event.type}`)
       return res.sendStatus(200)
     }
 

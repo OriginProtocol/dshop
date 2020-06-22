@@ -4,8 +4,11 @@ const w3 = new Web3()
 const { getIpfsHashFromBytes32 } = require('./_ipfs')
 
 const { Event } = require('../models')
+const { getLogger } = require('../utils/logger')
 
 const abi = require('./_abi')
+
+const log = getLogger('utils.events')
 const Marketplace = new w3.eth.Contract(abi)
 
 function getEventObj(event) {
@@ -38,14 +41,14 @@ function getEventObj(event) {
 }
 
 async function upsertEvent({ web3, event, shopId, networkId }) {
-  console.log('Upsert event...')
+  log.debug('Upsert event...')
   const eventObj = { ...getEventObj(event), shopId, networkId }
 
   // Make sure this event hasn't alredy been recorded in the DB.
   const { transactionHash } = event
   const exists = await Event.findOne({ where: { transactionHash } })
   if (exists) {
-    console.log('Event exists')
+    log.debug('Event exists')
     return exists
   }
 

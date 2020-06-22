@@ -3,6 +3,9 @@ require('dotenv').config()
 const fetch = require('node-fetch')
 const memoize = require('lodash/memoize')
 const { PROVIDER, NETWORK_ID } = require('./utils/const')
+const { getLogger } = require('./utils/logger')
+
+const log = getLogger('config')
 
 const Defaults = {
   '999': {
@@ -33,11 +36,11 @@ const getSiteConfig = memoize(async function getSiteConfig(
   let data
   if (dataURL) {
     const url = `${dataURL}config.json`
-    console.debug(`Loading config from ${url}`)
+    log.debug(`Loading config from ${url}`)
     const dataRaw = await fetch(url)
     data = await dataRaw.json()
   } else {
-    console.warn('dataURL not provided')
+    log.warn('dataURL not provided')
   }
   const defaultData = Defaults[netId] || {}
   const networkData = data ? data.networks[netId] : null || {}

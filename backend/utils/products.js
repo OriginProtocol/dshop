@@ -3,13 +3,15 @@ const fs = require('fs')
 const mv = require('mv')
 const sharp = require('sharp')
 const get = require('lodash/get')
-
+const pick = require('lodash/pick')
 const { execFile } = require('child_process')
 
-const pick = require('lodash/pick')
+const { getLogger } = require('../utils/logger')
+
 const { DSHOP_CACHE } = require('./const')
 
 const { addToCollections } = require('./collections')
+const log = getLogger('utils.products')
 
 const validProductFields = [
   'id',
@@ -149,12 +151,7 @@ async function moveProductImages(shop, productId, productData) {
               if (err) {
                 // TODO: better error handling
                 // Just push the original temp path for now
-                console.error(
-                  `Couldn't move file`,
-                  tmpFilePath,
-                  targetPath,
-                  err
-                )
+                log.error(`Couldn't move file`, tmpFilePath, targetPath, err)
               } else {
                 out.push(fileName)
                 imageMap.set(filePath, fileName)

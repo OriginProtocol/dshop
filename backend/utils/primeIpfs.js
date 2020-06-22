@@ -4,6 +4,9 @@ const Bottleneck = require('bottleneck')
 const limiter = new Bottleneck({ maxConcurrent: 10 })
 const { readdir } = fs.promises
 const { resolve } = require('path')
+const { getLogger } = require('../utils/logger')
+
+const log = getLogger('utils.primeIpfs')
 
 async function getFiles(dir) {
   const dirents = await readdir(dir, { withFileTypes: true })
@@ -19,7 +22,7 @@ async function getFiles(dir) {
 async function download(url) {
   await new Promise((resolve) => {
     const f = fs.createWriteStream('/dev/null').on('finish', resolve)
-    console.log(`Priming ${url}`)
+    log.info(`Priming ${url}`)
     https.get(url, (response) => response.pipe(f))
   })
 }
