@@ -101,7 +101,11 @@ const Product = ({ history, location, match }) => {
   }
 
   if (!productData) {
-    return <div className="product-detail"><Loading /></div>
+    return (
+      <div className="product-detail">
+        <Loading />
+      </div>
+    )
   }
 
   const collectionParam = get(match, 'params.collection')
