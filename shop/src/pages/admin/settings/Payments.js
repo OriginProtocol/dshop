@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react'
 
 import ethers from 'ethers'
 
-import useBackendApi from 'utils/useBackendApi'
 import useShopConfig from 'utils/useShopConfig'
 import * as Icons from 'components/icons/Admin'
 import Tabs from './_Tabs'
