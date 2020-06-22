@@ -18,12 +18,8 @@ function getLogger(name) {
 }
 
 const rootLogger = getLogger()
-const apiLogger = getLogger('dshop.api')
-const listenerLogger = getLogger('dshop.listener')
 
 module.exports = {
   getLogger,
-  rootLogger,
-  apiLogger,
-  listenerLogger
+  rootLogger
 }
