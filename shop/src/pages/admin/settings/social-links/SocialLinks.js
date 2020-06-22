@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react'
+import React from 'react'
 
 import Tooltip from 'components/Tooltip'
 
@@ -28,20 +28,27 @@ const SocialLinks = ({ socialLinks, setSocialLinks }) => {
                     [network.value]: ''
                   })
                 }
-                onChange={newVal => setSocialLinks(newVal)}
+                onChange={(newVal) => setSocialLinks(newVal)}
               />
             )
           })}
         </div>
         <div className="mt-3">
-          <EditModal onChange={newVal => setSocialLinks(newVal)} />
+          <EditModal onChange={(newVal) => setSocialLinks(newVal)} />
         </div>
       </div>
     </>
   )
 }
 
-const SocialLink = ({ icon, name, networkId, removeLink, linkUrl, onChange }) => (
+const SocialLink = ({
+  icon,
+  name,
+  networkId,
+  removeLink,
+  linkUrl,
+  onChange
+}) => (
   <div>
     <Tooltip text={linkUrl} placement="left">
       <div className="d-flex">
@@ -49,10 +56,14 @@ const SocialLink = ({ icon, name, networkId, removeLink, linkUrl, onChange }) =>
         {name}
       </div>
     </Tooltip>
-    <EditModal editMode={true} defaultValues={{
-      network: networkId,
-      link: linkUrl
-    }} onChange={onChange} />
+    <EditModal
+      editMode={true}
+      defaultValues={{
+        network: networkId,
+        link: linkUrl
+      }}
+      onChange={onChange}
+    />
     <Delete className="ml-2" onConfirm={removeLink} />
   </div>
 )

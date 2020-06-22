@@ -73,11 +73,14 @@ const EditSocialLinkModal = ({ editMode, defaultValues, onChange }) => {
   return (
     <>
       {editMode ? (
-        <a className="ml-auto" onClick={(e) => {
-          e.preventDefault()
-          setState({ showModal: true })
-        }}>
-          <img src="images/edit-icon.svg" />	
+        <a
+          className="ml-auto"
+          onClick={(e) => {
+            e.preventDefault()
+            setState({ showModal: true })
+          }}
+        >
+          <img src="images/edit-icon.svg" />
         </a>
       ) : (
         <button

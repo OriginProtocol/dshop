@@ -1,10 +1,9 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 
 import useBackendApi from 'utils/useBackendApi'
 import ConfirmationModal from 'components/ConfirmationModal'
 
-const DeleteProduct = ({ processor, className = '', afterDelete }) => {
+const DisconnectModal = ({ processor, className = '', afterDelete }) => {
   const { post } = useBackendApi({ authToken: true })
 
   return (
@@ -52,4 +51,4 @@ const DeleteProduct = ({ processor, className = '', afterDelete }) => {
   )
 }
 
-export default DeleteProduct
+export default DisconnectModal

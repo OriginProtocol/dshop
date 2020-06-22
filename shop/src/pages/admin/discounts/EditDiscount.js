@@ -227,7 +227,7 @@ const AdminEditDiscount = () => {
               className="form-check-input"
               type="checkbox"
               checked={state.onePerCustomer ? true : false}
-              onChange={e => setState({ onePerCustomer: e.target.checked })}
+              onChange={(e) => setState({ onePerCustomer: e.target.checked })}
             />
             One Per Customer
           </label>

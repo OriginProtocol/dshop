@@ -16,8 +16,6 @@ const PaymentSettings = () => {
 
   const [connectModal, setShowConnectModal] = useState(false)
 
-  const { post } = useBackendApi({ authToken: true })
-
   const Processors = useMemo(() => {
     if (!shopConfig) return []
 
@@ -94,7 +92,7 @@ const PaymentSettings = () => {
               </div>
               <div className="actions">
                 {processor.enabled ? (
-                  <DisconnectModal 
+                  <DisconnectModal
                     processor={processor}
                     afterDelete={() => refetch()}
                   />

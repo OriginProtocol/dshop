@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from 'react'
 
 import useShopConfig from 'utils/useShopConfig'
-import * as Icons from 'components/icons/Admin'
 import Tabs from './_Tabs'
 import PrintfulModal from './apps/PrintfulModal'
 import DisconnectModal from './payments/_DisconnectModal'
 
-const maskSecret = secret => {
-  return `${secret.substr(0, secret.length - 4).replace(/[^-]/g, 'x')}${secret.substr(-4)}`
+const maskSecret = (secret) => {
+  return `${secret
+    .substr(0, secret.length - 4)
+    .replace(/[^-]/g, 'x')}${secret.substr(-4)}`
 }
 
 const AppSettings = () => {
@@ -18,9 +19,7 @@ const AppSettings = () => {
   const Processors = useMemo(() => {
     if (!shopConfig) return []
 
-    const {
-      printful
-    } = shopConfig
+    const { printful } = shopConfig
     const printfulEnabled = !!printful
 
     return [
@@ -49,14 +48,12 @@ const AppSettings = () => {
               <div className="description">
                 {processor.description}
                 {!processor.enabled ? null : (
-                  <div className="connected-text">
-                    Connected
-                  </div>
+                  <div className="connected-text">Connected</div>
                 )}
               </div>
               <div className="actions">
                 {processor.enabled ? (
-                  <DisconnectModal 
+                  <DisconnectModal
                     processor={processor}
                     afterDelete={() => refetch()}
                   />
