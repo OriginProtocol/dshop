@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Link, Redirect, Switch, Route } from 'react-router-dom'
 import 'components/admin/Styles'
-import _get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
-import useBackendApi from 'utils/useBackendApi'
 import useAuth from 'utils/useAuth'
 
 import * as Icons from 'components/icons/Admin'

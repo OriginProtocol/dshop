@@ -56,12 +56,6 @@ const LinkCollections = ({ selectedValues, onChange }) => {
     })
   }, [searchVal, collections, loading])
 
-  const selectedCollections = useMemo(() => {
-    if (!collections) return []
-
-    return collections.filter((x) => selectedValues.includes(x.id))
-  }, [collections, selectedValues])
-
   return (
     <div className="link-collections">
       <div className="form-group">
@@ -95,7 +89,7 @@ const LinkCollections = ({ selectedValues, onChange }) => {
         ) : (
           <CollectionItemCheckboxes
             uniquePrefix="coll-selected-val-"
-            collections={selectedCollections}
+            collections={collections}
             onChange={onChange}
             selectedValues={selectedValues}
           />

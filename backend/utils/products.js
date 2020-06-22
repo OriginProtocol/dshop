@@ -10,6 +10,7 @@ const { getLogger } = require('../utils/logger')
 
 const { DSHOP_CACHE } = require('./const')
 
+const { addToCollections } = require('./collections')
 const log = getLogger('utils.products')
 
 const validProductFields = [
@@ -214,6 +215,12 @@ async function upsertProduct(shop, productData) {
   writeProductData(shop, newProductId, product)
 
   appendToProductsFile(shop, product)
+
+  addToCollections(shop, newProductId, productData.collections)
+
+  if (productData.collections) {
+    addToCollections(shop, productData.id, productData.collections)
+  }
 
   return {
     status: 200,

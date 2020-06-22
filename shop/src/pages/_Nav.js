@@ -21,9 +21,7 @@ const Nav = () => {
     <>
       <AffiliateNav />
       <nav
-        className={`navbar navbar-expand-md${
-          noBorder ? ' border-top-0' : ''
-        }`}
+        className={`navbar navbar-expand-md${noBorder ? ' border-top-0' : ''}`}
       >
         <div className="container bb">
           <form className="form-inline" onSubmit={(e) => e.preventDefault()}>

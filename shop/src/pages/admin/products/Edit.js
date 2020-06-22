@@ -6,6 +6,7 @@ import pickBy from 'lodash/pickBy'
 
 import { useStateValue } from 'data/state'
 import useProduct from 'utils/useProduct'
+import useCollections from 'utils/useCollections'
 import useBackendApi from 'utils/useBackendApi'
 import useSetState from 'utils/useSetState'
 import { formInput, formFeedback } from 'utils/formHelpers'
@@ -148,6 +149,8 @@ const EditProduct = () => {
 
   const { product } = useProduct(productId)
 
+  const { collections } = useCollections()
+
   const [media, setMedia] = useState([])
 
   useEffect(() => {
@@ -203,6 +206,16 @@ const EditProduct = () => {
   }, [product])
 
   useEffect(() => {
+    if (collections && collections.length) {
+      setSelectedCollections(
+        collections
+          .filter((c) => c.products.includes(productId))
+          .map((c) => c.id)
+      )
+    }
+  }, [collections, productId])
+
+  useEffect(() => {
     if (hasOptions && (!formState.options || !formState.options.length)) {
       setFormState({
         // Enforce at least one option if checkbox is selected
@@ -236,7 +249,8 @@ const EditProduct = () => {
         body: JSON.stringify({
           ...newState,
           price: newState.price * 100,
-          images: media.map((file) => file.path)
+          images: media.map((file) => file.path),
+          collections: selectedCollections
         })
       })
 

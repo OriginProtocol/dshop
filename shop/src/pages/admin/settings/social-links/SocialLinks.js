@@ -1,53 +1,70 @@
 import React from 'react'
 
-import useConfig from 'utils/useConfig'
-
-import Facebook from 'components/icons/Facebook'
-import Twitter from 'components/icons/Twitter'
-import Instagram from 'components/icons/Instagram'
-import Medium from 'components/icons/Medium'
-import YouTube from 'components/icons/YouTube'
-import PlusIcon from 'components/icons/Plus'
+import Tooltip from 'components/Tooltip'
 
 import Delete from './_Delete'
+import EditModal from './_Edit'
 
-const SocialLinks = () => {
-  const { config } = useConfig()
+import networks from './_networks'
+
+const SocialLinks = ({ socialLinks, setSocialLinks }) => {
   return (
-    <div className="social-links">
-      <div className="title">Social Media Links</div>
-      <div className="links">
-        {!config.facebook ? null : (
-          <SocialLink icon={<Facebook />} name="Facebook" />
-        )}
-        {!config.twitter ? null : (
-          <SocialLink icon={<Twitter />} name="Twitter" />
-        )}
-        {!config.instagram ? null : (
-          <SocialLink icon={<Instagram />} name="Instagram" />
-        )}
-        {!config.medium ? null : <SocialLink icon={<Medium />} name="Medium" />}
-        {!config.youtube ? null : (
-          <SocialLink icon={<YouTube />} name="YouTube" />
-        )}
+    <>
+      <div className="social-links">
+        <div className="title">Social Media Links</div>
+        <div className="links">
+          {networks.map((network) => {
+            if (!socialLinks[network.value]) return null
+
+            return (
+              <SocialLink
+                icon={network.icon}
+                name={network.name}
+                key={network.value}
+                networkId={network.value}
+                linkUrl={socialLinks[network.value]}
+                removeLink={() =>
+                  setSocialLinks({
+                    [network.value]: ''
+                  })
+                }
+                onChange={(newVal) => setSocialLinks(newVal)}
+              />
+            )
+          })}
+        </div>
+        <div className="mt-3">
+          <EditModal onChange={(newVal) => setSocialLinks(newVal)} />
+        </div>
       </div>
-      <div className="mt-3">
-        <button className="btn btn-outline-primary d-flex align-items-center">
-          <PlusIcon className="mr-2" /> Add Link
-        </button>
-      </div>
-    </div>
+    </>
   )
 }
 
-const SocialLink = ({ icon, name }) => (
+const SocialLink = ({
+  icon,
+  name,
+  networkId,
+  removeLink,
+  linkUrl,
+  onChange
+}) => (
   <div>
-    <div className="icon">{icon}</div>
-    {name}
-    <a href="#edit" className="ml-auto" onClick={(e) => e.preventDefault()}>
-      <img src="images/edit-icon.svg" />
-    </a>
-    <Delete className="ml-2" />
+    <Tooltip text={linkUrl} placement="left">
+      <div className="d-flex">
+        <div className="icon">{icon}</div>
+        {name}
+      </div>
+    </Tooltip>
+    <EditModal
+      editMode={true}
+      defaultValues={{
+        network: networkId,
+        link: linkUrl
+      }}
+      onChange={onChange}
+    />
+    <Delete className="ml-2" onConfirm={removeLink} />
   </div>
 )
 
@@ -67,6 +84,7 @@ require('react-styl')(`
       > div
         a
           visibility: hidden
+          cursor: pointer
         &:hover a
           visibility: visible
         .icon
@@ -85,9 +103,10 @@ require('react-styl')(`
             fill: #fff
         display: flex
         align-items: center
+        padding: 0.5rem 0
         &:first-child
           margin-top: 0.5rem
-        &:not(:last-child)
-          border-bottom: 1px solid #cdd7e0
-        padding: 0.5rem 0
+        &:not(:first-child)
+          border-top: 1px solid #cdd7e0
+
 `)

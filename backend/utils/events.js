@@ -54,7 +54,12 @@ async function upsertEvent({ web3, event, shopId, networkId }) {
 
   // Fetch the block to get its timestamp.
   const block = await web3.eth.getBlock(eventObj.blockNumber)
-  eventObj.timestamp = block.timestamp
+  if (block) {
+    eventObj.timestamp = block.timestamp
+  } else {
+    // Best effort.  This is likely only to happen with newer blocks
+    eventObj.timestamp = Math.floor(+new Date() / 1000)
+  }
 
   // Save the event in the DB.
   const record = await Event.create(eventObj)

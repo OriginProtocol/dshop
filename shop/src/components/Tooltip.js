@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react'
 import { createPopper } from '@popperjs/core'
 import { useEffect } from 'react'
 
-const Tooltip = ({ text, children }) => {
+const Tooltip = ({ text, children, placement }) => {
   const [open, setOpen] = useState(false)
   const [popper, setPopper] = useState()
 
@@ -13,7 +13,7 @@ const Tooltip = ({ text, children }) => {
   useEffect(() => {
     if (open) {
       const instance = createPopper(btn.current, popover.current, {
-        placement: 'right',
+        placement: placement || 'right',
         modifiers: [
           { name: 'offset', options: { offset: [0, 8] } },
           { name: 'arrow', options: { element: arrow.current } },
@@ -35,7 +35,7 @@ const Tooltip = ({ text, children }) => {
         popper.destroy()
       }
     }
-  }, [open, popover])
+  }, [open, popover, placement])
 
   const el = React.cloneElement(children, {
     ref: btn,
