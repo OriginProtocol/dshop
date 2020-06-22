@@ -16,9 +16,16 @@ const web3 = new Web3()
 
 let ws
 
+// JSON-RPC request IDs
+const REQID = {
+  logs: 1,
+  newHeads: 2,
+  getLogs: 3
+}
+
 const SubscribeToNewHeads = JSON.stringify({
   jsonrpc: '2.0',
-  id: 2,
+  id: REQID.newHeads,
   method: 'eth_subscribe',
   params: ['newHeads']
 })
@@ -31,7 +38,7 @@ const SubscribeToNewHeads = JSON.stringify({
 const SubscribeToLogs = ({ address }) => {
   return JSON.stringify({
     jsonrpc: '2.0',
-    id: 1,
+    id: REQID.logs,
     method: 'eth_subscribe',
     params: ['logs', { address }]
   })
@@ -47,7 +54,7 @@ const SubscribeToLogs = ({ address }) => {
 const GetPastLogs = ({ address, fromBlock, toBlock }) => {
   const rpc = {
     jsonrpc: '2.0',
-    id: 3,
+    id: REQID.getLogs,
     method: 'eth_getLogs',
     params: [
       {
@@ -109,7 +116,7 @@ async function connectWS({ network }) {
   })
 
   const handled = {}
-  let heads, logs
+  let headsSubscriptionId, logsSubscriptionId
   ws.addEventListener('message', async function incoming(raw) {
     raw = raw.data
 
@@ -121,12 +128,12 @@ async function connectWS({ network }) {
     handled[hash] = true
 
     const data = JSON.parse(raw)
-    if (data.id === 1) {
+    if (data.id === REQID.logs) {
       // Store subscription ID for Logs
-      logs = data.result
-    } else if (data.id === 2) {
-      heads = data.result
-    } else if (data.id === 3) {
+      logsSubscriptionId = data.result
+    } else if (data.id === REQID.newHeads) {
+      headsSubscriptionId = data.result
+    } else if (data.id === REQID.getLogs) {
       log.info(`Got ${data.result.length} unhandled logs`)
       for (const result of data.result) {
         await handleLog({
@@ -137,7 +144,7 @@ async function connectWS({ network }) {
           contractVersion
         })
       }
-    } else if (get(data, 'params.subscription') === logs) {
+    } else if (get(data, 'params.subscription') === logsSubscriptionId) {
       await handleLog({
         ...data.params.result,
         web3,
@@ -145,7 +152,7 @@ async function connectWS({ network }) {
         networkId,
         contractVersion
       })
-    } else if (get(data, 'params.subscription') === heads) {
+    } else if (get(data, 'params.subscription') === headsSubscriptionId) {
       const number = handleNewHead(data.params.result, networkId)
       const blockDiff = number - lastBlock
       if (blockDiff > 500) {
