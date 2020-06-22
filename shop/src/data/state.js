@@ -215,6 +215,10 @@ function getReducer(key) {
         'hasChanges',
         action.value === false ? false : true
       )
+    } else if (action.type === 'setAdminLocation') {
+      newState = set(newState, 'adminLocation', action.location)
+    } else if (action.type === 'setStorefrontLocation') {
+      newState = set(newState, 'storefrontLocation', action.location)
     }
 
     newState.cart.subTotal = newState.cart.items.reduce((total, item) => {

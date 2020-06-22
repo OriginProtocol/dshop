@@ -5,7 +5,6 @@ import { useStateValue } from 'data/state'
 import { NetworksById } from 'data/Networks'
 
 import FetchShopConfig from '../new-shop/_FetchShopConfig'
-import SyncPrintfulButton from './_SyncPrintfulButton'
 import SyncToCacheButton from './_SyncToCacheButton'
 
 const SyncShop = ({ shop }) => {
@@ -22,9 +21,6 @@ const SyncShop = ({ shop }) => {
 
   return (
     <div>
-      <div className="form-group">
-        <SyncPrintfulButton shop={shop} />
-      </div>
       <div className="form-group">
         <label>Fetch IPFS Hash from URL</label>
         <div className="input-group">

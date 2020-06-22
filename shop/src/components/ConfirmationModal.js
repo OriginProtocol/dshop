@@ -9,10 +9,12 @@ const AdminConfirmationModal = ({
   confirmText = 'Are you sure?',
   onConfirm,
   onSuccess,
+  onError,
   buttonText,
   children,
   proceedText = 'Yes',
   cancelText = 'No',
+  loadingText = 'Loading...',
   validate = () => true,
   customEl,
   modalOnly,
@@ -25,7 +27,12 @@ const AdminConfirmationModal = ({
     if (state.doConfirm) {
       onConfirm()
         .then((response) => {
-          setState({ response, confirmed: true })
+          if (onError && !response.success) {
+            setState({ doConfirm: false, loading: false })
+            onError(response)
+          } else {
+            setState({ response, confirmed: true })
+          }
         })
         .catch((err) => {
           setState({ error: err.toString() })
@@ -99,6 +106,10 @@ const AdminConfirmationModal = ({
                   />
                 </div>
               </>
+            ) : state.loading ? (
+              <>
+                <div className="text-lg">{loadingText}</div>
+              </>
             ) : (
               <>
                 <div className="text-lg">{confirmText}</div>
@@ -113,7 +124,7 @@ const AdminConfirmationModal = ({
                     className="btn btn-primary px-5 ml-3"
                     onClick={() => {
                       if (validate()) {
-                        setState({ doConfirm: true })
+                        setState({ doConfirm: true, loading: true })
                       }
                     }}
                     children={proceedText}

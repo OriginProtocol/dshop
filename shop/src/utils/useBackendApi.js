@@ -9,6 +9,9 @@ function useBackendApi(opts = {}) {
     if (authToken) {
       headers.authorization = `bearer ${config.backendAuthToken}`
     }
+    if (!opts.method) {
+      opts.method = 'POST'
+    }
 
     return new Promise((resolve, reject) => {
       fetch(`${config.backend}${url}`, {
@@ -18,7 +21,11 @@ function useBackendApi(opts = {}) {
       })
         .then((res) => res.json())
         .then((json) => {
-          json.success ? resolve(json) : reject(new Error(json.reason))
+          if (opts.suppressError) {
+            resolve(json)
+          } else {
+            json.success ? resolve(json) : reject(new Error(json.reason))
+          }
         })
         .catch(reject)
     })

@@ -26,15 +26,6 @@ function validateShop(shop) {
   return true
 }
 
-/**
- * Validate backend config
- */
-function validateConfig(config) {
-  // TODO
-  return !!config
-}
-
 module.exports = {
-  validateShop,
-  validateConfig
+  validateShop
 }

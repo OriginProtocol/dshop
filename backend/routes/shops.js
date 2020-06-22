@@ -6,7 +6,8 @@ const {
   SellerShop,
   Network,
   ShopDeployment,
-  ShopDeploymentName
+  ShopDeploymentName,
+  Sequelize
 } = require('../models')
 const { authSellerAndShop, authRole, authSuperUser } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
@@ -15,6 +16,7 @@ const { createShop } = require('../utils/shop')
 const genPGP = require('../utils/pgp')
 const get = require('lodash/get')
 const set = require('lodash/set')
+const kebabCase = require('lodash/kebabCase')
 const fs = require('fs')
 const configs = require('../scripts/configs')
 const { execFile } = require('child_process')
@@ -83,31 +85,31 @@ module.exports = function (app) {
     res.json({ success: true, shops })
   })
 
-  app.post('/shops/:shopId/sync-printful', authSuperUser, async (req, res) => {
-    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
-    if (!shop) {
-      return res.json({ success: false, reason: 'no-such-shop' })
+  app.post(
+    '/shop/sync-printful',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const network = await Network.findOne({ where: { active: true } })
+      if (!network) {
+        return res.json({ success: false, reason: 'no-active-network' })
+      }
+
+      const { printful } = getConfig(req.shop.config)
+      if (!printful) {
+        return res.json({ success: false, reason: 'no-printful-api-key' })
+      }
+
+      const OutputDir = `${DSHOP_CACHE}/${req.shop.authToken}`
+
+      await downloadProductData({ OutputDir, printfulApi: printful })
+      await writeProductData({ OutputDir })
+      await downloadPrintfulMockups({ OutputDir })
+      await resizePrintfulMockups({ OutputDir })
+
+      res.json({ success: true })
     }
-
-    const network = await Network.findOne({ where: { active: true } })
-    if (!network) {
-      return res.json({ success: false, reason: 'no-active-network' })
-    }
-
-    const { printful } = getConfig(shop.config)
-    if (!printful) {
-      return res.json({ success: false, reason: 'no-printful-api-key' })
-    }
-
-    const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
-
-    await downloadProductData({ OutputDir, printfulApi: printful })
-    await writeProductData({ OutputDir })
-    await downloadPrintfulMockups({ OutputDir })
-    await resizePrintfulMockups({ OutputDir })
-
-    res.json({ success: true })
-  })
+  )
 
   app.get('/shops/:shopId/deployments', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
@@ -291,6 +293,17 @@ module.exports = function (app) {
         message: 'Already exists'
       })
     }
+    const existingShopWithHostname = await Shop.findOne({
+      where: { hostname: req.body.hostname }
+    })
+    if (existingShopWithHostname) {
+      return res.json({
+        success: false,
+        reason: 'invalid',
+        field: 'hostname',
+        message: 'Already exists'
+      })
+    }
 
     const network = await Network.findOne({ where: { active: true } })
     const networkConfig = getConfig(network.config)
@@ -347,6 +360,7 @@ module.exports = function (app) {
       ...defaultShopConfig,
       ...pgpKeys,
       dataUrl,
+      hostname: req.body.hostname,
       publicUrl,
       printful: req.body.printfulApi,
       deliveryApi: req.body.printfulApi ? true : false
@@ -587,6 +601,65 @@ module.exports = function (app) {
     }
   )
 
+  app.put(
+    '/shop/config',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const jsonConfig = {}
+      if (req.body.title) {
+        jsonConfig.fullTitle = req.body.title
+        if (!jsonConfig.logo) {
+          jsonConfig.title = req.body.title
+        }
+      }
+
+      if (Object.keys(jsonConfig).length) {
+        const configFile = `${DSHOP_CACHE}/${req.shop.authToken}/data/config.json`
+
+        if (!fs.existsSync(configFile)) {
+          return res.json({ success: false, reason: 'dir-not-found' })
+        }
+
+        try {
+          const raw = fs.readFileSync(configFile).toString()
+          const config = JSON.parse(raw)
+          const jsonStr = JSON.stringify({ ...config, ...jsonConfig }, null, 2)
+          fs.writeFileSync(configFile, jsonStr)
+        } catch (e) {
+          console.log(e)
+          return res.json({ success: false })
+        }
+      }
+
+      const existingConfig = getConfig(req.shop.config)
+      if (req.body.hostname) {
+        const hostname = kebabCase(req.body.hostname)
+        const existingShops = await Shop.findAll({
+          where: { hostname, [Sequelize.Op.not]: { id: req.shop.id } }
+        })
+        if (existingShops.length) {
+          return res.json({
+            success: false,
+            reason: 'Name unavailable',
+            field: 'hostname'
+          })
+        }
+        req.shop.hostname = req.body.hostname
+      }
+      if (req.body.title) {
+        req.shop.name = req.body.title
+      }
+      const newConfig = setConfig(
+        { ...existingConfig, ...req.body },
+        req.shop.config
+      )
+      req.shop.config = newConfig
+      req.shop.save()
+      return res.json({ success: true })
+    }
+  )
+
   app.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {
@@ -596,7 +669,7 @@ module.exports = function (app) {
       where: { networkId: req.body.networkId }
     })
     if (!network) {
-      return res.json({ success: false, reason: 'no-active-network' })
+      return res.json({ success: false, reason: 'no-such-network' })
     }
 
     const dataDir = req.params.shopId

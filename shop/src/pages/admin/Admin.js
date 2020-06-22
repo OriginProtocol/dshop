@@ -1,5 +1,11 @@
 import React, { useState } from 'react'
-import { Link, Redirect, Switch, Route } from 'react-router-dom'
+import {
+  Redirect,
+  Switch,
+  Route,
+  useLocation,
+  useHistory
+} from 'react-router-dom'
 import 'components/admin/Styles'
 
 import { useStateValue } from 'data/state'
@@ -27,7 +33,9 @@ import PublishChanges from './_PublishChanges'
 const Admin = () => {
   const { loading, error } = useAuth()
   const [newShop, setNewShop] = useState()
-  const [{ admin }] = useStateValue()
+  const [{ admin, storefrontLocation }, dispatch] = useStateValue()
+  const location = useLocation()
+  const history = useHistory()
 
   if (error) {
     return <div className="fixed-loader">Admin Connection Error</div>
@@ -49,7 +57,16 @@ const Admin = () => {
             <NewShop shouldShow={newShop} onClose={() => setNewShop(false)} />
           </h1>
           <div className="nav-preview">
-            <Link to="/">Storefront</Link>
+            <a
+              href="#storefront"
+              onClick={(e) => {
+                e.preventDefault()
+                dispatch({ type: 'setAdminLocation', location })
+                history.push(storefrontLocation || '/')
+              }}
+            >
+              Storefront
+            </a>
           </div>
           <div className="user">
             <Icons.User />

@@ -50,14 +50,20 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
       onConfirm={() =>
         post('/shop', {
           method: 'POST',
+          suppressError: true,
           body: JSON.stringify({
             shopType: 'empty',
             name: state.name,
             backend: get(window, 'location.origin'),
-            dataDir: kebabCase(state.name)
+            dataDir: kebabCase(state.name),
+            hostname: kebabCase(state.name)
           })
         })
       }
+      onError={(json) => {
+        console.log(json)
+        setState({ nameError: json.message })
+      }}
       validate={() => {
         const { valid, newState } = validate(state)
         setState(newState)

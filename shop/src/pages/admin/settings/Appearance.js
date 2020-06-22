@@ -37,6 +37,7 @@ const ShopAppearance = () => {
       title: get(config, 'fullTitle'),
       aboutStore: get(shopConfig, 'aboutStore'),
       domain: get(shopConfig, 'domain'),
+      hostname: get(shopConfig, 'hostname'),
       logo: get(config, 'logo'),
       favicon: get(config, 'favicon'),
       ...socialLinkKeys.reduce(
@@ -56,15 +57,21 @@ const ShopAppearance = () => {
         setSaving('saving')
 
         try {
-          await post('/config', {
-            method: 'POST',
-            body: JSON.stringify(
-              pickBy(
-                state,
-                (v, k) => !k.endsWith('Error') && !socialLinkKeys.includes(k)
-              )
-            )
+          const shopConfig = pickBy(
+            state,
+            (v, k) => !k.endsWith('Error') && !socialLinkKeys.includes(k)
+          )
+          const shopConfigRes = await post('/shop/config', {
+            method: 'PUT',
+            body: JSON.stringify(shopConfig),
+            suppressError: true
           })
+
+          if (!shopConfigRes.success && shopConfigRes.field) {
+            setState({ [`${shopConfigRes.field}Error`]: shopConfigRes.reason })
+            setSaving(false)
+            return
+          }
 
           const hasChange = socialLinkKeys.some(
             (s) => get(state, s, '') !== get(config, s, '')
@@ -230,6 +237,7 @@ require('react-styl')(`
       input.form-control
         background-color: transparent
       .suffix
+        pointer-events: none
         position: absolute
         top: 0
         color: #9faebd

@@ -14,7 +14,8 @@ const AdminPrintfulSync = ({ className = '' }) => {
       buttonText="Sync"
       confirmText="Are you sure you want to sync with Printful?"
       confirmedText="Synced OK"
-      onConfirm={() => post(`/shops/sync-printful`)}
+      loadingText="Syncing..."
+      onConfirm={() => post(`/shop/sync-printful`)}
       onSuccess={async () => {
         dispatch({ type: 'reload', target: 'products' })
       }}

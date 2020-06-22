@@ -1,12 +1,16 @@
 import React from 'react'
+import { useLocation, useHistory } from 'react-router-dom'
 
-import Link from 'components/Link'
 import AccountSelector from 'pages/admin/_AccountSelector'
 import { DshopLogoWhite } from 'components/icons/Admin'
 
+import { useStateValue } from 'data/state'
 import useAuth from 'utils/useAuth'
 
 const AdminBar = () => {
+  const [{ adminLocation }, dispatch] = useStateValue()
+  const location = useLocation()
+  const history = useHistory()
   const { loading, logout } = useAuth({ only: localStorage.isAdmin })
   if (!localStorage.isAdmin) {
     return null
@@ -20,9 +24,17 @@ const AdminBar = () => {
           {loading ? null : <AccountSelector pathname="/" forceTitle={true} />}
         </div>
         <div className="d-flex">
-          <Link to="/admin" className="nav-link">
+          <a
+            href="#/admin"
+            className="nav-link"
+            onClick={(e) => {
+              e.preventDefault()
+              dispatch({ type: 'setStorefrontLocation', location })
+              history.push(adminLocation || '/admin')
+            }}
+          >
             Admin
-          </Link>
+          </a>
           <a
             href="#"
             onClick={(e) => {

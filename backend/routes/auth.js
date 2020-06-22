@@ -8,7 +8,6 @@ const {
 const fs = require('fs')
 const { createSeller, numSellers } = require('../utils/sellers')
 const encConf = require('../utils/encryptedConfig')
-const { validateConfig } = require('../utils/validators')
 const { DSHOP_CACHE } = require('../utils/const')
 const get = require('lodash/get')
 const omit = require('lodash/omit')
@@ -225,7 +224,7 @@ module.exports = function (app) {
   })
 
   app.get('/config', authSellerAndShop, authRole('admin'), async (req, res) => {
-    const config = await encConf.dump(req.shop.id)
+    const config = encConf.getConfig(req.shop.config)
     return res.json({
       success: true,
       config: {
@@ -234,24 +233,6 @@ module.exports = function (app) {
       }
     })
   })
-
-  app.post(
-    '/config',
-    authSellerAndShop,
-    authRole('admin'),
-    async (req, res) => {
-      const config = req.body
-
-      if (!validateConfig(config)) {
-        return res
-          .status(400)
-          .json({ success: false, message: 'Invalid config data' })
-      }
-
-      await encConf.assign(req.shop.id, config)
-      return res.json({ success: true })
-    }
-  )
 
   app.get('/password', authShop, async (req, res) => {
     const password = await encConf.get(req.shop.id, 'password')
