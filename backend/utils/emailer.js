@@ -5,6 +5,8 @@ const aws = require('aws-sdk')
 const fetch = require('node-fetch')
 const sharp = require('sharp')
 
+const { getLogger } = require('../utils/logger')
+
 const cartData = require('./cartData')
 const encConf = require('./encryptedConfig')
 const { SUPPORT_EMAIL_OVERRIDE } = require('./const')
@@ -15,6 +17,8 @@ const email = require('./templates/email')
 const emailTxt = require('./templates/emailTxt')
 const orderItem = require('./templates/orderItem')
 const orderItemTxt = require('./templates/orderItemTxt')
+
+const log = getLogger('utils.emailer')
 
 function formatPrice(num) {
   return `$${(num / 100).toFixed(2)}`
@@ -33,11 +37,11 @@ function optionsForItem(item) {
 async function sendMail(shopId, cart, skip) {
   const config = await encConf.dump(shopId)
   if (!config.email || config.email === 'disabled') {
-    console.log('Emailer disabled. Skipping sending email.')
+    log.debug('Emailer disabled. Skipping sending email.')
     return
   }
   if (process.env.NODE_ENV === 'test') {
-    console.log('Test environment. Email will be generated but not sent.')
+    log.info('Test environment. Email will be generated but not sent.')
     skip = true
   }
 
@@ -205,18 +209,16 @@ async function sendMail(shopId, cart, skip) {
   if (!skip) {
     transporter.sendMail(message, (err, msg) => {
       if (err) {
-        console.log('Error sending user confirmation email')
-        console.log(err)
+        log.error('Error sending user confirmation email:', err)
       } else {
-        console.log(msg.envelope)
+        log.debug(msg.envelope)
       }
     })
     transporter.sendMail(messageVendor, (err, msg) => {
       if (err) {
-        console.log('Error sending merchant confirmation email')
-        console.log(err)
+        log.error('Error sending merchant confirmation email:', err)
       } else {
-        console.log(msg.envelope)
+        log.debug(msg.envelope)
       }
     })
   }

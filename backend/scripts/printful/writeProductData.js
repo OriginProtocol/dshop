@@ -2,6 +2,10 @@ const fs = require('fs')
 const sortBy = require('lodash/sortBy')
 const get = require('lodash/get')
 
+const { getLogger } = require('../../utils/logger')
+
+const log = getLogger('utils.printful.writeProductData')
+
 async function writeProductData({ OutputDir, png }) {
   const productsRaw = fs.readFileSync(`${OutputDir}/printful-products.json`)
   const products = JSON.parse(productsRaw).reverse()
@@ -40,7 +44,7 @@ async function writeProductData({ OutputDir, png }) {
     const product = JSON.parse(productRaw)
     const externalId = syncProduct.sync_product.id
     if (!product.variants) {
-      console.log(`Could not find variants on product ${productId}`)
+      log.warn(`Could not find variants on product ${productId}`)
       continue
     }
 
@@ -76,7 +80,7 @@ async function writeProductData({ OutputDir, png }) {
       printfulSyncIds[vId] = syncVariant.id
       const v = product.variants.find((v) => v.id === vId)
       if (!v) {
-        console.log(`Could not find variant ${vId} on product ${row.id}`)
+        log.warn(`Could not find variant ${vId} on product ${row.id}`)
         return
       }
       const color = v.color

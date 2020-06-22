@@ -2,6 +2,7 @@ require('dotenv').config()
 
 const Web3 = require('web3')
 const openpgp = require('openpgp')
+const util = require('ethereumjs-util')
 
 const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
@@ -10,7 +11,9 @@ const { upsertEvent, getEventObj } = require('./events')
 const { getConfig } = require('./encryptedConfig')
 const discordWebhook = require('./discordWebhook')
 const { Network, Order, Shop } = require('../models')
-const util = require('ethereumjs-util')
+const { getLogger } = require('../utils/logger')
+
+const log = getLogger('utils.handleLog')
 
 const web3 = new Web3()
 const Marketplace = new web3.eth.Contract(abi)
@@ -46,7 +49,7 @@ const handleLog = async ({
 
   const eventAbi = MarketplaceABI.find((i) => i.signature === topics[0])
   if (!eventAbi) {
-    console.log('Unknown event')
+    log.warn('Unknown event')
     return
   }
 
@@ -65,13 +68,13 @@ const handleLog = async ({
   const eventObj = getEventObjFn(rawEvent)
 
   const listingId = `${networkId}-${contractVersion}-${eventObj.listingId}`
-  console.log(`Event ${eventObj.eventName} for listing Id ${listingId}`)
+  log.info(`Event ${eventObj.eventName} for listing Id ${listingId}`)
 
   // The listener calls handleLog for any event emitted by the marketplace.
   // Skip processing any event that is not dshop related.
   const shop = await Shop.findOne({ where: { listingId } })
   if (!shop) {
-    console.log(`Event is not for a registered dshop. Skipping.`)
+    log.debug(`Event is not for a registered dshop. Skipping.`)
     return
   }
 
@@ -105,7 +108,7 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
 
   // Skip any event that is not offer related.
   if (eventName.indexOf('Offer') < 0) {
-    console.log(`Not offer related. Ignoring event ${eventName}`)
+    log.debug(`Not offer related. Ignoring event ${eventName}`)
     return
   }
 
@@ -122,7 +125,7 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
 
   // If the order was already recorded, only update its status and we are done.
   if (order) {
-    console.log(`Updating status of DB order ${order.orderId} to ${eventName}`)
+    log.debug(`Updating status of DB order ${order.orderId} to ${eventName}`)
     await order.update({
       statusStr: eventName,
       updatedBlock: event.blockNumber
@@ -133,14 +136,14 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
   // At this point we expect the event to be an offer creation since no existing
   // order row was found in the DB.
   if (eventName !== 'OfferCreated') {
-    console.log(
+    log.error(
       `Error: got event ${eventName} offerId ${offerId} but no order found in the DB.`
     )
     return
   }
 
-  console.log(`${eventName} - ${event.offerId} by ${event.party}`)
-  console.log(`IPFS Hash: ${event.ipfsHash}`)
+  log.info(`${eventName} - ${event.offerId} by ${event.party}`)
+  log.info(`IPFS Hash: ${event.ipfsHash}`)
 
   const network = await Network.findOne({ where: { active: true } })
   const networkConfig = getConfig(network.config)
@@ -150,13 +153,13 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
     const shopConfig = getConfig(shop.config)
     const { dataUrl, pgpPrivateKey, pgpPrivateKeyPass } = shopConfig
     const ipfsGateway = await getIPFSGateway(dataUrl, event.networkId)
-    console.log('IPFS Gateway', ipfsGateway)
+    log.debug('IPFS Gateway', ipfsGateway)
 
     // Load the offer data. The main thing we are looking for is the IPFS hash
     // of the encrypted data.
     const offerData = await getText(ipfsGateway, event.ipfsHash, 10000)
     const offer = JSON.parse(offerData)
-    console.log('Offer:', offer)
+    log.debug('Offer:', offer)
 
     const encryptedHash = offer.encryptedData
     if (!encryptedHash) {
@@ -197,9 +200,9 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
       orderObj.commissionPending = Math.floor(data.subTotal / 200)
     }
     order = await Order.create(orderObj)
-    console.log(`Saved order ${order.orderId} to DB.`)
+    log.info(`Saved order ${order.orderId} to DB.`)
   } catch (e) {
-    console.error(e)
+    log.error(e)
     // Record the error in the DB.
     order = await Order.create({
       networkId: event.networkId,

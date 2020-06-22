@@ -1,6 +1,9 @@
 const Web3 = require('web3')
+const { getLogger } = require('../utils/logger')
 const abi = require('./_abi')
 const { post, getBytes32FromIpfsHash } = require('./_ipfs')
+
+const log = getLogger('utils.createListing')
 
 const baseListing = {
   __typename: 'UnitListing',
@@ -53,7 +56,7 @@ async function createListing({ network, pk, title }) {
   if (!account.address) {
     throw new Error('Error adding wallet')
   }
-  console.log(`Using wallet ${account.address}`)
+  log.info(`Using wallet ${account.address}`)
 
   const balance = await web3.eth.getBalance(account.address)
   if (balance === '0') {
@@ -76,7 +79,7 @@ async function createListing({ network, pk, title }) {
       .createListing(ipfsBytes, 0, account.address)
       .send({ from: account.address, gas: 350000 })
   } catch (e) {
-    console.log(e)
+    log.error(e)
   }
 
   web3.currentProvider.connection.close()

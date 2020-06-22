@@ -224,9 +224,6 @@ async function load(shopId, force = false) {
   const [iv, encryptedConf] = record.config.split(':')
   loadedIVs[shopId] = Buffer.from(iv, 'hex')
 
-  //console.log('iv: ', loadedIVs[shopId])
-  //console.log('encryptedConf: ', encryptedConf)
-
   loadedConfigs[shopId] = decryptJSON(loadedIVs[shopId], encryptedConf)
 
   return record

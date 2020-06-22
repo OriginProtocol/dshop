@@ -1,18 +1,21 @@
 const fs = require('fs')
 const sharp = require('sharp')
 const https = require('https')
+const { getLogger } = require('../../utils/logger')
+
+const log = getLogger('scripts.printful.downloadPrintfulMockups')
 
 async function downloadPrintfulMockups({ OutputDir, png }) {
   const filesRaw = fs.readFileSync(`${OutputDir}/printful-images.json`)
   const files = JSON.parse(filesRaw)
-  console.log(`Downloading ${files.length} mockups...`)
+  log.info(`Downloading ${files.length} mockups...`)
 
   for (const file of files) {
     const prefix = `${OutputDir}/data/${file.id}/orig`
     fs.mkdirSync(prefix, { recursive: true })
     const filename = `${prefix}/${file.file}`
     const filenameOut = png ? filename : filename.replace('.png', '.jpg')
-    // console.log(filenameOut)
+    // log.debug(filenameOut)
     if (!fs.existsSync(filenameOut)) {
       await new Promise((resolve) => {
         const f = fs.createWriteStream(filename).on('finish', resolve)

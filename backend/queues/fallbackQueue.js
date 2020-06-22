@@ -1,3 +1,7 @@
+const { getLogger } = require('../utils/logger')
+
+const log = getLogger('queues.fallbackQueue')
+
 /**
  * A fallback "queue" to use when redis is unavailable. It just runs
  * the queue's processing function immediately when you add a job.
@@ -22,14 +26,14 @@ class FallbackQueue {
    * @param {*} data
    */
   async add(data) {
-    console.log(this.name + ' queue using inline queue processor fallback.')
+    log.info(this.name + ' queue using inline queue processor fallback.')
     if (this.processor == undefined) {
       throw new Error('No processor defined for this fake job queue')
     }
     const job = {
       data: data,
       progress: () => undefined,
-      log: console.log
+      log: log.info
     }
     await this.processor(job)
   }
