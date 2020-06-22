@@ -15,6 +15,7 @@ import MobileMenu from './_MobileMenu'
 import Products from './Products'
 import Product from './Product'
 import About from './About'
+import Terms from './Terms'
 import Footer from './_Footer'
 import Affiliates from './affiliates/Affiliates'
 import Cart from './cart/Cart'
@@ -44,6 +45,7 @@ const Content = () => {
       <Route path="/cart" component={Cart} />
       <Route path="/search" component={Products} />
       <Route path="/about" component={About} />
+      <Route path="/terms" component={Terms} />
       {!config.affiliates ? null : (
         <Route path="/affiliates" component={Affiliates} />
       )}

@@ -2,17 +2,10 @@ import React from 'react'
 
 import Link from 'components/Link'
 
-// import useConfig from 'utils/useConfig'
+import useConfig from 'utils/useConfig'
 
 const Footer = () => {
-  // const { config } = useConfig()
-  // if (config.footer) {
-  //   return (
-  //     <div className="footer">
-  //       <div dangerouslySetInnerHTML={{ __html: config.footer }} />
-  //     </div>
-  //   )
-  // }
+  const { config } = useConfig()
   const date = new Date()
   return (
     <div className="footer">
@@ -29,6 +22,9 @@ const Footer = () => {
           &copy;{` Origin Protocol ${date.getFullYear()}`}
         </div>
         <div className="links">
+          {config.terms ? (
+            <Link to="/terms">Terms &amp; Conditions</Link>
+          ) : null}
           <Link to="/about">FAQ</Link>
           <a
             target="_blank"

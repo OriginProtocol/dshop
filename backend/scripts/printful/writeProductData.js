@@ -48,9 +48,18 @@ async function writeProductData({ OutputDir, png }) {
       (p) => p.externalId === externalId
     )
 
-    let handle
+    let handle,
+      existingData = {}
     if (existingProduct) {
       handle = existingProduct.id
+      try {
+        const existingDataRaw = fs.readFileSync(
+          `${OutputDir}/data/${handle}/data.json`
+        )
+        existingData = JSON.parse(existingDataRaw)
+      } catch (e) {
+        console.log(`Error reading existing data for ${handle}`)
+      }
     } else {
       handle = syncProduct.sync_product.name
         .toLowerCase()
@@ -142,11 +151,13 @@ async function writeProductData({ OutputDir, png }) {
 
     printfulIds[handle] = printfulSyncIds
 
+    const description = product.product.description.replace(/\r\n/g, '<br/>')
+
     const out = {
       id: handle,
       externalId,
       title: syncProduct.sync_product.name,
-      description: product.product.description.replace(/\r\n/g, '<br/>'),
+      description: existingData.description || description,
       price: Number(syncProduct.sync_variants[0].retail_price.replace('.', '')),
       available: true,
       options,

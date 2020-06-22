@@ -195,15 +195,17 @@ module.exports = function (app) {
     const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
 
     fs.mkdirSync(OutputDir, { recursive: true })
-    console.log(`Downloading ${req.body.hash} from ${network.ipfsApi}`)
+    console.log(`Downloading ${req.body.hash} from ${network.ipfs}`)
     const path = `/api/v0/get?arg=${req.body.hash}&archive=true&compress=true`
+
+    // console.log(`curl -X POST ${network.ipfs}${path}`)
 
     await new Promise((resolve) => {
       const f = fs
         .createWriteStream(`${OutputDir}/data.tar.gz`)
         .on('finish', resolve)
-      const fetchLib = network.ipfsApi.indexOf('https') === 0 ? https : http
-      const hostname = network.ipfsApi.split('://')[1]
+      const fetchLib = network.ipfs.indexOf('https') === 0 ? https : http
+      const hostname = network.ipfs.split('://')[1]
 
       const req = fetchLib.request({ hostname, path, method: 'POST' }, (res) =>
         res.pipe(f)

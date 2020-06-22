@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react'
 import useShopConfig from 'utils/useShopConfig'
 import Tabs from './_Tabs'
 import PrintfulModal from './apps/PrintfulModal'
+import PrintfulSync from './apps/PrintfulSync'
 import DisconnectModal from './payments/_DisconnectModal'
 
 const maskSecret = (secret) => {
@@ -29,8 +30,9 @@ const AppSettings = () => {
         description: printfulEnabled
           ? `Printful API key: ${maskSecret(printful)}`
           : 'Import your products from Printful.',
-        icon: <img src="/images/printful.png" />,
-        enabled: printfulEnabled
+        icon: <img src="images/printful.svg" width="70%" />,
+        enabled: printfulEnabled,
+        actions: <PrintfulSync className="mr-2" />
       }
     ]
   }, [shopConfig])
@@ -53,10 +55,13 @@ const AppSettings = () => {
               </div>
               <div className="actions">
                 {processor.enabled ? (
-                  <DisconnectModal
-                    processor={processor}
-                    afterDelete={() => refetch()}
-                  />
+                  <>
+                    {processor.actions}
+                    <DisconnectModal
+                      processor={processor}
+                      afterDelete={() => refetch()}
+                    />
+                  </>
                 ) : (
                   <button
                     className="btn btn-outline-primary px-4"
