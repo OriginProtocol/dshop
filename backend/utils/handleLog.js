@@ -15,6 +15,8 @@ const { getLogger } = require('../utils/logger')
 
 const log = getLogger('utils.handleLog')
 
+const { validateDiscountOnOrder } = require('./discounts')
+
 const web3 = new Web3()
 const Marketplace = new web3.eth.Contract(abi)
 const MarketplaceABI = Marketplace._jsonInterface
@@ -198,6 +200,10 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
     if (data.referrer) {
       orderObj.referrer = util.toChecksumAddress(data.referrer)
       orderObj.commissionPending = Math.floor(data.subTotal / 200)
+    }
+    const { valid, error } = await validateDiscountOnOrder(orderObj, { markIfValid: true })
+    if (!valid) {
+      orderObj.data.error = error
     }
     order = await Order.create(orderObj)
     log.info(`Saved order ${order.orderId} to DB.`)

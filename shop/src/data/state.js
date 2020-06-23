@@ -221,6 +221,9 @@ function getReducer(key) {
       newState = set(newState, 'storefrontLocation', action.location)
     }
 
+    // IMPORTANT: Keep this function's total calculation in sync with the calculation
+    // in backend/utils/disocunts.js#validateDiscountOnOrder() function
+
     newState.cart.subTotal = newState.cart.items.reduce((total, item) => {
       return total + item.quantity * item.price
     }, 0)

@@ -1,3 +1,5 @@
+const get = require('lodash/get')
+
 module.exports = (sequelize, DataTypes) => {
   const isPostgres = sequelize.options.dialect === 'postgres'
 
@@ -56,7 +58,24 @@ module.exports = (sequelize, DataTypes) => {
     {
       underscored: true,
       timestamps: false,
-      tableName: 'orders'
+      tableName: 'orders',
+      hooks: {
+        beforeCreate(order) {
+          const userEmail = get(order, 'data.userInfo.email')
+          if (userEmail) {
+            order = {
+              ...order,
+              data: {
+                ...order.data,
+                userInfo: {
+                  ...order.data.userInfo,
+                  email: userEmail.toLowerCase()
+                }
+              }
+            }
+          }
+        }
+      }
     }
   )
 

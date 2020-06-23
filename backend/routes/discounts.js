@@ -1,53 +1,15 @@
-const { Sequelize, Discount } = require('../models')
+const { Discount } = require('../models')
 const { authShop, authSellerAndShop } = require('./_auth')
+
+const { validateDiscount, getSafeDiscountProps } = require('../utils/discounts')
 
 module.exports = function (app) {
   app.post('/check-discount', authShop, async (req, res) => {
-    const code = req.body.code
-    const discounts = await Discount.findAll({
-      where: {
-        [Sequelize.Op.and]: [
-          { status: 'active' },
-          Sequelize.where(
-            Sequelize.fn('lower', Sequelize.col('code')),
-            Sequelize.fn('lower', code)
-          )
-        ],
-        shopId: req.shop.id,
-        startTime: {
-          [Sequelize.Op.lte]: Date.now()
-        },
-        endTime: {
-          [Sequelize.Op.or]: [
-            { [Sequelize.Op.gt]: Date.now() },
-            { [Sequelize.Op.eq]: null }
-          ]
-        }
-      }
-    })
-
-    if (discounts.length > 0) {
-      const discount = discounts.find((d) => {
-        return Number(d.maxUses) > 0 && Number(d.uses) < Number(d.maxUses)
-      })
-
-      if (!discount) {
-        return res.json({
-          reason: 'Discount code has expired'
-        })
-      }
-
-      res.json({
-        code: discount.code,
-        value: discount.value,
-        discountType: discount.discountType
-      })
-      return
+    const r = await validateDiscount(req.body.code, req.shop)
+    if (r.discount) {
+      r.discount = getSafeDiscountProps(r.discount)
     }
-
-    res.json({
-      reason: 'Invalid discount code'
-    })
+    res.json(r)
   })
 
   app.get('/discounts', authSellerAndShop, async (req, res) => {
