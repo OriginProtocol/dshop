@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import get from 'lodash/get'
 
 import formatPrice from 'utils/formatPrice'
+import Tooltip from 'components/Tooltip'
 // import Paginate from 'components/Paginate'
 
 import useOrders from 'utils/useOrders'
@@ -106,7 +107,14 @@ const AdminOrdersTable = ({ orders }) => {
               history.push(`/admin/orders/${order.orderId}`)
             }}
           >
-            <td>{order.orderId}</td>
+            <td>
+              {!get(order, 'data.error') ? null : (
+                <Tooltip text={order.data.error}>
+                  <img src="/images/error-icon.svg" className="error-icon mr-2" />
+                </Tooltip>
+              )}
+              {order.orderId}
+            </td>
             <td>{dayjs(order.createdAt).format('MMM D, h:mm A')}</td>
             <td>{customerName(order)}</td>
             <td>{get(order, 'data.paymentMethod.label')}</td>

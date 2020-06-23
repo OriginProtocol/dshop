@@ -1,6 +1,8 @@
 import React from 'react'
 import { NavLink, useRouteMatch, Switch, Route } from 'react-router-dom'
 
+import get from 'lodash/get'
+
 import useOrder from 'utils/useOrder'
 import { useStateValue } from 'data/state'
 
@@ -47,6 +49,11 @@ const AdminOrder = () => {
           </Link>
         </div>
       </h3>
+      {!get(order, 'data.error') ? null : (
+        <div className="alert alert-danger">
+          {order.data.error}
+        </div>
+      )}
       <ul className="nav nav-tabs mt-3 mb-4">
         <li className="nav-item">
           <NavLink className="nav-link" to={urlPrefix} exact>
