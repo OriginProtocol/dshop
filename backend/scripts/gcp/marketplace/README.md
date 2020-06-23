@@ -37,6 +37,10 @@ You will also need an account to build this from. While it's possible there's a 
 The [documentation](https://www.packer.io/docs/builders/googlecompute/) says that only the first two permissions are needed, but I wasn't able to get it to work without it. After you create the user, you need to download a json formatted key file, and call it accounts.json. You will also need to set the GOOGLE_APPLICATION_CREDENTIALS env var to the location of the accounts.json file.
 
     export GOOGLE_APPLICATION_CREDENTIALS=<path>/accounts.json
+    
+Set the GCP_PROJECT_ID env var to your GCP project ID. That is the project that will be used to build the image. For example:
+
+    export GCP_PROJECT_ID='originprotocol-public'
 
 
 To build, just run:
