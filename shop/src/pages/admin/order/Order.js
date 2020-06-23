@@ -50,9 +50,7 @@ const AdminOrder = () => {
         </div>
       </h3>
       {!get(order, 'data.error') ? null : (
-        <div className="alert alert-danger">
-          {order.data.error}
-        </div>
+        <div className="alert alert-danger">{order.data.error}</div>
       )}
       <ul className="nav nav-tabs mt-3 mb-4">
         <li className="nav-item">

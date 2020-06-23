@@ -201,7 +201,9 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
       orderObj.referrer = util.toChecksumAddress(data.referrer)
       orderObj.commissionPending = Math.floor(data.subTotal / 200)
     }
-    const { valid, error } = await validateDiscountOnOrder(orderObj, { markIfValid: true })
+    const { valid, error } = await validateDiscountOnOrder(orderObj, {
+      markIfValid: true
+    })
     if (!valid) {
       orderObj.data.error = error
     }

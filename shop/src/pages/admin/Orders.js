@@ -110,7 +110,10 @@ const AdminOrdersTable = ({ orders }) => {
             <td>
               {!get(order, 'data.error') ? null : (
                 <Tooltip text={order.data.error}>
-                  <img src="/images/error-icon.svg" className="error-icon mr-2" />
+                  <img
+                    src="/images/error-icon.svg"
+                    className="error-icon mr-2"
+                  />
                 </Tooltip>
               )}
               {order.orderId}

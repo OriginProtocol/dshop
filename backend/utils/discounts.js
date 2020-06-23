@@ -63,14 +63,18 @@ const getSafeDiscountProps = (discount) => {
 
 /**
  * Check if user has already used an one-use discount
- * @param {Model.Discount} discountObj 
+ * @param {Model.Discount} discountObj
  * @param {String} userEmail
  * @param {Number} shopId
- * 
+ *
  * @returns true if already used; false otherwise
  */
-const checkIfUserHasAvailedDiscount = async (discountObj, userEmail, shopId) => {
-  if  (discountObj.onePerCustomer) {
+const checkIfUserHasAvailedDiscount = async (
+  discountObj,
+  userEmail,
+  shopId
+) => {
+  if (discountObj.onePerCustomer) {
     const order = await Order.findOne({
       where: {
         shopId: shopId,
@@ -105,9 +109,12 @@ const markDiscountAsUsed = async (discountCode, shop) => {
 /**
  * Validate discount applied on an order.
  * @param {Models.Order} orderObj
- * @returns {{ valid, error }} 
+ * @returns {{ valid, error }}
  */
-const validateDiscountOnOrder = async (orderObj, args = { markIfValid: false }) => {
+const validateDiscountOnOrder = async (
+  orderObj,
+  args = { markIfValid: false }
+) => {
   const { markIfValid } = args
   // IMPORTANT: Keep this function's total calculation
   // in sync with the calculation in shop/src/data/state.js
@@ -133,10 +140,10 @@ const validateDiscountOnOrder = async (orderObj, args = { markIfValid: false }) 
   }
 
   // Fetch discount from DB
-  const { error, discount: discountObj } = await validateDiscount(
-    appliedDiscountObj.code,
-    { id: orderObj.shopId }
-  )
+  const {
+    error,
+    discount: discountObj
+  } = await validateDiscount(appliedDiscountObj.code, { id: orderObj.shopId })
 
   if (error) {
     // TODO: What if the discount was valid when user placed an order
@@ -160,7 +167,9 @@ const validateDiscountOnOrder = async (orderObj, args = { markIfValid: false }) 
   }
 
   const userEmail = get(cart, 'userInfo.email', '')
-  if (await checkIfUserHasAvailedDiscount(discountObj, userEmail, orderObj.shopId)) {
+  if (
+    await checkIfUserHasAvailedDiscount(discountObj, userEmail, orderObj.shopId)
+  ) {
     return {
       error: 'Discount error: Already availed the discount'
     }
