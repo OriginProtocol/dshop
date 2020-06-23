@@ -87,6 +87,7 @@ const AdminUsers = () => {
         </table>
       )}
       <form
+        autoComplete="off"
         className="d-flex flex-wrap align-items-start"
         onSubmit={(e) => {
           e.preventDefault()

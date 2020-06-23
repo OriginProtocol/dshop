@@ -16,7 +16,7 @@ const pick = require('lodash/pick')
 module.exports = function (app) {
   app.get('/auth', (req, res) => {
     if (!req.session.sellerId) {
-      return res.json({ success: false })
+      return res.json({ success: false, message: 'Not logged in' })
     }
 
     const id = req.session.sellerId
@@ -45,7 +45,9 @@ module.exports = function (app) {
             ...s.dataValues,
             role: get(s, 'Sellers[0].SellerShop.dataValues.role')
           }))
-          const role = req.sellerShop ? req.sellerShop.role : ''
+          const authToken = String(req.headers.authorization).split(' ')[1]
+          const shop = shops.find(s => s.authToken === authToken)
+          const role = shop ? shop.role : ''
           res.json({ success: true, email, role, shops })
         })
       }
@@ -138,37 +140,30 @@ module.exports = function (app) {
     }
   })
 
-  app.post(
-    '/auth/login',
-    async (req, res, next) => {
-      const seller = await Seller.findOne({ where: { email: req.body.email } })
-      if (!seller) {
-        return res.status(404).send({
-          success: false,
-          message: 'Invalid email'
-        })
-      }
-      const check = await checkPassword(req.body.password, seller.password)
-      if (check === true) {
-        req.session.sellerId = seller.id
-        req.seller = seller
-        next()
-      } else {
-        return res.status(404).send({
-          success: false,
-          message: 'Invalid password'
-        })
-      }
-    },
-    authSellerAndShop,
-    (req, res) => {
-      res.json({
-        success: true,
-        email: req.seller.email,
-        role: req.seller.superuser ? 'admin' : get(req, 'sellerShop.role')
+  app.post('/auth/login', async (req, res) => {
+    const seller = await Seller.findOne({ where: { email: req.body.email } })
+    if (!seller) {
+      return res.status(404).send({
+        success: false,
+        message: 'Invalid email'
       })
     }
-  )
+    const check = await checkPassword(req.body.password, seller.password)
+    if (check === true) {
+      req.session.sellerId = seller.id
+      req.seller = seller
+    } else {
+      return res.status(404).send({
+        success: false,
+        message: 'Invalid password'
+      })
+    }
+    res.json({
+      success: true,
+      email: req.seller.email,
+      role: seller.superuser ? 'admin' : ''
+    })
+  })
 
   const logoutHandler = (req, res) => {
     if (req.session.sellerId) {

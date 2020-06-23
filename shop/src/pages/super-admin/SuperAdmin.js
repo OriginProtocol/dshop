@@ -8,7 +8,7 @@ import * as Icons from 'components/icons/Admin'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 
-import Login from './Login'
+import Login from 'components/admin/Login'
 import Menu from './_Menu'
 import FirstTime from './setup/FirstTime'
 

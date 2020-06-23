@@ -8,7 +8,7 @@ import ErrorText from 'pages/super-admin/setup/_ErrorText'
 const Login = () => {
   const [state, setState] = useState({ email: '', password: '', error: '' })
   const [, dispatch] = useStateValue()
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi()
 
   return (
     <SetupLayout>
@@ -22,18 +22,9 @@ const Login = () => {
             password: state.password
           })
           post('/auth/login', { body })
-            .then(async (res) => {
-              if (res.ok) {
-                setState({ ...state, error: '' })
-                const auth = await res.json()
-                dispatch({ type: 'setAuth', auth })
-              } else {
-                const resJson = await res.json()
-                setState({
-                  ...state,
-                  error: resJson.message || 'Something went wrong'
-                })
-              }
+            .then((auth) => {
+              setState({ ...state, error: '' })
+              dispatch({ type: 'setAuth', auth })
             })
             .catch((err) => {
               console.error('Error signing in', err)

@@ -81,6 +81,19 @@ async function authSuperUser(req, res, next) {
   next()
 }
 
+async function authUser(req, res, next) {
+  if (!req.session.sellerId) {
+    return res.status(401).json({ success: false, message: 'Not logged in' })
+  }
+  const seller = await Seller.findOne({
+    where: { id: req.session.sellerId }
+  })
+  if (!seller) {
+    return res.status(401).json({ success: false, message: 'Not logged in' })
+  }
+  next()
+}
+
 async function authShop(req, res, next) {
   const authToken = String(req.headers.authorization).split(' ')[1]
   if (!authToken) {
@@ -112,5 +125,6 @@ module.exports = {
   authShop,
   authSellerAndShop,
   authRole,
+  authUser,
   authSuperUser
 }

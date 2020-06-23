@@ -121,6 +121,7 @@ const AdminSettings = ({ shop }) => {
       <Tabs />
 
       <form
+        autoComplete="off"
         className="mt-3"
         onSubmit={async (e) => {
           e.preventDefault()

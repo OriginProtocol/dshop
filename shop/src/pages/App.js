@@ -18,7 +18,8 @@ const App = ({ location, config }) => {
   const [, setReset] = useState(false)
   const [{ affiliate, passwordAuthed, resetBit }, dispatch] = useStateValue()
   const q = queryString.parse(location.search)
-  const isAdmin = location.pathname.indexOf('/admin') === 0
+  const isSuperAdmin = location.pathname.indexOf('/super-admin') === 0
+  const isAdmin = location.pathname.indexOf('/admin') === 0 || isSuperAdmin
   const isOrder = location.pathname.indexOf('/order') === 0
 
   useEffect(() => {
@@ -104,7 +105,7 @@ const App = ({ location, config }) => {
   }
 
   if (get(config, 'firstTimeSetup')) {
-    return <SuperAdmin />
+    return <Admin />
   }
 
   return (

@@ -82,6 +82,7 @@ const AdminEditDiscount = () => {
   return (
     <>
       <form
+        autoComplete="off"
         onSubmit={async (e) => {
           e.preventDefault()
           const { valid, newState } = validate(state)

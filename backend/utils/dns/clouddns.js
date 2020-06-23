@@ -9,7 +9,7 @@ const { getLogger } = require('../../utils/logger')
 const log = getLogger('utils.dns.clouddns')
 
 let CACHED_CLIENT
-const DEFAULT_TTL = 300 // 5 minutes
+const DEFAULT_TTL = 60 // 1 minute
 
 /**
  * Return a Google Cloud DNS API client

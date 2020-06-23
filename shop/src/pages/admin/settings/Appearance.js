@@ -9,7 +9,7 @@ import useShopConfig from 'utils/useShopConfig'
 import useBackendApi from 'utils/useBackendApi'
 import { formInput, formFeedback } from 'utils/formHelpers'
 
-import PlusIcon from 'components/icons/Plus'
+import CustomDomain from './_CustomDomain'
 import UploadFile from './_UploadFile'
 import Tabs from './_Tabs'
 import SocialLinks from './social-links/SocialLinks'
@@ -49,6 +49,7 @@ const ShopAppearance = () => {
 
   return (
     <form
+      autoComplete="off"
       onSubmit={async (e) => {
         e.preventDefault()
 
@@ -135,11 +136,8 @@ const ShopAppearance = () => {
               </div>
             </div>
             {Feedback('hostname')}
-            <div className="mt-1">
-              <a onClick={(e) => e.preventDefault()} href="#" className="add">
-                <PlusIcon />
-                Add a custom domain
-              </a>
+            <div className="mt-1 d-flex">
+              <CustomDomain hostname={state.hostname} />
             </div>
           </div>
           <div className="form-group">

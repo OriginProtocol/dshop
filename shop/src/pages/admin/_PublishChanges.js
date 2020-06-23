@@ -1,12 +1,10 @@
 import React from 'react'
 
 import { useStateValue } from 'data/state'
-import useBackendApi from 'utils/useBackendApi'
-import ConfirmationModal from 'components/ConfirmationModal'
+import DeployButton from './settings/deployments/_DeployButton'
 
 const PublishChanges = () => {
-  const [{ hasChanges }, dispatch] = useStateValue()
-  const { post } = useBackendApi({ authToken: true })
+  const [{ hasChanges }] = useStateValue()
   if (!hasChanges) {
     return null
   }
@@ -18,16 +16,7 @@ const PublishChanges = () => {
         onClick={() => window.open('/', 'dshop-preview')}
         children="Preview"
       />
-      <ConfirmationModal
-        className={`btn btn-sm btn-outline-primary ml-2`}
-        buttonText="Publish"
-        confirmText="Are you sure you want to publish your changes?"
-        confirmedText="Changes Published"
-        onConfirm={() => post(`/shops/deploy`)}
-        onSuccess={() => {
-          dispatch({ type: 'hasChanges', value: false })
-        }}
-      />
+      <DeployButton className="btn-sm ml-2" />
     </div>
   )
 }

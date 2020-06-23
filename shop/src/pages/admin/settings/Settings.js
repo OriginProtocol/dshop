@@ -7,6 +7,7 @@ import Console from './Console'
 import Appearance from './Appearance'
 import Payments from './Payments'
 import Apps from './Apps'
+import Deployments from './deployments/Deployments'
 
 const AdminSettings = () => (
   <Switch>
@@ -24,6 +25,9 @@ const AdminSettings = () => (
     </Route>
     <Route path="/admin/settings/apps">
       <Apps />
+    </Route>
+    <Route path="/admin/settings/deployments">
+      <Deployments />
     </Route>
     <Route>
       <Appearance />

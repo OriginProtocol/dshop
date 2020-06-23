@@ -4,7 +4,6 @@
   "byline": "Free shipping on all orders! 🚚💨",
   "logo": "",
   "css": "",
-  "footer": "© 2019 <a href=\"https://www.originprotocol.com\">Origin Protocol</a>. <span class=\"ml-1\">Learn more about this decentralized e-commerce store <a class=\"ul\" href=\"https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0\">here</a>.</span>",
 
   "supportEmail": "My Store <help@mystore.com>",
   "emailSubject": "Your Order",
@@ -25,7 +24,7 @@
   "networks": {
     "1": {
       "marketplaceContract": "0x698ff47b84837d3971118a369c570172ee7e54c2",
-      "listingId": "1-001-XXX",
+      "listingId": "",
       "affiliate": "",
       "arbitrator": "",
       "backend": "https://example.herokuapp.com",
@@ -34,13 +33,13 @@
     },
     "4": {
       "marketplaceContract": "0x3d608cce08819351ada81fc1550841ebc10686fd",
-      "listingId": "4-001-XXX",
+      "listingId": "",
       "backend": "https://example.herokuapp.com",
       "ipfsGateway": "https://ipfs.staging.originprotocol.com",
       "ipfsApi": "https://ipfs.staging.originprotocol.com"
     },
     "999": {
-      "listingId": "999-001-01",
+      "listingId": "",
       "backend": "http://0.0.0.0:3000",
       "ipfsGateway": "http://localhost:8080",
       "ipfsApi": "http://localhost:5002"

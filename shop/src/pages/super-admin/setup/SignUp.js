@@ -94,7 +94,7 @@ export default SignUp
 
 require('react-styl')(`
   .signup-form
-    .desc 
+    .desc
       font-size: 1.125rem
       text-align: center
       color: #ffffff

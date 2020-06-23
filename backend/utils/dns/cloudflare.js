@@ -66,7 +66,7 @@ async function setRecords({ email, key, zone, subdomain, ipfsGateway, hash }) {
       type: 'TXT',
       name: dnslink,
       content,
-      ttl: 120
+      ttl: 120 // 2 mins
     })
   } else {
     log.info(`TXT ${dnslink} exists pointing to ${txt.content}`)

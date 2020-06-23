@@ -197,7 +197,7 @@ async function deployShop({
       credentials: ipfsDeployCredentials
     })
     if (!hash) {
-      throw new Error('ipfs-errir')
+      throw new Error('ipfs-error')
     }
     log.info(`Deployed shop on ${pinner}. Hash=${hash}`)
     await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
@@ -232,23 +232,27 @@ async function deployShop({
 
   if (hash) {
     // Record the deployment in the DB.
-    const deployment = await ShopDeployment.create({
-      shopId: shop.id,
-      domain,
-      ipfsGateway,
-      ipfsHash: hash
-    })
-
-    if (subdomain) {
-      await ShopDeploymentName.create({
-        ipfsHash: hash,
-        hostname: `${subdomain}.${zone}`
+    try {
+      const deployment = await ShopDeployment.create({
+        shopId: shop.id,
+        domain,
+        ipfsGateway,
+        ipfsHash: hash
       })
-    }
 
-    log.info(
-      `Recorded shop deployment in the DB. id=${deployment.id} domain=${domain} ipfs=${ipfsGateway} hash=${hash}`
-    )
+      if (subdomain) {
+        await ShopDeploymentName.create({
+          ipfsHash: hash,
+          hostname: `${subdomain}.${zone}`
+        })
+      }
+
+      log.info(
+        `Recorded shop deployment in the DB. id=${deployment.id} domain=${domain} ipfs=${ipfsGateway} hash=${hash}`
+      )
+    } catch (e) {
+      log.error('Error creating ShopDeployment', e)
+    }
   }
 
   return { hash, domain }

@@ -25,6 +25,7 @@ const AdminConsole = () => {
       <div className="mt-4">
         <label className="font-weight-bold">Create order via IPFS hash</label>
         <form
+          autoComplete="off"
           className="d-flex"
           onSubmit={(e) => {
             e.preventDefault()
@@ -69,6 +70,7 @@ const AdminConsole = () => {
         </form>
         <label className="mt-4 font-weight-bold">Send confirmation email</label>
         <form
+          autoComplete="off"
           className="d-flex"
           onSubmit={(e) => {
             e.preventDefault()
@@ -105,6 +107,7 @@ const AdminConsole = () => {
         </form>
         <label className="mt-4 font-weight-bold">Read encrypted hash</label>
         <form
+          autoComplete="off"
           className="d-flex"
           onSubmit={async (e) => {
             e.preventDefault()
@@ -148,6 +151,7 @@ const AdminConsole = () => {
           Emit ListingUpdated event
         </label>
         <form
+          autoComplete="off"
           className="d-flex"
           onSubmit={async (e) => {
             e.preventDefault()
@@ -179,6 +183,7 @@ const AdminConsole = () => {
 
         <label className="mt-4 font-weight-bold">Sync Printful</label>
         <form
+          autoComplete="off"
           className="d-flex"
           onSubmit={async (e) => {
             e.preventDefault()

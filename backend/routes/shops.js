@@ -9,7 +9,12 @@ const {
   ShopDeploymentName,
   Sequelize
 } = require('../models')
-const { authSellerAndShop, authRole, authSuperUser } = require('./_auth')
+const {
+  authSellerAndShop,
+  authUser,
+  authRole,
+  authSuperUser
+} = require('./_auth')
 const { createSeller } = require('../utils/sellers')
 const { getConfig, setConfig } = require('../utils/encryptedConfig')
 const { createShop } = require('../utils/shop')
@@ -273,8 +278,8 @@ module.exports = function (app) {
   /**
    * Creates a new shop.
    */
-  app.post('/shop', authSuperUser, async (req, res) => {
-    const { dataDir, printfulApi, shopType, backend } = req.body
+  app.post('/shop', authUser, async (req, res) => {
+    const { dataDir, printfulApi, shopType, backend, hostname } = req.body
     const OutputDir = `${DSHOP_CACHE}/${dataDir}`
 
     if (fs.existsSync(OutputDir) && req.body.shopType !== 'local-dir') {
@@ -297,9 +302,7 @@ module.exports = function (app) {
         message: 'Already exists'
       })
     }
-    const existingShopWithHostname = await Shop.findOne({
-      where: { hostname: req.body.hostname }
-    })
+    const existingShopWithHostname = await Shop.findOne({ where: { hostname } })
     if (existingShopWithHostname) {
       return res.json({
         success: false,
@@ -346,9 +349,8 @@ module.exports = function (app) {
     }
 
     const zone = networkConfig.domain
-    const subdomain = req.body.hostname
     const isLocal = zone === 'localhost'
-    const publicUrl = isLocal ? backend : `https://${subdomain}.${zone}`
+    const publicUrl = isLocal ? backend : `https://${hostname}.${zone}`
     const dataUrl = `${publicUrl}/${req.body.dataDir}/`
 
     let defaultShopConfig = {}
@@ -364,7 +366,7 @@ module.exports = function (app) {
       ...defaultShopConfig,
       ...pgpKeys,
       dataUrl,
-      hostname: req.body.hostname,
+      hostname,
       publicUrl,
       printful: req.body.printfulApi,
       deliveryApi: req.body.printfulApi ? true : false
@@ -376,6 +378,7 @@ module.exports = function (app) {
       networkId: network.networkId,
       sellerId: req.session.sellerId,
       listingId: req.body.listingId,
+      hostname,
       name,
       authToken: req.body.dataDir,
       config: setConfig(config)
@@ -664,38 +667,6 @@ module.exports = function (app) {
     }
   )
 
-  app.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
-    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
-    if (!shop) {
-      return res.json({ success: false, reason: 'shop-not-found' })
-    }
-    const network = await Network.findOne({
-      where: { networkId: req.body.networkId }
-    })
-    if (!network) {
-      return res.json({ success: false, reason: 'no-such-network' })
-    }
-
-    const dataDir = req.params.shopId
-    const OutputDir = `${DSHOP_CACHE}/${dataDir}`
-
-    try {
-      const deployOpts = {
-        OutputDir,
-        dataDir,
-        network,
-        subdomain: dataDir,
-        shop,
-        pinner: req.body.pinner,
-        dnsProvider: req.body.dnsProvider
-      }
-      const { hash, domain } = await deployShop(deployOpts)
-      return res.json({ success: true, hash, domain, gateway: network.ipfs })
-    } catch (e) {
-      return res.json({ success: false, reason: e.message })
-    }
-  })
-
   app.post(
     '/shop/add-user',
     authSellerAndShop,
@@ -753,6 +724,124 @@ module.exports = function (app) {
       res.json({ success: false, reason: err.toString() })
     }
   })
+
+  app.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
+    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    if (!shop) {
+      return res.json({ success: false, reason: 'shop-not-found' })
+    }
+    const network = await Network.findOne({
+      where: { networkId: req.body.networkId }
+    })
+    if (!network) {
+      return res.json({ success: false, reason: 'no-such-network' })
+    }
+
+    const dataDir = req.params.shopId
+    const OutputDir = `${DSHOP_CACHE}/${dataDir}`
+
+    try {
+      const deployOpts = {
+        OutputDir,
+        dataDir,
+        network,
+        subdomain: dataDir,
+        shop,
+        pinner: req.body.pinner,
+        dnsProvider: req.body.dnsProvider
+      }
+      const { hash, domain } = await deployShop(deployOpts)
+      return res.json({ success: true, hash, domain, gateway: network.ipfs })
+    } catch (e) {
+      return res.json({ success: false, reason: e.message })
+    }
+  })
+
+  app.post(
+    '/shop/deploy',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      if (!req.shop.hostname) {
+        return res.json({ success: false, reason: 'no-hostname-configured' })
+      }
+      const network = await Network.findOne({ where: { active: true } })
+      if (!network) {
+        return res.json({ success: false, reason: 'no-active-network' })
+      }
+      const networkConfig = getConfig(network.config)
+
+      const dataDir = req.shop.authToken
+      const OutputDir = `${DSHOP_CACHE}/${dataDir}`
+
+      let pinner, dnsProvider
+
+      if (network.ipfsApi && networkConfig.ipfsClusterPassword) {
+        pinner = 'ipfs-cluster'
+      } else if (networkConfig.pinataKey) {
+        pinner = 'pinata'
+      }
+      if (!pinner) {
+        return res.json({ success: false, reason: 'no-pinner-configured' })
+      }
+
+      if (networkConfig.gcpCredentials) {
+        dnsProvider = 'gcp'
+      } else if (networkConfig.cloudflareApiKey) {
+        dnsProvider = 'cloudflare'
+      }
+
+      try {
+        const deployOpts = {
+          OutputDir,
+          dataDir,
+          network,
+          subdomain: req.shop.hostname,
+          shop: req.shop,
+          pinner,
+          dnsProvider
+        }
+        const { hash, domain } = await deployShop(deployOpts)
+        return res.json({ success: true, hash, domain, gateway: network.ipfs })
+      } catch (e) {
+        return res.json({ success: false, reason: e.message })
+      }
+    }
+  )
+
+  app.get(
+    '/shop/deployments',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const deploymentResult = await ShopDeployment.findAll({
+        where: { shopId: req.shop.id },
+        include: [
+          {
+            model: ShopDeploymentName,
+            as: 'names'
+          }
+        ],
+        order: [['createdAt', 'desc']]
+      })
+
+      const deployments = deploymentResult.map((row) => ({
+        ...pick(
+          row.dataValues,
+          'id',
+          'shopId',
+          'domain',
+          'ipfsGateway',
+          'ipfsHash',
+          'createdAt',
+          'updatedAt'
+        ),
+        domains: row.dataValues.names.map((nam) => nam.hostname)
+      }))
+
+      res.json({ success: true, deployments })
+    }
+  )
 
   /**
    * Create a shop deployment record
