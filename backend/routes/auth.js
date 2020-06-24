@@ -46,7 +46,7 @@ module.exports = function (app) {
             role: get(s, 'Sellers[0].SellerShop.dataValues.role')
           }))
           const authToken = String(req.headers.authorization).split(' ')[1]
-          const shop = shops.find(s => s.authToken === authToken)
+          const shop = shops.find((s) => s.authToken === authToken)
           const role = shop ? shop.role : ''
           res.json({ success: true, email, role, shops })
         })
