@@ -59,7 +59,9 @@ async function triggerAutoSSL(url, autoSSLHost) {
 
   url = url instanceof URL ? url : new URL(url)
   const hostname = url.hostname
-  url.hostname = autoSSLHost.includes('//') ? autoSSLHost.split('//').slice(-1) : autoSSLHost
+  url.hostname = autoSSLHost.includes('//')
+    ? autoSSLHost.split('//').slice(-1)
+    : autoSSLHost
 
   log.debug(`Making request to ${url.hostname} with header (Host: ${hostname})`)
 
@@ -77,13 +79,20 @@ async function triggerAutoSSL(url, autoSSLHost) {
       success = true
       break
     } catch (err) {
-      log.info(`Error when attempting to trigger AutoSSL on attempt ${attempts}:`, err)
+      log.info(
+        `Error when attempting to trigger AutoSSL on attempt ${attempts}:`,
+        err
+      )
 
       if (attempts <= AUTOSSL_MAX_ATTEMPTS) {
         // sleep with backoff
         await (async () => {
-          log.debug(`AutoSSL trigger backing off by ${attempts * AUTOSSL_BACKOFF}ms`)
-          return new Promise(resolve => setTimeout(resolve, attempts * AUTOSSL_BACKOFF))
+          log.debug(
+            `AutoSSL trigger backing off by ${attempts * AUTOSSL_BACKOFF}ms`
+          )
+          return new Promise((resolve) =>
+            setTimeout(resolve, attempts * AUTOSSL_BACKOFF)
+          )
         })()
 
         attempts += 1

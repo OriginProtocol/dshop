@@ -37,8 +37,6 @@ function isPublicDNSName(v) {
   )
 }
 
-
-
 module.exports = {
   isPublicDNSName,
   isUnsoppableName,
