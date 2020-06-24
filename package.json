@@ -58,7 +58,9 @@
       "truffle",
       "truffle-hdwallet-provider",
       "truffle-privatekey-provider",
-      "solc"
+      "solc",
+      "sequelize",
+      "sequelize-cli"
     ],
     "ignorePaths": [],
     "schedule": "before 2am",

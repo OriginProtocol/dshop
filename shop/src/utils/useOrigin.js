@@ -176,6 +176,7 @@ function useOrigin({ marketplaceAddress, targetNetworkId } = {}) {
   targetNetworkId = targetNetworkId
     ? String(targetNetworkId)
     : String(config.netId)
+
   marketplaceAddress = marketplaceAddress
     ? marketplaceAddress
     : config.contracts.Marketplace_V01
@@ -193,7 +194,7 @@ function useOrigin({ marketplaceAddress, targetNetworkId } = {}) {
     )
     setMarketplace(marketplace)
     setLoading(false)
-  }, [status])
+  }, [status, netId])
 
   function getOffer({ tx, password }) {
     return getOfferFromTx({ tx, password, config, provider, marketplace })

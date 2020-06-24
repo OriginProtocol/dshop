@@ -39,7 +39,7 @@ const About = () => {
         <div className="question">What is this site?</div>
         <div className="answer">
           This is a decentralized e-commerce site leveraging Ethereum, IPFS and
-          PGP. All content is hosted on IPFS. Payments can be made with Eth,
+          PGP. All content is hosted on IPFS. Payments can be made with ETH,
           ERC-20 tokens or Credit Card.
         </div>
         <div className="question">Who built this?</div>

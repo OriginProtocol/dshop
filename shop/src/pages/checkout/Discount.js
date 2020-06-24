@@ -20,15 +20,14 @@ const OrderDiscount = ({ cart }) => {
         if (!code) {
           return
         }
-        const res = await fetch(`${config.backend}/check-discount`, {
+        const { discount } = await fetch(`${config.backend}/check-discount`, {
           method: 'POST',
           headers: {
             'content-type': 'application/json',
             authorization: `bearer ${config.backendAuthToken}`
           },
           body: JSON.stringify({ code })
-        })
-        const discount = await res.json()
+        }).then((res) => res.json())
         if (!discount || !discount.code) {
           setError(true)
         } else {

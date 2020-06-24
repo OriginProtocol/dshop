@@ -32,18 +32,19 @@ const waitForAllowance = ({ wallet, marketplace, amount, token }) => {
   })
 }
 
-const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
+const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
   const { config } = useConfig()
   const { marketplace } = useOrigin()
   const [{ cart }, dispatch] = useStateValue()
   const [activeToken, setActiveToken] = useState({})
+  const [tokenPrice, setTokenPrice] = useState('')
   const token = useToken(activeToken, cart.total)
   const { exchangeRates, toTokenPrice } = usePrice()
   const [approveUnlockTx, setApproveUnlockTx] = useState(false)
   const [unlockTx, setUnlockTx] = useState(false)
   const wallet = useWallet({ needSigner: true })
 
-  useMakeOffer({ submit, activeToken, encryptedData, onChange, buttonText })
+  useMakeOffer({ submit, activeToken, encryptedData, onChange, tokenPrice })
 
   const paymentMethods = get(config, 'paymentMethods', [])
   const cryptoSelected = get(cart, 'paymentMethod.id') === 'crypto'
@@ -56,6 +57,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
 
   useEffect(() => {
     const newState = {
+      submit: 0,
       disabled:
         wallet.status !== 'enabled' ||
         !activeToken.id ||
@@ -68,9 +70,10 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
         cart.total,
         activeToken.name
       )} ${activeToken.name}`
+      setTokenPrice(newState.buttonText)
     }
     onChange(newState)
-  }, [activeToken.id, token.loading])
+  }, [activeToken.id, token.loading, cryptoSelected])
 
   const label = (
     <label className={`radio${cryptoSelected ? '' : ' inactive'}`}>
@@ -78,11 +81,10 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
         type="radio"
         name="paymentMethod"
         checked={cryptoSelected}
+        disabled={loading}
         onChange={() => {
-          dispatch({
-            type: 'updatePaymentMethod',
-            method: cryptoPaymentMethod
-          })
+          if (loading) return
+          dispatch({ type: 'updatePaymentMethod', method: cryptoPaymentMethod })
         }}
       />
       Cryptocurrency
@@ -155,6 +157,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, buttonText }) => {
                     <td className="input-container">
                       <input
                         type="radio"
+                        disabled={loading}
                         value={token.id}
                         checked={isActive}
                         onChange={() => setActiveToken(token)}

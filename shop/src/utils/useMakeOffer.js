@@ -1,5 +1,5 @@
 import ethers from 'ethers'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { post } from '@origin/ipfs'
 import get from 'lodash/get'
 
@@ -15,18 +15,21 @@ function useMakeOffer({
   activeToken,
   encryptedData,
   onChange,
-  buttonText
+  tokenPrice
 }) {
   const { signer, marketplace } = useOrigin()
   const { config } = useConfig()
   const { toTokenPrice } = usePrice()
   const [{ cart }] = useStateValue()
-  const [initialButtonText] = useState(buttonText)
   const cryptoSelected = get(cart, 'paymentMethod.id') === 'crypto'
 
   useEffect(() => {
     async function makeOffer() {
-      onChange({ disabled: true, buttonText: 'Awaiting approval...' })
+      onChange({
+        disabled: true,
+        loading: true,
+        buttonText: 'Awaiting approval...'
+      })
       const l = config.listingId.split('-')
       const listingId = l[l.length - 1]
       const finalizes = 0 // Let the seller finalize things
@@ -62,13 +65,13 @@ function useMakeOffer({
         )
         .then((tx) => {
           onChange({ disabled: true, buttonText: 'Confirming transaction...' })
-          tx.wait(2).then(() => {
+          tx.wait().then(() => {
             onChange({ tx: tx.hash })
           })
         })
         .catch((err) => {
           console.error(err)
-          onChange({ disabled: false, buttonText: initialButtonText })
+          onChange({ disabled: false, loading: false, buttonText: tokenPrice })
         })
     }
     if (cryptoSelected && submit) {

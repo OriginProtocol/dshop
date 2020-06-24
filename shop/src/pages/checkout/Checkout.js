@@ -38,7 +38,7 @@ const Checkout = () => {
       // Need to re-add stylesheet as this component is lazy loaded
       Styl.addStylesheet()
     }
-  }, [window.Stripe])
+  }, [])
 
   return (
     <StripeProvider stripe={stripe}>

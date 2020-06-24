@@ -657,6 +657,9 @@ module.exports = function (app) {
       if (req.body.title) {
         req.shop.name = req.body.title
       }
+      if (req.body.listingId) {
+        req.shop.listingId = req.body.listingId
+      }
       const newConfig = setConfig(
         { ...existingConfig, ...req.body },
         req.shop.config

@@ -1,19 +1,30 @@
 import React, { useMemo, useState } from 'react'
-
 import ethers from 'ethers'
+import pickBy from 'lodash/pickBy'
 
 import useShopConfig from 'utils/useShopConfig'
+import useSetState from 'utils/useSetState'
+import useConfig from 'utils/useConfig'
+import useBackendApi from 'utils/useBackendApi'
+
 import * as Icons from 'components/icons/Admin'
 import Tabs from './_Tabs'
 import Web3Modal from './payments/Web3Modal'
 import StripeModal from './payments/StripeModal'
 import UpholdModal from './payments/UpholdModal'
+import ContractSettings from './payments/ContractSettings'
 import DisconnectModal from './payments/_DisconnectModal'
 
 const PaymentSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
+  const { config } = useConfig()
+  const [state, setState] = useSetState({
+    listingId: config.listingId
+  })
 
   const [connectModal, setShowConnectModal] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const { post } = useBackendApi({ authToken: true })
 
   const Processors = useMemo(() => {
     if (!shopConfig) return []
@@ -72,8 +83,52 @@ const PaymentSettings = () => {
   }, [shopConfig])
 
   return (
-    <>
-      <h3 className="admin-title">Settings</h3>
+    <form
+      className="shop-settings"
+      autoComplete="off"
+      onSubmit={async (e) => {
+        e.preventDefault()
+        if (saving) return
+
+        setSaving('saving')
+
+        try {
+          const shopConfig = pickBy(state, (v, k) => !k.endsWith('Error'))
+          const shopConfigRes = await post('/shop/config', {
+            method: 'PUT',
+            body: JSON.stringify(shopConfig),
+            suppressError: true
+          })
+
+          if (!shopConfigRes.success && shopConfigRes.field) {
+            setState({ [`${shopConfigRes.field}Error`]: shopConfigRes.reason })
+            setSaving(false)
+            return
+          }
+
+          setSaving('ok')
+          setTimeout(() => setSaving(null), 3000)
+        } catch (err) {
+          console.error(err)
+          setSaving(false)
+        }
+      }}
+    >
+      <h3 className="admin-title with-actions">
+        Settings
+        <div className="actions ml-auto">
+          <button type="button" className="btn btn-outline-primary mr-2">
+            Cancel
+          </button>
+          <button type="submit" className="btn btn-primary" disabled={saving}>
+            {saving === 'saving'
+              ? 'Updating...'
+              : saving === 'ok'
+              ? 'Updated ✅'
+              : 'Update'}
+          </button>
+        </div>
+      </h3>
       <Tabs />
       <div className="admin-payment-settings">
         {Processors.map((processor) => (
@@ -135,7 +190,8 @@ const PaymentSettings = () => {
           }}
         />
       )}
-    </>
+      <ContractSettings {...{ state, setState, config }} />
+    </form>
   )
 }
 

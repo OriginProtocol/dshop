@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import get from 'lodash/get'
 
+import formatPrice from 'utils/formatPrice'
 import { formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useIsMobile from 'utils/useIsMobile'
@@ -9,7 +10,7 @@ import { useStateValue } from 'data/state'
 import { CardElement, injectStripe } from 'react-stripe-elements'
 
 const PayWithStripe = injectStripe(
-  ({ stripe, submit, encryptedData, onChange }) => {
+  ({ stripe, submit, encryptedData, onChange, loading }) => {
     const { config } = useConfig()
     const isMobile = useIsMobile()
     const [{ cart }, dispatch] = useStateValue()
@@ -53,9 +54,27 @@ const PayWithStripe = injectStripe(
     }, [stripe, stripeSelected, paymentReq])
 
     useEffect(() => {
+      if (stripeSelected) {
+        onChange({
+          buttonText: `Pay ${formatPrice(cart.total)}`,
+          disabled: paymentReq ? false : true
+        })
+      }
+    }, [stripeSelected])
+
+    useEffect(() => {
       if (!stripe || !stripeSelected || !paymentReq || !submit) {
         return
       }
+
+      const resetState = {
+        loading: false,
+        disabled: false,
+        buttonText: `Pay ${formatPrice(cart.total)}`,
+        submit: 0
+      }
+
+      onChange({ loading: true })
 
       fetch(`${config.backend}/pay`, {
         headers: {
@@ -74,6 +93,7 @@ const PayWithStripe = injectStripe(
         .then((json) => {
           if (!json.success) {
             setFormData({ ...formData, cardError: json.message })
+            onChange(resetState)
             return
           }
           const { userInfo } = cart
@@ -113,7 +133,7 @@ const PayWithStripe = injectStripe(
             .then((result) => {
               if (result.error) {
                 setFormData({ ...formData, cardError: result.error.message })
-                onChange({ loading: false })
+                onChange(resetState)
               } else {
                 onChange({ tx: encryptedData.hash, loading: false })
               }
@@ -124,7 +144,7 @@ const PayWithStripe = injectStripe(
                 ...formData,
                 cardError: 'Payment server error. Please try again later.'
               })
-              onChange({ loading: false })
+              onChange(resetState)
             })
         })
     }, [stripe, stripeSelected, submit])
@@ -140,12 +160,17 @@ const PayWithStripe = injectStripe(
             type="radio"
             name="paymentMethod"
             checked={stripeSelected}
-            onChange={() =>
+            disabled={loading}
+            onChange={() => {
+              if (loading) {
+                return
+              }
+              onChange({ submit: 0, disabled: false })
               dispatch({
                 type: 'updatePaymentMethod',
                 method: stripePaymentMethod
               })
-            }
+            }}
           />
           Credit Card
           {isMobile ? null : (

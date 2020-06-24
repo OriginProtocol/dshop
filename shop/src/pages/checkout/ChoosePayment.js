@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useReducer } from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 
@@ -10,7 +10,6 @@ import { useStateValue } from 'data/state'
 import { Countries } from 'data/Countries'
 
 import Link from 'components/Link'
-import LoadingButton from 'components/LoadingButton'
 
 import PayWithCrypto from './payment-methods/Crypto'
 import PayWithStripe from './payment-methods/Stripe'
@@ -54,15 +53,16 @@ function validate(state) {
   return { valid, newState: { ...state, ...newState } }
 }
 
+const reducer = (state, newState) => ({ ...state, ...newState })
+
 const ChoosePayment = () => {
   const history = useHistory()
   const { config } = useConfig()
   const [{ cart, referrer }, dispatch] = useStateValue()
-  const [paymentState, setPaymentStateRaw] = useState({
+  const [paymentState, setPaymentState] = useReducer(reducer, {
     buttonText: `Pay ${formatPrice(cart.total)}`,
     submit: 0
   })
-  const setPaymentState = (s) => setPaymentStateRaw({ ...paymentState, ...s })
 
   useEffect(() => {
     const { tx, encryptedData } = paymentState
@@ -105,8 +105,17 @@ const ChoosePayment = () => {
     }
 
     dispatch({ type: 'updateUserInfo', info: newState })
+    setPaymentState({
+      disabled: true,
+      loading: true,
+      buttonText: 'Processing...'
+    })
     addData({ ...cart, referrer }, config).then((encryptedData) => {
-      setPaymentState({ encryptedData, submit: paymentState.submit + 1 })
+      setPaymentState({
+        loading: false,
+        encryptedData,
+        submit: paymentState.submit + 1
+      })
     })
   }
 
@@ -124,10 +133,9 @@ const ChoosePayment = () => {
 
       <div className="actions">
         <Link to="/checkout/shipping">&laquo; Return to shipping</Link>
-        <LoadingButton
+        <button
           type="submit"
           className={`btn btn-primary btn-lg${disabled ? ' disabled' : ''}`}
-          loading={paymentState.loading}
           children={paymentState.buttonText}
         />
       </div>
