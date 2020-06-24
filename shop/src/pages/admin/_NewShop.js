@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 import kebabCase from 'lodash/kebabCase'
@@ -27,9 +27,14 @@ function validate(state) {
 const defaultState = { title: '' }
 
 const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
+  const shopName = useCallback((node) => {
+    if (node !== null) {
+      setTimeout(() => node.focus(), 50)
+    }
+  }, [])
   const history = useHistory()
   const [, dispatch] = useStateValue()
-  const { setDataSrc } = useConfig()
+  const { setActiveShop } = useConfig()
   const [state, setState] = useSetState(defaultState)
   const { post } = useBackendApi({ authToken: true })
   const input = formInput(state, (newState) => setState(newState))
@@ -38,9 +43,10 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
   return (
     <ConfirmationModal
       confirmText="Add a new shop"
-      confirmedText="Shop created"
+      confirmedText={false}
       proceedText="Add"
       cancelText="Cancel"
+      loadingText="Creating Shop..."
       modalOnly={true}
       shouldShow={shouldShow}
       onClose={() => {
@@ -71,10 +77,10 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
       }}
       onSuccess={(json) => {
         setState({}, true)
-        localStorage.activeShop = json.slug
-        setDataSrc(`${json.slug}/`)
-        dispatch({ type: 'reload', target: 'auth' })
-        dispatch({ type: 'reset', dataDir: json.slug })
+        setActiveShop(json.slug)
+        setTimeout(() => {
+          dispatch({ type: 'reset', dataDir: json.slug })
+        }, 50)
         history.push({
           pathname: '/admin/onboarding',
           state: { scrollToTop: true }
@@ -83,7 +89,7 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
     >
       <div className="form-row mt-3">
         <label>Shop name</label>
-        <input {...input('name')} autoFocus autoComplete="off" />
+        <input ref={shopName} {...input('name')} />
         {Feedback('name')}
       </div>
     </ConfirmationModal>

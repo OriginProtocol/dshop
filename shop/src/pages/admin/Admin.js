@@ -7,9 +7,11 @@ import {
   useHistory
 } from 'react-router-dom'
 import 'components/admin/Styles'
+import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 import useAuth from 'utils/useAuth'
+import useConfig from 'utils/useConfig'
 
 import * as Icons from 'components/icons/Admin'
 import Login from 'components/admin/Login'
@@ -33,9 +35,9 @@ import PublishChanges from './_PublishChanges'
 const Admin = () => {
   const { loading, error } = useAuth()
   const [newShop, setNewShop] = useState()
-  const [{ admin, storefrontLocation }, dispatch] = useStateValue()
-  const location = useLocation()
-  const history = useHistory()
+  const { config, setActiveShop } = useConfig()
+  const [{ admin }] = useStateValue()
+  const shops = get(admin, 'shops', [])
 
   if (error) {
     return <div className="fixed-loader">Admin Connection Error</div>
@@ -47,33 +49,32 @@ const Admin = () => {
     return <Login />
   }
 
+  if (!shops.length) {
+    return <div className="admin">Setup new shop</div>
+  }
+
+  if (!config.activeShop) {
+    const shops = get(admin, 'shops', [])
+    return (
+      <div className="admin">
+        <Nav />
+        <NewShop shouldShow={newShop} onClose={() => setNewShop(false)} />
+        <div className="shop-chooser">
+          {shops.map((shop) => (
+            <div key={shop.id} onClick={() => setActiveShop(shop.authToken)}>
+              {shop.name}
+            </div>
+          ))}
+          <div onClick={() => setNewShop(true)}>New Shop</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="admin">
-      <nav>
-        <div className="fullwidth-container">
-          <h1>
-            <img className="dshop-logo" src="images/dshop-logo-blue.svg" />
-            <AccountSelector onNewShop={() => setNewShop(true)} />
-            <NewShop shouldShow={newShop} onClose={() => setNewShop(false)} />
-          </h1>
-          <div className="nav-preview">
-            <a
-              href="#storefront"
-              onClick={(e) => {
-                e.preventDefault()
-                dispatch({ type: 'setAdminLocation', location })
-                history.push(storefrontLocation || '/')
-              }}
-            >
-              Storefront
-            </a>
-          </div>
-          <div className="user">
-            <Icons.User />
-            {admin.email}
-          </div>
-        </div>
-      </nav>
+      <Nav setNewShop={setNewShop} />
+      <NewShop shouldShow={newShop} onClose={() => setNewShop(false)} />
       <div className="sidebar-layout">
         <div className="sidebar-container">
           <Menu />
@@ -101,6 +102,51 @@ const Admin = () => {
   )
 }
 
+const Nav = ({ setNewShop }) => {
+  const [{ admin, storefrontLocation }, dispatch] = useStateValue()
+  const location = useLocation()
+  const history = useHistory()
+  const { config, setActiveShop } = useConfig()
+
+  return (
+    <nav>
+      <div className="fullwidth-container">
+        <h1>
+          <img
+            className="dshop-logo"
+            src="images/dshop-logo-blue.svg"
+            onClick={() => {
+              setActiveShop(null)
+              setTimeout(() => {
+                dispatch({ type: 'reset', dataDir: '' })
+              }, 50)
+            }}
+          />
+          <AccountSelector onNewShop={() => setNewShop(true)} />
+        </h1>
+        {!config.activeShop ? null : (
+          <div className="nav-preview">
+            <a
+              href="#storefront"
+              onClick={(e) => {
+                e.preventDefault()
+                dispatch({ type: 'setAdminLocation', location })
+                history.push(storefrontLocation || '/')
+              }}
+            >
+              Storefront
+            </a>
+          </div>
+        )}
+        <div className="user">
+          <Icons.User />
+          {admin.email}
+        </div>
+      </div>
+    </nav>
+  )
+}
+
 export default Admin
 
 require('react-styl')(`
@@ -108,4 +154,13 @@ require('react-styl')(`
     margin-right: 2rem
     font-size: 14px
     vertical-align: 3px
+  .admin .shop-chooser
+    display: flex
+    flex-direction: column
+    align-items: center
+    margin-top: 3rem
+    > div
+      cursor: pointer
+      font-size: 24px
+      margin-bottom: 0.5rem
 `)

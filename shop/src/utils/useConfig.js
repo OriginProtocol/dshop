@@ -47,6 +47,25 @@ function useConfig() {
   const [error, setError] = useState(false)
   const [reload, setReload] = useState(0)
 
+  function setDataSrc(src) {
+    dataSrc = src
+    setReload(reload + 1)
+  }
+
+  function setActiveShop(shop) {
+    if (localStorage.activeShop === shop) return false
+    if (shop) {
+      config.activeShop = shop
+      localStorage.activeShop = shop
+    } else {
+      delete config.activeShop
+      delete localStorage.activeShop
+    }
+    setDataSrc(shop ? `${shop}/` : 'DATA_DIR/')
+    window.scrollTo(0, 0)
+    return true
+  }
+
   async function fetchConfig() {
     loaded = dataSrc
     if (!config) {
@@ -121,10 +140,7 @@ function useConfig() {
     config,
     loading,
     error,
-    setDataSrc: (src) => {
-      dataSrc = src
-      setReload(reload + 1)
-    }
+    setActiveShop
   }
 }
 

@@ -4,6 +4,8 @@ import dayjs from 'dayjs'
 
 import Paginate from 'components/Paginate'
 import Link from 'components/Link'
+import Loading from 'components/Loading'
+import NoItems from 'components/NoItems'
 
 import useRest from 'utils/useRest'
 
@@ -33,14 +35,18 @@ const AdminDiscounts = () => {
 
   return (
     <>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h3 className="m-0">Discounts</h3>
-        <Link to="/admin/discounts/new" className="btn btn-primary">
-          Create discount
-        </Link>
-      </div>
+      <h3 className="admin-title">
+        Discounts
+        {!discounts.length ? null : (
+          <div className="ml-auto">
+            <Link to="/admin/discounts/new" className="btn btn-primary">
+              Create discount
+            </Link>
+          </div>
+        )}
+      </h3>
       {loading ? (
-        'Loading...'
+        <Loading />
       ) : (
         <>
           {discounts.length ? (
@@ -104,12 +110,12 @@ const AdminDiscounts = () => {
               </tbody>
             </table>
           ) : (
-            <h5 className="text-center my-5">
-              You have no discounts yet.
-              <Link to="/admin/discounts/new" className="btn btn-link">
-                <h5>Create one now</h5>
-              </Link>
-            </h5>
+            <NoItems
+              heading="Add a discount code"
+              description="Offer discounts on your products."
+              linkTo="/admin/discounts/new"
+              buttonText="Create discount"
+            />
           )}
         </>
       )}

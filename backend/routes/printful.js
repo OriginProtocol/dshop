@@ -42,9 +42,8 @@ module.exports = function (app) {
   app.post(
     '/orders/:orderId/printful/create',
     authSellerAndShop,
-    findOrder,
     async (req, res) => {
-      const apiKey = await encConf.get(req.order.shopId, 'printful')
+      const apiKey = await encConf.get(req.shop.id, 'printful')
       if (!apiKey) {
         return res.status(500).json({
           success: false,
@@ -66,20 +65,26 @@ module.exports = function (app) {
         body: JSON.stringify(req.body)
       })
 
-      const json = await newOrderResponse.json()
+      const text = await newOrderResponse.text()
+      try {
+        const json = JSON.parse(text)
+        log.debug(json)
 
-      log.debug(json)
+        if (!newOrderResponse.ok) {
+          log.error('Attempt to create Printful order failed!')
+          if (json && json.error) log.error(json.error.message)
+          return res.status(json.code).json({
+            success: false,
+            message: json.error.message
+          })
+        }
 
-      if (!newOrderResponse.ok) {
-        log.error('Attempt to create Printful order failed!')
-        if (json && json.error) log.error(json.error.message)
-        return res.status(json.code).json({
-          success: false,
-          message: json.error.message
-        })
+        res.json({ success: true })
+      } catch (e) {
+        log.error('Error parsing Printful response')
+        log.error(text)
+        res.json({ success: false })
       }
-
-      res.json({ success: true })
     }
   )
 

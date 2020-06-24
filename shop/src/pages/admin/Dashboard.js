@@ -18,7 +18,7 @@ const AdminDashboard = () => {
   const [sort, setSort] = useState('orders')
   const [range, setRange] = useState('all-time')
 
-  if (loading) {
+  if (loading && !orders) {
     return <Loading />
   }
 
@@ -74,9 +74,9 @@ const AdminDashboard = () => {
 
   return (
     <>
-      <div className="d-flex mb-3 align-items-center">
-        <h3 className="m-0">Dashboard</h3>
-        <div className="ml-auto">
+      <h3 className="admin-title">
+        Dashboard
+        <div className="ml-auto" style={{ fontSize: 14 }}>
           Range:
           <select
             className="ml-2"
@@ -90,7 +90,7 @@ const AdminDashboard = () => {
             <option value="today">Today</option>
           </select>
         </div>
-      </div>
+      </h3>
       <div className="admin-dashboard-stats">
         <div className="stat-item">
           <img src="/images/box.svg" className="stat-image" />
@@ -166,6 +166,7 @@ export default AdminDashboard
 
 require('react-styl')(`
   .admin-dashboard-stats
+    margin-top: 1rem
     display: flex
     color: #000
     .stat-item

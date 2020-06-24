@@ -24,20 +24,26 @@ const AdminConfirmationModal = ({
   const [state, setState] = useSetState()
 
   useEffect(() => {
+    let isSubscribed = true
     if (state.doConfirm) {
       onConfirm()
         .then((response) => {
+          if (!isSubscribed) return
           if (onError && !response.success) {
             setState({ doConfirm: false, loading: false })
             onError(response)
+          } else if (confirmedText === false) {
+            setState({ shouldClose: true, response })
           } else {
             setState({ response, confirmed: true })
           }
         })
         .catch((err) => {
+          if (!isSubscribed) return
           setState({ error: err.toString() })
         })
     }
+    return () => (isSubscribed = false)
   }, [state.doConfirm])
 
   useEffect(() => {
@@ -73,7 +79,7 @@ const AdminConfirmationModal = ({
         <Modal
           shouldClose={state.shouldClose}
           onClose={() => {
-            if (state.confirmed) {
+            if (state.response) {
               onSuccess(state.response)
             }
             if (onClose) {
@@ -82,7 +88,16 @@ const AdminConfirmationModal = ({
             setState({}, true)
           }}
         >
-          <div className="modal-body text-center p-5">
+          <form
+            autoComplete="off"
+            className="modal-body text-center p-5"
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (validate()) {
+                setState({ doConfirm: true, loading: true })
+              }
+            }}
+          >
             {state.error ? (
               <>
                 <div className="text-lg">Error</div>
@@ -116,23 +131,19 @@ const AdminConfirmationModal = ({
                 {children}
                 <div className="actions">
                   <button
+                    type="button"
                     className="btn btn-outline-primary px-5"
                     onClick={() => setState({ shouldClose: true })}
                     children={cancelText}
                   />
                   <button
                     className="btn btn-primary px-5 ml-3"
-                    onClick={() => {
-                      if (validate()) {
-                        setState({ doConfirm: true, loading: true })
-                      }
-                    }}
                     children={proceedText}
                   />
                 </div>
               </>
             )}
-          </div>
+          </form>
         </Modal>
       )}
     </>

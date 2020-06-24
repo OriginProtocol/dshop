@@ -5,6 +5,7 @@ import usePaginate from 'utils/usePaginate'
 import useSearchQuery from 'utils/useSearchQuery'
 
 import Paginate from 'components/Paginate'
+import NoItems from 'components/NoItems'
 import useConfig from 'utils/useConfig'
 import formatPrice from 'utils/formatPrice'
 import sortProducts from 'utils/sortProducts'
@@ -66,17 +67,17 @@ const AdminProducts = () => {
     <div
       className={`admin-products-page${hasNoProducts ? ' no-products' : ''}`}
     >
-      <div className="d-flex justify-content-between mb-3">
-        <h3 className="m-0">
-          Products{' '}
-          {hasNoProducts ? null : <span>({sortedProducts.length})</span>}
-        </h3>
+      <h3 className="admin-title">
+        Products
+        {hasNoProducts ? null : <span>({sortedProducts.length})</span>}
         {hasNoProducts ? null : (
-          <Link to="/admin/products/new">
-            <button className="btn btn-primary ml-3">Add Product</button>
-          </Link>
+          <div className="ml-auto">
+            <Link to="/admin/products/new">
+              <button className="btn btn-primary ml-3">Add Product</button>
+            </Link>
+          </div>
         )}
-      </div>
+      </h3>
 
       {hasNoProducts ? (
         <NoProductsBanner />
@@ -149,19 +150,12 @@ const AdminProducts = () => {
 }
 
 const NoProductsBanner = () => (
-  <div className="no-products-banner">
-    <div className="add-product-cta">
-      <h3>Add your products</h3>
-      <div className="desc">
-        Get closer to your first sale by adding products.
-        <br />
-        Click the button below to get started.
-      </div>
-      <Link to="/admin/products/new">
-        <button className="btn btn-primary">Add Product</button>
-      </Link>
-    </div>
-  </div>
+  <NoItems
+    heading="Add your products"
+    description="Get closer to your first sale by adding products."
+    linkTo="/admin/products/new"
+    buttonText="Add Product"
+  />
 )
 
 export default AdminProducts
@@ -187,9 +181,6 @@ require('react-styl')(`
       background-repeat: no-repeat
       background-position: center
   .admin-products-page
-    .btn.btn-primary
-      width: 175px
-
     h3 span
       color: #9faebd
 
@@ -201,28 +192,5 @@ require('react-styl')(`
       display: flex
       flex-direction: column
       height: 100%
-      .no-products-banner
-        flex: 1
-        max-height: 450px
-        background-image: url('images/cart-graphic.svg')
-        background-position: bottom right
-        background-size: contain
-        background-repeat: no-repeat
-        display: flex
-        align-items: center
-
-        .add-product-cta
-          .desc
-            font-size: 1rem
-            color: #8293a4
-
-          h3
-            font-family: Lato
-            font-size: 1.5rem
-            font-weight: bold
-            color: #000000
-
-          .btn
-            margin: 2.5rem 0 3.5rem 0
 
 `)

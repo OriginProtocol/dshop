@@ -3,6 +3,7 @@ import { useHistory } from 'react-router-dom'
 
 import Paginate from 'components/Paginate'
 import SortableTable from 'components/SortableTable'
+import NoItems from 'components/NoItems'
 import useCollections from 'utils/useCollections'
 import useBackendApi from 'utils/useBackendApi'
 
@@ -15,7 +16,7 @@ function reducer(state, newState) {
 const AdminCollections = () => {
   const history = useHistory()
   const { post } = useBackendApi({ authToken: true })
-  const { collections } = useCollections()
+  const { collections, loading } = useCollections()
   const [state, setState] = useReducer(reducer, {
     collections: []
   })
@@ -35,36 +36,47 @@ const AdminCollections = () => {
     <>
       <h3 className="admin-title">
         Collections
-        <div className="ml-auto">
-          <CreateCollection />
-        </div>
-      </h3>
-      <SortableTable
-        items={collections}
-        onClick={(collection) => {
-          history.push(`/admin/collections/${collection.id}`)
-        }}
-        onChange={(collections) =>
-          post('/collections', {
-            method: 'PUT',
-            body: JSON.stringify({ collections })
-          })
-        }
-      >
-        {(item, DragTarget) => (
-          <>
-            <div className="td title">
-              <div className="draggable-content" draggable>
-                <DragTarget />
-                {item.title}
-              </div>
-            </div>
-            <div className="td justify-content-center">
-              {item.products.length}
-            </div>
-          </>
+        {!collections.length ? null : (
+          <div className="ml-auto">
+            <CreateCollection />
+          </div>
         )}
-      </SortableTable>
+      </h3>
+      {collections.length || loading ? (
+        <SortableTable
+          items={collections}
+          onClick={(collection) => {
+            history.push(`/admin/collections/${collection.id}`)
+          }}
+          onChange={(collections) =>
+            post('/collections', {
+              method: 'PUT',
+              body: JSON.stringify({ collections })
+            })
+          }
+        >
+          {(item, DragTarget) => (
+            <>
+              <div className="td title">
+                <div className="draggable-content" draggable>
+                  <DragTarget />
+                  {item.title}
+                </div>
+              </div>
+              <div className="td justify-content-center">
+                {item.products.length}
+              </div>
+            </>
+          )}
+        </SortableTable>
+      ) : (
+        <NoItems
+          heading="Add a collection"
+          description="Use collections to group your products into categories."
+        >
+          <CreateCollection />
+        </NoItems>
+      )}
       <Paginate total={collections.length} />
     </>
   )

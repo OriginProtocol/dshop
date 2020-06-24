@@ -4,21 +4,19 @@ import useConfig from 'utils/useConfig'
 function useRest(url, opts = {}) {
   const { config } = useConfig()
   const [data, setData] = useState({})
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(data[url] === undefined)
   const [error, setError] = useState(false)
 
   useEffect(() => {
     async function fetchData(url) {
       setLoading(true)
       try {
-        const headers = new Headers({
-          authorization: `bearer ${config.backendAuthToken}`
-        })
-        const myRequest = new Request(`${config.backend}${url}`, {
+        const raw = await fetch(`${config.backend}${url}`, {
           credentials: 'include',
-          headers
+          headers: {
+            authorization: `bearer ${config.backendAuthToken}`
+          }
         })
-        const raw = await fetch(myRequest)
         const res = await raw.json()
         if (res.error) {
           setError(true)

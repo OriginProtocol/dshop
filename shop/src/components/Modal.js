@@ -29,9 +29,13 @@ const Modal = ({ children, onClose, className, shouldClose }) => {
   }, [el])
 
   useEffect(() => {
+    let timeout
     if (shouldClose) {
       setShow(false)
-      setTimeout(() => onClose(), 150)
+      timeout = setTimeout(() => onClose(), 150)
+    }
+    return function cleanup() {
+      clearTimeout(timeout)
     }
   }, [shouldClose])
 

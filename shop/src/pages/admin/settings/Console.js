@@ -4,7 +4,10 @@ import { get } from '@origin/ipfs'
 
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
+import useBackendApi from 'utils/useBackendApi'
+import useSetState from 'utils/useSetState'
 import { updateListing } from 'utils/listing'
+import { formInput, formFeedback } from 'utils/formHelpers'
 
 import Tabs from './_Tabs'
 
@@ -16,6 +19,11 @@ const AdminConsole = () => {
   const [readHash, setReadHash] = useState('')
   const [shopIpfsHash, setShopIpfsHash] = useState('')
   const [printfulError, setPrintfulError] = useState('')
+  const { post } = useBackendApi({ authToken: true })
+
+  const [state, setState] = useSetState()
+  const input = formInput(state, (newState) => setState(newState))
+  const Feedback = formFeedback(state)
 
   return (
     <>
@@ -213,6 +221,34 @@ const AdminConsole = () => {
             Sync
           </button>
           {printfulError ? <div className="ml-3">{printfulError}</div> : null}
+        </form>
+
+        <label className="mt-4 font-weight-bold">Printful create order</label>
+        <form
+          autoComplete="off"
+          onSubmit={async (e) => {
+            e.preventDefault()
+            setPrintfulError('')
+            post(`/orders/${state.orderId}/printful/create`, {
+              body: state.printfulOrder
+            }).then((saveRes) => {
+              console.log(saveRes)
+            })
+          }}
+        >
+          <div className="form-group">
+            <label>Order ID</label>
+            <input className="form-control" {...input('orderId')} />
+            {Feedback('orderId')}
+          </div>
+          <div className="form-group">
+            <label>Order JSON</label>
+            <textarea className="form-control" {...input('printfulOrder')} />
+            {Feedback('printfulOrder')}
+          </div>
+          <button type="submit" className="btn btn-outline-primary">
+            Send
+          </button>
         </form>
 
         <h4 className="mt-3">Contents of config.json on IPFS</h4>

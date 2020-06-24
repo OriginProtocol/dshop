@@ -8,12 +8,16 @@ import useConfig from 'utils/useConfig'
 import Caret from 'components/icons/Caret'
 import Popover from 'components/Popover'
 
-const ShopsDropdown = ({ onNewShop, pathname = '/admin', forceTitle }) => {
+const ShopsDropdown = ({ onNewShop, forceTitle }) => {
   const [shouldClose, setShouldClose] = useState(0)
-  const { config, setDataSrc } = useConfig()
+  const { config, setActiveShop } = useConfig()
   const [{ admin }, dispatch] = useStateValue()
   const history = useHistory()
   const shops = get(admin, 'shops', [])
+
+  if (!shops.length || !config.activeShop) {
+    return null
+  }
 
   const logo = config.logo ? `${config.dataSrc}${config.logo}` : ''
   const isSVG = logo.match(/.svg$/i) ? 'svg' : ''
@@ -44,17 +48,12 @@ const ShopsDropdown = ({ onNewShop, pathname = '/admin', forceTitle }) => {
             }`}
             key={shop.id}
             onClick={() => {
-              if (localStorage.activeShop === shop.authToken) return
-              localStorage.activeShop = shop.authToken
-              setDataSrc(`${shop.authToken}/`)
-              history.push({
-                pathname,
-                state: { scrollToTop: true }
-              })
-              setTimeout(() => {
-                dispatch({ type: 'reset', dataDir: shop.authToken })
-              }, 50)
-              setShouldClose(shouldClose + 1)
+              if (setActiveShop(shop.authToken)) {
+                setTimeout(() => {
+                  dispatch({ type: 'reset', dataDir: shop.authToken })
+                }, 50)
+                setShouldClose(shouldClose + 1)
+              }
             }}
           >
             <img src="/images/green-checkmark.svg" />

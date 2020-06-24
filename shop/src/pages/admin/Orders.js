@@ -6,6 +6,7 @@ import get from 'lodash/get'
 import formatPrice from 'utils/formatPrice'
 import Tooltip from 'components/Tooltip'
 // import Paginate from 'components/Paginate'
+import NoItems from 'components/NoItems'
 
 import useOrders from 'utils/useOrders'
 
@@ -35,10 +36,24 @@ const AdminOrders = () => {
   const filteredOrders = filterOrders(orders, search)
 
   useEffect(() => {
-    searchRef.current.addEventListener('search', (e) =>
-      setSearch(e.target.value)
-    )
+    if (searchRef.current) {
+      searchRef.current.addEventListener('search', (e) =>
+        setSearch(e.target.value)
+      )
+    }
   }, [searchRef])
+
+  if (!orders.length) {
+    return (
+      <>
+        <h3 className="admin-title">Orders</h3>
+        <NoItems
+          heading="No Orders yet!"
+          description="Generate some sales and orders will appear here."
+        />
+      </>
+    )
+  }
 
   return (
     <>
