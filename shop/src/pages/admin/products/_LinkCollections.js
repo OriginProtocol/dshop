@@ -148,6 +148,7 @@ require('react-styl')(`
 
     .new-coll-link
       display: flex
+      background-color: #fff
       align-items: center
       color: #3b80ee
       cursor: pointer
