@@ -9,7 +9,7 @@
 ##
 ## startup_script.sh is executed on VM launch to do the system build.
 ##
-## The final image will be named origin-dshop-YYYYMMDDHHmmSS
+## The final image will be named origin-dshop-<VM image name>-image-YYYYMMDDHHmmSS
 ##
 ## Requirements: gcloud, packer
 ##
