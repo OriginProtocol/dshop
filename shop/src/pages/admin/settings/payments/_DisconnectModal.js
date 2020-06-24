@@ -39,8 +39,8 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
             break
         }
 
-        return post('/config', {
-          method: 'POST',
+        return post('/shop/config', {
+          method: 'PUT',
           body: JSON.stringify(updatedConfig)
         })
       }}

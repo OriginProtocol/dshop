@@ -29,7 +29,7 @@ function useMakeOffer({
       onChange({ disabled: true, buttonText: 'Awaiting approval...' })
       const l = config.listingId.split('-')
       const listingId = l[l.length - 1]
-      const finalizes = 60 * 60 * 24 * 14 // 2 weeks after offer accepted
+      const finalizes = 0 // Let the seller finalize things
 
       const amount = toTokenPrice(cart.total, activeToken.name)
       const amountWei = ethers.utils.parseUnits(amount, 'ether')

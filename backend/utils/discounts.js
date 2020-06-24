@@ -128,14 +128,11 @@ const validateDiscountOnOrder = async (
     }
   }
 
-  if (!appliedDiscount && !appliedDiscountObj) {
+  if (!Number(appliedDiscount) === 0 || get(cart, 'discountObj.value', 0) === 0) {
     // Doesn't have any discounts applied,
     // skip any validation
-    return true
-  } else if (!appliedDiscount || !appliedDiscountObj) {
-    // Missing some props?
     return {
-      error: 'Invalid order: Missing discount data'
+      valid: true
     }
   }
 
