@@ -14,7 +14,6 @@ const CustomerInfo = ({ order }) => {
 
   const phone = get(cart, 'userInfo.phone')
 
-
   return (
     <div className="customer-info">
       <div>

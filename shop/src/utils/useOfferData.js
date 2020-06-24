@@ -6,7 +6,6 @@ import useOrigin from 'utils/useOrigin'
 import useAcceptOffer from 'utils/useAcceptOffer'
 import IdentityProxyAbi from 'utils/abis/IdentityProxy'
 
-
 const useOfferData = (orderId) => {
   const { config } = useConfig()
   const [offer, setOffer] = useState()

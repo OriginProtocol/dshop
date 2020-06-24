@@ -128,7 +128,10 @@ const validateDiscountOnOrder = async (
     }
   }
 
-  if (!Number(appliedDiscount) === 0 || get(cart, 'discountObj.value', 0) === 0) {
+  if (
+    !Number(appliedDiscount) === 0 ||
+    get(cart, 'discountObj.value', 0) === 0
+  ) {
     // Doesn't have any discounts applied,
     // skip any validation
     return {

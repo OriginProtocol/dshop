@@ -22,7 +22,6 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
   if (!cart || !cart.items) return null
   const donateTo = get(config, 'donations.name')
 
-
   return (
     <>
       <a

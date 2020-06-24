@@ -1,4 +1,4 @@
-import React, { useReducer, useMemo } from 'react'
+import React, { useReducer } from 'react'
 import { useRouteMatch } from 'react-router-dom'
 import get from 'lodash/get'
 
@@ -23,7 +23,7 @@ const getStatusText = (orderState, paymentMethod) => {
   switch (orderState) {
     case OfferStates.Created:
       return isCryptoPayment
-        ? `A crypto payment has been made. Make sure you have some ETH to cover gas costs.` 
+        ? `A crypto payment has been made. Make sure you have some ETH to cover gas costs.`
         : `A payment has been made with ${paymentMethod.label}.`
 
     case OfferStates.Accepted:
@@ -33,7 +33,6 @@ const getStatusText = (orderState, paymentMethod) => {
     case OfferStates.Withdrawn:
       return `The offer made with ${paymentMethod.label} has been rejected and refunded.`
   }
-
 }
 
 const getButtonText = (orderState) => {
@@ -62,26 +61,27 @@ const PaymentInfo = ({ order }) => {
 
   const { sellerProxy } = useOfferData(orderId)
 
-  useAcceptOffer({ 
-    offerId: orderId, 
-    onChange: setState, 
-    sellerProxy, 
+  useAcceptOffer({
+    offerId: orderId,
+    onChange: setState,
+    sellerProxy,
     submit: orderState === OfferStates.Created ? state.submit : 0,
     buttonText: 'Accept Payment'
   })
 
-  useFinalizeOffer({ 
-    offerId: orderId, 
-    onChange: setState, 
-    sellerProxy, 
+  useFinalizeOffer({
+    offerId: orderId,
+    onChange: setState,
+    sellerProxy,
     submit: orderState === OfferStates.Accepted ? state.submit : 0,
     buttonText: 'Finalize Purchase'
   })
 
-  useWithdrawOffer({ 
-    offerId: orderId, 
-    onChange: ({ buttonText, ...props }) => setState({ rejectButtonText: buttonText, ...props }), 
-    sellerProxy, 
+  useWithdrawOffer({
+    offerId: orderId,
+    onChange: ({ buttonText, ...props }) =>
+      setState({ rejectButtonText: buttonText, ...props }),
+    sellerProxy,
     submit: state.submitWithdraw,
     buttonText: state.rejectButtonText
   })
@@ -90,10 +90,12 @@ const PaymentInfo = ({ order }) => {
 
   const completed = orderState === OfferStates.Finalized
 
-  const hasActions = [OfferStates.Created, OfferStates.Accepted].includes(orderState)
+  const hasActions = [OfferStates.Created, OfferStates.Accepted].includes(
+    orderState
+  )
 
   const canWithdraw = orderState === OfferStates.Created
-  
+
   return (
     <div className={`order-payment-info${completed ? ' completed' : ''}`}>
       <div className="status-text">
@@ -101,18 +103,20 @@ const PaymentInfo = ({ order }) => {
       </div>
       {!hasActions ? null : (
         <div className="status-actions">
-          <button 
-            className="btn btn-outline-primary" 
+          <button
+            className="btn btn-outline-primary"
             type="button"
             onClick={() => setState({ submit: state.submit + 1 })}
             children={state.buttonText || getButtonText(orderState)}
             disabled={state.disabled}
           />
           {!canWithdraw ? null : (
-            <button 
-              className="btn btn-outline-danger" 
+            <button
+              className="btn btn-outline-danger"
               type="button"
-              onClick={() => setState({ submitWithdraw: state.submitWithdraw + 1 })}
+              onClick={() =>
+                setState({ submitWithdraw: state.submitWithdraw + 1 })
+              }
               children={state.rejectButtonText}
               disabled={state.disabled}
             />
