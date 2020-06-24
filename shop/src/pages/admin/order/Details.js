@@ -1,52 +1,32 @@
 import React from 'react'
 import get from 'lodash/get'
-import dayjs from 'dayjs'
 
 import Summary from '../../checkout/Summary'
 
-import formatAddress from 'utils/formatAddress'
+import CustomerInfo from './_CustomerInfo'
+import PaymentInfo from './_PaymentInfo'
 
 const AdminOrderDetails = ({ order }) => {
   const cart = get(order, 'data')
-  const userInfo = get(order, 'data.userInfo')
-  if (!userInfo) {
-    return <div>Loading...</div>
-  }
-
-  const phone = get(cart, 'userInfo.phone')
 
   return (
-    <div className="order-details">
-      <div className="customer-info">
-        <div>Date</div>
-        <div>{dayjs(order.createdAt).format('MMM D, h:mm A')}</div>
-        <div>Customer</div>
-        <div>
-          <div>{get(cart, 'userInfo.email')}</div>
-          <div>{!phone ? null : `☎ ${phone}`}</div>
-        </div>
-        <div>Payment</div>
-        <div>{get(cart, 'paymentMethod.label')}</div>
-        <div>Shipping</div>
-        <div>{get(cart, 'shipping.label')}</div>
-        <div>Ship to</div>
-        <div>
-          {formatAddress(cart.userInfo).map((line, idx) => (
-            <div key={idx}>{line}</div>
-          ))}
-        </div>
-        <div>Bill to</div>
-        <div>
-          {cart.userInfo.billingDifferent
-            ? formatAddress(cart.userInfo, 'billing').map((line, idx) => (
-                <div key={idx}>{line}</div>
-              ))
-            : 'Same as shipping address'}
+    <div className="order-details row">
+      <div className="col-md-6">
+        <div className="section-title no-border">Order Summary</div>
+        <div className="mb-3">
+          <Summary cart={cart} />
         </div>
       </div>
-      <div className="mb-4">
-        <h5 className="mb-3">Order Summary</h5>
-        <Summary cart={cart} />
+      <div className="col-md-6">
+        <div className="section-title">Payment</div>
+        <div className="mb-3">
+          <PaymentInfo order={order} />
+        </div>
+
+        <div className="section-title">Details</div>
+        <div className="mb-3">
+          <CustomerInfo order={order} />
+        </div>
       </div>
     </div>
   )
@@ -57,20 +37,20 @@ export default AdminOrderDetails
 require('react-styl')(`
   .admin
     .order-details
-      display: flex
-      flex-wrap: wrap-reverse
       color: #000
-      > div:nth-child(2)
-        flex: 2
+
+      .section-title
+        font-size: 1rem
+        font-weight: bold
+        margin-bottom: 0.5rem
+        margin-top: 1rem
+        &:not(.no-border)
+          padding-bottom: 0.5rem
+          border-bottom: 1px solid #cdd7e0
+
       .order-summary
-        max-width: 350px
-      .customer-info
-        flex: 2
-        margin-right: 3rem
-        display: grid
-        grid-column-gap: 1.5rem
-        grid-row-gap: 1.5rem
-        grid-template-columns: 5rem 1fr
-        > div:nth-child(odd)
-          font-weight: 600
+        border: 1px solid #cdd7e0
+        border-radius: 10px
+        padding: 1.25rem
+
 `)

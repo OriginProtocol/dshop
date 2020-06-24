@@ -30,7 +30,7 @@ const AdminOrder = () => {
           Orders
         </Link>
         <span className="chevron" />
-        {`#${orderId}`}
+        {`Order #${orderId}`}
         <div style={{ fontSize: 18 }} className="ml-auto">
           <Link
             to={`/admin/orders/${listingId}-${offerId - 1}${
@@ -67,13 +67,6 @@ const AdminOrder = () => {
         )}
         {admin.role !== 'admin' ? null : (
           <li className="nav-item">
-            <NavLink className="nav-link" to={`${urlPrefix}/payment`}>
-              Payment
-            </NavLink>
-          </li>
-        )}
-        {admin.role !== 'admin' ? null : (
-          <li className="nav-item">
             <NavLink className="nav-link" to={`${urlPrefix}/contract`}>
               Contract
             </NavLink>
@@ -87,7 +80,6 @@ const AdminOrder = () => {
           <Route path={`${urlPrefix}/printful`}>
             <Printful />
           </Route>
-          <Route path={`${urlPrefix}/payment`}>Payment</Route>
           <Route path={`${urlPrefix}/contract`}>
             <Contract order={order} />
           </Route>

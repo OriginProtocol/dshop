@@ -79,7 +79,7 @@ const AdminContract = () => {
 
   return (
     <div className="order-details">
-      <div className="customer-info">
+      <div className="contract-data">
         <div>Status</div>
         <div>
           {status(offer.status)}
@@ -150,3 +150,15 @@ const AdminContract = () => {
 }
 
 export default AdminContract
+
+require('react-styl')(`
+  .contract-data
+    flex: 2
+    margin-right: 3rem
+    display: grid
+    grid-column-gap: 1.5rem
+    grid-row-gap: 1.5rem
+    grid-template-columns: 5rem 1fr
+    > div:nth-child(odd)
+      font-weight: 600
+`)

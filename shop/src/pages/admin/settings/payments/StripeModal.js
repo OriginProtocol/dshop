@@ -18,13 +18,22 @@ const validate = (state) => {
     newState.stripeBackendError = 'Secret key is required'
   }
 
+  if (!state.stripeKey) {
+    newState.stripeKeyError = 'Client key is required'
+  }
+
+  if (!state.stripeWebhookSecret) {
+    newState.stripeWebhookSecretError = 'Webhook secret key is required'
+  }
+
   const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
 
   return {
     valid,
     newState: {
       ...pickBy(state, (v, k) => !k.endsWith('Error')),
-      ...newState
+      ...newState,
+      stripe: true
     }
   }
 }
@@ -47,9 +56,19 @@ const StripeModal = ({ onClose }) => {
       onClose={onClose}
     >
       <div className="form-group">
+        <label>Stripe Public Key</label>
+        <input {...input('stripeKey')} />
+        {Feedback('stripeKey')}
+      </div>
+      <div className="form-group">
         <label>Stripe Secret Key</label>
         <input {...input('stripeBackend')} />
         {Feedback('stripeBackend')}
+      </div>
+      <div className="form-group">
+        <label>Stripe Webhook Key</label>
+        <input {...input('stripeWebhookSecret')} />
+        {Feedback('stripeWebhookSecret')}
       </div>
     </ConnectModal>
   )
