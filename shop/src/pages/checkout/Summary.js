@@ -17,10 +17,10 @@ function summaryNote(note, cart) {
 
 const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
   const { config } = useConfig()
+  const [summary, showSummary] = useState(false)
+
   if (!cart || !cart.items) return null
   const donateTo = get(config, 'donations.name')
-
-  const [summary, showSummary] = useState(false)
 
   return (
     <>

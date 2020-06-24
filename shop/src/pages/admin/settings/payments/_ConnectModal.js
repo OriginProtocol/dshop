@@ -23,8 +23,8 @@ const ConnectModal = ({ children, title, validate, onCancel, onClose }) => {
     })
 
     try {
-      await post('/config', {
-        method: 'POST',
+      await post('/shop/config', {
+        method: 'PUT',
         body: JSON.stringify(newState)
       })
       setState({
