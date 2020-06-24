@@ -65,7 +65,7 @@ async function triggerAutoSSL(url, autoSSLHost) {
 
   log.debug(`Making request to ${url.hostname} with header (Host: ${hostname})`)
 
-  while (!success && attempts <= AUTOSSL_MAX_ATTEMPTS) {
+  for (;;) {
     try {
       await getHTTPS({
         host: url.hostname,
