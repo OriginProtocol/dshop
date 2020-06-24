@@ -18,14 +18,4 @@ describe('HTTP Utils', () => {
         .that.has.string('ENOTFOUND')
     )
   })
-
-  // TODO: Remove this
-  it('should sleep for 3 seconds', async () => {
-    const start = +new Date()
-    await (async () => {
-      return new Promise((resolve) => setTimeout(resolve, 3000))
-    })()
-    const end = +new Date()
-    expect(end - start).to.be.above(2999)
-  })
 })
