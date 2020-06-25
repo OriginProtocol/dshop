@@ -614,14 +614,17 @@ module.exports = function (app) {
     try {
       log.info('Trying to deregister any existing webhook...')
       const stripe = Stripe(stripeBackend)
-  
+
       const webhookEndpoints = await stripe.webhookEndpoints.list({
         limit: 100
       })
 
       const endpointsToDelete = webhookEndpoints.data
-        .filter(endpoint => get(endpoint, 'metadata.dshopStore') === backendAuthToken)
-        .map(endpoint => endpoint.id)
+        .filter(
+          (endpoint) =>
+            get(endpoint, 'metadata.dshopStore') === backendAuthToken
+        )
+        .map((endpoint) => endpoint.id)
 
       for (const endpointId of endpointsToDelete) {
         try {
@@ -660,7 +663,7 @@ module.exports = function (app) {
 
     try {
       const stripe = Stripe(stripeBackend)
-  
+
       const endpoint = await stripe.webhookEndpoints.create({
         url: `${webhookHost}/webhook`,
         enabled_events: ['*'],
@@ -731,14 +734,17 @@ module.exports = function (app) {
         req.shop.listingId = req.body.listingId
       }
 
-      let stripeOpts = {}
+      const stripeOpts = {}
       // Stripe webhooks
       if (req.body.stripe === false) {
         await deregisterStripeWebhooks(existingConfig)
         stripeOpts.stripeWebhookSecret = ''
         stripeOpts.stripeBackend = ''
       } else if (req.body.stripe) {
-        const { secret } = await registerStripeWebhooks(req.body, existingConfig)
+        const { secret } = await registerStripeWebhooks(
+          req.body,
+          existingConfig
+        )
         stripeOpts.stripeWebhookSecret = secret
       }
 
