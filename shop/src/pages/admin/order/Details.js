@@ -37,6 +37,7 @@ export default AdminOrderDetails
 require('react-styl')(`
   .admin
     .order-details
+      max-width: 920px
       color: #000
 
       .section-title
