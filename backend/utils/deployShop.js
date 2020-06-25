@@ -8,11 +8,14 @@ const { getLogger } = require('../utils/logger')
 
 const { getConfig } = require('./encryptedConfig')
 const prime = require('./primeIpfs')
+const { getHTTPS } = require('./http')
 const setCloudflareRecords = require('./dns/cloudflare')
 const setCloudDNSRecords = require('./dns/clouddns')
 
-const log = getLogger('utils.handleLog')
+const log = getLogger('utils.deployShop')
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+const AUTOSSL_MAX_ATTEMPTS = 5
+const AUTOSSL_BACKOFF = 30000
 
 /**
  * Convert an HTTP URL into a multiaddr
@@ -44,6 +47,70 @@ function urlToMultiaddr(v, opts) {
   )}${url.pathname}`
 }
 
+/**
+ * Trigger AutoSSL to generate cert
+ *
+ * @param url {T} URL object or string to connect to
+ * @returns {boolean} if it was successful
+ */
+async function triggerAutoSSL(url, autoSSLHost) {
+  let success = false
+  let attempts = 1
+
+  url = url instanceof URL ? url : new URL(url)
+  const hostname = url.hostname
+  url.hostname = autoSSLHost.includes('//')
+    ? autoSSLHost.split('//').slice(-1)
+    : autoSSLHost
+
+  log.debug(`Making request to ${url.hostname} with header (Host: ${hostname})`)
+
+  for (;;) {
+    try {
+      await getHTTPS({
+        host: url.hostname,
+        path: url.pathname,
+        port: url.port || 443,
+        servername: hostname,
+        headers: {
+          host: hostname
+        }
+      })
+      success = true
+      break
+    } catch (err) {
+      log.info(
+        `Error when attempting to trigger AutoSSL on attempt ${attempts}:`,
+        err
+      )
+
+      if (attempts <= AUTOSSL_MAX_ATTEMPTS) {
+        // sleep with backoff
+        await (async () => {
+          log.debug(
+            `AutoSSL trigger backing off by ${attempts * AUTOSSL_BACKOFF}ms`
+          )
+          return new Promise((resolve) =>
+            setTimeout(resolve, attempts * AUTOSSL_BACKOFF)
+          )
+        })()
+
+        attempts += 1
+      } else {
+        break
+      }
+    }
+  }
+
+  if (!success) {
+    log.error('Error trying to auto-trigger AutoSSL')
+  } else {
+    log.debug('AutoSSL trigger completed')
+  }
+
+  return success
+}
+
 async function configureShopDNS({
   network,
   subdomain,
@@ -52,13 +119,15 @@ async function configureShopDNS({
   dnsProvider
 }) {
   const networkConfig = getConfig(network.config)
+  const gatewayURL = new URL(network.ipfs)
+  const gatewayHost = gatewayURL.hostname
 
   if (dnsProvider === 'cloudflare') {
     if (!networkConfig.cloudflareApiKey) {
       log.warn('Cloudflare DNS Proider selected but no credentials configured!')
     } else {
       await setCloudflareRecords({
-        ipfsGateway: 'ipfs-prod.ogn.app',
+        ipfsGateway: gatewayHost,
         zone,
         subdomain,
         hash,
@@ -73,7 +142,7 @@ async function configureShopDNS({
       log.warn('GCP DNS Proider selected but no credentials configured!')
     } else {
       await setCloudDNSRecords({
-        ipfsGateway: 'ipfs-prod.ogn.app',
+        ipfsGateway: gatewayHost,
         zone,
         subdomain,
         hash,
@@ -228,6 +297,10 @@ async function deployShop({
   if (subdomain) {
     domain = dnsProvider ? `https://${subdomain}.${zone}` : null
     await configureShopDNS({ network, subdomain, zone, hash, dnsProvider })
+    if (network.ipfs) {
+      // Intentionally not awating on this so we can return to the user faster
+      triggerAutoSSL(domain, network.ipfs)
+    }
   }
 
   if (hash) {

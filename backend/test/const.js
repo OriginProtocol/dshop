@@ -11,6 +11,7 @@ module.exports = {
   TEST_DSHOP_CACHE: TMP_DIR,
   TEST_HASH_1: 'QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx',
   TEST_DOMAIN_1: 'originprotocol.com',
+  BAD_DOMAIN_1: 'thisisnotarealdomaindotcom135.com',
   TEST_LISTING_ID_1: '999-001-999',
   TEST_SHOP_TOKEN_1: 'test-shop',
   TEST_UNSTOPPABLE_DOMAIN_1: 'testname.crypto',

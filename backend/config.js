@@ -16,14 +16,14 @@ const Defaults = {
     marketplaceContract: process.env.MARKETPLACE_CONTRACT
   },
   '4': {
-    ipfsGateway: 'https://ipfs.staging.originprotocol.com',
-    ipfsApi: 'https://ipfs.staging.originprotocol.com',
+    ipfsGateway: 'https://fs-autossl.staging.ogn.app',
+    ipfsApi: 'https://fs.staging.ogn.app',
     marketplaceContract: '0x3d608cce08819351ada81fc1550841ebc10686fd',
     fetchPastLogs: true
   },
   '1': {
-    ipfsGateway: 'https://ipfs.originprotocol.com',
-    ipfsApi: 'https://ipfs.originprotocol.com',
+    ipfsGateway: 'https://fs-autossl.ogn.app',
+    ipfsApi: 'https://fs.ogn.app',
     marketplaceContract: '0x698ff47b84837d3971118a369c570172ee7e54c2',
     fetchPastLogs: true
   }
