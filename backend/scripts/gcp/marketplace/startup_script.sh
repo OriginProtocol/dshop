@@ -185,7 +185,7 @@ http {
 
 }
 EOM
-sudo /etc/init.d/nginx restart
+sudo /etc/init.d/openresty restart
 FULL_SCRIPT_DELIMITER
 
 # Run as root and store log
