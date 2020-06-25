@@ -149,7 +149,7 @@ const ShopAppearance = () => {
           </div>
           <div className="form-group">
             <label>
-              Tagline{' '}
+              Tagline
               <span>(will appear nex to your logo on the masthead)</span>
             </label>
             <input {...input('byline')} />
@@ -251,13 +251,13 @@ const ShopAppearance = () => {
             </label>
             <input {...input('emailSubject')} />
           </div>
-          <div className="form-group">
+          {/* <div className="form-group">
             <label>
               Email Body
               <span>(for receipt emails)</span>
             </label>
             <textarea style={{ minHeight: '15vh' }} {...input('emailBody')} />
-          </div>
+          </div> */}
           <div className="form-group">
             <label>Custom CSS</label>
             <textarea style={{ minHeight: '15vh' }} {...input('css')} />

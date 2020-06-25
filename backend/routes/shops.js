@@ -686,7 +686,15 @@ module.exports = function (app) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      const jsonConfig = {}
+      const jsonConfig = pick(
+        req.body,
+        'metaDescription',
+        'css',
+        'emailSubject',
+        'cartSummaryNote',
+        'byline',
+        'discountCodes'
+      )
       if (req.body.title) {
         jsonConfig.fullTitle = req.body.title
         if (!jsonConfig.logo) {
