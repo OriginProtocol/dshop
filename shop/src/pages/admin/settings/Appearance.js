@@ -40,6 +40,13 @@ const ShopAppearance = () => {
       hostname: get(shopConfig, 'hostname'),
       logo: get(config, 'logo'),
       favicon: get(config, 'favicon'),
+      byline: get(config, 'byline'),
+      metaDescription: get(config, 'metaDescription'),
+      cartSummaryNote: get(config, 'cartSummaryNote'),
+      discountCodes: get(config, 'discountCodes'),
+      emailSubject: get(config, 'emailSubject'),
+      emailBody: get(config, 'emailBody'),
+      css: get(config, 'css'),
       ...socialLinkKeys.reduce(
         (socialLinks, key) => ({ ...socialLinks, [key]: get(config, key, '') }),
         {}
@@ -142,6 +149,13 @@ const ShopAppearance = () => {
           </div>
           <div className="form-group">
             <label>
+              Tagline
+              <span>(will appear nex to your logo on the masthead)</span>
+            </label>
+            <input {...input('byline')} />
+          </div>
+          <div className="form-group">
+            <label>
               Store Logo
               <span>
                 (max. size 200x200 px. 100x100 px recommended. PNG or JPG)
@@ -202,7 +216,54 @@ const ShopAppearance = () => {
             </label>
             <textarea style={{ minHeight: '20vh' }} {...input('aboutStore')} />
           </div>
+          <div className="form-group">
+            <label>
+              Meta Description
+              <span>(or SEO only. Will appear in HTML)</span>
+            </label>
+            <input {...input('metaDescription')} />
+          </div>
+          <div className="form-group">
+            <label>
+              Cart Summary Note
+              <span>
+                (appears under summary in checkout process. Use it for any
+                information related to order fulfillment)
+              </span>
+            </label>
+            <input {...input('cartSummaryNote')} />
+          </div>
+          <div>
+            <label>Discount Codes</label>
+            <span className="form-check mb-3">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={state.discountCodes ? true : false}
+                onChange={(e) => setState({ discountCodes: e.target.checked })}
+              />
+              Show discount codes on checkout
+            </span>
+          </div>
+          <div className="form-group">
+            <label>
+              Email Subject <span>(for receipt emails)</span>
+            </label>
+            <input {...input('emailSubject')} />
+          </div>
+          {/* <div className="form-group">
+            <label>
+              Email Body
+              <span>(for receipt emails)</span>
+            </label>
+            <textarea style={{ minHeight: '15vh' }} {...input('emailBody')} />
+          </div> */}
+          <div className="form-group">
+            <label>Custom CSS</label>
+            <textarea style={{ minHeight: '15vh' }} {...input('css')} />
+          </div>
         </div>
+
         <div className="col-lg-3 col-md-4">
           <SocialLinks socialLinks={state} setSocialLinks={setState} />
         </div>
@@ -215,11 +276,19 @@ export default ShopAppearance
 
 require('react-styl')(`
   .shop-settings
+    .upload-file
+      max-width: 100%
     .add
       display: flex
       align-items: center
       svg
         margin-right: 5px
+    input
+      border: 1px solid #cdd7e0
+      background-color: #fafbfc
+    textarea
+      border: 1px solid #cdd7e0
+      background-color: #fafbfc
     label
       margin-top: 0.5rem
       > span
@@ -232,8 +301,6 @@ require('react-styl')(`
       font-size: 14px
     .suffix-wrap
       position: relative
-      input.form-control
-        background-color: transparent
       .suffix
         pointer-events: none
         position: absolute
