@@ -61,7 +61,8 @@ cat > $PACKER_JSON <<EOF
       "image_name": "$IMAGE_NAME",
       "image_family": "$IMAGE_FAMILY",
       "zone": "$PACKER_ZONE",
-      "startup_script_file":"startup_script.sh"
+      "startup_script_file":"startup_script.sh",
+      "image_licenses": ["projects/originprotocol-public/global/licenses/origin-protocol-dshop"]
     }
   ]
 }
