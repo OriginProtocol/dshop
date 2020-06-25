@@ -17,7 +17,7 @@ const OfferStates = {
   Disputed: 'OfferDisputed'
 }
 
-const getStatusText = (orderState, paymentMethod) => {
+const getStatusText = (orderState, paymentMethod, refundError) => {
   const isCryptoPayment = paymentMethod.id === 'crypto'
 
   switch (orderState) {
@@ -31,7 +31,7 @@ const getStatusText = (orderState, paymentMethod) => {
     case OfferStates.Finalized:
       return `Payment made with ${paymentMethod.label} has been accepted and Finalized.`
     case OfferStates.Withdrawn:
-      return `The offer made with ${paymentMethod.label} has been rejected and refunded.`
+      return `The offer made with ${paymentMethod.label} has been rejected ${refundError ? 'but refund of payment failed' : 'and refunded'}.`
   }
 }
 
@@ -58,6 +58,7 @@ const PaymentInfo = ({ order }) => {
   const cart = get(order, 'data')
   const paymentMethod = get(cart, 'paymentMethod', {})
   const orderState = get(order, 'statusStr')
+  const refundError = !!get(order, 'data.refundError')
 
   const { sellerProxy } = useOfferData(orderId)
 
@@ -97,9 +98,9 @@ const PaymentInfo = ({ order }) => {
   const canWithdraw = orderState === OfferStates.Created
 
   return (
-    <div className={`order-payment-info${completed ? ' completed' : ''}`}>
+    <div className={`order-payment-info${completed ? ' completed' : ''}${refundError ? ' error' : ''}`}>
       <div className="status-text">
-        {getStatusText(orderState, paymentMethod)}
+        {getStatusText(orderState, paymentMethod, refundError)}
       </div>
       {!hasActions ? null : (
         <div className="status-actions">
@@ -143,6 +144,9 @@ require('react-styl')(`
     &.completed
       background-color: #f0fffc
       border: solid 1px #00ffd4
+
+    &.error
+      color: red
 
     .status-text
       max-width: 340px
