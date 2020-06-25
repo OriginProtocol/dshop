@@ -212,6 +212,20 @@ async function upsertProduct(shop, productData) {
     variants
   }
 
+  if (!product.variants || !product.variants.length) {
+    product.variants = [
+      {
+        ...pick(product, ['title', 'price', 'image', 'available']),
+        id: 0,
+        name: product.title,
+        options: [],
+        option1: null,
+        option2: null,
+        option3: null
+      }
+    ]
+  }
+
   writeProductData(shop, newProductId, product)
 
   appendToProductsFile(shop, product)
