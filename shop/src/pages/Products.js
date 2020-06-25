@@ -123,6 +123,11 @@ require('react-styl')(`
         background-repeat: no-repeat
         background-position: center
         cursor: pointer
+        &.empty
+          background: var(--light) url(images/default-image.svg)
+          background-repeat: no-repeat
+          background-position: center
+          background-size: 73px 61px
         &:hover
           opacity: 0.5
       .product-body

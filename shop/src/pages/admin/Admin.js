@@ -36,7 +36,7 @@ const Admin = () => {
   const { loading, error } = useAuth()
   const [newShop, setNewShop] = useState()
   const { config, setActiveShop } = useConfig()
-  const [{ admin }] = useStateValue()
+  const [{ admin }, dispatch] = useStateValue()
   const shops = get(admin, 'shops', [])
 
   if (error) {
@@ -60,12 +60,30 @@ const Admin = () => {
         <Nav />
         <NewShop shouldShow={newShop} onClose={() => setNewShop(false)} />
         <div className="shop-chooser">
-          {shops.map((shop) => (
-            <div key={shop.id} onClick={() => setActiveShop(shop.authToken)}>
-              {shop.name}
-            </div>
-          ))}
-          <div onClick={() => setNewShop(true)}>New Shop</div>
+          <h3>Select a store</h3>
+          <div className="shops">
+            {shops.map((shop) => (
+              <div
+                key={shop.id}
+                onClick={() => {
+                  setActiveShop(shop.authToken)
+                  setTimeout(() => {
+                    dispatch({ type: 'reset', dataDir: shop.authToken })
+                  }, 50)
+                }}
+              >
+                {shop.name}
+              </div>
+            ))}
+          </div>
+          <div className="create-shop">
+            <button
+              className="btn btn-outline-primary btn-sm px-5"
+              onClick={() => setNewShop(true)}
+            >
+              Add Store
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -155,12 +173,28 @@ require('react-styl')(`
     font-size: 14px
     vertical-align: 3px
   .admin .shop-chooser
+    padding-top: 3rem
+    background-color: #fafbfc
     display: flex
     flex-direction: column
     align-items: center
-    margin-top: 3rem
-    > div
-      cursor: pointer
-      font-size: 24px
-      margin-bottom: 0.5rem
+    flex: 1
+    .create-shop
+      margin-top: 2rem
+    .shops
+      margin-top: 1.5rem
+      display: grid
+      grid-template-columns: 50% 50%
+      grid-column-gap: 1rem
+      grid-row-gap: 1rem
+      > div
+        color: #3b80ee
+        text-align: center
+        font-size: 20px
+        background: #fff
+        border-radius: 10px
+        box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.1)
+        padding: 1.5rem 2rem
+        cursor: pointer
+        font-weight: bold
 `)

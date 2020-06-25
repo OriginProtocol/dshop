@@ -7,6 +7,7 @@ import ConfirmationModal from 'components/ConfirmationModal'
 import useSetState from 'utils/useSetState'
 import useCollections from 'utils/useCollections'
 import useBackendApi from 'utils/useBackendApi'
+import useAutoFocus from 'utils/useAutoFocus'
 import { useStateValue } from 'data/state'
 
 function validate(state) {
@@ -26,6 +27,7 @@ function validate(state) {
 const AdminCreateCollection = ({ className = '', children, onSuccess }) => {
   const history = useHistory()
   const [, dispatch] = useStateValue()
+  const title = useAutoFocus()
   const { collections } = useCollections()
   const [state, setState] = useSetState({ title: '' })
   const { post } = useBackendApi({ authToken: true })
@@ -75,7 +77,7 @@ const AdminCreateCollection = ({ className = '', children, onSuccess }) => {
     >
       <div className="form-row mt-3">
         <label>Collection name</label>
-        <input {...input('title')} autoFocus />
+        <input ref={title} {...input('title')} autoFocus />
         {Feedback('title')}
       </div>
     </ConfirmationModal>

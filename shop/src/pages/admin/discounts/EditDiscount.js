@@ -148,7 +148,7 @@ const AdminEditDiscount = () => {
         <div className="form-row">
           <div className="form-group col-md-6" style={{ maxWidth: '15rem' }}>
             <label>Discount Code</label>
-            <input type="code" {...input('code')} />
+            <input type="code" {...input('code')} autoFocus />
             {Feedback('code')}
           </div>
           <div className="form-group col-md-6" style={{ maxWidth: '15rem' }}>
