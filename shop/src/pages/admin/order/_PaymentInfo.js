@@ -31,7 +31,9 @@ const getStatusText = (orderState, paymentMethod, refundError) => {
     case OfferStates.Finalized:
       return `Payment made with ${paymentMethod.label} has been accepted and Finalized.`
     case OfferStates.Withdrawn:
-      return `The offer made with ${paymentMethod.label} has been rejected ${refundError ? 'but refund of payment failed' : 'and refunded'}.`
+      return `The offer made with ${paymentMethod.label} has been rejected ${
+        refundError ? 'but refund of payment failed' : 'and refunded'
+      }.`
   }
 }
 
@@ -98,7 +100,11 @@ const PaymentInfo = ({ order }) => {
   const canWithdraw = orderState === OfferStates.Created
 
   return (
-    <div className={`order-payment-info${completed ? ' completed' : ''}${refundError ? ' error' : ''}`}>
+    <div
+      className={`order-payment-info${completed ? ' completed' : ''}${
+        refundError ? ' error' : ''
+      }`}
+    >
       <div className="status-text">
         {getStatusText(orderState, paymentMethod, refundError)}
       </div>
