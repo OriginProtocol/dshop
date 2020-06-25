@@ -24,18 +24,23 @@ const ShippingForm = ({ prefix = '', state, setState, input, Feedback }) => {
         </div>
       </div>
       <div className="form-group">
-        <input placeholder="Address" {...input(field('address1'))} />
+        <input
+          placeholder="Address"
+          {...input(field('address1'))}
+          maxLength="80"
+        />
         {Feedback(field('address1'))}
       </div>
       <div className="form-group">
         <input
-          placeholder="Apartment, suite, etc. (optional)"
+          placeholder="Address line 2 (optional)"
+          maxLength="25"
           {...input(field('address2'))}
         />
         {Feedback(field('address2'))}
       </div>
       <div className="form-group">
-        <input placeholder="City" {...input(field('city'))} />
+        <input placeholder="City" {...input(field('city'))} maxLength="32" />
         {Feedback(field('city'))}
       </div>
 
@@ -65,8 +70,7 @@ const ShippingForm = ({ prefix = '', state, setState, input, Feedback }) => {
         )}
         <div className="form-group col-md">
           <input
-            type="text"
-            className="form-control"
+            maxLength="10"
             placeholder={get(
               country,
               'labels.zip',

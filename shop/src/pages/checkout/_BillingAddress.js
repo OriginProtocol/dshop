@@ -22,7 +22,7 @@ const BillingAddress = ({ formState, setFormState, input, Feedback }) => {
             <div>Same as shipping address</div>
           </div>
         </label>
-        <label className={`radio ${active ? 'active mb-3' : 'inactive'}`}>
+        <label className={`radio ${active ? 'active mb-1' : 'inactive'}`}>
           <input
             type="radio"
             name="billingDifferent"
@@ -34,10 +34,12 @@ const BillingAddress = ({ formState, setFormState, input, Feedback }) => {
           </div>
         </label>
         {!formState.billingDifferent ? null : (
-          <ShippingForm
-            prefix="billing"
-            {...{ state: formState, setState: setFormState, input, Feedback }}
-          />
+          <div className="px-3">
+            <ShippingForm
+              prefix="billing"
+              {...{ state: formState, setState: setFormState, input, Feedback }}
+            />
+          </div>
         )}
       </div>
     </>
