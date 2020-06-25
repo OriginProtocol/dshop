@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 import kebabCase from 'lodash/kebabCase'
@@ -8,6 +8,7 @@ import ConfirmationModal from 'components/ConfirmationModal'
 import useSetState from 'utils/useSetState'
 import useBackendApi from 'utils/useBackendApi'
 import useConfig from 'utils/useConfig'
+import useAutoFocus from 'utils/useAutoFocus'
 import { useStateValue } from 'data/state'
 
 function validate(state) {
@@ -27,11 +28,7 @@ function validate(state) {
 const defaultState = { title: '' }
 
 const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
-  const shopName = useCallback((node) => {
-    if (node !== null) {
-      setTimeout(() => node.focus(), 50)
-    }
-  }, [])
+  const shopName = useAutoFocus()
   const history = useHistory()
   const [, dispatch] = useStateValue()
   const { setActiveShop } = useConfig()
@@ -80,6 +77,7 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
         setActiveShop(json.slug)
         setTimeout(() => {
           dispatch({ type: 'reset', dataDir: json.slug })
+          dispatch({ type: 'reload', target: 'auth' })
         }, 50)
         history.push({
           pathname: '/admin/onboarding',

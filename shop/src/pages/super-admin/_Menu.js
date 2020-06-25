@@ -1,16 +1,14 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
 
-import useConfig from 'utils/useConfig'
-import { useStateValue } from 'data/state'
+import useAuth from 'utils/useAuth'
 import Link from 'components/Link'
 import Menu from 'components/admin/Menu'
 import * as Icons from 'components/icons/Admin'
 
 const AdminMenu = () => {
   const { pathname } = useLocation()
-  const { config } = useConfig()
-  const [, dispatch] = useStateValue()
+  const { logout } = useAuth()
   const active = (path) => (pathname.indexOf(path) === 0 ? 'active' : '')
 
   return (
@@ -44,15 +42,7 @@ const AdminMenu = () => {
           href="#logout"
           onClick={(e) => {
             e.preventDefault()
-
-            fetch(`${config.backend}/auth/logout`, {
-              method: 'POST',
-              credentials: 'include'
-            }).then(async (response) => {
-              if (response.status === 200) {
-                dispatch({ type: 'logout' })
-              }
-            })
+            logout()
           }}
         >
           <Icons.Logout />

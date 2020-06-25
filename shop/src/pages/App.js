@@ -16,7 +16,10 @@ const App = ({ location, config }) => {
   const history = useHistory()
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [, setReset] = useState(false)
-  const [{ affiliate, passwordAuthed, resetBit }, dispatch] = useStateValue()
+  const [
+    { admin, affiliate, passwordAuthed, resetBit },
+    dispatch
+  ] = useStateValue()
   const q = queryString.parse(location.search)
   const isSuperAdmin = location.pathname.indexOf('/super-admin') === 0
   const isAdmin = location.pathname.indexOf('/admin') === 0 || isSuperAdmin
@@ -104,7 +107,9 @@ const App = ({ location, config }) => {
     return <Password />
   }
 
-  if (get(config, 'firstTimeSetup')) {
+  if (get(admin, 'setup')) {
+    return <SuperAdmin />
+  } else if (get(config, 'firstTimeSetup') && !get(admin, 'superuser')) {
     return <Admin />
   }
 

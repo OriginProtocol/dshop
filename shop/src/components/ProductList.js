@@ -21,9 +21,13 @@ const ProductList = ({ products }) => {
     <div className="products">
       {products.length ? null : <div>No Products!</div>}
       {products.map((product) => {
-        let img = `${config.dataSrc}${product.id}/520/${product.image}`
-        if (product.data) {
-          img = `${config.ipfsGateway}${product.data}/520/${product.image}`
+        let img
+        if (product.image) {
+          img = `${config.dataSrc}${product.id}/520/${product.image}`
+          if (product.data) {
+            img = `${config.ipfsGateway}${product.data}/520/${product.image}`
+          }
+          img = { backgroundImage: `url(${img})` }
         }
         return (
           <div
@@ -38,7 +42,7 @@ const ProductList = ({ products }) => {
               }
             }}
           >
-            <div className="pic" style={{ backgroundImage: `url(${img})` }} />
+            <div className={`pic${!img ? ' empty' : ''}`} style={img} />
             <div className="product-body">
               <Link to={`${urlPrefix}/products/${product.id}`}>
                 {product.title}

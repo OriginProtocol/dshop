@@ -4,7 +4,7 @@ import { useStateValue } from 'data/state'
 
 import SignUp from './SignUp'
 import ServerSetup from './ServerSetup'
-import CreateShop from '../shops/new-shop/CreateShop'
+import Redirect from 'components/Redirect'
 import SetupLayout from './_SetupLayout'
 
 const FirstTime = () => {
@@ -35,10 +35,7 @@ const FirstTime = () => {
         ) : step === 'server-setup' ? (
           <ServerSetup />
         ) : (
-          <>
-            <div className="desc">Create your shop</div>
-            <CreateShop />
-          </>
+          <Redirect to="/admin" />
         )}
       </div>
     </SetupLayout>
@@ -57,7 +54,7 @@ require('react-styl')(`
     margin-top: 4rem
     margin-bottom: 4rem
 
-    .desc 
+    .desc
       font-size: 1.125rem
       text-align: center
       color: #ffffff
@@ -73,7 +70,7 @@ require('react-styl')(`
       display: flex
       flex-direction: column
 
-    .create-shop 
+    .create-shop
       .advanced-link
         color: #fff
 

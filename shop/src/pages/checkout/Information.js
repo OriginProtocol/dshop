@@ -29,9 +29,16 @@ function validate(state) {
   }
   if (!state.address1) {
     newState.address1Error = 'Enter an address'
+  } else if (state.address1.length > 80) {
+    newState.address1Error = 'Address too long'
+  }
+  if (state.address2 && state.address2.length > 25) {
+    newState.address2Error = 'Address too long'
   }
   if (!state.city) {
     newState.cityError = 'Enter a city'
+  } else if (state.city.length > 32) {
+    newState.cityError = 'City name too long'
   }
   const provinces = get(Countries, `${state.country}.provinces`, {})
   if (!state.province && Object.keys(provinces).length) {
@@ -39,6 +46,8 @@ function validate(state) {
   }
   if (!state.zip) {
     newState.zipError = 'Enter a ZIP / postal code'
+  } else if (state.zip.length > 10) {
+    newState.zipError = 'ZIP / postal code too long'
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)

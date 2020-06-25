@@ -1,5 +1,6 @@
 const omit = require('lodash/omit')
 const pick = require('lodash/pick')
+const Stripe = require('stripe')
 const {
   Seller,
   Shop,
@@ -602,11 +603,83 @@ module.exports = function (app) {
 
         res.json({ success: true })
       } catch (e) {
-        console.log(e)
+        log.error('Failed to update social links')
         res.json({ success: false })
       }
     }
   )
+
+  async function deregisterStripeWebhooks(config) {
+    const { stripeBackend, backendAuthToken } = config
+    try {
+      log.info('Trying to deregister any existing webhook...')
+      const stripe = Stripe(stripeBackend)
+
+      const webhookEndpoints = await stripe.webhookEndpoints.list({
+        limit: 100
+      })
+
+      const endpointsToDelete = webhookEndpoints.data
+        .filter(
+          (endpoint) =>
+            get(endpoint, 'metadata.dshopStore') === backendAuthToken
+        )
+        .map((endpoint) => endpoint.id)
+
+      for (const endpointId of endpointsToDelete) {
+        try {
+          await stripe.webhookEndpoints.del(endpointId)
+        } catch (err) {
+          log.error('Failed to deregister webhook', endpointId, err)
+        }
+      }
+
+      log.info(`${endpointsToDelete} webhooks deregisterd`)
+    } catch (err) {
+      log.error('Failed to deregister webhooks', err)
+      return { success: false }
+    }
+
+    return { success: true }
+  }
+
+  async function registerStripeWebhooks(newConfig, oldConfig) {
+    const { backendAuthToken } = oldConfig
+    const { stripeBackend } = newConfig
+
+    // Deregister old webhooks
+    await deregisterStripeWebhooks(oldConfig)
+
+    // NOTE: Fails on localhost, try using a reverse proxy/tunnel like ngrok
+    // Or setup manually using Stripe CLI
+    const webhookHost = get(oldConfig, `publicUrl`)
+
+    if (!webhookHost) {
+      log.error('Invalid webhook host')
+      return { success: false }
+    }
+
+    log.info('Trying to register webhook on host', webhookHost)
+
+    try {
+      const stripe = Stripe(stripeBackend)
+
+      const endpoint = await stripe.webhookEndpoints.create({
+        url: `${webhookHost}/webhook`,
+        enabled_events: ['*'],
+        metadata: {
+          dshopStore: backendAuthToken
+        }
+      })
+
+      log.info(`Registered webhook for host ${webhookHost}`)
+
+      return { success: true, secret: endpoint.secret }
+    } catch (err) {
+      console.error('Failed to register webhooks', err)
+      return { success: false }
+    }
+  }
 
   app.put(
     '/shop/config',
@@ -634,7 +707,7 @@ module.exports = function (app) {
           const jsonStr = JSON.stringify({ ...config, ...jsonConfig }, null, 2)
           fs.writeFileSync(configFile, jsonStr)
         } catch (e) {
-          console.log(e)
+          log.error(e)
           return res.json({ success: false })
         }
       }
@@ -660,8 +733,23 @@ module.exports = function (app) {
       if (req.body.listingId) {
         req.shop.listingId = req.body.listingId
       }
+
+      const stripeOpts = {}
+      // Stripe webhooks
+      if (req.body.stripe === false) {
+        await deregisterStripeWebhooks(existingConfig)
+        stripeOpts.stripeWebhookSecret = ''
+        stripeOpts.stripeBackend = ''
+      } else if (req.body.stripe) {
+        const { secret } = await registerStripeWebhooks(
+          req.body,
+          existingConfig
+        )
+        stripeOpts.stripeWebhookSecret = secret
+      }
+
       const newConfig = setConfig(
-        { ...existingConfig, ...req.body },
+        { ...existingConfig, ...req.body, ...stripeOpts },
         req.shop.config
       )
       req.shop.config = newConfig

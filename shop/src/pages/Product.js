@@ -54,6 +54,18 @@ const Product = ({ history, location, match }) => {
   useEffect(() => {
     async function setData(data) {
       const variants = get(data, 'variants', [])
+      if (!variants.length) {
+        variants.push({
+          ...pick(data, ['title', 'price', 'image', 'available']),
+          id: 0,
+          name: data.title,
+          options: [],
+          option1: null,
+          option2: null,
+          option3: null
+        })
+      }
+
       const variant =
         variants.find((v) => String(v.id) === opts.variant) || variants[0]
       const newState = {

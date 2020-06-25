@@ -18,12 +18,25 @@ const Modal = ({ children, onClose, className, shouldClose }) => {
 
   const el = useRef(document.createElement('div'))
 
+  function doClose() {
+    setShow(false)
+    return setTimeout(() => onClose(), 150)
+  }
+
   useEffect(() => {
     document.body.appendChild(el.current)
     document.getElementById('app').style.filter = 'blur(2px)'
+    function onKeyDown(e) {
+      // Esc
+      if (e.keyCode === 27) {
+        doClose()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
     setShow(true)
     return () => {
       document.getElementById('app').style.filter = ''
+      document.removeEventListener('keydown', onKeyDown)
       el.current.parentElement.removeChild(el.current)
     }
   }, [el])
@@ -31,8 +44,7 @@ const Modal = ({ children, onClose, className, shouldClose }) => {
   useEffect(() => {
     let timeout
     if (shouldClose) {
-      setShow(false)
-      timeout = setTimeout(() => onClose(), 150)
+      timeout = doClose()
     }
     return function cleanup() {
       clearTimeout(timeout)

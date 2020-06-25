@@ -4,13 +4,17 @@ const Web3 = require('web3')
 const openpgp = require('openpgp')
 const util = require('ethereumjs-util')
 
+const Stripe = require('stripe')
+
+const get = require('lodash/get')
+
 const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
 const sendMail = require('./emailer')
 const { upsertEvent, getEventObj } = require('./events')
 const { getConfig } = require('./encryptedConfig')
 const discordWebhook = require('./discordWebhook')
-const { Network, Order, Shop } = require('../models')
+const { Network, Order, Shop, ExternalPayment } = require('../models')
 const { getLogger } = require('../utils/logger')
 
 const log = getLogger('utils.handleLog')
@@ -128,10 +132,71 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
   // If the order was already recorded, only update its status and we are done.
   if (order) {
     log.debug(`Updating status of DB order ${order.orderId} to ${eventName}`)
-    await order.update({
+
+    const updatedFields = {
       statusStr: eventName,
       updatedBlock: event.blockNumber
-    })
+    }
+
+    let refundError
+
+    if (eventName === 'OfferWithdrawn') {
+      // Initiate payment refund
+      const paymentMethod = get(order, 'data.paymentMethod.id')
+
+      if (paymentMethod === 'stripe') {
+        log.info('Trying to refund Stripe payment')
+        try {
+          // Load the shop configuration.
+          const shopConfig = getConfig(shop.config)
+          const { dataUrl } = shopConfig
+          const ipfsGateway = await getIPFSGateway(dataUrl, event.networkId)
+          log.info('IPFS Gateway', ipfsGateway)
+
+          // Load the offer data to get the paymentCode
+          const offerData = await getText(ipfsGateway, order.ipfsHash, 10000)
+          const offer = JSON.parse(offerData)
+          log.info('Payment Code', offer.paymentCode)
+
+          const externalPayment = await ExternalPayment.findOne({
+            where: {
+              paymentCode: offer.paymentCode
+            },
+            attributes: ['payment_code', 'payment_intent']
+          })
+
+          const paymentIntent = externalPayment.get({ plain: true })
+            .payment_intent
+
+          log.info('Payment Intent', paymentIntent)
+
+          const stripe = Stripe(shopConfig.stripeBackend)
+          const piRefund = await stripe.refunds.create({
+            payment_intent: paymentIntent
+          })
+
+          refundError = piRefund.reason
+
+          if (!refundError) {
+            log.info('Payment refunded')
+          } else {
+            log.info('Failed to refund payment', refundError)
+          }
+        } catch (err) {
+          console.error(err)
+          log.error('Failed to refund payment')
+          refundError = 'Could not refund payment on Stripe'
+        }
+      }
+    }
+
+    updatedFields.data = {
+      ...order.data,
+      refundError
+    }
+
+    await order.update(updatedFields)
+
     return order
   }
 

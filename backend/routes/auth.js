@@ -14,50 +14,10 @@ const omit = require('lodash/omit')
 const pick = require('lodash/pick')
 
 module.exports = function (app) {
-  app.get('/auth', (req, res) => {
-    if (!req.session.sellerId) {
-      return res.json({ success: false, message: 'Not logged in' })
-    }
-
-    const id = req.session.sellerId
-
-    Seller.findOne({ where: { id } }).then((seller) => {
-      if (!seller) {
-        return res
-          .status(401)
-          .json({ success: false, message: 'Not logged in' })
-      }
-      const { superuser, email } = seller
-      const attributes = ['name', 'id', 'authToken', 'hostname']
-      const include = { model: Seller, where: { id } }
-
-      if (superuser) {
-        Shop.findAll({ attributes }).then((allShops) => {
-          const shops = allShops.map((s) => ({
-            ...s.dataValues,
-            role: 'admin'
-          }))
-          res.json({ success: true, email, role: 'admin', shops })
-        })
-      } else {
-        Shop.findAll({ attributes, include }).then((allShops) => {
-          const shops = allShops.map((s) => ({
-            ...s.dataValues,
-            role: get(s, 'Sellers[0].SellerShop.dataValues.role')
-          }))
-          const authToken = String(req.headers.authorization).split(' ')[1]
-          const shop = shops.find((s) => s.authToken === authToken)
-          const role = shop ? shop.role : ''
-          res.json({ success: true, email, role, shops })
-        })
-      }
-    })
-  })
-
-  app.get('/superuser/auth', async (req, res) => {
+  app.get('/auth', async (req, res) => {
     const userCount = await Seller.count()
     if (!userCount) {
-      return res.json({ success: false, reason: 'no-users' })
+      return res.json({ success: false, reason: 'no-users', setup: true })
     }
 
     if (!req.session.sellerId) {
@@ -66,30 +26,60 @@ module.exports = function (app) {
     const user = await Seller.findOne({ where: { id: req.session.sellerId } })
     if (!user) {
       return res.json({ success: false, reason: 'no-such-user' })
-    } else if (!user.superuser) {
-      return res.json({ success: false, reason: 'not-superuser' })
     }
+    const { email } = user
 
     const allNetworks = await Network.findAll()
     const networks = allNetworks.map((n) => {
       const net = { ...encConf.getConfig(n.config), ...n.dataValues }
-      return omit(net, ['config'])
+      if (user.superuser) {
+        return omit(net, ['config'])
+      } else {
+        return pick(net, [
+          'networkId',
+          'ipfs',
+          'ipfsApi',
+          'marketplaceContract',
+          'marketplaceVersion',
+          'active'
+        ])
+      }
     })
     const network = networks.find((n) => n.active)
     if (!network) {
-      return res.json({ success: false, reason: 'no-active-network' })
+      return res.json({
+        success: false,
+        reason: 'no-active-network',
+        setup: true
+      })
     }
 
     const shopDataDir = DSHOP_CACHE
-    const shops = await Shop.findAll({
-      order: [['createdAt', 'desc']]
-    }).map((s) => ({
-      ...s.dataValues,
-      viewable: fs.existsSync(`${shopDataDir}/${s.authToken}/data/config.json`)
-    }))
+
+    const order = [['createdAt', 'desc']]
+    const attributes = ['name', 'id', 'authToken', 'hostname']
+    const include = { model: Seller, where: { id: user.id } }
+    let shops = []
+
+    if (user.superuser) {
+      const allShops = await Shop.findAll({ order })
+      shops = allShops.map((s) => ({
+        ...s.dataValues,
+        role: 'admin',
+        viewable: fs.existsSync(
+          `${shopDataDir}/${s.authToken}/data/config.json`
+        )
+      }))
+    } else {
+      const allShops = Shop.findAll({ attributes, include, order })
+      shops = allShops.map((s) => ({
+        ...s.dataValues,
+        role: get(s, 'Sellers[0].SellerShop.dataValues.role')
+      }))
+    }
 
     let localShops = []
-    if (fs.existsSync(shopDataDir)) {
+    if (user.superuser && fs.existsSync(shopDataDir)) {
       localShops = fs
         .readdirSync(shopDataDir)
         .filter((shop) =>
@@ -104,18 +94,25 @@ module.exports = function (app) {
         reason: 'no-shops',
         networks,
         network,
+        email,
         localShops
       })
     }
 
-    res.json({
+    const response = {
       success: true,
-      email: user.email,
+      email,
       networks,
       network,
       shops,
       localShops
-    })
+    }
+    if (user.superuser) {
+      response.role = 'admin'
+      response.superuser = true
+    }
+
+    res.json(response)
   })
 
   app.get('/auth/:email', async (req, res) => {

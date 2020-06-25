@@ -3,7 +3,6 @@ import { Redirect, Switch, Route } from 'react-router-dom'
 import get from 'lodash/get'
 
 import 'components/admin/Styles'
-import * as Icons from 'components/icons/Admin'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
@@ -25,17 +24,20 @@ import User from './users/Show'
 import NewUser from './users/New'
 import EditUser from './users/Edit'
 
+import Nav from '../admin/_Nav'
+
 const SuperAdmin = () => {
   const { config } = useConfig()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState()
+  const [newShop, setNewShop] = useState()
 
   const [{ admin, reload }, dispatch] = useStateValue()
 
   useEffect(() => {
     document.title = 'Origin Dshop Admin'
 
-    fetch(`${config.backend}/superuser/auth`, { credentials: 'include' })
+    fetch(`${config.backend}/auth`, { credentials: 'include' })
       .then(async (response) => {
         if (response.status === 200) {
           const auth = await response.json()
@@ -68,20 +70,7 @@ const SuperAdmin = () => {
 
   return (
     <div className="admin">
-      <nav>
-        <div className="fullwidth-container">
-          <h1>
-            <img className="dshop-logo" src="images/dshop-logo-blue.svg" />
-            <div className="shops-title-wrapper">
-              <div className="shop-title">Super Admin</div>
-            </div>
-          </h1>
-          <div className="user">
-            <Icons.User />
-            {admin.email}
-          </div>
-        </div>
-      </nav>
+      <Nav superAdmin={true} newShop={newShop} setNewShop={setNewShop} />
       <div className="sidebar-layout">
         <div className="sidebar-container">
           <Menu />

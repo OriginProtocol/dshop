@@ -99,7 +99,13 @@ const Gallery = ({ pics = [], active: activeImage, onChange }) => {
   }
 
   const current = pics[active]
-  if (!current) return null
+  if (!current) {
+    return (
+      <div className="gallery">
+        <div className="main-pic empty" />
+      </div>
+    )
+  }
 
   const backgroundImage = `url(${current})`
 
@@ -221,6 +227,11 @@ require('react-styl')(`
       background-size: contain
       background-repeat: no-repeat
       background-position: center center
+      &.empty
+        background: var(--light) url(images/default-image.svg)
+        background-repeat: no-repeat
+        background-position: center
+        background-size: 30%
       .prev,.next
         display: block
         position: absolute

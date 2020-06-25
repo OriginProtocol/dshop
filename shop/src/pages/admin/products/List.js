@@ -110,7 +110,7 @@ const AdminProducts = () => {
               >
                 <td>
                   <div
-                    className="pic"
+                    className={`pic${product.image ? '' : ' empty'}`}
                     style={{
                       backgroundImage: product.image
                         ? `url(${config.dataSrc}${product.id}/520/${product.image})`
@@ -180,6 +180,10 @@ require('react-styl')(`
       background-size: contain
       background-repeat: no-repeat
       background-position: center
+      &.empty
+        background-color: var(--light)
+        background-image: url(images/default-image.svg)
+        background-size: 50%
   .admin-products-page
     h3 span
       color: #9faebd

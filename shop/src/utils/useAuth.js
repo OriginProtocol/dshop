@@ -13,7 +13,7 @@ function useAuth(opts = {}) {
     async function fetchAuth() {
       setLoading(true)
 
-      get('/auth')
+      get('/auth', { suppressError: true })
         .then((auth) => {
           dispatch({ type: 'setAuth', auth })
           if (_get(auth, 'success')) {
@@ -31,11 +31,9 @@ function useAuth(opts = {}) {
   }, [reload.auth])
 
   function logout() {
-    post(`/auth/logout`, { method: 'POST' }).then(async (response) => {
-      if (response.status === 200) {
-        delete localStorage.isAdmin
-        dispatch({ type: 'logout' })
-      }
+    post(`/auth/logout`).then(() => {
+      delete localStorage.isAdmin
+      dispatch({ type: 'logout' })
     })
   }
 

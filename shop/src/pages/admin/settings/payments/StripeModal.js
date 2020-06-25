@@ -22,9 +22,9 @@ const validate = (state) => {
     newState.stripeKeyError = 'Client key is required'
   }
 
-  if (!state.stripeWebhookSecret) {
-    newState.stripeWebhookSecretError = 'Webhook secret key is required'
-  }
+  // if (!state.stripeWebhookSecret) {
+  //   newState.stripeWebhookSecretError = 'Webhook secret key is required'
+  // }
 
   const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
 

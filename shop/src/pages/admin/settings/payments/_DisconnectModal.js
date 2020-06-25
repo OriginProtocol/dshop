@@ -17,7 +17,10 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
         switch (processor.id) {
           case 'stripe':
             updatedConfig = {
-              stripeBackend: ''
+              stripe: false,
+              stripeKey: '',
+              stripeBackend: '',
+              stripeWebhookSecret: ''
             }
             break
           case 'uphold':
