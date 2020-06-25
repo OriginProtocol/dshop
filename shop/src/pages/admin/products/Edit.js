@@ -155,7 +155,14 @@ const EditProduct = () => {
 
   useEffect(() => {
     if (product) {
-      const newFormState = { ...product }
+      const newFormState = {
+        ...product,
+        price: product.price / 100,
+        variants: (product.variants || []).map((variant) => ({
+          ...variant,
+          price: variant.price / 100
+        }))
+      }
 
       let imageArray = product.images
       if (!imageArray && product.image) {
@@ -250,7 +257,11 @@ const EditProduct = () => {
           ...newState,
           price: newState.price * 100,
           images: media.map((file) => file.path),
-          collections: selectedCollections
+          collections: selectedCollections,
+          variants: (newState.variants || []).map((variant) => ({
+            ...variant,
+            price: variant.price * 100
+          }))
         })
       })
 
