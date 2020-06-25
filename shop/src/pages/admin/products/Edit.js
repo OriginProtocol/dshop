@@ -178,8 +178,6 @@ const EditProduct = () => {
         path: image
       }))
 
-      newFormState.price = product.price / 100
-
       const shouldBackfillOptions =
         newFormState.options &&
         (!newFormState.availableOptions ||
