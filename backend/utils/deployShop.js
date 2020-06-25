@@ -298,6 +298,7 @@ async function deployShop({
     domain = dnsProvider ? `https://${subdomain}.${zone}` : null
     await configureShopDNS({ network, subdomain, zone, hash, dnsProvider })
     if (network.ipfs) {
+      // Intentionally not awating on this so we can return to the user faster
       triggerAutoSSL(domain, network.ipfs)
     }
   }
