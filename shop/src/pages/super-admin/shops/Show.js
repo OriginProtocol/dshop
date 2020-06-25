@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  useHistory,
-  Link,
-  Switch,
-  Route,
-  useRouteMatch,
-  Redirect
-} from 'react-router-dom'
+import { Link, Switch, Route, useRouteMatch, Redirect } from 'react-router-dom'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
@@ -30,7 +23,6 @@ const NavItem = ({ url, active, name }) => (
 )
 
 const AdminShop = () => {
-  const history = useHistory()
   const [{ admin }] = useStateValue()
   const match = useRouteMatch('/super-admin/shops/:shopId/:tab?')
   const { shopId, tab } = match.params
@@ -55,25 +47,6 @@ const AdminShop = () => {
         <span className="chevron" />
         {shop.name}
         <div className="ml-auto">
-          <button
-            className="btn btn-outline-primary"
-            onClick={() => {
-              localStorage.activeShop = shop.authToken
-              window.open(location.origin)
-            }}
-            children="Storefront"
-          />
-          <button
-            className="btn btn-outline-primary ml-2"
-            onClick={() => {
-              localStorage.activeShop = shop.authToken
-              history.push({
-                pathname: `/admin/settings/server`,
-                state: { scrollToTop: true }
-              })
-            }}
-            children="Admin"
-          />
           <DeleteShop shop={shop} className="ml-2" />
         </div>
       </h3>

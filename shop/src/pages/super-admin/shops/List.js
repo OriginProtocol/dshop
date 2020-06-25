@@ -37,7 +37,6 @@ const AdminShops = () => {
             <th className="text-center">Listing ID</th>
             <th>Created</th>
             <th className="text-center">Network</th>
-            <th />
           </tr>
         </thead>
         <tbody>
@@ -52,38 +51,6 @@ const AdminShops = () => {
               <td className="text-center">{shop.listingId}</td>
               <td>{dayjs(shop.createdAt).format('MMM D, h:mm A')}</td>
               <td className="text-center">{networkName(shop)}</td>
-              <td className="text-right">
-                {!shop.viewable ? null : (
-                  <>
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        localStorage.activeShop = shop.authToken
-                        window.open(location.origin)
-                      }}
-                      children="Storefront"
-                    />
-                    <span className="mx-2" style={{ color: '#999' }}>
-                      |
-                    </span>
-                    <a
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        localStorage.activeShop = shop.authToken
-                        history.push({
-                          pathname: `/admin`,
-                          state: { scrollToTop: true }
-                        })
-                      }}
-                      children="Admin"
-                    />
-                  </>
-                )}
-              </td>
             </tr>
           ))}
         </tbody>

@@ -77,6 +77,7 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
         setActiveShop(json.slug)
         setTimeout(() => {
           dispatch({ type: 'reset', dataDir: json.slug })
+          dispatch({ type: 'reload', target: 'auth' })
         }, 50)
         history.push({
           pathname: '/admin/onboarding',

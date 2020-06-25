@@ -8,14 +8,14 @@ import useConfig from 'utils/useConfig'
 import Caret from 'components/icons/Caret'
 import Popover from 'components/Popover'
 
-const ShopsDropdown = ({ onNewShop, forceTitle }) => {
+const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
   const [shouldClose, setShouldClose] = useState(0)
   const { config, setActiveShop } = useConfig()
   const [{ admin }, dispatch] = useStateValue()
   const history = useHistory()
   const shops = get(admin, 'shops', [])
 
-  if (!shops.length || !config.activeShop) {
+  if (!shops.length || (!config.activeShop && !superAdmin)) {
     return null
   }
 
@@ -31,7 +31,9 @@ const ShopsDropdown = ({ onNewShop, forceTitle }) => {
       shouldClose={shouldClose}
       button={
         <>
-          {logo && !forceTitle ? (
+          {superAdmin ? (
+            'Super Admin'
+          ) : logo && !forceTitle ? (
             <img src={logo} className={isSVG} />
           ) : (
             config.fullTitle
@@ -53,6 +55,12 @@ const ShopsDropdown = ({ onNewShop, forceTitle }) => {
                   dispatch({ type: 'reset', dataDir: shop.authToken })
                 }, 50)
                 setShouldClose(shouldClose + 1)
+                if (superAdmin) {
+                  history.push({
+                    pathname: `/admin`,
+                    state: { scrollToTop: true }
+                  })
+                }
               }
             }}
           >
@@ -64,6 +72,11 @@ const ShopsDropdown = ({ onNewShop, forceTitle }) => {
           <div
             className="shop-el bt"
             onClick={() => {
+              setShouldClose(shouldClose + 1)
+              setActiveShop(null)
+              setTimeout(() => {
+                dispatch({ type: 'reset', dataDir: '' })
+              }, 50)
               history.push({
                 pathname: `/super-admin`,
                 state: { scrollToTop: true }

@@ -22,9 +22,9 @@ const Login = () => {
             password: state.password
           })
           post('/auth/login', { body })
-            .then((auth) => {
+            .then(() => {
               setState({ ...state, error: '' })
-              dispatch({ type: 'setAuth', auth })
+              dispatch({ type: 'reload', target: 'auth' })
             })
             .catch((err) => {
               console.error('Error signing in', err)
