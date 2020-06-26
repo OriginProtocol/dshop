@@ -27,7 +27,6 @@ const PayWithStripe = injectStripe(
       if (!stripe || !stripeSelected || paymentReq) {
         return
       }
-      console.log('Make Stripe payment request...')
 
       try {
         const paymentRequest = stripe.paymentRequest({

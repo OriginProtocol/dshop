@@ -14,10 +14,12 @@ import { useStateValue } from 'data/state'
 function validate(state) {
   const newState = {}
 
-  if (!state.name) {
-    newState.nameError = 'Enter a title'
-  } else if (state.name.length < 3) {
-    newState.nameError = 'Title is too short'
+  if (state.shopType !== 'local-dir') {
+    if (!state.name) {
+      newState.nameError = 'Enter a title'
+    } else if (state.name.length < 3) {
+      newState.nameError = 'Title is too short'
+    }
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
@@ -25,17 +27,19 @@ function validate(state) {
   return { valid, newState: { ...state, ...newState } }
 }
 
-const defaultState = { title: '' }
+const defaultState = { title: '', shopType: 'empty' }
 
 const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
   const shopName = useAutoFocus()
   const history = useHistory()
-  const [, dispatch] = useStateValue()
+  const [{ admin }, dispatch] = useStateValue()
   const { setActiveShop } = useConfig()
   const [state, setState] = useSetState(defaultState)
   const { post } = useBackendApi({ authToken: true })
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
+
+  const localShops = get(admin, 'localShops', [])
 
   return (
     <ConfirmationModal
@@ -50,19 +54,23 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
         setState(defaultState, true)
         onClose()
       }}
-      onConfirm={() =>
-        post('/shop', {
+      onConfirm={() => {
+        const data = {
+          shopType: state.shopType,
+          name: state.name,
+          backend: get(window, 'location.origin'),
+          dataDir: kebabCase(state.name),
+          hostname: kebabCase(state.name)
+        }
+        if (state.shopType === 'local-dir') {
+          data.hostname = data.dataDir = state.dataDir || localShops[0]
+        }
+        return post('/shop', {
           method: 'POST',
           suppressError: true,
-          body: JSON.stringify({
-            shopType: 'empty',
-            name: state.name,
-            backend: get(window, 'location.origin'),
-            dataDir: kebabCase(state.name),
-            hostname: kebabCase(state.name)
-          })
+          body: JSON.stringify(data)
         })
-      }
+      }}
       onError={(json) => {
         console.log(json)
         setState({ nameError: json.message })
@@ -82,10 +90,43 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
         })
       }}
     >
-      <div className="form-row mt-3">
-        <label>Shop name</label>
-        <input ref={shopName} {...input('name')} />
-        {Feedback('name')}
+      <div className="text-left pt-3">
+        {state.shopType === 'local-dir' ? null : (
+          <div className="form-group">
+            <label>Shop name</label>
+            <input ref={shopName} {...input('name')} />
+            {Feedback('name')}
+          </div>
+        )}
+        {!get(admin, 'superuser') ? null : (
+          <div className="form-row">
+            <div className="form-group col-md-6">
+              <label>Shop type</label>
+              <select {...input('shopType')}>
+                {/* <option value="multi-product">New Multi Product</option> */}
+                {/* <option value="single-product">New Single Product</option> */}
+                <option value="empty">No Template</option>
+                {localShops.length ? (
+                  <option value="local-dir">From Cache</option>
+                ) : null}
+                {/* <option value="clone-url">Clone URL</option> */}
+                {/* <option value="clone-ipfs">Clone IPFS Hash</option> */}
+                {/* <option value="printful">New Printful</option> */}
+                {/* <option value="affiliate">New Affiliate</option> */}
+              </select>
+            </div>
+            {state.shopType === 'local-dir' ? (
+              <div className="form-group col-md-6">
+                <label>Data dir</label>
+                <select {...input('dataDir')}>
+                  {localShops.map((localShop) => (
+                    <option key={localShop}>{localShop}</option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+          </div>
+        )}
       </div>
     </ConfirmationModal>
   )

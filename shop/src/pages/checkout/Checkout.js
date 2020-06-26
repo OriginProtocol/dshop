@@ -20,14 +20,17 @@ const Checkout = () => {
   const [stripe, setStripe] = useState(null)
 
   useEffect(() => {
+    if (!config.activeShop) {
+      return
+    }
     if (!cart.items.length) {
       history.push('/cart')
       return
     }
-    if (window.Stripe && config.stripe) {
+    if (window.Stripe && config.stripeKey) {
       setStripe(window.Stripe(config.stripeKey))
     } else {
-      if (config.stripe && config.stripeKey) {
+      if (config.stripeKey) {
         const script = document.createElement('script')
         script.src = 'https://js.stripe.com/v3/'
         script.addEventListener('load', () => {
@@ -38,7 +41,7 @@ const Checkout = () => {
       // Need to re-add stylesheet as this component is lazy loaded
       Styl.addStylesheet()
     }
-  }, [])
+  }, [config.activeShop])
 
   if (!config) {
     return <div>Loading...</div>

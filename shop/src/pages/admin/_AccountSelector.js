@@ -64,7 +64,7 @@ const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
             {shop.name}
           </div>
         ))}
-        {admin.role !== 'admin' ? null : (
+        {!admin.superuser ? null : (
           <div
             className="shop-el bt"
             onClick={() => {

@@ -123,8 +123,12 @@ const ChoosePayment = () => {
     <form onSubmit={onSubmit}>
       <div className="checkout-payment-method">
         <PayWithCrypto {...paymentState} onChange={setPaymentState} />
-        <PayWithStripe {...paymentState} onChange={setPaymentState} />
-        <PayWithUphold {...paymentState} onChange={setPaymentState} />
+        {!paymentMethods.find((p) => p.id === 'stripe') ? null : (
+          <PayWithStripe {...paymentState} onChange={setPaymentState} />
+        )}
+        {!paymentMethods.find((p) => p.id === 'uphold') ? null : (
+          <PayWithUphold {...paymentState} onChange={setPaymentState} />
+        )}
       </div>
 
       {hideBillingAddress ? null : (

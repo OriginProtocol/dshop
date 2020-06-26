@@ -29,7 +29,7 @@ function useWithdrawOffer({
           disabled: true,
           buttonText: 'Confirming transaction...'
         })
-        tx.wait(2).then(() => {
+        tx.wait().then(() => {
           onChange({ tx: tx.hash })
         })
       }

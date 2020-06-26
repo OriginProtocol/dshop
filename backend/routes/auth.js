@@ -1,3 +1,8 @@
+const fs = require('fs')
+const get = require('lodash/get')
+const omit = require('lodash/omit')
+const pick = require('lodash/pick')
+
 const { Seller, Shop, Network } = require('../models')
 const {
   checkPassword,
@@ -5,13 +10,9 @@ const {
   authSellerAndShop,
   authRole
 } = require('./_auth')
-const fs = require('fs')
 const { createSeller, numSellers } = require('../utils/sellers')
 const encConf = require('../utils/encryptedConfig')
 const { DSHOP_CACHE } = require('../utils/const')
-const get = require('lodash/get')
-const omit = require('lodash/omit')
-const pick = require('lodash/pick')
 
 module.exports = function (app) {
   app.get('/auth', async (req, res) => {
@@ -57,28 +58,26 @@ module.exports = function (app) {
     const shopDataDir = DSHOP_CACHE
 
     const order = [['createdAt', 'desc']]
-    const attributes = ['name', 'id', 'authToken', 'hostname']
+    const attributes = ['id', 'name', 'authToken', 'hostname', 'listingId']
     const include = { model: Seller, where: { id: user.id } }
     let shops = []
 
     if (user.superuser) {
       const allShops = await Shop.findAll({ order })
-      shops = allShops.map((s) => ({
-        ...s.dataValues,
-        role: 'admin',
-        viewable: fs.existsSync(
-          `${shopDataDir}/${s.authToken}/data/config.json`
-        )
-      }))
+      shops = allShops.map((s) => {
+        const configPath = `${shopDataDir}/${s.authToken}/data/config.json`
+        const viewable = fs.existsSync(configPath)
+        return { ...pick(s.dataValues, attributes), role: 'admin', viewable }
+      })
     } else {
-      const allShops = Shop.findAll({ attributes, include, order })
+      const allShops = await Shop.findAll({ attributes, include, order })
       shops = allShops.map((s) => ({
-        ...s.dataValues,
+        ...pick(s.dataValues, attributes),
         role: get(s, 'Sellers[0].SellerShop.dataValues.role')
       }))
     }
 
-    let localShops = []
+    let localShops
     if (user.superuser && fs.existsSync(shopDataDir)) {
       localShops = fs
         .readdirSync(shopDataDir)

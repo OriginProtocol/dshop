@@ -181,6 +181,13 @@ const reducer = (state, action) => {
   } else if (action.type === 'orderComplete') {
     newState = set(newState, 'cart', cloneDeep(defaultState.cart))
   } else if (action.type === 'setAuth') {
+    const activeShop = get(state, 'config.activeShop')
+    if (activeShop) {
+      const shop = get(action.auth, 'shops', []).find(
+        (s) => s.authToken === activeShop
+      )
+      action.auth.role = get(shop, 'role')
+    }
     newState = set(newState, `admin`, action.auth)
   } else if (action.type === 'setPasswordAuthed') {
     newState = set(newState, `passwordAuthed`, action.authed)

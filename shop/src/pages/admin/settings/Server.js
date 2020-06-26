@@ -141,13 +141,13 @@ const AdminSettings = ({ shop }) => {
           if (valid) {
             setSaving('saving')
             const token = shop ? shop.authToken : config.backendAuthToken
-            const raw = await fetch(`${config.backend}/config`, {
+            const raw = await fetch(`${config.backend}/shop/config`, {
               headers: {
                 authorization: `bearer ${token}`,
                 'content-type': 'application/json'
               },
               credentials: 'include',
-              method: 'POST',
+              method: 'PUT',
               body: JSON.stringify(newState)
             })
             if (raw.ok) {

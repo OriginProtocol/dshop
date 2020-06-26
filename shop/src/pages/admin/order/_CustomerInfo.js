@@ -60,7 +60,7 @@ const CustomerInfo = ({ order }) => {
 export default CustomerInfo
 
 require('react-styl')(`
-  .customer-info
+  .admin .customer-info
     > div
       display: flex
       > div

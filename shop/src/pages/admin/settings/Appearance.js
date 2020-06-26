@@ -8,6 +8,7 @@ import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
 import useBackendApi from 'utils/useBackendApi'
 import { formInput, formFeedback } from 'utils/formHelpers'
+import { useStateValue } from 'data/state'
 
 import CustomDomain from './_CustomDomain'
 import UploadFile from './_UploadFile'
@@ -22,6 +23,7 @@ const socialLinkKeys = ['facebook', 'twitter', 'instagram', 'medium', 'youtube']
 
 const ShopAppearance = () => {
   const { config } = useConfig()
+  const [{ admin }] = useStateValue()
   const { shopConfig } = useShopConfig()
   const { postRaw, post } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, {
@@ -139,7 +141,8 @@ const ShopAppearance = () => {
             <div className="suffix-wrap">
               <input {...input('hostname')} />
               <div className="suffix">
-                <span>{state.hostname}</span>.ogn.app
+                <span>{state.hostname}</span>
+                {`.${get(admin, 'network.domain')}`}
               </div>
             </div>
             {Feedback('hostname')}

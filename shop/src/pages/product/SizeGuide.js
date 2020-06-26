@@ -13,7 +13,6 @@ const SizeGuide = ({ product, wide }) => {
   const sizes = product.sizeGuide.sizes.filter(
     (s) => productSizes.indexOf(s.size) >= 0
   )
-  // console.log(sizes.length, wide)
 
   if (!data.measurements.length) {
     return null

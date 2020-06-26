@@ -48,6 +48,12 @@ async function fetchConfig(dataSrc, activeShop) {
     if (!config.paymentMethods) {
       config.paymentMethods = DefaultPaymentMethods
     }
+    config.paymentMethods = config.paymentMethods.filter((m) => {
+      if (m.id === 'stripe' && !config.stripeKey) {
+        return false
+      }
+      return true
+    })
     let supportEmailPlain = config.supportEmail
     if (supportEmailPlain.match(/<([^>]+)>/)[1]) {
       supportEmailPlain = supportEmailPlain.match(/<([^>]+)>/)[1]

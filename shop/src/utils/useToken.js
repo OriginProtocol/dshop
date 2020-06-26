@@ -74,7 +74,6 @@ function useToken(activeToken = {}, totalUsd) {
             const allowanceUSD = Math.ceil(
               (Number(allowanceNum) / exchangeRate) * 100
             )
-            // console.log({ allowanceUSD })
             hasAllowance = allowanceUSD >= totalUsd
           }
           setState({

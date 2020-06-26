@@ -60,6 +60,14 @@ const About = () => {
           </a>{' '}
           to be notified when the decentralized store is generally available.
         </div>
+        <div className="question">What is your support email address?</div>
+        <div className="answer">
+          {`Please email `}
+          <a href={`mailto:${config.supportEmailPlain}`}>
+            {config.supportEmailPlain}
+          </a>
+          {' for support.'}
+        </div>
       </div>
     </>
   )

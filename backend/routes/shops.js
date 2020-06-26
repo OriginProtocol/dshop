@@ -693,7 +693,8 @@ module.exports = function (app) {
         'emailSubject',
         'cartSummaryNote',
         'byline',
-        'discountCodes'
+        'discountCodes',
+        'stripeKey'
       )
       if (req.body.title) {
         jsonConfig.fullTitle = req.body.title
@@ -701,8 +702,13 @@ module.exports = function (app) {
           jsonConfig.title = req.body.title
         }
       }
+      let listingId
+      if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
+        listingId = req.body.listingId
+        req.shop.listingId = listingId
+      }
 
-      if (Object.keys(jsonConfig).length) {
+      if (Object.keys(jsonConfig).length || listingId) {
         const configFile = `${DSHOP_CACHE}/${req.shop.authToken}/data/config.json`
 
         if (!fs.existsSync(configFile)) {
@@ -712,7 +718,12 @@ module.exports = function (app) {
         try {
           const raw = fs.readFileSync(configFile).toString()
           const config = JSON.parse(raw)
-          const jsonStr = JSON.stringify({ ...config, ...jsonConfig }, null, 2)
+          const newConfig = { ...config, ...jsonConfig }
+          if (listingId) {
+            const [netId] = listingId.split('-')
+            set(newConfig, `networks.${netId}.listingId`, listingId)
+          }
+          const jsonStr = JSON.stringify(newConfig, null, 2)
           fs.writeFileSync(configFile, jsonStr)
         } catch (e) {
           log.error(e)
@@ -737,9 +748,6 @@ module.exports = function (app) {
       }
       if (req.body.title) {
         req.shop.name = req.body.title
-      }
-      if (req.body.listingId) {
-        req.shop.listingId = req.body.listingId
       }
 
       const stripeOpts = {}

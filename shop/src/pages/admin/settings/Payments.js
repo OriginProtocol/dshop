@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import ethers from 'ethers'
 import pickBy from 'lodash/pickBy'
 
@@ -18,9 +18,11 @@ import DisconnectModal from './payments/_DisconnectModal'
 const PaymentSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
   const { config } = useConfig()
-  const [state, setState] = useSetState({
-    listingId: config.listingId
-  })
+  const [state, setState] = useSetState()
+
+  useEffect(() => {
+    setState({ listingId: config.listingId })
+  }, [config.activeShop])
 
   const [connectModal, setShowConnectModal] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -129,7 +131,7 @@ const PaymentSettings = () => {
         </div>
       </h3>
       <Tabs />
-      <div className="admin-payment-settings">
+      <div className="admin-payment-settings shop-settings">
         {Processors.map((processor) => (
           <div key={processor.id} className={`processor ${processor.id}`}>
             <div className="icon">{processor.icon}</div>
@@ -164,32 +166,32 @@ const PaymentSettings = () => {
             </div>
           </div>
         ))}
+        {connectModal === 'web3' && (
+          <Web3Modal
+            onClose={() => {
+              setShowConnectModal(null)
+              refetch()
+            }}
+          />
+        )}
+        {connectModal === 'stripe' && (
+          <StripeModal
+            onClose={() => {
+              setShowConnectModal(null)
+              refetch()
+            }}
+          />
+        )}
+        {connectModal === 'uphold' && (
+          <UpholdModal
+            onClose={() => {
+              setShowConnectModal(null)
+              refetch()
+            }}
+          />
+        )}
+        <ContractSettings {...{ state, setState, config }} />
       </div>
-      {connectModal === 'web3' && (
-        <Web3Modal
-          onClose={() => {
-            setShowConnectModal(null)
-            refetch()
-          }}
-        />
-      )}
-      {connectModal === 'stripe' && (
-        <StripeModal
-          onClose={() => {
-            setShowConnectModal(null)
-            refetch()
-          }}
-        />
-      )}
-      {connectModal === 'uphold' && (
-        <UpholdModal
-          onClose={() => {
-            setShowConnectModal(null)
-            refetch()
-          }}
-        />
-      )}
-      <ContractSettings {...{ state, setState, config }} />
     </form>
   )
 }

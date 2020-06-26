@@ -1,18 +1,19 @@
 import React, { useState } from 'react'
+import get from 'lodash/get'
 
 import PlusIcon from 'components/icons/Plus'
 import Modal from 'components/Modal'
 
 import useBackendApi from 'utils/useBackendApi'
+import { useStateValue } from 'data/state'
 
 const CustomDomain = ({ hostname = '' }) => {
   const [show, setShow] = useState()
   const [shouldClose, setShouldClose] = useState()
   const [domain, setDomain] = useState('')
-
   const [verifyStatus, setVerifyStatus] = useState({})
-
   const { post } = useBackendApi({ authToken: true })
+  const [{ admin }] = useStateValue()
 
   const verifyDomain = async () => {
     if (verifyStatus.loading) return
@@ -81,8 +82,15 @@ const CustomDomain = ({ hostname = '' }) => {
                   <div className="mb-2">
                     Please set the following DNS records:
                   </div>
-                  <div className="record">{`${domain} CNAME ipfs-prod.ogn.app`}</div>
-                  <div className="record">{`_dnslink.${domain} TXT ${hostname}.ogn.app`}</div>
+                  <div className="record">{`${domain} CNAME ${get(
+                    admin,
+                    'network.ipfs',
+                    ''
+                  ).replace(/^https?:\/\//, '')}`}</div>
+                  <div className="record">{`_dnslink.${domain} TXT ${hostname}.${get(
+                    admin,
+                    'network.domain'
+                  )}`}</div>
                 </div>
               )}
             </div>
