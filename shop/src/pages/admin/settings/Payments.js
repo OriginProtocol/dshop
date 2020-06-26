@@ -113,7 +113,7 @@ const PaymentSettings = () => {
         }
       }}
     >
-      <h3 className="admin-title with-actions">
+      <h3 className="admin-title">
         Settings
         <div className="actions ml-auto">
           <button type="button" className="btn btn-outline-primary mr-2">

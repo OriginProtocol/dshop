@@ -148,9 +148,7 @@ const EditProduct = () => {
   const title = `${isNewProduct ? 'Add' : 'Edit'} product`
 
   const { product } = useProduct(productId)
-
   const { collections } = useCollections()
-
   const [media, setMedia] = useState([])
 
   useEffect(() => {

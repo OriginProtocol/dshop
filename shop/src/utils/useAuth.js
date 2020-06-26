@@ -31,7 +31,8 @@ function useAuth(opts = {}) {
   }, [reload.auth])
 
   function logout() {
-    localStorage.clear()
+    delete localStorage.isAdmin
+    delete localStorage.activeShop
     post(`/auth/logout`).then(() => {
       dispatch({ type: 'logout' })
     })

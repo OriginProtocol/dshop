@@ -29,7 +29,7 @@ const Admin = () => {
   const { loading, error } = useAuth()
   const [newShop, setNewShop] = useState()
   const { config, setActiveShop } = useConfig()
-  const [{ admin }, dispatch] = useStateValue()
+  const [{ admin }] = useStateValue()
   const shops = get(admin, 'shops', [])
 
   if (error) {
@@ -44,11 +44,7 @@ const Admin = () => {
   }
 
   if (!config.activeShop || !shops.length) {
-    return (
-      <StoreSelector
-        {...{ setActiveShop, admin, dispatch, newShop, setNewShop }}
-      />
-    )
+    return <StoreSelector {...{ setActiveShop, admin, newShop, setNewShop }} />
   }
 
   return (

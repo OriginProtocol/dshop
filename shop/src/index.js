@@ -1,13 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import get from 'lodash/get'
 
 import { HashRouter, BrowserRouter } from 'react-router-dom'
 import Styl from 'react-styl'
 
 import { StateProvider } from 'data/state'
 import App from './pages/App'
-import useConfig from 'utils/useConfig'
 import './css/app.scss'
 import './css/app.css'
 
@@ -22,14 +20,10 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const Providers = () => {
-  const { loading, config } = useConfig()
-  if (loading) {
-    return null
-  }
   return (
     <Router>
-      <StateProvider storage={get(config, 'backendAuthToken', 'dshop')}>
-        <App config={config} />
+      <StateProvider>
+        <App />
       </StateProvider>
     </Router>
   )

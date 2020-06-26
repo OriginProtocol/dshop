@@ -14,7 +14,7 @@ import Payment from './Payment'
 import Summary from './Summary'
 
 const Checkout = () => {
-  const { config, loading } = useConfig()
+  const { config } = useConfig()
   const history = useHistory()
   const [{ cart }] = useStateValue()
   const [stripe, setStripe] = useState(null)
@@ -40,7 +40,7 @@ const Checkout = () => {
     }
   }, [])
 
-  if (loading) {
+  if (!config) {
     return <div>Loading...</div>
   }
 
@@ -99,7 +99,6 @@ require('react-styl')(`
       border-style: solid
       border-color: #ddd
       background: #f6f6f6
-
 
   @media (max-width: 767.98px)
     .checkout

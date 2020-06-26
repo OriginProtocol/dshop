@@ -16,7 +16,7 @@ const ShowCollection = () => {
 
   return (
     <div>
-      <h3 className="admin-title with-border with-actions">
+      <h3 className="admin-title with-border">
         <Link to="/admin/collections" className="muted">
           Collections
         </Link>

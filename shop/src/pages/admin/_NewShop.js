@@ -75,10 +75,7 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
       onSuccess={(json) => {
         setState({}, true)
         setActiveShop(json.slug)
-        setTimeout(() => {
-          dispatch({ type: 'reset', dataDir: json.slug })
-          dispatch({ type: 'reload', target: 'auth' })
-        }, 50)
+        dispatch({ type: 'reload', target: 'auth' })
         history.push({
           pathname: '/admin/onboarding',
           state: { scrollToTop: true }

@@ -130,7 +130,7 @@ const AdminEditDiscount = () => {
           }
         }}
       >
-        <h3 className="admin-title with-border with-actions">
+        <h3 className="admin-title with-border">
           <Link to="/admin/discounts" className="muted">
             Discounts
           </Link>

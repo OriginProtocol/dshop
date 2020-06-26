@@ -11,23 +11,18 @@ import Admin from './admin/Admin'
 import SuperAdmin from './super-admin/SuperAdmin'
 
 import { useStateValue } from 'data/state'
+import useConfig from 'utils/useConfig'
 
-const App = ({ location, config }) => {
+const App = ({ location }) => {
   const history = useHistory()
   const [passwordLoading, setPasswordLoading] = useState(false)
-  const [, setReset] = useState(false)
-  const [
-    { admin, affiliate, passwordAuthed, resetBit },
-    dispatch
-  ] = useStateValue()
+  const { setActiveShop, config, error } = useConfig()
+  const [{ admin, affiliate, passwordAuthed }, dispatch] = useStateValue()
   const q = queryString.parse(location.search)
+
   const isSuperAdmin = location.pathname.indexOf('/super-admin') === 0
   const isAdmin = location.pathname.indexOf('/admin') === 0 || isSuperAdmin
   const isOrder = location.pathname.indexOf('/order') === 0
-
-  useEffect(() => {
-    setReset(resetBit)
-  }, [resetBit])
 
   // Redirect to HTTPS if URL is not local
   useEffect(() => {
@@ -96,7 +91,26 @@ const App = ({ location, config }) => {
     if (document.title === 'TITLE') {
       document.title = 'Origin Dshop'
     }
-  }, [config, resetBit])
+  }, [config])
+
+  useEffect(() => {
+    if (!config) {
+      setActiveShop(true)
+    }
+  }, [config])
+
+  if (!config) {
+    return null
+  }
+
+  if (get(admin, 'setup')) {
+    return <SuperAdmin />
+  } else if (
+    error ||
+    (get(config, 'firstTimeSetup') && !get(admin, 'superuser'))
+  ) {
+    return <Admin />
+  }
 
   if (passwordLoading) {
     return null
@@ -105,12 +119,6 @@ const App = ({ location, config }) => {
   const passwordProtected = get(config, 'passwordProtected')
   if (passwordProtected && !passwordAuthed && !isAdmin && !isOrder) {
     return <Password />
-  }
-
-  if (get(admin, 'setup')) {
-    return <SuperAdmin />
-  } else if (get(config, 'firstTimeSetup') && !get(admin, 'superuser')) {
-    return <Admin />
   }
 
   return (

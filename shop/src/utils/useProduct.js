@@ -1,20 +1,19 @@
 import { useEffect, useState } from 'react'
 
 import fetchProduct from '../data/fetchProduct'
+import useConfig from 'utils/useConfig'
 
 function useProduct(productId) {
   const [product, setProduct] = useState()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
+  const { config } = useConfig()
 
   async function fetchProducts() {
     setLoading(true)
     setError(null)
     try {
-      const product = await fetchProduct(
-        `${localStorage.activeShop}/`,
-        productId
-      )
+      const product = await fetchProduct(`${config.activeShop}/`, productId)
       setProduct(product)
       setLoading(false)
     } catch (e) {
@@ -24,10 +23,9 @@ function useProduct(productId) {
   }
 
   useEffect(() => {
-    if (!productId) {
+    if (!productId || productId === 'new') {
       return
     }
-
     fetchProducts()
   }, [productId])
 

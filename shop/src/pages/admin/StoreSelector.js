@@ -3,13 +3,7 @@ import get from 'lodash/get'
 
 import Nav from './_Nav'
 
-const StoreSelector = ({
-  setActiveShop,
-  admin,
-  dispatch,
-  newShop,
-  setNewShop
-}) => {
+const StoreSelector = ({ setActiveShop, admin, newShop, setNewShop }) => {
   const shops = get(admin, 'shops', [])
   return (
     <div className="admin">
@@ -24,15 +18,9 @@ const StoreSelector = ({
               {shops.map((shop) => (
                 <div
                   key={shop.id}
-                  onClick={() => {
-                    setActiveShop(shop.authToken)
-                    setTimeout(() => {
-                      dispatch({ type: 'reset', dataDir: shop.authToken })
-                    }, 50)
-                  }}
-                >
-                  {shop.name}
-                </div>
+                  onClick={() => setActiveShop(shop.authToken)}
+                  children={shop.name}
+                />
               ))}
             </div>
           </>

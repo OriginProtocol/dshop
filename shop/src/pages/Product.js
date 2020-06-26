@@ -53,6 +53,9 @@ const Product = ({ history, location, match }) => {
 
   useEffect(() => {
     async function setData(data) {
+      if (!data) {
+        return
+      }
       const variants = get(data, 'variants', [])
       if (!variants.length) {
         variants.push({
@@ -85,10 +88,9 @@ const Product = ({ history, location, match }) => {
       if (products.length) {
         const product = products.find((p) => p.id === match.params.id)
         const url = `${config.ipfsGateway}${product.data}/data.json`
-        fetch(url).then(async (res) => {
-          const json = await res.json()
-          setData({ ...product, ...json })
-        })
+        fetch(url)
+          .then((res) => res.json())
+          .then((json) => setData({ ...product, ...json }))
       }
     } else {
       fetchProduct(config.dataSrc, match.params.id).then(setData)

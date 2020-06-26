@@ -13,14 +13,14 @@ const getCollections = memoize(
 
 function useCollections() {
   const { config } = useConfig()
-  const [{ collections, reload, resetBit }, dispatch] = useStateValue()
+  const [{ collections, reload }, dispatch] = useStateValue()
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!config.dataSrc) return
     let isSubscribed = true
     setLoading(true)
-    getCollections(config.dataSrc, reload.collections, resetBit).then(
+    getCollections(config.dataSrc, reload.collections, config.activeShop).then(
       (collections) => {
         if (isSubscribed) {
           setLoading(false)
@@ -29,7 +29,7 @@ function useCollections() {
       }
     )
     return () => (isSubscribed = false)
-  }, [reload.collections, resetBit])
+  }, [reload.collections, config.activeShop])
 
   return { collections, loading }
 }

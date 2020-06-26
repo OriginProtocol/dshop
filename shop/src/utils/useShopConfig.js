@@ -31,13 +31,12 @@ function useShopConfig() {
 
   const refetch = async () => {
     getShopConfig.cache.clear()
-
     await fetchConfig()
   }
 
   useEffect(() => {
     fetchConfig()
-  }, [])
+  }, [config.activeShop])
 
   return { loading, shopConfig, refetch }
 }

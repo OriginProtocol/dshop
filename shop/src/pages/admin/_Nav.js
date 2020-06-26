@@ -22,10 +22,7 @@ const Nav = ({ newShop, setNewShop, superAdmin }) => {
             className="dshop-logo"
             src="images/dshop-logo-blue.svg"
             onClick={() => {
-              setActiveShop(null)
-              setTimeout(() => {
-                dispatch({ type: 'reset', dataDir: '' })
-              }, 50)
+              setActiveShop()
               history.push('/admin')
             }}
           />

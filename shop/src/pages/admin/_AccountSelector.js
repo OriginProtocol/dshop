@@ -11,7 +11,7 @@ import Popover from 'components/Popover'
 const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
   const [shouldClose, setShouldClose] = useState(0)
   const { config, setActiveShop } = useConfig()
-  const [{ admin }, dispatch] = useStateValue()
+  const [{ admin }] = useStateValue()
   const history = useHistory()
   const shops = get(admin, 'shops', [])
 
@@ -50,17 +50,13 @@ const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
             }`}
             key={shop.id}
             onClick={() => {
-              if (setActiveShop(shop.authToken)) {
-                setTimeout(() => {
-                  dispatch({ type: 'reset', dataDir: shop.authToken })
-                }, 50)
-                setShouldClose(shouldClose + 1)
-                if (superAdmin) {
-                  history.push({
-                    pathname: `/admin`,
-                    state: { scrollToTop: true }
-                  })
-                }
+              setActiveShop(shop.authToken)
+              setShouldClose(shouldClose + 1)
+              if (superAdmin) {
+                history.push({
+                  pathname: `/admin`,
+                  state: { scrollToTop: true }
+                })
               }
             }}
           >
@@ -73,10 +69,7 @@ const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
             className="shop-el bt"
             onClick={() => {
               setShouldClose(shouldClose + 1)
-              setActiveShop(null)
-              setTimeout(() => {
-                dispatch({ type: 'reset', dataDir: '' })
-              }, 50)
+              setActiveShop()
               history.push({
                 pathname: `/super-admin/shops`,
                 state: { scrollToTop: true }
