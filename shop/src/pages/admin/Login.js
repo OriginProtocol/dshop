@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useHistory } from 'react-router-dom'
 
 import { useStateValue } from 'data/state'
 import useBackendApi from 'utils/useBackendApi'
@@ -6,6 +7,7 @@ import SetupLayout from 'pages/super-admin/setup/_SetupLayout'
 import ErrorText from 'pages/super-admin/setup/_ErrorText'
 
 const Login = () => {
+  const history = useHistory()
   const [state, setState] = useState({ email: '', password: '', error: '' })
   const [, dispatch] = useStateValue()
   const { post } = useBackendApi()
@@ -25,6 +27,7 @@ const Login = () => {
             .then(() => {
               setState({ ...state, error: '' })
               dispatch({ type: 'reload', target: 'auth' })
+              history.push('/admin')
             })
             .catch((err) => {
               console.error('Error signing in', err)

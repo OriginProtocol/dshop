@@ -163,13 +163,9 @@ module.exports = function (app) {
   })
 
   const logoutHandler = (req, res) => {
-    if (req.session.sellerId) {
-      req.session.destroy(function () {
-        res.json({ success: true })
-      })
-    } else {
-      res.json({ success: false })
-    }
+    req.session.destroy(function () {
+      res.json({ success: true })
+    })
   }
 
   app.post('/auth/logout', logoutHandler)

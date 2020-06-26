@@ -48,7 +48,7 @@ const AdminOrders = () => {
       <>
         <h3 className="admin-title">Orders</h3>
         <NoItems
-          heading="No Orders yet!"
+          heading="No orders yet!"
           description="Generate some sales and orders will appear here."
         />
       </>

@@ -20,7 +20,7 @@ const StoreSelector = ({
         ) : (
           <>
             <h3>Select a store</h3>
-            <div className="shops">
+            <div className={`shops${shops.length > 1 ? ' multi' : ''}`}>
               {shops.map((shop) => (
                 <div
                   key={shop.id}
@@ -64,10 +64,11 @@ require('react-styl')(`
       margin-top: 2rem
     .shops
       margin-top: 1.5rem
-      display: grid
-      grid-template-columns: 50% 50%
-      grid-column-gap: 1rem
-      grid-row-gap: 1rem
+      &.multi
+        display: grid
+        grid-template-columns: 1fr 1fr
+        grid-column-gap: 1rem
+        grid-row-gap: 1rem
       > div
         color: #3b80ee
         text-align: center
@@ -78,4 +79,8 @@ require('react-styl')(`
         padding: 1.5rem 2rem
         cursor: pointer
         font-weight: bold
+        max-width: 250px
+        white-space: nowrap
+        overflow: hidden
+        text-overflow: ellipsis
 `)

@@ -7,7 +7,7 @@ function useAuth(opts = {}) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [{ auth, reload }, dispatch] = useStateValue()
-  const { get, post } = useBackendApi({ authToken: true })
+  const { get, post } = useBackendApi()
 
   useEffect(() => {
     async function fetchAuth() {
@@ -31,8 +31,8 @@ function useAuth(opts = {}) {
   }, [reload.auth])
 
   function logout() {
+    localStorage.clear()
     post(`/auth/logout`).then(() => {
-      delete localStorage.isAdmin
       dispatch({ type: 'logout' })
     })
   }

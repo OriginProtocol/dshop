@@ -52,20 +52,6 @@ function useConfig() {
     setReload(reload + 1)
   }
 
-  function setActiveShop(shop) {
-    if (localStorage.activeShop === shop) return false
-    if (shop) {
-      config.activeShop = shop
-      localStorage.activeShop = shop
-    } else {
-      delete config.activeShop
-      delete localStorage.activeShop
-    }
-    setDataSrc(shop ? `${shop}/` : 'DATA_DIR/')
-    window.scrollTo(0, 0)
-    return true
-  }
-
   async function fetchConfig() {
     loaded = dataSrc
     if (!config) {
@@ -128,6 +114,20 @@ function useConfig() {
       setLoading(false)
       setError(true)
     }
+  }
+
+  function setActiveShop(shop) {
+    if (localStorage.activeShop === shop) return false
+    if (shop) {
+      config.activeShop = shop
+      localStorage.activeShop = shop
+    } else {
+      delete config.activeShop
+      delete localStorage.activeShop
+    }
+    window.scrollTo(0, 0)
+    setDataSrc(shop ? `${shop}/` : 'DATA_DIR/')
+    return true
   }
 
   useEffect(() => {

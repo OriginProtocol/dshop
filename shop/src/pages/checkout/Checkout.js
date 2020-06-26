@@ -14,7 +14,7 @@ import Payment from './Payment'
 import Summary from './Summary'
 
 const Checkout = () => {
-  const { config } = useConfig()
+  const { config, loading } = useConfig()
   const history = useHistory()
   const [{ cart }] = useStateValue()
   const [stripe, setStripe] = useState(null)
@@ -39,6 +39,10 @@ const Checkout = () => {
       Styl.addStylesheet()
     }
   }, [])
+
+  if (loading) {
+    return null
+  }
 
   return (
     <StripeProvider stripe={stripe}>

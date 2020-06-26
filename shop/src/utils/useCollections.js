@@ -17,6 +17,7 @@ function useCollections() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!config.dataSrc) return
     let isSubscribed = true
     setLoading(true)
     getCollections(config.dataSrc, reload.collections, resetBit).then(

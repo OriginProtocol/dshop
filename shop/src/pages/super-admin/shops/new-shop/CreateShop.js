@@ -45,9 +45,6 @@ function validate(state) {
   } else if (!state.dataDir.match(/^[a-z0-9-]+$/)) {
     newState.dataDirError = 'Use alpha-numeric characters only'
   }
-  if (!state.listingId) {
-    newState.listingIdError = 'Enter a Listing ID'
-  }
   if (!state.backend) {
     newState.backendError = 'Enter a URL'
   }
@@ -121,7 +118,9 @@ const CreateShop = () => {
           method: 'POST',
           body: JSON.stringify({
             ...state,
-            listingId: `${listingPrefix}${state.listingId}`
+            listingId: state.listingId
+              ? `${listingPrefix}${state.listingId}`
+              : ''
           })
         })
         const json = await res.json()

@@ -78,7 +78,7 @@ const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
                 dispatch({ type: 'reset', dataDir: '' })
               }, 50)
               history.push({
-                pathname: `/super-admin`,
+                pathname: `/super-admin/shops`,
                 state: { scrollToTop: true }
               })
             }}
