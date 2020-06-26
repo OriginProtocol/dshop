@@ -4,6 +4,7 @@ import pickBy from 'lodash/pickBy'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConnectModal from '../payments/_ConnectModal'
+import PasswordField from 'components/admin/PasswordField'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
 
@@ -48,7 +49,7 @@ const PrintfulModal = ({ onClose }) => {
     >
       <div className="form-group">
         <label>Printful API Key</label>
-        <input {...input('printful')} />
+        <PasswordField input={input} field="printful" />
         {Feedback('printful')}
       </div>
     </ConnectModal>

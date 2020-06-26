@@ -5,6 +5,8 @@ import ethers from 'ethers'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConnectModal from './_ConnectModal'
 
+import PasswordField from 'components/admin/PasswordField'
+
 const reducer = (state, newState) => ({ ...state, ...newState })
 
 const initialState = {
@@ -59,7 +61,7 @@ const Web3Modal = ({ onClose }) => {
           <div className="input-group-prepend">
             <span className="input-group-text">0x</span>
           </div>
-          <input {...input('web3Pk')} />
+          <PasswordField input={input} field="web3Pk" />
         </div>
         {Feedback('web3Pk')}
       </div>

@@ -24,7 +24,7 @@ const Checkout = () => {
       history.push('/cart')
       return
     }
-    if (window.Stripe) {
+    if (window.Stripe && config.stripe) {
       setStripe(window.Stripe(config.stripeKey))
     } else {
       if (config.stripe && config.stripeKey) {
@@ -41,7 +41,7 @@ const Checkout = () => {
   }, [])
 
   if (loading) {
-    return null
+    return <div>Loading...</div>
   }
 
   return (

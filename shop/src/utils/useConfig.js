@@ -57,11 +57,11 @@ function useConfig() {
     if (!config) {
       config = { backend: '', firstTimeSetup: true, netId }
     }
-    setLoading(true)
     if (dataSrc === 'DATA_DIR/') {
       setLoading(false)
       return
     }
+    if (!loading) setLoading(true)
 
     try {
       const url = `${dataSrc}config.json`
@@ -133,6 +133,8 @@ function useConfig() {
   useEffect(() => {
     if (loaded !== dataSrc) {
       fetchConfig()
+    } else {
+      setLoading(false)
     }
   }, [reload])
 

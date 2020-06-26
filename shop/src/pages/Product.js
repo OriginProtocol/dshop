@@ -56,13 +56,14 @@ const Product = ({ history, location, match }) => {
       const variants = get(data, 'variants', [])
       if (!variants.length) {
         variants.push({
-          ...pick(data, ['title', 'price', 'image', 'available']),
+          ...pick(data, ['title', 'price', 'image']),
           id: 0,
           name: data.title,
           options: [],
           option1: null,
           option2: null,
-          option3: null
+          option3: null,
+          available: true
         })
       }
 

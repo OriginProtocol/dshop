@@ -215,13 +215,14 @@ async function upsertProduct(shop, productData) {
   if (!product.variants || !product.variants.length) {
     product.variants = [
       {
-        ...pick(product, ['title', 'price', 'image', 'available']),
+        ...pick(product, ['title', 'price', 'image']),
         id: 0,
         name: product.title,
         options: [],
         option1: null,
         option2: null,
-        option3: null
+        option3: null,
+        available: true
       }
     ]
   }
