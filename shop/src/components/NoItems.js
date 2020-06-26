@@ -4,24 +4,26 @@ import Link from 'components/Link'
 
 const NoItems = ({ children, heading, description, linkTo, buttonText }) => (
   <div className="no-items">
-    <div className="cta">
-      <h3>{heading}</h3>
-      <div className="desc">
-        {description}
-        {children || buttonText ? (
-          <>
-            <br />
-            Click the button below to get started.
-          </>
+    <div className="cta-wrap">
+      <div className="cta">
+        <h3>{heading}</h3>
+        <div className="desc">
+          {description}
+          {children || buttonText ? (
+            <>
+              <br />
+              Click the button below to get started.
+            </>
+          ) : null}
+        </div>
+        {children ? (
+          children
+        ) : buttonText ? (
+          <Link to={linkTo}>
+            <button className="btn btn-primary px-5">{buttonText}</button>
+          </Link>
         ) : null}
       </div>
-      {children ? (
-        children
-      ) : buttonText ? (
-        <Link to={linkTo}>
-          <button className="btn btn-primary px-5">{buttonText}</button>
-        </Link>
-      ) : null}
     </div>
   </div>
 )
@@ -30,15 +32,23 @@ export default NoItems
 
 require('react-styl')(`
   .no-items
-    height: calc(100% - 1.5rem)
-    max-height: 450px
+    flex: 1
+    margin-right: -2.5rem
+    margin-bottom: -1.875rem
     background-image: url('images/cart-graphic.svg')
     background-position: bottom right
     background-size: contain
     background-repeat: no-repeat
-    display: flex
     align-items: center
+    justify-content: stretch
+    .cta-wrap
+      display: flex
+      flex: 1
+      height: 100%
+      max-height: 350px
+      align-items: center
     .cta
+      min-height: 165px
       .desc
         font-size: 1rem
         color: #8293a4
@@ -50,6 +60,6 @@ require('react-styl')(`
         color: #000000
 
       .btn
-        margin: 2.5rem 0 3.5rem 0
+        margin: 2.5rem 0 0 0
 
 `)

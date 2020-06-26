@@ -123,4 +123,6 @@ require('react-styl')(`
       .main-content-container
         flex: 1
         padding: 1.875rem 2.5rem
+        display: flex
+        flex-direction: column
 `)

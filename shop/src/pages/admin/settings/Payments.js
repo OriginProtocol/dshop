@@ -84,7 +84,6 @@ const PaymentSettings = () => {
 
   return (
     <form
-      className="shop-settings"
       autoComplete="off"
       onSubmit={async (e) => {
         e.preventDefault()
