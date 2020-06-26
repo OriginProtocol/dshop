@@ -5,7 +5,7 @@ const ErrorText = ({ children }) => {
 
   return (
     <div className="admin-error-text">
-      <img src="/images/error-icon.svg" />
+      <img src="images/error-icon.svg" />
       {children}
     </div>
   )

@@ -93,12 +93,12 @@ const AdminDashboard = () => {
       </h3>
       <div className="admin-dashboard-stats">
         <div className="stat-item">
-          <img src="/images/box.svg" className="stat-image" />
+          <img src="images/box.svg" className="stat-image" />
           <div className="stat-name">Total orders</div>
           <div className="stat-value">{filteredSales.length}</div>
         </div>
         <div className="stat-item">
-          <img src="/images/coins.svg" className="stat-image" />
+          <img src="images/coins.svg" className="stat-image" />
           <div className="stat-name">Total revenue</div>
           <div className="stat-value">{formatPrice(totalSales)}</div>
         </div>

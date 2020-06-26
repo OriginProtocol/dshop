@@ -293,7 +293,7 @@ module.exports = function (app) {
     }
 
     const existingShopWithAuthToken = await Shop.findOne({
-      where: { authToken: req.body.dataDir }
+      where: { authToken: dataDir }
     })
     if (existingShopWithAuthToken) {
       return res.json({
@@ -352,7 +352,7 @@ module.exports = function (app) {
     const zone = networkConfig.domain
     const isLocal = zone === 'localhost'
     const publicUrl = isLocal ? backend : `https://${hostname}.${zone}`
-    const dataUrl = `${publicUrl}/${req.body.dataDir}/`
+    const dataUrl = `${publicUrl}/${dataDir}/`
 
     let defaultShopConfig = {}
     if (networkConfig.defaultShopConfig) {
@@ -381,7 +381,7 @@ module.exports = function (app) {
       listingId: req.body.listingId,
       hostname,
       name,
-      authToken: req.body.dataDir,
+      authToken: dataDir,
       config: setConfig(config)
     })
 
@@ -400,7 +400,7 @@ module.exports = function (app) {
     log.info(`Added role OK`)
 
     if (shopType === 'blank' || shopType === 'local-dir') {
-      return res.json({ success: true })
+      return res.json({ success: true, slug: dataDir })
     }
 
     fs.mkdirSync(OutputDir, { recursive: true })

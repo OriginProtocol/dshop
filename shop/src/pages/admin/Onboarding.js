@@ -92,7 +92,7 @@ const Onboarding = () => {
                 {task.completed && (
                   <img
                     className="completed-icon"
-                    src="/images/green-checkmark-circle.svg"
+                    src="images/green-checkmark-circle.svg"
                   />
                 )}
               </div>
@@ -110,7 +110,7 @@ require('react-styl')(`
   .onboarding
     .new-shop-hero
       margin: -1.875rem -2.5rem 1.875rem -2.5rem
-      background-image: url('/images/background-graphic.svg')
+      background-image: url('images/background-graphic.svg')
       background-size: cover
       background-position: center
       background-repeat: no-repeat

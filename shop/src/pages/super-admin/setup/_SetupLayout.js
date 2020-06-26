@@ -21,7 +21,7 @@ require('react-styl')(`
   .setup-layout
     min-height: 100vh
     width: 100%
-    background-image: url('/images/background-graphic.svg')
+    background-image: url('images/background-graphic.svg')
     background-size: cover
     padding-top: 4rem
     overflow: scroll

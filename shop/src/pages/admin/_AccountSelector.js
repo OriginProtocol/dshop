@@ -60,7 +60,7 @@ const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
               }
             }}
           >
-            <img src="/images/green-checkmark.svg" />
+            <img src="images/green-checkmark.svg" />
             {shop.name}
           </div>
         ))}
@@ -76,7 +76,7 @@ const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
               })
             }}
           >
-            <img src="/images/green-checkmark.svg" />
+            <img src="images/green-checkmark.svg" />
             Super Admin
           </div>
         )}

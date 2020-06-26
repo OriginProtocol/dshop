@@ -15,12 +15,12 @@ const SuperAdminDashboard = () => {
       </div>
       <div className="admin-dashboard-stats">
         <div className="stat-item">
-          <img src="/images/box.svg" className="stat-image" />
+          <img src="images/box.svg" className="stat-image" />
           <div className="stat-name">Active Network ID</div>
           <div className="stat-value">{network.networkId}</div>
         </div>
         <div className="stat-item">
-          <img src="/images/coins.svg" className="stat-image" />
+          <img src="images/coins.svg" className="stat-image" />
           <div className="stat-name">Total shops</div>
           <div className="stat-value">{shops.length}</div>
         </div>
