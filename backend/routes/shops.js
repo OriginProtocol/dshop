@@ -837,9 +837,8 @@ module.exports = function (app) {
     if (!shop) {
       return res.json({ success: false, reason: 'shop-not-found' })
     }
-    const network = await Network.findOne({
-      where: { networkId: req.body.networkId }
-    })
+    const { networkId } = req.body
+    const network = await Network.findOne({ where: { networkId } })
     if (!network) {
       return res.json({ success: false, reason: 'no-such-network' })
     }
@@ -872,7 +871,12 @@ module.exports = function (app) {
       if (!req.shop.hostname) {
         return res.json({ success: false, reason: 'no-hostname-configured' })
       }
-      const network = await Network.findOne({ where: { active: true } })
+
+      let where = { active: true }
+      if (req.seller.superuser && req.body.networkId) {
+        where = { networkId: req.body.networkId }
+      }
+      const network = await Network.findOne({ where })
       if (!network) {
         return res.json({ success: false, reason: 'no-active-network' })
       }
