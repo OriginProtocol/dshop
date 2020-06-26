@@ -74,10 +74,10 @@ function useMakeOffer({
           onChange({ disabled: false, loading: false, buttonText: tokenPrice })
         })
     }
-    if (cryptoSelected && submit) {
+    if (cryptoSelected && submit && signer) {
       makeOffer()
     }
-  }, [submit])
+  }, [submit, signer])
 }
 
 export default useMakeOffer
