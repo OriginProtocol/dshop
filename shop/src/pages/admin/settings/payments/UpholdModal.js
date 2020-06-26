@@ -5,6 +5,8 @@ import pickBy from 'lodash/pickBy'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConnectModal from './_ConnectModal'
 
+import PasswordField from 'components/admin/PasswordField'
+
 const reducer = (state, newState) => ({ ...state, ...newState })
 
 const initialState = {
@@ -67,12 +69,12 @@ const UpholdModal = ({ onClose }) => {
       </div>
       <div className="form-group">
         <label>Client Key</label>
-        <input {...input('upholdClient')} />
+        <PasswordField input={input} field="upholdClient" />
         {Feedback('upholdClient')}
       </div>
       <div className="form-group">
         <label>Client Secret</label>
-        <input {...input('upholdSecret')} />
+        <PasswordField input={input} field="upholdSecret" />
         {Feedback('upholdSecret')}
       </div>
     </ConnectModal>

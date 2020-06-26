@@ -5,6 +5,8 @@ import pickBy from 'lodash/pickBy'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConnectModal from './_ConnectModal'
 
+import PasswordField from 'components/admin/PasswordField'
+
 const reducer = (state, newState) => ({ ...state, ...newState })
 
 const initialState = {
@@ -57,17 +59,18 @@ const StripeModal = ({ onClose }) => {
     >
       <div className="form-group">
         <label>Stripe Public Key</label>
+        <PasswordField input={input} field="stripeKey" />
         <input {...input('stripeKey')} />
         {Feedback('stripeKey')}
       </div>
       <div className="form-group">
         <label>Stripe Secret Key</label>
-        <input {...input('stripeBackend')} />
+        <PasswordField input={input} field="stripeBackend" />
         {Feedback('stripeBackend')}
       </div>
       <div className="form-group">
         <label>Stripe Webhook Key</label>
-        <input {...input('stripeWebhookSecret')} />
+        <PasswordField input={input} field="stripeWebhookSecret" />
         {Feedback('stripeWebhookSecret')}
       </div>
     </ConnectModal>
