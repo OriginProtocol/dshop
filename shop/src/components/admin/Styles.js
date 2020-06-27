@@ -94,7 +94,9 @@ require('react-styl')(`
     .admin-title
       display: flex
       align-items: center
+      line-height: normal
       min-height: 2.5rem
+      margin-bottom: 1rem
       &.with-border
         padding-bottom: 1rem
         border-bottom: 1px solid #dfe2e6

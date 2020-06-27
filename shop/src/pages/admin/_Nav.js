@@ -1,5 +1,6 @@
 import React from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
+import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
@@ -13,6 +14,9 @@ const Nav = ({ newShop, setNewShop, superAdmin }) => {
   const location = useLocation()
   const history = useHistory()
   const { config, setActiveShop } = useConfig()
+
+  const shops = get(admin, 'shops', [])
+  const activeShop = shops.find((s) => s.authToken === config.activeShop)
 
   return (
     <nav>
@@ -31,9 +35,10 @@ const Nav = ({ newShop, setNewShop, superAdmin }) => {
             onNewShop={() => setNewShop(true)}
           />
         </h1>
-        {!config.activeShop ? null : (
+        {!activeShop ? null : (
           <div className="nav-preview">
             <a
+              className={activeShop.viewable ? '' : 'disabled'}
               href="#storefront"
               onClick={(e) => {
                 e.preventDefault()

@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 
 const SettingsTabs = () => {
   return (
-    <ul className="nav nav-tabs pt-2">
+    <ul className="nav nav-tabs">
       <li className="nav-item">
         <NavLink className="nav-link" to="/admin/settings" exact>
           Appearance

@@ -166,7 +166,7 @@ export default AdminDashboard
 
 require('react-styl')(`
   .admin-dashboard-stats
-    margin-top: 1rem
+    margin-top: 0.5rem
     display: flex
     color: #000
     .stat-item

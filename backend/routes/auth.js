@@ -60,15 +60,14 @@ module.exports = function (app) {
     const order = [['createdAt', 'desc']]
     const attributes = ['id', 'name', 'authToken', 'hostname', 'listingId']
     const include = { model: Seller, where: { id: user.id } }
-    let shops = []
 
+    let shops = []
     if (user.superuser) {
       const allShops = await Shop.findAll({ order })
-      shops = allShops.map((s) => {
-        const configPath = `${shopDataDir}/${s.authToken}/data/config.json`
-        const viewable = fs.existsSync(configPath)
-        return { ...pick(s.dataValues, attributes), role: 'admin', viewable }
-      })
+      shops = allShops.map((s) => ({
+        ...pick(s.dataValues, attributes),
+        role: 'admin'
+      }))
     } else {
       const allShops = await Shop.findAll({ attributes, include, order })
       shops = allShops.map((s) => ({
@@ -76,6 +75,11 @@ module.exports = function (app) {
         role: get(s, 'Sellers[0].SellerShop.dataValues.role')
       }))
     }
+    shops = shops.map((s) => {
+      const configPath = `${shopDataDir}/${s.authToken}/data/config.json`
+      const viewable = fs.existsSync(configPath)
+      return { ...s, viewable }
+    })
 
     let localShops
     if (user.superuser && fs.existsSync(shopDataDir)) {

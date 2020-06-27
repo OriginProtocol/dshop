@@ -1,4 +1,5 @@
 import React from 'react'
+import { useHistory, useLocation } from 'react-router-dom'
 
 import useProducts from 'utils/useProducts'
 import usePaginate from 'utils/usePaginate'
@@ -6,10 +7,10 @@ import useSearchQuery from 'utils/useSearchQuery'
 
 import Paginate from 'components/Paginate'
 import NoItems from 'components/NoItems'
+import Link from 'components/Link'
 import useConfig from 'utils/useConfig'
 import formatPrice from 'utils/formatPrice'
 import sortProducts from 'utils/sortProducts'
-import { Link, useHistory, useLocation } from 'react-router-dom'
 import useCollections from 'utils/useCollections'
 
 import DeleteButton from './_Delete'
@@ -69,13 +70,18 @@ const AdminProducts = () => {
     >
       <h3 className="admin-title">
         Products
-        {hasNoProducts ? null : <span>({sortedProducts.length})</span>}
         {hasNoProducts ? null : (
-          <div className="ml-auto">
-            <Link to="/admin/products/new">
-              <button className="btn btn-primary ml-3">Add Product</button>
-            </Link>
-          </div>
+          <>
+            <span className="ml-2">({sortedProducts.length})</span>
+            <div className="ml-auto">
+              <Link
+                to="/admin/products/new"
+                className="btn btn-primary ml-3 px-4"
+              >
+                Add Product
+              </Link>
+            </div>
+          </>
         )}
       </h3>
 

@@ -310,16 +310,21 @@ const EditProduct = () => {
           createProduct()
         }}
       >
-        <div className="title-section d-flex justify-content-between mb-3">
-          <h3 className="m-0">{title}</h3>
-          {actions}
-        </div>
+        <h3 className="admin-title with-border">
+          {title}
+          <div className="ml-auto">{actions}</div>
+        </h3>
+
         <div className="row">
           <div className="col-md-9">
             <div className="form-section">
               <div className="form-group">
                 <label>Title</label>
-                <input type="text" {...input('title')} autoFocus />
+                <input
+                  type="text"
+                  {...input('title')}
+                  autoFocus={isNewProduct}
+                />
                 {Feedback('title')}
               </div>
 
@@ -625,10 +630,6 @@ require('react-styl')(`
       justify-content: flex-end
     .actions .btn
       width: 120px
-
-    .title-section
-      border-bottom: 1px solid #dfe2e6
-      padding-bottom: 1rem
 
     .form-group, .form-check
       margin-bottom: 1rem

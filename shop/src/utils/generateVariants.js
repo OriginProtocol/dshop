@@ -26,6 +26,7 @@ export const generateVariants = (product) => {
   const { options, availableOptions, variants } = product
 
   if (!options || !availableOptions) return []
+  if (!options.length || !availableOptions.length) return []
 
   // Map existing variants for easy access and carrying over values
   const existingVairants = (variants || []).reduce((obj, variant) => {
