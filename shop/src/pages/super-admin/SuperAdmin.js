@@ -58,10 +58,6 @@ const SuperAdmin = () => {
     return <div className="fixed-loader">Loading...</div>
   }
 
-  if (!get(admin, 'superuser')) {
-    return <Redirect to="/admin" />
-  }
-
   if (!get(admin, 'success')) {
     const reason = get(admin, 'reason', '')
     if (!admin || reason.match(/^(not-logged-in|not-superuser)$/)) {
@@ -70,6 +66,10 @@ const SuperAdmin = () => {
     return (
       <FirstTime next={() => dispatch({ type: 'reload', target: 'auth' })} />
     )
+  }
+
+  if (!get(admin, 'superuser')) {
+    return <Redirect to="/admin" />
   }
 
   return (
