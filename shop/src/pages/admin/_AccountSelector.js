@@ -8,6 +8,22 @@ import useConfig from 'utils/useConfig'
 import Caret from 'components/icons/Caret'
 import Popover from 'components/Popover'
 
+// Sets width when SVG images don't have width set explicitly
+const AutoWidthImg = ({ src }) => {
+  const [width, setWidth] = useState({})
+  return (
+    <img
+      src={src}
+      width={width[src]}
+      onLoad={(e) => {
+        if (src.match(/.svg$/i)) {
+          setWidth({ [src]: e.target.width })
+        }
+      }}
+    />
+  )
+}
+
 const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
   const [shouldClose, setShouldClose] = useState(0)
   const { config, setActiveShop } = useConfig()
@@ -20,7 +36,6 @@ const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
   }
 
   const logo = config.logo ? `${config.dataSrc}${config.logo}` : ''
-  const isSVG = logo.match(/.svg$/i) ? 'svg' : ''
 
   return (
     <Popover
@@ -34,7 +49,7 @@ const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
           {superAdmin ? (
             'Super Admin'
           ) : logo && !forceTitle ? (
-            <img src={logo} className={isSVG} />
+            <AutoWidthImg src={logo} />
           ) : (
             config.fullTitle
           )}
@@ -99,13 +114,10 @@ export default ShopsDropdown
 
 require('react-styl')(`
   .shop-title
-    max-width: 14rem
     cursor: pointer
     .icon.icon-caret
       fill: #3b80ee
       margin-left: 0.75rem
-    img
-      width: 85%
 
   .shops-dropdown
     position: absolute

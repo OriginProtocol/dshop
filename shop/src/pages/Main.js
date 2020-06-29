@@ -105,6 +105,7 @@ const Main = () => {
           <MobileMenu open={menu} onClose={() => setMenu(false)} />
           <Content />
         </div>
+        <Notice footer={true} />
         <Footer />
       </>
     )
@@ -130,6 +131,7 @@ const Main = () => {
         </header>
         <Content />
       </div>
+      <Notice footer={true} />
       <Footer />
     </>
   )
