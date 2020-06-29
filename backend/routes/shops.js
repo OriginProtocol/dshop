@@ -693,14 +693,15 @@ module.exports = function (app) {
         'byline',
         'discountCodes',
         'stripeKey',
-        'acceptedTokens'
+        'acceptedTokens',
+        'title',
+        'fullTitle',
+        'facebook',
+        'twitter',
+        'instagram',
+        'medium',
+        'youtube'
       )
-      if (req.body.title) {
-        jsonConfig.fullTitle = req.body.title
-        if (!jsonConfig.logo) {
-          jsonConfig.title = req.body.title
-        }
-      }
       let listingId
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
         listingId = req.body.listingId
@@ -745,8 +746,8 @@ module.exports = function (app) {
         }
         req.shop.hostname = req.body.hostname
       }
-      if (req.body.title) {
-        req.shop.name = req.body.title
+      if (req.body.fullTitle) {
+        req.shop.name = req.body.fullTitle
       }
 
       const stripeOpts = {}

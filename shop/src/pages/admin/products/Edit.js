@@ -116,7 +116,7 @@ function validate(state, { hasOptions }) {
 const EditProduct = () => {
   const history = useHistory()
   const match = useRouteMatch('/admin/products/:productId')
-  const [, dispatch] = useStateValue()
+  const [{ config }, dispatch] = useStateValue()
   const { productId } = match.params
   const { post } = useBackendApi({ authToken: true })
 
@@ -201,9 +201,7 @@ const EditProduct = () => {
       newFormState.variants = generateVariants(newFormState)
 
       setMedia(mappedImages)
-
       setFormState(newFormState)
-
       setHasOptions(!!product.options && product.options.length > 0)
     }
   }, [product])
@@ -233,10 +231,7 @@ const EditProduct = () => {
 
     setSubmitError(null)
 
-    const { valid, newState } = validate(formState, {
-      hasOptions: hasOptions
-    })
-
+    const { valid, newState } = validate(formState, { hasOptions })
     setFormState(newState)
 
     if (!valid) {
@@ -263,10 +258,10 @@ const EditProduct = () => {
 
       if (newState.id) {
         // Clear memoize cache for existing product
-        fetchProduct.cache.delete(`${localStorage.activeShop}/-${newState.id}`)
+        fetchProduct.cache.delete(`${config.dataSrc}-${newState.id}`)
       }
 
-      dispatch({ type: 'reload', target: 'products' })
+      dispatch({ type: 'reload', target: ['products', 'collections'] })
       dispatch({ type: 'hasChanges' })
       history.push('/admin/products')
       return

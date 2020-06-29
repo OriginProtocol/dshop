@@ -209,9 +209,14 @@ const reducer = (state, action) => {
   } else if (action.type === 'setReferrer') {
     newState = set(newState, 'referrer', action.referrer)
   } else if (action.type === 'reload') {
-    const target = `reload.${action.target}`
-    const reload = get(newState, target, 0)
-    newState = set(newState, target, reload + 1)
+    const targets = Array.isArray(action.target)
+      ? action.target
+      : [action.target]
+    targets.forEach((t) => {
+      const target = `reload.${t}`
+      const reload = get(newState, target, 0)
+      newState = set(newState, target, reload + 1)
+    })
   } else if (action.type === 'hasChanges') {
     newState = set(
       newState,

@@ -7,17 +7,21 @@ const addToCollections = (shop, productId, collectionIds) => {
   try {
     const outDir = path.resolve(`${DSHOP_CACHE}/${shop.authToken}/data`)
     const collectionsPath = `${outDir}/collections.json`
-    const data = require(collectionsPath)
+    const data = JSON.parse(fs.readFileSync(collectionsPath).toString())
 
     const updatedData = data.map((collection) => {
-      if (collectionIds.includes(collection.id)) {
-        return {
-          ...collection,
-          products: Array.from(new Set([...collection.products, productId]))
-        }
+      let products = collection.products || []
+
+      const hasProduct = collection.products.indexOf(productId) >= 0
+      const shouldHaveProduct = collectionIds.indexOf(collection.id) >= 0
+
+      if (hasProduct && !shouldHaveProduct) {
+        products = products.filter((pId) => pId !== productId)
+      } else if (!hasProduct && shouldHaveProduct) {
+        products.push(productId)
       }
 
-      return collection
+      return { ...collection, products }
     })
 
     fs.writeFileSync(collectionsPath, JSON.stringify(updatedData, undefined, 2))

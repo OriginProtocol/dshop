@@ -93,6 +93,7 @@ const AdminConfirmationModal = ({
             className="modal-body text-center p-5"
             onSubmit={(e) => {
               e.preventDefault()
+              e.stopPropagation()
               if (validate()) {
                 setState({ doConfirm: true, loading: true })
               }

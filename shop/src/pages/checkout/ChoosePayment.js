@@ -122,7 +122,9 @@ const ChoosePayment = () => {
   return (
     <form onSubmit={onSubmit}>
       <div className="checkout-payment-method">
-        <PayWithCrypto {...paymentState} onChange={setPaymentState} />
+        {!paymentMethods.find((p) => p.id === 'crypto') ? null : (
+          <PayWithCrypto {...paymentState} onChange={setPaymentState} />
+        )}
         {!paymentMethods.find((p) => p.id === 'stripe') ? null : (
           <PayWithStripe {...paymentState} onChange={setPaymentState} />
         )}

@@ -46,7 +46,6 @@ const LinkCollections = ({ selectedValues, onChange }) => {
     if (!collections || loading) return []
 
     const val = (searchVal || '').toLowerCase()
-
     if (val.trim().length === 0) return []
 
     return collections.filter((x) => {

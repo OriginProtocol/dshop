@@ -228,9 +228,7 @@ async function upsertProduct(shop, productData) {
   }
 
   writeProductData(shop, newProductId, product)
-
   appendToProductsFile(shop, product)
-
   addToCollections(shop, newProductId, productData.collections)
 
   if (productData.collections) {

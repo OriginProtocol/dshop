@@ -77,9 +77,8 @@ const AdminProducts = () => {
               <Link
                 to="/admin/products/new"
                 className="btn btn-primary ml-3 px-4"
-              >
-                Add Product
-              </Link>
+                children="Add Product"
+              />
             </div>
           </>
         )}

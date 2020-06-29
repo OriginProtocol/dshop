@@ -73,20 +73,24 @@ const App = ({ location }) => {
 
   // Add custom CSS
   useEffect(() => {
-    if (config && config.css) {
-      const existingCss = document.querySelector('#custom-css')
-      if (existingCss) {
-        existingCss.textContent = config.css
-      } else {
-        const css = document.createElement('style')
-        css.id = 'custom-css'
-        css.appendChild(document.createTextNode(config.css))
-        document.head.appendChild(css)
+    if (config) {
+      if (config.css) {
+        const existingCss = document.querySelector('#custom-css')
+        if (existingCss) {
+          existingCss.textContent = config.css
+        } else {
+          const css = document.createElement('style')
+          css.id = 'custom-css'
+          css.appendChild(document.createTextNode(config.css))
+          document.head.appendChild(css)
+        }
       }
-    }
-    if (config && config.favicon) {
       const favicon = document.querySelector('link[rel="icon"]')
-      favicon.href = `${config.dataSrc}${config.favicon}`
+      if (config.favicon) {
+        favicon.href = `${config.dataSrc}${config.favicon}`
+      } else {
+        favicon.href = 'FAVICON'
+      }
     }
     if (document.title === 'TITLE') {
       document.title = 'Origin Dshop'

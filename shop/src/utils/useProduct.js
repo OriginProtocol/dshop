@@ -13,7 +13,7 @@ function useProduct(productId) {
     setLoading(true)
     setError(null)
     try {
-      const product = await fetchProduct(`${config.activeShop}/`, productId)
+      const product = await fetchProduct(config.dataSrc, productId)
       setProduct(product)
       setLoading(false)
     } catch (e) {

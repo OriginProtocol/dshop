@@ -19,16 +19,31 @@ function reducer(state, newState) {
   return { ...state, ...newState }
 }
 
-const socialLinkKeys = ['facebook', 'twitter', 'instagram', 'medium', 'youtube']
+const configFields = [
+  'fullTitle',
+  'title',
+  'logo',
+  'favicon',
+  'byline',
+  'metaDescription',
+  'cartSummaryNote',
+  'discountCodes',
+  'emailSubject',
+  'emailBody',
+  'css',
+  'facebook',
+  'twitter',
+  'instagram',
+  'medium',
+  'youtube'
+]
 
 const ShopAppearance = () => {
   const { config } = useConfig()
-  const [{ admin }] = useStateValue()
+  const [{ admin }, dispatch] = useStateValue()
   const { shopConfig } = useShopConfig()
   const { postRaw, post } = useBackendApi({ authToken: true })
-  const [state, setState] = useReducer(reducer, {
-    domain: ''
-  })
+  const [state, setState] = useReducer(reducer, { domain: '' })
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
 
@@ -36,23 +51,10 @@ const ShopAppearance = () => {
 
   useEffect(() => {
     setState({
-      title: get(config, 'fullTitle'),
       aboutStore: get(shopConfig, 'aboutStore'),
       domain: get(shopConfig, 'domain'),
       hostname: get(shopConfig, 'hostname'),
-      logo: get(config, 'logo'),
-      favicon: get(config, 'favicon'),
-      byline: get(config, 'byline'),
-      metaDescription: get(config, 'metaDescription'),
-      cartSummaryNote: get(config, 'cartSummaryNote'),
-      discountCodes: get(config, 'discountCodes'),
-      emailSubject: get(config, 'emailSubject'),
-      emailBody: get(config, 'emailBody'),
-      css: get(config, 'css'),
-      ...socialLinkKeys.reduce(
-        (socialLinks, key) => ({ ...socialLinks, [key]: get(config, key, '') }),
-        {}
-      )
+      ...pick(config, configFields)
     })
   }, [shopConfig, config])
 
@@ -67,10 +69,7 @@ const ShopAppearance = () => {
         setSaving('saving')
 
         try {
-          const shopConfig = pickBy(
-            state,
-            (v, k) => !k.endsWith('Error') && !socialLinkKeys.includes(k)
-          )
+          const shopConfig = pickBy(state, (v, k) => !k.endsWith('Error'))
           const shopConfigRes = await post('/shop/config', {
             method: 'PUT',
             body: JSON.stringify(shopConfig),
@@ -83,18 +82,14 @@ const ShopAppearance = () => {
             return
           }
 
-          const hasChange = socialLinkKeys.some(
-            (s) => get(state, s, '') !== get(config, s, '')
-          )
-
-          if (hasChange) {
-            await post('/shop/social-links', {
-              method: 'PUT',
-              body: JSON.stringify(pick(state, socialLinkKeys))
-            })
-          }
-
           setSaving('ok')
+          dispatch({
+            type: 'setConfig',
+            config: {
+              ...config,
+              ...pick(shopConfig, configFields)
+            }
+          })
           setTimeout(() => setSaving(null), 3000)
         } catch (err) {
           console.error(err)
@@ -123,18 +118,18 @@ const ShopAppearance = () => {
           <div className="form-group">
             <label>Store Name</label>
             <input
-              {...input('title')}
+              {...input('fullTitle')}
               onChange={(e) => {
-                const existing = kebabCase(state.title)
+                const existing = kebabCase(state.fullTitle)
                 const hostname = kebabCase(e.target.value)
                 if (state.hostname === existing || !state.hostname) {
-                  setState({ title: e.target.value, hostname })
+                  setState({ fullTitle: e.target.value, hostname })
                 } else {
-                  setState({ title: e.target.value })
+                  setState({ fullTitle: e.target.value })
                 }
               }}
             />
-            {Feedback('title')}
+            {Feedback('fullTitle')}
           </div>
           <div className="form-group">
             <label>Store Domain</label>
@@ -156,6 +151,7 @@ const ShopAppearance = () => {
               <span>(will appear nex to your logo on the masthead)</span>
             </label>
             <input {...input('byline')} />
+            {Feedback('byline')}
           </div>
           <div className="form-group">
             <label>
@@ -178,11 +174,27 @@ const ShopAppearance = () => {
               onUpload={(body) => {
                 body.append('type', 'logo')
                 postRaw('/shop/assets', { method: 'PUT', body }).then((res) => {
-                  setState({ logo: res.path })
+                  const logo = res.path
+                  const newState = { logo }
+                  if (!config.logo) {
+                    newState.title = ''
+                  }
+                  setState(newState)
+                  dispatch({ type: 'setConfig', config: { ...config, logo } })
                 })
               }}
             />
           </div>
+          {!state.logo ? null : (
+            <div className="form-group">
+              <label>
+                Logo text
+                <span>(will appear to right of your logo)</span>
+              </label>
+              <input {...input('title')} />
+              {Feedback('title')}
+            </div>
+          )}
           <div className="form-group">
             <label>
               Store Favicon
@@ -205,7 +217,12 @@ const ShopAppearance = () => {
               onUpload={(body) => {
                 body.append('type', 'favicon')
                 postRaw('/shop/assets', { method: 'PUT', body }).then((res) => {
-                  setState({ favicon: res.path })
+                  const favicon = res.path
+                  setState({ favicon })
+                  dispatch({
+                    type: 'setConfig',
+                    config: { ...config, favicon }
+                  })
                 })
               }}
             />

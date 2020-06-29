@@ -59,7 +59,7 @@ const PayWithStripe = injectStripe(
           disabled: paymentReq ? false : true
         })
       }
-    }, [stripeSelected])
+    }, [stripeSelected, paymentReq])
 
     useEffect(() => {
       if (!stripe || !stripeSelected || !paymentReq || !submit) {
