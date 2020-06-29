@@ -50,7 +50,7 @@ module.exports = function (app) {
     authRole('admin'),
     async (req, res) => {
       const users = await Seller.findAll({
-        attributes: ['id', 'name', 'email'],
+        attributes: ['id', 'name', 'email', 'emailVerified'],
         include: {
           model: Shop,
           attributes: ['id'],
@@ -63,9 +63,7 @@ module.exports = function (app) {
         success: true,
         users: users.map((user) => {
           return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
+            ...user.get({ plain: true }),
             role: get(user, 'Shops[0].SellerShop.role')
           }
         })
@@ -780,7 +778,9 @@ module.exports = function (app) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res, next) => {
-      const { seller, status, error } = await createSeller(req.body)
+      const { seller, status, error } = await createSeller(req.body, {
+        shopId: req.shop.id
+      })
 
       if (error) {
         return res.status(status).json({ success: false, message: error })

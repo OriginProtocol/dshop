@@ -22,14 +22,17 @@ const Onboarding = () => {
       config.youtube)
   )
 
-  const tasks = [
-    {
-      id: 'new_product',
-      completed: !!(products && products.length > 0),
-      icon: <Icons.Box />,
-      name: 'Add your first product',
-      link: '/admin/products/new'
-    },
+  // const taskset1 = [
+  //   {
+  //     id: 'new_product',
+  //     completed: !!(products && products.length > 0),
+  //     icon: <Icons.Box />,
+  //     name: 'Add your first product',
+  //     link: '/admin/products/new'
+  //   },
+  // ]
+
+  const taskset2 = [
     {
       id: 'custom_domain',
       completed: !!(shopConfig && shopConfig.domain),
@@ -73,7 +76,7 @@ const Onboarding = () => {
       <div className="new-shop-tasks">
         <div className="subtitle">Get your store up and running</div>
         <div className="tasks-lists">
-          {tasks.map((task) => {
+          {taskset2.map((task) => {
             return (
               <div
                 className={`task-item${task.completed ? ' completed' : ''}`}

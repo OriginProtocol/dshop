@@ -1,11 +1,45 @@
-const { Seller } = require('../models')
+const { Seller, Shop } = require('../models')
 const { createSalt, hashPassword, checkPassword } = require('../routes/_auth')
+
+const { sendVerifyEmail } = require('./emailer')
+
+const { getConfig } = require('./encryptedConfig')
+
+const { generateVerificationCode } = require('./emailVerification')
+
+async function sendVerificationEmail(seller, shopId) {
+  const shop = await Shop.findOne({
+    where: {
+      id: shopId
+    }
+  })
+  
+  const config = getConfig(shop.config)
+
+  const publicUrl = config.publicUrl
+
+  const {
+    code,
+    expires,
+    verifyUrl
+  } = generateVerificationCode(publicUrl)
+
+  await seller.update({
+    data: {
+      ...seller.data,
+      emailVerificationCode: code,
+      verificationExpiresAt: expires
+    }
+  })
+
+  return sendVerifyEmail(seller.get({ plain: true }), verifyUrl, shopId)
+}
 
 async function createSeller({ name, email, password }, opts) {
   if (!name || !email || !password) {
     return { status: 400, error: 'Invalid registration' }
   }
-  const { superuser } = opts || {} // Superuser creation must be done explicitly
+  const { superuser, skipEmailVerification, shopId } = opts || {} // Superuser creation must be done explicitly
 
   const sellerCheck = await Seller.findOne({
     where: { email: email.toLowerCase() }
@@ -22,10 +56,17 @@ async function createSeller({ name, email, password }, opts) {
     name,
     email: email.toLowerCase(),
     password: passwordHash,
-    superuser: superuser
+    superuser: superuser,
+    emailVerified: false,
+    data: {}
   })
 
-  return { seller }
+  if (!skipEmailVerification) {
+    // Send verification email
+    await sendVerificationEmail(seller, shopId)
+  }
+
+  return { success: true, seller }
 }
 
 async function numSellers() {
@@ -42,4 +83,4 @@ async function authSeller(email, password) {
   return await checkPassword(password, seller.password)
 }
 
-module.exports = { findSeller, createSeller, authSeller, numSellers }
+module.exports = { findSeller, createSeller, authSeller, numSellers, sendVerificationEmail }

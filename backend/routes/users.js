@@ -1,8 +1,12 @@
 const { Seller, Shop, SellerShop } = require('../models')
-const { authSuperUser, createSalt, hashPassword } = require('./_auth')
+const { authSuperUser, authSellerAndShop, createSalt, hashPassword } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
 const pick = require('lodash/pick')
+const omit = require('lodash/omit')
 const { Op } = require('sequelize')
+
+const { sendVerificationEmail } = require('../utils/sellers')
+const { verifyEmailCode } = require('../utils/emailVerification')
 
 module.exports = function (app) {
   app.get('/superuser/users', authSuperUser, async (req, res) => {
@@ -57,7 +61,7 @@ module.exports = function (app) {
   })
 
   app.post('/superuser/users', authSuperUser, async (req, res) => {
-    createSeller(req.body, { superuser: req.body.superuser }).then((result) => {
+    createSeller(req.body, { superuser: req.body.superuser, skipEmailVerification: true }).then((result) => {
       res.json(result)
     })
   })
@@ -77,5 +81,40 @@ module.exports = function (app) {
       .then(() => Seller.destroy({ where: { id: userId } }))
       .then(() => res.json({ success: true }))
       .catch((err) => res.json({ success: false, reason: err.toString() }))
+  })
+
+
+  app.get('/verify-email', async (req, res) => {
+    const { code } = req.query
+    const seller = await Seller.findOne({
+      where: {
+        data: {
+          emailVerificationCode: code
+        }
+      }
+    })
+
+    const resp = verifyEmailCode(code, seller)
+
+    if (resp.success) {
+      await seller.update({
+        emailVerified: true,
+        data: omit(seller.data, ['emailVerificationCode', 'verificationExpiresAt'])
+      })
+    }
+
+    res.send(resp)    
+  })
+
+  app.put('/resend-email', authSellerAndShop, async (req, res) => {
+    try {
+      await sendVerificationEmail(req.seller, req.shop.id)
+    } catch (err) {
+      log.error('Could not resend verification email', err)
+    }
+
+    return res.send({
+      success: true
+    })
   })
 }

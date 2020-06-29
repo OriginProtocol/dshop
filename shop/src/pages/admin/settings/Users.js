@@ -1,8 +1,13 @@
 import React, { useEffect } from 'react'
 
+import get from 'lodash/get'
+
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useSetState from 'utils/useSetState'
+import useBackendApi from 'utils/useBackendApi'
+
+import { useStateValue } from 'data/state'
 
 import Tabs from './_Tabs'
 
@@ -29,7 +34,10 @@ function validate(state) {
 
 const AdminUsers = () => {
   const { config } = useConfig()
+  const [{ admin }] = useStateValue()
   const [state, setState] = useSetState({ loading: false, users: [] })
+
+  const { post } = useBackendApi({ authToken: true })
 
   const loadUsers = () => {
     fetch(`${config.backend}/shop/users`, {
@@ -49,6 +57,12 @@ const AdminUsers = () => {
           password: undefined
         })
       }
+    })
+  }
+
+  const resendCode = async () => {
+    await post('/resend-email', {
+      method: 'PUT'
     })
   }
 
@@ -73,6 +87,7 @@ const AdminUsers = () => {
               <th>User</th>
               <th>Email</th>
               <th>Role</th>
+              <th>Email Verified</th>
             </tr>
           </thead>
           <tbody>
@@ -81,6 +96,16 @@ const AdminUsers = () => {
                 <td>{user.name}</td>
                 <td>{user.email}</td>
                 <td>{user.role}</td>
+                <td>{user.emailVerified ? 'Yes' : (
+                  <>
+                    {get(admin, 'email') === user.email ? (
+                      <a href="#" onClick={e => {
+                        e.preventDefault()
+                        resendCode()
+                      }}>Resend code</a>
+                    ) : 'No'}
+                  </>
+                )}</td>
               </tr>
             ))}
           </tbody>
