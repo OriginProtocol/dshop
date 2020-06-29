@@ -2,7 +2,7 @@ const { authSellerAndShop } = require('./_auth')
 const { Order } = require('../models')
 const { findOrder } = require('../utils/orders')
 const makeOffer = require('./_makeOffer')
-const sendMail = require('../utils/emailer')
+const { sendNewOrderEmail } = require('../utils/emailer')
 
 module.exports = function (app) {
   app.get('/orders', authSellerAndShop, async (req, res) => {
@@ -23,7 +23,7 @@ module.exports = function (app) {
     findOrder,
     async (req, res) => {
       try {
-        await sendMail(req.shop.id, JSON.parse(req.order.data))
+        await sendNewOrderEmail(req.shop.id, JSON.parse(req.order.data))
         res.json({ success: true })
       } catch (e) {
         res.json({ success: false })

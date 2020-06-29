@@ -28,7 +28,7 @@ module.exports = function (app) {
     if (!user) {
       return res.json({ success: false, reason: 'no-such-user' })
     }
-    const { email } = user
+    const { email, emailVerified } = user
 
     const allNetworks = await Network.findAll()
     const networks = allNetworks.map((n) => {
@@ -116,7 +116,8 @@ module.exports = function (app) {
       networks,
       network,
       shops,
-      localShops
+      localShops,
+      emailVerified: emailVerified
     }
     if (user.superuser) {
       response.role = 'admin'
@@ -190,7 +191,9 @@ module.exports = function (app) {
     }
 
     const { seller, status, error } = await createSeller(req.body, {
-      superuser: true
+      superuser: true,
+      // TODO: Explore some ways to send email before a shop is setup?
+      skipEmailVerification: true
     })
 
     if (error) {
@@ -207,10 +210,6 @@ module.exports = function (app) {
 
   app.delete('/auth/registration', async (req, res) => {
     const { sellerId } = req.session
-
-    if (!sellerId) {
-      return res.status(400).json({ success: false })
-    }
 
     if (!sellerId) {
       return res.status(400).json({ success: false })

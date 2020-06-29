@@ -10,7 +10,7 @@ const get = require('lodash/get')
 
 const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
-const sendMail = require('./emailer')
+const { sendNewOrderEmail } = require('./emailer')
 const { upsertEvent, getEventObj } = require('./events')
 const { getConfig } = require('./encryptedConfig')
 const discordWebhook = require('./discordWebhook')
@@ -293,7 +293,7 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
 
   // Send notifications via email and discord.
   if (!skipEmail) {
-    await sendMail(shop.id, data)
+    await sendNewOrderEmail(shop.id, data)
   }
   if (!skipDiscord) {
     await discordWebhook({

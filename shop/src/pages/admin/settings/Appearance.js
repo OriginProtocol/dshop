@@ -147,7 +147,7 @@ const ShopAppearance = () => {
             </div>
             {Feedback('hostname')}
             <div className="mt-1 d-flex">
-              <CustomDomain hostname={state.hostname} />
+              <CustomDomain hostname={state.hostname} netId={config.netId} />
             </div>
           </div>
           <div className="form-group">

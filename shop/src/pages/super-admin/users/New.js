@@ -1,31 +1,27 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 
-import useConfig from 'utils/useConfig'
+import useBackendApi from 'utils/useBackendApi'
 import Link from 'components/Link'
 
 import UserForm from './_Form'
 
 const AdminNewUser = () => {
-  const { config } = useConfig()
   const history = useHistory()
 
-  function onSave(user) {
-    fetch(`${config.backend}/superuser/users`, {
-      credentials: 'include',
+  const { post } = useBackendApi({ authToken: true })
+
+  async function onSave(user) {
+    const { seller } = await post('/superuser/users', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
       body: JSON.stringify(user)
     })
-      .then((res) => res.json())
-      .then(({ seller }) => {
-        if (seller) {
-          history.push({
-            pathname: `/super-admin/users/${seller.id}`,
-            state: { scrollToTop: true }
-          })
-        }
+    if (seller) {
+      history.push({
+        pathname: `/super-admin/users/${seller.id}`,
+        state: { scrollToTop: true }
       })
+    }
   }
 
   return (

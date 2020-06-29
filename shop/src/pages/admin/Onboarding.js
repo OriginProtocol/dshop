@@ -22,14 +22,17 @@ const Onboarding = () => {
       config.youtube)
   )
 
-  const tasks = [
+  const taskset1 = [
     {
       id: 'new_product',
       completed: !!(products && products.length > 0),
       icon: <Icons.Box />,
       name: 'Add your first product',
       link: '/admin/products/new'
-    },
+    }
+  ]
+
+  const taskset2 = [
     {
       id: 'custom_domain',
       completed: !!(shopConfig && shopConfig.domain),
@@ -71,9 +74,40 @@ const Onboarding = () => {
       </div>
 
       <div className="new-shop-tasks">
+        <div className="subtitle">Finish setting up your store</div>
+        <div className="tasks-lists">
+          {taskset1.map((task) => {
+            return (
+              <div
+                className={`task-item${task.completed ? ' completed' : ''}`}
+                key={task.id}
+                onClick={() => {
+                  if (task.link) {
+                    history.push({
+                      pathname: task.link,
+                      state: { scrollToTop: true }
+                    })
+                  }
+                }}
+              >
+                {task.icon}
+                <div className="task-name">{task.name}</div>
+                {task.completed && (
+                  <img
+                    className="completed-icon"
+                    src="images/green-checkmark-circle.svg"
+                  />
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="new-shop-tasks">
         <div className="subtitle">Get your store up and running</div>
         <div className="tasks-lists">
-          {tasks.map((task) => {
+          {taskset2.map((task) => {
             return (
               <div
                 className={`task-item${task.completed ? ' completed' : ''}`}

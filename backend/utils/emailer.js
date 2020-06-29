@@ -18,6 +18,9 @@ const emailTxt = require('./templates/emailTxt')
 const orderItem = require('./templates/orderItem')
 const orderItemTxt = require('./templates/orderItemTxt')
 
+const verifyEmail = require('./templates/verifyEmail')
+const verifyEmailTxt = require('./templates/verifyEmailTxt')
+
 const log = getLogger('utils.emailer')
 
 function formatPrice(num) {
@@ -34,17 +37,7 @@ function optionsForItem(item) {
   return options
 }
 
-async function sendMail(shopId, cart, skip) {
-  const config = await encConf.dump(shopId)
-  if (!config.email || config.email === 'disabled') {
-    log.debug('Emailer disabled. Skipping sending email.')
-    return
-  }
-  if (process.env.NODE_ENV === 'test') {
-    log.info('Test environment. Email will be generated but not sent.')
-    skip = true
-  }
-
+function getEmailTranspoter(config) {
   let transporter
   if (config.email === 'sendgrid') {
     let auth
@@ -84,6 +77,22 @@ async function sendMail(shopId, cart, skip) {
   } else {
     transporter = nodemailer.createTransport({ sendmail: true })
   }
+
+  return transporter
+}
+
+async function sendNewOrderEmail(shopId, cart, skip) {
+  const config = await encConf.dump(shopId)
+  if (!config.email || config.email === 'disabled') {
+    log.debug('Emailer disabled. Skipping sending email.')
+    return
+  }
+  if (process.env.NODE_ENV === 'test') {
+    log.info('Test environment. Email will be generated but not sent.')
+    skip = true
+  }
+
+  const transporter = getEmailTranspoter(config)
 
   const dataURL = config.dataUrl
   let publicURL = config.publicUrl
@@ -226,4 +235,59 @@ async function sendMail(shopId, cart, skip) {
   return message
 }
 
-module.exports = sendMail
+async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
+  const config = await encConf.dump(shopId)
+  if (!config.email || config.email === 'disabled') {
+    log.debug('Emailer disabled. Skipping sending email.')
+    return
+  }
+
+  if (process.env.NODE_ENV === 'test') {
+    log.info('Test environment. Email will be generated but not sent.')
+    skip = true
+  }
+
+  const transporter = getEmailTranspoter(config)
+
+  const { name, email } = seller
+
+  const vars = {
+    head,
+    name,
+    verifyUrl,
+    supportEmailPlain: SUPPORT_EMAIL_OVERRIDE || 'dshop@originprotocol.com'
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    vars.supportEmailPlain = process.env.SUPPORT_EMAIL || vars.supportEmailPlain
+  }
+
+  const htmlOutput = mjml2html(verifyEmail(vars), { minify: true })
+
+  const txtOutput = verifyEmailTxt(vars)
+
+  const message = {
+    from: vars.supportEmailPlain,
+    to: `${name} <${email}>`,
+    subject: 'Confirm your email address',
+    html: htmlOutput.html,
+    text: txtOutput
+  }
+
+  if (skip) return message
+
+  return new Promise((resolve) => {
+    transporter.sendMail(message, (err, msg) => {
+      if (err) {
+        log.error('Error sending verification email', err)
+      } else {
+        log.debug(msg.envelope)
+        log.debug(msg)
+      }
+
+      resolve(message)
+    })
+  })
+}
+
+module.exports = { sendNewOrderEmail, sendVerifyEmail }
