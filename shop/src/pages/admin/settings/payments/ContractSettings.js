@@ -1,11 +1,35 @@
-import React from 'react'
+import React, { useMemo, useEffect } from 'react'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
+import supportedTokens from 'data/supportedTokens'
+
 import CreateListing from './_CreateListing'
 
 const ContractSettings = ({ state, setState, config }) => {
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
+
+  useEffect(() => {
+    setState({
+      acceptedTokens: config.acceptedTokens || []
+    })
+  }, [config.acceptedTokens])
+
+  const acceptedTokenIds = useMemo(() => {
+    return (state.acceptedTokens || []).map((t) => t.id)
+  }, [state.acceptedTokens])
+
+  const updateAcceptedTokens = (tokenObj, selected) => {
+    let acceptedTokens = [...state.acceptedTokens]
+    if (selected) {
+      acceptedTokens.push(tokenObj)
+      acceptedTokens = Array.from(new Set([...acceptedTokens, tokenObj]))
+    } else {
+      acceptedTokens = acceptedTokens.filter((t) => t.id !== tokenObj.id)
+    }
+
+    setState({ acceptedTokens })
+  }
 
   return (
     <div className="contract-settings">
@@ -55,21 +79,25 @@ const ContractSettings = ({ state, setState, config }) => {
         <input {...input('disputeWindow')} />
         {Feedback('disputeWindow')}
       </div>
-      <div className="form-group">
-        <label>Accepted Tokens</label>
-        <div>
-          <input type="checkbox" />
-          Origin Tokens (OGN)
+
+      <label>Accepted Tokens</label>
+      {supportedTokens.map((token) => (
+        <div className="form-group" key={token.id}>
+          <div className="form-check">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              checked={acceptedTokenIds.includes(token.id)}
+              onChange={(e) => updateAcceptedTokens(token, e.target.checked)}
+            />
+            <label className="form-check-label">
+              {token.displayName
+                ? `${token.displayName} (${token.name})`
+                : token.name}
+            </label>
+          </div>
         </div>
-        <div>
-          <input type="checkbox" />
-          Ether (ETH)
-        </div>
-        <div>
-          <input type="checkbox" />
-          Maker DAI (DAI)
-        </div>
-      </div>
+      ))}
     </div>
   )
 }
@@ -82,4 +110,7 @@ require('react-styl')(`
     margin-top: 3rem
     padding-top: 2rem
     max-width: 450px
+
+    .form-check-label
+      margin: 0
 `)

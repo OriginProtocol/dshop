@@ -694,7 +694,8 @@ module.exports = function (app) {
         'cartSummaryNote',
         'byline',
         'discountCodes',
-        'stripeKey'
+        'stripeKey',
+        'acceptedTokens'
       )
       if (req.body.title) {
         jsonConfig.fullTitle = req.body.title

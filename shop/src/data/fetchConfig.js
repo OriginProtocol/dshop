@@ -1,6 +1,7 @@
 import ethers from 'ethers'
 
 import { NetworksByIdStr } from 'data/Networks'
+import supportedTokens from './supportedTokens'
 
 const networks = {}
 try {
@@ -21,15 +22,7 @@ const activeNetwork = NetworksByIdStr[net] || NetworksByIdStr['localhost']
 const netId = String(activeNetwork.id)
 const contracts = networks[activeNetwork.idStr] || {}
 
-const DefaultTokens = [
-  { id: 'token-OGN', name: 'OGN', address: contracts.OGN },
-  { id: 'token-DAI', name: 'DAI', address: contracts.DAI },
-  {
-    id: 'token-ETH',
-    name: 'ETH',
-    address: ethers.constants.AddressZero
-  }
-]
+const DefaultTokens = supportedTokens
 
 let config
 
