@@ -7,7 +7,7 @@ import Modal from 'components/Modal'
 import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
 
-const CustomDomain = ({ hostname = '' }) => {
+const CustomDomain = ({ netId, hostname = '' }) => {
   const [show, setShow] = useState()
   const [shouldClose, setShouldClose] = useState()
   const [domain, setDomain] = useState('')
@@ -25,15 +25,17 @@ const CustomDomain = ({ hostname = '' }) => {
     try {
       const body = JSON.stringify({
         domain,
-        hostname
+        hostname,
+        networkId: Number(netId)
       })
 
-      const { success, error } = await post('/domains/verify-dns', {
+      const { success, valid, error } = await post('/domains/verify-dns', {
         body
       })
 
       setVerifyStatus({
         success,
+        valid,
         error
       })
     } catch (err) {
@@ -94,13 +96,13 @@ const CustomDomain = ({ hostname = '' }) => {
                 </div>
               )}
             </div>
-            {!verifyStatus.success ? null : (
+            {!verifyStatus.valid ? null : (
               <div className="alert alert-success my-3">
                 Your DNS records look good.
               </div>
             )}
             {!verifyStatus.error ? null : (
-              <div className="alert alert-danger my-3">
+              <div className="alert alert-warning my-3">
                 {verifyStatus.error}
               </div>
             )}
