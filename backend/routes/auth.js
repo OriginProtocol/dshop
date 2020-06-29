@@ -58,7 +58,15 @@ module.exports = function (app) {
     const shopDataDir = DSHOP_CACHE
 
     const order = [['createdAt', 'desc']]
-    const attributes = ['id', 'name', 'authToken', 'hostname', 'listingId']
+    const attributes = [
+      'id',
+      'name',
+      'authToken',
+      'hostname',
+      'listingId',
+      'createdAt',
+      'networkId'
+    ]
     const include = { model: Seller, where: { id: user.id } }
 
     let shops = []
