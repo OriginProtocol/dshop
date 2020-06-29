@@ -276,7 +276,7 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
 
   if (skip) return message
 
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     transporter.sendMail(message, (err, msg) => {
       if (err) {
         log.error('Error sending verification email', err)
@@ -288,7 +288,6 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
       resolve(message)
     })
   })
-
 }
 
 module.exports = { sendNewOrderEmail, sendVerifyEmail }

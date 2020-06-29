@@ -13,16 +13,12 @@ async function sendVerificationEmail(seller, shopId) {
       id: shopId
     }
   })
-  
+
   const config = getConfig(shop.config)
 
   const publicUrl = config.publicUrl
 
-  const {
-    code,
-    expires,
-    verifyUrl
-  } = generateVerificationCode(publicUrl)
+  const { code, expires, verifyUrl } = generateVerificationCode(publicUrl)
 
   await seller.update({
     data: {
@@ -83,4 +79,10 @@ async function authSeller(email, password) {
   return await checkPassword(password, seller.password)
 }
 
-module.exports = { findSeller, createSeller, authSeller, numSellers, sendVerificationEmail }
+module.exports = {
+  findSeller,
+  createSeller,
+  authSeller,
+  numSellers,
+  sendVerificationEmail
+}

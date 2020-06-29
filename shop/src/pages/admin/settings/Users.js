@@ -96,16 +96,27 @@ const AdminUsers = () => {
                 <td>{user.name}</td>
                 <td>{user.email}</td>
                 <td>{user.role}</td>
-                <td>{user.emailVerified ? 'Yes' : (
-                  <>
-                    {get(admin, 'email') === user.email ? (
-                      <a href="#" onClick={e => {
-                        e.preventDefault()
-                        resendCode()
-                      }}>Resend code</a>
-                    ) : 'No'}
-                  </>
-                )}</td>
+                <td>
+                  {user.emailVerified ? (
+                    'Yes'
+                  ) : (
+                    <>
+                      {get(admin, 'email') === user.email ? (
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            resendCode()
+                          }}
+                        >
+                          Resend code
+                        </a>
+                      ) : (
+                        'No'
+                      )}
+                    </>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

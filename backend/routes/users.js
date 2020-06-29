@@ -1,5 +1,10 @@
 const { Seller, Shop, SellerShop } = require('../models')
-const { authSuperUser, authSellerAndShop, createSalt, hashPassword } = require('./_auth')
+const {
+  authSuperUser,
+  authSellerAndShop,
+  createSalt,
+  hashPassword
+} = require('./_auth')
 const { createSeller } = require('../utils/sellers')
 const pick = require('lodash/pick')
 const omit = require('lodash/omit')
@@ -7,6 +12,10 @@ const { Op } = require('sequelize')
 
 const { sendVerificationEmail } = require('../utils/sellers')
 const { verifyEmailCode } = require('../utils/emailVerification')
+
+const { getLogger } = require('../utils/logger')
+
+const log = getLogger('routes.users')
 
 module.exports = function (app) {
   app.get('/superuser/users', authSuperUser, async (req, res) => {
@@ -61,7 +70,10 @@ module.exports = function (app) {
   })
 
   app.post('/superuser/users', authSuperUser, async (req, res) => {
-    createSeller(req.body, { superuser: req.body.superuser, skipEmailVerification: true }).then((result) => {
+    createSeller(req.body, {
+      superuser: req.body.superuser,
+      skipEmailVerification: true
+    }).then((result) => {
       res.json(result)
     })
   })
@@ -83,7 +95,6 @@ module.exports = function (app) {
       .catch((err) => res.json({ success: false, reason: err.toString() }))
   })
 
-
   app.get('/verify-email', async (req, res) => {
     const { code } = req.query
     const seller = await Seller.findOne({
@@ -99,11 +110,14 @@ module.exports = function (app) {
     if (resp.success) {
       await seller.update({
         emailVerified: true,
-        data: omit(seller.data, ['emailVerificationCode', 'verificationExpiresAt'])
+        data: omit(seller.data, [
+          'emailVerificationCode',
+          'verificationExpiresAt'
+        ])
       })
     }
 
-    res.send(resp)    
+    res.send(resp)
   })
 
   app.put('/resend-email', authSellerAndShop, async (req, res) => {
