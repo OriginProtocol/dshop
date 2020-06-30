@@ -32,7 +32,7 @@ const defaultState = { title: '', shopType: 'empty' }
 const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
   const shopName = useAutoFocus()
   const history = useHistory()
-  const [{ admin }, dispatch] = useStateValue()
+  const [{ admin, config }, dispatch] = useStateValue()
   const { setActiveShop } = useConfig()
   const [state, setState] = useSetState(defaultState)
   const { post } = useBackendApi({ authToken: true })
@@ -58,7 +58,7 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
         const data = {
           shopType: state.shopType,
           name: state.name,
-          backend: get(window, 'location.origin'),
+          backend: config.backend || get(window, 'location.origin'),
           dataDir: kebabCase(state.name),
           hostname: kebabCase(state.name)
         }
