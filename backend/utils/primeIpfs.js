@@ -32,7 +32,11 @@ async function prime(urlPrefix, dir) {
   const files = filesWithPath.map((f) => f.split('public/')[1])
   for (const file of files) {
     const url = `${urlPrefix}/${file}`
-    limiter.schedule((url) => download(url), url)
+    limiter
+      .schedule((url) => download(url), url)
+      .on('error', (err) => {
+        log.error(`Error occurred when priming ${url}:`, err)
+      })
   }
 }
 
