@@ -40,7 +40,9 @@ const SortableTable = ({ items, onClick, children, onChange, labels }) => {
       onDragOver={(e) => e.preventDefault()}
     >
       <div className="th">{labels ? labels[0] : 'Name'}</div>
-      <div className="th text-center">{labels ? labels[1] : 'Number of Products'}</div>
+      <div className="th text-center">
+        {labels ? labels[1] : 'Number of Products'}
+      </div>
       {sortedItems.map((item, idx) => {
         return (
           <div

@@ -31,7 +31,8 @@ function useCollections() {
     return () => (isSubscribed = false)
   }, [reload.collections, config.activeShop])
 
-  const reloadCollections = () => dispatch({ type: 'reload', target: 'collections' })
+  const reloadCollections = () =>
+    dispatch({ type: 'reload', target: 'collections' })
 
   return { collections, loading, reload: reloadCollections }
 }

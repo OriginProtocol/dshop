@@ -19,15 +19,18 @@ const ShowCollection = () => {
   const { collectionId } = match.params
 
   const { post } = useBackendApi({ authToken: true })
-  
+
   const collection = useMemo(() => {
-    if (!products || !collections || !products.length || !collections.length) return null
-    
+    if (!products || !collections || !products.length || !collections.length)
+      return null
+
     const collection = collections.find((c) => c.id === collectionId)
 
-    return { 
+    return {
       ...collection,
-      products: get(collection, 'products', []).map(pId => products.find(p => p.id === pId))
+      products: get(collection, 'products', []).map((pId) =>
+        products.find((p) => p.id === pId)
+      )
     }
   }, [collections, collectionId, products])
 
@@ -53,14 +56,14 @@ const ShowCollection = () => {
         </div>
       </h3>
       {collection.products.length ? (
-        <SortableTable 
+        <SortableTable
           items={collection.products}
           onClick={() => {}}
           onChange={(products) => {
             post(`/collections/${collection.id}`, {
               body: JSON.stringify({
                 ...collection,
-                products: products.map(p => p.id)
+                products: products.map((p) => p.id)
               }),
               method: 'PUT'
             })
@@ -76,7 +79,10 @@ const ShowCollection = () => {
                 </div>
               </div>
               <div className="td justify-content-center">
-                <img className="linked-product-image" src={`/${localStorage.activeShop}/${product.id}/orig/${product.image}`} />
+                <img
+                  className="linked-product-image"
+                  src={`/${localStorage.activeShop}/${product.id}/orig/${product.image}`}
+                />
               </div>
             </>
           )}
