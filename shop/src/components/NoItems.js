@@ -20,7 +20,9 @@ const NoItems = ({ children, heading, description, linkTo, buttonText }) => (
           children
         ) : buttonText ? (
           <Link to={linkTo}>
-            <button className="btn btn-primary px-5">{buttonText}</button>
+            <button className="btn btn-primary px-5" type="button">
+              {buttonText}
+            </button>
           </Link>
         ) : null}
       </div>
