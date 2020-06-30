@@ -138,11 +138,9 @@ export async function updateListing({ config, shopIpfsHash }) {
     return
   }
   const provider = new ethers.providers.Web3Provider(window.ethereum)
-  const providerNetwork = await provider.getNetwork()
-  if (providerNetwork.chainId !== parseInt(config.netId)) {
-    console.error(
-      `Provider network should be ${config.netId} vs ${providerNetwork.chainId}`
-    )
+  const netId = provider.provider.networkVersion
+  if (netId !== config.netId) {
+    console.error(`Provider network should be ${config.netId} vs ${netId}`)
     return
   }
 
