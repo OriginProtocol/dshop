@@ -5,6 +5,7 @@ import get from 'lodash/get'
 
 import DeleteButton from './_Delete'
 import Link from 'components/Link'
+import useConfig from 'utils/useConfig'
 import useCollections from 'utils/useCollections'
 import useProducts from 'utils/useProducts'
 import useBackendApi from 'utils/useBackendApi'
@@ -13,6 +14,7 @@ import SortableTable from 'components/SortableTable'
 import NoItems from 'components/NoItems'
 
 const ShowCollection = () => {
+  const { config } = useConfig()
   const { collections, reload } = useCollections()
   const { products } = useProducts()
   const match = useRouteMatch('/admin/collections/:collectionId')
@@ -70,22 +72,26 @@ const ShowCollection = () => {
           }}
           labels={['Product', 'Image']}
         >
-          {(product, DragTarget) => (
-            <>
-              <div className="td title">
-                <div className="draggable-content" draggable>
-                  <DragTarget />
-                  {product.title}
+          {(product, DragTarget) => {
+            const src = product.image
+              ? `${config.activeShop}/${product.id}/orig/${product.image}`
+              : null
+            return (
+              <>
+                <div className="td title">
+                  <div className="draggable-content" draggable>
+                    <DragTarget />
+                    {product.title}
+                  </div>
                 </div>
-              </div>
-              <div className="td justify-content-center">
-                <img
-                  className="linked-product-image"
-                  src={`/${localStorage.activeShop}/${product.id}/orig/${product.image}`}
-                />
-              </div>
-            </>
-          )}
+                <div className="td justify-content-center">
+                  {!src ? null : (
+                    <img className="linked-product-image" src={src} />
+                  )}
+                </div>
+              </>
+            )
+          }}
         </SortableTable>
       ) : (
         <NoItems

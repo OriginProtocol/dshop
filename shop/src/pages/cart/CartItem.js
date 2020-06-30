@@ -52,6 +52,7 @@ const CartItem = ({ item }) => {
         )}
         <div className="mt-2">
           <a
+            className="text-danger"
             href="#"
             onClick={(e) => {
               e.preventDefault()

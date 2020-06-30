@@ -74,16 +74,15 @@ const App = ({ location }) => {
   // Add custom CSS
   useEffect(() => {
     if (config) {
-      if (config.css) {
-        const existingCss = document.querySelector('#custom-css')
-        if (existingCss) {
-          existingCss.textContent = config.css
-        } else {
-          const css = document.createElement('style')
-          css.id = 'custom-css'
-          css.appendChild(document.createTextNode(config.css))
-          document.head.appendChild(css)
-        }
+      const customCss = isAdmin ? '' : config.css || ''
+      const existingCss = document.querySelector('#custom-css')
+      if (existingCss) {
+        existingCss.textContent = customCss
+      } else {
+        const cssEl = document.createElement('style')
+        cssEl.id = 'custom-css'
+        cssEl.appendChild(document.createTextNode(customCss))
+        document.head.appendChild(cssEl)
       }
       const favicon = document.querySelector('link[rel="icon"]')
       if (config.favicon) {

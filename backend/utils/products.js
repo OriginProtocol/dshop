@@ -24,7 +24,10 @@ const validProductFields = [
   'sku',
   'variants',
   'options',
-  'availableOptions'
+  'availableOptions',
+  'dispatchOrigin',
+  'processingTime',
+  'shipInternational'
 ]
 
 const minimalistProductFields = ['id', 'title', 'description', 'price', 'image']
