@@ -8,6 +8,10 @@ const { getLogger } = require('../utils/logger')
 
 const log = getLogger('utils.primeIpfs')
 
+limiter.on('error', (err) => {
+  log.error(`Error occurred when priming:`, err)
+})
+
 async function getFiles(dir) {
   const dirents = await readdir(dir, { withFileTypes: true })
   const files = await Promise.all(
@@ -32,11 +36,7 @@ async function prime(urlPrefix, dir) {
   const files = filesWithPath.map((f) => f.split('public/')[1])
   for (const file of files) {
     const url = `${urlPrefix}/${file}`
-    limiter
-      .schedule((url) => download(url), url)
-      .on('error', (err) => {
-        log.error(`Error occurred when priming ${url}:`, err)
-      })
+    limiter.schedule((url) => download(url), url)
   }
 }
 
