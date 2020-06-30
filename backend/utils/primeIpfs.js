@@ -25,9 +25,13 @@ async function getFiles(dir) {
 
 async function download(url) {
   await new Promise((resolve) => {
-    const f = fs.createWriteStream('/dev/null').on('finish', resolve)
-    log.info(`Priming ${url}`)
-    https.get(url, (response) => response.pipe(f))
+    try {
+      const f = fs.createWriteStream('/dev/null').on('finish', resolve)
+      log.info(`Priming ${url}`)
+      https.get(url, (response) => response.pipe(f))
+    } catch (err) {
+      log.error(`Error making GET request to ${url}:`, err)
+    }
   })
 }
 
