@@ -117,7 +117,7 @@ module.exports = function (app) {
       network,
       shops,
       localShops,
-      emailVerified: emailVerified
+      emailVerified
     }
     if (user.superuser) {
       response.role = 'admin'

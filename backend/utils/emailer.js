@@ -37,7 +37,7 @@ function optionsForItem(item) {
   return options
 }
 
-function getEmailTranspoter(config) {
+function getEmailTransporter(config) {
   let transporter
   if (config.email === 'sendgrid') {
     let auth
@@ -92,7 +92,7 @@ async function sendNewOrderEmail(shopId, cart, skip) {
     skip = true
   }
 
-  const transporter = getEmailTranspoter(config)
+  const transporter = getEmailTransporter(config)
 
   const dataURL = config.dataUrl
   let publicURL = config.publicUrl
@@ -247,7 +247,7 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
     skip = true
   }
 
-  const transporter = getEmailTranspoter(config)
+  const transporter = getEmailTransporter(config)
 
   const { name, email } = seller
 

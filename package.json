@@ -65,5 +65,8 @@
     "ignorePaths": [],
     "schedule": "before 2am",
     "rebaseStalePrs": false
+  },
+  "nodemonConfig": {
+    "ignore": ["data/**", "dist/**"] 
   }
 }
