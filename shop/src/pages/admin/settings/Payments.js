@@ -217,7 +217,7 @@ require('react-styl')(`
         background-color: #00cc58
       &.web3 .icon
         background-color: #3b80ee
-      &.printful .icon
+      &.printful .icon, &.sendgrid .icon, &.aws .icon, &.mailgun .icon
         border: 1px solid #cdd7e0
 
       > div:nth-child(2)

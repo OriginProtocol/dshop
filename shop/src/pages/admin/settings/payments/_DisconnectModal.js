@@ -40,6 +40,31 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
               printful: ''
             }
             break
+          case 'sendgrid':
+            updatedConfig = {
+              email: '',
+              sendgridUsername: '',
+              sendgridPassword: '',
+              sendgridApiKey: ''
+            }
+            break
+          case 'aws':
+            updatedConfig = {
+              email: '',
+              awsRegion: '',
+              awsAccessKey: '',
+              awsAccessSecret: ''
+            }
+            break
+          case 'mailgun':
+            updatedConfig = {
+              email: '',
+              mailgunSmtpServer: '',
+              mailgunSmtpPort: '',
+              mailgunSmtpLogin: '',
+              mailgunSmtpPassword: ''
+            }
+            break
         }
 
         return post('/shop/config', {
