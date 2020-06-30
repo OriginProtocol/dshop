@@ -6,7 +6,7 @@ function reducer(state, newState) {
 
 let over = false
 
-const SortableTable = ({ items, onClick, children, onChange }) => {
+const SortableTable = ({ items, onClick, children, onChange, labels }) => {
   const [state, setState] = useReducer(reducer, { items: [] })
   useEffect(() => {
     setState({ items })
@@ -39,8 +39,8 @@ const SortableTable = ({ items, onClick, children, onChange }) => {
       className={`sortable-table${isDragging ? '' : ' hoverable'}`}
       onDragOver={(e) => e.preventDefault()}
     >
-      <div className="th">Name</div>
-      <div className="th text-center">Number of Products</div>
+      <div className="th">{labels ? labels[0] : 'Name'}</div>
+      <div className="th text-center">{labels ? labels[1] : 'Number of Products'}</div>
       {sortedItems.map((item, idx) => {
         return (
           <div
