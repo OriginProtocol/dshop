@@ -21,7 +21,10 @@ const PaymentSettings = () => {
   const [state, setState] = useSetState()
 
   useEffect(() => {
-    setState({ listingId: config.listingId })
+    setState({
+      listingId: config.listingId,
+      acceptedTokens: config.acceptedTokens
+    })
   }, [config.activeShop])
 
   const [connectModal, setShowConnectModal] = useState(false)

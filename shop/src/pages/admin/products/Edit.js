@@ -468,7 +468,10 @@ const EditProduct = () => {
               <label>Shipping</label>
               <div className="form-check">
                 <input
-                  {...input('shipInternational')}
+                  checked={formState.shipInternational ? true : false}
+                  onChange={(e) =>
+                    setFormState({ shipInternational: e.target.checked })
+                  }
                   id="shippingCheckbox"
                   type="checkbox"
                   className="form-check-input"

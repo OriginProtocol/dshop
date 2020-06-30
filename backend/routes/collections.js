@@ -33,12 +33,12 @@ module.exports = function (app) {
     authRole('admin'),
     async (req, res) => {
       const { collectionId } = req.params
-      
+
       try {
         const outDir = path.resolve(`${DSHOP_CACHE}/${req.shop.authToken}/data`)
         const collectionsPath = `${outDir}/collections.json`
-        const collections = JSON.parse(fs.readFileSync(collectionsPath))
-          .map(collection => {
+        const collections = JSON.parse(fs.readFileSync(collectionsPath)).map(
+          (collection) => {
             if (collection.id === collectionId) {
               return {
                 ...pick(req.body, ['title', 'products']),
@@ -47,7 +47,8 @@ module.exports = function (app) {
             }
 
             return collection
-          })
+          }
+        )
 
         fs.writeFileSync(
           collectionsPath,
