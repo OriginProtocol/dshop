@@ -58,10 +58,12 @@ const AdminProducts = () => {
     return opts.sort.endsWith('-ascending') ? <> &#8593;</> : <> &#8595;</>
   }
 
-  const getCollection = (product) => {
-    const collection = collections.find((c) => c.products.includes(product.id))
+  const getCollections = (product) => {
+    const result = collections
+      .filter((c) => c.products.includes(product.id))
+      .map((c) => c.title)
 
-    return collection ? collection.title : null
+    return result.length ? result.join(', ') : null
   }
 
   return (
@@ -98,7 +100,7 @@ const AdminProducts = () => {
               <th onClick={sortByColumnCallback('price')}>
                 Price {getSortIcon('price')}
               </th>
-              <th>Collection</th>
+              <th>Collections</th>
               <th></th>
             </tr>
           </thead>
@@ -130,7 +132,7 @@ const AdminProducts = () => {
                 <td>
                   <div className="price">{formatPrice(product.price)}</div>
                 </td>
-                <td>{getCollection(product)}</td>
+                <td>{getCollections(product)}</td>
                 <td>
                   <div className="actions">
                     <div className="action-icon">

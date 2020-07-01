@@ -38,6 +38,7 @@ function getImageForVariant(productData, variant) {
 
 const Product = ({ history, location, match }) => {
   const [state, setState] = useReducer(reducer, {
+    loading: true,
     options: {},
     activeImage: 0,
     addedToCart: false,
@@ -54,6 +55,7 @@ const Product = ({ history, location, match }) => {
   useEffect(() => {
     async function setData(data) {
       if (!data) {
+        setState({ loading: false, productData: undefined })
         return
       }
       const variants = get(data, 'variants', [])
@@ -76,6 +78,7 @@ const Product = ({ history, location, match }) => {
         productData: data,
         activeImage: 0,
         addedToCart: false,
+        loading: false,
         options: pick(variant, 'option1', 'option2', 'option3')
       }
       const imageForVariant = getImageForVariant(data, variant)
@@ -93,6 +96,7 @@ const Product = ({ history, location, match }) => {
           .then((json) => setData({ ...product, ...json }))
       }
     } else {
+      setState({ loading: true })
       fetchProduct(config.dataSrc, match.params.id).then(setData)
     }
   }, [match.params.id, products.length])
@@ -115,12 +119,16 @@ const Product = ({ history, location, match }) => {
     })
   }
 
-  if (!productData) {
+  if (state.loading) {
     return (
       <div className="product-detail">
         <Loading />
       </div>
     )
+  }
+
+  if (!productData) {
+    return <div className="product-detail">Product not found</div>
   }
 
   const collectionParam = get(match, 'params.collection')

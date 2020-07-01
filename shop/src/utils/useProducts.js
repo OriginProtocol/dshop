@@ -14,30 +14,37 @@ function useProducts() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
 
-  async function fetchProducts() {
-    setLoading(true)
-    try {
-      let products = []
-      if (config.isAffiliate) {
-        products = await get('/affiliate/products')
-      } else {
-        products = await getProducts(`${config.dataSrc}products.json`)
-      }
-      dispatch({ type: 'setProducts', products })
-      setLoading(false)
-    } catch (e) {
-      setError(true)
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
+    let isSubscribed = true
+
+    async function fetchProducts() {
+      setLoading(true)
+      try {
+        let products = []
+        if (config.isAffiliate) {
+          products = await get('/affiliate/products')
+        } else {
+          products = await getProducts(`${config.dataSrc}products.json`)
+        }
+        if (!isSubscribed) {
+          return
+        }
+        dispatch({ type: 'setProducts', products })
+        setLoading(false)
+      } catch (e) {
+        setError(true)
+        setLoading(false)
+      }
+    }
+
     if (reload.products) {
       getProducts.cache.clear()
     }
     if (config.dataSrc) {
       fetchProducts()
     }
+
+    return () => (isSubscribed = false)
   }, [config.dataSrc, reload.products])
 
   return { products, productIndex, loading, error }

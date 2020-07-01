@@ -10,13 +10,19 @@ const PublishChanges = () => {
   }
   return (
     <div className="changes">
-      <div>You have changes that have not been published.</div>
+      <div>
+        You have changes that have not been published. Click “Publish Changes”
+        to make publicly visible.
+      </div>
       <button
-        className="btn btn-sm btn-outline-primary ml-4"
+        className="btn btn-sm btn-outline-primary ml-auto px-4"
         onClick={() => window.open('/', 'dshop-preview')}
         children="Preview"
       />
-      <DeployButton className="btn-sm ml-2" />
+      <DeployButton
+        className="btn-primary btn-sm ml-2 px-3"
+        buttonText="Publish Changes"
+      />
     </div>
   )
 }
@@ -34,4 +40,5 @@ require('react-styl')(`
     align-items: center
     .btn
       font-size: 12px
+      font-weight: bold
 `)

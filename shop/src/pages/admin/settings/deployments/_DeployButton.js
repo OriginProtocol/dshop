@@ -4,14 +4,14 @@ import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
 import ConfirmationModal from 'components/ConfirmationModal'
 
-const AdminDeployShop = ({ className = '' }) => {
+const AdminDeployShop = ({ className = 'btn-outline-primary', buttonText }) => {
   const { post } = useBackendApi({ authToken: true })
   const [, dispatch] = useStateValue()
 
   return (
     <ConfirmationModal
-      className={`btn btn-outline-primary ${className}`}
-      buttonText="Deploy"
+      className={`btn ${className}`}
+      buttonText={buttonText || 'Deploy'}
       confirmText="Are you sure you want to deploy?"
       confirmedText="Deployed OK"
       loadingText="Deploying..."

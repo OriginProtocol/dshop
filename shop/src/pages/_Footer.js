@@ -14,7 +14,7 @@ const Footer = () => {
           target="_blank"
           rel="noopener noreferrer"
           className="powered-by"
-          href="https://www.originprotocol.com/en/product"
+          href="https://www.originprotocol.com/en/dshop"
         >
           Powered by <span>Origin Dshop</span>
         </a>
