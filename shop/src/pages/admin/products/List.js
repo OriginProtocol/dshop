@@ -96,7 +96,6 @@ const AdminProducts = () => {
                 Name {getSortIcon('title')}
               </th>
               <th onClick={sortByColumnCallback('title')}></th>
-              <th>Quantity</th>
               <th onClick={sortByColumnCallback('price')}>
                 Price {getSortIcon('price')}
               </th>
@@ -128,7 +127,6 @@ const AdminProducts = () => {
                 <td>
                   <div className="title">{product.title}</div>
                 </td>
-                <td>{product.quantity}</td>
                 <td>
                   <div className="price">{formatPrice(product.price)}</div>
                 </td>

@@ -10,9 +10,8 @@ const ContractSettings = ({ state, setState, config }) => {
   const Feedback = formFeedback(state)
 
   useEffect(() => {
-    setState({
-      acceptedTokens: config.acceptedTokens || []
-    })
+    const acceptedTokens = config.acceptedTokens || []
+    setState({ acceptedTokens })
   }, [config.acceptedTokens])
 
   const acceptedTokenIds = useMemo(() => {
@@ -81,23 +80,27 @@ const ContractSettings = ({ state, setState, config }) => {
       </div>
 
       <label>Accepted Tokens</label>
-      {supportedTokens.map((token) => (
-        <div className="form-group" key={token.id}>
-          <div className="form-check">
-            <input
-              type="checkbox"
-              className="form-check-input"
-              checked={acceptedTokenIds.includes(token.id)}
-              onChange={(e) => updateAcceptedTokens(token, e.target.checked)}
-            />
-            <label className="form-check-label">
-              {token.displayName
-                ? `${token.displayName} (${token.name})`
-                : token.name}
-            </label>
-          </div>
-        </div>
-      ))}
+      <div className="form-group">
+        {supportedTokens
+          .filter((t) => t.address)
+          .map((token) => (
+            <div key={token.id} className="form-check">
+              <label className="form-check-label">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  checked={acceptedTokenIds.includes(token.id)}
+                  onChange={(e) =>
+                    updateAcceptedTokens(token, e.target.checked)
+                  }
+                />
+                {token.displayName
+                  ? `${token.displayName} (${token.name})`
+                  : token.name}
+              </label>
+            </div>
+          ))}
+      </div>
     </div>
   )
 }

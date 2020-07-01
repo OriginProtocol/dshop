@@ -46,6 +46,7 @@ export const generateVariants = (product) => {
         name: comboTitle,
         price: product.price,
         image: product.image,
+        available: true,
 
         // Default to previous values if it exists
         ...existingVairants[optionCombo.join('|||')],

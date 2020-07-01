@@ -41,17 +41,21 @@ const EditVariants = ({ options, variants, media, onChange }) => {
               ))}
               <td>
                 <div className="form-group m-0">
-                  <input
-                    type="number"
-                    value={variant.price}
-                    className="form-control"
-                    disabled={!variant.available}
-                    onChange={(e) => {
-                      const updatedVariants = [...variants]
-                      updatedVariants[index].price = e.target.value
-                      onChange(updatedVariants)
-                    }}
-                  />
+                  <div className="input-group" style={{ maxWidth: 150 }}>
+                    <div className="input-group-prepend">
+                      <span className="input-group-text">$</span>
+                    </div>
+                    <input
+                      value={variant.price}
+                      className="form-control"
+                      disabled={!variant.available}
+                      onChange={(e) => {
+                        const updatedVariants = [...variants]
+                        updatedVariants[index].price = e.target.value
+                        onChange(updatedVariants)
+                      }}
+                    />
+                  </div>
                 </div>
               </td>
               <td>
@@ -78,9 +82,7 @@ export default EditVariants
 require('react-styl')(`
   .edit-variants
     margin: 2rem 0
-
     th, td
       white-space: nowrap
       max-width: 150px
-
 `)

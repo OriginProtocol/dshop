@@ -57,16 +57,18 @@ const LinkCollections = ({ selectedValues, onChange }) => {
 
   return (
     <div className="link-collections">
-      <div className="form-group">
+      <div className={`form-group${collections.length >= 20 ? '' : ' mb-0'}`}>
         <label>Collections</label>
-        <input
-          value={searchVal}
-          onChange={(e) => setSearchVal(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
-          placeholder="Search collections"
-          className="form-control"
-          type="text"
-        />
+        {collections.length < 20 ? null : (
+          <input
+            value={searchVal}
+            onChange={(e) => setSearchVal(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
+            placeholder="Search collections"
+            className="form-control"
+            type="text"
+          />
+        )}
         {searchResults.length === 0 ? null : (
           <div className="search-results">
             {loading ? (
