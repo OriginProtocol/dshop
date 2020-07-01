@@ -27,7 +27,6 @@ const Onboarding = () => {
       config.youtube)
   )
 
-
   const web3Enabled = !!get(shopConfig, 'web3Pk')
 
   const taskset1 = [
@@ -40,7 +39,8 @@ const Onboarding = () => {
     },
     {
       id: 'payment_options',
-      completed: get(config, 'paymentMethods.length', 0) > (web3Enabled ? 1 : 0),
+      completed:
+        get(config, 'paymentMethods.length', 0) > (web3Enabled ? 1 : 0),
       icon: <Icons.Card />,
       name: 'Set up your payment options',
       link: '/admin/settings/payments'

@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useState, useRef } from 'react'
+import React, { useReducer, useEffect, useState } from 'react'
 import get from 'lodash/get'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
@@ -66,12 +66,13 @@ const ShopAppearance = () => {
 
   useEffect(() => {
     if (config.about) {
-      fetch(`${config.dataSrc}${config.about}`).then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch')
-        return res.text()
-      })
+      fetch(`${config.dataSrc}${config.about}`)
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to fetch')
+          return res.text()
+        })
         .then((body) => setAboutText(body), 2000)
-        .catch(err => {
+        .catch((err) => {
           console.error('Failed to load about page', err)
         })
     }
@@ -269,7 +270,10 @@ const ShopAppearance = () => {
               </span>
             </label>
             {/* <textarea style={{ minHeight: '20vh' }} {...input('about')} /> */}
-            <CKEditor data={aboutText} onChange={e => setAboutText(e.editor.getData())} />
+            <CKEditor
+              data={aboutText}
+              onChange={(e) => setAboutText(e.editor.getData())}
+            />
           </div>
           <div className="form-group">
             <label>

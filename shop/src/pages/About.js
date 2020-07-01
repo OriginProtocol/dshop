@@ -11,15 +11,17 @@ const About = () => {
   useEffect(() => {
     if (config.about) {
       setLoading(true)
-      fetch(`${config.dataSrc}${config.about}`).then((res) => {
-        setLoading(false)
-        if (res.ok) {
-          res.text().then((body) => setAbout(body))
-        }
-      }).catch(err => {
-        console.error('Failed to load about page', err)
-        setLoading(false)
-      })
+      fetch(`${config.dataSrc}${config.about}`)
+        .then((res) => {
+          setLoading(false)
+          if (res.ok) {
+            res.text().then((body) => setAbout(body))
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to load about page', err)
+          setLoading(false)
+        })
     }
   }, [config.about])
 

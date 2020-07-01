@@ -100,7 +100,11 @@ export const Card = () => (
 
 export const Email = () => (
   <svg className="icon icon-email" viewBox="0 0 40 30">
-    <path fill="#FEC100" fillRule="evenodd" d="M0 30h40V0H0v30zM4.137 3.333h31.725L20 16.188 4.137 3.333zm32.53 3.639v19.695H3.333V6.972L20 20.478 36.667 6.972z"/>
+    <path
+      fill="#FEC100"
+      fillRule="evenodd"
+      d="M0 30h40V0H0v30zM4.137 3.333h31.725L20 16.188 4.137 3.333zm32.53 3.639v19.695H3.333V6.972L20 20.478 36.667 6.972z"
+    />
   </svg>
 )
 
