@@ -10,23 +10,26 @@ function useAuth(opts = {}) {
   const { get, post } = useBackendApi()
 
   useEffect(() => {
-    async function fetchAuth() {
+    let isSubscribed = true
+    if (!auth && (opts.only === undefined || opts.only)) {
       setLoading(true)
 
       get('/auth', { suppressError: true })
         .then((auth) => {
-          dispatch({ type: 'setAuth', auth })
+          if (!isSubscribed) return
           if (_get(auth, 'success')) {
             localStorage.isAdmin = true
           }
           setLoading(false)
+          dispatch({ type: 'setAuth', auth })
         })
         .catch(() => {
+          if (!isSubscribed) return
           setError(true)
         })
     }
-    if (!auth && (opts.only === undefined || opts.only)) {
-      fetchAuth()
+    return function cleanup() {
+      isSubscribed = false
     }
   }, [reload.auth])
 

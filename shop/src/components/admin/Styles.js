@@ -56,13 +56,6 @@ require('react-styl')(`
           height: 16px
           margin-left: 10px
 
-      .user
-        color: #8293a4
-        font-size: 14px
-        svg
-          fill: #9faebd
-          margin-right: 0.5rem
-          vertical-align: -3px
     .table
       &.table-hover
         cursor: pointer
