@@ -112,7 +112,7 @@ const ShopAppearance = () => {
             const fileBody = new FormData()
             const aboutFile = new File([aboutText], ABOUT_FILENAME)
             fileBody.append('file', aboutFile)
-            await postRaw(`/shops/${localStorage.activeShop}/save-files`, {
+            await postRaw(`/shops/${config.activeShop}/save-files`, {
               body: fileBody
             })
           }
