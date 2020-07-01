@@ -1,7 +1,6 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
 
-import useAuth from 'utils/useAuth'
 import { useStateValue } from 'data/state'
 import Link from 'components/Link'
 import Menu from 'components/admin/Menu'
@@ -9,7 +8,6 @@ import * as Icons from 'components/icons/Admin'
 
 const AdminMenu = () => {
   const { pathname } = useLocation()
-  const { logout } = useAuth()
   const [{ admin }] = useStateValue()
   const active = (path) => (pathname.indexOf(path) === 0 ? 'active' : '')
 
@@ -59,18 +57,6 @@ const AdminMenu = () => {
           </Link>
         </li>
       )}
-      <li className="db">
-        <a
-          href="#logout"
-          onClick={(e) => {
-            e.preventDefault()
-            logout()
-          }}
-        >
-          <Icons.Logout />
-          Logout
-        </a>
-      </li>
     </Menu>
   )
 }

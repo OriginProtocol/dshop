@@ -6,8 +6,8 @@ import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 
 import AccountSelector from './_AccountSelector'
+import User from './_User'
 import NewShop from './_NewShop'
-import * as Icons from 'components/icons/Admin'
 
 const Nav = ({ newShop, setNewShop, superAdmin }) => {
   const [{ admin, storefrontLocation }, dispatch] = useStateValue()
@@ -50,10 +50,7 @@ const Nav = ({ newShop, setNewShop, superAdmin }) => {
             </a>
           </div>
         )}
-        <div className="user">
-          <Icons.User />
-          {admin.email}
-        </div>
+        <User />
       </div>
       <NewShop shouldShow={newShop} onClose={() => setNewShop(false)} />
     </nav>

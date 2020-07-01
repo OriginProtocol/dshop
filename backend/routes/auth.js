@@ -28,7 +28,7 @@ module.exports = function (app) {
     if (!user) {
       return res.json({ success: false, reason: 'no-such-user' })
     }
-    const { email, emailVerified } = user
+    const { email, emailVerified, name } = user
 
     const allNetworks = await Network.findAll()
     const networks = allNetworks.map((n) => {
@@ -106,6 +106,7 @@ module.exports = function (app) {
         networks,
         network,
         email,
+        name,
         localShops
       })
     }
@@ -113,6 +114,7 @@ module.exports = function (app) {
     const response = {
       success: true,
       email,
+      name,
       networks,
       network,
       shops,
