@@ -1,8 +1,10 @@
-import React, { useReducer, useEffect, useState } from 'react'
+import React, { useReducer, useEffect, useState, useRef } from 'react'
 import get from 'lodash/get'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
 import kebabCase from 'lodash/kebabCase'
+
+import CKEditor from 'ckeditor4-react'
 
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
@@ -35,8 +37,11 @@ const configFields = [
   'twitter',
   'instagram',
   'medium',
-  'youtube'
+  'youtube',
+  'about'
 ]
+
+const ABOUT_FILENAME = 'about.html'
 
 const ShopAppearance = () => {
   const { config } = useConfig()
@@ -49,14 +54,28 @@ const ShopAppearance = () => {
 
   const [saving, setSaving] = useState(false)
 
+  const [aboutText, setAboutText] = useState('')
+
   useEffect(() => {
     setState({
-      aboutStore: get(shopConfig, 'aboutStore'),
       domain: get(shopConfig, 'domain'),
       hostname: get(shopConfig, 'hostname'),
       ...pick(config, configFields)
     })
   }, [shopConfig, config])
+
+  useEffect(() => {
+    if (config.about) {
+      fetch(`${config.dataSrc}${config.about}`).then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch')
+        return res.text()
+      })
+        .then((body) => setAboutText(body), 2000)
+        .catch(err => {
+          console.error('Failed to load about page', err)
+        })
+    }
+  }, [config && config.about])
 
   return (
     <form
@@ -70,6 +89,12 @@ const ShopAppearance = () => {
 
         try {
           const shopConfig = pickBy(state, (v, k) => !k.endsWith('Error'))
+          if (aboutText) {
+            shopConfig.about = ABOUT_FILENAME
+          } else {
+            shopConfig.about = ''
+          }
+
           const shopConfigRes = await post('/shop/config', {
             method: 'PUT',
             body: JSON.stringify(shopConfig),
@@ -80,6 +105,15 @@ const ShopAppearance = () => {
             setState({ [`${shopConfigRes.field}Error`]: shopConfigRes.reason })
             setSaving(false)
             return
+          }
+
+          if (aboutText) {
+            const fileBody = new FormData()
+            const aboutFile = new File([aboutText], ABOUT_FILENAME)
+            fileBody.append('file', aboutFile)
+            await postRaw(`/shops/${localStorage.activeShop}/save-files`, {
+              body: fileBody
+            })
           }
 
           setSaving('ok')
@@ -234,7 +268,8 @@ const ShopAppearance = () => {
                 (visible on your About page to buyers browsing your store)
               </span>
             </label>
-            <textarea style={{ minHeight: '20vh' }} {...input('aboutStore')} />
+            {/* <textarea style={{ minHeight: '20vh' }} {...input('about')} /> */}
+            <CKEditor data={aboutText} onChange={e => setAboutText(e.editor.getData())} />
           </div>
           <div className="form-group">
             <label>

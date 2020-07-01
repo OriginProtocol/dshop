@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Origin Dshop Backend",
   "engines": {
-    "node": "10.x"
+    "node": ">=10.x"
   },
   "main": "index.js",
   "scripts": {

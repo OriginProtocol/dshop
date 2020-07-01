@@ -6206,6 +6206,14 @@ cipher-base@^1.0.0, cipher-base@^1.0.1, cipher-base@^1.0.3:
     inherits "^2.0.1"
     safe-buffer "^5.0.1"
 
+ckeditor4-react@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/ckeditor4-react/-/ckeditor4-react-1.1.1.tgz#4e106b50e82efdc1165a91fb5d6cdd06e9343fd4"
+  integrity sha512-QiqX7IheulPBNXNnVJ0mdhjISc2upNFp52Vqj6/BqeNqM1L2bOSTW2wK7zB+pMpuXlq/wB/naLVXvVcop7KE2w==
+  dependencies:
+    load-script "^1.0.0"
+    prop-types "^15.6.2"
+
 class-is@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/class-is/-/class-is-1.1.0.tgz#9d3c0fba0440d211d843cec3dedfa48055005825"
@@ -14560,6 +14568,11 @@ load-json-file@^5.3.0:
     pify "^4.0.1"
     strip-bom "^3.0.0"
     type-fest "^0.3.0"
+
+load-script@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/load-script/-/load-script-1.0.0.tgz#0491939e0bee5643ee494a7e3da3d2bac70c6ca4"
+  integrity sha1-BJGTngvuVkPuSUp+PaPSuscMbKQ=
 
 loader-runner@^2.4.0:
   version "2.4.0"
