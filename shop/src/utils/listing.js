@@ -98,10 +98,19 @@ export async function getListingLatestIpfsHash(
  *   Format is <network id>-<contract version>-<listing id>
  *   For example: 1-001-123
  */
-export async function createListing({ marketplace, title, config, signer }) {
+export async function createListing({
+  marketplace,
+  title,
+  config,
+  network,
+  signer
+}) {
   const address = signer.getAddress()
 
-  const bytes32Hash = await post(config.ipfsApi, { ...baseListing, title })
+  const bytes32Hash = await post(config.ipfsApi || network.ipfsApi, {
+    ...baseListing,
+    title
+  })
 
   const tx = await marketplace.createListing(bytes32Hash, 0, address)
   const receipt = await tx.wait()
