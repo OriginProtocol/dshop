@@ -1,9 +1,13 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 
+import get from 'lodash/get'
+
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
 import useProducts from 'utils/useProducts'
+
+import { useStateValue } from 'data/state'
 
 import * as Icons from 'components/icons/Admin'
 
@@ -11,6 +15,7 @@ const Onboarding = () => {
   const { config } = useConfig()
   const { shopConfig } = useShopConfig()
   const { products } = useProducts()
+  const [{ admin }] = useStateValue()
   const history = useHistory()
 
   const hasSocialLinks = !!(
@@ -22,10 +27,34 @@ const Onboarding = () => {
       config.youtube)
   )
 
+  const web3Enabled = !!get(shopConfig, 'web3Pk')
+
   const taskset1 = [
     {
+      id: 'setup_web3',
+      completed: web3Enabled,
+      icon: <Icons.Wallet />,
+      name: 'Setup a Web3 wallet',
+      link: '/admin/settings/payments'
+    },
+    {
+      id: 'payment_options',
+      completed:
+        get(config, 'paymentMethods.length', 0) > (web3Enabled ? 1 : 0),
+      icon: <Icons.Card />,
+      name: 'Set up your payment options',
+      link: '/admin/settings/payments'
+    },
+    {
+      id: 'verify_email',
+      completed: get(admin, 'emailVerified', false),
+      icon: <Icons.Email />,
+      name: 'Verify your email',
+      link: '/admin/settings/users'
+    },
+    {
       id: 'new_product',
-      completed: !!(products && products.length > 0),
+      completed: get(products, 'length', 0) > 0,
       icon: <Icons.Box />,
       name: 'Add your first product',
       link: '/admin/products/new'
@@ -35,7 +64,7 @@ const Onboarding = () => {
   const taskset2 = [
     {
       id: 'custom_domain',
-      completed: !!(shopConfig && shopConfig.domain),
+      completed: !!get(shopConfig, 'domain'),
       icon: <Icons.Globe />,
       name: 'Add a custom domain name',
       link: '/admin/settings'
@@ -49,7 +78,7 @@ const Onboarding = () => {
     },
     {
       id: 'store_info',
-      completed: !!(shopConfig && shopConfig.aboutStore),
+      completed: !!get(shopConfig, 'about'),
       icon: <Icons.Text />,
       name: 'Tell us a bit about your store',
       link: '/admin/settings'
@@ -104,7 +133,7 @@ const Onboarding = () => {
         </div>
       </div>
 
-      <div className="new-shop-tasks">
+      <div className="new-shop-tasks mt-5">
         <div className="subtitle">Get your store up and running</div>
         <div className="tasks-lists">
           {taskset2.map((task) => {

@@ -2,7 +2,7 @@ const generateVerificationCode = (publicUrl) => {
   const code = Math.random().toString(36).substring(2)
   const expires = Date.now() + 24 * 60 * 60 * 1000 // 24 hours
 
-  const verifyUrl = new URL(`${publicUrl}/sellers/verify-email`)
+  const verifyUrl = new URL(`${publicUrl}/verify-email`)
   verifyUrl.searchParams.set('code', code)
 
   return {

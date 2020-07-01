@@ -98,7 +98,7 @@ const AdminUsers = () => {
                 <td>{user.role}</td>
                 <td>
                   {user.emailVerified ? (
-                    'Yes'
+                    '✅'
                   ) : (
                     <>
                       {get(admin, 'email') === user.email ? (
@@ -112,7 +112,7 @@ const AdminUsers = () => {
                           Resend code
                         </a>
                       ) : (
-                        'No'
+                        '❌'
                       )}
                     </>
                   )}

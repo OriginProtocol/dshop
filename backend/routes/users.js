@@ -115,6 +115,8 @@ module.exports = function (app) {
           'verificationExpiresAt'
         ])
       })
+
+      return res.redirect('/#/admin/settings/users')
     }
 
     res.send(resp)

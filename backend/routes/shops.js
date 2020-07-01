@@ -692,6 +692,7 @@ module.exports = function (app) {
         'cartSummaryNote',
         'byline',
         'discountCodes',
+        'stripe',
         'stripeKey',
         'acceptedTokens',
         'title',
@@ -700,7 +701,8 @@ module.exports = function (app) {
         'twitter',
         'instagram',
         'medium',
-        'youtube'
+        'youtube',
+        'about'
       )
       let listingId
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
