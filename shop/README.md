@@ -4,7 +4,8 @@ An experimental decentralized e-commerce store served entirely from IPFS.
 
 ## Clone the repo
 
-    git clone git@github.com:OriginProtocol/dshop.git dshop cd dshop
+    git clone git@github.com:OriginProtocol/dshop.git dshop
+    cd dshop
 
 ## Configure the database
 
