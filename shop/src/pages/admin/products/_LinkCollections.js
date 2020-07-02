@@ -43,7 +43,7 @@ const LinkCollections = ({ selectedValues, onChange }) => {
   const { collections, loading } = useCollections()
 
   const searchResults = useMemo(() => {
-    if (!collections || loading) return []
+    if (!collections || !collections.length) return []
 
     const val = (searchVal || '').toLowerCase()
     if (val.trim().length === 0) return []
@@ -85,7 +85,7 @@ const LinkCollections = ({ selectedValues, onChange }) => {
         )}
       </div>
       <div className="selected-values">
-        {loading ? (
+        {loading && !collections.length ? (
           'Loading...'
         ) : (
           <CollectionItemCheckboxes

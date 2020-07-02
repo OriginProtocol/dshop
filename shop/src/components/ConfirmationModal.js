@@ -32,7 +32,7 @@ const AdminConfirmationModal = ({
           if (onError && !response.success) {
             setState({ doConfirm: false, loading: false })
             onError(response)
-          } else if (confirmedText === false) {
+          } else if (!confirmedText) {
             setState({ shouldClose: true, response })
           } else {
             setState({ response, confirmed: true })

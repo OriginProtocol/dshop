@@ -56,7 +56,13 @@ const TokenComponent = ({ values, onChange, validationError }) => {
   )
 }
 
-const EditOptions = ({ formState, setFormState, label, onRemove }) => {
+const EditOptions = ({
+  formState,
+  setFormState,
+  label,
+  onRemove,
+  placeholder
+}) => {
   const input = formInput(formState, (newState) => setFormState(newState))
   const Feedback = formFeedback(formState)
 
@@ -65,7 +71,7 @@ const EditOptions = ({ formState, setFormState, label, onRemove }) => {
       <>
         <div className="col-md-6">
           <label>{label}</label>
-          <input type="text" {...input('title')} />
+          <input type="text" {...input('title')} placeholder={placeholder} />
           {Feedback('title')}
         </div>
         <div className="col-md-6">

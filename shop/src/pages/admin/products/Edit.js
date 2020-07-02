@@ -265,7 +265,6 @@ const EditProduct = () => {
 
       dispatch({ type: 'reload', target: ['products', 'collections'] })
       dispatch({ type: 'hasChanges' })
-      history.push('/admin/products')
       return
     } catch (error) {
       console.error('Could not update the product', error)
@@ -292,7 +291,12 @@ const EditProduct = () => {
           Delete
         </DeleteButton>
       )}
-      <button className="btn btn-primary ml-2" type="submit">
+      <button
+        className={`btn btn-${
+          formState.hasChanges ? 'outline-' : ''
+        }primary ml-2`}
+        type="submit"
+      >
         Save
       </button>
     </div>
@@ -398,6 +402,13 @@ const EditProduct = () => {
                     <EditOption
                       key={index}
                       label={`Option ${index + 1}`}
+                      placeholder={
+                        index === 0
+                          ? 'eg Size'
+                          : index === 1
+                          ? 'eg Color'
+                          : null
+                      }
                       formState={{
                         title: option,
                         options: formState.availableOptions[index]

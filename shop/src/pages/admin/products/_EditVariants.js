@@ -10,8 +10,8 @@ const EditVariants = ({ options, variants, media, onChange }) => {
       <thead>
         <tr>
           <th>Available</th>
-          {options.map((opt) => (
-            <th key={`variant-opt-${opt}`}>{opt}</th>
+          {options.map((opt, idx) => (
+            <th key={`variant-opt-${opt || idx}`}>{opt}</th>
           ))}
           <th>Price</th>
           <th>Image</th>
