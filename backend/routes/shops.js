@@ -114,6 +114,10 @@ module.exports = function (app) {
       await downloadPrintfulMockups({ OutputDir })
       await resizePrintfulMockups({ OutputDir })
 
+      await req.shop.update({
+        hasChanges: true
+      })
+
       res.json({ success: true })
     }
   )
@@ -557,6 +561,10 @@ module.exports = function (app) {
             JSON.stringify(config, null, 2)
           )
 
+          await req.shop.update({
+            hasChanges: true
+          })
+
           res.json({ success: true, path: file.name })
         } catch (e) {
           log.error(e)
@@ -598,6 +606,10 @@ module.exports = function (app) {
             2
           )
         )
+
+        await req.shop.update({
+          hasChanges: true
+        })
 
         res.json({ success: true })
       } catch (e) {
@@ -771,6 +783,7 @@ module.exports = function (app) {
         req.shop.config
       )
       req.shop.config = newConfig
+      req.shop.hasChanges = true
       req.shop.save()
       return res.json({ success: true })
     }
@@ -917,6 +930,11 @@ module.exports = function (app) {
           dnsProvider
         }
         const { hash, domain } = await deployShop(deployOpts)
+
+        await req.shop.update({
+          hasChanges: false
+        })
+
         return res.json({ success: true, hash, domain, gateway: network.ipfs })
       } catch (e) {
         return res.json({ success: false, reason: e.message })
@@ -1089,6 +1107,10 @@ module.exports = function (app) {
           hostname: fqn
         })
       }
+
+      await req.shop.update({
+        hasChanges: true
+      })
 
       return res.json({ success: true, ipfsHash, names: hostnames })
     }

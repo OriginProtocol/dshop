@@ -17,6 +17,12 @@ module.exports = function (app) {
     async (req, res) => {
       const { product, status, error } = await upsertProduct(req.shop, req.body)
 
+      if (!error) {
+        await req.shop.update({
+          hasChanges: true
+        })
+      }
+
       return res.status(status).send({
         success: !error,
         reason: error,
@@ -34,6 +40,12 @@ module.exports = function (app) {
         req.shop,
         req.params.productId
       )
+
+      if (!error) {
+        await req.shop.update({
+          hasChanges: true
+        })
+      }
 
       return res.status(status).send({
         success: !error,

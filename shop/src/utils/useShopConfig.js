@@ -3,7 +3,7 @@ import memoize from 'lodash/memoize'
 import useConfig from 'utils/useConfig'
 
 const getShopConfig = memoize(
-  async function fetchOrder(backend, authToken) {
+  async function fetchShopConfig(backend, authToken) {
     const result = await fetch(`${backend}/config`, {
       credentials: 'include',
       headers: { authorization: `bearer ${authToken}` }

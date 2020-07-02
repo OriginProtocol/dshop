@@ -20,6 +20,11 @@ module.exports = function (app) {
           collectionsPath,
           JSON.stringify(collections, undefined, 2)
         )
+
+        await req.shop.update({
+          hasChanges: true
+        })
+
         res.send({ success: true })
       } catch (e) {
         res.json({ success: false })
@@ -54,6 +59,11 @@ module.exports = function (app) {
           collectionsPath,
           JSON.stringify(collections, undefined, 2)
         )
+
+        await req.shop.update({
+          hasChanges: true
+        })
+
         res.send({ success: true })
       } catch (e) {
         res.json({ success: false })

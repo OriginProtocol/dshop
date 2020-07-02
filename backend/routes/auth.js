@@ -65,6 +65,7 @@ module.exports = function (app) {
       'hostname',
       'listingId',
       'createdAt',
+      'hasChanges',
       'networkId'
     ]
     const include = { model: Seller, where: { id: user.id } }
@@ -229,7 +230,7 @@ module.exports = function (app) {
       success: true,
       config: {
         ...config,
-        ...pick(req.shop.dataValues, 'hostname')
+        ...pick(req.shop.dataValues, ['hostname', 'hasChanges'])
       }
     })
   })

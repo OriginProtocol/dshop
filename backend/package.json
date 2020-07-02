@@ -80,5 +80,8 @@
     "singleQuote": true,
     "proseWrap": "always",
     "trailingComma": "none"
+  },
+  "nodemonConfig": {
+    "ignore": ["data/**", "dist/**"] 
   }
 }
