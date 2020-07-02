@@ -226,12 +226,21 @@ module.exports = function (app) {
       // when the VM gets launched. It is then displayed to the operator on the deployment page
       // of the GCP console. We enforce the use of that password to prevent a malicious actor from
       // creating a super-admin account before the operator.
-      const gcpPassword = getGcpSuperAdminPassword()
+      let gcpPassword
+      try {
+        gcpPassword = getGcpSuperAdminPassword()
+      } catch (e) {
+        return res.status(500).json({
+          success: false,
+          message:
+            'An error occurred while fetching super-admin credentials. Please contact support.'
+        })
+      }
       if (req.body.password !== gcpPassword) {
         return res.status(401).json({
           success: false,
           message:
-            'Invalid password. Please use the superadmin password displayed on the GCP console.'
+            'Invalid password. Please use the super-admin password displayed on the GCP console.'
         })
       }
     }
