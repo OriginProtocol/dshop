@@ -17,34 +17,35 @@ function usePrice() {
   const [exchangeRates, setRates] = useState({})
   const { config } = useConfig()
 
-  useEffect(() => {
-    async function fetchExchangeRates() {
-      const json = await memoFetch(ratesUrl)
-      const acceptedTokens = config.acceptedTokens || []
+  async function fetchExchangeRates() {
+    const json = await memoFetch(ratesUrl)
+    const acceptedTokens = config.acceptedTokens || []
 
-      // Special case for COS as it's not in coingecko rates by contract address API
-      if (acceptedTokens.find((t) => t.id === 'token-COS')) {
-        const cosData = await memoFetch(cosUrl)
-        json.COS = 1 / get(cosData, '[0].current_price')
-      }
-
-      // Find tokens that don't have rates and look them up by contract address
-      const withoutRates = acceptedTokens.filter((token) => {
-        return !json[token.name] && token.address
-      })
-      if (withoutRates.length) {
-        const addresses = withoutRates.map((t) => t.address)
-        const url = `${ratesByContractUrl}&contract_addresses=${addresses}`
-        const ratesByContract = await memoFetch(url)
-        withoutRates.forEach(({ name, address }) => {
-          if (ratesByContract[address]) {
-            json[name] = 1 / ratesByContract[address].usd
-          }
-        })
-      }
-
-      setRates(json)
+    // Special case for COS as it's not in coingecko rates by contract address API
+    if (acceptedTokens.find((t) => t.id === 'token-COS')) {
+      const cosData = await memoFetch(cosUrl)
+      json.COS = 1 / get(cosData, '[0].current_price')
     }
+
+    // Find tokens that don't have rates and look them up by contract address
+    const withoutRates = acceptedTokens.filter((token) => {
+      return !json[token.name] && token.address
+    })
+    if (withoutRates.length) {
+      const addresses = withoutRates.map((t) => t.address)
+      const url = `${ratesByContractUrl}&contract_addresses=${addresses}`
+      const ratesByContract = await memoFetch(url)
+      withoutRates.forEach(({ name, address }) => {
+        if (ratesByContract[address]) {
+          json[name] = 1 / ratesByContract[address].usd
+        }
+      })
+    }
+
+    setRates(json)
+  }
+
+  useEffect(() => {
     if (!exchangeRates.ETH) {
       fetchExchangeRates()
     }
@@ -60,7 +61,7 @@ function usePrice() {
     return ((value * 1) / exchangeRates[token]).toFixed(2)
   }
 
-  return { exchangeRates, toTokenPrice, toFiatPrice }
+  return { exchangeRates, toTokenPrice, toFiatPrice, refetch: fetchExchangeRates }
 }
 
 export default usePrice
