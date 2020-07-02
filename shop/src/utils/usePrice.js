@@ -61,7 +61,12 @@ function usePrice() {
     return ((value * 1) / exchangeRates[token]).toFixed(2)
   }
 
-  return { exchangeRates, toTokenPrice, toFiatPrice, refetch: fetchExchangeRates }
+  return {
+    exchangeRates,
+    toTokenPrice,
+    toFiatPrice,
+    refetch: fetchExchangeRates
+  }
 }
 
 export default usePrice

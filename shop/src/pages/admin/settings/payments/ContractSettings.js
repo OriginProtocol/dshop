@@ -10,15 +10,14 @@ import CustomTokenModal from './_CustomTokenModal'
 const dedupArray = (arr, prop) => {
   const m = new Map()
 
-  return arr
-    .reduce((out, el) => {
-      if (m.has(el[prop])) {
-        return out
-      }
+  return arr.reduce((out, el) => {
+    if (m.has(el[prop])) {
+      return out
+    }
 
-      m.set(el[prop])
-      return [...out, el]
-    }, [])
+    m.set(el[prop])
+    return [...out, el]
+  }, [])
 }
 
 const ContractSettings = ({ state, setState, config }) => {
@@ -37,8 +36,7 @@ const ContractSettings = ({ state, setState, config }) => {
 
   const allTokensList = useMemo(() => {
     // Merge DefaultTokens and any custom tokens and return a deduplicated list of tokens
-      return dedupArray([...DefaultTokens, ...(state.acceptedTokens || [])], 'id')
-
+    return dedupArray([...DefaultTokens, ...(state.acceptedTokens || [])], 'id')
   }, [DefaultTokens, state.acceptedTokens])
 
   const updateAcceptedTokens = (tokenObj, selected) => {
@@ -122,9 +120,8 @@ const ContractSettings = ({ state, setState, config }) => {
       ))}
 
       <CustomTokenModal
-        onNewTokenAdded={tokenObj => updateAcceptedTokens(tokenObj, true)}
+        onNewTokenAdded={(tokenObj) => updateAcceptedTokens(tokenObj, true)}
       />
-
     </div>
   )
 }

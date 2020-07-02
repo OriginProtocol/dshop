@@ -26,8 +26,8 @@ const validate = (state) => {
 
   const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
 
-  return { 
-    valid, 
+  return {
+    valid,
     newState: {
       ...pickBy(state, (v, k) => !k.endsWith('Error')),
       ...newState
@@ -38,13 +38,14 @@ const validate = (state) => {
 const isTokenValid = async (tokenAddress) => {
   try {
     // Check if we can get price of token from CoinGecko
-    let url = 'https://api.coingecko.com/api/v3/simple/token_price/ethereum?vs_currencies=usd'
+    let url =
+      'https://api.coingecko.com/api/v3/simple/token_price/ethereum?vs_currencies=usd'
     url = url + '&contract_addresses=' + tokenAddress
 
     const resp = await fetch(url)
     const data = await resp.json()
 
-    return !Number.isNaN(data[tokenAddress].usd) 
+    return !Number.isNaN(data[tokenAddress].usd)
   } catch (err) {
     console.error(err)
     return false
@@ -80,11 +81,7 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
     }
 
     onNewTokenAdded({
-      ...pick(newState, [
-        'name',
-        'address',
-        'displayName'
-      ]),
+      ...pick(newState, ['name', 'address', 'displayName']),
       id: `token-${newState.name.toUpperCase()}`
     })
 
@@ -99,11 +96,13 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
 
   return (
     <>
-      <button 
+      <button
         className="btn btn-outline-primary"
         type="button"
         onClick={() => setState({ showModal: true })}
-      >+ Add custom token</button>
+      >
+        + Add custom token
+      </button>
       {!state.showModal ? null : (
         <Modal
           shouldClose={state.shouldClose}
@@ -116,7 +115,6 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
         >
           <div className="modal-body payment-method-modal">
             <h5>Add a custom ERC20 token</h5>
-
 
             <div className="form-group">
               <label>Token Symbol</label>
@@ -135,18 +133,18 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
             </div>
 
             {!state.testError ? null : (
-              <div className="alert alert-danger my-3">
-                {state.testError}
-              </div>
+              <div className="alert alert-danger my-3">{state.testError}</div>
             )}
 
             <div className="actions">
               <button
                 className="btn btn-outline-primary mr-2"
                 type="button"
-                onClick={() => setState({
-                  shouldClose: true
-                })}
+                onClick={() =>
+                  setState({
+                    shouldClose: true
+                  })
+                }
               >
                 Cancel
               </button>
@@ -156,9 +154,7 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
                 onClick={testAndAdd}
                 disabled={state.saving}
               >
-                {state.saving
-                  ? 'Adding...'
-                  : 'Add'}
+                {state.saving ? 'Adding...' : 'Add'}
               </button>
             </div>
           </div>
