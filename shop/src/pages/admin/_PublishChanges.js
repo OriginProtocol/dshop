@@ -1,13 +1,25 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
+import get from 'lodash/get'
+import useShopConfig from 'utils/useShopConfig'
 import { useStateValue } from 'data/state'
 import DeployButton from './settings/deployments/_DeployButton'
 
 const PublishChanges = () => {
-  const [{ hasChanges }] = useStateValue()
+  const [{ reload }] = useStateValue()
+  const { shopConfig, refetch } = useShopConfig()
+
+  useEffect(() => {
+    // Refetch config when a reload of products/collections is requested
+    refetch()
+  }, [reload, reload.products, reload.collections])
+
+  const hasChanges = get(shopConfig, 'hasChanges', false)
+
   if (!hasChanges) {
     return null
   }
+
   return (
     <div className="changes">
       <div>

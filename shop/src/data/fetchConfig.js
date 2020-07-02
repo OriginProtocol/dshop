@@ -1,7 +1,7 @@
 import ethers from 'ethers'
 
 import { NetworksByIdStr } from 'data/Networks'
-import supportedTokens from './supportedTokens'
+import DefaultTokens from './defaultTokens'
 
 const networks = {}
 try {
@@ -21,8 +21,6 @@ const net = localStorage.ognNetwork
 const activeNetwork = NetworksByIdStr[net] || NetworksByIdStr['localhost']
 const netId = String(activeNetwork.id)
 const contracts = networks[activeNetwork.idStr] || {}
-
-const DefaultTokens = supportedTokens
 
 let config
 

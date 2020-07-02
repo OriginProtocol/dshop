@@ -1,9 +1,24 @@
 import React, { useMemo, useEffect } from 'react'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
-import supportedTokens from 'data/supportedTokens'
+import DefaultTokens from 'data/defaultTokens'
 
 import CreateListing from './_CreateListing'
+
+import CustomTokenModal from './_CustomTokenModal'
+
+const dedupArray = (arr, prop) => {
+  const m = new Map()
+
+  return arr.reduce((out, el) => {
+    if (m.has(el[prop])) {
+      return out
+    }
+
+    m.set(el[prop])
+    return [...out, el]
+  }, [])
+}
 
 const ContractSettings = ({ state, setState, config }) => {
   const input = formInput(state, (newState) => setState(newState))
@@ -18,11 +33,16 @@ const ContractSettings = ({ state, setState, config }) => {
     return (state.acceptedTokens || []).map((t) => t.id)
   }, [state.acceptedTokens])
 
+  const allTokensList = useMemo(() => {
+    // Merge DefaultTokens and any custom tokens and return a deduplicated list of tokens
+    return dedupArray([...DefaultTokens, ...(state.acceptedTokens || [])], 'id')
+  }, [DefaultTokens, state.acceptedTokens])
+
   const updateAcceptedTokens = (tokenObj, selected) => {
     let acceptedTokens = [...state.acceptedTokens]
     if (selected) {
       acceptedTokens.push(tokenObj)
-      acceptedTokens = Array.from(new Set([...acceptedTokens, tokenObj]))
+      acceptedTokens = dedupArray([...acceptedTokens, tokenObj], 'id')
     } else {
       acceptedTokens = acceptedTokens.filter((t) => t.id !== tokenObj.id)
     }
@@ -81,7 +101,7 @@ const ContractSettings = ({ state, setState, config }) => {
 
       <label>Accepted Tokens</label>
       <div className="form-group">
-        {supportedTokens
+        {allTokensList
           .filter((t) => t.address)
           .map((token) => (
             <div key={token.id} className="form-check">
@@ -101,6 +121,10 @@ const ContractSettings = ({ state, setState, config }) => {
             </div>
           ))}
       </div>
+
+      <CustomTokenModal
+        onNewTokenAdded={(tokenObj) => updateAcceptedTokens(tokenObj, true)}
+      />
     </div>
   )
 }

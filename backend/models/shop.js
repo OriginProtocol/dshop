@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
       password: DataTypes.STRING,
       config: DataTypes.TEXT,
       firstBlock: DataTypes.INTEGER,
-      lastBlock: DataTypes.INTEGER
+      lastBlock: DataTypes.INTEGER,
+      hasChanges: DataTypes.BOOLEAN
     },
     {
       underscored: true,
