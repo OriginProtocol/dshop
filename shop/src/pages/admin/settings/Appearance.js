@@ -272,6 +272,30 @@ const ShopAppearance = () => {
             {/* <textarea style={{ minHeight: '20vh' }} {...input('about')} /> */}
             <CKEditor
               data={aboutText}
+              config={{
+                toolbar: [
+                  { name: 'styles', items: ['Format'] },
+                  {
+                    name: 'basicstyles',
+                    items: ['Bold', 'Italic', '-', 'RemoveFormat']
+                  },
+                  {
+                    name: 'paragraph',
+                    items: [
+                      'NumberedList',
+                      'BulletedList',
+                      '-',
+                      'Outdent',
+                      'Indent'
+                    ]
+                  },
+                  { name: 'links', items: ['Link', 'Unlink'] },
+                  {
+                    name: 'insert',
+                    items: ['Image', 'Table', 'HorizontalRule']
+                  }
+                ]
+              }}
               onChange={(e) => setAboutText(e.editor.getData())}
             />
           </div>

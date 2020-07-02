@@ -6,7 +6,13 @@ function reducer(state, newState) {
 
 let over = false
 
-const SortableTable = ({ items, onClick, children, onChange, labels }) => {
+const SortableTable = ({
+  items,
+  onClick,
+  children,
+  onChange,
+  labels = ['Name', 'Number of Products']
+}) => {
   const [state, setState] = useReducer(reducer, { items: [] })
   useEffect(() => {
     setState({ items })
@@ -36,13 +42,14 @@ const SortableTable = ({ items, onClick, children, onChange, labels }) => {
 
   return (
     <div
-      className={`sortable-table${isDragging ? '' : ' hoverable'}`}
+      className={`sortable-table${isDragging ? '' : ' hoverable'}${
+        onClick ? ' clickable' : ''
+      }`}
       onDragOver={(e) => e.preventDefault()}
+      style={{ gridTemplateColumns: labels.map(() => 'auto').join(' ') }}
     >
-      <div className="th">{labels ? labels[0] : 'Name'}</div>
-      <div className="th text-center">
-        {labels ? labels[1] : 'Number of Products'}
-      </div>
+      {labels[0] ? <div className="th">{labels[0]}</div> : null}
+      {labels[1] ? <div className="th text-center">{labels[1]}</div> : null}
       {sortedItems.map((item, idx) => {
         return (
           <div
@@ -70,7 +77,6 @@ export default SortableTable
 
 require('react-styl')(`
   .sortable-table
-    cursor: pointer
     display: grid
     grid-template-columns: auto auto
     .th
@@ -93,9 +99,11 @@ require('react-styl')(`
       &.dragging
         .td
           color: transparent
-    &.hoverable
+    &.clickable
+      cursor: pointer
       .grid-row:hover .td
         background-color: #f3f8ff
+    &.hoverable
       .title:hover
         .reorder
           visibility: visible

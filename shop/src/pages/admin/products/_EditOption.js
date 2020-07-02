@@ -56,7 +56,13 @@ const TokenComponent = ({ values, onChange, validationError }) => {
   )
 }
 
-const EditOptions = ({ formState, setFormState, label, onRemove }) => {
+const EditOptions = ({
+  formState,
+  setFormState,
+  label,
+  onRemove,
+  placeholder
+}) => {
   const input = formInput(formState, (newState) => setFormState(newState))
   const Feedback = formFeedback(formState)
 
@@ -65,7 +71,7 @@ const EditOptions = ({ formState, setFormState, label, onRemove }) => {
       <>
         <div className="col-md-6">
           <label>{label}</label>
-          <input type="text" {...input('title')} />
+          <input type="text" {...input('title')} placeholder={placeholder} />
           {Feedback('title')}
         </div>
         <div className="col-md-6">
@@ -94,12 +100,10 @@ export default EditOptions
 require('react-styl')(`
   .edit-product-option
     margin-bottom: 1rem
-
     .remove-link
       font-size: 0.8rem
       padding: 0
       margin-bottom: 0.625rem
-
 
   .option-token-comp
     border-radius: 5px
@@ -107,10 +111,8 @@ require('react-styl')(`
     background-color: #fafbfc
     padding: 6px
     min-height: 80px
-
     display: flex
     flex-wrap: wrap
-
     cursor: text
 
     &.is-invalid
@@ -130,10 +132,8 @@ require('react-styl')(`
       font-size: 0.75rem
       cursor: pointer
       margin: 5px
-
       display: flex
-      align-items: center;
-
+      align-items: center
       .remove-icon
         border-left: solid 1px #3b80ee
         margin-left: 0.5rem

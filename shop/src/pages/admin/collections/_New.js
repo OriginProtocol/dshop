@@ -39,7 +39,7 @@ const AdminCreateCollection = ({ className = '', children, onSuccess }) => {
       className={children ? className : `btn btn-primary px-4 ${className}`}
       buttonText={<>{children || 'Add Collection'}</>}
       confirmText="Add a Collection"
-      confirmedText="Collection created"
+      confirmedText={false}
       proceedText="Add"
       cancelText="Cancel"
       onConfirm={() => {

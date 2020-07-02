@@ -55,8 +55,10 @@ function validate(state, { hasOptions }) {
     newState.descriptionError = 'Description is required'
   }
 
-  if (!state.price || !state.price < 0) {
+  if (!state.price || state.price < 0) {
     newState.priceError = 'Price is required'
+  } else if (!String(state.price).match(/^[0-9]+(\.[0-9]{1,2})?$/)) {
+    newState.priceError = 'Invalid price'
   }
 
   if (hasOptions) {
@@ -155,10 +157,10 @@ const EditProduct = () => {
     if (product) {
       const newFormState = {
         ...product,
-        price: product.price / 100,
+        price: (product.price / 100).toFixed(2),
         variants: (product.variants || []).map((variant) => ({
           ...variant,
-          price: variant.price / 100
+          price: (variant.price / 100).toFixed(2)
         }))
       }
 
@@ -263,7 +265,6 @@ const EditProduct = () => {
 
       dispatch({ type: 'reload', target: ['products', 'collections'] })
       dispatch({ type: 'hasChanges' })
-      history.push('/admin/products')
       return
     } catch (error) {
       console.error('Could not update the product', error)
@@ -290,7 +291,12 @@ const EditProduct = () => {
           Delete
         </DeleteButton>
       )}
-      <button className="btn btn-primary ml-2" type="submit">
+      <button
+        className={`btn btn-${
+          formState.hasChanges ? 'outline-' : ''
+        }primary ml-2`}
+        type="submit"
+      >
         Save
       </button>
     </div>
@@ -347,7 +353,7 @@ const EditProduct = () => {
                       <div className="input-group-prepend">
                         <span className="input-group-text">$</span>
                       </div>
-                      <input type="number" {...input('price')} />
+                      <input {...input('price')} />
                     </div>
                     {Feedback('price')}
                   </div>
@@ -359,12 +365,11 @@ const EditProduct = () => {
                     <input type="text" {...input('sku')} />
                     {Feedback('sku')}
                   </div>
-
-                  <div className="form-group">
+                  {/* <div className="form-group">
                     <label>Quantity</label>
                     <input type="number" {...input('quantity')} />
                     {Feedback('quantity')}
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
@@ -397,6 +402,13 @@ const EditProduct = () => {
                     <EditOption
                       key={index}
                       label={`Option ${index + 1}`}
+                      placeholder={
+                        index === 0
+                          ? 'eg Size'
+                          : index === 1
+                          ? 'eg Color'
+                          : null
+                      }
                       formState={{
                         title: option,
                         options: formState.availableOptions[index]

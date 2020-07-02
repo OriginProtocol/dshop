@@ -60,7 +60,6 @@ const ShowCollection = () => {
       {collection.products.length ? (
         <SortableTable
           items={collection.products}
-          onClick={() => {}}
           onChange={(products) => {
             post(`/collections/${collection.id}`, {
               body: JSON.stringify({
@@ -70,7 +69,7 @@ const ShowCollection = () => {
               method: 'PUT'
             })
           }}
-          labels={['Product', 'Image']}
+          labels={['Product']}
         >
           {(product, DragTarget) => {
             const src = product.image
@@ -81,13 +80,11 @@ const ShowCollection = () => {
                 <div className="td title">
                   <div className="draggable-content" draggable>
                     <DragTarget />
+                    {!src ? null : (
+                      <img className="linked-product-image" src={src} />
+                    )}
                     {product.title}
                   </div>
-                </div>
-                <div className="td justify-content-center">
-                  {!src ? null : (
-                    <img className="linked-product-image" src={src} />
-                  )}
                 </div>
               </>
             )

@@ -502,8 +502,15 @@ module.exports = function (app) {
         try {
           for (const file of allFiles) {
             await new Promise((resolve, reject) => {
-              mv(file.path, `${uploadDir}/${file.name}`, (err) => {
-                return err ? reject(err) : resolve()
+              fs.stat(file.path, (err, fstat) => {
+                if (err) return reject(err)
+                if (!fstat.isFile()) {
+                  return reject(`${file.path} does not exist or is not a file`)
+                }
+
+                mv(file.path, `${uploadDir}/${file.name}`, (err) => {
+                  return err ? reject(err) : resolve()
+                })
               })
             })
           }
@@ -539,14 +546,24 @@ module.exports = function (app) {
         }
 
         const { file } = files
+        if (!file) {
+          return res.json({ success: false, reason: 'no-file' })
+        }
         if (Array.isArray(file)) {
           return res.json({ success: false, reason: 'too-many-files' })
         }
 
         try {
           await new Promise((resolve, reject) => {
-            mv(file.path, `${uploadDir}/${file.name}`, (err) => {
-              return err ? reject(err) : resolve()
+            fs.stat(file.path, (err, fstat) => {
+              if (err) return reject(err)
+              if (!fstat.isFile()) {
+                return reject(`${file.path} does not exist or is not a file`)
+              }
+
+              mv(file.path, `${uploadDir}/${file.name}`, (err) => {
+                return err ? reject(err) : resolve()
+              })
             })
           })
 
