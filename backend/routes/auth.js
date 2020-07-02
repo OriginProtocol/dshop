@@ -1,3 +1,4 @@
+const fetch = require('node-fetch')
 const fs = require('fs')
 const get = require('lodash/get')
 const omit = require('lodash/omit')
@@ -13,6 +14,30 @@ const {
 const { createSeller, numSellers } = require('../utils/sellers')
 const encConf = require('../utils/encryptedConfig')
 const { DSHOP_CACHE } = require('../utils/const')
+
+const { getLogger } = require('../utils/logger')
+const log = getLogger('routes.auth')
+
+/**
+ * Utility function. Gets the secure random password automatically generated
+ * during the GCP marketplace deployment of the instance.
+ * See https://cloud.google.com/marketplace/docs/partners/vm/build-vm-image#creating_authorization_credentials
+ * @private
+ */
+async function getGcpSuperAdminPassword() {
+  const url = 'http://metadata/computeMetadata/v1/instance/attributes/DSHOP_SUPERADMIN_PASSWORD'
+  const res = await fetch(url, {
+    headers: { 'Metadata-Flavor': 'Google', },
+    method: 'GET'
+  })
+  if (!res.ok) {
+    log.error(`GET ${url} returned ${res}`)
+    throw new Error(`Failed fetching GCP super-admin credentials.`)
+  }
+  const password = await res.text()
+  return password
+}
+
 
 module.exports = function (app) {
   app.get('/auth', async (req, res) => {
@@ -185,12 +210,29 @@ module.exports = function (app) {
 
   app.post('/auth/logout', logoutHandler)
 
+  /**
+   * Creates a super admin account.
+   * Called during initial onboarding flow for standing up the system.
+   */
   app.post('/auth/registration', async (req, res) => {
     if ((await numSellers()) > 0) {
       return res.status(409).json({
         success: false,
         message: 'An initial user has already been setup'
       })
+    }
+    if (process.env.GCP_MARKETPLACE_DEPLOYMENT) {
+      // In the case of GCP marketplace deployment, the super-admin password is auto-generated
+      // when the VM gets launched. It is then displayed to the operator on the deployment page
+      // of the GCP console. We enforce the use of that password to prevent a malicious actor from
+      // creating a super-admin account before the operator.
+      const gcpPassword = getGcpSuperAdminPassword()
+      if (body.password !== gcpPassword) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid password. Please use the superadmin password displayed on the GCP console.'
+        })
+      }
     }
 
     const { seller, status, error } = await createSeller(req.body, {
