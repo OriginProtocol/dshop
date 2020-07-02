@@ -25,9 +25,10 @@ const log = getLogger('routes.auth')
  * @private
  */
 async function getGcpSuperAdminPassword() {
-  const url = 'http://metadata/computeMetadata/v1/instance/attributes/DSHOP_SUPERADMIN_PASSWORD'
+  const url =
+    'http://metadata/computeMetadata/v1/instance/attributes/DSHOP_SUPERADMIN_PASSWORD'
   const res = await fetch(url, {
-    headers: { 'Metadata-Flavor': 'Google', },
+    headers: { 'Metadata-Flavor': 'Google' },
     method: 'GET'
   })
   if (!res.ok) {
@@ -37,7 +38,6 @@ async function getGcpSuperAdminPassword() {
   const password = await res.text()
   return password
 }
-
 
 module.exports = function (app) {
   app.get('/auth', async (req, res) => {
@@ -227,10 +227,11 @@ module.exports = function (app) {
       // of the GCP console. We enforce the use of that password to prevent a malicious actor from
       // creating a super-admin account before the operator.
       const gcpPassword = getGcpSuperAdminPassword()
-      if (body.password !== gcpPassword) {
+      if (req.body.password !== gcpPassword) {
         return res.status(401).json({
           success: false,
-          message: 'Invalid password. Please use the superadmin password displayed on the GCP console.'
+          message:
+            'Invalid password. Please use the superadmin password displayed on the GCP console.'
         })
       }
     }
