@@ -14,13 +14,32 @@ const backendUrl = REDIS_URL ? REDIS_URL : undefined
 const queueOpts = {}
 
 const all = [
-  new Queue('makeOffer', backendUrl, queueOpts),
-  new Queue('download', backendUrl, queueOpts),
-  new Queue('discord', backendUrl, queueOpts),
+  new Queue(
+    'makeOffer',
+    backendUrl,
+    Object.assign(queueOpts, {
+      prefix: '{makeOffer}'
+    })
+  ),
+  new Queue(
+    'download',
+    backendUrl,
+    Object.assign(queueOpts, {
+      prefix: '{download}'
+    })
+  ),
+  new Queue(
+    'discord',
+    backendUrl,
+    Object.assign(queueOpts, {
+      prefix: '{discord}'
+    })
+  ),
   new Queue(
     'email',
     backendUrl,
     Object.assign(queueOpts, {
+      prefix: '{email}',
       maxStalledCount: 0 // We don't want to risk sending an email twice
     })
   )
