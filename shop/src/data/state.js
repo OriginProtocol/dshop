@@ -7,7 +7,7 @@ import pick from 'lodash/pick'
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 
-import { Countries } from 'data/Countries'
+import { Countries } from '@origin/utils/Countries'
 
 import fbTrack from './fbTrack'
 

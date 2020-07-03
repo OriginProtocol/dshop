@@ -787,12 +787,14 @@ module.exports = function (app) {
         await deregisterStripeWebhooks(existingConfig)
         stripeOpts.stripeWebhookSecret = ''
         stripeOpts.stripeBackend = ''
-      } else if (req.body.stripe) {
+      } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
         const { secret } = await registerStripeWebhooks(
           req.body,
           existingConfig
         )
         stripeOpts.stripeWebhookSecret = secret
+      } else if (req.body.stripeWebhookSecret) {
+        stripeOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
       }
 
       const newConfig = setConfig(

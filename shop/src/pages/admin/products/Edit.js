@@ -13,7 +13,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import { generateVariants } from 'utils/generateVariants'
 
 import fetchProduct from 'data/fetchProduct'
-import { Countries } from 'data/Countries'
+import { Countries } from '@origin/utils/Countries'
 
 import ImagePicker from 'components/ImagePicker'
 import DeleteButton from './_Delete'

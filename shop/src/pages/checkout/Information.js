@@ -6,7 +6,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useSetState from 'utils/useSetState'
 import { useStateValue } from 'data/state'
-import { Countries } from 'data/Countries'
+import { Countries } from '@origin/utils/Countries'
 
 import Link from 'components/Link'
 import ShippingForm from 'components/ShippingForm'

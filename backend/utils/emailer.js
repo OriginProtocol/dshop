@@ -21,6 +21,9 @@ const orderItemTxt = require('./templates/orderItemTxt')
 const verifyEmail = require('./templates/verifyEmail')
 const verifyEmailTxt = require('./templates/verifyEmailTxt')
 
+const pritnfulOrderFailed = require('./templates/printfulOrderFailed')
+const pritnfulOrderFailedTxt = require('./templates/pritnfulOrderFailedTxt')
+
 const log = getLogger('utils.emailer')
 
 function formatPrice(num) {
@@ -290,4 +293,68 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
   })
 }
 
-module.exports = { sendNewOrderEmail, sendVerifyEmail }
+async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
+  const config = await encConf.dump(shopId)
+  if (!config.email || config.email === 'disabled') {
+    log.debug('Emailer disabled. Skipping sending email.')
+    return
+  }
+  if (process.env.NODE_ENV === 'test') {
+    log.info('Test environment. Email will be generated but not sent.')
+    skip = true
+  }
+
+  const dataURL = config.dataUrl
+  const publicURL = config.publicUrl
+
+  const data = await getSiteConfig(dataURL)
+
+  const transporter = getEmailTransporter(config)
+
+  const cart = orderData.data
+
+  const vars = {
+    head,
+    supportEmail: SUPPORT_EMAIL_OVERRIDE || 'dshop@originprotocol.com',
+    message: opts ? opts.message : '',
+    orderUrlAdmin: `${publicURL}/admin/orders/${cart.offerId}`,
+    siteName: data.fullTitle || data.title
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    vars.supportEmail = process.env.SUPPORT_EMAIL || vars.supportEmail
+  }
+
+  const htmlOutput = mjml2html(pritnfulOrderFailed(vars), { minify: true })
+
+  const txtOutput = pritnfulOrderFailedTxt(vars)
+
+  const message = {
+    from: vars.supportEmail,
+    to: vars.supportEmail,
+    subject: 'Failed to create order on Printful',
+    html: htmlOutput.html,
+    text: txtOutput
+  }
+
+  if (skip) return message
+
+  return new Promise((resolve) => {
+    transporter.sendMail(message, (err, msg) => {
+      if (err) {
+        log.error('Error sending email', err)
+      } else {
+        log.debug(msg.envelope)
+        log.debug(msg)
+      }
+
+      resolve(message)
+    })
+  })
+}
+
+module.exports = {
+  sendNewOrderEmail,
+  sendVerifyEmail,
+  sendPrintfulOrderFailedEmail
+}
