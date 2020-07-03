@@ -222,13 +222,13 @@ module.exports = function (app) {
       })
     }
     if (process.env.GCP_MARKETPLACE_DEPLOYMENT) {
-      // In the case of GCP marketplace deployment, the super-admin password is auto-generated
+      // In the case of a GCP marketplace deployment, the super-admin password is auto-generated
       // when the VM gets launched. It is then displayed to the operator on the deployment page
       // of the GCP console. We enforce the use of that password to prevent a malicious actor from
       // creating a super-admin account before the operator.
       let gcpPassword
       try {
-        gcpPassword = getGcpSuperAdminPassword()
+        gcpPassword = await getGcpSuperAdminPassword()
       } catch (e) {
         return res.status(500).json({
           success: false,
