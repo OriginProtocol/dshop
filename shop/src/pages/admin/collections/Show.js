@@ -1,7 +1,11 @@
-import React, { useMemo, useEffect } from 'react'
+import React, { useReducer, useEffect } from 'react'
 import { useRouteMatch } from 'react-router-dom'
 
 import get from 'lodash/get'
+import pickBy from 'lodash/pickBy'
+
+import { useStateValue } from 'data/state'
+import { formInput, formFeedback } from 'utils/formHelpers'
 
 import DeleteButton from './_Delete'
 import Link from 'components/Link'
@@ -13,61 +17,138 @@ import useBackendApi from 'utils/useBackendApi'
 import SortableTable from 'components/SortableTable'
 import NoItems from 'components/NoItems'
 
+const reducer = (state, newState) => ({ ...state, ...newState })
+
+const validate = (state) => {
+  const newState = {}
+
+  if (!state.title) {
+    newState.titleError = 'Title is required'
+  }
+
+  const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
+
+  return {
+    valid,
+    newState: {
+      ...pickBy(state, (v, k) => !k.endsWith('Error')),
+      ...newState
+    }
+  }
+}
+
 const ShowCollection = () => {
+  const [, dispatch] = useStateValue()
   const { config } = useConfig()
-  const { collections, reload } = useCollections()
   const { products } = useProducts()
+  const { collections } = useCollections()
   const match = useRouteMatch('/admin/collections/:collectionId')
   const { collectionId } = match.params
 
   const { post } = useBackendApi({ authToken: true })
 
-  const collection = useMemo(() => {
-    if (!products || !collections || !products.length || !collections.length)
-      return null
+  const [state, setState] = useReducer(reducer, {
+    title: '',
+    products: []
+  })
+
+  const input = formInput(state, (newState) => setState(newState))
+  const Feedback = formFeedback(state)
+
+  useEffect(() => {
+    if (
+      !products ||
+      !collections ||
+      !products.length ||
+      !collections.length ||
+      state.collection
+    )
+      return
 
     const collection = collections.find((c) => c.id === collectionId)
 
-    return {
-      ...collection,
-      products: get(collection, 'products', []).map((pId) =>
-        products.find((p) => p.id === pId)
-      )
+    const mappedProducts = get(collection, 'products', [])
+      .map((pId) => products.find((p) => p.id === pId))
+      .filter((p) => !!p)
+
+    setState({
+      collection,
+      title: get(collection, 'title', ''),
+      products: mappedProducts
+    })
+  }, [collections, collectionId, products, state.collection])
+
+  const saveCollection = async () => {
+    const { valid, newState } = validate(state)
+    setState(newState)
+
+    if (!valid) return
+
+    setState({
+      saving: 'saving'
+    })
+
+    try {
+      await post(`/collections/${state.collection.id}`, {
+        body: JSON.stringify({
+          ...state.collection,
+          title: state.title,
+          products: state.products.map((p) => p.id)
+        }),
+        method: 'PUT'
+      })
+
+      dispatch({ type: 'reload', target: 'collections' })
+
+      setState({
+        saving: 'ok'
+      })
+
+      setTimeout(() => setState({ saving: false }), 2000)
+    } catch (err) {
+      console.error(err)
+      setState({ saving: false })
     }
-  }, [collections, collectionId, products])
+  }
 
-  // TODO: Should reload after save, but it adds unwanted jerkiness
-  useEffect(() => reload(), [])
-
-  if (!collection) {
+  if (!state.collection) {
     return 'Loading...'
   }
 
   return (
-    <>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        saveCollection()
+      }}
+    >
       <h3 className="admin-title with-border">
         <Link to="/admin/collections" className="muted">
           Collections
         </Link>
         <span className="chevron" />
-        {collection.title}
+        {state.title}
         <div className="actions ml-auto">
-          {!collection ? null : (
-            <DeleteButton className="mr-2" collection={collection} />
-          )}
+          <DeleteButton className="mr-2" collection={state.collection} />
+          <button className="btn btn-primary" disabled={state.saving}>
+            {state.saving === 'saving'
+              ? 'Saving...'
+              : state.saving === 'ok'
+              ? 'Saved ✅'
+              : 'Save'}
+          </button>
         </div>
       </h3>
-      {collection.products.length ? (
+      <div className="form-group">
+        <label>Collection Name</label>
+        <input {...input('title')} />
+        {Feedback('title')}
+      </div>
+      {state.products.length ? (
         <SortableTable
-          items={collection.products}
+          items={state.products}
           onChange={(products) => {
-            post(`/collections/${collection.id}`, {
-              body: JSON.stringify({
-                ...collection,
-                products: products.map((p) => p.id)
-              }),
-              method: 'PUT'
-            })
+            setState({ products })
           }}
           labels={['Product']}
         >
@@ -98,7 +179,7 @@ const ShowCollection = () => {
           buttonText="Add products to collection"
         />
       )}
-    </>
+    </form>
   )
 }
 

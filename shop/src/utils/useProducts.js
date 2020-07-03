@@ -32,6 +32,7 @@ function useProducts() {
         dispatch({ type: 'setProducts', products })
         setLoading(false)
       } catch (e) {
+        console.error(e)
         setError(true)
         setLoading(false)
       }

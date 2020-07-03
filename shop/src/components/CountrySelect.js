@@ -1,7 +1,7 @@
 import React from 'react'
 import sortBy from 'lodash/sortBy'
 
-import { Countries } from 'data/Countries'
+import { Countries } from '@origin/utils/Countries'
 
 const CountrySelect = ({ className, value, onChange }) => {
   const countries = sortBy(

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
-import { Countries } from 'data/Countries'
+import { Countries } from '@origin/utils/Countries'
 import formatPrice from 'utils/formatPrice'
 import useShippingZones from 'utils/useShippingZones'
 import useConfig from 'utils/useConfig'

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Countries, CountriesDefaultInfo } from 'data/Countries'
+import { Countries, CountriesDefaultInfo } from '@origin/utils/Countries'
 
 import CountrySelect from 'components/CountrySelect'
 import ProvinceSelect from 'components/ProvinceSelect'

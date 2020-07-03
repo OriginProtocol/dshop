@@ -31,8 +31,10 @@ function useCollections() {
     return () => (isSubscribed = false)
   }, [reload.collections, config.activeShop])
 
-  const reloadCollections = () =>
+  const reloadCollections = () => {
+    getCollections.cache.clear()
     dispatch({ type: 'reload', target: 'collections' })
+  }
 
   return { collections, loading, reload: reloadCollections }
 }

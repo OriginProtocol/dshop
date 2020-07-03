@@ -7,7 +7,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import formatPrice from 'utils/formatPrice'
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
-import { Countries } from 'data/Countries'
+import { Countries } from '@origin/utils/Countries'
 
 import Link from 'components/Link'
 

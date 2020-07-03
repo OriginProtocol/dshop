@@ -21,6 +21,7 @@
   "dependencies": {
     "@google-cloud/bigquery": "^5.0.0",
     "@google-cloud/dns": "^2.0.0",
+    "@origin/utils": "^0.1.0",
     "aws-sdk": "^2.680.0",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
@@ -82,6 +83,9 @@
     "trailingComma": "none"
   },
   "nodemonConfig": {
-    "ignore": ["data/**", "dist/**"] 
+    "ignore": [
+      "data/**",
+      "dist/**"
+    ]
   }
 }

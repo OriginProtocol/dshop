@@ -16,6 +16,7 @@ const { getConfig } = require('./encryptedConfig')
 const discordWebhook = require('./discordWebhook')
 const { Network, Order, Shop, ExternalPayment } = require('../models')
 const { getLogger } = require('../utils/logger')
+const { autoFulfillOrder } = require('../utils/printful')
 
 const log = getLogger('utils.handleLog')
 
@@ -274,6 +275,10 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
     }
     order = await Order.create(orderObj)
     log.info(`Saved order ${order.orderId} to DB.`)
+
+    if (shopConfig.printful) {
+      await autoFulfillOrder(order, shopConfig, shop)
+    }
   } catch (e) {
     log.error(e)
     // Record the error in the DB.
