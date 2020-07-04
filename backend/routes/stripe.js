@@ -7,6 +7,7 @@ const Stripe = require('stripe')
 const { Shop, ExternalPayment } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
+const { normalizeDescriptor } = require('../utils/stripe')
 const { getLogger } = require('../utils/logger')
 
 const makeOffer = require('./_makeOffer')
@@ -42,7 +43,7 @@ module.exports = function (app) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: req.body.amount,
       currency: 'usd',
-      statement_descriptor: req.shop.name,
+      statement_descriptor: normalizeDescriptor(req.shop.name),
       metadata: {
         shopId: req.shop.id,
         shopStr: req.shop.authToken,
