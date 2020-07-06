@@ -276,7 +276,7 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
     order = await Order.create(orderObj)
     log.info(`Saved order ${order.orderId} to DB.`)
 
-    if (shopConfig.printful) {
+    if (shopConfig.printful && shopConfig.printfulAutoFulfill) {
       await autoFulfillOrder(order, shopConfig, shop)
     }
   } catch (e) {

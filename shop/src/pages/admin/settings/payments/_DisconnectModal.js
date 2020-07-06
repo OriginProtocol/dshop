@@ -37,7 +37,8 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
             break
           case 'printful':
             updatedConfig = {
-              printful: ''
+              printful: '',
+              printfulAutoFulfill: false
             }
             break
           case 'sendgrid':

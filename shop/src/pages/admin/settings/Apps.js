@@ -127,6 +127,15 @@ const AppSettings = () => {
                 {processor.enabled ? (
                   <>
                     {processor.actions}
+                    <button
+                      className="btn btn-outline-primary mr-2"
+                      type="button"
+                      onClick={() => {
+                        setShowConnectModal(processor.id)
+                      }}
+                    >
+                      Configure
+                    </button>
                     <DisconnectModal
                       processor={processor}
                       afterDelete={() => refetch()}

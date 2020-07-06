@@ -1,5 +1,6 @@
 import React, { useReducer } from 'react'
 
+import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
@@ -9,7 +10,8 @@ import PasswordField from 'components/admin/PasswordField'
 const reducer = (state, newState) => ({ ...state, ...newState })
 
 const initialState = {
-  printful: ''
+  printful: '',
+  printfulAutoFulfill: false
 }
 
 const validate = (state) => {
@@ -30,8 +32,11 @@ const validate = (state) => {
   }
 }
 
-const PrintfulModal = ({ onClose }) => {
-  const [state, setState] = useReducer(reducer, initialState)
+const PrintfulModal = ({ onClose, initialConfig }) => {
+  const [state, setState] = useReducer(reducer, {
+    ...initialState,
+    ...pick(initialConfig, Object.keys(initialState))
+  })
 
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
@@ -51,6 +56,19 @@ const PrintfulModal = ({ onClose }) => {
         <label>Printful API Key</label>
         <PasswordField input={input} field="printful" />
         {Feedback('printful')}
+      </div>
+      <div className="form-check">
+        <label className="form-check-label">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            checked={state.printfulAutoFulfill}
+            onChange={(e) =>
+              setState({ printfulAutoFulfill: e.target.checked })
+            }
+          />
+          Auto-fulfill orders
+        </label>
       </div>
     </ConnectModal>
   )
