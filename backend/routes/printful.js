@@ -5,7 +5,8 @@ const {
   fetchOrder,
   placeOrder,
   confirmOrder,
-  fetchShippingEstimate
+  fetchShippingEstimate,
+  processShippedEvent
 } = require('../utils/printful')
 
 module.exports = function (app) {
@@ -51,5 +52,13 @@ module.exports = function (app) {
     const { status, ...resp } = await fetchShippingEstimate(apiKey, req.body)
 
     return res.status(status || 200).send(resp)
+  })
+
+  app.post('/printful-webhook', async (req, res) => {
+    const { data } = req.body
+
+    await processShippedEvent(data)
+
+    return res.status(200).end()
   })
 }

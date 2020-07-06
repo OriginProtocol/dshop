@@ -10,7 +10,9 @@ const { DSHOP_CACHE } = require('./const')
 
 const generatePrintfulOrder = require('@origin/utils/generatePrintfulOrder')
 
-const { sendPrintfulOrderFailedEmail } = require('./emailer')
+const { sendPrintfulOrderFailedEmail, sendNewOrderEmail } = require('./emailer')
+
+const { Order } = require('../models')
 
 const PrintfulURL = 'https://api.printful.com'
 
@@ -216,10 +218,109 @@ const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
   }
 }
 
+const registerPrintfulWebhook = async (shopConfig) => {
+  try {
+    const webhookHost = get(shopConfig, `publicUrl`)
+
+    const apiKey = shopConfig.printful
+    if (!apiKey) {
+      return
+    }
+
+    const apiAuth = Buffer.from(apiKey).toString('base64')
+
+    const url = `${PrintfulURL}/webhooks`
+
+    const webhookURL = `${webhookHost}/printful-webhook`
+
+    const registerData = {
+      url: webhookURL,
+      types: ['package_shipped']
+    }
+
+    const resp = await fetch(url, {
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Basic ${apiAuth}`
+      },
+      credentials: 'include',
+      method: 'POST',
+      body: JSON.stringify(registerData)
+    })
+
+    const respJSON = await resp.json()
+
+    if (resp.ok) {
+      log.info(`Registered printful webhook`, webhookURL, respJSON)
+    } else {
+      log.error('Failed to register printful webhook', respJSON)
+    }
+  } catch (err) {
+    log.error('Failed to register printful webhook', err)
+  }
+}
+
+const deregisterPrintfulWebhook = async (shopConfig) => {
+  try {
+    const apiKey = shopConfig.printful
+    if (!apiKey) {
+      return
+    }
+
+    const apiAuth = Buffer.from(apiKey).toString('base64')
+
+    const url = `${PrintfulURL}/webhooks`
+
+    await fetch(url, {
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Basic ${apiAuth}`
+      },
+      credentials: 'include',
+      method: 'DELETE'
+    })
+
+    log.info(`Deregistered printful webhook`)
+  } catch (err) {
+    log.error('Failed to deregister printful webhook', err)
+  }
+}
+
+const processShippedEvent = async (event) => {
+  try {
+    const { shipment, order } = event
+
+    const dbOrder = await Order.findOne({
+      where: {
+        orderId: order.external_id
+      }
+    })
+
+    if (!dbOrder) {
+      log.error('Invalid order, not found in DB', order)
+      return
+    }
+
+    await sendNewOrderEmail(dbOrder.shopId, dbOrder.data, {
+      trackingInfo: {
+        trackingNumber: shipment.tracking_number,
+        trackingUrl: shipment.tracking_url,
+        trackingService: shipment.service
+      },
+      skipVendorMail: true
+    })
+  } catch (err) {
+    log.error('Failed to process shipped event', err)
+  }
+}
+
 module.exports = {
   fetchOrder,
   placeOrder,
   confirmOrder,
   fetchShippingEstimate,
-  autoFulfillOrder
+  autoFulfillOrder,
+  registerPrintfulWebhook,
+  deregisterPrintfulWebhook,
+  processShippedEvent
 }
