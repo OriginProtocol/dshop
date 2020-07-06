@@ -18,6 +18,7 @@ function useWallet() {
   useEffect(() => {
     // Default to browser supplied provider
     if (window.ethereum) {
+      window.ethereum.autoRefreshOnNetworkChange = false
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()
       const mm = get(window, 'ethereum._metamask', {})
@@ -89,17 +90,22 @@ function useWallet() {
         return resolve(false)
       }
 
-      window.ethereum.enable().then((enabled) => {
-        if (enabled) {
-          // Short timeout to let MetaMask catch up
-          setTimeout(function () {
-            dispatch({ type: 'reload', target: 'provider' })
-            resolve(true)
-          }, 250)
-        } else {
+      window.ethereum
+        .enable()
+        .then((enabled) => {
+          if (enabled) {
+            // Short timeout to let MetaMask catch up
+            setTimeout(function () {
+              dispatch({ type: 'reload', target: 'provider' })
+              resolve(true)
+            }, 250)
+          } else {
+            resolve(false)
+          }
+        })
+        .catch(() => {
           resolve(false)
-        }
-      })
+        })
     })
   }
 

@@ -1,5 +1,7 @@
 - New merchant signup
--
+- Shipping settings
+- Create listing before publish
+- Error checking for crypto functions (correct account, network selected, has balance, etc)
 
 - Fix up Uphold payment method
 

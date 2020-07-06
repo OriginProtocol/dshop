@@ -112,7 +112,10 @@ export async function createListing({
     title
   })
 
-  const tx = await marketplace.createListing(bytes32Hash, 0, address)
+  return await marketplace.createListing(bytes32Hash, 0, address)
+}
+
+export async function waitForCreateListing(tx) {
   const receipt = await tx.wait()
 
   const listingCreated = receipt.events.find(

@@ -1,0 +1,11 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <linearGradient id="linearColors">
+    <stop offset="0%" stop-color="#fff"></stop>
+    <stop offset="100%" stop-color="#3b80ee"></stop>
+  </linearGradient>
+  <circle r="30" cx="32" cy="32" stroke-width="4" fill="none" stroke="url(#linearColors)">
+  </circle>
+
+  <animateTransform from="0,0,0" to="360,0,0" attributeName="transform" type="rotate" repeatCount="indefinite" dur="750ms">
+  </animateTransform>
+</svg>

@@ -182,3 +182,29 @@ export const Web3 = () => (
     />
   </svg>
 )
+
+export const Spinner = () => (
+  <svg width="64" height="64" viewBox="0 0 64 64">
+    <linearGradient id="linearColors">
+      <stop offset="0%" stopColor="#fff"></stop>
+      <stop offset="100%" stopColor="#3b80ee"></stop>
+    </linearGradient>
+    <circle
+      r="30"
+      cx="32"
+      cy="32"
+      strokeWidth="4"
+      fill="none"
+      stroke="url(#linearColors)"
+    />
+
+    <animateTransform
+      attributeName="transform"
+      type="rotate"
+      from="0,0,0"
+      to="360,0,0"
+      repeatCount="indefinite"
+      dur="750ms"
+    />
+  </svg>
+)

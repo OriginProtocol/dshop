@@ -58,6 +58,15 @@ const PaymentSettings = () => {
 
     return [
       {
+        id: 'web3',
+        title: 'Web3 Wallet',
+        description: web3Enabled
+          ? `Address: ${walletAddress}`
+          : 'You have not connected a wallet. This is where crypto payments will be sent.',
+        icon: <Icons.Web3 />,
+        enabled: web3Enabled
+      },
+      {
         id: 'stripe',
         title: 'Stripe',
         description: stripeEnabled
@@ -74,18 +83,24 @@ const PaymentSettings = () => {
           : 'Use Uphold to easily accept crypto payments in your shop.',
         icon: <Icons.Uphold />,
         enabled: upholdEnabled
-      },
-      {
-        id: 'web3',
-        title: 'Web3 Wallet',
-        description: web3Enabled
-          ? `Address: ${walletAddress}`
-          : 'You have not connected a wallet',
-        icon: <Icons.Web3 />,
-        enabled: web3Enabled
       }
     ]
   }, [shopConfig])
+
+  const actions = (
+    <>
+      <button type="button" className="btn btn-outline-primary mr-2">
+        Cancel
+      </button>
+      <button type="submit" className="btn btn-primary" disabled={saving}>
+        {saving === 'saving'
+          ? 'Updating...'
+          : saving === 'ok'
+          ? 'Updated ✅'
+          : 'Update'}
+      </button>
+    </>
+  )
 
   return (
     <form
@@ -120,18 +135,7 @@ const PaymentSettings = () => {
     >
       <h3 className="admin-title">
         Settings
-        <div className="actions ml-auto">
-          <button type="button" className="btn btn-outline-primary mr-2">
-            Cancel
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving === 'saving'
-              ? 'Updating...'
-              : saving === 'ok'
-              ? 'Updated ✅'
-              : 'Update'}
-          </button>
-        </div>
+        <div className="actions ml-auto">{actions}</div>
       </h3>
       <Tabs />
       <div className="admin-payment-settings shop-settings">
@@ -194,6 +198,7 @@ const PaymentSettings = () => {
           />
         )}
         <ContractSettings {...{ state, setState, config }} />
+        <div className="d-flex mt-4 justify-content-end">{actions}</div>
       </div>
     </form>
   )

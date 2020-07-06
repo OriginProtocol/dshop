@@ -3,7 +3,6 @@ import ethers from 'ethers'
 
 import useConfig from 'utils/useConfig'
 import useOrigin from 'utils/useOrigin'
-import useAcceptOffer from 'utils/useAcceptOffer'
 import IdentityProxyAbi from 'utils/abis/IdentityProxy'
 
 const useOfferData = (orderId) => {
@@ -13,10 +12,6 @@ const useOfferData = (orderId) => {
   const [sellerProxy, setSellerProxy] = useState()
   const { marketplace, provider, signer } = useOrigin()
   const splitOrder = orderId.split('-')
-  const [state, setState] = useState({ submit: 0, buttonText: 'Accept Offer' })
-  const onChange = (newState) => setState({ ...state, ...newState })
-
-  useAcceptOffer({ offerId: orderId, onChange, sellerProxy, ...state })
 
   useEffect(() => {
     if (!marketplace || !orderId) {

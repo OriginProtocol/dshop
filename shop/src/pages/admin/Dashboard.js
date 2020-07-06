@@ -138,9 +138,11 @@ const AdminDashboard = () => {
               <tr key={product.id}>
                 <td>
                   <div
-                    className="pic"
+                    className={`pic${product.image ? '' : ' empty'}`}
                     style={{
-                      backgroundImage: `url(${config.dataSrc}${product.id}/520/${product.image})`
+                      backgroundImage: product.image
+                        ? `url(${config.dataSrc}${product.id}/520/${product.image})`
+                        : null
                     }}
                   />
                 </td>

@@ -7,7 +7,6 @@ import { useStateValue } from 'data/state'
 import { NetworksById } from 'data/Networks'
 
 import Paginate from 'components/Paginate'
-import Link from 'components/Link'
 
 function networkName(shop) {
   const network = get(NetworksById, shop.networkId, {})
@@ -22,14 +21,7 @@ const AdminShops = () => {
 
   return (
     <>
-      <h3 className="admin-title">
-        Shops
-        <div className="ml-auto">
-          <Link to="/super-admin/shops/new" className="btn btn-primary">
-            Create shop
-          </Link>
-        </div>
-      </h3>
+      <h3 className="admin-title">Shops</h3>
       <table className="table admin-discounts table-hover">
         <thead>
           <tr>

@@ -57,12 +57,7 @@ const Web3Modal = ({ onClose }) => {
     >
       <div className="form-group">
         <label>Private Key</label>
-        <div className="input-group">
-          <div className="input-group-prepend">
-            <span className="input-group-text">0x</span>
-          </div>
-          <PasswordField input={input} field="web3Pk" />
-        </div>
+        <PasswordField input={input} field="web3Pk" prepend="0x" />
         {Feedback('web3Pk')}
       </div>
     </ConnectModal>

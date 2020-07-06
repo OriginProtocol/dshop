@@ -17,16 +17,20 @@ function useOrder(orderId) {
   const { config } = useConfig()
   const [loading, setLoading] = useState(false)
   const [order, setOrder] = useState()
-  const [{ admin }] = useStateValue()
+  const [{ admin, reload }] = useStateValue()
   const { backend, backendAuthToken } = config
 
   useEffect(() => {
     setLoading(true)
+    const orderKey = `order-${orderId}`
+    if (reload[orderKey]) {
+      getOrder.cache.delete(orderId)
+    }
     getOrder(admin, orderId, backend, backendAuthToken).then((order) => {
       setLoading(false)
       setOrder(order)
     })
-  }, [orderId])
+  }, [orderId, reload[`order-${orderId}`]])
 
   return { loading, order }
 }

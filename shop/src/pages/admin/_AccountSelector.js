@@ -24,7 +24,7 @@ const AutoWidthImg = ({ src }) => {
   )
 }
 
-const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
+const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
   const [shouldClose, setShouldClose] = useState(0)
   const { config, setActiveShop } = useConfig()
   const [{ admin }] = useStateValue()
@@ -83,8 +83,8 @@ const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
           <div
             className="shop-el bt"
             onClick={() => {
-              setShouldClose(shouldClose + 1)
               setActiveShop()
+              setShouldClose(shouldClose + 1)
               history.push({
                 pathname: `/super-admin/shops`,
                 state: { scrollToTop: true }
@@ -110,7 +110,7 @@ const ShopsDropdown = ({ onNewShop, forceTitle, superAdmin }) => {
   )
 }
 
-export default ShopsDropdown
+export default AccountSelector
 
 require('react-styl')(`
   .shop-title
