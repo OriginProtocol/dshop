@@ -218,6 +218,11 @@ const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
   }
 }
 
+const getPrintfulWebhookURL = () => {
+  const secret = process.env.PRINTFUL_WEBHOOK_SECRET
+  return `/printful-webhook${secret ? '-' + secret : ''}`
+}
+
 const registerPrintfulWebhook = async (shopConfig) => {
   try {
     const webhookHost = get(shopConfig, `publicUrl`)
@@ -231,7 +236,7 @@ const registerPrintfulWebhook = async (shopConfig) => {
 
     const url = `${PrintfulURL}/webhooks`
 
-    const webhookURL = `${webhookHost}/printful-webhook`
+    const webhookURL = `${webhookHost}${getPrintfulWebhookURL()}`
 
     const registerData = {
       url: webhookURL,
@@ -322,5 +327,6 @@ module.exports = {
   autoFulfillOrder,
   registerPrintfulWebhook,
   deregisterPrintfulWebhook,
-  processShippedEvent
+  processShippedEvent,
+  getPrintfulWebhookURL
 }
