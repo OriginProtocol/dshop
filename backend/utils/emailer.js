@@ -84,7 +84,7 @@ function getEmailTransporter(config) {
   return transporter
 }
 
-async function sendNewOrderEmail(shopId, cart, skip) {
+async function sendNewOrderEmail(shopId, cart, varsOverride, skip) {
   const config = await encConf.dump(shopId)
   if (!config.email || config.email === 'disabled') {
     log.debug('Emailer disabled. Skipping sending email.')
@@ -193,7 +193,8 @@ async function sendNewOrderEmail(shopId, cart, skip) {
     shippingAddress,
     billingAddress,
     shippingMethod: cart.shipping.label,
-    paymentMethod: cart.paymentMethod.label
+    paymentMethod: cart.paymentMethod.label,
+    ...varsOverride
   }
 
   const htmlOutputVendor = mjml2html(vendor(vars), { minify: true })
@@ -226,13 +227,16 @@ async function sendNewOrderEmail(shopId, cart, skip) {
         log.debug(msg.envelope)
       }
     })
-    transporter.sendMail(messageVendor, (err, msg) => {
-      if (err) {
-        log.error('Error sending merchant confirmation email:', err)
-      } else {
-        log.debug(msg.envelope)
-      }
-    })
+
+    if (!vars.skipVendorMail) {
+      transporter.sendMail(messageVendor, (err, msg) => {
+        if (err) {
+          log.error('Error sending merchant confirmation email:', err)
+        } else {
+          log.debug(msg.envelope)
+        }
+      })
+    }
   }
 
   return message

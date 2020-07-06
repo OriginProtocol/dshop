@@ -35,6 +35,10 @@ const { configureShopDNS, deployShop } = require('../utils/deployShop')
 const { DSHOP_CACHE } = require('../utils/const')
 const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
+const {
+  deregisterPrintfulWebhook,
+  registerPrintfulWebhook
+} = require('../utils/printful')
 
 const downloadProductData = require('../scripts/printful/downloadProductData')
 const downloadPrintfulMockups = require('../scripts/printful/downloadPrintfulMockups')
@@ -795,6 +799,16 @@ module.exports = function (app) {
         stripeOpts.stripeWebhookSecret = secret
       } else if (req.body.stripeWebhookSecret) {
         stripeOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
+      }
+
+      // Printful webhooks
+      if (req.body.printful) {
+        await registerPrintfulWebhook({
+          ...existingConfig,
+          ...req.body
+        })
+      } else if (existingConfig.printful && !req.body.printful) {
+        await deregisterPrintfulWebhook(existingConfig)
       }
 
       const newConfig = setConfig(

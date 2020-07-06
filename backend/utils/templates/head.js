@@ -72,6 +72,10 @@ module.exports = () => `
       border-top: 2px solid lightgrey;
       padding-top: 20px;
     }
+
+    .mb-10 {
+      margin-bottom: 10px
+    }
   </mj-style>
   <mj-style>
     @media (max-width: 400px) {
