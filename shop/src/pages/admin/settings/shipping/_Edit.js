@@ -75,6 +75,8 @@ const EditShippingMethod = ({ onClose, shippingZone }) => {
 
   const upsertShippingMethod = async () => {
     const { valid, newState } = validate(state)
+    setState(newState)
+
     if (!valid) return
 
     setState({
@@ -159,7 +161,6 @@ const EditShippingMethod = ({ onClose, shippingZone }) => {
               />
               Products ship internationally
             </label>
-            {Feedback('shipping')}
           </div>
 
           {!state.shipInternational ? null : (
