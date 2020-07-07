@@ -81,10 +81,3 @@ const Admin = () => {
 }
 
 export default Admin
-
-require('react-styl')(`
-  .nav-preview
-    margin-right: 2rem
-    font-size: 14px
-    vertical-align: 3px
-`)

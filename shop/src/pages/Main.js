@@ -6,7 +6,7 @@ import useConfig from 'utils/useConfig'
 
 import Bars from 'components/icons/Bars.js'
 import Link from 'components/Link'
-import AdminNav from 'components/admin/NavBar'
+import AdminNav from 'pages/admin/_Nav'
 
 import Nav from './_Nav'
 import Notice from './_Notice'

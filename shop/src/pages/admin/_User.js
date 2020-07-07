@@ -16,7 +16,7 @@ const UserDropdown = () => {
     <Popover
       el="div"
       placement="bottom-start"
-      className="user"
+      className="user ml-auto"
       contentClassName="user-dropdown"
       shouldClose={shouldClose}
       button={
@@ -46,7 +46,7 @@ const UserDropdown = () => {
 export default UserDropdown
 
 require('react-styl')(`
-  .admin nav
+  nav.admin-nav
     .user-dropdown
       position: absolute
       color: #000

@@ -3,6 +3,13 @@
 */
 
 require('react-styl')(`
+  .fullwidth-container
+    width: 100%
+    flex: 1
+    padding: 0 1.125rem
+    .row
+      margin: 0
+
   .admin
     -webkit-font-smoothing: antialiased
     min-height: 100vh
@@ -13,48 +20,9 @@ require('react-styl')(`
       color: #000
     h1
       font-size: 24px
-    .fullwidth-container
-      width: 100%
-      flex: 1
-      padding: 0 1.125rem
-      .row
-        margin: 0
 
     .flex-1
       flex: 1
-    nav
-      border-bottom: 1px solid #dfe2e6
-      color: #000
-      > .fullwidth-container
-        display: flex
-        align-items: center
-        justify-content: between
-        flex-wrap: wrap
-        min-height: 4.5rem
-      h1
-        margin: 0
-        display: flex
-        flex: 1
-        font-size: 1rem
-        img
-          max-height: 2.5rem
-          max-width: 12rem
-          &.dshop-logo
-            transform: translateY(3.5px)
-        .shops-title-wrapper
-          display: flex
-        .shop-title
-          display: flex
-          align-items: center
-          margin-left: 1rem
-          padding-left: 1rem
-          border-left: 1px solid #5666
-          position: relative
-          cursor: pointer
-        .dropdown-cog
-          width: 16px
-          height: 16px
-          margin-left: 10px
 
     .table
       &.table-hover

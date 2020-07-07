@@ -11,7 +11,7 @@ function useAuth(opts = {}) {
 
   useEffect(() => {
     let isSubscribed = true
-    if (!auth && (opts.only === undefined || opts.only)) {
+    if (!auth && (opts.only === undefined || opts.only())) {
       setLoading(true)
 
       get('/auth', { suppressError: true })
