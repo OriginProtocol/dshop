@@ -20,7 +20,8 @@ const initialState = {
   label: '',
   countries: null,
   amount: 0,
-  detail: ''
+  detail: '',
+  processingTime: ''
 }
 
 const validate = (state) => {
