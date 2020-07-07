@@ -62,7 +62,7 @@ module.exports = function (app) {
 
     try {
       const storedSecret = await encConf.get(shopId, 'printfulWebhookSecret')
-  
+
       if (secret !== storedSecret) {
         log.error('Invalid secret, ignoring event', data)
         return res.status(200).end()

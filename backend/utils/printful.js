@@ -231,9 +231,7 @@ const registerPrintfulWebhook = async (shopId, shopConfig) => {
 
     const url = `${PrintfulURL}/webhooks`
 
-    const secret = Math.random()
-      .toString(36)
-      .substring(2)
+    const secret = Math.random().toString(36).substring(2)
 
     const webhookURL = `${webhookHost}/printful/webhooks/${shopId}/${secret}`
 

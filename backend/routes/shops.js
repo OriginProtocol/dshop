@@ -803,10 +803,13 @@ module.exports = function (app) {
 
       // Printful webhooks
       if (req.body.printful) {
-        const printfulWebhookSecret = await registerPrintfulWebhook(req.shop.id, {
-          ...existingConfig,
-          ...req.body
-        })
+        const printfulWebhookSecret = await registerPrintfulWebhook(
+          req.shop.id,
+          {
+            ...existingConfig,
+            ...req.body
+          }
+        )
 
         additionalOpts.printfulWebhookSecret = printfulWebhookSecret
       } else if (existingConfig.printful && !req.body.printful) {
