@@ -6,7 +6,7 @@ import useConfig from 'utils/useConfig'
 
 function useShippingZones() {
   const { config } = useConfig()
-  const [{ shippingZones, cart }, dispatch] = useStateValue()
+  const [{ shippingZones, cart, reload }, dispatch] = useStateValue()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
 
@@ -46,10 +46,9 @@ function useShippingZones() {
         setError(true)
       }
     }
-    if (!shippingZones.length) {
-      fetchShippingZones()
-    }
-  }, [])
+
+    fetchShippingZones()
+  }, [reload.shippingZones])
 
   return { shippingZones, loading, error }
 }

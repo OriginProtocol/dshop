@@ -6,9 +6,10 @@ const {
   placeOrder,
   confirmOrder,
   fetchShippingEstimate,
-  processShippedEvent,
-  getPrintfulWebhookURL
+  processShippedEvent
 } = require('../utils/printful')
+const { getLogger } = require('../utils/logger')
+const log = getLogger('routes.printful')
 
 module.exports = function (app) {
   app.get(
@@ -55,8 +56,20 @@ module.exports = function (app) {
     return res.status(status || 200).send(resp)
   })
 
-  app.post(getPrintfulWebhookURL(), async (req, res) => {
+  app.post('/printful/webhooks/:shopId/:secret', async (req, res) => {
     const { data } = req.body
+    const { shopId, secret } = req.params
+
+    try {
+      const storedSecret = await encConf.get(shopId, 'printfulWebhookSecret')
+
+      if (secret !== storedSecret) {
+        log.error('Invalid secret, ignoring event', data)
+        return res.status(200).end()
+      }
+    } catch (err) {
+      log.error('Failed to validate secret on request', shopId, err)
+    }
 
     await processShippedEvent(data)
 

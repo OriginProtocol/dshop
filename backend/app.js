@@ -73,6 +73,7 @@ require('./queues/ui')(app)
 require('./routes/products')(app)
 require('./routes/collections')(app)
 require('./routes/domains')(app)
+require('./routes/shipping-zones')(app)
 
 app.get(
   '(/collections/:collection)?/products/:product',
