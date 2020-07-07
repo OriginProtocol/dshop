@@ -95,16 +95,18 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
             Super Admin
           </div>
         )}
-        <div
-          className="new-shop-link"
-          onClick={() => {
-            setShouldClose(shouldClose + 1)
-            onNewShop()
-          }}
-        >
-          <div className="add-shop-icon">+</div>
-          Add a shop
-        </div>
+        {!onNewShop ? null : (
+          <div
+            className="new-shop-link"
+            onClick={() => {
+              setShouldClose(shouldClose + 1)
+              onNewShop()
+            }}
+          >
+            <div className="add-shop-icon">+</div>
+            Add a shop
+          </div>
+        )}
       </>
     </Popover>
   )

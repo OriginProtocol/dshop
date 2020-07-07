@@ -43,7 +43,7 @@ const Nav = ({ newShop, setNewShop }) => {
           />
           <AccountSelector
             superAdmin={isSuperAdmin}
-            onNewShop={() => setNewShop(true)}
+            onNewShop={setNewShop ? () => setNewShop(true) : null}
           />
         </h1>
         {!activeShop ? null : (
