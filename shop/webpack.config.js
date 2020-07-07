@@ -101,7 +101,7 @@ const webpackConfig = {
           {
             loader: 'sass-loader',
             options: {
-              prependData: theme
+              additionalData: theme
             }
           }
         ]
