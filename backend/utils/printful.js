@@ -218,12 +218,7 @@ const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
   }
 }
 
-const getPrintfulWebhookURL = () => {
-  const secret = process.env.PRINTFUL_WEBHOOK_SECRET
-  return `/printful-webhook${secret ? '-' + secret : ''}`
-}
-
-const registerPrintfulWebhook = async (shopConfig) => {
+const registerPrintfulWebhook = async (shopId, shopConfig) => {
   try {
     const webhookHost = get(shopConfig, `publicUrl`)
 
@@ -236,7 +231,11 @@ const registerPrintfulWebhook = async (shopConfig) => {
 
     const url = `${PrintfulURL}/webhooks`
 
-    const webhookURL = `${webhookHost}${getPrintfulWebhookURL()}`
+    const secret = Math.random()
+      .toString(36)
+      .substring(2)
+
+    const webhookURL = `${webhookHost}/printful/webhooks/${shopId}/${secret}`
 
     const registerData = {
       url: webhookURL,
@@ -260,6 +259,8 @@ const registerPrintfulWebhook = async (shopConfig) => {
     } else {
       log.error('Failed to register printful webhook', respJSON)
     }
+
+    return secret
   } catch (err) {
     log.error('Failed to register printful webhook', err)
   }
@@ -291,13 +292,14 @@ const deregisterPrintfulWebhook = async (shopConfig) => {
   }
 }
 
-const processShippedEvent = async (event) => {
+const processShippedEvent = async (event, shopId) => {
   try {
     const { shipment, order } = event
 
     const dbOrder = await Order.findOne({
       where: {
-        orderId: order.external_id
+        orderId: order.external_id,
+        shopId
       }
     })
 
@@ -306,7 +308,7 @@ const processShippedEvent = async (event) => {
       return
     }
 
-    await sendNewOrderEmail(dbOrder.shopId, dbOrder.data, {
+    await sendNewOrderEmail(shopId, dbOrder.data, {
       trackingInfo: {
         trackingNumber: shipment.tracking_number,
         trackingUrl: shipment.tracking_url,
@@ -327,6 +329,5 @@ module.exports = {
   autoFulfillOrder,
   registerPrintfulWebhook,
   deregisterPrintfulWebhook,
-  processShippedEvent,
-  getPrintfulWebhookURL
+  processShippedEvent
 }

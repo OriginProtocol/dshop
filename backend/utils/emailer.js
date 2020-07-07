@@ -265,10 +265,6 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
     supportEmailPlain: SUPPORT_EMAIL_OVERRIDE || 'dshop@originprotocol.com'
   }
 
-  if (process.env.NODE_ENV === 'development') {
-    vars.supportEmailPlain = process.env.SUPPORT_EMAIL || vars.supportEmailPlain
-  }
-
   const htmlOutput = mjml2html(verifyEmail(vars), { minify: true })
 
   const txtOutput = verifyEmailTxt(vars)
@@ -323,10 +319,6 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
     message: opts ? opts.message : '',
     orderUrlAdmin: `${publicURL}/admin/orders/${cart.offerId}`,
     siteName: data.fullTitle || data.title
-  }
-
-  if (process.env.NODE_ENV === 'development') {
-    vars.supportEmail = process.env.SUPPORT_EMAIL || vars.supportEmail
   }
 
   const htmlOutput = mjml2html(pritnfulOrderFailed(vars), { minify: true })

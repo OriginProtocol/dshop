@@ -785,34 +785,37 @@ module.exports = function (app) {
         req.shop.name = req.body.fullTitle
       }
 
-      const stripeOpts = {}
+      const additionalOpts = {}
       // Stripe webhooks
       if (req.body.stripe === false) {
         await deregisterStripeWebhooks(existingConfig)
-        stripeOpts.stripeWebhookSecret = ''
-        stripeOpts.stripeBackend = ''
+        additionalOpts.stripeWebhookSecret = ''
+        additionalOpts.stripeBackend = ''
       } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
         const { secret } = await registerStripeWebhooks(
           req.body,
           existingConfig
         )
-        stripeOpts.stripeWebhookSecret = secret
+        additionalOpts.stripeWebhookSecret = secret
       } else if (req.body.stripeWebhookSecret) {
-        stripeOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
+        additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
       }
 
       // Printful webhooks
       if (req.body.printful) {
-        await registerPrintfulWebhook({
+        const printfulWebhookSecret = await registerPrintfulWebhook(req.shop.id, {
           ...existingConfig,
           ...req.body
         })
+
+        additionalOpts.printfulWebhookSecret = printfulWebhookSecret
       } else if (existingConfig.printful && !req.body.printful) {
         await deregisterPrintfulWebhook(existingConfig)
+        additionalOpts.printfulWebhookSecret = ''
       }
 
       const newConfig = setConfig(
-        { ...existingConfig, ...req.body, ...stripeOpts },
+        { ...existingConfig, ...req.body, ...additionalOpts },
         req.shop.config
       )
       req.shop.config = newConfig
