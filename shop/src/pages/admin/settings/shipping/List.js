@@ -3,10 +3,10 @@ import React, { useState } from 'react'
 import formatPrice from 'utils/formatPrice'
 import useShippingZones from 'utils/useShippingZones'
 
-import Tabs from './_Tabs'
+import Tabs from '../_Tabs'
 
-import DeleteButton from './shipping/_Delete'
-import EditModal from './shipping/_Edit'
+import DeleteButton from './_Delete'
+import EditModal from './_Edit'
 
 const Shipping = () => {
   const { shippingZones, loading } = useShippingZones()

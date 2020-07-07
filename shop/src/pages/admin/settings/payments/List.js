@@ -1,30 +1,33 @@
 import React, { useMemo, useState, useEffect } from 'react'
-import ethers from 'ethers'
+import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
 
 import useShopConfig from 'utils/useShopConfig'
 import useSetState from 'utils/useSetState'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
+import useListingData from 'utils/useListingData'
+import { useStateValue } from 'data/state'
 
 import * as Icons from 'components/icons/Admin'
-import Tabs from './_Tabs'
-import Web3Modal from './payments/Web3Modal'
-import StripeModal from './payments/StripeModal'
-import UpholdModal from './payments/UpholdModal'
-import ContractSettings from './payments/ContractSettings'
-import DisconnectModal from './payments/_DisconnectModal'
+import Tabs from '../_Tabs'
+import Web3Modal from './Web3Modal'
+import StripeModal from './StripeModal'
+import UpholdModal from './UpholdModal'
+import ContractSettings from './ContractSettings'
+import DisconnectModal from './_DisconnectModal'
+import CreateListing from './_CreateListing'
 
 const PaymentSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
-  const { config } = useConfig()
+  const [{ admin }] = useStateValue()
+  const { config, refetch: refetchConfig } = useConfig()
   const [state, setState] = useSetState()
+  const { listing } = useListingData(state.listingId)
 
   useEffect(() => {
-    setState({
-      listingId: config.listingId,
-      acceptedTokens: config.acceptedTokens
-    })
+    const { listingId, acceptedTokens } = config
+    setState({ listingId, acceptedTokens })
   }, [config.activeShop])
 
   const [connectModal, setShowConnectModal] = useState(false)
@@ -80,6 +83,22 @@ const PaymentSettings = () => {
     refetch()
   }
 
+  function onListingCreated(createdListing) {
+    const listingId = [
+      get(admin, 'network.networkId'),
+      get(admin, 'network.marketplaceVersion'),
+      createdListing
+    ].join('-')
+    post('/shop/config', {
+      method: 'PUT',
+      body: JSON.stringify({ listingId }),
+      suppressError: true
+    }).then(() => {
+      refetch()
+      refetchConfig()
+    })
+  }
+
   return (
     <form
       autoComplete="off"
@@ -123,19 +142,30 @@ const PaymentSettings = () => {
           </div>
           <div>
             <div className="title">Web3 Wallet</div>
-            <div className="description">
-              You have not connected a wallet. This is where crypto payments
-              will be sent.
-            </div>
-            <div className="actions">
-              <button
-                className="btn btn-outline-primary px-4"
-                type="button"
-                onClick={() => {}}
-              >
-                Connect
-              </button>
-            </div>
+            {config.listingId ? (
+              <>
+                <div className="description">
+                  <div>{`Shop ID: ${config.listingId}`}</div>
+                  {!listing ? null : (
+                    <div className="mt-1">{`Account: ${listing.seller}`}</div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="description">
+                  You have not connected a wallet. This is where crypto payments
+                  will be sent.
+                </div>
+                <div className="actions">
+                  <CreateListing
+                    className="btn btn-outline-primary px-4"
+                    onCreated={onListingCreated}
+                    children="Connect"
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
         {Processors.map((processor) => (
@@ -162,9 +192,8 @@ const PaymentSettings = () => {
                     className="btn btn-outline-primary px-4"
                     type="button"
                     onClick={() => setShowConnectModal(processor.id)}
-                  >
-                    Connect
-                  </button>
+                    children="Connect"
+                  />
                 )}
               </div>
             </div>

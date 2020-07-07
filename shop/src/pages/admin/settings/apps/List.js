@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from 'react'
 
 import useShopConfig from 'utils/useShopConfig'
-import Tabs from './_Tabs'
-import PrintfulModal from './apps/PrintfulModal'
-import PrintfulSync from './apps/PrintfulSync'
-import SendgridModal from './apps/SendgridModal'
-import AWSModal from './apps/AWSModal'
-import MailgunModal from './apps/MailgunModal'
-import DisconnectModal from './payments/_DisconnectModal'
+import Tabs from '../_Tabs'
+import PrintfulModal from './PrintfulModal'
+import PrintfulSync from './PrintfulSync'
+import SendgridModal from './SendgridModal'
+import AWSModal from './AWSModal'
+import MailgunModal from './MailgunModal'
+import DisconnectModal from '../payments/_DisconnectModal'
 
 const maskSecret = (secret, maxLen) => {
   const shouldTruncate = maxLen && secret.length > maxLen

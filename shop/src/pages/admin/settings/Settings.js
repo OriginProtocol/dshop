@@ -4,11 +4,11 @@ import { Switch, Route } from 'react-router-dom'
 import ServerSettings from './Server'
 import Users from './Users'
 import Console from './Console'
-import Appearance from './Appearance'
-import Payments from './Payments'
-import Apps from './Apps'
-import Deployments from './deployments/Deployments'
-import Shipping from './Shipping'
+import Appearance from './appearance/Edit'
+import Payments from './payments/List'
+import Apps from './apps/List'
+import Deployments from './deployments/List'
+import Shipping from './shipping/List'
 
 const AdminSettings = () => (
   <Switch>

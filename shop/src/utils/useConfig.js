@@ -29,7 +29,11 @@ function useConfig() {
       })
   }
 
-  return { config, error, setActiveShop }
+  function refetch() {
+    setActiveShop(true)
+  }
+
+  return { config, error, setActiveShop, refetch }
 }
 
 export default useConfig

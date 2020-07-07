@@ -27,7 +27,7 @@ const Onboarding = () => {
       config.youtube)
   )
 
-  const web3Enabled = !!get(shopConfig, 'web3Pk')
+  const web3Enabled = !!get(config, 'listingId')
 
   const taskset1 = [
     {

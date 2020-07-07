@@ -12,9 +12,9 @@ import useBackendApi from 'utils/useBackendApi'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
 
+import Tabs from '../_Tabs'
 import CustomDomain from './_CustomDomain'
 import UploadFile from './_UploadFile'
-import Tabs from './_Tabs'
 import SocialLinks from './social-links/SocialLinks'
 
 function reducer(state, newState) {
