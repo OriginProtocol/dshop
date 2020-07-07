@@ -18,18 +18,14 @@ const ConnectModal = ({ children, title, validate, onCancel, onClose }) => {
     const { valid, newState } = validate()
     if (!valid) return
 
-    setState({
-      saving: 'saving'
-    })
+    setState({ saving: 'saving' })
 
     try {
       await post('/shop/config', {
         method: 'PUT',
         body: JSON.stringify(newState)
       })
-      setState({
-        saving: 'ok'
-      })
+      setState({ saving: 'ok' })
       setTimeout(() => {
         setState({ saving: '', shouldClose: true })
       }, 1500)
@@ -45,10 +41,7 @@ const ConnectModal = ({ children, title, validate, onCancel, onClose }) => {
     <Modal
       shouldClose={state.shouldClose}
       onClose={() => {
-        setState({
-          showModal: false,
-          shouldClose: false
-        })
+        setState({ showModal: false, shouldClose: false })
         onClose()
       }}
     >
@@ -61,9 +54,7 @@ const ConnectModal = ({ children, title, validate, onCancel, onClose }) => {
             className="btn btn-outline-primary mr-2"
             type="button"
             onClick={() => {
-              setState({
-                shouldClose: true
-              })
+              setState({ shouldClose: true })
               onCancel()
             }}
           >

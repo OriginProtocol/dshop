@@ -4,7 +4,7 @@ const bodyParser = require('body-parser')
 const randomstring = require('randomstring')
 const Stripe = require('stripe')
 
-const { Shop, ExternalPayment } = require('../models')
+const { Shop, ExternalPayment, Network } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
 const { normalizeDescriptor } = require('../utils/stripe')
@@ -30,8 +30,14 @@ module.exports = function (app) {
       })
     }
 
+    const network = await Network.findOne({
+      where: { networkId: req.shop.networkId }
+    })
+    const networkConfig = getConfig(network.config)
     const shopConfig = getConfig(req.shop.config)
-    if (!shopConfig.web3Pk || !shopConfig.stripeBackend) {
+    const web3Pk = shopConfig.web3Pk || networkConfig.web3Pk
+
+    if (!web3Pk || !shopConfig.stripeBackend) {
       return res.status(400).send({
         success: false,
         message: 'CC payments unavailable'

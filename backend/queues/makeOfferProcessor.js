@@ -42,11 +42,9 @@ async function processor(job) {
 
   log(20, 'Submitting Offer')
   const web3 = new Web3(network.provider)
-  // The plan per Nick is to begin using a network level web3PK
-  // for submitting offers, while stores use their own PK for any further
-  // crypto payment activity. If we have a network config, we use it for
-  // submitting, and fall back to the store PK.
-  const backendPk = networkConfig.web3Pk || shopConfig.web3Pk
+
+  // Use the Shop PK if there is one, otherwise fall back to Network PK.
+  const backendPk = shopConfig.web3Pk || networkConfig.web3Pk
   const account = web3.eth.accounts.wallet.add(backendPk)
   const walletAddress = account.address
   log(22, `using walletAddress ${walletAddress}`)

@@ -34,38 +34,11 @@ const PaymentSettings = () => {
   const Processors = useMemo(() => {
     if (!shopConfig) return []
 
-    const {
-      stripeBackend,
-      upholdApi,
-      upholdClient,
-      upholdSecret,
-      web3Pk
-    } = shopConfig
+    const { stripeBackend, upholdApi, upholdClient, upholdSecret } = shopConfig
     const stripeEnabled = !!stripeBackend
     const upholdEnabled = !!upholdApi && !!upholdClient && !!upholdSecret
-    const web3Enabled = !!web3Pk
-
-    let walletAddress = ''
-
-    if (web3Enabled) {
-      try {
-        const wallet = new ethers.Wallet(web3Pk)
-        walletAddress = wallet.address
-      } catch (err) {
-        console.error(err)
-      }
-    }
 
     return [
-      {
-        id: 'web3',
-        title: 'Web3 Wallet',
-        description: web3Enabled
-          ? `Address: ${walletAddress}`
-          : 'You have not connected a wallet. This is where crypto payments will be sent.',
-        icon: <Icons.Web3 />,
-        enabled: web3Enabled
-      },
       {
         id: 'stripe',
         title: 'Stripe',
@@ -101,6 +74,11 @@ const PaymentSettings = () => {
       </button>
     </>
   )
+
+  function onCloseModal() {
+    setShowConnectModal(null)
+    refetch()
+  }
 
   return (
     <form
@@ -139,6 +117,27 @@ const PaymentSettings = () => {
       </h3>
       <Tabs />
       <div className="admin-payment-settings shop-settings">
+        <div className="processor web3">
+          <div className="icon">
+            <Icons.Web3 />
+          </div>
+          <div>
+            <div className="title">Web3 Wallet</div>
+            <div className="description">
+              You have not connected a wallet. This is where crypto payments
+              will be sent.
+            </div>
+            <div className="actions">
+              <button
+                className="btn btn-outline-primary px-4"
+                type="button"
+                onClick={() => {}}
+              >
+                Connect
+              </button>
+            </div>
+          </div>
+        </div>
         {Processors.map((processor) => (
           <div key={processor.id} className={`processor ${processor.id}`}>
             <div className="icon">{processor.icon}</div>
@@ -162,9 +161,7 @@ const PaymentSettings = () => {
                   <button
                     className="btn btn-outline-primary px-4"
                     type="button"
-                    onClick={() => {
-                      setShowConnectModal(processor.id)
-                    }}
+                    onClick={() => setShowConnectModal(processor.id)}
                   >
                     Connect
                   </button>
@@ -173,31 +170,13 @@ const PaymentSettings = () => {
             </div>
           </div>
         ))}
-        {connectModal === 'web3' && (
-          <Web3Modal
-            onClose={() => {
-              setShowConnectModal(null)
-              refetch()
-            }}
-          />
-        )}
-        {connectModal === 'stripe' && (
-          <StripeModal
-            onClose={() => {
-              setShowConnectModal(null)
-              refetch()
-            }}
-          />
-        )}
-        {connectModal === 'uphold' && (
-          <UpholdModal
-            onClose={() => {
-              setShowConnectModal(null)
-              refetch()
-            }}
-          />
-        )}
+
+        {connectModal === 'web3' && <Web3Modal onClose={onCloseModal} />}
+        {connectModal === 'stripe' && <StripeModal onClose={onCloseModal} />}
+        {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
+
         <ContractSettings {...{ state, setState, config }} />
+
         <div className="d-flex mt-4 justify-content-end">{actions}</div>
       </div>
     </form>
