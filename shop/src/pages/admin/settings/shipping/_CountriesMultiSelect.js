@@ -9,8 +9,12 @@ const CountriesMultiSelect = ({ selected, onChange }) => {
   const [shouldClose, setShouldClose] = useState(0)
 
   useEffect(() => {
-    const listener = e => {
-      if (!e.target.matches('.countries-dropdown, .countries-dropdown *, .countries-multi-select, .countries-multi-select *')) {
+    const listener = (e) => {
+      if (
+        !e.target.matches(
+          '.countries-dropdown, .countries-dropdown *, .countries-multi-select, .countries-multi-select *'
+        )
+      ) {
         setShouldClose(shouldClose + 1)
       }
     }
@@ -23,7 +27,7 @@ const CountriesMultiSelect = ({ selected, onChange }) => {
     if (checked) {
       onChange(Array.from(new Set([...selected, value])))
     } else {
-      onChange(selected.filter(c => c !== value))
+      onChange(selected.filter((c) => c !== value))
     }
   }
 
@@ -36,20 +40,24 @@ const CountriesMultiSelect = ({ selected, onChange }) => {
       shouldClose={shouldClose}
       button={
         <>
-          {selected.length > 0 ? `${selected.length} selected` : 'Select one or more'}
+          {selected.length > 0
+            ? `${selected.length} selected`
+            : 'Select one or more'}
           <Caret />
         </>
       }
     >
       <>
-        {Object.keys(Countries).map(country => (
+        {Object.keys(Countries).map((country) => (
           <div className="form-check" key={country}>
             <label className="form-check-label">
-              <input 
+              <input
                 type="checkbox"
                 className="form-check-input"
                 checked={selected.includes(Countries[country].code)}
-                onChange={e => updateState(Countries[country].code, e.target.checked)}
+                onChange={(e) =>
+                  updateState(Countries[country].code, e.target.checked)
+                }
               />
               {`${country} (${Countries[country].code})`}
             </label>

@@ -17,7 +17,13 @@ const Shipping = () => {
       <h3 className="admin-title">
         Settings
         <div className="actions ml-auto">
-          <button type="button" className="btn btn-primary" onClick={() => setShowModal({})}>Add</button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => setShowModal({})}
+          >
+            Add
+          </button>
         </div>
       </h3>
       <Tabs />
@@ -35,16 +41,23 @@ const Shipping = () => {
             </tr>
           </thead>
           <tbody>
-            {shippingZones.map(zone => {
+            {shippingZones.map((zone) => {
               return (
                 <tr key={zone.id}>
                   <td>{zone.label}</td>
                   <td>{formatPrice(zone.amount)}</td>
-                  <td>{zone.countries ? zone.countries.join(', ') : 'Rest of the world'}</td>
+                  <td>
+                    {zone.countries
+                      ? zone.countries.join(', ')
+                      : 'Rest of the world'}
+                  </td>
                   <td>{zone.processingTime || zone.detail}</td>
                   <td>
                     <div className="actions">
-                      <div className="action-icon" onClick={() => setShowModal(zone)}>
+                      <div
+                        className="action-icon"
+                        onClick={() => setShowModal(zone)}
+                      >
                         <img src="images/edit-icon.svg" />
                       </div>
                       <DeleteButton className="action-icon" shippingZone={zone}>
@@ -59,7 +72,10 @@ const Shipping = () => {
         </table>
       )}
       {!showModal ? null : (
-        <EditModal onClose={() => setShowModal(false)} shippingZone={showModal || {}} />
+        <EditModal
+          onClose={() => setShowModal(false)}
+          shippingZone={showModal || {}}
+        />
       )}
     </div>
   )

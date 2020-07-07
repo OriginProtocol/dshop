@@ -39,7 +39,10 @@ const validate = (state) => {
     newState.amountError = 'Amount is required'
   }
 
-  if (state.shipInternational && (!state.countries || !state.countries.length)) {
+  if (
+    state.shipInternational &&
+    (!state.countries || !state.countries.length)
+  ) {
     newState.countriesError = 'Select at least one country'
   }
 
@@ -61,7 +64,7 @@ const EditShippingMethod = ({ onClose, shippingZone }) => {
 
     ...shippingZone,
     amount: shippingZone ? (shippingZone.amount / 100).toFixed() : 0,
-    shipInternational: get(shippingZone, 'countries.length', 0) > 0, 
+    shipInternational: get(shippingZone, 'countries.length', 0) > 0,
 
     showModal: false,
     shouldClose: false
@@ -117,11 +120,12 @@ const EditShippingMethod = ({ onClose, shippingZone }) => {
         onClose()
       }}
     >
-      <form onSubmit={e => {
-        e.preventDefault()
-        upsertShippingMethod()
-
-      }}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          upsertShippingMethod()
+        }}
+      >
         <div className="modal-body payment-method-modal">
           <h5>Add Shipping Method</h5>
 
@@ -141,7 +145,7 @@ const EditShippingMethod = ({ onClose, shippingZone }) => {
             <label>Processing Time</label>
             <select {...input('processingTime')}>
               <option>Please choose one...</option>
-              {ProcessingTimes.filter(t => t.value !== 'custom').map((t) => (
+              {ProcessingTimes.filter((t) => t.value !== 'custom').map((t) => (
                 <option key={t.value} value={t.value}>
                   {t.label}
                 </option>
@@ -167,11 +171,12 @@ const EditShippingMethod = ({ onClose, shippingZone }) => {
           {!state.shipInternational ? null : (
             <div className="form-group">
               <label>Ships to</label>
-              <CountriesMultiSelect 
-                selected={state.countries || []} 
+              <CountriesMultiSelect
+                selected={state.countries || []}
                 onChange={(countries) => {
                   setState({ countries })
-                }} />
+                }}
+              />
               {Feedback('countries')}
             </div>
           )}
