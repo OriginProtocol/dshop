@@ -48,7 +48,13 @@ module.exports = function (app) {
         const existingData = JSON.parse(fs.readFileSync(shippingPath))
 
         const newZoneData = {
-          ...pick(req.body, ['label', 'detail', 'countries', 'amount', 'processingTime']),
+          ...pick(req.body, [
+            'label',
+            'detail',
+            'countries',
+            'amount',
+            'processingTime'
+          ]),
           id: shippingId
         }
 

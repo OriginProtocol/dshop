@@ -28,8 +28,9 @@ const Shipping = () => {
           <thead>
             <tr>
               <th>Method</th>
-              <th>Cost</th>
-              <th>Default Method</th>
+              <th>Cost per shipment</th>
+              <th>Countries</th>
+              <th>Processing Time</th>
               <th></th>
             </tr>
           </thead>
@@ -39,7 +40,8 @@ const Shipping = () => {
                 <tr key={zone.id}>
                   <td>{zone.label}</td>
                   <td>{formatPrice(zone.amount)}</td>
-                  <td>{zone.countries ? '❌' : '✅'}</td>
+                  <td>{zone.countries ? zone.countries.join(', ') : 'Rest of the world'}</td>
+                  <td>{zone.processingTime || zone.detail}</td>
                   <td>
                     <div className="actions">
                       <div className="action-icon" onClick={() => setShowModal(zone)}>
