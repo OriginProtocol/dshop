@@ -1,6 +1,8 @@
 require('dotenv').config()
 const randomstring = require('randomstring')
 
+// Note: Origin managed staging and prod kubernetes deployments do not
+// use EnvKey. The required env vars are set in helm charts.
 try {
   require('envkey')
 } catch (err) {
@@ -46,12 +48,12 @@ const {
   PROVIDER,
   PROVIDER_WS,
   REDIS_URL,
-  IPFS_GATEWAY, // IFPS gateway oerride
+  IPFS_GATEWAY, // IFPS gateway override
   SUPPORT_EMAIL_OVERRIDE
 } = process.env
 
 /**
- * This is a placeholder for possible future single-tennant override. Currently
+ * This is a placeholder for possible future single-tenant override. Currently
  * it does nothing, so don't bother setting it.  Instead create a single store
  * config.
  */
