@@ -17,6 +17,7 @@ const defaultState = {
   shippingZones: [],
   orders: [],
   discounts: [],
+  toasts: [],
   reload: {},
 
   cart: {
@@ -85,8 +86,9 @@ function getStorage(storage) {
 */
 
 const reducer = (state, action) => {
-  fbTrack(state, action)
   let newState = cloneDeep(state)
+
+  fbTrack(state, action)
   if (action.type === 'addToCart') {
     const { product, variant, maxQuantity } = action.item
     const existingIdx = state.cart.items.findIndex(
@@ -237,6 +239,13 @@ const reducer = (state, action) => {
     newState = cloneDeep(getInitialState(activeShop))
     newState = set(newState, 'config', action.config)
     newState = set(newState, 'admin', cloneDeep(state.admin))
+  } else if (action.type === 'setConfigSimple') {
+    newState = set(newState, 'config', action.config)
+  } else if (action.type === 'toast') {
+    newState = set(newState, `toasts[${newState.toasts.length}]`, {
+      message: action.message,
+      id: +new Date()
+    })
   }
 
   // IMPORTANT: Keep this function's total calculation in sync with the calculation

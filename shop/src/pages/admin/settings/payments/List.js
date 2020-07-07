@@ -20,7 +20,7 @@ import CreateListing from './_CreateListing'
 
 const PaymentSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
-  const [{ admin }] = useStateValue()
+  const [{ admin }, dispatch] = useStateValue()
   const { config, refetch: refetchConfig } = useConfig()
   const [state, setState] = useSetState()
   const { listing } = useListingData(state.listingId)
@@ -69,11 +69,7 @@ const PaymentSettings = () => {
         Cancel
       </button>
       <button type="submit" className="btn btn-primary" disabled={saving}>
-        {saving === 'saving'
-          ? 'Updating...'
-          : saving === 'ok'
-          ? 'Updated ✅'
-          : 'Update'}
+        {saving ? 'Updating...' : 'Update'}
       </button>
     </>
   )
@@ -106,7 +102,7 @@ const PaymentSettings = () => {
         e.preventDefault()
         if (saving) return
 
-        setSaving('saving')
+        setSaving(true)
 
         try {
           const shopConfig = pickBy(state, (v, k) => !k.endsWith('Error'))
@@ -122,8 +118,8 @@ const PaymentSettings = () => {
             return
           }
 
-          setSaving('ok')
-          setTimeout(() => setSaving(null), 3000)
+          dispatch({ type: 'toast', message: 'Saved OK' })
+          setSaving(false)
         } catch (err) {
           console.error(err)
           setSaving(false)

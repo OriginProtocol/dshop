@@ -7,6 +7,8 @@ import { useStateValue } from 'data/state'
 import useAuth from 'utils/useAuth'
 import useConfig from 'utils/useConfig'
 
+import Toaster from 'components/Toaster'
+
 import Login from './Login'
 import Products from './products/List'
 import EditProduct from './products/Edit'
@@ -49,6 +51,7 @@ const Admin = () => {
 
   return (
     <div className="admin">
+      <Toaster />
       <Nav newShop={newShop} setNewShop={setNewShop} />
       <div className="sidebar-layout">
         <div className="sidebar-container">

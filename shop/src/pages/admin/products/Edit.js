@@ -250,8 +250,9 @@ const EditProduct = () => {
         fetchProduct.cache.delete(`${config.dataSrc}-${newState.id}`)
       }
 
+      dispatch({ type: 'toast', message: 'Product saved OK' })
       dispatch({ type: 'reload', target: ['products', 'collections'] })
-      dispatch({ type: 'hasChanges' })
+
       return
     } catch (error) {
       console.error('Could not update the product', error)

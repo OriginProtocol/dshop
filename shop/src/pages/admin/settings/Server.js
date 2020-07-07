@@ -4,6 +4,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
 import useSetState from 'utils/useSetState'
+import { useStateValue } from 'data/state'
 import PasswordField from 'components/admin/PasswordField'
 
 import Tabs from './_Tabs'
@@ -82,6 +83,7 @@ const AdminSettings = ({ shop }) => {
   const [keyFromDb, setKeyFromDb] = useState()
   const [state, setState] = useSetState(defaultValues)
   const [keyValid, setKeyValid] = useState(false)
+  const [, dispatch] = useStateValue()
 
   const pgpPublicKey = keyFromDb
     ? shopConfig.pgpPublicKey || ''
@@ -139,7 +141,7 @@ const AdminSettings = ({ shop }) => {
           }
 
           if (valid) {
-            setSaving('saving')
+            setSaving(true)
             const token = shop ? shop.authToken : config.backendAuthToken
             const raw = await fetch(`${config.backend}/shop/config`, {
               headers: {
@@ -151,8 +153,8 @@ const AdminSettings = ({ shop }) => {
               body: JSON.stringify(newState)
             })
             if (raw.ok) {
-              setSaving('ok')
-              setTimeout(() => setSaving(null), 3000)
+              dispatch({ type: 'toast', message: 'Saved OK' })
+              setSaving(false)
             }
           } else {
             window.scrollTo(0, 0)
@@ -400,13 +402,7 @@ const AdminSettings = ({ shop }) => {
           <button type="submit" className="btn btn-primary">
             Save
           </button>
-          <span className="ml-2">
-            {saving === 'saving'
-              ? 'Saving...'
-              : saving === 'ok'
-              ? 'Saved OK ✅'
-              : null}
-          </span>
+          <span className="ml-2">{saving ? 'Saving...' : 'Save'}</span>
         </div>
       </form>
     </>

@@ -86,7 +86,7 @@ const ShopAppearance = () => {
 
         if (saving) return
 
-        setSaving('saving')
+        setSaving(true)
 
         try {
           const shopConfig = pickBy(state, (v, k) => !k.endsWith('Error'))
@@ -117,15 +117,15 @@ const ShopAppearance = () => {
             })
           }
 
-          setSaving('ok')
+          setSaving(false)
           dispatch({
-            type: 'setConfig',
+            type: 'setConfigSimple',
             config: {
               ...config,
               ...pick(shopConfig, configFields)
             }
           })
-          setTimeout(() => setSaving(null), 3000)
+          dispatch({ type: 'toast', message: 'Saved settings OK' })
         } catch (err) {
           console.error(err)
           setSaving(false)
@@ -139,11 +139,7 @@ const ShopAppearance = () => {
             Cancel
           </button>
           <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving === 'saving'
-              ? 'Updating...'
-              : saving === 'ok'
-              ? 'Updated ✅'
-              : 'Update'}
+            {saving ? 'Updating...' : 'Update'}
           </button>
         </div>
       </h3>
@@ -215,7 +211,10 @@ const ShopAppearance = () => {
                     newState.title = ''
                   }
                   setState(newState)
-                  dispatch({ type: 'setConfig', config: { ...config, logo } })
+                  dispatch({
+                    type: 'setConfigSimple',
+                    config: { ...config, logo }
+                  })
                 })
               }}
             />
@@ -255,7 +254,7 @@ const ShopAppearance = () => {
                   const favicon = res.path
                   setState({ favicon })
                   dispatch({
-                    type: 'setConfig',
+                    type: 'setConfigSimple',
                     config: { ...config, favicon }
                   })
                 })

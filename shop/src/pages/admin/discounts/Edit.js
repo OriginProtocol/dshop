@@ -5,6 +5,7 @@ import dayjs from 'dayjs'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useRest from 'utils/useRest'
+import { useStateValue } from 'data/state'
 import useSetState from 'utils/useSetState'
 import Link from 'components/Link'
 import DeleteButton from './_Delete'
@@ -60,6 +61,7 @@ const AdminEditDiscount = () => {
     skip: discountId === 'new'
   })
   const [state, setState] = useSetState(defaultValues)
+  const [, dispatch] = useStateValue()
   useEffect(() => {
     if (discount) {
       setState({
@@ -120,6 +122,7 @@ const AdminEditDiscount = () => {
               })
             })
             if (raw.ok) {
+              dispatch({ type: 'toast', message: 'Discount created OK' })
               history.push({
                 pathname: '/admin/discounts',
                 state: { scrollToTop: true }
