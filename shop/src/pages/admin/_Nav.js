@@ -6,15 +6,13 @@ import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import useAuth from 'utils/useAuth'
 
+import SwitchToStorefront from 'components/SwitchToStorefront'
 import AccountSelector from './_AccountSelector'
 import User from './_User'
 import NewShop from './_NewShop'
 
 const Nav = ({ newShop, setNewShop }) => {
-  const [
-    { admin, storefrontLocation, adminLocation },
-    dispatch
-  ] = useStateValue()
+  const [{ admin, adminLocation }, dispatch] = useStateValue()
   const location = useLocation()
   const history = useHistory()
   const { config, setActiveShop } = useConfig()
@@ -59,19 +57,13 @@ const Nav = ({ newShop, setNewShop }) => {
             >
               Admin
             </button>
-            <button
-              type="button"
+            <SwitchToStorefront
               className={`btn btn-${isAdmin ? 'outline-' : ''}primary px-4${
                 activeShop.viewable ? '' : ' disabled'
               }`}
-              onClick={() => {
-                if (!isAdmin) return
-                dispatch({ type: 'setAdminLocation', location })
-                history.push(storefrontLocation || '/')
-              }}
             >
               Storefront
-            </button>
+            </SwitchToStorefront>
           </div>
         )}
         <User />

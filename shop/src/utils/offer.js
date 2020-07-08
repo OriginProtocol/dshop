@@ -64,6 +64,23 @@ export async function finalizeOffer({
   }
 }
 
+export async function waitForOfferStatus({ marketplace, offerId, status }) {
+  const [, , listingID, offerID] = offerId.split('-')
+
+  return new Promise((resolve) => {
+    function checkOfferStatus() {
+      marketplace.offers(listingID, offerID).then((offerData) => {
+        if (offerData.status === status) {
+          resolve()
+        } else {
+          setTimeout(checkOfferStatus, 5000)
+        }
+      })
+    }
+    checkOfferStatus()
+  })
+}
+
 export async function withdrawOffer({
   marketplace,
   offerId,

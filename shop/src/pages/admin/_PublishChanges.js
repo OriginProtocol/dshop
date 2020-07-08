@@ -4,6 +4,7 @@ import get from 'lodash/get'
 import useShopConfig from 'utils/useShopConfig'
 import { useStateValue } from 'data/state'
 import DeployButton from './settings/deployments/_DeployButton'
+import SwitchToStorefront from 'components/SwitchToStorefront'
 
 const PublishChanges = () => {
   const [{ reload }] = useStateValue()
@@ -26,9 +27,8 @@ const PublishChanges = () => {
         You have changes that have not been published. Click “Publish Changes”
         to make publicly visible.
       </div>
-      <button
+      <SwitchToStorefront
         className="btn btn-sm btn-outline-primary ml-auto px-4"
-        onClick={() => window.open('/', 'dshop-preview')}
         children="Preview"
       />
       <DeployButton

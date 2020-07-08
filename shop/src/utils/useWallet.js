@@ -16,6 +16,7 @@ function useWallet() {
 
   const providerUrl = get(admin, 'network.provider', config.provider)
   useEffect(() => {
+    let isSubscribed = true
     // Default to browser supplied provider
     if (window.ethereum) {
       window.ethereum.autoRefreshOnNetworkChange = false
@@ -23,9 +24,11 @@ function useWallet() {
       const signer = provider.getSigner()
       const mm = get(window, 'ethereum._metamask', {})
       provider.send('net_version').then((netId) => {
+        if (!isSubscribed) return
         if (mm.isEnabled) {
           Promise.all([mm.isEnabled(), mm.isUnlocked(), mm.isApproved()]).then(
             ([isEnabled, isUnlocked, isApproved]) => {
+              if (!isSubscribed) return
               const enabled = isEnabled && isUnlocked && isApproved
               const signerStatus = enabled ? 'enabled' : 'disabled'
               setState({
@@ -51,7 +54,8 @@ function useWallet() {
       // Fall back to provider specified by Network
       const provider = new ethers.providers.JsonRpcProvider(providerUrl)
       const signer = provider.getSigner()
-      provider.send('net_version').then((netId) =>
+      provider.send('net_version').then((netId) => {
+        if (!isSubscribed) return
         setState({
           provider,
           signer,
@@ -59,10 +63,12 @@ function useWallet() {
           signerStatus: 'disabled',
           netId
         })
-      )
+      })
     } else {
       setState({ status: 'no-web3' })
     }
+
+    return () => (isSubscribed = false)
   }, [providerUrl, reload.provider])
 
   useEffect(() => {

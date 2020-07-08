@@ -7,7 +7,12 @@ import useOfferData from 'utils/useOfferData'
 import useConfig from 'utils/useConfig'
 import useOrigin from 'utils/useOrigin'
 
-import { acceptOffer, withdrawOffer, finalizeOffer } from 'utils/offer'
+import {
+  acceptOffer,
+  withdrawOffer,
+  finalizeOffer,
+  waitForOfferStatus
+} from 'utils/offer'
 
 import Web3Transaction from 'components/Web3Transaction'
 
@@ -58,8 +63,6 @@ const PaymentInfo = ({ order }) => {
 
   if (!cart) return <div>Loading...</div>
 
-  const completed = orderState === OfferStates.Finalized
-
   if (orderState === OfferStates.Created) {
     return (
       <div className="order-payment-info">
@@ -86,7 +89,9 @@ const PaymentInfo = ({ order }) => {
             execTx={() =>
               acceptOffer({ marketplace, offerId, sellerProxy, config })
             }
-            awaitTx={(tx) => tx.wait()}
+            awaitTx={() =>
+              waitForOfferStatus({ marketplace, offerId, status: 2 })
+            }
             onSuccess={() =>
               dispatch({ type: 'reload', target: `order-${offerId}` })
             }
@@ -99,7 +104,9 @@ const PaymentInfo = ({ order }) => {
             execTx={() =>
               withdrawOffer({ marketplace, offerId, sellerProxy, config })
             }
-            awaitTx={(tx) => tx.wait()}
+            awaitTx={() =>
+              waitForOfferStatus({ marketplace, offerId, status: 0 })
+            }
             onSuccess={() =>
               dispatch({ type: 'reload', target: `order-${offerId}` })
             }
@@ -124,12 +131,14 @@ const PaymentInfo = ({ order }) => {
           />
           <Web3Transaction
             dependencies={[marketplace]}
-            account={get(offer, 'buyer')}
+            account={[get(offer, 'buyer'), get(listing, 'seller')]}
             shouldSubmit={state.finalizeOffer}
             execTx={() =>
               finalizeOffer({ marketplace, offerId, sellerProxy, config })
             }
-            awaitTx={(tx) => tx.wait()}
+            awaitTx={() =>
+              waitForOfferStatus({ marketplace, offerId, status: 0 })
+            }
             onSuccess={() =>
               dispatch({ type: 'reload', target: `order-${offerId}` })
             }
@@ -142,9 +151,9 @@ const PaymentInfo = ({ order }) => {
 
   return (
     <div
-      className={`order-payment-info${completed ? ' completed' : ''}${
-        refundError ? ' error' : ''
-      }`}
+      className={`order-payment-info${
+        orderState === OfferStates.Finalized ? ' completed' : ''
+      }${refundError ? ' error' : ''}`}
     >
       <div className="status-text">
         {getStatusText(orderState, paymentMethod, refundError)}
