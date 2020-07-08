@@ -27,7 +27,7 @@ function useProduct(productId) {
       return
     }
     fetchProducts()
-  }, [productId])
+  }, [productId, config.activeShop])
 
   return { product, loading, error }
 }

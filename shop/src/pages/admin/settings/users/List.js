@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import _get from 'lodash/get'
 
 import useSetState from 'utils/useSetState'
 import useBackendApi from 'utils/useBackendApi'
@@ -68,7 +69,7 @@ const AdminUsers = () => {
                     '✅'
                   ) : (
                     <>
-                      {get(admin, 'email') === user.email ? (
+                      {_get(admin, 'email') === user.email ? (
                         <a
                           href="#"
                           onClick={(e) => {

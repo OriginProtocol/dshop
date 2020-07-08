@@ -19,7 +19,8 @@ async function checkPassword(password, passwordHash) {
 
 function authRole(role) {
   return function (req, res, next) {
-    if (!req.seller.superuser && get(req, 'sellerShop.role') !== role) {
+    const sellerRole = get(req, 'sellerShop.role', '').toLowerCase()
+    if (!req.seller.superuser && sellerRole !== role) {
       return res.json({ success: false, error: 'Unauthorized' })
     }
     next()

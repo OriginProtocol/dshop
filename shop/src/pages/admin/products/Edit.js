@@ -141,58 +141,63 @@ const EditProduct = () => {
   const [media, setMedia] = useState([])
 
   useEffect(() => {
-    if (product) {
-      const newFormState = {
-        ...product,
-        price: (product.price / 100).toFixed(2),
-        variants: (product.variants || []).map((variant) => ({
-          ...variant,
-          price: (variant.price / 100).toFixed(2)
-        }))
-      }
-
-      let imageArray = product.images
-      if (!imageArray && product.image) {
-        imageArray = [product.image]
-      } else if (!imageArray) {
-        imageArray = []
-      }
-
-      const mappedImages = imageArray.map((image) => ({
-        src: image.includes('/__tmp/')
-          ? image
-          : `/${localStorage.activeShop}/${product.id}/orig/${image}`,
-        path: image
-      }))
-
-      const shouldBackfillOptions =
-        newFormState.options &&
-        (!newFormState.availableOptions ||
-          newFormState.availableOptions.length !== product.options.length)
-
-      if (shouldBackfillOptions) {
-        // While editing existing products
-        newFormState.availableOptions = newFormState.options.map(
-          (option, index) => {
-            // Parse possible values from generated variants
-            return Array.from(
-              new Set(
-                (product.variants || [])
-                  .map((v) => v.options[index])
-                  .filter((o) => !!o)
-              )
-            )
-          }
-        )
-      }
-
-      // Regenerate variants
-      newFormState.variants = generateVariants(newFormState)
-
-      setMedia(mappedImages)
-      setFormState(newFormState)
-      setHasOptions(!!product.options && product.options.length > 0)
+    if (product === null) {
+      history.push('/admin/products')
+      return
     }
+    if (product === undefined) {
+      return
+    }
+    const newFormState = {
+      ...product,
+      price: (product.price / 100).toFixed(2),
+      variants: (product.variants || []).map((variant) => ({
+        ...variant,
+        price: (variant.price / 100).toFixed(2)
+      }))
+    }
+
+    let imageArray = product.images
+    if (!imageArray && product.image) {
+      imageArray = [product.image]
+    } else if (!imageArray) {
+      imageArray = []
+    }
+
+    const mappedImages = imageArray.map((image) => ({
+      src: image.includes('/__tmp/')
+        ? image
+        : `/${localStorage.activeShop}/${product.id}/orig/${image}`,
+      path: image
+    }))
+
+    const shouldBackfillOptions =
+      newFormState.options &&
+      (!newFormState.availableOptions ||
+        newFormState.availableOptions.length !== product.options.length)
+
+    if (shouldBackfillOptions) {
+      // While editing existing products
+      newFormState.availableOptions = newFormState.options.map(
+        (option, index) => {
+          // Parse possible values from generated variants
+          return Array.from(
+            new Set(
+              (product.variants || [])
+                .map((v) => v.options[index])
+                .filter((o) => !!o)
+            )
+          )
+        }
+      )
+    }
+
+    // Regenerate variants
+    newFormState.variants = generateVariants(newFormState)
+
+    setMedia(mappedImages)
+    setFormState(newFormState)
+    setHasOptions(!!product.options && product.options.length > 0)
   }, [product])
 
   useEffect(() => {

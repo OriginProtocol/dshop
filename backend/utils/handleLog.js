@@ -298,7 +298,7 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
 
   // Send notifications via email and discord.
   if (!skipEmail) {
-    await sendNewOrderEmail(shop.id, data)
+    await sendNewOrderEmail(shop, data)
   }
   if (!skipDiscord) {
     await discordWebhook({

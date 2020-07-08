@@ -67,7 +67,8 @@ module.exports = function (app) {
           'ipfsApi',
           'marketplaceContract',
           'marketplaceVersion',
-          'active'
+          'active',
+          'domain'
         ])
       }
     })
@@ -125,7 +126,7 @@ module.exports = function (app) {
         .filter((dir) => !shops.some((s) => s.authToken === dir))
     }
 
-    if (!shops.length) {
+    if (user.superuser && !shops.length) {
       return res.json({
         success: false,
         reason: 'no-shops',
