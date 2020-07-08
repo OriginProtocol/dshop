@@ -6,7 +6,14 @@ import Modal from 'components/Modal'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
 
-const ConnectModal = ({ children, title, validate, onCancel, onClose }) => {
+const ConnectModal = ({
+  children,
+  title,
+  validate,
+  onCancel,
+  onClose,
+  overrideOnConnect
+}) => {
   const [state, setState] = useReducer(reducer, {
     showModal: false,
     shouldClose: false
@@ -17,6 +24,12 @@ const ConnectModal = ({ children, title, validate, onCancel, onClose }) => {
   const onConnect = async () => {
     const { valid, newState } = validate()
     if (!valid) return
+
+    if (overrideOnConnect) {
+      overrideOnConnect(newState)
+      setState({ shouldClose: true })
+      return
+    }
 
     setState({ saving: 'saving' })
 

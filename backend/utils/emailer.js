@@ -7,6 +7,8 @@ const sharp = require('sharp')
 
 const { getLogger } = require('../utils/logger')
 
+const { Network } = require('../models')
+
 const cartData = require('./cartData')
 const encConf = require('./encryptedConfig')
 const { SUPPORT_EMAIL_OVERRIDE } = require('./const')
@@ -40,7 +42,26 @@ function optionsForItem(item) {
   return options
 }
 
-function getEmailTransporter(config) {
+async function getEmailTransporter(shopConfig) {
+  let networkConfig = {}
+
+  // Try network's default config,
+  try {
+    const network = await Network.findOne({
+      where: { networkId: shopConfig.networkId, active: true }
+    })
+    if (network) {
+      networkConfig = encConf.getConfig(network.config) || {}
+    }
+  } catch (err) {
+    log.error(`Failed to fetch network's default config`, err)
+  }
+
+  const config = {
+    ...networkConfig,
+    ...shopConfig
+  }
+
   let transporter
   if (config.email === 'sendgrid') {
     let auth
@@ -95,7 +116,7 @@ async function sendNewOrderEmail(shopId, cart, varsOverride, skip) {
     skip = true
   }
 
-  const transporter = getEmailTransporter(config)
+  const transporter = await getEmailTransporter(config)
 
   const dataURL = config.dataUrl
   let publicURL = config.publicUrl
@@ -254,7 +275,7 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
     skip = true
   }
 
-  const transporter = getEmailTransporter(config)
+  const transporter = await getEmailTransporter(config)
 
   const { name, email } = seller
 
@@ -309,7 +330,7 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
 
   const data = await getSiteConfig(dataURL)
 
-  const transporter = getEmailTransporter(config)
+  const transporter = await getEmailTransporter(config)
 
   const cart = orderData.data
 
