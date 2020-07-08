@@ -2,7 +2,7 @@ import React from 'react'
 import { Switch, Route } from 'react-router-dom'
 
 import ServerSettings from './Server'
-import Users from './Users'
+import UsersList from './users/List'
 import Console from './Console'
 import Appearance from './appearance/Edit'
 import Payments from './payments/List'
@@ -13,7 +13,7 @@ import Shipping from './shipping/List'
 const AdminSettings = () => (
   <Switch>
     <Route path="/admin/settings/users">
-      <Users />
+      <UsersList />
     </Route>
     <Route path="/admin/settings/server">
       <ServerSettings />
