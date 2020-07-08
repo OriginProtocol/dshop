@@ -61,7 +61,7 @@ const Nav = ({ newShop, setNewShop }) => {
             </button>
             <button
               type="button"
-              className={`btn btn-${isAdmin ? 'outline-' : ''}primary px-3${
+              className={`btn btn-${isAdmin ? 'outline-' : ''}primary px-4${
                 activeShop.viewable ? '' : ' disabled'
               }`}
               onClick={() => {
@@ -91,6 +91,8 @@ require('react-styl')(`
       position: absolute
       left: 50%
       transform: translateX(-50%)
+      display: grid
+      grid-template-columns: 1fr 1fr
     > .fullwidth-container
       display: flex
       align-items: center
