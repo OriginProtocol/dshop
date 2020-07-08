@@ -47,7 +47,7 @@ const validate = (state) => {
   }
 }
 
-const MailgunModal = ({ onClose, initialConfig }) => {
+const MailgunModal = ({ onClose, initialConfig, overrideOnConnect }) => {
   const [state, setState] = useReducer(reducer, {
     ...initialState,
     ...pick(initialConfig, Object.keys(initialState))
@@ -66,6 +66,7 @@ const MailgunModal = ({ onClose, initialConfig }) => {
       }}
       onCancel={() => setState(initialState)}
       onClose={onClose}
+      overrideOnConnect={overrideOnConnect}
     >
       <div className="form-group">
         <label>Server Host</label>

@@ -1,9 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 
 import useSetState from 'utils/useSetState'
 import { Networks } from 'data/Networks'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import PasswordField from 'components/admin/PasswordField'
+
+import useEmailAppsList from 'utils/useEmailAppsList'
+import ProcessorsList from 'components/settings/ProcessorsList'
+
+import AWSModal from '../../admin/settings/apps/AWSModal'
+import MailgunModal from '../../admin/settings/apps/MailgunModal'
+import SendgridModal from '../../admin/settings/apps/SendgridModal'
 
 const Defaults = {
   '1': {
@@ -124,6 +131,52 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
       setState(Defaults[state.networkId])
     }
   }, [state.networkId])
+
+  const [configureEmailModal, setConfigureEmailModal] = useState(false)
+  const { emailAppsList } = useEmailAppsList({
+    shopConfig: state.defaultShopConfig
+  })
+
+  const ProcessorIdToEmailComp = {
+    sendgrid: SendgridModal,
+    aws: AWSModal,
+    mailgun: MailgunModal
+  }
+
+  const ActiveEmailModalComp = ProcessorIdToEmailComp[configureEmailModal]
+
+  const emailProcessors = useMemo(() => {
+    return emailAppsList.map((processor) => ({
+      ...processor,
+      actions: (
+        <>
+          {processor.enabled ? (
+            <>
+              <button
+                className="btn btn-outline-primary mr-2"
+                type="button"
+                onClick={() => setConfigureEmailModal(processor.id)}
+              >
+                Configure
+              </button>
+              {/* <DisconnectModal
+                processor={processor}
+                afterDelete={() => refetch()}
+              /> */}
+            </>
+          ) : (
+            <button
+              className="btn btn-outline-primary mr-2"
+              type="button"
+              onClick={() => setConfigureEmailModal(processor.id)}
+            >
+              Connect
+            </button>
+          )}
+        </>
+      )
+    }))
+  }, [emailAppsList])
 
   return (
     <form
@@ -269,6 +322,28 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           {advanced ? 'Hide advanced settings' : 'Show advanced settings'}
         </a>
       </div>
+
+      <div className="my-3">
+        <label>Configure email server</label>
+        <ProcessorsList processors={emailProcessors} />
+        {!ActiveEmailModalComp ? null : (
+          <ActiveEmailModalComp
+            initialConfig={state.defaultShopConfig}
+            onClose={() => {
+              setConfigureEmailModal(false)
+            }}
+            overrideOnConnect={(newState) =>
+              setState({
+                defaultShopConfig: {
+                  ...state.defaultShopConfig,
+                  ...newState
+                }
+              })
+            }
+          />
+        )}
+      </div>
+
       {!advanced ? null : (
         <>
           <div className="form-row">
