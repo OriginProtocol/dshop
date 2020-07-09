@@ -1,13 +1,14 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 
 import useBackendApi from 'utils/useBackendApi'
+import useRedirect from 'utils/useRedirect'
+
 import Link from 'components/Link'
 
 import UserForm from './_Form'
 
 const AdminNewUser = () => {
-  const history = useHistory()
+  const redirectTo = useRedirect()
 
   const { post } = useBackendApi({ authToken: true })
 
@@ -17,10 +18,7 @@ const AdminNewUser = () => {
       body: JSON.stringify(user)
     })
     if (seller) {
-      history.push({
-        pathname: `/super-admin/users/${seller.id}`,
-        state: { scrollToTop: true }
-      })
+      redirectTo(`/super-admin/users/${seller.id}`)
     }
   }
 

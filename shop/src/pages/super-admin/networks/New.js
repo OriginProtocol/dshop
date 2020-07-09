@@ -1,14 +1,14 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 
 import useConfig from 'utils/useConfig'
+import useRedirect from 'utils/useRedirect'
 import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
 import NetworkForm from './_Form'
 
 const NewNetwork = () => {
-  const history = useHistory()
+  const redirectTo = useRedirect()
   const { config } = useConfig()
   const [, dispatch] = useStateValue()
 
@@ -21,10 +21,7 @@ const NewNetwork = () => {
     })
       .then((res) => {
         if (res.ok) {
-          history.push({
-            pathname: `/super-admin/networks`,
-            state: { scrollToTop: true }
-          })
+          redirectTo('/super-admin/networks')
           dispatch({ type: 'reload', target: 'auth' })
         }
       })

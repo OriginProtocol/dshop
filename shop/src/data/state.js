@@ -247,7 +247,8 @@ const reducer = (state, action) => {
   } else if (action.type === 'toast') {
     newState = set(newState, `toasts[${newState.toasts.length}]`, {
       message: action.message,
-      id: +new Date()
+      id: +new Date(),
+      type: action.style
     })
   }
 

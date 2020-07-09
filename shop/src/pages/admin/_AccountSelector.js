@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { useHistory, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
+import useRedirect from 'utils/useRedirect'
 
 import Caret from 'components/icons/Caret'
 import Popover from 'components/Popover'
@@ -28,7 +29,7 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
   const [shouldClose, setShouldClose] = useState(0)
   const { config, setActiveShop } = useConfig()
   const [{ admin }] = useStateValue()
-  const history = useHistory()
+  const redirectTo = useRedirect()
   const location = useLocation()
   const shops = get(admin, 'shops', [])
 
@@ -72,16 +73,10 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
               setActiveShop(shop.authToken)
               setShouldClose(shouldClose + 1)
               if (superAdmin) {
-                history.push({
-                  pathname: `/admin`,
-                  state: { scrollToTop: true }
-                })
+                redirectTo('/admin')
               }
               if (!isAdmin) {
-                history.push({
-                  pathname: `/`,
-                  state: { scrollToTop: true }
-                })
+                redirectTo('/')
               }
             }}
           >
@@ -95,10 +90,7 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
             onClick={() => {
               setActiveShop()
               setShouldClose(shouldClose + 1)
-              history.push({
-                pathname: `/super-admin/shops`,
-                state: { scrollToTop: true }
-              })
+              redirectTo('/super-admin/shops')
             }}
           >
             <img src="images/green-checkmark.svg" />

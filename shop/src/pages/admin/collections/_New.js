@@ -1,5 +1,4 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 import kebabCase from 'lodash/kebabCase'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
@@ -8,6 +7,7 @@ import useSetState from 'utils/useSetState'
 import useCollections from 'utils/useCollections'
 import useBackendApi from 'utils/useBackendApi'
 import useAutoFocus from 'utils/useAutoFocus'
+import useRedirect from 'utils/useRedirect'
 import { useStateValue } from 'data/state'
 
 function validate(state) {
@@ -25,7 +25,7 @@ function validate(state) {
 }
 
 const AdminCreateCollection = ({ className = '', children, onSuccess }) => {
-  const history = useHistory()
+  const redirectTo = useRedirect()
   const [, dispatch] = useStateValue()
   const title = useAutoFocus()
   const { collections } = useCollections()
@@ -68,10 +68,7 @@ const AdminCreateCollection = ({ className = '', children, onSuccess }) => {
         if (onSuccess) {
           onSuccess()
         } else {
-          history.push({
-            pathname: '/admin/collections',
-            state: { scrollToTop: true }
-          })
+          redirectTo('/admin/collections')
         }
       }}
     >

@@ -1,11 +1,11 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
 import useProducts from 'utils/useProducts'
+import useRedirect from 'utils/useRedirect'
 
 import { useStateValue } from 'data/state'
 
@@ -16,7 +16,7 @@ const Onboarding = () => {
   const { shopConfig } = useShopConfig()
   const { products } = useProducts()
   const [{ admin }] = useStateValue()
-  const history = useHistory()
+  const redirectTo = useRedirect()
 
   const hasSocialLinks = !!(
     config &&
@@ -118,10 +118,7 @@ const Onboarding = () => {
                 key={task.id}
                 onClick={() => {
                   if (task.link) {
-                    history.push({
-                      pathname: task.link,
-                      state: { scrollToTop: true }
-                    })
+                    redirectTo(task.link)
                   }
                 }}
               >
@@ -149,10 +146,7 @@ const Onboarding = () => {
                 key={task.id}
                 onClick={() => {
                   if (task.link) {
-                    history.push({
-                      pathname: task.link,
-                      state: { scrollToTop: true }
-                    })
+                    redirectTo(task.link)
                   }
                 }}
               >
