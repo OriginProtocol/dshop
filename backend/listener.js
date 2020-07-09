@@ -7,8 +7,8 @@ const Web3 = require('web3')
 const get = require('lodash/get')
 
 const { Op, Network } = require('./models')
-const { handleLog } = require('./utils/handleLog')
 const { getLogger } = require('./utils/logger')
+const { eventsQueue } = require('./queues/queues')
 
 const log = getLogger('listener')
 
@@ -73,7 +73,7 @@ async function connectWS({ network }) {
   const { networkId, providerWs } = network
   const address = network.marketplaceContract
   const contractVersion = network.marketplaceVersion
-  lastBlock = network.lastBlock
+  lastBlock = network.lastBlock ? network.lastBlock : 0
   log.info(`Connecting to ${providerWs} (netId ${networkId})`)
   log.info(
     `Watching events on contract version ${contractVersion} at ${address}`
@@ -129,22 +129,32 @@ async function connectWS({ network }) {
     } else if (data.id === 3) {
       log.info(`Got ${data.result.length} unhandled logs`)
       for (const result of data.result) {
-        await handleLog({
-          ...result,
-          web3,
+        await eventsQueue.add(
+          {
+            ...result,
+            address,
+            networkId,
+            contractVersion
+          },
+          {
+            attempts: 3,
+            jobId: result.transactionHash
+          }
+        )
+      }
+    } else if (get(data, 'params.subscription') === logs) {
+      await eventsQueue.add(
+        {
+          ...data.params.result,
           address,
           networkId,
           contractVersion
-        })
-      }
-    } else if (get(data, 'params.subscription') === logs) {
-      await handleLog({
-        ...data.params.result,
-        web3,
-        address,
-        networkId,
-        contractVersion
-      })
+        },
+        {
+          attempts: 3,
+          jobId: data.params.result.transactionHash
+        }
+      )
     } else if (get(data, 'params.subscription') === heads) {
       const number = handleNewHead(data.params.result, networkId)
       const blockDiff = number - lastBlock
@@ -167,13 +177,16 @@ const handleNewHead = (head, networkId) => {
   const number = web3.utils.hexToNumber(head.number)
   const timestamp = web3.utils.hexToNumber(head.timestamp)
 
-  Network.update({ networkId, lastBlock: number }, {
-    where: {
-      lastBlock: {
-        [Op.lt]: number
+  Network.update(
+    { networkId, lastBlock: number },
+    {
+      where: {
+        lastBlock: {
+          [Op.lt]: number
+        }
       }
     }
-  })
+  )
 
   log.debug(`New block ${number} timestamp: ${timestamp}`)
 
