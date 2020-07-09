@@ -288,6 +288,7 @@ module.exports = function (app) {
     const OutputDir = `${DSHOP_CACHE}/${dataDir}`
 
     if (fs.existsSync(OutputDir) && req.body.shopType !== 'local-dir') {
+      log.warn(`${OutputDir} alraedy exists`)
       return res.json({
         success: false,
         reason: 'invalid',
