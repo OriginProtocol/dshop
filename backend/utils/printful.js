@@ -31,11 +31,19 @@ const PrintfulWebhookEvents = {
   OrderRemoveHold: 'order_remove_hold'
 }
 
-const fetchOrder = async (apiKey, orderId) => {
+/**
+ * Fetches a Printful order.
+ * @param {string} apiKey: Prinful API key.
+ * @param {string} orderId: dshop order id.
+ *    Format: <networkId>-<contractVersion>-<listingId>-<offerId>.
+ *    Example: '1-001-81-231'
+ * @returns {Promise<{message: string, status: integer}|{[p: string]: *}|{message: (*|string), status: *}>}
+ */
+const fetchOrder2 = async (apiKey, orderId) => {
   if (!apiKey) {
     return {
       status: 500,
-      message: 'Missing printful API configuration'
+      message: 'Missing Printful API configuration'
     }
   }
 
@@ -47,8 +55,15 @@ const fetchOrder = async (apiKey, orderId) => {
       authorization: `Basic ${apiAuth}`
     }
   })
-  const json = await result.json()
+  const json = (await result.json()) || {}
+  if (!result.ok) {
+    return {
+      status: result.status,
+      message: json.result || 'Printful API call failed'
+    }
+  }
   return {
+    status: 200,
     success: true,
     ...get(json, 'result', {})
   }
