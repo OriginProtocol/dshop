@@ -108,7 +108,9 @@ async function getEmailTransporter(shop) {
 async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   const transporter = await getEmailTransporter(shop)
   if (!transporter) {
-    log.info('Emailer not configured. Skipping sending email.')
+    log.info(
+      `Emailer not configured for shop id {shop.id}. Skipping sending new order email.`
+    )
     return
   }
 
@@ -246,7 +248,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   if (!skip) {
     transporter.sendMail(message, (err, msg) => {
       if (err) {
-        log.error('Error sending user confirmation email:', err)
+        log.error('Error sending buyer confirmation email:', err)
       } else {
         log.info('Buyer confirmation email sent')
         log.debug(msg.envelope)
@@ -272,7 +274,9 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
   const shop = await Shop.findOne({ where: { id: shopId } })
   const transporter = await getEmailTransporter(shop)
   if (!transporter) {
-    log.debug('Emailer disabled. Skipping sending email.')
+    log.info(
+      `Emailer not configured for shop id {shopId}. Skipping sending verification email.`
+    )
     return
   }
 
@@ -322,7 +326,9 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
   const shop = await Shop.findOne({ where: { id: shopId } })
   const transporter = await getEmailTransporter(shop)
   if (!transporter) {
-    log.debug('Emailer disabled. Skipping sending email.')
+    log.info(
+      `Emailer not configured for shop id {shopId}. Skipping sending Printful order failed email.`
+    )
     return
   }
 
