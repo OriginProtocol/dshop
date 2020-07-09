@@ -32,8 +32,8 @@ module.exports = function (app) {
 
   app.post('/discounts', authSellerAndShop, async (req, res) => {
     const discount = await Discount.create({
-      shopId: req.shop.id,
-      ...req.body
+      ...req.body,
+      shopId: req.shop.id
     })
     res.json({ success: true, discount })
   })
