@@ -1,12 +1,12 @@
 import React, { useRef, useState } from 'react'
 import { formInput, formFeedback } from 'utils/formHelpers'
 
-const TokenComponent = ({ values, onChange, validationError }) => {
+const TokenComponent = ({ values, onChange, validationError, disabled }) => {
   const inputRef = useRef()
   const [newValue, setNewValue] = useState('')
 
   const onClickListener = (e) => {
-    if (e.target.matches('.option-token-comp')) {
+    if (e.target.matches('.option-token-comp') && !disabled) {
       inputRef.current.focus()
     }
   }
@@ -14,7 +14,9 @@ const TokenComponent = ({ values, onChange, validationError }) => {
   return (
     <>
       <div
-        className={`option-token-comp${validationError ? ' is-invalid' : ''}`}
+        className={`option-token-comp${validationError ? ' is-invalid' : ''}${
+          disabled ? ' disabled' : ''
+        }`}
         onClick={onClickListener}
       >
         {values.map((v, index) => {
@@ -22,6 +24,7 @@ const TokenComponent = ({ values, onChange, validationError }) => {
             <div
               className="token"
               onClick={() => {
+                if (disabled) return
                 const updatedValues = [...values]
                 updatedValues.splice(index, 1)
                 onChange(updatedValues)
@@ -29,25 +32,27 @@ const TokenComponent = ({ values, onChange, validationError }) => {
               key={index}
             >
               {v}
-              <div className="remove-icon">&times;</div>
+              {disabled ? null : <div className="remove-icon">&times;</div>}
             </div>
           )
         })}
-        <input
-          placeholder="Add a new value"
-          ref={inputRef}
-          value={newValue}
-          onChange={(e) => setNewValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              onChange(Array.from(new Set([...values, newValue])))
-              setNewValue('')
-            } else if (e.key === 'Backspace' && newValue.length === 0) {
-              onChange(values.slice(0, -1))
-            }
-          }}
-        />
+        {disabled ? null : (
+          <input
+            placeholder="Add a new value"
+            ref={inputRef}
+            value={newValue}
+            onChange={(e) => setNewValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                onChange(Array.from(new Set([...values, newValue])))
+                setNewValue('')
+              } else if (e.key === 'Backspace' && newValue.length === 0) {
+                onChange(values.slice(0, -1))
+              }
+            }}
+          />
+        )}
       </div>
       {validationError && (
         <div className="invalid-feedback d-block">{validationError}</div>
@@ -61,7 +66,8 @@ const EditOptions = ({
   setFormState,
   label,
   onRemove,
-  placeholder
+  placeholder,
+  disabled
 }) => {
   const input = formInput(formState, (newState) => setFormState(newState))
   const Feedback = formFeedback(formState)
@@ -71,23 +77,31 @@ const EditOptions = ({
       <>
         <div className="col-md-6">
           <label>{label}</label>
-          <input type="text" {...input('title')} placeholder={placeholder} />
+          <input
+            type="text"
+            {...input('title')}
+            placeholder={placeholder}
+            disabled={disabled}
+          />
           {Feedback('title')}
         </div>
         <div className="col-md-6">
           <div className="d-flex">
-            <button
-              type="button"
-              className="remove-link btn btn-link ml-auto"
-              onClick={onRemove}
-            >
-              Remove
-            </button>
+            {disabled ? null : (
+              <button
+                type="button"
+                className="remove-link btn btn-link ml-auto"
+                onClick={onRemove}
+              >
+                Remove
+              </button>
+            )}
           </div>
           <TokenComponent
             values={formState.options || []}
             onChange={(newOptions) => setFormState({ options: newOptions })}
             validationError={formState.optionsError}
+            disabled={disabled}
           />
         </div>
       </>
@@ -140,6 +154,12 @@ require('react-styl')(`
         padding-left: 0.5rem
         color: #3b80ee
         font-size: 1rem
+
+    &.disabled
+      margin-top: 2rem
+      cursor: auto
+      .token
+        cursor: auto
 
     input
       padding: 0.25rem 0.5rem

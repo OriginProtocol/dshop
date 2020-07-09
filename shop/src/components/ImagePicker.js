@@ -13,7 +13,7 @@ function reducer(state, newState) {
 }
 
 const PreviewImages = (props) => {
-  const { dragging, dragTarget, onChange, onDragStateChange } = props
+  const { dragging, dragTarget, onChange, onDragStateChange, disabled } = props
 
   const images = useMemo(() => {
     const a = [...(props.images || [])]
@@ -28,57 +28,68 @@ const PreviewImages = (props) => {
 
   if (images.length === 0) return null
 
-  return images.map((image, idx) => (
-    <div
-      key={image.src}
-      className={`preview-row${dragTarget === idx ? ' dragging' : ''}`}
-      draggable
-      onDragEnd={(e) => {
-        if (e.dataTransfer.items.length > 0) return
-        onDragStateChange({ dragging: null, dragTarget: null })
-        onChange(images)
-      }}
-      onDragEnter={(e) => {
-        if (e.dataTransfer.items.length > 0) return
-        onDragStateChange({ dragTarget: idx })
-      }}
-      onDragOver={(e) => {
-        if (e.dataTransfer.items.length > 0) return
-        e.preventDefault()
-      }}
-      onDragStart={(e) => {
-        if (e.dataTransfer.items.length > 0) return
-        if (e.target.className.match(/preview-row/)) {
-          setTimeout(() => onDragStateChange({ dragging: idx }))
-        } else {
+  return images.map((image, idx) => {
+    let eventProps = {
+      className: 'preview-row disabled'
+    }
+
+    if (!disabled) {
+      eventProps = {
+        className: `preview-row${dragTarget === idx ? ' dragging' : ''}`,
+        draggable: true,
+        onDragEnd: (e) => {
+          if (e.dataTransfer.items.length > 0) return
+          onDragStateChange({ dragging: null, dragTarget: null })
+          onChange(images)
+        },
+        onDragEnter: (e) => {
+          if (e.dataTransfer.items.length > 0) return
+          onDragStateChange({ dragTarget: idx })
+        },
+        onDragOver: (e) => {
+          if (e.dataTransfer.items.length > 0) return
           e.preventDefault()
+        },
+        onDragStart: (e) => {
+          if (e.dataTransfer.items.length > 0) return
+          if (e.target.className.match(/preview-row/)) {
+            setTimeout(() => onDragStateChange({ dragging: idx }))
+          } else {
+            e.preventDefault()
+          }
         }
-      }}
-    >
-      <div className="img" style={{ backgroundImage: `url(${image.src})` }} />
-      <div className="info">
-        <div className="img-title">{image.name || image.path}</div>
-        <div className="img-subtitle">
-          {idx === 0 ? 'Cover image' : `Image ${idx}`}
+      }
+    }
+
+    return (
+      <div key={image.src} {...eventProps}>
+        <div className="img" style={{ backgroundImage: `url(${image.src})` }} />
+        <div className="info">
+          <div className="img-title">{image.name || image.path}</div>
+          <div className="img-subtitle">
+            {idx === 0 ? 'Cover image' : `Image ${idx}`}
+          </div>
+        </div>
+        <div className="actions">
+          {disabled ? null : (
+            <a
+              href="#"
+              title="Remove"
+              onClick={(e) => {
+                e.preventDefault()
+                onChange(images.filter((i, offset) => idx !== offset))
+              }}
+              children={<>&times;</>}
+            />
+          )}
         </div>
       </div>
-      <div className="actions">
-        <a
-          href="#"
-          title="Remove"
-          onClick={(e) => {
-            e.preventDefault()
-            onChange(images.filter((i, offset) => idx !== offset))
-          }}
-          children={<>&times;</>}
-        />
-      </div>
-    </div>
-  ))
+    )
+  })
 }
 
 const ImagePicker = (props) => {
-  const { onChange } = props
+  const { onChange, disabled } = props
   const [state, setState] = useReducer(reducer, {})
 
   const { config } = useConfig()
@@ -131,6 +142,16 @@ const ImagePicker = (props) => {
   }
 
   const hasImages = !!(state.images && state.images.length > 0)
+
+  if (disabled) {
+    return (
+      <div className="image-picker">
+        {!hasImages ? null : (
+          <PreviewImages images={state.images} disabled={true} />
+        )}
+      </div>
+    )
+  }
 
   return (
     <div
@@ -257,12 +278,14 @@ require('react-styl')(`
 
       position: relative
       background: var(--white)
-      cursor: move
 
       border-radius: 2px
       border: solid 1px #cdd7e0
       background-color: #ffffff
       padding: 10px
+
+      &:not(.disabled)
+        cursor: move
 
       .info
         font-size: 0.875rem
