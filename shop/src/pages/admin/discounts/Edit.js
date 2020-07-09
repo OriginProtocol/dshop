@@ -140,9 +140,7 @@ const AdminEditDiscount = () => {
           <span className="chevron" />
           {title}
           <div className="actions">
-            {!discount ? null : (
-              <DeleteButton discount={discount} />
-            )}
+            {!discount ? null : <DeleteButton discount={discount} />}
             <button type="submit" className="btn btn-primary">
               Save
             </button>
