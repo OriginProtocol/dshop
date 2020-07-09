@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useReducer, useMemo } from 'react'
 import useConfig from 'utils/useConfig'
+import loadImage from 'utils/loadImage'
 
 const acceptedFileTypes = [
   'image/jpeg',
@@ -97,9 +98,7 @@ const ImagePicker = (props) => {
   const uploadRef = useRef()
 
   useEffect(() => {
-    setState({
-      images: props.images || []
-    })
+    setState({ images: props.images || [] })
   }, [props.images])
 
   const uploadImages = async (files) => {
@@ -107,7 +106,21 @@ const ImagePicker = (props) => {
       const formData = new FormData()
 
       for (const file of files) {
-        formData.append('file', file)
+        const processedFile = await new Promise((resolve) => {
+          loadImage(
+            file,
+            (img) => {
+              return img.toBlob((blob) => resolve(blob), 'image/jpeg')
+            },
+            {
+              orientation: true,
+              maxWidth: 2000,
+              maxHeight: 2000,
+              canvas: true
+            }
+          )
+        })
+        formData.append('file', processedFile)
       }
 
       const resp = await fetch(`/products/upload-images`, {
@@ -119,7 +132,6 @@ const ImagePicker = (props) => {
       })
 
       const jsonResp = await resp.json()
-
       return jsonResp.uploadedFiles
     } catch (error) {
       console.error('Could not upload images', error)
@@ -163,9 +175,7 @@ const ImagePicker = (props) => {
 
         if (e.currentTarget.matches('.image-picker, .image-picker *')) {
           clearTimeout(window.__dragLeaveTimeout)
-          setState({
-            externalDrop: true
-          })
+          setState({ externalDrop: true })
         }
       }}
       onDragLeave={(e) => {
@@ -176,9 +186,7 @@ const ImagePicker = (props) => {
         e.stopPropagation()
 
         window.__dragLeaveTimeout = setTimeout(() => {
-          setState({
-            externalDrop: false
-          })
+          setState({ externalDrop: false })
         }, 300)
       }}
       onDrop={async (e) => {
@@ -186,9 +194,7 @@ const ImagePicker = (props) => {
         e.preventDefault()
         e.stopPropagation()
 
-        setState({
-          externalDrop: false
-        })
+        setState({ externalDrop: false })
 
         const files = Array.from(e.dataTransfer.items).map((x) => x.getAsFile())
         await filesAdded(files)

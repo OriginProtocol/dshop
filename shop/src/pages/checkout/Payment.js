@@ -39,8 +39,18 @@ const CheckoutPayment = () => {
         <b>Payment</b>
         <div>All transactions are secure and encrypted</div>
       </div>
-
-      <ChoosePayment />
+      {!config.listingId ? (
+        <>
+          <div className="alert alert-danger mt-4">
+            Sorry, this shop is not set up to accept payment
+          </div>
+          <div className="actions">
+            <Link to="/checkout/shipping">&laquo; Return to shipping</Link>
+          </div>
+        </>
+      ) : (
+        <ChoosePayment />
+      )}
 
       <BetaWarning />
     </div>

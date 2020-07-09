@@ -1,12 +1,12 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 
 import { useStateValue } from 'data/state'
+import useRedirect from 'utils/useRedirect'
 import useBackendApi from 'utils/useBackendApi'
 import ConfirmationModal from 'components/ConfirmationModal'
 
 const AdminMakeActiveNetwork = ({ network }) => {
-  const history = useHistory()
+  const redirectTo = useRedirect()
   const { post } = useBackendApi()
   const [, dispatch] = useStateValue()
 
@@ -19,10 +19,7 @@ const AdminMakeActiveNetwork = ({ network }) => {
         post(`/networks/${network.networkId}/make-active`, { method: 'POST' })
       }
       onSuccess={() => {
-        history.push({
-          pathname: '/super-admin/networks',
-          state: { scrollToTop: true }
-        })
+        redirectTo('/super-admin/networks')
         dispatch({ type: 'reload', target: 'auth' })
       }}
     />

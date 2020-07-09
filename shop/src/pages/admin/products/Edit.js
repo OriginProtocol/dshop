@@ -112,7 +112,10 @@ const EditProduct = () => {
   const [submitting, setSubmitting] = useState(false)
   const [, setSubmitError] = useState(null)
 
-  const [formState, setFormState] = useSetState({})
+  const [formState, setFormState] = useSetState({
+    options: [],
+    variants: []
+  })
   const [selectedCollections, setSelectedCollections] = useState([])
 
   const [hasOptions, setHasOptions] = useState(false)
@@ -231,6 +234,11 @@ const EditProduct = () => {
 
     if (!valid) {
       setSubmitError('Please fill in all required fields')
+      dispatch({
+        type: 'toast',
+        message: 'Please fill in all required fields',
+        style: 'error'
+      })
       return
     }
 
@@ -650,8 +658,6 @@ require('react-styl')(`
       margin-bottom: 5rem
       display: flex
       justify-content: flex-end
-    .actions .btn
-      width: 120px
 
     .form-group, .form-check
       margin-bottom: 1rem

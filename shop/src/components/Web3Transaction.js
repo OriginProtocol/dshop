@@ -111,7 +111,8 @@ const Web3Transaction = ({
         setState({
           modal: true,
           title: `Submitted to blockchain...`,
-          description: '',
+          description:
+            'You can continue to monitor this transaction in your wallet',
           spinner: true
         })
 
@@ -173,7 +174,7 @@ const Web3Transaction = ({
             className="btn btn-outline-primary px-4"
             type="button"
             onClick={() => setState({ shouldClose: true })}
-            children="Dismiss"
+            children="Hide"
           />
         </div>
       </div>

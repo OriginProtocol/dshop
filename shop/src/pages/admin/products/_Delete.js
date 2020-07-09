@@ -1,12 +1,12 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 
+import useRedirect from 'utils/useRedirect'
 import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
 import ConfirmationModal from 'components/ConfirmationModal'
 
 const DeleteProduct = ({ product, className = '', children }) => {
-  const history = useHistory()
+  const redirectTo = useRedirect()
   const [, dispatch] = useStateValue()
   const { post } = useBackendApi({ authToken: true })
 
@@ -19,10 +19,7 @@ const DeleteProduct = ({ product, className = '', children }) => {
       onConfirm={() => post(`/products/${product.id}`, { method: 'DELETE' })}
       onSuccess={async () => {
         dispatch({ type: 'reload', target: 'products' })
-        history.push({
-          pathname: '/admin/products',
-          state: { scrollToTop: true }
-        })
+        redirectTo('/admin/products')
       }}
     />
   )
