@@ -18,6 +18,8 @@ import ContractSettings from './ContractSettings'
 import DisconnectModal from './_DisconnectModal'
 import CreateListing from './_CreateListing'
 
+import ProcessorsList from 'components/settings/ProcessorsList'
+
 const PaymentSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
   const [{ admin }, dispatch] = useStateValue()
@@ -60,7 +62,27 @@ const PaymentSettings = () => {
         icon: <Icons.Uphold />,
         enabled: upholdEnabled
       }
-    ]
+    ].map((processor) => ({
+      // Add actions buttons
+      ...processor,
+      actions: (
+        <>
+          {processor.enabled ? (
+            <DisconnectModal
+              processor={processor}
+              afterDelete={() => refetch()}
+            />
+          ) : (
+            <button
+              className="btn btn-outline-primary px-4"
+              type="button"
+              onClick={() => setShowConnectModal(processor.id)}
+              children="Connect"
+            />
+          )}
+        </>
+      )
+    }))
   }, [shopConfig])
 
   const actions = (
@@ -131,7 +153,7 @@ const PaymentSettings = () => {
         <div className="actions ml-auto">{actions}</div>
       </h3>
       <Tabs />
-      <div className="admin-payment-settings shop-settings">
+      <div className="admin-payment-settings shop-settings processors-list">
         <div className="processor web3">
           <div className="icon">
             <Icons.Web3 />
@@ -164,37 +186,7 @@ const PaymentSettings = () => {
             )}
           </div>
         </div>
-        {Processors.map((processor) => (
-          <div key={processor.id} className={`processor ${processor.id}`}>
-            <div className="icon">{processor.icon}</div>
-            <div>
-              <div className="title">{processor.title}</div>
-              <div className="description">
-                {processor.description}
-                {!processor.enabled ? null : (
-                  <div className="connected-text">
-                    {processor.id === 'web3' ? 'Wallet Connected' : 'Connected'}
-                  </div>
-                )}
-              </div>
-              <div className="actions">
-                {processor.enabled ? (
-                  <DisconnectModal
-                    processor={processor}
-                    afterDelete={() => refetch()}
-                  />
-                ) : (
-                  <button
-                    className="btn btn-outline-primary px-4"
-                    type="button"
-                    onClick={() => setShowConnectModal(processor.id)}
-                    children="Connect"
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
+        <ProcessorsList processors={Processors} />
 
         {connectModal === 'web3' && <Web3Modal onClose={onCloseModal} />}
         {connectModal === 'stripe' && <StripeModal onClose={onCloseModal} />}
@@ -211,49 +203,4 @@ const PaymentSettings = () => {
 export default PaymentSettings
 
 require('react-styl')(`
-  .admin-payment-settings
-    .processor
-      margin-top: 2rem
-      display: flex
-      .icon
-        display: flex
-        align-items: center
-        justify-content: center
-        width: 115px
-        height: 115px
-        border-radius: 10px
-        margin-right: 1.5rem
-      &.stripe .icon
-        background-color: #6772e5
-      &.uphold .icon
-        background-color: #00cc58
-      &.web3 .icon
-        background-color: #3b80ee
-      &.printful .icon, &.sendgrid .icon, &.aws .icon, &.mailgun .icon
-        border: 1px solid #cdd7e0
-
-      > div:nth-child(2)
-        display: flex
-        flex-direction: column
-        line-height: normal
-        .title
-          font-weight: bold
-        .description
-          max-width: 30rem
-          flex: 1
-          margin: 0.5rem 0
-          .connected-text
-            margin-top: 0.5rem
-            display: flex
-            align-items: center
-            &:before
-              content: ' '
-              width: 14px
-              height: 14px
-              background-color: #3beec3
-              border-radius: 50%
-              display: inline-block
-              margin-right: 6px
-        .actions
-          margin-top: 0.25rem
 `)

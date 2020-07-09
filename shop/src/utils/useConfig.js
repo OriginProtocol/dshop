@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStateValue } from 'data/state'
-import fetchConfig from 'data/fetchConfig'
+import { fetchConfig } from 'data/fetchConfig'
 
 function useConfig() {
   const [{ config }, dispatch] = useStateValue()

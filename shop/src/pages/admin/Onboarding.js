@@ -203,20 +203,20 @@ require('react-styl')(`
           border-radius: 10px
           border: solid 1px #cdd7e0
           background-color: #fafbfc
-          padding: 1rem
+          padding: 1rem 1.25rem
           display: flex
+          min-height: 4.5rem
+          line-height: normal
           align-items: center
           cursor: pointer
 
           .task-name
             flex: 1
-            font-size: 1.125rem
+            font-size: 1.25rem
+            padding-bottom: 2px
 
           .icon
-            height: 48px
-            width: 48px
-            object-fit: contain
-            margin-right: 1rem
+            margin-right: 1.5rem
 
           .completed-icon
             height: 34px

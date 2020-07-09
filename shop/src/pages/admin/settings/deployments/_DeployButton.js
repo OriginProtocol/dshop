@@ -16,7 +16,7 @@ const AdminDeployShop = ({ className = 'btn-outline-primary', buttonText }) => {
     return (
       <ConfirmationModal
         className={`btn ${className}`}
-        buttonText={buttonText || 'Deploy'}
+        buttonText={buttonText || 'Publish'}
         confirmText="Please setup your Web3 wallet first"
         confirmedText={false}
         cancelText="Cancel"
@@ -34,10 +34,11 @@ const AdminDeployShop = ({ className = 'btn-outline-primary', buttonText }) => {
   return (
     <ConfirmationModal
       className={`btn ${className}`}
-      buttonText={buttonText || 'Deploy'}
-      confirmText="Are you sure you want to deploy?"
-      confirmedText="Deployed OK"
-      loadingText="Deploying..."
+      buttonText={buttonText || 'Publish'}
+      confirmText="Are you sure you want to publish changes?"
+      confirmedText="Published OK"
+      loadingText="Publishing..."
+      spinner={true}
       onConfirm={() => post(`/shop/deploy`)}
       onSuccess={() => {
         dispatch({ type: 'hasChanges', value: false })

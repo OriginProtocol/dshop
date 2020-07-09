@@ -7,6 +7,8 @@ const sharp = require('sharp')
 
 const { getLogger } = require('../utils/logger')
 
+const { Network, Shop } = require('../models')
+
 const cartData = require('./cartData')
 const encConf = require('./encryptedConfig')
 const { SUPPORT_EMAIL_OVERRIDE } = require('./const')
@@ -40,7 +42,28 @@ function optionsForItem(item) {
   return options
 }
 
-function getEmailTransporter(config) {
+async function getEmailTransporter(shop) {
+  let networkConfig = {}
+
+  // Try network's default config,
+  try {
+    const network = await Network.findOne({
+      where: { networkId: shop.networkId, active: true }
+    })
+    if (network) {
+      networkConfig = encConf.getConfig(network.config) || {}
+    }
+  } catch (err) {
+    log.error(`Failed to fetch network's default config`, err)
+  }
+
+  const shopConfig = encConf.getConfig(shop.config)
+
+  const config = {
+    ...networkConfig,
+    ...shopConfig
+  }
+
   let transporter
   if (config.email === 'sendgrid') {
     let auth
@@ -77,25 +100,24 @@ function getEmailTransporter(config) {
       secretAccessKey: config.awsAccessSecret
     })
     transporter = nodemailer.createTransport({ SES })
-  } else {
-    transporter = nodemailer.createTransport({ sendmail: true })
   }
 
   return transporter
 }
 
-async function sendNewOrderEmail(shopId, cart, varsOverride, skip) {
-  const config = await encConf.dump(shopId)
-  if (!config.email || config.email === 'disabled') {
+async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
+  const transporter = await getEmailTransporter(shop)
+  if (!transporter) {
     log.debug('Emailer disabled. Skipping sending email.')
     return
   }
+
   if (process.env.NODE_ENV === 'test') {
     log.info('Test environment. Email will be generated but not sent.')
     skip = true
   }
 
-  const transporter = getEmailTransporter(config)
+  const config = encConf.getConfig(shop.config)
 
   const dataURL = config.dataUrl
   let publicURL = config.publicUrl
@@ -107,17 +129,19 @@ async function sendNewOrderEmail(shopId, cart, varsOverride, skip) {
   for (const item of items) {
     const img = item.variant.image || item.product.image
     const options = optionsForItem(item)
-    const cid = `${img.replace(/[^a-z]/g, '')}`
+    const cid = img ? `${img.replace(/[^a-z]/g, '')}` : null
 
-    const imgStream = await fetch(`${dataURL}${item.product.id}/520/${img}`)
-    const imgBlob = await imgStream.arrayBuffer()
-    const content = await sharp(Buffer.from(imgBlob)).resize(100).toBuffer()
+    if (img) {
+      const imgStream = await fetch(`${dataURL}${item.product.id}/520/${img}`)
+      const imgBlob = await imgStream.arrayBuffer()
+      const content = await sharp(Buffer.from(imgBlob)).resize(100).toBuffer()
 
-    attachments.push({ filename: img, content, cid })
+      attachments.push({ filename: img, content, cid })
+    }
 
     orderItems.push(
       orderItem({
-        img: `cid:${cid}`,
+        img: img ? `cid:${cid}` : null,
         title: item.product.title,
         quantity: item.quantity,
         price: formatPrice(item.price),
@@ -243,8 +267,9 @@ async function sendNewOrderEmail(shopId, cart, varsOverride, skip) {
 }
 
 async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
-  const config = await encConf.dump(shopId)
-  if (!config.email || config.email === 'disabled') {
+  const shop = await Shop.findOne({ where: { id: shopId } })
+  const transporter = await getEmailTransporter(shop)
+  if (!transporter) {
     log.debug('Emailer disabled. Skipping sending email.')
     return
   }
@@ -253,8 +278,6 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
     log.info('Test environment. Email will be generated but not sent.')
     skip = true
   }
-
-  const transporter = getEmailTransporter(config)
 
   const { name, email } = seller
 
@@ -294,11 +317,14 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
 }
 
 async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
-  const config = await encConf.dump(shopId)
-  if (!config.email || config.email === 'disabled') {
+  const shop = await Shop.findOne({ where: { id: shopId } })
+  const transporter = await getEmailTransporter(shop)
+  if (!transporter) {
     log.debug('Emailer disabled. Skipping sending email.')
     return
   }
+
+  const config = encConf.getConfig(shop.config)
   if (process.env.NODE_ENV === 'test') {
     log.info('Test environment. Email will be generated but not sent.')
     skip = true
@@ -308,9 +334,6 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
   const publicURL = config.publicUrl
 
   const data = await getSiteConfig(dataURL)
-
-  const transporter = getEmailTransporter(config)
-
   const cart = orderData.data
 
   const vars = {
@@ -322,7 +345,6 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
   }
 
   const htmlOutput = mjml2html(pritnfulOrderFailed(vars), { minify: true })
-
   const txtOutput = pritnfulOrderFailedTxt(vars)
 
   const message = {

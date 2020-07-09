@@ -23,7 +23,7 @@ module.exports = function (app) {
     findOrder,
     async (req, res) => {
       try {
-        await sendNewOrderEmail(req.shop.id, JSON.parse(req.order.data))
+        await sendNewOrderEmail(req.shop, JSON.parse(req.order.data))
         res.json({ success: true })
       } catch (e) {
         res.json({ success: false })

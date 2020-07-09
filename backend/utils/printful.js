@@ -12,7 +12,7 @@ const generatePrintfulOrder = require('@origin/utils/generatePrintfulOrder')
 
 const { sendPrintfulOrderFailedEmail, sendNewOrderEmail } = require('./emailer')
 
-const { Order } = require('../models')
+const { Order, Shop } = require('../models')
 
 const PrintfulURL = 'https://api.printful.com'
 
@@ -191,9 +191,7 @@ const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
 
     // TODO: Should this be a configurable variable on admin?
     const draft = process.env.NODE_ENV === 'development'
-
     const printfulIdsFile = `${DSHOP_CACHE}/${shop.authToken}/data/printful-ids.json`
-
     const printfulIds = JSON.parse(fs.readFileSync(printfulIdsFile))
 
     const printfulOrderData = generatePrintfulOrder(
@@ -294,6 +292,8 @@ const processShippedEvent = async (event, shopId) => {
   try {
     const { shipment, order } = event
 
+    const shop = await Shop.findOne({ where: { id: shopId } })
+
     const dbOrder = await Order.findOne({
       where: {
         orderId: order.external_id,
@@ -306,7 +306,7 @@ const processShippedEvent = async (event, shopId) => {
       return
     }
 
-    await sendNewOrderEmail(shopId, dbOrder.data, {
+    await sendNewOrderEmail(shop, dbOrder.data, {
       trackingInfo: {
         trackingNumber: shipment.tracking_number,
         trackingUrl: shipment.tracking_url,

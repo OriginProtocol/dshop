@@ -71,7 +71,7 @@ module.exports = function (app) {
       log.error('Failed to validate secret on request', shopId, err)
     }
 
-    await processShippedEvent(data)
+    await processShippedEvent(data, shopId)
 
     return res.status(200).end()
   })

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useLocation } from 'react-router-dom'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
@@ -29,7 +29,11 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
   const { config, setActiveShop } = useConfig()
   const [{ admin }] = useStateValue()
   const history = useHistory()
+  const location = useLocation()
   const shops = get(admin, 'shops', [])
+
+  const isSuperAdmin = location.pathname.indexOf('/super-admin') === 0
+  const isAdmin = location.pathname.indexOf('/admin') === 0 || isSuperAdmin
 
   if (!shops.length || (!config.activeShop && !superAdmin)) {
     return null
@@ -70,6 +74,12 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
               if (superAdmin) {
                 history.push({
                   pathname: `/admin`,
+                  state: { scrollToTop: true }
+                })
+              }
+              if (!isAdmin) {
+                history.push({
+                  pathname: `/`,
                   state: { scrollToTop: true }
                 })
               }

@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from 'react'
 
 import useShopConfig from 'utils/useShopConfig'
+import useEmailAppsList from 'utils/useEmailAppsList'
+import maskSecret from 'utils/maskSecret'
+
 import Tabs from '../_Tabs'
 import PrintfulModal from './PrintfulModal'
 import PrintfulSync from './PrintfulSync'
@@ -9,43 +12,20 @@ import AWSModal from './AWSModal'
 import MailgunModal from './MailgunModal'
 import DisconnectModal from '../payments/_DisconnectModal'
 
-const maskSecret = (secret, maxLen) => {
-  const shouldTruncate = maxLen && secret.length > maxLen
-
-  return `${secret
-    .substr(
-      0,
-      shouldTruncate
-        ? Math.min(maxLen / 2, secret.length - 4)
-        : secret.length - 4
-    )
-    .replace(/[^-]/g, 'x')}${shouldTruncate ? '...' : ''}${secret.substr(
-    shouldTruncate ? -(maxLen / 2) : -4
-  )}`
-}
+import ProcessorsList from 'components/settings/ProcessorsList'
 
 const AppSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
 
   const [connectModal, setShowConnectModal] = useState(false)
 
-  const Processors = useMemo(() => {
+  const { emailAppsList } = useEmailAppsList({ shopConfig })
+
+  const appsList = useMemo(() => {
     if (!shopConfig) return []
 
-    const {
-      email,
-      printful,
-      sendgridApiKey,
-      sendgridUsername,
-      awsAccessKey,
-      mailgunSmtpLogin,
-      mailgunSmtpServer
-    } = shopConfig
+    const { printful } = shopConfig
     const printfulEnabled = !!printful
-
-    const sendgridEnabled = email === 'sendgrid'
-    const awsEnabled = email === 'aws'
-    const mailgunEnabled = email === 'mailgun'
 
     return [
       {
@@ -58,37 +38,40 @@ const AppSettings = () => {
         enabled: printfulEnabled,
         actions: <PrintfulSync className="mr-2" />
       },
-      {
-        id: 'sendgrid',
-        title: 'Sendgrid',
-        description: sendgridEnabled
-          ? `Sendgrid ${sendgridApiKey ? 'API key' : 'username'}: ${
-              sendgridApiKey ? maskSecret(sendgridApiKey, 12) : sendgridUsername
-            }`
-          : 'Send emails using SendGrid',
-        icon: <img src="images/sendgrid.png" width="100%" />,
-        enabled: sendgridEnabled
-      },
-      {
-        id: 'aws',
-        title: 'AWS SES',
-        description: awsEnabled
-          ? `AWS SES Access Key: ${maskSecret(awsAccessKey, 12)}`
-          : 'Send emails using AWS SES',
-        icon: <img src="images/aws-ses.png" width="60%" />,
-        enabled: awsEnabled
-      },
-      {
-        id: 'mailgun',
-        title: 'Mailgun',
-        description: mailgunEnabled
-          ? `Mailgun account: ${mailgunSmtpLogin}@${mailgunSmtpServer}`
-          : 'Send emails using Mailgun',
-        icon: <img src="images/mailgun.png" width="80%" />,
-        enabled: mailgunEnabled
-      }
-    ]
-  }, [shopConfig])
+      ...emailAppsList
+    ].map((processor) => ({
+      // Add actions buttons
+      ...processor,
+      actions: (
+        <>
+          {processor.enabled ? (
+            <>
+              {processor.actions}
+              <button
+                className="btn btn-outline-primary mr-2"
+                type="button"
+                onClick={() => setShowConnectModal(processor.id)}
+              >
+                Configure
+              </button>
+              <DisconnectModal
+                processor={processor}
+                afterDelete={() => refetch()}
+              />
+            </>
+          ) : (
+            <button
+              className="btn btn-outline-primary px-4"
+              type="button"
+              onClick={() => setShowConnectModal(processor.id)}
+            >
+              Connect
+            </button>
+          )}
+        </>
+      )
+    }))
+  }, [shopConfig, emailAppsList])
 
   let ModalToRender
 
@@ -111,52 +94,7 @@ const AppSettings = () => {
     <>
       <h3 className="admin-title">Settings</h3>
       <Tabs />
-      <div className="admin-payment-settings">
-        {Processors.map((processor) => (
-          <div key={processor.id} className={`processor ${processor.id}`}>
-            <div className="icon">{processor.icon}</div>
-            <div>
-              <div className="title">{processor.title}</div>
-              <div className="description">
-                {processor.description}
-                {!processor.enabled ? null : (
-                  <div className="connected-text">Connected</div>
-                )}
-              </div>
-              <div className="actions">
-                {processor.enabled ? (
-                  <>
-                    {processor.actions}
-                    <button
-                      className="btn btn-outline-primary mr-2"
-                      type="button"
-                      onClick={() => {
-                        setShowConnectModal(processor.id)
-                      }}
-                    >
-                      Configure
-                    </button>
-                    <DisconnectModal
-                      processor={processor}
-                      afterDelete={() => refetch()}
-                    />
-                  </>
-                ) : (
-                  <button
-                    className="btn btn-outline-primary px-4"
-                    type="button"
-                    onClick={() => {
-                      setShowConnectModal(processor.id)
-                    }}
-                  >
-                    Connect
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <ProcessorsList processors={appsList} />
       {!connectModal ? null : (
         <ModalToRender
           initialConfig={shopConfig}

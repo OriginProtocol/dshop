@@ -833,9 +833,28 @@ module.exports = function (app) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res, next) => {
-      const { seller, status, error } = await createSeller(req.body, {
-        shopId: req.shop.id
-      })
+      const shopId = req.shop.id
+      if (!req.body.email) {
+        return res.json({ success: false, message: 'No email specified' })
+      }
+
+      const { role } = req.body
+      const email = req.body.email.toLowerCase()
+      const existingSeller = await Seller.findOne({ where: { email } })
+      if (existingSeller) {
+        SellerShop.upsert({ sellerId: existingSeller.id, shopId, role })
+          .then(() => {
+            res.json({ success: true, sellerExists: true })
+          })
+          .catch((err) => {
+            log.error(err)
+            next(err)
+          })
+
+        return
+      }
+
+      const { seller, status, error } = await createSeller(req.body, { shopId })
 
       if (error) {
         return res.status(status).json({ success: false, message: error })
@@ -845,11 +864,7 @@ module.exports = function (app) {
         return res.json({ success: false })
       }
 
-      SellerShop.create({
-        sellerId: seller.id,
-        shopId: req.shop.id,
-        role: req.body.role
-      })
+      SellerShop.create({ sellerId: seller.id, shopId, role })
         .then(() => {
           res.json({ success: true })
         })

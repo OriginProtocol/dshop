@@ -43,7 +43,7 @@ const validate = (state, useBasicAuth) => {
   }
 }
 
-const SendgridModal = ({ onClose, initialConfig }) => {
+const SendgridModal = ({ onClose, initialConfig, overrideOnConnect }) => {
   const [state, setState] = useReducer(reducer, {
     ...initialState,
     ...pick(initialConfig, Object.keys(initialState))
@@ -64,6 +64,7 @@ const SendgridModal = ({ onClose, initialConfig }) => {
       }}
       onCancel={() => setState(initialState)}
       onClose={onClose}
+      overrideOnConnect={overrideOnConnect}
     >
       <div className="form-check my-3">
         <input
