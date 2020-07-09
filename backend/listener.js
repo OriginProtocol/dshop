@@ -6,7 +6,7 @@ const WebSocket = require('ws')
 const Web3 = require('web3')
 const get = require('lodash/get')
 
-const { Network } = require('./models')
+const { Op, Network } = require('./models')
 const { handleLog } = require('./utils/handleLog')
 const { getLogger } = require('./utils/logger')
 
@@ -167,7 +167,14 @@ const handleNewHead = (head, networkId) => {
   const number = web3.utils.hexToNumber(head.number)
   const timestamp = web3.utils.hexToNumber(head.timestamp)
 
-  Network.upsert({ networkId, lastBlock: number })
+  Network.update({ networkId, lastBlock: number }, {
+    where: {
+      lastBlock: {
+        [Op.lt]: number
+      }
+    }
+  })
+
   log.debug(`New block ${number} timestamp: ${timestamp}`)
 
   return number
