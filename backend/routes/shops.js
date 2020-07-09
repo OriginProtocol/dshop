@@ -903,6 +903,9 @@ module.exports = function (app) {
     }
   })
 
+  /**
+   * Called by super-admin for deploying a shop.
+   */
   app.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {
@@ -934,6 +937,9 @@ module.exports = function (app) {
     }
   })
 
+  /**
+   * Called by admin for deploying a shop.
+   */
   app.post(
     '/shop/deploy',
     authSellerAndShop,
@@ -958,6 +964,8 @@ module.exports = function (app) {
 
       let pinner, dnsProvider
 
+      // If both an IPFs cluster and Pinata are configured,
+      // we favor pinning on IPFS cluster.
       if (network.ipfsApi && networkConfig.ipfsClusterPassword) {
         pinner = 'ipfs-cluster'
       } else if (networkConfig.pinataKey) {
