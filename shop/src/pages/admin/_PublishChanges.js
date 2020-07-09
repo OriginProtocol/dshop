@@ -15,18 +15,18 @@ const PublishChanges = () => {
 
   return (
     <div className="changes">
-      <div>
-        You have changes that have not been published. Click “Publish Changes”
-        to make publicly visible.
+      You have changes that have not been published. Click “Publish Changes” to
+      make publicly visible.
+      <div className="actions">
+        <SwitchToStorefront
+          className="btn btn-sm btn-outline-primary"
+          children="Preview"
+        />
+        <DeployButton
+          className="btn-primary btn-sm"
+          buttonText="Publish Changes"
+        />
       </div>
-      <SwitchToStorefront
-        className="btn btn-sm btn-outline-primary ml-auto px-4"
-        children="Preview"
-      />
-      <DeployButton
-        className="btn-primary btn-sm ml-2 px-3"
-        buttonText="Publish Changes"
-      />
     </div>
   )
 }
@@ -42,7 +42,16 @@ require('react-styl')(`
     margin: -1.875rem -2.5rem 1.875rem -2.5rem
     font-size: 14px
     align-items: center
-    .btn
-      font-size: 12px
-      font-weight: bold
+    .actions
+      display: grid
+      margin-left: auto
+      grid-auto-flow: column
+      grid-auto-columns: 1fr
+      column-gap: 0.5rem
+      .btn
+        font-size: 12px
+        font-weight: bold
+        padding-left: 0.75rem
+        padding-right: 0.75rem
+        border-radius: 5px
 `)
