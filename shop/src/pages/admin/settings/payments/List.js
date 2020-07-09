@@ -87,7 +87,7 @@ const PaymentSettings = () => {
 
   const actions = (
     <>
-      <button type="button" className="btn btn-outline-primary mr-2">
+      <button type="button" className="btn btn-outline-primary">
         Cancel
       </button>
       <button type="submit" className="btn btn-primary" disabled={saving}>
@@ -150,7 +150,7 @@ const PaymentSettings = () => {
     >
       <h3 className="admin-title">
         Settings
-        <div className="actions ml-auto">{actions}</div>
+        <div className="actions">{actions}</div>
       </h3>
       <Tabs />
       <div className="admin-payment-settings shop-settings processors-list">

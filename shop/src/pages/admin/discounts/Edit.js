@@ -139,9 +139,9 @@ const AdminEditDiscount = () => {
           </Link>
           <span className="chevron" />
           {title}
-          <div className="actions ml-auto">
+          <div className="actions">
             {!discount ? null : (
-              <DeleteButton className="mr-2" discount={discount} />
+              <DeleteButton discount={discount} />
             )}
             <button type="submit" className="btn btn-primary">
               Save
@@ -290,8 +290,3 @@ const AdminEditDiscount = () => {
 }
 
 export default AdminEditDiscount
-
-require('react-styl')(`
-  .admin-title .actions button
-    min-width: 150px
-`)

@@ -35,7 +35,7 @@ const AdminUser = () => {
         </Link>
         <span className="chevron" />
         {user.name}
-        <div className="ml-auto">
+        <div className="actions">
           <Link
             to={`/super-admin/users/${userId}/edit`}
             className="btn btn-outline-primary"

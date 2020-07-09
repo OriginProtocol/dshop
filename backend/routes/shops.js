@@ -518,7 +518,7 @@ module.exports = function (app) {
               })
             })
           }
-          res.json({ fields, files })
+          res.json({ success: true, fields, files })
         } catch (e) {
           log.error(e)
           res.json({ success: false })

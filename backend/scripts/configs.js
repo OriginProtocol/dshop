@@ -53,15 +53,8 @@ const shopConfig = {
 
 const shipping = [
   {
-    id: 'domestic',
-    label: 'Free Shipping',
-    detail: 'Arrives in 7 to 10 days',
-    countries: ['US'],
-    amount: 0
-  },
-  {
     id: 'international',
-    label: 'Free International Shipping',
+    label: 'Free Shipping',
     detail: 'Arrives in 10 to 14 days',
     amount: 0
   }

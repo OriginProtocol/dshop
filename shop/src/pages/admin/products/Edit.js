@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouteMatch, useHistory } from 'react-router'
 
-import get from 'lodash/get'
+// import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
 
 import { useStateValue } from 'data/state'
@@ -13,8 +13,8 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import { generateVariants } from 'utils/generateVariants'
 
 import fetchProduct from 'data/fetchProduct'
-import { Countries } from '@origin/utils/Countries'
-import ProcessingTimes from '@origin/utils/ProcessingTimes'
+// import { Countries } from '@origin/utils/Countries'
+// import ProcessingTimes from '@origin/utils/ProcessingTimes'
 
 import ImagePicker from 'components/ImagePicker'
 import DeleteButton from './_Delete'
@@ -122,17 +122,17 @@ const EditProduct = () => {
   const input = formInput(formState, (newState) => setFormState(newState))
   const Feedback = formFeedback(formState)
 
-  const procTimeState = get(formState, 'processingTimeOpts', {})
+  // const procTimeState = get(formState, 'processingTimeOpts', {})
 
-  const customProcTimeInput = formInput(procTimeState, (newState) => {
-    setFormState({
-      processingTimeOpts: {
-        ...formState.processingTimeOpts,
-        ...newState
-      }
-    })
-  })
-  const customProcTimeFeedback = formFeedback(procTimeState)
+  // const customProcTimeInput = formInput(procTimeState, (newState) => {
+  //   setFormState({
+  //     processingTimeOpts: {
+  //       ...formState.processingTimeOpts,
+  //       ...newState
+  //     }
+  //   })
+  // })
+  // const customProcTimeFeedback = formFeedback(procTimeState)
 
   const title = `${isNewProduct ? 'Add' : 'Edit'} product`
 
@@ -258,6 +258,10 @@ const EditProduct = () => {
       dispatch({ type: 'toast', message: 'Product saved OK' })
       dispatch({ type: 'reload', target: ['products', 'collections'] })
 
+      if (!newState.id) {
+        history.push('/admin/products')
+      }
+
       return
     } catch (error) {
       console.error('Could not update the product', error)
@@ -285,9 +289,7 @@ const EditProduct = () => {
         </DeleteButton>
       )}
       <button
-        className={`btn btn-${
-          formState.hasChanges ? 'outline-' : ''
-        }primary ml-2`}
+        className={`btn btn-${formState.hasChanges ? 'outline-' : ''}primary`}
         type="submit"
       >
         Save
@@ -306,7 +308,7 @@ const EditProduct = () => {
       >
         <h3 className="admin-title with-border">
           {title}
-          <div className="ml-auto">{actions}</div>
+          {actions}
         </h3>
 
         <div className="row">
@@ -469,7 +471,7 @@ const EditProduct = () => {
               </>
             )}
 
-            <div>
+            {/* <div>
               <label>Shipping</label>
               <div className="form-check">
                 <input
@@ -603,7 +605,7 @@ const EditProduct = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </div> */}
           </div>
           <div className="col-md-3">
             <LinkCollections

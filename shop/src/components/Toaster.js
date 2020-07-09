@@ -3,11 +3,15 @@ import { useSpring, animated } from 'react-spring'
 
 import { useStateValue } from 'data/state'
 
-const reducer = (state, newState) => ({ ...state, ...newState })
+let savedState = {}
+const reducer = (state, newState) => {
+  savedState = { ...state, ...newState }
+  return savedState
+}
 
 const Toaster = () => {
   const [{ toasts }] = useStateValue()
-  const [hidden, setHidden] = useReducer(reducer, {})
+  const [hidden, setHidden] = useReducer(reducer, savedState)
   const visibleToasts = toasts.filter((t) => !hidden[t.id])
 
   return (
@@ -16,7 +20,10 @@ const Toaster = () => {
         <Toast
           key={toast.id}
           num={num}
-          onHide={(id) => setHidden({ [id]: true })}
+          onHide={(id) => {
+            setHidden({ [id]: true })
+            savedState[id] = true
+          }}
           {...toast}
         />
       ))}
@@ -30,7 +37,7 @@ const Toast = ({ id, num, message, onHide }) => {
   const modalProps = useSpring({
     config: { mass: 0.75, tension: 300, friction: 20 },
     opacity: show ? 1 : 0,
-    top: show ? num * 50 + 20 : -50,
+    top: show ? num * 50 + 100 : -50,
     zIndex: num + 1
   })
 
@@ -41,6 +48,7 @@ const Toast = ({ id, num, message, onHide }) => {
     return () => {
       clearTimeout(showTimeout)
       clearTimeout(hideTimeout)
+      onHide(id)
     }
   }, [])
 

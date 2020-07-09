@@ -22,7 +22,7 @@ const AdminUsers = () => {
     <>
       <h3 className="admin-title">
         Users
-        <div className="ml-auto">
+        <div className="actions">
           <Link to="/super-admin/users/new" className="btn btn-primary">
             Add user
           </Link>

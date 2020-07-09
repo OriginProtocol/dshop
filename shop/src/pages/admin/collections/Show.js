@@ -128,8 +128,8 @@ const ShowCollection = () => {
         </Link>
         <span className="chevron" />
         {state.title}
-        <div className="actions ml-auto">
-          <DeleteButton className="mr-2" collection={state.collection} />
+        <div className="actions">
+          <DeleteButton collection={state.collection} />
           <button className="btn btn-primary" disabled={state.saving}>
             {state.saving === 'saving'
               ? 'Saving...'

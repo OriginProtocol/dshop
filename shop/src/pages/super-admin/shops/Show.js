@@ -46,8 +46,8 @@ const AdminShop = () => {
         </Link>
         <span className="chevron" />
         {shop.name}
-        <div className="ml-auto">
-          <DeleteShop shop={shop} className="ml-2" />
+        <div className="actions">
+          <DeleteShop shop={shop} />
         </div>
       </h3>
 

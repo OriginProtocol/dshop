@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useStateValue } from 'data/state'
 import _get from 'lodash/get'
+import memoize from 'lodash/memoize'
 import useBackendApi from 'utils/useBackendApi'
+
+const getAuth = memoize((as, get) => get('/auth', { suppressError: true }))
 
 function useAuth(opts = {}) {
   const [loading, setLoading] = useState(true)
@@ -14,7 +17,7 @@ function useAuth(opts = {}) {
     if (!auth && (opts.only === undefined || opts.only())) {
       setLoading(true)
 
-      get('/auth', { suppressError: true })
+      getAuth(reload.auth, get)
         .then((auth) => {
           if (!isSubscribed) return
           if (_get(auth, 'success')) {
@@ -36,6 +39,7 @@ function useAuth(opts = {}) {
   function logout() {
     delete localStorage.isAdmin
     delete localStorage.activeShop
+    getAuth.cache.clear()
     post(`/auth/logout`).then(() => {
       dispatch({ type: 'logout' })
     })

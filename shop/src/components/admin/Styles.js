@@ -53,6 +53,15 @@ require('react-styl')(`
       line-height: normal
       min-height: 2.5rem
       margin-bottom: 1rem
+      .actions
+        margin-left: auto
+        display: grid
+        grid-auto-columns: 1fr
+        grid-auto-flow: column
+        column-gap: 0.75rem
+        .btn
+          padding-left: 2rem
+          padding-right: 2rem
       &.with-border
         padding-bottom: 1rem
         border-bottom: 1px solid #dfe2e6

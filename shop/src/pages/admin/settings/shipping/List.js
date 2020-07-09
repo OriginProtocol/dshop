@@ -16,7 +16,7 @@ const Shipping = () => {
     <div className="shipping-settings">
       <h3 className="admin-title">
         Settings
-        <div className="actions ml-auto">
+        <div className="actions">
           <button
             type="button"
             className="btn btn-primary"
@@ -33,8 +33,8 @@ const Shipping = () => {
         <table className="table mt-4">
           <thead>
             <tr>
-              <th>Method</th>
-              <th>Cost per shipment</th>
+              <th>Description</th>
+              <th>Total cost</th>
               <th>Countries</th>
               <th>Processing Time</th>
               <th></th>

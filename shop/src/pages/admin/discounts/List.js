@@ -38,7 +38,7 @@ const AdminDiscounts = () => {
       <h3 className="admin-title">
         Discounts
         {!discounts.length ? null : (
-          <div className="ml-auto">
+          <div className="actions">
             <Link to="/admin/discounts/new" className="btn btn-primary">
               Create discount
             </Link>

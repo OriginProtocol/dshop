@@ -38,14 +38,6 @@ const Onboarding = () => {
       link: '/admin/settings/payments'
     },
     {
-      id: 'payment_options',
-      completed:
-        get(config, 'paymentMethods.length', 0) > (web3Enabled ? 1 : 0),
-      icon: <Icons.Card />,
-      name: 'Set up your payment options',
-      link: '/admin/settings/payments'
-    },
-    {
       id: 'verify_email',
       completed: get(admin, 'emailVerified', false),
       icon: <Icons.Email />,
@@ -58,6 +50,13 @@ const Onboarding = () => {
       icon: <Icons.Box />,
       name: 'Add your first product',
       link: '/admin/products/new'
+    },
+    {
+      id: 'setup_shipping',
+      completed: get(products, 'length', 0) > 0,
+      icon: <Icons.Shipping />,
+      name: 'Set up your shipping options',
+      link: '/admin/settings/shipping'
     }
   ]
 
@@ -89,6 +88,13 @@ const Onboarding = () => {
       icon: <Icons.Link />,
       name: 'Add social media links',
       link: '/admin/settings'
+    },
+    {
+      id: 'payment_options',
+      completed: get(config, 'paymentMethods.length', 0) > 1,
+      icon: <Icons.Card />,
+      name: 'Add alternative payment options',
+      link: '/admin/settings/payments'
     }
   ]
 

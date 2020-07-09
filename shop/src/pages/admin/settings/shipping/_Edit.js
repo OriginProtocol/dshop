@@ -136,8 +136,13 @@ const EditShippingMethod = ({ onClose, shippingZone }) => {
           </div>
 
           <div className="form-group">
-            <label>Cost per shipment</label>
-            <input {...input('amount')} type="number" min="0" />
+            <label>Total cost</label>
+            <div className="input-group" style={{ maxWidth: 150 }}>
+              <div className="input-group-prepend">
+                <span className="input-group-text">$</span>
+              </div>
+              <input {...input('amount')} />
+            </div>
             {Feedback('amount')}
           </div>
 
