@@ -95,7 +95,7 @@ async function getEmailTransporter(shop) {
   } else if (config.email === 'aws') {
     const SES = new aws.SES({
       apiVersion: '2010-12-01',
-      region: 'us-east-1',
+      region: config.awsRegion || 'us-east-1',
       accessKeyId: config.awsAccessKey,
       secretAccessKey: config.awsAccessSecret
     })
@@ -108,7 +108,7 @@ async function getEmailTransporter(shop) {
 async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   const transporter = await getEmailTransporter(shop)
   if (!transporter) {
-    log.debug('Emailer disabled. Skipping sending email.')
+    log.info('Emailer not configured. Skipping sending email.')
     return
   }
 
@@ -248,6 +248,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
       if (err) {
         log.error('Error sending user confirmation email:', err)
       } else {
+        log.info('Buyer confirmation email sent')
         log.debug(msg.envelope)
       }
     })
@@ -257,6 +258,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
         if (err) {
           log.error('Error sending merchant confirmation email:', err)
         } else {
+          log.info('Merchant confirmation email sent')
           log.debug(msg.envelope)
         }
       })

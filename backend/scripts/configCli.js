@@ -6,7 +6,7 @@
 // Note: easiest is to run the script from local after having setup
 // a SQL proxy to prod and the ENCRYPTION_KEY env var.
 //
-const { Shop } = require('../models')
+const { Network, Shop } = require('../models')
 const { getLogger } = require('../utils/logger')
 const log = getLogger('cli')
 
@@ -14,15 +14,29 @@ const { getConfig } = require('../utils/encryptedConfig')
 
 /**
  * Dumps a shop config on the console.
+ * @param {models.Network} network
  * @param {models.Shop} shop
  * @returns {Promise<void>}
  */
-async function dump(shop) {
+async function dump(network, shop) {
+  const networkConfig = getConfig(network.config)
+  console.log('Network Id:', network.networkId)
+  console.log('Network Config:')
+  console.log(networkConfig)
+
   const shopConfig = getConfig(shop.config)
   console.log('Shop Id:', shop.id)
   console.log('Shop Name:', shop.name)
   console.log('Shop Config:')
   console.log(shopConfig)
+}
+
+async function _getNetwork(config) {
+  const network = await Network.findOne({ where: { networkId: config.networkId, active: true } })
+  if (!network) {
+    throw new Error(`No active network with id ${config.networkId}`)
+  }
+  return network
 }
 
 async function _getShop(config) {
@@ -44,10 +58,11 @@ async function _getShop(config) {
 }
 
 async function main(config) {
+  const network = await _getNetwork(config)
   const shop = await _getShop(config)
 
   if (config.action === 'dump') {
-    await dump(shop)
+    await dump(network, shop)
   } else {
     throw new Error(`Unsupported action ${config.action}`)
   }
