@@ -32,7 +32,9 @@ async function dump(network, shop) {
 }
 
 async function _getNetwork(config) {
-  const network = await Network.findOne({ where: { networkId: config.networkId, active: true } })
+  const network = await Network.findOne({
+    where: { networkId: config.networkId, active: true }
+  })
   if (!network) {
     throw new Error(`No active network with id ${config.networkId}`)
   }
