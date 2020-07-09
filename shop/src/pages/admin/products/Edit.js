@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouteMatch, useHistory } from 'react-router'
 
-// import get from 'lodash/get'
+import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
 
 import { useStateValue } from 'data/state'
@@ -118,6 +118,7 @@ const EditProduct = () => {
   const [hasOptions, setHasOptions] = useState(false)
 
   const isNewProduct = productId === 'new'
+  const externallyManaged = formState.externalId ? true : false
 
   const input = formInput(formState, (newState) => setFormState(newState))
   const Feedback = formFeedback(formState)
@@ -289,7 +290,9 @@ const EditProduct = () => {
         </DeleteButton>
       )}
       <button
-        className={`btn btn-${formState.hasChanges ? 'outline-' : ''}primary`}
+        className={`btn btn-${
+          formState.hasChanges ? 'outline-' : ''
+        }primary ml-2`}
         type="submit"
       >
         Save
@@ -314,29 +317,43 @@ const EditProduct = () => {
         <div className="row">
           <div className="col-md-9">
             <div className="form-section">
+              {!externallyManaged ? null : (
+                <div className="alert alert-info">
+                  This product was synced from Printful. Things you can update
+                  is limited. Update the other fields on Printful.
+                </div>
+              )}
               <div className="form-group">
                 <label>Title</label>
                 <input
                   type="text"
                   {...input('title')}
-                  autoFocus={isNewProduct}
+                  autoFocus={isNewProduct && !externallyManaged}
+                  disabled={externallyManaged}
                 />
                 {Feedback('title')}
               </div>
 
               <div className="form-group">
                 <label>Description</label>
-                <textarea {...input('description')} />
+                <textarea
+                  {...input('description')}
+                  disabled={externallyManaged}
+                />
                 {Feedback('description')}
               </div>
 
               <div className="media-uploader">
                 <label>
-                  Photos <span>(add as many as you like)</span>
+                  Photos{' '}
+                  {externallyManaged ? null : (
+                    <span>(add as many as you like)</span>
+                  )}
                 </label>
                 <ImagePicker
                   images={media}
                   onChange={(media) => setMedia(media)}
+                  disabled={externallyManaged}
                 />
               </div>
 
@@ -348,7 +365,7 @@ const EditProduct = () => {
                       <div className="input-group-prepend">
                         <span className="input-group-text">$</span>
                       </div>
-                      <input {...input('price')} />
+                      <input {...input('price')} disabled={externallyManaged} />
                     </div>
                     {Feedback('price')}
                   </div>
@@ -373,17 +390,14 @@ const EditProduct = () => {
               <div className="col-md-12">
                 <label>Variants</label>
                 <div className="form-check">
-                  <input
-                    id="variantsCheckbox"
-                    type="checkbox"
-                    className="form-check-input"
-                    checked={hasOptions}
-                    onChange={(e) => setHasOptions(e.target.checked)}
-                  />
-                  <label
-                    className="form-check-label"
-                    htmlFor="variantsCheckbox"
-                  >
+                  <label className="form-check-label">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={hasOptions}
+                      disabled={externallyManaged}
+                      onChange={(e) => setHasOptions(e.target.checked)}
+                    />
                     This product has multiple options, like different sizes
                   </label>
                 </div>
@@ -439,11 +453,13 @@ const EditProduct = () => {
                         availableOptions.splice(index, 1)
                         setFormState({ options, availableOptions })
                       }}
+                      disabled={externallyManaged}
                     />
                   )
                 })}
                 <div className="mb-5">
-                  {formState.options && formState.options.length >= 3 ? null : (
+                  {get(formState, 'options.length') >= 3 ||
+                  externallyManaged ? null : (
                     <button
                       className="btn btn-outline-primary"
                       type="button"
@@ -462,6 +478,7 @@ const EditProduct = () => {
                   options={formState.options}
                   variants={formState.variants}
                   media={media}
+                  disabled={externallyManaged}
                   onChange={(updatedVariants) => {
                     setFormState({
                       variants: updatedVariants

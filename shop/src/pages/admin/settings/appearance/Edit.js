@@ -125,6 +125,7 @@ const ShopAppearance = () => {
               ...pick(shopConfig, configFields)
             }
           })
+          dispatch({ type: 'hasChanges', value: true })
           dispatch({ type: 'toast', message: 'Saved settings OK' })
         } catch (err) {
           console.error(err)
