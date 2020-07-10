@@ -57,7 +57,7 @@ const EditNetwork = () => {
         <span className="chevron" />
         Edit
         {network.active ? null : (
-          <div className="ml-auto">
+          <div className="actions">
             <MakeActiveButton network={network} />
           </div>
         )}

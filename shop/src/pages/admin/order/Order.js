@@ -31,7 +31,7 @@ const AdminOrder = () => {
         </Link>
         <span className="chevron" />
         {`Order #${orderId}`}
-        <div style={{ fontSize: 18 }} className="ml-auto">
+        <div style={{ fontSize: 18 }} className="actions">
           <Link
             to={`/admin/orders/${listingId}-${offerId - 1}${
               tab ? `/${tab}` : ''
@@ -40,7 +40,6 @@ const AdminOrder = () => {
             &lt; Older
           </Link>
           <Link
-            className="ml-3"
             to={`/admin/orders/${listingId}-${offerId + 1}${
               tab ? `/${tab}` : ''
             }`}

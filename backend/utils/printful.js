@@ -14,7 +14,22 @@ const { sendPrintfulOrderFailedEmail, sendNewOrderEmail } = require('./emailer')
 
 const { Order, Shop } = require('../models')
 
+const encConf = require('./encryptedConfig')
+
+const { printfulSyncQueue } = require('../queues/queues')
+
 const PrintfulURL = 'https://api.printful.com'
+
+const PrintfulWebhookEvents = {
+  PackageShipped: 'package_shipped',
+  PackageReturned: 'package_returned',
+  OrderFailed: 'order_failed',
+  OrderCanceled: 'order_canceled',
+  ProductSynced: 'product_synced',
+  ProductUpdated: 'product_updated',
+  OrderPutHold: 'order_put_hold',
+  OrderRemoveHold: 'order_remove_hold'
+}
 
 const fetchOrder = async (apiKey, orderId) => {
   if (!apiKey) {
@@ -235,7 +250,7 @@ const registerPrintfulWebhook = async (shopId, shopConfig) => {
 
     const registerData = {
       url: webhookURL,
-      types: ['package_shipped']
+      types: Object.values(PrintfulWebhookEvents)
     }
 
     const resp = await fetch(url, {
@@ -319,6 +334,29 @@ const processShippedEvent = async (event, shopId) => {
   }
 }
 
+const processUpdatedEvent = async (event, shopId) => {
+  const {
+    sync_product: { id }
+  } = event
+
+  const shop = await Shop.findOne({ where: { id: shopId } })
+
+  const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
+
+  const apiKey = await encConf.get(shopId, 'printful')
+
+  log.debug(`Product ${id} updated. Started to sync all products...`)
+
+  await printfulSyncQueue.add(
+    {
+      shopId,
+      OutputDir,
+      apiKey
+    },
+    { attempts: 1 }
+  )
+}
+
 module.exports = {
   fetchOrder,
   placeOrder,
@@ -327,5 +365,7 @@ module.exports = {
   autoFulfillOrder,
   registerPrintfulWebhook,
   deregisterPrintfulWebhook,
-  processShippedEvent
+  processShippedEvent,
+  processUpdatedEvent,
+  PrintfulWebhookEvents
 }

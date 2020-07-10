@@ -75,10 +75,10 @@ const AdminProducts = () => {
         {hasNoProducts ? null : (
           <>
             <span className="ml-2">({sortedProducts.length})</span>
-            <div className="ml-auto">
+            <div className="actions">
               <Link
                 to="/admin/products/new"
-                className="btn btn-primary ml-3 px-4"
+                className="btn btn-primary"
                 children="Add Product"
               />
             </div>

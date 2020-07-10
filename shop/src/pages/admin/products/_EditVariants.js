@@ -2,7 +2,7 @@ import React from 'react'
 
 import SelectVariantImage from './_SelectVariantImage'
 
-const EditVariants = ({ options, variants, media, onChange }) => {
+const EditVariants = ({ options, variants, media, onChange, disabled }) => {
   if (!options || !variants) return null
 
   return (
@@ -28,6 +28,7 @@ const EditVariants = ({ options, variants, media, onChange }) => {
                   <input
                     type="checkbox"
                     checked={variant.available || false}
+                    disabled={disabled}
                     onChange={(e) => {
                       const updatedVariants = [...variants]
                       updatedVariants[index].available = e.target.checked
@@ -48,7 +49,7 @@ const EditVariants = ({ options, variants, media, onChange }) => {
                     <input
                       value={variant.price}
                       className="form-control"
-                      disabled={!variant.available}
+                      disabled={!variant.available || disabled}
                       onChange={(e) => {
                         const updatedVariants = [...variants]
                         updatedVariants[index].price = e.target.value
@@ -67,6 +68,7 @@ const EditVariants = ({ options, variants, media, onChange }) => {
                     updatedVariants[index].image = selectedMedia.path
                     onChange(updatedVariants)
                   }}
+                  disabled={disabled}
                 />
               </td>
             </tr>

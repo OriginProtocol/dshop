@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 
 import useSetState from 'utils/useSetState'
 import Modal from 'components/Modal'
+import { Spinner } from 'components/icons/Admin'
 
 const AdminConfirmationModal = ({
   className = 'btn btn-outline-primary',
@@ -19,7 +20,8 @@ const AdminConfirmationModal = ({
   customEl,
   modalOnly,
   shouldShow,
-  onClose
+  onClose,
+  spinner
 }) => {
   const [state, setState] = useSetState()
 
@@ -122,9 +124,14 @@ const AdminConfirmationModal = ({
                   />
                 </div>
               </>
-            ) : state.loading ? (
+            ) : state.loading && loadingText !== false ? (
               <>
                 <div className="text-lg">{loadingText}</div>
+                {!spinner ? null : (
+                  <div className="mt-4">
+                    <Spinner />
+                  </div>
+                )}
               </>
             ) : (
               <>
@@ -138,7 +145,9 @@ const AdminConfirmationModal = ({
                     children={cancelText}
                   />
                   <button
-                    className="btn btn-primary px-5 ml-3"
+                    className={`btn btn-primary px-5 ml-3${
+                      state.loading ? ' disabled' : ''
+                    }`}
                     children={proceedText}
                   />
                 </div>

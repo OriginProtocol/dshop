@@ -37,7 +37,7 @@ const AdminCollections = () => {
       <h3 className="admin-title">
         Collections
         {!collections.length ? null : (
-          <div className="ml-auto">
+          <div className="actions">
             <CreateCollection />
           </div>
         )}

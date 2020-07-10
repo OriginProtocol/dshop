@@ -41,7 +41,7 @@ const AdminUsers = () => {
     <>
       <h3 className="admin-title">
         Settings
-        <div className="actions ml-auto">
+        <div className="actions">
           <AddUserModal afterSave={() => loadUsers()} />
         </div>
       </h3>

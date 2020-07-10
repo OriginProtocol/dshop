@@ -1,11 +1,11 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
 import useProducts from 'utils/useProducts'
+import useRedirect from 'utils/useRedirect'
 
 import { useStateValue } from 'data/state'
 
@@ -16,7 +16,7 @@ const Onboarding = () => {
   const { shopConfig } = useShopConfig()
   const { products } = useProducts()
   const [{ admin }] = useStateValue()
-  const history = useHistory()
+  const redirectTo = useRedirect()
 
   const hasSocialLinks = !!(
     config &&
@@ -38,14 +38,6 @@ const Onboarding = () => {
       link: '/admin/settings/payments'
     },
     {
-      id: 'payment_options',
-      completed:
-        get(config, 'paymentMethods.length', 0) > (web3Enabled ? 1 : 0),
-      icon: <Icons.Card />,
-      name: 'Set up your payment options',
-      link: '/admin/settings/payments'
-    },
-    {
       id: 'verify_email',
       completed: get(admin, 'emailVerified', false),
       icon: <Icons.Email />,
@@ -58,6 +50,13 @@ const Onboarding = () => {
       icon: <Icons.Box />,
       name: 'Add your first product',
       link: '/admin/products/new'
+    },
+    {
+      id: 'setup_shipping',
+      completed: get(products, 'length', 0) > 0,
+      icon: <Icons.Shipping />,
+      name: 'Set up your shipping options',
+      link: '/admin/settings/shipping'
     }
   ]
 
@@ -89,6 +88,13 @@ const Onboarding = () => {
       icon: <Icons.Link />,
       name: 'Add social media links',
       link: '/admin/settings'
+    },
+    {
+      id: 'payment_options',
+      completed: get(config, 'paymentMethods.length', 0) > 1,
+      icon: <Icons.Card />,
+      name: 'Add alternative payment options',
+      link: '/admin/settings/payments'
     }
   ]
 
@@ -112,10 +118,7 @@ const Onboarding = () => {
                 key={task.id}
                 onClick={() => {
                   if (task.link) {
-                    history.push({
-                      pathname: task.link,
-                      state: { scrollToTop: true }
-                    })
+                    redirectTo(task.link)
                   }
                 }}
               >
@@ -143,10 +146,7 @@ const Onboarding = () => {
                 key={task.id}
                 onClick={() => {
                   if (task.link) {
-                    history.push({
-                      pathname: task.link,
-                      state: { scrollToTop: true }
-                    })
+                    redirectTo(task.link)
                   }
                 }}
               >
@@ -203,20 +203,20 @@ require('react-styl')(`
           border-radius: 10px
           border: solid 1px #cdd7e0
           background-color: #fafbfc
-          padding: 1rem
+          padding: 1rem 1.25rem
           display: flex
+          min-height: 4.5rem
+          line-height: normal
           align-items: center
           cursor: pointer
 
           .task-name
             flex: 1
-            font-size: 1.125rem
+            font-size: 1.25rem
+            padding-bottom: 2px
 
           .icon
-            height: 48px
-            width: 48px
-            object-fit: contain
-            margin-right: 1rem
+            margin-right: 1.5rem
 
           .completed-icon
             height: 34px

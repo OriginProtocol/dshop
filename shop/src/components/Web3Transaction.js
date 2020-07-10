@@ -1,4 +1,7 @@
 import React, { useReducer, useEffect } from 'react'
+import omit from 'lodash/omit'
+import pick from 'lodash/pick'
+import uniq from 'lodash/uniq'
 
 import useConfig from 'utils/useConfig'
 import useWallet from 'utils/useWallet'
@@ -7,7 +10,7 @@ import Modal from 'components/Modal'
 import { Spinner } from 'components/icons/Admin'
 
 const reducer = (state, newState) => {
-  if (!newState) return {}
+  if (newState.reset) return omit(newState, 'reset')
   return { ...state, ...newState }
 }
 
@@ -29,7 +32,10 @@ const Web3Transaction = ({
     if (shouldSubmit) {
       setState({ submit: true })
     } else {
-      setState()
+      setState({
+        reset: true,
+        ...pick(state, ['signerAddress', 'dependenciesOk'])
+      })
     }
   }, [shouldSubmit])
 
@@ -67,11 +73,17 @@ const Web3Transaction = ({
       }
 
       if (account) {
-        if (account !== state.signerAddress) {
+        const accounts = uniq(
+          Array.isArray(account) ? account : [account]
+        ).filter((a) => a)
+
+        if (!accounts.some((a) => a === state.signerAddress)) {
           setState({
             modal: true,
             title: 'Incorrect account',
-            description: `Please set account to ${account}`,
+            description: `Please set account to ${
+              accounts.length > 1 ? 'one of ' : ''
+            }${accounts.join(', ')}`,
             spinner: false
           })
           return
@@ -99,7 +111,8 @@ const Web3Transaction = ({
         setState({
           modal: true,
           title: `Submitted to blockchain...`,
-          description: '',
+          description:
+            'You can continue to monitor this transaction in your wallet',
           spinner: true
         })
 
@@ -161,7 +174,7 @@ const Web3Transaction = ({
             className="btn btn-outline-primary px-4"
             type="button"
             onClick={() => setState({ shouldClose: true })}
-            children="Dismiss"
+            children="Hide"
           />
         </div>
       </div>

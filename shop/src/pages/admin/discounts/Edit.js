@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react'
-import { useRouteMatch, useHistory } from 'react-router-dom'
+import { useRouteMatch } from 'react-router-dom'
 import dayjs from 'dayjs'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useRest from 'utils/useRest'
+import useRedirect from 'utils/useRedirect'
 import { useStateValue } from 'data/state'
 import useSetState from 'utils/useSetState'
 import Link from 'components/Link'
@@ -54,7 +55,7 @@ const defaultValues = {
 
 const AdminEditDiscount = () => {
   const { config } = useConfig()
-  const history = useHistory()
+  const redirectTo = useRedirect()
   const match = useRouteMatch('/admin/discounts/:discountId')
   const { discountId } = match.params
   const { data: discount } = useRest(`/discounts/${discountId}`, {
@@ -123,10 +124,7 @@ const AdminEditDiscount = () => {
             })
             if (raw.ok) {
               dispatch({ type: 'toast', message: 'Discount created OK' })
-              history.push({
-                pathname: '/admin/discounts',
-                state: { scrollToTop: true }
-              })
+              redirectTo('/admin/discounts')
             }
           } else {
             window.scrollTo(0, 0)
@@ -139,10 +137,8 @@ const AdminEditDiscount = () => {
           </Link>
           <span className="chevron" />
           {title}
-          <div className="actions ml-auto">
-            {!discount ? null : (
-              <DeleteButton className="mr-2" discount={discount} />
-            )}
+          <div className="actions">
+            {!discount ? null : <DeleteButton discount={discount} />}
             <button type="submit" className="btn btn-primary">
               Save
             </button>
@@ -290,8 +286,3 @@ const AdminEditDiscount = () => {
 }
 
 export default AdminEditDiscount
-
-require('react-styl')(`
-  .admin-title .actions button
-    min-width: 150px
-`)

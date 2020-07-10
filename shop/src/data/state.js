@@ -219,6 +219,9 @@ const reducer = (state, action) => {
       const reload = get(newState, target, 0)
       newState = set(newState, target, reload + 1)
     })
+    if (['products', 'collections'].indexOf(action.target)) {
+      newState = set(newState, 'hasChanges', true)
+    }
   } else if (action.type === 'hasChanges') {
     newState = set(
       newState,
@@ -244,7 +247,8 @@ const reducer = (state, action) => {
   } else if (action.type === 'toast') {
     newState = set(newState, `toasts[${newState.toasts.length}]`, {
       message: action.message,
-      id: +new Date()
+      id: +new Date(),
+      type: action.style
     })
   }
 

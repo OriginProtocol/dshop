@@ -40,10 +40,7 @@ const {
   registerPrintfulWebhook
 } = require('../utils/printful')
 
-const downloadProductData = require('../scripts/printful/downloadProductData')
-const downloadPrintfulMockups = require('../scripts/printful/downloadPrintfulMockups')
-const resizePrintfulMockups = require('../scripts/printful/resizePrintfulMockups')
-const writeProductData = require('../scripts/printful/writeProductData')
+const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
 
 const log = getLogger('routes.shops')
 
@@ -113,13 +110,14 @@ module.exports = function (app) {
 
       const OutputDir = `${DSHOP_CACHE}/${req.shop.authToken}`
 
-      await downloadProductData({ OutputDir, printfulApi: printful })
-      await writeProductData({ OutputDir })
-      await downloadPrintfulMockups({ OutputDir })
-      await resizePrintfulMockups({ OutputDir })
-
-      await req.shop.update({
-        hasChanges: true
+      await printfulSyncProcessor.processor({
+        data: {
+          OutputDir,
+          apiKey: printful,
+          shopId: req.shop.id
+        },
+        log: (data) => log.debug(data),
+        progress: () => {}
       })
 
       res.json({ success: true })
@@ -413,10 +411,15 @@ module.exports = function (app) {
     log.info(`Outputting to ${OutputDir}`)
 
     if (shopType === 'printful' && printfulApi) {
-      await downloadProductData({ OutputDir, printfulApi })
-      await writeProductData({ OutputDir })
-      await downloadPrintfulMockups({ OutputDir })
-      await resizePrintfulMockups({ OutputDir })
+      // Should this be made async? Like just moving to the queue instead of blocking?
+      await printfulSyncProcessor.processor({
+        data: {
+          OutputDir,
+          apiKey: printfulApi
+        },
+        log: (data) => log.debug(data),
+        progress: () => {}
+      })
     }
 
     let shopConfig = { ...configs.shopConfig }
@@ -518,7 +521,7 @@ module.exports = function (app) {
               })
             })
           }
-          res.json({ fields, files })
+          res.json({ success: true, fields, files })
         } catch (e) {
           log.error(e)
           res.json({ success: false })
@@ -823,7 +826,7 @@ module.exports = function (app) {
       )
       req.shop.config = newConfig
       req.shop.hasChanges = true
-      req.shop.save()
+      await req.shop.save()
       return res.json({ success: true })
     }
   )

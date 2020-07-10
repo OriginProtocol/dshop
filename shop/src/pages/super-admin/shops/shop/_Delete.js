@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { useHistory } from 'react-router-dom'
 
 import { useStateValue } from 'data/state'
 import useBackendApi from 'utils/useBackendApi'
+import useRedirect from 'utils/useRedirect'
 import ConfirmationModal from 'components/ConfirmationModal'
 
 const AdminDeleteShop = ({ shop, className = '' }) => {
-  const history = useHistory()
+  const redirectTo = useRedirect()
   const [, dispatch] = useStateValue()
   const [deleteCache, setDeleteCache] = useState(false)
 
@@ -16,17 +16,15 @@ const AdminDeleteShop = ({ shop, className = '' }) => {
     <ConfirmationModal
       className={`btn btn-outline-danger ${className}`}
       buttonText="Delete"
+      loadingText={false}
       confirmText="Are you sure you want to delete this shop?"
-      confirmedText="Shop deleted"
+      confirmedText={false}
       onConfirm={() => {
         const body = JSON.stringify({ deleteCache })
         return post(`/shops/${shop.authToken}`, { method: 'DELETE', body })
       }}
       onSuccess={() => {
-        history.push({
-          pathname: '/super-admin/shops',
-          state: { scrollToTop: true }
-        })
+        redirectTo('/super-admin/shops')
         dispatch({ type: 'reload', target: 'auth' })
       }}
     >

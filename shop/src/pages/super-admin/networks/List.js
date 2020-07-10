@@ -18,7 +18,7 @@ const AdminShops = () => {
     <>
       <h3 className="admin-title">
         Networks
-        <div className="ml-auto">
+        <div className="actions">
           <Link to="/super-admin/networks/new" className="btn btn-primary">
             Create network
           </Link>

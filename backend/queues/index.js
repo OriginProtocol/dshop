@@ -5,6 +5,7 @@ const queues = require('./queues')
  */
 function runProcessors() {
   require('./makeOfferProcessor').attachToQueue()
+  require('./printfulSyncProcessor').attachToQueue()
 }
 
 module.exports = {

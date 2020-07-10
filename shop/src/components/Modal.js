@@ -4,6 +4,7 @@ import { useSpring, animated } from 'react-spring'
 
 const Modal = ({ children, onClose, className, shouldClose }) => {
   const [show, setShow] = useState(false)
+  const [shouldCloseInt, setShouldCloseInt] = useState(false)
 
   const bgProps = useSpring({
     config: { duration: 150 },
@@ -20,7 +21,7 @@ const Modal = ({ children, onClose, className, shouldClose }) => {
 
   function doClose() {
     setShow(false)
-    return setTimeout(() => onClose(), 150)
+    return setTimeout(onClose, 150)
   }
 
   useEffect(() => {
@@ -43,13 +44,11 @@ const Modal = ({ children, onClose, className, shouldClose }) => {
 
   useEffect(() => {
     let timeout
-    if (shouldClose) {
+    if (shouldClose || shouldCloseInt) {
       timeout = doClose()
     }
-    return function cleanup() {
-      clearTimeout(timeout)
-    }
-  }, [shouldClose])
+    return () => clearTimeout(timeout)
+  }, [el, shouldClose, shouldCloseInt])
 
   const cmp = (
     <>
@@ -58,10 +57,7 @@ const Modal = ({ children, onClose, className, shouldClose }) => {
         className="modal d-block"
         tabIndex="-1"
         style={modalProps}
-        onClick={() => {
-          setShow(false)
-          setTimeout(() => onClose(), 150)
-        }}
+        onClick={() => setShouldCloseInt(true)}
       >
         <div
           onClick={(e) => e.stopPropagation()}

@@ -1,6 +1,6 @@
 import ethers from 'ethers'
 
-import { NetworksByIdStr } from 'data/Networks'
+import { NetworksByIdStr, NetworksById } from 'data/Networks'
 import DefaultTokens from './defaultTokens'
 
 const networks = {}
@@ -17,14 +17,13 @@ const DefaultPaymentMethods = [
   { id: 'stripe', label: 'Credit Card' }
 ]
 
-const net = localStorage.ognNetwork
-const activeNetwork = NetworksByIdStr[net] || NetworksByIdStr['localhost']
-const netId = String(activeNetwork.id)
-const contracts = networks[activeNetwork.idStr] || {}
-
 let config
 
-async function fetchConfig(dataSrc, activeShop) {
+export async function fetchConfig(dataSrc, activeShop) {
+  const net = localStorage.ognNetwork
+  const activeNetwork = NetworksByIdStr[net] || NetworksByIdStr['localhost']
+  const netId = String(activeNetwork.id)
+
   config = { backend: '', firstTimeSetup: true, netId }
   if (!dataSrc || dataSrc === 'DATA_DIR/') {
     return config
@@ -51,34 +50,12 @@ async function fetchConfig(dataSrc, activeShop) {
     }
 
     config.supportEmailPlain = supportEmailPlain
-    const netConfig = config.networks[netId] || {}
 
-    if (netId === '999' && process.env.MARKETPLACE_CONTRACT) {
-      // Use the address of the marketplace contract deployed on the local test network.
-      netConfig.marketplaceContract = process.env.MARKETPLACE_CONTRACT
-    }
-
-    const tokenList =
-      netConfig.acceptedTokens || config.acceptedTokens || DefaultTokens
-
-    const acceptedTokens = tokenList
-      .map((token) => {
-        if (token.name === 'ETH') {
-          token.address = ethers.constants.AddressZero
-        } else if (!token.address && contracts[token.name]) {
-          token.address = contracts[token.name]
-        }
-        return token
-      })
-      .filter((token) => token.address)
+    const networkConfig = activeNetworkConfig(config, netId)
 
     return {
       ...config,
-      ...netConfig,
-      netId,
-      contracts,
-      acceptedTokens,
-      netName: activeNetwork.name,
+      ...networkConfig,
       dataSrc,
       activeShop
     }
@@ -87,4 +64,35 @@ async function fetchConfig(dataSrc, activeShop) {
   }
 }
 
-export default fetchConfig
+export function activeNetworkConfig(config, netId) {
+  const activeNetwork = NetworksById[netId]
+  const contracts = networks[activeNetwork.idStr] || {}
+  const netConfig = config.networks[netId] || {}
+
+  if (netId === '999' && process.env.MARKETPLACE_CONTRACT) {
+    // Use the address of the marketplace contract deployed on the local test network.
+    netConfig.marketplaceContract = process.env.MARKETPLACE_CONTRACT
+  }
+
+  const tokenList =
+    netConfig.acceptedTokens || config.acceptedTokens || DefaultTokens
+
+  const acceptedTokens = tokenList
+    .map((token) => {
+      if (token.name === 'ETH') {
+        token.address = ethers.constants.AddressZero
+      } else if (!token.address && contracts[token.name]) {
+        token.address = contracts[token.name]
+      }
+      return token
+    })
+    .filter((token) => token.address)
+
+  return {
+    ...netConfig,
+    netId,
+    contracts,
+    acceptedTokens,
+    netName: activeNetwork.name
+  }
+}

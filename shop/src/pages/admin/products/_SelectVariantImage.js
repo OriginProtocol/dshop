@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 
 import Modal from 'components/Modal'
 
-const SelectVariantImage = ({ selection, media, onChange }) => {
+const SelectVariantImage = ({ selection, media, onChange, disabled }) => {
   const [showModal, setShowModal] = useState(false)
   const [shouldClose, setShouldClose] = useState(false)
 
@@ -13,18 +13,22 @@ const SelectVariantImage = ({ selection, media, onChange }) => {
   return (
     <>
       <div
-        className="select-variant-image selectbox"
-        onClick={() => setShowModal(true)}
+        className={`select-variant-image selectbox${
+          disabled ? ' disabled' : ''
+        }`}
+        onClick={() => (disabled ? null : setShowModal(true))}
       >
         <img src={selection.src} />
-        <a
-          className="btn btn-link"
-          onClick={(e) => {
-            e.preventDefault()
-          }}
-        >
-          Change
-        </a>
+        {disabled ? null : (
+          <a
+            className="btn btn-link"
+            onClick={(e) => {
+              e.preventDefault()
+            }}
+          >
+            Change
+          </a>
+        )}
       </div>
       {!showModal ? null : (
         <Modal
@@ -77,6 +81,9 @@ require('react-styl')(`
       cursor: pointer
       justify-content: center
       align-items: center
+
+      &.disabled
+        cursor: auto
 
       .btn.btn-link
         font-size: 0.625rem
