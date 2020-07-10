@@ -138,6 +138,7 @@ async function connectWS({ network }) {
           },
           {
             attempts: 3,
+            // jobId is used to prevent job duplication
             jobId: result.transactionHash
           }
         )
@@ -152,6 +153,7 @@ async function connectWS({ network }) {
         },
         {
           attempts: 3,
+          // jobId is used to prevent job duplication
           jobId: data.params.result.transactionHash
         }
       )
