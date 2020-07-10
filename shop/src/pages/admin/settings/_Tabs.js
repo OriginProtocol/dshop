@@ -20,18 +20,18 @@ const SettingsTabs = () => {
         </NavLink>
       </li>
       <li className="nav-item">
-        <NavLink className="nav-link" to="/admin/settings/users">
-          Users
-        </NavLink>
-      </li>
-      <li className="nav-item">
         <NavLink className="nav-link" to="/admin/settings/shipping">
           Shipping
         </NavLink>
       </li>
       <li className="nav-item">
+        <NavLink className="nav-link" to="/admin/settings/users">
+          Users
+        </NavLink>
+      </li>
+      <li className="nav-item">
         <NavLink className="nav-link" to="/admin/settings/deployments">
-          Deploy
+          Publish
         </NavLink>
       </li>
       <li className="nav-item">

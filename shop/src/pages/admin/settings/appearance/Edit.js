@@ -125,6 +125,7 @@ const ShopAppearance = () => {
               ...pick(shopConfig, configFields)
             }
           })
+          dispatch({ type: 'hasChanges', value: true })
           dispatch({ type: 'toast', message: 'Saved settings OK' })
         } catch (err) {
           console.error(err)
@@ -134,8 +135,8 @@ const ShopAppearance = () => {
     >
       <h3 className="admin-title">
         Settings
-        <div className="actions ml-auto">
-          <button type="button" className="btn btn-outline-primary mr-2">
+        <div className="actions">
+          <button type="button" className="btn btn-outline-primary">
             Cancel
           </button>
           <button type="submit" className="btn btn-primary" disabled={saving}>

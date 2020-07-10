@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useReducer, useMemo } from 'react'
 import useConfig from 'utils/useConfig'
+import loadImage from 'utils/loadImage'
 
 const acceptedFileTypes = [
   'image/jpeg',
@@ -13,7 +14,7 @@ function reducer(state, newState) {
 }
 
 const PreviewImages = (props) => {
-  const { dragging, dragTarget, onChange, onDragStateChange } = props
+  const { dragging, dragTarget, onChange, onDragStateChange, disabled } = props
 
   const images = useMemo(() => {
     const a = [...(props.images || [])]
@@ -28,57 +29,68 @@ const PreviewImages = (props) => {
 
   if (images.length === 0) return null
 
-  return images.map((image, idx) => (
-    <div
-      key={image.src}
-      className={`preview-row${dragTarget === idx ? ' dragging' : ''}`}
-      draggable
-      onDragEnd={(e) => {
-        if (e.dataTransfer.items.length > 0) return
-        onDragStateChange({ dragging: null, dragTarget: null })
-        onChange(images)
-      }}
-      onDragEnter={(e) => {
-        if (e.dataTransfer.items.length > 0) return
-        onDragStateChange({ dragTarget: idx })
-      }}
-      onDragOver={(e) => {
-        if (e.dataTransfer.items.length > 0) return
-        e.preventDefault()
-      }}
-      onDragStart={(e) => {
-        if (e.dataTransfer.items.length > 0) return
-        if (e.target.className.match(/preview-row/)) {
-          setTimeout(() => onDragStateChange({ dragging: idx }))
-        } else {
+  return images.map((image, idx) => {
+    let eventProps = {
+      className: 'preview-row disabled'
+    }
+
+    if (!disabled) {
+      eventProps = {
+        className: `preview-row${dragTarget === idx ? ' dragging' : ''}`,
+        draggable: true,
+        onDragEnd: (e) => {
+          if (e.dataTransfer.items.length > 0) return
+          onDragStateChange({ dragging: null, dragTarget: null })
+          onChange(images)
+        },
+        onDragEnter: (e) => {
+          if (e.dataTransfer.items.length > 0) return
+          onDragStateChange({ dragTarget: idx })
+        },
+        onDragOver: (e) => {
+          if (e.dataTransfer.items.length > 0) return
           e.preventDefault()
+        },
+        onDragStart: (e) => {
+          if (e.dataTransfer.items.length > 0) return
+          if (e.target.className.match(/preview-row/)) {
+            setTimeout(() => onDragStateChange({ dragging: idx }))
+          } else {
+            e.preventDefault()
+          }
         }
-      }}
-    >
-      <div className="img" style={{ backgroundImage: `url(${image.src})` }} />
-      <div className="info">
-        <div className="img-title">{image.name || image.path}</div>
-        <div className="img-subtitle">
-          {idx === 0 ? 'Cover image' : `Image ${idx}`}
+      }
+    }
+
+    return (
+      <div key={image.src} {...eventProps}>
+        <div className="img" style={{ backgroundImage: `url(${image.src})` }} />
+        <div className="info">
+          <div className="img-title">{image.name || image.path}</div>
+          <div className="img-subtitle">
+            {idx === 0 ? 'Cover image' : `Image ${idx}`}
+          </div>
+        </div>
+        <div className="actions">
+          {disabled ? null : (
+            <a
+              href="#"
+              title="Remove"
+              onClick={(e) => {
+                e.preventDefault()
+                onChange(images.filter((i, offset) => idx !== offset))
+              }}
+              children={<>&times;</>}
+            />
+          )}
         </div>
       </div>
-      <div className="actions">
-        <a
-          href="#"
-          title="Remove"
-          onClick={(e) => {
-            e.preventDefault()
-            onChange(images.filter((i, offset) => idx !== offset))
-          }}
-          children={<>&times;</>}
-        />
-      </div>
-    </div>
-  ))
+    )
+  })
 }
 
 const ImagePicker = (props) => {
-  const { onChange } = props
+  const { onChange, disabled } = props
   const [state, setState] = useReducer(reducer, {})
 
   const { config } = useConfig()
@@ -86,9 +98,7 @@ const ImagePicker = (props) => {
   const uploadRef = useRef()
 
   useEffect(() => {
-    setState({
-      images: props.images || []
-    })
+    setState({ images: props.images || [] })
   }, [props.images])
 
   const uploadImages = async (files) => {
@@ -96,7 +106,21 @@ const ImagePicker = (props) => {
       const formData = new FormData()
 
       for (const file of files) {
-        formData.append('file', file)
+        const processedFile = await new Promise((resolve) => {
+          loadImage(
+            file,
+            (img) => {
+              return img.toBlob((blob) => resolve(blob), 'image/jpeg')
+            },
+            {
+              orientation: true,
+              maxWidth: 2000,
+              maxHeight: 2000,
+              canvas: true
+            }
+          )
+        })
+        formData.append('file', processedFile)
       }
 
       const resp = await fetch(`/products/upload-images`, {
@@ -108,7 +132,6 @@ const ImagePicker = (props) => {
       })
 
       const jsonResp = await resp.json()
-
       return jsonResp.uploadedFiles
     } catch (error) {
       console.error('Could not upload images', error)
@@ -132,6 +155,16 @@ const ImagePicker = (props) => {
 
   const hasImages = !!(state.images && state.images.length > 0)
 
+  if (disabled) {
+    return (
+      <div className="image-picker">
+        {!hasImages ? null : (
+          <PreviewImages images={state.images} disabled={true} />
+        )}
+      </div>
+    )
+  }
+
   return (
     <div
       className="image-picker"
@@ -142,9 +175,7 @@ const ImagePicker = (props) => {
 
         if (e.currentTarget.matches('.image-picker, .image-picker *')) {
           clearTimeout(window.__dragLeaveTimeout)
-          setState({
-            externalDrop: true
-          })
+          setState({ externalDrop: true })
         }
       }}
       onDragLeave={(e) => {
@@ -155,9 +186,7 @@ const ImagePicker = (props) => {
         e.stopPropagation()
 
         window.__dragLeaveTimeout = setTimeout(() => {
-          setState({
-            externalDrop: false
-          })
+          setState({ externalDrop: false })
         }, 300)
       }}
       onDrop={async (e) => {
@@ -165,9 +194,7 @@ const ImagePicker = (props) => {
         e.preventDefault()
         e.stopPropagation()
 
-        setState({
-          externalDrop: false
-        })
+        setState({ externalDrop: false })
 
         const files = Array.from(e.dataTransfer.items).map((x) => x.getAsFile())
         await filesAdded(files)
@@ -257,12 +284,14 @@ require('react-styl')(`
 
       position: relative
       background: var(--white)
-      cursor: move
 
       border-radius: 2px
       border: solid 1px #cdd7e0
       background-color: #ffffff
       padding: 10px
+
+      &:not(.disabled)
+        cursor: move
 
       .info
         font-size: 0.875rem

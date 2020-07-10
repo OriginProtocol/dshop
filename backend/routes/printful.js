@@ -6,12 +6,19 @@ const {
   placeOrder,
   confirmOrder,
   fetchShippingEstimate,
-  processShippedEvent
+  processShippedEvent,
+  processUpdatedEvent,
+  PrintfulWebhookEvents
 } = require('../utils/printful')
 const { getLogger } = require('../utils/logger')
 const log = getLogger('routes.printful')
 
+const { ExternalEvent } = require('../models')
+
 module.exports = function (app) {
+  /**
+   * Makes an API call to Printful to get details about a specific order.
+   */
   app.get(
     '/orders/:orderId/printful',
     authSellerAndShop,
@@ -57,7 +64,7 @@ module.exports = function (app) {
   })
 
   app.post('/printful/webhooks/:shopId/:secret', async (req, res) => {
-    const { data } = req.body
+    const { type, data } = req.body
     const { shopId, secret } = req.params
 
     try {
@@ -71,7 +78,26 @@ module.exports = function (app) {
       log.error('Failed to validate secret on request', shopId, err)
     }
 
-    await processShippedEvent(data, shopId)
+    try {
+      await ExternalEvent.create({
+        shopId,
+        service: 'printful',
+        event_type: type,
+        data: req.body
+      })
+
+      switch (type) {
+        case PrintfulWebhookEvents.PackageShipped:
+          await processShippedEvent(data, shopId)
+          break
+
+        case PrintfulWebhookEvents.ProductUpdated:
+          await processUpdatedEvent(data, shopId)
+          break
+      }
+    } catch (err) {
+      log.error('Failed to process event', err)
+    }
 
     return res.status(200).end()
   })

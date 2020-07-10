@@ -13,8 +13,8 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import { generateVariants } from 'utils/generateVariants'
 
 import fetchProduct from 'data/fetchProduct'
-import { Countries } from '@origin/utils/Countries'
-import ProcessingTimes from '@origin/utils/ProcessingTimes'
+// import { Countries } from '@origin/utils/Countries'
+// import ProcessingTimes from '@origin/utils/ProcessingTimes'
 
 import ImagePicker from 'components/ImagePicker'
 import DeleteButton from './_Delete'
@@ -112,27 +112,31 @@ const EditProduct = () => {
   const [submitting, setSubmitting] = useState(false)
   const [, setSubmitError] = useState(null)
 
-  const [formState, setFormState] = useSetState({})
+  const [formState, setFormState] = useSetState({
+    options: [],
+    variants: []
+  })
   const [selectedCollections, setSelectedCollections] = useState([])
 
   const [hasOptions, setHasOptions] = useState(false)
 
   const isNewProduct = productId === 'new'
+  const externallyManaged = formState.externalId ? true : false
 
   const input = formInput(formState, (newState) => setFormState(newState))
   const Feedback = formFeedback(formState)
 
-  const procTimeState = get(formState, 'processingTimeOpts', {})
+  // const procTimeState = get(formState, 'processingTimeOpts', {})
 
-  const customProcTimeInput = formInput(procTimeState, (newState) => {
-    setFormState({
-      processingTimeOpts: {
-        ...formState.processingTimeOpts,
-        ...newState
-      }
-    })
-  })
-  const customProcTimeFeedback = formFeedback(procTimeState)
+  // const customProcTimeInput = formInput(procTimeState, (newState) => {
+  //   setFormState({
+  //     processingTimeOpts: {
+  //       ...formState.processingTimeOpts,
+  //       ...newState
+  //     }
+  //   })
+  // })
+  // const customProcTimeFeedback = formFeedback(procTimeState)
 
   const title = `${isNewProduct ? 'Add' : 'Edit'} product`
 
@@ -230,6 +234,11 @@ const EditProduct = () => {
 
     if (!valid) {
       setSubmitError('Please fill in all required fields')
+      dispatch({
+        type: 'toast',
+        message: 'Please fill in all required fields',
+        style: 'error'
+      })
       return
     }
 
@@ -257,6 +266,10 @@ const EditProduct = () => {
 
       dispatch({ type: 'toast', message: 'Product saved OK' })
       dispatch({ type: 'reload', target: ['products', 'collections'] })
+
+      if (!newState.id) {
+        history.push('/admin/products')
+      }
 
       return
     } catch (error) {
@@ -306,35 +319,49 @@ const EditProduct = () => {
       >
         <h3 className="admin-title with-border">
           {title}
-          <div className="ml-auto">{actions}</div>
+          {actions}
         </h3>
 
         <div className="row">
           <div className="col-md-9">
             <div className="form-section">
+              {!externallyManaged ? null : (
+                <div className="alert alert-info">
+                  This product was synced from Printful. Things you can update
+                  is limited. Update the other fields on Printful.
+                </div>
+              )}
               <div className="form-group">
                 <label>Title</label>
                 <input
                   type="text"
                   {...input('title')}
-                  autoFocus={isNewProduct}
+                  autoFocus={isNewProduct && !externallyManaged}
+                  disabled={externallyManaged}
                 />
                 {Feedback('title')}
               </div>
 
               <div className="form-group">
                 <label>Description</label>
-                <textarea {...input('description')} />
+                <textarea
+                  {...input('description')}
+                  disabled={externallyManaged}
+                />
                 {Feedback('description')}
               </div>
 
               <div className="media-uploader">
                 <label>
-                  Photos <span>(add as many as you like)</span>
+                  Photos{' '}
+                  {externallyManaged ? null : (
+                    <span>(add as many as you like)</span>
+                  )}
                 </label>
                 <ImagePicker
                   images={media}
                   onChange={(media) => setMedia(media)}
+                  disabled={externallyManaged}
                 />
               </div>
 
@@ -346,7 +373,7 @@ const EditProduct = () => {
                       <div className="input-group-prepend">
                         <span className="input-group-text">$</span>
                       </div>
-                      <input {...input('price')} />
+                      <input {...input('price')} disabled={externallyManaged} />
                     </div>
                     {Feedback('price')}
                   </div>
@@ -371,17 +398,14 @@ const EditProduct = () => {
               <div className="col-md-12">
                 <label>Variants</label>
                 <div className="form-check">
-                  <input
-                    id="variantsCheckbox"
-                    type="checkbox"
-                    className="form-check-input"
-                    checked={hasOptions}
-                    onChange={(e) => setHasOptions(e.target.checked)}
-                  />
-                  <label
-                    className="form-check-label"
-                    htmlFor="variantsCheckbox"
-                  >
+                  <label className="form-check-label">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={hasOptions}
+                      disabled={externallyManaged}
+                      onChange={(e) => setHasOptions(e.target.checked)}
+                    />
                     This product has multiple options, like different sizes
                   </label>
                 </div>
@@ -437,11 +461,13 @@ const EditProduct = () => {
                         availableOptions.splice(index, 1)
                         setFormState({ options, availableOptions })
                       }}
+                      disabled={externallyManaged}
                     />
                   )
                 })}
                 <div className="mb-5">
-                  {formState.options && formState.options.length >= 3 ? null : (
+                  {get(formState, 'options.length') >= 3 ||
+                  externallyManaged ? null : (
                     <button
                       className="btn btn-outline-primary"
                       type="button"
@@ -460,6 +486,7 @@ const EditProduct = () => {
                   options={formState.options}
                   variants={formState.variants}
                   media={media}
+                  disabled={externallyManaged}
                   onChange={(updatedVariants) => {
                     setFormState({
                       variants: updatedVariants
@@ -469,7 +496,7 @@ const EditProduct = () => {
               </>
             )}
 
-            <div>
+            {/* <div>
               <label>Shipping</label>
               <div className="form-check">
                 <input
@@ -603,7 +630,7 @@ const EditProduct = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </div> */}
           </div>
           <div className="col-md-3">
             <LinkCollections
@@ -631,8 +658,6 @@ require('react-styl')(`
       margin-bottom: 5rem
       display: flex
       justify-content: flex-end
-    .actions .btn
-      width: 120px
 
     .form-group, .form-check
       margin-bottom: 1rem

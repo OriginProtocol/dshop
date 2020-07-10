@@ -42,6 +42,13 @@ const all = [
       prefix: '{email}',
       maxStalledCount: 0 // We don't want to risk sending an email twice
     })
+  ),
+  new Queue(
+    'printfulSync',
+    backendUrl,
+    Object.assign(queueOpts, {
+      prefix: '{printfulSync}'
+    })
   )
 ]
 

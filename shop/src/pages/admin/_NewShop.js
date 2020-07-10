@@ -1,5 +1,4 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 import kebabCase from 'lodash/kebabCase'
 
@@ -9,6 +8,7 @@ import useSetState from 'utils/useSetState'
 import useBackendApi from 'utils/useBackendApi'
 import useConfig from 'utils/useConfig'
 import useAutoFocus from 'utils/useAutoFocus'
+import useRedirect from 'utils/useRedirect'
 import { useStateValue } from 'data/state'
 
 function validate(state) {
@@ -31,7 +31,7 @@ const defaultState = { title: '', shopType: 'empty' }
 
 const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
   const shopName = useAutoFocus()
-  const history = useHistory()
+  const redirectTo = useRedirect()
   const [{ admin, config }, dispatch] = useStateValue()
   const { setActiveShop } = useConfig()
   const [state, setState] = useSetState(defaultState)
@@ -84,10 +84,7 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
         setState({}, true)
         setActiveShop(json.slug)
         dispatch({ type: 'reload', target: 'auth' })
-        history.push({
-          pathname: '/admin/onboarding',
-          state: { scrollToTop: true }
-        })
+        redirectTo('/admin/onboarding')
       }}
     >
       <div className="text-left pt-3">

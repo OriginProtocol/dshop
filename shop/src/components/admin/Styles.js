@@ -47,6 +47,15 @@ require('react-styl')(`
     form
       label:not(.form-check-label)
         font-weight: 600
+    .admin-title .actions,.footer-actions .actions
+      margin-left: auto
+      display: grid
+      grid-auto-columns: 1fr
+      grid-auto-flow: column
+      column-gap: 0.75rem
+      .btn
+        padding-left: 2rem
+        padding-right: 2rem
     .admin-title
       display: flex
       align-items: center
