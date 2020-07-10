@@ -1,11 +1,11 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 
+import useRedirect from 'utils/useRedirect'
 import useBackendApi from 'utils/useBackendApi'
 import ConfirmationModal from 'components/ConfirmationModal'
 
 const AdminDeleteUser = ({ userId }) => {
-  const history = useHistory()
+  const redirectTo = useRedirect()
   const { post } = useBackendApi()
 
   return (
@@ -15,12 +15,7 @@ const AdminDeleteUser = ({ userId }) => {
       confirmText="Are you sure you wish to delete this user?"
       confirmedText="User deleted successfully"
       onConfirm={() => post(`/superuser/users/${userId}`, { method: 'DELETE' })}
-      onSuccess={() => {
-        history.push({
-          pathname: '/super-admin/users',
-          state: { scrollToTop: true }
-        })
-      }}
+      onSuccess={() => redirectTo('/super-admin/users')}
     />
   )
 }

@@ -6,8 +6,8 @@
   },
   "workspaces": {
     "packages": [
-      "shop/**",
-      "backend/**",
+      "shop",
+      "backend",
       "packages/**"
     ],
     "nohoist": [

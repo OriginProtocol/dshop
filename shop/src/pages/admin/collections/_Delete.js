@@ -1,13 +1,13 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 
 import ConfirmationModal from 'components/ConfirmationModal'
 import useBackendApi from 'utils/useBackendApi'
+import useRedirect from 'utils/useRedirect'
 import { useStateValue } from 'data/state'
 import useCollections from 'utils/useCollections'
 
 const AdminDeleteDiscount = ({ className = '', collection }) => {
-  const history = useHistory()
+  const redirectTo = useRedirect()
   const [, dispatch] = useStateValue()
   const { collections } = useCollections()
   const { post } = useBackendApi({ authToken: true })
@@ -28,10 +28,7 @@ const AdminDeleteDiscount = ({ className = '', collection }) => {
       }
       onSuccess={() => {
         dispatch({ type: 'reload', target: 'collections' })
-        history.push({
-          pathname: '/admin/collections',
-          state: { scrollToTop: true }
-        })
+        redirectTo('/admin/collections')
       }}
     />
   )

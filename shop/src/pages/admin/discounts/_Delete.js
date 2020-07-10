@@ -1,11 +1,11 @@
 import React from 'react'
-import { useHistory } from 'react-router-dom'
 
+import useRedirect from 'utils/useRedirect'
 import useBackendApi from 'utils/useBackendApi'
 import ConfirmationModal from 'components/ConfirmationModal'
 
 const AdminDeleteDiscount = ({ discount, className = '' }) => {
-  const history = useHistory()
+  const redirectTo = useRedirect()
   const { post } = useBackendApi({ authToken: true })
 
   return (
@@ -15,12 +15,7 @@ const AdminDeleteDiscount = ({ discount, className = '' }) => {
       confirmText="Are you sure you want to delete this discount?"
       confirmedText="Discount deleted"
       onConfirm={() => post(`/discounts/${discount.id}`, { method: 'DELETE' })}
-      onSuccess={() => {
-        history.push({
-          pathname: '/admin/discounts',
-          state: { scrollToTop: true }
-        })
-      }}
+      onSuccess={() => redirectTo('/admin/discounts')}
     />
   )
 }

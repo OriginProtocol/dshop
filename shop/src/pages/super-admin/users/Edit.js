@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { useHistory, useRouteMatch } from 'react-router-dom'
+import { useRouteMatch } from 'react-router-dom'
 import omit from 'lodash/omit'
 
+import useRedirect from 'utils/useRedirect'
 import useConfig from 'utils/useConfig'
 import Link from 'components/Link'
 
@@ -9,7 +10,7 @@ import UserForm from './_Form'
 
 const AdminNewUser = () => {
   const { config } = useConfig()
-  const history = useHistory()
+  const redirectTo = useRedirect()
   const match = useRouteMatch('/super-admin/users/:userId')
   const { userId } = match.params
   const [user, setUser] = useState()
@@ -32,10 +33,7 @@ const AdminNewUser = () => {
       .then((res) => res.json())
       .then((res) => {
         if (res.success) {
-          history.push({
-            pathname: `/super-admin/users/${userId}`,
-            state: { scrollToTop: true }
-          })
+          redirectTo(`/super-admin/users/${userId}`)
         } else if (res.field) {
           setErrors({ [`${res.field}Error`]: res.reason })
         }
@@ -56,12 +54,7 @@ const AdminNewUser = () => {
           onSave={onSave}
           user={user}
           errors={errors}
-          onCancel={() => {
-            history.push({
-              pathname: `/super-admin/users/${userId}`,
-              state: { scrollToTop: true }
-            })
-          }}
+          onCancel={() => redirectTo(`/super-admin/users/${userId}`)}
         />
       </div>
     </>

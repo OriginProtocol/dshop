@@ -3,7 +3,7 @@ const { getLogger } = require('./logger')
 const log = getLogger('utils.stripe')
 
 const DEFAULT_DESCRIPTOR = 'DSHOP'
-const DESCRIPTOR_VALID_CHARS = /[^A-Z ]/gi
+const DESCRIPTOR_INVALID_CHARS = /[^A-Z ]/gi
 
 /**
  * Normalize a "statement descriptor" for stripe payments.
@@ -19,7 +19,7 @@ function normalizeDescriptor(d) {
     return DEFAULT_DESCRIPTOR
   }
 
-  return d.replace(DESCRIPTOR_VALID_CHARS, '')
+  return d.replace(DESCRIPTOR_INVALID_CHARS, '')
 }
 
 module.exports = { normalizeDescriptor }

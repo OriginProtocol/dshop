@@ -124,7 +124,7 @@ const AdminConfirmationModal = ({
                   />
                 </div>
               </>
-            ) : state.loading ? (
+            ) : state.loading && loadingText !== false ? (
               <>
                 <div className="text-lg">{loadingText}</div>
                 {!spinner ? null : (
@@ -145,7 +145,9 @@ const AdminConfirmationModal = ({
                     children={cancelText}
                   />
                   <button
-                    className="btn btn-primary px-5 ml-3"
+                    className={`btn btn-primary px-5 ml-3${
+                      state.loading ? ' disabled' : ''
+                    }`}
                     children={proceedText}
                   />
                 </div>
