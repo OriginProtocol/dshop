@@ -290,7 +290,7 @@ async function deployShop({
     if (!hash) {
       throw new Error('IPFS deploy error')
     }
-    log.info(`Deployed shop to ${pinner.length} pinners. Hash=${hash}`)
+    log.info(`Deployed shop to ${remotePinners.length} pinners. Hash=${hash}`)
 
     // Prime various IPFS gateways.
     log.info('Priming gateways...')
