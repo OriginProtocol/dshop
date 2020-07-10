@@ -24,7 +24,9 @@ module.exports = function (app) {
 
       const isHealthy = !!netCount && !!jobCounts
 
-      res.json({ success: true, health: isHealthy })
+      res
+        .status(isHealthy ? 200 : 500)
+        .json({ success: true, health: isHealthy })
     } catch (err) {
       log.error('Error when checking health of backend: ', err)
       // Do not return a 200 on a bad health check
