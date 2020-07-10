@@ -39,7 +39,7 @@ const PrintfulWebhookEvents = {
  *    Example: '1-001-81-231'
  * @returns {Promise<{message: string, status: integer}|{[p: string]: *}|{message: (*|string), status: *}>}
  */
-const fetchOrder2 = async (apiKey, orderId) => {
+const fetchOrder = async (apiKey, orderId) => {
   if (!apiKey) {
     return {
       status: 500,
