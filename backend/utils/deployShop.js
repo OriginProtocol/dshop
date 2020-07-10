@@ -156,6 +156,19 @@ async function configureShopDNS({
   }
 }
 
+/**
+ * Deploys a DShop
+ * @param {string} OutputDir: directory to use for preparing the set of files to deploy.
+ * @param {string} dataDir: name of the directory for storing the shop's data files.
+ * @param {models.Network} network: network configuration DB object.
+ * @param {string} subdomain
+ * @param {models.Shop} shop: shop DB object.
+ * @param {string} pinner: Pinner service to use for deploying the shop's data. 'ipfs-cluster' or 'pinata'.
+ *        NOTE: Currently this argument is ignored and the data is deployed to all the pinners configured.
+ *        If for example an IPFS cluster and Pinata are configured, both are used for deployment.
+ * @param {string} dnsProvider: DNS provider to use for configuring the domain. 'gcp' or 'cloudflare'
+ * @returns {Promise<{domain: string, hash: string}>} Domain configured and IPFS hash of the deployment.
+ */
 async function deployShop({
   OutputDir,
   dataDir,
@@ -168,6 +181,7 @@ async function deployShop({
   const networkConfig = getConfig(network.config)
   const zone = networkConfig.domain
 
+  log.info('Preparing data for deploy...')
   await new Promise((resolve, reject) => {
     execFile('rm', ['-rf', `${OutputDir}/public`], (error, stdout) => {
       if (error) reject(error)
@@ -223,42 +237,50 @@ async function deployShop({
       .replace('FAVICON', publicShopConfig.favicon || 'favicon.ico')
   )
 
-  const remotePinners = []
+  // Note: for legacy reasons, the URLs for the IPFS Gateway and API are stored in
+  // the network.ipfs/ipfsApi fields while other configs are stored under network.config.
+  const ipfsClusterConfigured =
+    network.ipfsApi && networkConfig.ipfsClusterPassword
+  const pinataConfigured = networkConfig.pinataKey && networkConfig.pinataSecret
 
+  // Build a list of all configured pinners.
+  let pinnerUrl
+  const remotePinners = []
   const ipfsDeployCredentials = {}
-  if (network.ipfsApi && networkConfig.ipfsClusterPassword) {
+  if (ipfsClusterConfigured) {
     const maddr = urlToMultiaddr(network.ipfsApi, {
       translateLocalhostPort: 9094
     })
-    log.info(`Connecting to cluster ${maddr}`)
+    log.info(
+      `IPFS cluster configured at ${maddr}. Adding to the list of pinners.`
+    )
     ipfsDeployCredentials['ipfsCluster'] = {
       host: maddr,
-      username: networkConfig.ipfsClusterUser || 'dshop',
+      username: networkConfig.ipfsClusterUser || 'dshop', // username can be anything when authenticating to the cluster.
       password: networkConfig.ipfsClusterPassword
     }
     remotePinners.push('ipfs-cluster')
+    if (pinner === 'ipfs-cluster') {
+      pinnerUrl = maddr
+    }
   }
 
-  if (networkConfig.pinataKey && networkConfig.pinataSecret) {
+  if (pinataConfigured) {
+    log.info(`Pinata configured. Adding to the list of pinners.`)
     ipfsDeployCredentials['pinata'] = {
       apiKey: networkConfig.pinataKey,
       secretApiKey: networkConfig.pinataSecret
     }
     remotePinners.push('pinata')
+    if (pinner === 'pinata') {
+      pinnerUrl = 'https://api.pinata.cloud'
+    }
   }
 
-  // Deploy the shop to IPFS.
-  let hash, ipfsGateway
+  // Deploy the shop to all the configured IPFS pinners.
+  let hash
   const publicDirPath = `${OutputDir}/public`
-  if (
-    (networkConfig.pinataKey &&
-      networkConfig.pinataSecret &&
-      pinner === 'pinata') ||
-    (network.ipfsApi &&
-      networkConfig.ipfsClusterPassword &&
-      pinner === 'ipfs-cluster')
-  ) {
-    ipfsGateway = 'https://gateway.pinata.cloud'
+  if (ipfsDeployCredentials.length > 0) {
     hash = await deploy({
       publicDirPath,
       remotePinners,
@@ -266,19 +288,21 @@ async function deployShop({
       credentials: ipfsDeployCredentials
     })
     if (!hash) {
-      throw new Error('ipfs-error')
+      throw new Error('IPFS deploy error')
     }
-    log.info(`Deployed shop on ${pinner}. Hash=${hash}`)
+    log.info(`Deployed shop to ${pinner.length} pinners. Hash=${hash}`)
+
+    // Prime various IPFS gateways.
+    log.info('Priming gateways...')
     await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
-    await prime(`https://ipfs-prod.ogn.app/ipfs/${hash}`, publicDirPath)
     if (networkConfig.pinataKey) {
       await prime(`https://gateway.pinata.cloud/ipfs/${hash}`, publicDirPath)
     }
-    if (networkConfig.ipfsGateway) {
-      await prime(`${networkConfig.ipfsGateway}/ipfs/${hash}`, publicDirPath)
+    if (networkConfig.ipfs) {
+      await prime(`${networkConfig.ipfs}/ipfs/${hash}`, publicDirPath)
     }
   } else if (network.ipfsApi.indexOf('localhost') > 0) {
-    ipfsGateway = network.ipfs
+    // Local dev deployment.
     const ipfs = ipfsClient(network.ipfsApi)
     const allFiles = []
     const glob = ipfsClient.globSource(publicDirPath, { recursive: true })
@@ -293,12 +317,14 @@ async function deployShop({
     )
   }
 
+  // Configure DNS.
   let domain
   if (subdomain) {
+    log.info('Configuring DNS...')
     domain = dnsProvider ? `https://${subdomain}.${zone}` : null
     await configureShopDNS({ network, subdomain, zone, hash, dnsProvider })
     if (domain && network.ipfs) {
-      // Intentionally not awating on this so we can return to the user faster
+      // Intentionally not awaiting on this so we can return to the user faster
       triggerAutoSSL(domain, network.ipfs)
     }
   }
@@ -309,22 +335,30 @@ async function deployShop({
       const deployment = await ShopDeployment.create({
         shopId: shop.id,
         domain,
-        ipfsGateway,
+        ipfsPinner: pinnerUrl,
         ipfsHash: hash
       })
 
       if (subdomain) {
-        await ShopDeploymentName.create({
-          ipfsHash: hash,
-          hostname: `${subdomain}.${zone}`
+        const hostname = `${subdomain}.${zone}`
+        // There could be an existing entry by the same hash/hostname.
+        // For example if a store gets redeployed without changes, its hash remains identical.
+        const deploymentName = await ShopDeploymentName.findOne({
+          where: { ipfsHash: hash, hostname }
         })
+        if (!deploymentName) {
+          await ShopDeploymentName.create({
+            ipfsHash: hash,
+            hostname
+          })
+        }
       }
 
       log.info(
-        `Recorded shop deployment in the DB. id=${deployment.id} domain=${domain} ipfs=${ipfsGateway} hash=${hash}`
+        `Recorded shop deployment in the DB. id=${deployment.id} domain=${domain} hash=${hash}`
       )
     } catch (e) {
-      log.error('Error creating ShopDeployment', e)
+      log.error('Error recording the shop deployment in the DB', e)
     }
   }
 
