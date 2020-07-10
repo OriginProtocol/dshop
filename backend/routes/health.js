@@ -19,7 +19,7 @@ module.exports = function (app) {
       const netCount = await Network.count()
 
       // Quick redis check. this should throw a MaxRetriesPerRequestError if the
-      // connection is bad.
+      // connection is bad.  Return values for the fallbackQueue are mocked
       const jobCounts = await makeOfferQueue.getJobCounts()
 
       const isHealthy = !!netCount && !!jobCounts
