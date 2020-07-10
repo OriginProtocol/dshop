@@ -218,7 +218,9 @@ module.exports = function (app) {
   app.post('/auth/registration', async (req, res) => {
     const sellerCount = await numSellers()
     if (sellerCount > 0) {
-      log.warn(`Super admin reg attempt when ${sellerCount} sellers already exist!`)
+      log.warn(
+        `Super admin reg attempt when ${sellerCount} sellers already exist!`
+      )
       return res.status(409).json({
         success: false,
         message: 'An initial user has already been setup'
