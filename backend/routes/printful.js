@@ -16,6 +16,9 @@ const log = getLogger('routes.printful')
 const { ExternalEvent } = require('../models')
 
 module.exports = function (app) {
+  /**
+   * Makes an API call to Printful to get details about a specific order.
+   */
   app.get(
     '/orders/:orderId/printful',
     authSellerAndShop,
