@@ -280,7 +280,7 @@ async function deployShop({
   // Deploy the shop to all the configured IPFS pinners.
   let hash
   const publicDirPath = `${OutputDir}/public`
-  if (ipfsDeployCredentials.length > 0) {
+  if (remotePinners.length > 0) {
     hash = await deploy({
       publicDirPath,
       remotePinners,
