@@ -298,8 +298,8 @@ async function deployShop({
     if (networkConfig.pinataKey) {
       await prime(`https://gateway.pinata.cloud/ipfs/${hash}`, publicDirPath)
     }
-    if (networkConfig.ipfs) {
-      await prime(`${networkConfig.ipfs}/ipfs/${hash}`, publicDirPath)
+    if (network.ipfs) {
+      await prime(`${network.ipfs}/ipfs/${hash}`, publicDirPath)
     }
   } else if (network.ipfsApi.indexOf('localhost') > 0) {
     // Local dev deployment.
