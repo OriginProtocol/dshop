@@ -967,8 +967,8 @@ module.exports = function (app) {
 
       let pinner, dnsProvider
 
-      // If both an IPFs cluster and Pinata are configured,
-      // we favor pinning on IPFS cluster.
+      // If both an IPFS cluster and Pinata are configured,
+      // we favor pinning on the IPFS cluster.
       if (network.ipfsApi && networkConfig.ipfsClusterPassword) {
         pinner = 'ipfs-cluster'
       } else if (networkConfig.pinataKey) {

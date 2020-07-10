@@ -5,8 +5,8 @@ module.exports = (sequelize, DataTypes) => {
       shopId: DataTypes.INTEGER,
       // Depreciated.  should be added to shop_deployment_names
       domain: DataTypes.STRING,
-      ipfsPinner: DataTypes.STRING, // URL of the pinner used for the deployment.
-      ipfsHash: DataTypes.STRING // Hash of the deployment.
+      ipfsPinner: DataTypes.STRING, // URL of the IPFS pinner service used for the deployment.
+      ipfsHash: DataTypes.STRING // IPFS hash of the deployment.
     },
     {
       underscored: true,

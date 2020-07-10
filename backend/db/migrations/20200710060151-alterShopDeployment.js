@@ -7,8 +7,6 @@ module.exports = {
     `)
   },
   down: queryInterface => {
-    if (queryInterface.sequelize.options.dialect === 'sqlite') return Promise.resolve()
-
     return queryInterface.sequelize.query(`
       ALTER TABLE shop_deployments RENAME COLUMN ipfs_pinner TO ipfs_gateway;
     `)

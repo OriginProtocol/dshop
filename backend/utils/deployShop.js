@@ -342,7 +342,7 @@ async function deployShop({
       if (subdomain) {
         const hostname = `${subdomain}.${zone}`
         // There could be an existing entry by the same hash/hostname.
-        // For example if a store gets redeployed without changes, the has remains identical.
+        // For example if a store gets redeployed without changes, its hash remains identical.
         const deploymentName = await ShopDeploymentName.findOne({
           where: { ipfsHash: hash, hostname }
         })
