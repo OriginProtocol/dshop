@@ -75,6 +75,7 @@ const placeOrder = async (apiKey, orderData, opts = {}) => {
   if (!apiKey) {
     return {
       status: 500,
+      success: false,
       message: 'Missing printful API configuration'
     }
   }
