@@ -29,7 +29,6 @@ const MarketplaceABI = Marketplace._jsonInterface
 /**
  * Handles processing events emitted by the marketplace contract.
  *
- * @param {Object} web3: Web3 object
  * @param {Integer} networkId: Ethereum newtrok id
  * @param {string} contractVersion: Version of the marketplace contract. Ex: '001'
  * @param {Object} data: blockchain event data
@@ -40,7 +39,6 @@ const MarketplaceABI = Marketplace._jsonInterface
  * @returns {Promise<void>}
  */
 const handleLog = async ({
-  web3,
   networkId,
   contractVersion,
   address,
@@ -53,6 +51,9 @@ const handleLog = async ({
   mockUpsert
 }) => {
   const isTest = process.env.NODE_ENV === 'test'
+
+  const network = await Network.findOne({ where: { networkId } })
+  web3.setProvider(network.provider)
 
   const eventAbi = MarketplaceABI.find((i) => i.signature === topics[0])
   if (!eventAbi) {
