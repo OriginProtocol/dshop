@@ -238,12 +238,13 @@ async function deployShop({
   )
 
   // Note: for legacy reasons, the URLs for the IPFS Gateway and API are stored in
-  // the network.ipfs/ipfsApi fields while the rest of the configuration is under network.config.
+  // the network.ipfs/ipfsApi fields while other configs are stored under network.config.
   const ipfsClusterConfigured =
     network.ipfsApi && networkConfig.ipfsClusterPassword
   const pinataConfigured = networkConfig.pinataKey && networkConfig.pinataSecret
 
   // Build a list of all configured pinners.
+  let pinnerUrl
   const remotePinners = []
   const ipfsDeployCredentials = {}
   if (ipfsClusterConfigured) {
@@ -255,10 +256,13 @@ async function deployShop({
     )
     ipfsDeployCredentials['ipfsCluster'] = {
       host: maddr,
-      username: networkConfig.ipfsClusterUser || 'dshop', // username is optional for authenticating with the cluster.
+      username: networkConfig.ipfsClusterUser || 'dshop', // username can be anything when authenticating to the cluster.
       password: networkConfig.ipfsClusterPassword
     }
     remotePinners.push('ipfs-cluster')
+    if (pinner === 'ipfs-cluster') {
+      pinnerUrl = maddr
+    }
   }
 
   if (pinataConfigured) {
@@ -268,10 +272,13 @@ async function deployShop({
       secretApiKey: networkConfig.pinataSecret
     }
     remotePinners.push('pinata')
+    if (pinner === 'pinata') {
+      pinnerUrl = 'https://api.pinata.cloud'
+    }
   }
 
   // Deploy the shop to all the configured IPFS pinners.
-  let hash, ipfsGateway
+  let hash
   const publicDirPath = `${OutputDir}/public`
   if (ipfsDeployCredentials.length > 0) {
     hash = await deploy({
@@ -328,7 +335,7 @@ async function deployShop({
       const deployment = await ShopDeployment.create({
         shopId: shop.id,
         domain,
-        ipfsGateway: network.ipfs, // TODO FRANCK: store preferred gateway as set by the pinner var?
+        ipfsPinner: pinnerUrl,
         ipfsHash: hash
       })
 
