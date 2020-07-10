@@ -18,18 +18,9 @@ const encConf = require('./encryptedConfig')
 
 const { printfulSyncQueue } = require('../queues/queues')
 
-const PrintfulURL = 'https://api.printful.com'
+const { PrintfulWebhookEvents } = require('./enums')
 
-const PrintfulWebhookEvents = {
-  PackageShipped: 'package_shipped',
-  PackageReturned: 'package_returned',
-  OrderFailed: 'order_failed',
-  OrderCanceled: 'order_canceled',
-  ProductSynced: 'product_synced',
-  ProductUpdated: 'product_updated',
-  OrderPutHold: 'order_put_hold',
-  OrderRemoveHold: 'order_remove_hold'
-}
+const PrintfulURL = 'https://api.printful.com'
 
 const fetchOrder = async (apiKey, orderId) => {
   if (!apiKey) {
@@ -351,7 +342,9 @@ const processUpdatedEvent = async (event, shopId) => {
     {
       shopId,
       OutputDir,
-      apiKey
+      apiKey,
+      smartFetch: true,
+      forceRefetchIds: [id]
     },
     { attempts: 1 }
   )
