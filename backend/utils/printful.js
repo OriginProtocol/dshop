@@ -37,12 +37,12 @@ const PrintfulWebhookEvents = {
  * @param {string} orderId: dshop order id.
  *    Format: <networkId>-<contractVersion>-<listingId>-<offerId>.
  *    Example: '1-001-81-231'
- * @returns {Promise<{status: number, success: boolean, message: string}|{status: number, success: boolean, ...Object}>}
+ * @returns {Promise<{statusCode: number, success: boolean, message: string}|{statusCode: number, success: boolean, ...Object}>}
  */
 const fetchOrder = async (apiKey, orderId) => {
   if (!apiKey) {
     return {
-      status: 500,
+      statusCode: 500,
       success: false,
       message: 'Missing Printful API configuration'
     }
@@ -59,13 +59,13 @@ const fetchOrder = async (apiKey, orderId) => {
   const json = (await result.json()) || {}
   if (!result.ok) {
     return {
-      status: result.status,
+      statusCode: result.status,
       success: false,
       message: json.result || 'Printful API call failed'
     }
   }
   return {
-    status: 200,
+    statusCode: 200,
     success: true,
     ...get(json, 'result', {})
   }
