@@ -25,9 +25,12 @@ module.exports = function (app) {
     findOrder,
     async (req, res) => {
       const apiKey = await encConf.get(req.order.shopId, 'printful')
-      const { status, ...resp } = await fetchOrder(apiKey, req.order.orderId)
+      const { statusCode, ...resp } = await fetchOrder(
+        apiKey,
+        req.order.orderId
+      )
 
-      return res.status(status || 200).send(resp)
+      return res.status(statusCode || 200).send(resp)
     }
   )
 
