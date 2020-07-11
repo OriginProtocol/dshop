@@ -1,8 +1,9 @@
 // A script to reconcile Stripe payment records with Dshop orders.
 // Fetches the events in the last 30 days from Stripe and checks there is
 // a corresponding entry in the orders table.
+// Also allows to check the shops Stripe configuration for errors.
 //
-// The simplest for running it to do the following:
+// The simplest for running it is to do the following:
 // 1. Setup a proxy to prod DB on your local
 // 2. Set DATABASE_URL to point to local proxy
 // 3. Run the script locally.
