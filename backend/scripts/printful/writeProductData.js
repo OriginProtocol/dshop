@@ -6,7 +6,13 @@ const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('utils.printful.writeProductData')
 
-async function writeProductData({ OutputDir, png }) {
+/**
+ *
+ * @param {String} OutputDir data directory of the store
+ * @param {Boolean} png Downloads file in PNG format, if set to true; jpeg otherwise
+ * @param {Array<String|Number>} updatedIds Updates only the products with ids from this array; to avoid unncessary download of files
+ */
+async function writeProductData({ OutputDir, png, updatedIds }) {
   const productsRaw = fs.readFileSync(`${OutputDir}/printful-products.json`)
   const products = JSON.parse(productsRaw).reverse()
   let customImages = {}
@@ -32,6 +38,8 @@ async function writeProductData({ OutputDir, png }) {
   const printfulIds = {}
 
   for (const row of products) {
+    const shouldSkipUpdate = !updatedIds ? false : !updatedIds.includes(row.id)
+
     const syncProductRaw = fs.readFileSync(
       `${OutputDir}/data-printful/sync-product-${row.id}.json`
     )
@@ -106,7 +114,12 @@ async function writeProductData({ OutputDir, png }) {
           const splitImg = img.preview_url.split('/')
           const file = splitImg[splitImg.length - 1].replace('_preview', '')
           const url = img.preview_url
-          downloadImages.push({ id: `${handle}`, file, url })
+          downloadImages.push({
+            id: `${handle}`,
+            file,
+            url,
+            skip: shouldSkipUpdate
+          })
           const fileWithExt = png ? file : file.replace('.png', '.jpg')
           allImages[img.preview_url] = fileWithExt
           images.push(fileWithExt)
@@ -179,11 +192,13 @@ async function writeProductData({ OutputDir, png }) {
       image: out.image
     })
 
-    fs.mkdirSync(`${OutputDir}/data/${handle}`, { recursive: true })
-    fs.writeFileSync(
-      `${OutputDir}/data/${handle}/data.json`,
-      JSON.stringify(out, null, 2)
-    )
+    if (!shouldSkipUpdate) {
+      fs.mkdirSync(`${OutputDir}/data/${handle}`, { recursive: true })
+      fs.writeFileSync(
+        `${OutputDir}/data/${handle}/data.json`,
+        JSON.stringify(out, null, 2)
+      )
+    }
   }
 
   // Keep original products.json order

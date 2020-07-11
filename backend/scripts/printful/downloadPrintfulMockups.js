@@ -7,7 +7,7 @@ const log = getLogger('scripts.printful.downloadPrintfulMockups')
 
 async function downloadPrintfulMockups({ OutputDir, png }) {
   const filesRaw = fs.readFileSync(`${OutputDir}/printful-images.json`)
-  const files = JSON.parse(filesRaw)
+  const files = JSON.parse(filesRaw).filter((f) => !f.skip)
   log.info(`Downloading ${files.length} mockups...`)
 
   for (const file of files) {
