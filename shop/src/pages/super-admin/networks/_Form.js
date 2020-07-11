@@ -132,9 +132,16 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
     }
   }, [state.networkId])
 
+  let parsedDefaultShopConfig
+  try {
+    parsedDefaultShopConfig = JSON.parse(state.defaultShopConfig)
+  } catch (_) {
+    console.error('Failed to parse existing shop config, falling back')
+  }
+
   const [configureEmailModal, setConfigureEmailModal] = useState(false)
   const { emailAppsList } = useEmailAppsList({
-    shopConfig: state.defaultShopConfig
+    shopConfig: parsedDefaultShopConfig
   })
 
   const ProcessorIdToEmailComp = {
@@ -311,6 +318,28 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           {Feedback('discordWebhook')}
         </div>
       </div>
+
+      <div className="my-3">
+        <label>Configure email server</label>
+        <ProcessorsList processors={emailProcessors} />
+        {!ActiveEmailModalComp ? null : (
+          <ActiveEmailModalComp
+            initialConfig={parsedDefaultShopConfig}
+            onClose={() => {
+              setConfigureEmailModal(false)
+            }}
+            overrideOnConnect={(newState) =>
+              setState({
+                defaultShopConfig: JSON.stringify({
+                  ...parsedDefaultShopConfig,
+                  ...newState
+                }
+              )})
+            }
+          />
+        )}
+      </div>
+
       <div className="mb-2 justify-content-center d-flex advanced-settings-link">
         <a
           href="#"
@@ -323,33 +352,12 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
         </a>
       </div>
 
-      <div className="my-3">
-        <label>Configure email server</label>
-        <ProcessorsList processors={emailProcessors} />
-        {!ActiveEmailModalComp ? null : (
-          <ActiveEmailModalComp
-            initialConfig={state.defaultShopConfig}
-            onClose={() => {
-              setConfigureEmailModal(false)
-            }}
-            overrideOnConnect={(newState) =>
-              setState({
-                defaultShopConfig: {
-                  ...state.defaultShopConfig,
-                  ...newState
-                }
-              })
-            }
-          />
-        )}
-      </div>
-
       {!advanced ? null : (
         <>
           <div className="form-row">
             <div className="form-group col-md-12">
               <label>Default Shop Config</label>
-              <textarea {...input('defaultShopConfig')}></textarea>
+              <textarea {...input('defaultShopConfig')} value={state.defaultShopConfig}></textarea>
               {Feedback('defaultShopConfig')}
             </div>
           </div>

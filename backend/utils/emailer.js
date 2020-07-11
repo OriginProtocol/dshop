@@ -45,24 +45,33 @@ function optionsForItem(item) {
 async function getEmailTransporter(shop) {
   let networkConfig = {}
 
+  const shopConfig = encConf.getConfig(shop.config)
+
+  let config = {
+    ...shopConfig
+  }
+
   // Try network's default config,
   try {
-    const network = await Network.findOne({
-      where: { networkId: shop.networkId, active: true }
-    })
-    if (network) {
-      networkConfig = encConf.getConfig(network.config) || {}
+    if (!shopConfig.email) {
+      // Has not configured email server, fallback to network config
+      const network = await Network.findOne({
+        where: { networkId: shop.networkId, active: true }
+      })
+
+      if (network) {
+        networkConfig = encConf.getConfig(network.config)
+        networkConfig = JSON.parse(networkConfig.defaultShopConfig)
+
+        config = {
+          ...networkConfig
+        }
+      }
     }
   } catch (err) {
     log.error(`Failed to fetch network's default config`, err)
   }
 
-  const shopConfig = encConf.getConfig(shop.config)
-
-  const config = {
-    ...networkConfig,
-    ...shopConfig
-  }
 
   let transporter
   if (config.email === 'sendgrid') {
@@ -312,6 +321,7 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
     transporter.sendMail(message, (err, msg) => {
       if (err) {
         log.error('Error sending verification email', err)
+        return resolve()
       } else {
         log.debug(msg.envelope)
         log.debug(msg)

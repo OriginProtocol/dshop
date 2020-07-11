@@ -10,7 +10,7 @@ import Tabs from '../_Tabs'
 import AddUserModal from './_Add'
 
 const AdminUsers = () => {
-  const [{ admin }] = useStateValue()
+  const [{ admin }, dispatch] = useStateValue()
   const [state, setState] = useSetState({ loading: false, users: [] })
 
   const { post, get } = useBackendApi({ authToken: true })
@@ -27,9 +27,17 @@ const AdminUsers = () => {
   }
 
   const resendCode = async () => {
-    await post('/resend-email', {
-      method: 'PUT'
-    })
+    try {
+      await post('/resend-email', {
+        method: 'PUT'
+      })
+
+      dispatch({ type: 'toast', message: 'Email has been resent, check your inbox' })
+    } catch (err) {
+      console.error(err)
+      dispatch({ type: 'toast', style: 'error', message: 'Failed to send email, check your email configuration settings' })
+    }
+
   }
 
   useEffect(() => {
