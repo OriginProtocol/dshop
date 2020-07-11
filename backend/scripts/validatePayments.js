@@ -174,7 +174,7 @@ async function validateConfigs() {
   log.info('Checking configs for Stripe enabled shops...')
   for (const [key, shops] of Object.entries(keyToShops)) {
     // We expect all the shops with the same key to also have the same secret.
-    let expectedSecret = shops[0].stripeWebhookSecret
+    const expectedSecret = shops[0].stripeWebhookSecret
     let error = false
     for (const shop of shops) {
       if (shop.stripeWebhookSecret !== expectedSecret) {
