@@ -9,7 +9,7 @@ const getProductIds = require('./getProductIds')
 const PrintfulURL = 'https://api.printful.com'
 
 /**
- * Download's product data from Printful
+ * Downloads product data from Printful
  *
  * @param {String} OutputDir data directory of the shop
  * @param {String} printfulApi API key of printful store

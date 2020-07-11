@@ -1,3 +1,6 @@
+// NOTE: Add migration files to update `ExternalEvents.event_type` and 
+// `ExternalEvents.service` when changing this file
+
 const PrintfulWebhookEvents = {
   PackageShipped: 'package_shipped',
   PackageReturned: 'package_returned',
