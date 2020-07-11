@@ -68,7 +68,8 @@ describe('Orders', () => {
       pgpPublicKey: PGP_PUBLIC_KEY,
       shopType: 'single-product',
       backend: ROOT_BACKEND_URL,
-      listingId: TEST_LISTING_ID_1
+      listingId: TEST_LISTING_ID_1,
+      hostname: 'test-shop'
     }
 
     const jason = await apiRequest({

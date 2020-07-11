@@ -109,7 +109,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   const transporter = await getEmailTransporter(shop)
   if (!transporter) {
     log.info(
-      `Emailer not configured for shop id {shop.id}. Skipping sending new order email.`
+      `Emailer not configured for shop id ${shop.id}. Skipping sending new order email.`
     )
     return
   }
@@ -275,7 +275,7 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
   const transporter = await getEmailTransporter(shop)
   if (!transporter) {
     log.info(
-      `Emailer not configured for shop id {shopId}. Skipping sending verification email.`
+      `Emailer not configured for shop id ${shopId}. Skipping sending verification email.`
     )
     return
   }
@@ -327,7 +327,7 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
   const transporter = await getEmailTransporter(shop)
   if (!transporter) {
     log.info(
-      `Emailer not configured for shop id {shopId}. Skipping sending Printful order failed email.`
+      `Emailer not configured for shop id ${shopId}. Skipping sending Printful order failed email.`
     )
     return
   }

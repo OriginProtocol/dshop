@@ -22,11 +22,20 @@ const { PrintfulWebhookEvents } = require('./enums')
 
 const PrintfulURL = 'https://api.printful.com'
 
+/**
+ * Fetches a Printful order.
+ * @param {string} apiKey: Prinful API key.
+ * @param {string} orderId: dshop order id.
+ *    Format: <networkId>-<contractVersion>-<listingId>-<offerId>.
+ *    Example: '1-001-81-231'
+ * @returns {Promise<{statusCode: number, success: boolean, message: string}|{statusCode: number, success: boolean, ...Object}>}
+ */
 const fetchOrder = async (apiKey, orderId) => {
   if (!apiKey) {
     return {
-      status: 500,
-      message: 'Missing printful API configuration'
+      statusCode: 500,
+      success: false,
+      message: 'Missing Printful API configuration'
     }
   }
 
@@ -38,8 +47,16 @@ const fetchOrder = async (apiKey, orderId) => {
       authorization: `Basic ${apiAuth}`
     }
   })
-  const json = await result.json()
+  const json = (await result.json()) || {}
+  if (!result.ok) {
+    return {
+      statusCode: result.status,
+      success: false,
+      message: json.result || 'Printful API call failed'
+    }
+  }
   return {
+    statusCode: 200,
     success: true,
     ...get(json, 'result', {})
   }
@@ -49,6 +66,7 @@ const placeOrder = async (apiKey, orderData, opts = {}) => {
   if (!apiKey) {
     return {
       status: 500,
+      success: false,
       message: 'Missing printful API configuration'
     }
   }

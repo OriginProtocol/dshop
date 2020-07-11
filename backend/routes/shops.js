@@ -288,6 +288,7 @@ module.exports = function (app) {
     const OutputDir = `${DSHOP_CACHE}/${dataDir}`
 
     if (fs.existsSync(OutputDir) && req.body.shopType !== 'local-dir') {
+      log.warn(`${OutputDir} alraedy exists`)
       return res.json({
         success: false,
         reason: 'invalid',
@@ -906,6 +907,9 @@ module.exports = function (app) {
     }
   })
 
+  /**
+   * Called by super-admin for deploying a shop.
+   */
   app.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {
@@ -937,6 +941,9 @@ module.exports = function (app) {
     }
   })
 
+  /**
+   * Called by admin for deploying a shop.
+   */
   app.post(
     '/shop/deploy',
     authSellerAndShop,
@@ -961,6 +968,8 @@ module.exports = function (app) {
 
       let pinner, dnsProvider
 
+      // If both an IPFS cluster and Pinata are configured,
+      // we favor pinning on the IPFS cluster.
       if (network.ipfsApi && networkConfig.ipfsClusterPassword) {
         pinner = 'ipfs-cluster'
       } else if (networkConfig.pinataKey) {

@@ -16,15 +16,21 @@ const log = getLogger('routes.printful')
 const { ExternalEvent } = require('../models')
 
 module.exports = function (app) {
+  /**
+   * Makes an API call to Printful to get details about a specific order.
+   */
   app.get(
     '/orders/:orderId/printful',
     authSellerAndShop,
     findOrder,
     async (req, res) => {
       const apiKey = await encConf.get(req.order.shopId, 'printful')
-      const { status, ...resp } = await fetchOrder(apiKey, req.order.orderId)
+      const { statusCode, ...resp } = await fetchOrder(
+        apiKey,
+        req.order.orderId
+      )
 
-      return res.status(status || 200).send(resp)
+      return res.status(statusCode || 200).send(resp)
     }
   )
 

@@ -49,6 +49,13 @@ const all = [
     Object.assign(queueOpts, {
       prefix: '{printfulSync}'
     })
+  ),
+  new Queue(
+    'events',
+    backendUrl,
+    Object.assign(queueOpts, {
+      prefix: '{events}'
+    })
   )
 ]
 
