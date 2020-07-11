@@ -32,12 +32,18 @@ const AdminUsers = () => {
         method: 'PUT'
       })
 
-      dispatch({ type: 'toast', message: 'Email has been resent, check your inbox' })
+      dispatch({
+        type: 'toast',
+        message: 'Email has been resent, check your inbox'
+      })
     } catch (err) {
       console.error(err)
-      dispatch({ type: 'toast', style: 'error', message: 'Failed to send email, check your email configuration settings' })
+      dispatch({
+        type: 'toast',
+        style: 'error',
+        message: 'Failed to send email, check your email configuration settings'
+      })
     }
-
   }
 
   useEffect(() => {

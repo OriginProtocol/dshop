@@ -72,7 +72,6 @@ async function getEmailTransporter(shop) {
     log.error(`Failed to fetch network's default config`, err)
   }
 
-
   let transporter
   if (config.email === 'sendgrid') {
     let auth

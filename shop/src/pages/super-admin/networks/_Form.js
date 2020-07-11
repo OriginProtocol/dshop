@@ -333,8 +333,8 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
                 defaultShopConfig: JSON.stringify({
                   ...parsedDefaultShopConfig,
                   ...newState
-                }
-              )})
+                })
+              })
             }
           />
         )}
@@ -357,7 +357,10 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           <div className="form-row">
             <div className="form-group col-md-12">
               <label>Default Shop Config</label>
-              <textarea {...input('defaultShopConfig')} value={state.defaultShopConfig}></textarea>
+              <textarea
+                {...input('defaultShopConfig')}
+                value={state.defaultShopConfig}
+              ></textarea>
               {Feedback('defaultShopConfig')}
             </div>
           </div>
