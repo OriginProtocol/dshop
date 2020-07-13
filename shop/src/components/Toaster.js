@@ -1,5 +1,6 @@
-import React, { useReducer, useState, useEffect } from 'react'
+import React, { useReducer, useState, useEffect, useRef } from 'react'
 import { useSpring, animated } from 'react-spring'
+import { createPortal } from 'react-dom'
 
 import { useStateValue } from 'data/state'
 
@@ -38,7 +39,7 @@ const Toast = ({ id, num, message, onHide, type = 'success' }) => {
     config: { mass: 0.75, tension: 300, friction: 20 },
     opacity: show ? 1 : 0,
     top: show ? num * 50 + 20 : -50,
-    zIndex: num + 1
+    zIndex: num + 1100
   })
 
   useEffect(() => {
@@ -52,7 +53,20 @@ const Toast = ({ id, num, message, onHide, type = 'success' }) => {
     }
   }, [])
 
-  return (
+  const el = useRef(document.createElement('div'))
+
+  useEffect(() => {
+    document.body.appendChild(el.current)
+    el.current.classList.add('d-toaster')
+
+    return () => {
+      if (el.current.parentElement) {
+        el.current.parentElement.removeChild(el.current)
+      }
+    }
+  }, [el])
+
+  const cmp = (
     <animated.div className={`d-toast ${type}`} style={modalProps}>
       {type === 'error' ? (
         <svg width="14" height="14" viewBox="0 0 14 14">
@@ -74,6 +88,8 @@ const Toast = ({ id, num, message, onHide, type = 'success' }) => {
       {message}
     </animated.div>
   )
+
+  return createPortal(cmp, el.current)
 }
 
 export default Toaster
@@ -97,5 +113,8 @@ require('react-styl')(`
       border-color: #d50000
     svg
       margin-right: 0.5rem
+
+  .d-toaster
+    z-index: 1050
 
 `)

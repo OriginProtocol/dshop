@@ -68,10 +68,18 @@ const PaymentSettings = () => {
       actions: (
         <>
           {processor.enabled ? (
-            <DisconnectModal
-              processor={processor}
-              afterDelete={() => refetch()}
-            />
+            <>
+              <button
+                className="btn btn-outline-primary mr-2"
+                type="button"
+                onClick={() => setShowConnectModal(processor.id)}
+                children="Configure"
+              />
+              <DisconnectModal
+                processor={processor}
+                afterDelete={() => refetch()}
+              />
+            </>
           ) : (
             <button
               className="btn btn-outline-primary px-4"
@@ -189,7 +197,7 @@ const PaymentSettings = () => {
         <ProcessorsList processors={Processors} />
 
         {connectModal === 'web3' && <Web3Modal onClose={onCloseModal} />}
-        {connectModal === 'stripe' && <StripeModal onClose={onCloseModal} />}
+        {connectModal === 'stripe' && <StripeModal onClose={onCloseModal} initialConfig={shopConfig} />}
         {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
 
         <ContractSettings {...{ state, setState, config }} />

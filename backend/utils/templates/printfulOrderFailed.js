@@ -6,7 +6,7 @@ module.exports = (vars) => `
       <mj-column>
         <mj-text mj-class="large">${vars.siteName}</mj-text>
         <mj-text mj-class="light">
-          You’re receiving this message because one of the orders couldn't created on Printful because of the following reason:
+          You’re receiving this message because one of the orders couldn't be created on Printful because of the following reason:
         </mj-text>
         <mj-text mj-class="light">
           ${vars.message}

@@ -646,6 +646,11 @@ module.exports = function (app) {
 
   async function deregisterStripeWebhooks(config) {
     const { stripeBackend, backendAuthToken } = config
+
+    if (!stripeBackend || !backendAuthToken) {
+      return
+    }
+
     try {
       log.info('Trying to deregister any existing webhook...')
       const stripe = Stripe(stripeBackend)
