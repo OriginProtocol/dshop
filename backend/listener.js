@@ -180,12 +180,20 @@ const handleNewHead = (head, networkId) => {
   const timestamp = web3.utils.hexToNumber(head.timestamp)
 
   Network.update(
-    { networkId, lastBlock: number },
+    { lastBlock: number },
     {
       where: {
-        lastBlock: {
-          [Op.lt]: number
-        }
+        networkId,
+        [Op.or]: [
+          {
+            lastBlock: null
+          },
+          {
+            lastBlock: {
+              [Op.lt]: number
+            }
+          }
+        ]
       }
     }
   )
