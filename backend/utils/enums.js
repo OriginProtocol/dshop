@@ -1,4 +1,4 @@
-// NOTE: Add migration files to update `ExternalEvents.event_type` and 
+// NOTE: Add migration files to update `ExternalEvents.event_type` and
 // `ExternalEvents.service` when changing this file
 
 const PrintfulWebhookEvents = {

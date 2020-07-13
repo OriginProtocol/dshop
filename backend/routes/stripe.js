@@ -106,8 +106,7 @@ module.exports = function (app) {
         await stripeWebhookErrorEmail(req.shop.id, {
           externalPaymentId: externalPayment.id,
           stackTrace: err.stack,
-          message: err.message,
-
+          message: err.message
         })
       } catch (error) {
         log.error('⚠️ Failed to send email', error)
