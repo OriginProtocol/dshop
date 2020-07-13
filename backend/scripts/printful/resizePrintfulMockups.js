@@ -9,7 +9,7 @@ const log = getLogger('utils.printfu.resizePrintfulMockups')
 async function resizePrintfulMockups({ OutputDir }) {
   const filesRaw = fs.readFileSync(`${OutputDir}/printful-images.json`)
   const files = JSON.parse(filesRaw)
-  const fileIds = uniq(files.map((f) => f.id))
+  const fileIds = uniq(files.filter((f) => !f.skip).map((f) => f.id))
   log.info(`Resizing mockups for ${fileIds.length} products...`)
 
   for (const fileId of fileIds) {

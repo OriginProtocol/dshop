@@ -37,6 +37,7 @@ before(async function () {
   this.timeout(30000)
   // Start backend
   fs.mkdirSync(TMP_DIR)
+  console.log(`Using temp dir at ${TMP_DIR}`)
   process.env.PORT = BACKEND_PORT
   process.env.DATABASE_URL = TEST_DATABASE_URL
   process.env.DSHOP_CACHE = TEST_DSHOP_CACHE

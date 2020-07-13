@@ -288,6 +288,7 @@ module.exports = function (app) {
     const OutputDir = `${DSHOP_CACHE}/${dataDir}`
 
     if (fs.existsSync(OutputDir) && req.body.shopType !== 'local-dir') {
+      log.warn(`${OutputDir} alraedy exists`)
       return res.json({
         success: false,
         reason: 'invalid',
@@ -645,6 +646,11 @@ module.exports = function (app) {
 
   async function deregisterStripeWebhooks(config) {
     const { stripeBackend, backendAuthToken } = config
+
+    if (!stripeBackend || !backendAuthToken) {
+      return
+    }
+
     try {
       log.info('Trying to deregister any existing webhook...')
       const stripe = Stripe(stripeBackend)

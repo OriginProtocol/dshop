@@ -19,19 +19,41 @@ const processor = async (job) => {
     job.progress(progress)
   }
 
-  const { OutputDir, apiKey, shopId } = job.data
+  const startTime = Date.now()
 
-  await downloadProductData({ OutputDir, printfulApi: apiKey })
-  log(25, 'Downloaded products data')
+  const { OutputDir, apiKey, shopId, smartFetch, forceRefetchIds } = job.data
 
-  await writeProductData({ OutputDir })
-  log(50, 'Wrote product data')
+  let taskStartTime = Date.now()
+  const updatedIds = await downloadProductData({
+    OutputDir,
+    printfulApi: apiKey,
+    smartFetch,
+    forceRefetchIds
+  })
+  log(
+    25,
+    `Downloaded products data, Time Taken: ${
+      (Date.now() - taskStartTime) / 1000
+    }s`
+  )
+  taskStartTime = Date.now()
+
+  await writeProductData({ OutputDir, updatedIds })
+  log(
+    50,
+    `Wrote product data, Time Taken: ${(Date.now() - taskStartTime) / 1000}s`
+  )
+  taskStartTime = Date.now()
 
   await downloadPrintfulMockups({ OutputDir })
-  log(75, 'Downloaded mockups')
+  log(
+    75,
+    `Downloaded mockups, Time Taken: ${(Date.now() - taskStartTime) / 1000}s`
+  )
+  taskStartTime = Date.now()
 
   await resizePrintfulMockups({ OutputDir })
-  log(90, 'Resize mockups')
+  log(90, `Resize mockups, Time Taken: ${(Date.now() - taskStartTime) / 1000}s`)
 
   if (shopId) {
     const shop = await Shop.findOne({ where: { id: shopId } })
@@ -40,7 +62,10 @@ const processor = async (job) => {
     })
   }
 
-  log(100, 'Finished')
+  log(
+    100,
+    `Finished, Cumulative time take: ${(Date.now() - startTime) / 1000}s`
+  )
 }
 
 module.exports = { processor, attachToQueue }

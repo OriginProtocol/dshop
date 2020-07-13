@@ -123,14 +123,16 @@ module.exports = function (app) {
   })
 
   app.put('/resend-email', authSellerAndShop, async (req, res) => {
+    let sent = false
+
     try {
-      await sendVerificationEmail(req.seller, req.shop.id)
+      sent = await sendVerificationEmail(req.seller, req.shop.id)
     } catch (err) {
       log.error('Could not resend verification email', err)
     }
 
     return res.send({
-      success: true
+      success: sent
     })
   })
 }

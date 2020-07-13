@@ -1,3 +1,5 @@
+const { PrintfulWebhookEvents, ExternalServices } = require('../utils/enums')
+
 module.exports = (sequelize, DataTypes) => {
   const isPostgres = sequelize.options.dialect === 'postgres'
 
@@ -5,8 +7,8 @@ module.exports = (sequelize, DataTypes) => {
     'ExternalEvent',
     {
       shopId: DataTypes.INTEGER,
-      service: DataTypes.STRING,
-      event_type: DataTypes.STRING,
+      service: DataTypes.ENUM(...Object.values(PrintfulWebhookEvents)),
+      event_type: DataTypes.ENUM(...Object.values(ExternalServices)),
       data: isPostgres ? DataTypes.JSONB : DataTypes.JSON
     },
     {

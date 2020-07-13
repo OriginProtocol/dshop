@@ -55,6 +55,20 @@ class FallbackQueue {
    * Do nothing stub
    */
   pause() {}
+
+  /**
+   * Fake job counts for health check
+   */
+  getJobCounts() {
+    return {
+      waiting: -1,
+      active: -1,
+      completed: -1,
+      failed: -1,
+      delayed: -1,
+      paused: -1
+    }
+  }
 }
 
 module.exports = FallbackQueue

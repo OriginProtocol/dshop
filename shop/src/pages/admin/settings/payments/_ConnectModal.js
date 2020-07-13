@@ -12,11 +12,13 @@ const ConnectModal = ({
   validate,
   onCancel,
   onClose,
-  overrideOnConnect
+  overrideOnConnect,
+  actions
 }) => {
   const [state, setState] = useReducer(reducer, {
     showModal: false,
-    shouldClose: false
+    shouldClose: false,
+    verified: false
   })
 
   const { post } = useBackendApi({ authToken: true })
@@ -73,6 +75,7 @@ const ConnectModal = ({
           >
             Cancel
           </button>
+          {actions}
           <button
             className="btn btn-primary"
             type="button"
