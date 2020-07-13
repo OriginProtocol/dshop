@@ -147,4 +147,26 @@ module.exports = function (app) {
   }
 
   app.post('/webhook', rawJson, handleWebhook, makeOffer)
+
+  app.post('/stripe/check-creds', authShop, async (req, res) => {
+    let valid = false
+
+    try {
+      const { stripeBackend } = req.body
+
+      const stripe = Stripe(stripeBackend)
+
+      await stripe.customers.list({ limit: 1 })
+
+      valid = true
+    } catch (err) {
+      log.error('Failed to verify stripe credentials', err)
+      valid = false
+    }
+
+    return res.status(200).send({
+      success: true,
+      valid
+    })
+  })
 }

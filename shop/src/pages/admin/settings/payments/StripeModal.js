@@ -1,5 +1,6 @@
 import React, { useReducer } from 'react'
 
+import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
@@ -7,10 +8,16 @@ import ConnectModal from './_ConnectModal'
 
 import PasswordField from 'components/admin/PasswordField'
 
+import useBackendApi from 'utils/useBackendApi'
+
+import VerifyButton from '../_VerifyButton'
+
 const reducer = (state, newState) => ({ ...state, ...newState })
 
 const initialState = {
-  stripeBackend: ''
+  stripeKey: '',
+  stripeBackend: '',
+  stripeWebhookSecret: ''
 }
 
 const validate = (state) => {
@@ -36,11 +43,22 @@ const validate = (state) => {
   }
 }
 
-const StripeModal = ({ onClose }) => {
-  const [state, setState] = useReducer(reducer, initialState)
+const StripeModal = ({ onClose, initialConfig }) => {
+  const [state, setState] = useReducer(reducer, {
+    ...initialState,
+    ...pick(initialConfig, Object.keys(initialState))
+  })
 
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
+
+  const { post } = useBackendApi({ authToken: true })
+
+  const verifyCredentials = () => {
+    return post('/stripe/check-creds', {
+      body: JSON.stringify(state)
+    })
+  }
 
   return (
     <ConnectModal
@@ -52,6 +70,7 @@ const StripeModal = ({ onClose }) => {
       }}
       onCancel={() => setState(initialState)}
       onClose={onClose}
+      actions={<VerifyButton onVerify={verifyCredentials} />}
     >
       <div className="form-group">
         <label>Stripe Public Key</label>
