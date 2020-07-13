@@ -197,7 +197,9 @@ const PaymentSettings = () => {
         <ProcessorsList processors={Processors} />
 
         {connectModal === 'web3' && <Web3Modal onClose={onCloseModal} />}
-        {connectModal === 'stripe' && <StripeModal onClose={onCloseModal} initialConfig={shopConfig} />}
+        {connectModal === 'stripe' && (
+          <StripeModal onClose={onCloseModal} initialConfig={shopConfig} />
+        )}
         {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
 
         <ContractSettings {...{ state, setState, config }} />
