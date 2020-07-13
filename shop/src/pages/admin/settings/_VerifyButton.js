@@ -9,7 +9,7 @@ const VerifyButton = ({ onVerify, children }) => {
   const onVerifyClick = async () => {
     try {
       setVerifying(true)
- 
+
       const { valid } = await onVerify()
 
       if (valid) {
@@ -37,13 +37,13 @@ const VerifyButton = ({ onVerify, children }) => {
     }
   }
   return (
-    <button 
-      className="btn btn-outline-primary mr-2" 
+    <button
+      className="btn btn-outline-primary mr-2"
       type="button"
       onClick={onVerifyClick}
       disabled={verifying}
     >
-      {verifying ? 'Verifying...' : (children || 'Verify')}
+      {verifying ? 'Verifying...' : children || 'Verify'}
     </button>
   )
 }
