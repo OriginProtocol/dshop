@@ -23,8 +23,11 @@ const orderItemTxt = require('./templates/orderItemTxt')
 const verifyEmail = require('./templates/verifyEmail')
 const verifyEmailTxt = require('./templates/verifyEmailTxt')
 
-const pritnfulOrderFailed = require('./templates/printfulOrderFailed')
-const pritnfulOrderFailedTxt = require('./templates/pritnfulOrderFailedTxt')
+const printfulOrderFailed = require('./templates/printfulOrderFailed')
+const printfulOrderFailedTxt = require('./templates/printfulOrderFailedTxt')
+
+const stripeWebhookError = require('./templates/stripeWebhookError')
+const stripeWebhookErrorTxt = require('./templates/stripeWebhookErrorTxt')
 
 const log = getLogger('utils.emailer')
 
@@ -361,8 +364,8 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
     siteName: data.fullTitle || data.title
   }
 
-  const htmlOutput = mjml2html(pritnfulOrderFailed(vars), { minify: true })
-  const txtOutput = pritnfulOrderFailedTxt(vars)
+  const htmlOutput = mjml2html(printfulOrderFailed(vars), { minify: true })
+  const txtOutput = printfulOrderFailedTxt(vars)
 
   const message = {
     from: vars.supportEmail,
@@ -388,8 +391,63 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
   })
 }
 
+async function stripeWebhookErrorEmail(shopId, errorData, skip) {
+  const shop = await Shop.findOne({ where: { id: shopId } })
+  const transporter = await getEmailTransporter(shop)
+  if (!transporter) {
+    log.info(
+      `Emailer not configured for shop id ${shopId}. Skipping sending Stripe error email.`
+    )
+    return
+  }
+
+  const config = encConf.getConfig(shop.config)
+  if (process.env.NODE_ENV === 'test') {
+    log.info('Test environment. Email will be generated but not sent.')
+    skip = true
+  }
+
+  const dataURL = config.dataUrl
+
+  const data = await getSiteConfig(dataURL)
+
+  const vars = {
+    head,
+    supportEmail: SUPPORT_EMAIL_OVERRIDE || 'dshop@originprotocol.com',
+    siteName: data.fullTitle || data.title,
+    ...errorData
+  }
+
+  const htmlOutput = mjml2html(stripeWebhookError(vars), { minify: true })
+  const txtOutput = stripeWebhookErrorTxt(vars)
+
+  const message = {
+    from: vars.supportEmail,
+    to: vars.supportEmail,
+    subject: 'Failed to process stripe webhook event',
+    html: htmlOutput.html,
+    text: txtOutput
+  }
+
+  if (skip) return message
+
+  return new Promise((resolve) => {
+    transporter.sendMail(message, (err, msg) => {
+      if (err) {
+        log.error('Error sending email', err)
+      } else {
+        log.debug(msg.envelope)
+        log.debug(msg)
+      }
+
+      resolve(message)
+    })
+  })
+}
+
 module.exports = {
   sendNewOrderEmail,
   sendVerifyEmail,
-  sendPrintfulOrderFailedEmail
+  sendPrintfulOrderFailedEmail,
+  stripeWebhookErrorEmail
 }

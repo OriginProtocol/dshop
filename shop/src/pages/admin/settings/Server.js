@@ -399,10 +399,9 @@ const AdminSettings = ({ shop }) => {
         </div>
 
         <div className="actions">
-          <button type="submit" className="btn btn-primary">
-            Save
+          <button type="submit" className="btn btn-primary" disabled={saving}>
+            {saving ? 'Saving...' : 'Save'}
           </button>
-          <span className="ml-2">{saving ? 'Saving...' : 'Save'}</span>
         </div>
       </form>
     </>

@@ -1,7 +1,7 @@
 module.exports = (vars) => `
 ${vars.siteName}
 
-You’re receiving this message because one of the orders couldn't created on Printful because of the following reason:
+You’re receiving this message because one of the orders couldn't be created on Printful because of the following reason:
 
 > ${vars.message}
 

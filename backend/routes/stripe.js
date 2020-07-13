@@ -12,6 +12,8 @@ const { getLogger } = require('../utils/logger')
 
 const makeOffer = require('./_makeOffer')
 
+const { stripeWebhookErrorEmail } = require('../utils/emailer')
+
 const log = getLogger('routes.stripe')
 
 const rawJson = bodyParser.raw({ type: 'application/json' })
@@ -99,7 +101,17 @@ module.exports = function (app) {
       const secret = shopConfig.stripeWebhookSecret
       event = stripe.webhooks.constructEvent(req.body, sig, secret)
     } catch (err) {
-      log.error(`⚠️  Webhook signature verification failed:`, err)
+      log.error(`⚠️ Webhook signature verification failed:`, err)
+      try {
+        await stripeWebhookErrorEmail(req.shop.id, {
+          externalPaymentId: externalPayment.id,
+          stackTrace: err.stack,
+          message: err.message,
+
+        })
+      } catch (error) {
+        log.error('⚠️ Failed to send email', error)
+      }
       return res.sendStatus(400)
     }
 
