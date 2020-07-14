@@ -56,7 +56,7 @@ async function getEmailTransporter(shop) {
 
   // Try network's default config,
   try {
-    if (!shopConfig.email) {
+    if (!shopConfig.email || shopConfig.email === 'disabled') {
       // Has not configured email server, fallback to network config
       const network = await Network.findOne({
         where: { networkId: shop.networkId, active: true }
