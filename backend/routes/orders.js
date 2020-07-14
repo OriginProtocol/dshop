@@ -4,8 +4,8 @@ const { findOrder } = require('../utils/orders')
 const makeOffer = require('./_makeOffer')
 const { sendNewOrderEmail } = require('../utils/emailer')
 
-module.exports = function (app) {
-  app.get('/orders', authSellerAndShop, async (req, res) => {
+module.exports = function (router) {
+  router.get('/orders', authSellerAndShop, async (req, res) => {
     const orders = await Order.findAll({
       where: { shopId: req.shop.id },
       order: [['createdAt', 'desc']]
@@ -13,11 +13,11 @@ module.exports = function (app) {
     res.json(orders)
   })
 
-  app.get('/orders/:orderId', authSellerAndShop, findOrder, (req, res) => {
+  router.get('/orders/:orderId', authSellerAndShop, findOrder, (req, res) => {
     res.json(req.order)
   })
 
-  app.post(
+  router.post(
     '/orders/:orderId/email',
     authSellerAndShop,
     findOrder,
@@ -31,7 +31,7 @@ module.exports = function (app) {
     }
   )
 
-  app.post(
+  router.post(
     '/orders/create',
     authSellerAndShop,
     (req, res, next) => {

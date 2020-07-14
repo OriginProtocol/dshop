@@ -6,8 +6,8 @@ const snakeCase = require('lodash/snakeCase')
 const { authSellerAndShop, authRole } = require('./_auth')
 const { DSHOP_CACHE } = require('../utils/const')
 
-module.exports = function (app) {
-  app.put(
+module.exports = function (router) {
+  router.put(
     '/shipping-zones',
     authSellerAndShop,
     authRole('admin'),
@@ -35,7 +35,7 @@ module.exports = function (app) {
     }
   )
 
-  app.put(
+  router.put(
     '/shipping-zones/:shippingId',
     authSellerAndShop,
     authRole('admin'),

@@ -1,6 +1,7 @@
 const fs = require('fs')
 const express = require('express')
 const session = require('express-session')
+const Router = require('express-promise-router')
 const SequelizeStore = require('connect-session-sequelize')(session.Store)
 const cors = require('cors')
 const bodyParser = require('body-parser')
@@ -12,7 +13,6 @@ const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
 const { Sentry, sentryEventPrefix } = require('./sentry')
 
 const log = getLogger('app')
-const app = express()
 
 require('./queues').runProcessors()
 
@@ -20,13 +20,17 @@ const ORIGIN_WHITELIST_ENABLED = false
 const ORIGIN_WHITELIST = []
 const BODYPARSER_EXCLUDES = ['/webhook', '/products/upload-images']
 
+const app = express()
+
 // TODO: Restrict this more? See: https://expressjs.com/en/guide/behind-proxies.html
 app.set('trust proxy', true)
 
-const sessionStore = new SequelizeStore({ db: sequelize })
-
 // Must be the first middleware.
 app.use(Sentry.Handlers.requestHandler())
+
+// Use express-promise-router which allows middleware to return promises.
+const router = Router()
+app.use(router)
 
 app.use(
   cors({
@@ -41,6 +45,8 @@ app.use(
   })
 )
 
+// Configure sessions.
+const sessionStore = new SequelizeStore({ db: sequelize })
 app.use(
   session({
     secret: 'keyboard cat', // TODO
@@ -60,26 +66,26 @@ app.use((req, res, next) => {
   return jsonBodyParser(req, res, next)
 })
 
-require('./routes/networks')(app)
-require('./routes/auth')(app)
-require('./routes/users')(app)
-require('./routes/shops')(app)
-require('./routes/affiliate')(app)
-require('./routes/uphold')(app)
-require('./routes/orders')(app)
-require('./routes/printful')(app)
-require('./routes/stripe')(app)
-require('./routes/discounts')(app)
-require('./routes/tx')(app)
-require('./queues/ui')(app)
-require('./routes/products')(app)
-require('./routes/collections')(app)
-require('./routes/domains')(app)
-require('./routes/shipping-zones')(app)
-require('./routes/health')(app)
+require('./routes/networks')(router)
+require('./routes/auth')(router)
+require('./routes/users')(router)
+require('./routes/shops')(router)
+require('./routes/affiliate')(router)
+require('./routes/uphold')(router)
+require('./routes/orders')(router)
+require('./routes/printful')(router)
+require('./routes/stripe')(router)
+require('./routes/discounts')(router)
+require('./routes/tx')(router)
+require('./queues/ui')(router)
+require('./routes/products')(router)
+require('./routes/collections')(router)
+require('./routes/domains')(router)
+require('./routes/shipping-zones')(router)
+require('./routes/health')(router)
 
-app.use(serveStatic(`${__dirname}/dist`, { index: false }))
-app.get('/', async (req, res) => {
+router.use(serveStatic(`${__dirname}/dist`, { index: false }))
+router.get('/', async (req, res) => {
   let html
   try {
     html = fs.readFileSync(`${__dirname}/dist/index.html`).toString()
@@ -103,7 +109,7 @@ app.get('/', async (req, res) => {
   res.send(html)
 })
 
-app.get('*', (req, res, next) => {
+router.get('*', (req, res, next) => {
   const split = req.path.split('/')
   if (split.length <= 2) {
     return next()

@@ -8,8 +8,8 @@ const { DSHOP_CACHE } = require('../utils/const')
 const encConf = require('../utils/encryptedConfig')
 const { findShopByHostname } = require('../utils/shop')
 
-module.exports = function (app) {
-  app.put(
+module.exports = function (router) {
+  router.put(
     '/collections',
     authSellerAndShop,
     authRole('admin'),
@@ -33,7 +33,7 @@ module.exports = function (app) {
     }
   )
 
-  app.put(
+  router.put(
     '/collections/:collectionId',
     authSellerAndShop,
     authRole('admin'),
@@ -72,7 +72,7 @@ module.exports = function (app) {
     }
   )
 
-  app.get(
+  router.get(
     '(/collections/:collection)?/products/:product',
     findShopByHostname,
     async (req, res) => {

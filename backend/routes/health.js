@@ -4,15 +4,15 @@ const { getLogger } = require('../utils/logger')
 
 const log = getLogger('routes.health')
 
-module.exports = function (app) {
+module.exports = function (router) {
   // This endpoint will tell the health checks that this backend has started
-  app.get('/health/started', async (req, res) => {
+  router.get('/health/started', async (req, res) => {
     res.json({ success: true })
   })
 
   // This will do some basic connection health checks to determine the health
   // of the backend.
-  app.get('/health/status', async (req, res) => {
+  router.get('/health/status', async (req, res) => {
     try {
       // Quick DB check. There should be at least one default network and this
       // should throw if the connection is bad.

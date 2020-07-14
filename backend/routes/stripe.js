@@ -23,8 +23,8 @@ const rawJson = bodyParser.raw({ type: 'application/json' })
 //    stripe listen --forward-to localhost:3000/webhook
 // Update stripe webhook in shop server config
 
-module.exports = function (app) {
-  app.post('/pay', authShop, async (req, res) => {
+module.exports = function (router) {
+  router.post('/pay', authShop, async (req, res) => {
     if (req.body.amount < 50) {
       return res.status(400).send({
         success: false,
@@ -146,9 +146,9 @@ module.exports = function (app) {
     next()
   }
 
-  app.post('/webhook', rawJson, handleWebhook, makeOffer)
+  router.post('/webhook', rawJson, handleWebhook, makeOffer)
 
-  app.post('/stripe/check-creds', authShop, async (req, res) => {
+  router.post('/stripe/check-creds', authShop, async (req, res) => {
     let valid = false
 
     try {
