@@ -41,7 +41,6 @@ async function getGcpSuperAdminPassword() {
 
 module.exports = function (router) {
   router.get('/auth', async (req, res) => {
-    throw new Error('Shall I use Router or App?')
     const userCount = await Seller.count()
     if (!userCount) {
       return res.json({ success: false, reason: 'no-users', setup: true })
