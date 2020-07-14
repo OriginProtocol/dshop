@@ -298,11 +298,18 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
 
   const { name, email } = seller
 
+  const config = encConf.getConfig(shop.config)
+
+  const dataURL = config.dataUrl
+
+  const data = await getSiteConfig(dataURL)
+
   const vars = {
     head,
     name,
     verifyUrl,
-    supportEmailPlain: SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com'
+    supportEmailPlain:
+      SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com'
   }
 
   const htmlOutput = mjml2html(verifyEmail(vars), { minify: true })
@@ -358,7 +365,8 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
 
   const vars = {
     head,
-    supportEmail: SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com',
+    supportEmail:
+      SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com',
     message: opts ? opts.message : '',
     orderUrlAdmin: `${publicURL}/admin/orders/${cart.offerId}`,
     siteName: data.fullTitle || data.title
@@ -413,7 +421,8 @@ async function stripeWebhookErrorEmail(shopId, errorData, skip) {
 
   const vars = {
     head,
-    supportEmail: SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com',
+    supportEmail:
+      SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com',
     siteName: data.fullTitle || data.title,
     ...errorData
   }
