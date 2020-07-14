@@ -7,6 +7,11 @@ import Modal from 'components/Modal'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 
+import useTokenDataProviders from 'utils/useTokenDataProviders'
+
+import Web3 from 'web3'
+const web3 = new Web3()
+
 const reducer = (state, newState) => ({ ...state, ...newState })
 
 const validate = (state) => {
@@ -22,6 +27,8 @@ const validate = (state) => {
 
   if (!state.address) {
     newState.addressError = 'Token address is required'
+  } else if (!web3.utils.isAddress(state.address)) {
+    newState.addressError = 'Invalid contract address'
   }
 
   const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
@@ -35,17 +42,21 @@ const validate = (state) => {
   }
 }
 
-const isTokenValid = async (tokenAddress) => {
+const isTokenValid = async (token, tokenDataProviders) => {
   try {
-    // Check if we can get price of token from CoinGecko
-    let url =
-      'https://api.coingecko.com/api/v3/simple/token_price/ethereum?vs_currencies=usd'
-    url = url + '&contract_addresses=' + tokenAddress
+    const provider = tokenDataProviders.find(
+      (provider) => provider.id === token.apiProvider
+    )
 
-    const resp = await fetch(url)
-    const data = await resp.json()
+    if (!provider) {
+      console.error('Invalid provider', token, tokenDataProviders)
+      return false
+    }
 
-    return !Number.isNaN(data[tokenAddress].usd)
+    const priceData = await provider.getTokenPrices(token)
+    const tokenPrice = priceData[token.name]
+
+    return typeof tokenPrice === 'number' && !Number.isNaN(tokenPrice)
   } catch (err) {
     console.error(err)
     return false
@@ -53,7 +64,10 @@ const isTokenValid = async (tokenAddress) => {
 }
 
 const CustomTokenModal = ({ onNewTokenAdded }) => {
+  const { tokenDataProviders } = useTokenDataProviders()
+
   const [state, setState] = useReducer(reducer, {
+    apiProvider: tokenDataProviders[0].id,
     showModal: false,
     shouldClose: false
   })
@@ -70,7 +84,7 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
 
     setState({ saving: true })
 
-    const tokenValid = await isTokenValid(newState.address)
+    const tokenValid = await isTokenValid(newState, tokenDataProviders)
 
     if (!tokenValid) {
       setState({
@@ -81,7 +95,7 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
     }
 
     onNewTokenAdded({
-      ...pick(newState, ['name', 'address', 'displayName']),
+      ...pick(newState, ['name', 'address', 'displayName', 'apiProvider']),
       id: `token-${newState.name.toUpperCase()}`
     })
 
@@ -130,6 +144,18 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
               <label>Token Address</label>
               <input {...input('address')} />
               {Feedback('address')}
+            </div>
+
+            <div className="form-group">
+              <label>Fetch price from</label>
+              <select {...input('apiProvider')}>
+                <option>Select one</option>
+                {tokenDataProviders.map((provider) => (
+                  <option key={provider.id} value={provider.id}>
+                    {provider.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {!state.testError ? null : (

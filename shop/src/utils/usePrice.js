@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
-import get from 'lodash/get'
 import memoize from 'lodash/memoize'
 
 import useConfig from 'utils/useConfig'
+
+import useTokenDataProviders from 'utils/useTokenDataProviders'
+
 const ratesUrl = 'https://bridge.originprotocol.com/utils/exchange-rates'
-const cosUrl =
-  'https://api.coingecko.com/api/v3/coins/markets?ids=contentos&vs_currency=usd'
-const ratesByContractUrl =
-  'https://api.coingecko.com/api/v3/simple/token_price/ethereum?vs_currencies=usd'
 
 const memoFetch = memoize(async function (url) {
   return fetch(url).then((raw) => raw.json())
@@ -17,29 +15,36 @@ function usePrice() {
   const [exchangeRates, setRates] = useState({})
   const { config } = useConfig()
 
-  async function fetchExchangeRates() {
-    const json = await memoFetch(ratesUrl)
-    const acceptedTokens = config.acceptedTokens || []
+  const { tokenDataProviders } = useTokenDataProviders()
 
-    // Special case for COS as it's not in coingecko rates by contract address API
-    if (acceptedTokens.find((t) => t.id === 'token-COS')) {
-      const cosData = await memoFetch(cosUrl)
-      json.COS = 1 / get(cosData, '[0].current_price')
-    }
+  async function fetchExchangeRates() {
+    let json = await memoFetch(ratesUrl)
+    const acceptedTokens = config.acceptedTokens || []
 
     // Find tokens that don't have rates and look them up by contract address
     const withoutRates = acceptedTokens.filter((token) => {
       return !json[token.name] && token.address
     })
     if (withoutRates.length) {
-      const addresses = withoutRates.map((t) => t.address)
-      const url = `${ratesByContractUrl}&contract_addresses=${addresses}`
-      const ratesByContract = await memoFetch(url)
-      withoutRates.forEach(({ name, address }) => {
-        if (ratesByContract[address]) {
-          json[name] = 1 / ratesByContract[address].usd
+      const rates = await tokenDataProviders.reduce(async (rates, provider) => {
+        const filteredTokens = withoutRates.filter((token) =>
+          token.apiProvider
+            ? token.apiProvider === provider.id
+            : provider.id === 'coingecko_symbol'
+        )
+
+        if (filteredTokens.length === 0) return rates
+
+        return {
+          ...rates,
+          ...(await provider.getTokenPrices(filteredTokens))
         }
-      })
+      }, {})
+
+      json = {
+        ...json,
+        ...rates
+      }
     }
 
     setRates(json)

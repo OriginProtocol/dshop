@@ -113,11 +113,14 @@ async function getEmailTransporter(shop) {
     transporter = nodemailer.createTransport({ SES })
   }
 
-  return transporter
+  return { 
+    transporter,
+    fromEmail: SUPPORT_EMAIL_OVERRIDE || config.fromEmail || 'no-reply@ogn.app'
+  }
 }
 
 async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
-  const transporter = await getEmailTransporter(shop)
+  const { transporter, fromEmail } = await getEmailTransporter(shop)
   if (!transporter) {
     log.info(
       `Emailer not configured for shop id ${shop.id}. Skipping sending new order email.`
@@ -208,6 +211,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     head,
     siteName: data.fullTitle || data.title,
     supportEmail: SUPPORT_EMAIL_OVERRIDE || data.supportEmail,
+    fromEmail,
     supportEmailPlain,
     subject: data.emailSubject,
     storeUrl: publicURL,
@@ -239,7 +243,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   const txtOutput = emailTxt(vars)
 
   const message = {
-    from: vars.supportEmail,
+    from: vars.fromEmail,
     to: `${vars.firstName} ${vars.lastName} <${vars.email}>`,
     subject: vars.subject,
     html: htmlOutput.html,
@@ -248,7 +252,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   }
 
   const messageVendor = {
-    from: vars.supportEmail,
+    from: vars.fromEmail,
     to: vars.supportEmail,
     subject: `[${vars.siteName}] Order #${cart.offerId}`,
     html: htmlOutputVendor.html,
@@ -283,7 +287,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
 
 async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
   const shop = await Shop.findOne({ where: { id: shopId } })
-  const transporter = await getEmailTransporter(shop)
+  const { transporter, fromEmail } = await getEmailTransporter(shop)
   if (!transporter) {
     log.info(
       `Emailer not configured for shop id ${shopId}. Skipping sending verification email.`
@@ -309,7 +313,8 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
     name,
     verifyUrl,
     supportEmailPlain:
-      SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com'
+      SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com',
+    fromEmail
   }
 
   const htmlOutput = mjml2html(verifyEmail(vars), { minify: true })
@@ -317,7 +322,7 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
   const txtOutput = verifyEmailTxt(vars)
 
   const message = {
-    from: vars.supportEmailPlain,
+    from: vars.fromEmail,
     to: `${name} <${email}>`,
     subject: 'Confirm your email address',
     html: htmlOutput.html,
@@ -343,7 +348,7 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
 
 async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
   const shop = await Shop.findOne({ where: { id: shopId } })
-  const transporter = await getEmailTransporter(shop)
+  const { transporter, fromEmail } = await getEmailTransporter(shop)
   if (!transporter) {
     log.info(
       `Emailer not configured for shop id ${shopId}. Skipping sending Printful order failed email.`
@@ -369,14 +374,15 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
       SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com',
     message: opts ? opts.message : '',
     orderUrlAdmin: `${publicURL}/admin/orders/${cart.offerId}`,
-    siteName: data.fullTitle || data.title
+    siteName: data.fullTitle || data.title,
+    fromEmail
   }
 
   const htmlOutput = mjml2html(printfulOrderFailed(vars), { minify: true })
   const txtOutput = printfulOrderFailedTxt(vars)
 
   const message = {
-    from: vars.supportEmail,
+    from: vars.fromEmail,
     to: vars.supportEmail,
     subject: 'Failed to create order on Printful',
     html: htmlOutput.html,
@@ -401,7 +407,7 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
 
 async function stripeWebhookErrorEmail(shopId, errorData, skip) {
   const shop = await Shop.findOne({ where: { id: shopId } })
-  const transporter = await getEmailTransporter(shop)
+  const { transporter, fromEmail } = await getEmailTransporter(shop)
   if (!transporter) {
     log.info(
       `Emailer not configured for shop id ${shopId}. Skipping sending Stripe error email.`
@@ -424,6 +430,7 @@ async function stripeWebhookErrorEmail(shopId, errorData, skip) {
     supportEmail:
       SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com',
     siteName: data.fullTitle || data.title,
+    fromEmail,
     ...errorData
   }
 
@@ -431,7 +438,7 @@ async function stripeWebhookErrorEmail(shopId, errorData, skip) {
   const txtOutput = stripeWebhookErrorTxt(vars)
 
   const message = {
-    from: vars.supportEmail,
+    from: vars.fromEmail,
     to: vars.supportEmail,
     subject: 'Failed to process stripe webhook event',
     html: htmlOutput.html,
