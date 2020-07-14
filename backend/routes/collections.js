@@ -4,9 +4,9 @@ const path = require('path')
 const pick = require('lodash/pick')
 
 const { authSellerAndShop, authRole } = require('./_auth')
-const { findShopByHostname } = require('./utils/shop')
 const { DSHOP_CACHE } = require('../utils/const')
-const encConf = require('./utils/encryptedConfig')
+const encConf = require('../utils/encryptedConfig')
+const { findShopByHostname } = require('../utils/shop')
 
 module.exports = function (app) {
   app.put(
