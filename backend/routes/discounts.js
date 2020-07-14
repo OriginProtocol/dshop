@@ -1,3 +1,5 @@
+const pick = require('lodash/pick')
+
 const { Discount } = require('../models')
 const { authShop, authSellerAndShop } = require('./_auth')
 
@@ -39,7 +41,17 @@ module.exports = function (app) {
   })
 
   app.put('/discounts/:id', authSellerAndShop, async (req, res) => {
-    const result = await Discount.update(req.body, {
+    const data = pick(req.body, [
+      'status',
+      'code',
+      'discountType',
+      'value',
+      'maxUses',
+      'onePerCustomer',
+      'startTime',
+      'endTime'
+    ])
+    const result = await Discount.update(data, {
       where: {
         id: req.params.id,
         shopId: req.shop.id
