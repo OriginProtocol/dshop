@@ -167,7 +167,7 @@ const PaymentSettings = () => {
             <Icons.Web3 />
           </div>
           <div>
-            <div className="title">Web3 Wallet</div>
+            <div className="title">Crypto Wallet</div>
             {config.listingId ? (
               <>
                 <div className="description">

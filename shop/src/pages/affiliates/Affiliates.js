@@ -92,7 +92,7 @@ const Affiliate = ({ setState, dispatch, affiliate }) => {
           <span className="active" />
           Active
         </div>
-        <div>Web3 wallet address</div>
+        <div>Crypto wallet address</div>
         <div>{affiliate.account}</div>
         <div>View Affiliate toolbar</div>
         <div className="d-flex align-items-center">

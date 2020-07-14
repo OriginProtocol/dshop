@@ -4,17 +4,16 @@ import dayjs from 'dayjs'
 
 import formatPrice from 'utils/formatPrice'
 
-import useConfig from 'utils/useConfig'
 import useOrders from 'utils/useOrders'
 import useProducts from 'utils/useProducts'
 
 import Chart from './_Chart'
 import Loading from 'components/Loading'
+import ProductImage from 'components/ProductImage'
 
 const AdminDashboard = () => {
   const { orders, loading } = useOrders()
   const { products } = useProducts()
-  const { config } = useConfig()
   const [sort, setSort] = useState('orders')
   const [range, setRange] = useState('all-time')
 
@@ -104,6 +103,9 @@ const AdminDashboard = () => {
         </div>
         {/* <h5 className="ml-4">{`${formatPrice(totalSales * 0.05)} profit`}</h5> */}
       </div>
+      <div className="mt-4">
+        <Chart orders={orders} />
+      </div>
       {topProducts.length === 0 ? null : (
         <table className="table admin-products mt-4">
           <thead>
@@ -137,14 +139,7 @@ const AdminDashboard = () => {
             {topProducts.map((product) => (
               <tr key={product.id}>
                 <td>
-                  <div
-                    className={`pic${product.image ? '' : ' empty'}`}
-                    style={{
-                      backgroundImage: product.image
-                        ? `url(${config.dataSrc}${product.id}/520/${product.image})`
-                        : null
-                    }}
-                  />
+                  <ProductImage product={product} />
                 </td>
                 <td>
                   <div className="title">{product.title}</div>
@@ -157,9 +152,6 @@ const AdminDashboard = () => {
           </tbody>
         </table>
       )}
-      <div className="mt-4">
-        <Chart orders={orders} />
-      </div>
     </>
   )
 }

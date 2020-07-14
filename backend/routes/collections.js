@@ -21,9 +21,7 @@ module.exports = function (app) {
           JSON.stringify(collections, undefined, 2)
         )
 
-        await req.shop.update({
-          hasChanges: true
-        })
+        await req.shop.update({ hasChanges: true })
 
         res.send({ success: true })
       } catch (e) {
@@ -46,8 +44,8 @@ module.exports = function (app) {
           (collection) => {
             if (collection.id === collectionId) {
               return {
-                ...pick(req.body, ['title', 'products']),
-                id: collectionId
+                ...collection,
+                ...pick(req.body, ['title', 'products'])
               }
             }
 

@@ -5,10 +5,10 @@ import useProducts from 'utils/useProducts'
 import usePaginate from 'utils/usePaginate'
 import useSearchQuery from 'utils/useSearchQuery'
 
+import ProductImage from 'components/ProductImage'
 import Paginate from 'components/Paginate'
 import NoItems from 'components/NoItems'
 import Link from 'components/Link'
-import useConfig from 'utils/useConfig'
 import formatPrice from 'utils/formatPrice'
 import sortProducts from 'utils/sortProducts'
 import useCollections from 'utils/useCollections'
@@ -16,7 +16,6 @@ import useCollections from 'utils/useCollections'
 import DeleteButton from './_Delete'
 
 const AdminProducts = () => {
-  const { config } = useConfig()
   const { products, loading: productsLoading } = useProducts()
   const { collections, loading: collectionsLoading } = useCollections()
   const { start, end } = usePaginate()
@@ -115,14 +114,7 @@ const AdminProducts = () => {
                 }}
               >
                 <td>
-                  <div
-                    className={`pic${product.image ? '' : ' empty'}`}
-                    style={{
-                      backgroundImage: product.image
-                        ? `url(${config.dataSrc}${product.id}/520/${product.image})`
-                        : null
-                    }}
-                  />
+                  <ProductImage product={product} />
                 </td>
                 <td>
                   <div className="title">{product.title}</div>
@@ -179,16 +171,6 @@ require('react-styl')(`
     .price
       color: #666
       font-size: 14px
-    .pic
-      width: 60px
-      height: 50px
-      background-size: contain
-      background-repeat: no-repeat
-      background-position: center
-      &.empty
-        background-color: var(--light)
-        background-image: url(images/default-image.svg)
-        background-size: 50%
   .admin-products-page
     h3 span
       color: #9faebd

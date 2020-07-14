@@ -42,16 +42,19 @@ require('react-styl')(`
     margin: -1.875rem -2.5rem 1.875rem -2.5rem
     font-size: 14px
     align-items: center
+    line-height: normal
     .actions
       display: grid
       margin-left: auto
       grid-auto-flow: column
       grid-auto-columns: 1fr
       column-gap: 0.5rem
+      align-items: center
       .btn
         font-size: 12px
         font-weight: bold
         padding-left: 0.75rem
         padding-right: 0.75rem
         border-radius: 5px
+        line-height: normal
 `)

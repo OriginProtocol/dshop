@@ -17,7 +17,7 @@ const AdminDeployShop = ({ className = 'btn-outline-primary', buttonText }) => {
       <ConfirmationModal
         className={`btn ${className}`}
         buttonText={buttonText || 'Publish'}
-        confirmText="Please setup your Web3 wallet first"
+        confirmText="Please setup your crypto wallet first"
         confirmedText={false}
         cancelText="Cancel"
         proceedText="OK"

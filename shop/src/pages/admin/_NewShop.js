@@ -16,9 +16,9 @@ function validate(state) {
 
   if (state.shopType !== 'local-dir') {
     if (!state.name) {
-      newState.nameError = 'Enter a title'
+      newState.nameError = 'Enter a name for your shop'
     } else if (state.name.length < 3) {
-      newState.nameError = 'Title is too short'
+      newState.nameError = 'Shop name is too short'
     }
   }
 
@@ -43,9 +43,9 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
 
   return (
     <ConfirmationModal
-      confirmText="Add a new shop"
+      confirmText="Create a shop"
       confirmedText={false}
-      proceedText="Add"
+      proceedText="Create"
       cancelText="Cancel"
       loadingText="Creating Shop..."
       modalOnly={true}
@@ -87,11 +87,17 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
         redirectTo('/admin/onboarding')
       }}
     >
-      <div className="text-left pt-3">
+      <div className="new-shop-modal text-left pt-3">
         {state.shopType === 'local-dir' ? null : (
           <div className="form-group">
-            <label>Shop name</label>
-            <input ref={shopName} {...input('name')} />
+            <label>
+              Shop name<span className="ml-2">(you can change this later)</span>
+            </label>
+            <input
+              ref={shopName}
+              {...input('name')}
+              placeholder="eg My Store"
+            />
             {Feedback('name')}
           </div>
         )}
@@ -130,3 +136,12 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
 }
 
 export default AdminNewShop
+
+require('react-styl')(`
+  .new-shop-modal
+    label span
+      color: #8293a4
+      font-size: 0.875rem
+      font-weight: normal
+
+`)

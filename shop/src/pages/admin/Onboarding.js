@@ -34,7 +34,9 @@ const Onboarding = () => {
       id: 'setup_web3',
       completed: web3Enabled,
       icon: <Icons.Wallet />,
-      name: 'Setup a Web3 wallet',
+      name: 'Connect your crypto wallet',
+      note:
+        'You must connect an Ethereum wallet with at least 0.005 ETH in order to publish changes and receive crypto payments.',
       link: '/admin/settings/payments'
     },
     {
@@ -114,7 +116,7 @@ const Onboarding = () => {
           {taskset1.map((task) => {
             return (
               <div
-                className={`task-item${task.completed ? ' completed' : ''}`}
+                className="task-item"
                 key={task.id}
                 onClick={() => {
                   if (task.link) {
@@ -122,14 +124,19 @@ const Onboarding = () => {
                   }
                 }}
               >
-                {task.icon}
-                <div className="task-name">{task.name}</div>
-                {task.completed && (
-                  <img
-                    className="completed-icon"
-                    src="images/green-checkmark-circle.svg"
-                  />
-                )}
+                <div className={task.completed ? ' completed' : ''}>
+                  {task.icon}
+                  <div className="task-name">{task.name}</div>
+                  {task.completed && (
+                    <img
+                      className="completed-icon"
+                      src="images/green-checkmark-circle.svg"
+                    />
+                  )}
+                </div>
+                {task.note && !task.completed ? (
+                  <div className="note">{task.note}</div>
+                ) : null}
               </div>
             )
           })}
@@ -142,7 +149,7 @@ const Onboarding = () => {
           {taskset2.map((task) => {
             return (
               <div
-                className={`task-item${task.completed ? ' completed' : ''}`}
+                className="task-item"
                 key={task.id}
                 onClick={() => {
                   if (task.link) {
@@ -150,14 +157,16 @@ const Onboarding = () => {
                   }
                 }}
               >
-                {task.icon}
-                <div className="task-name">{task.name}</div>
-                {task.completed && (
-                  <img
-                    className="completed-icon"
-                    src="images/green-checkmark-circle.svg"
-                  />
-                )}
+                <div className={task.completed ? ' completed' : ''}>
+                  {task.icon}
+                  <div className="task-name">{task.name}</div>
+                  {task.completed && (
+                    <img
+                      className="completed-icon"
+                      src="images/green-checkmark-circle.svg"
+                    />
+                  )}
+                </div>
               </div>
             )
           })}
@@ -202,32 +211,39 @@ require('react-styl')(`
           margin-bottom: 0.5rem
           border-radius: 10px
           border: solid 1px #cdd7e0
-          background-color: #fafbfc
-          padding: 1rem 1.25rem
-          display: flex
-          min-height: 4.5rem
-          line-height: normal
-          align-items: center
-          cursor: pointer
+          .note
+            border-top: 1px solid #ffda26
+            background: #fff7d6
+            padding: 0.875rem 1.25rem
+            border-radius: 0 0 10px 10px
+            line-height: normal
+            color: #000
+          > div:first-child
+            padding: 1rem 1.25rem
+            display: flex
+            min-height: 5rem
+            line-height: normal
+            align-items: center
+            cursor: pointer
 
-          .task-name
-            flex: 1
-            font-size: 1.25rem
-            padding-bottom: 2px
-
-          .icon
-            margin-right: 1.5rem
-
-          .completed-icon
-            height: 34px
-            width: 34px
-            object-fit: contain
-
-          &.completed
             .task-name
-              color: #8293a4
+              flex: 1
+              font-size: 1.25rem
+              padding-bottom: 2px
+
             .icon
-              path
-                fill: #8493A3 !important
+              margin-right: 1.5rem
+
+            .completed-icon
+              height: 34px
+              width: 34px
+              object-fit: contain
+
+            &.completed
+              .task-name
+                color: #8293a4
+              .icon
+                path
+                  fill: #8493A3 !important
 
 `)

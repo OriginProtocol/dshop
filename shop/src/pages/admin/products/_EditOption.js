@@ -20,12 +20,13 @@ const TokenComponent = ({ options, onChange, disabled }) => {
         switch (event.key) {
           case 'Enter':
           case 'Tab':
+          case ',':
             setInputValue('')
             onChange([...options, inputValue])
             event.preventDefault()
         }
       }}
-      placeholder="Type an option name and press enter..."
+      placeholder="Separate options with a comma"
       value={options.map((label) => ({ label, value: label }))}
     />
   )
@@ -63,7 +64,9 @@ const EditOptions = ({
       </div>
       <div className="col-md-8">
         <div className="d-flex">
-          {disabled ? null : (
+          {disabled ? (
+            <label>&nbsp;</label>
+          ) : (
             <button
               type="button"
               className="remove-link btn btn-link ml-auto"
