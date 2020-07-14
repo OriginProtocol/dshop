@@ -114,7 +114,7 @@ app.get('*', (req, res, next) => {
   serveStatic(dir)(req, res, next)
 })
 
-// must come after controllers and before other error middleware
+// Must come after controllers and before any other error middleware.
 app.use(Sentry.Handlers.errorHandler())
 
 // The custom error handler must be defined last.

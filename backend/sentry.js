@@ -1,6 +1,6 @@
 const Sentry = require('@sentry/node')
 const sentryEventPrefix =
-  'https://sentry.io/organizations/origin-protocol/projects/squad-deals-api/events'
+  'https://sentry.io/organizations/origin-protocol/projects/dshop-backend/events'
 
 const { getLogger } = require('./utils/logger')
 const log = getLogger('sentry')
