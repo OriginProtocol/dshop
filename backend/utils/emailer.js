@@ -208,6 +208,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     head,
     siteName: data.fullTitle || data.title,
     supportEmail: SUPPORT_EMAIL_OVERRIDE || data.supportEmail,
+    fromEmail: SUPPORT_EMAIL_OVERRIDE || config.fromEmail || 'no-reply.ogn.app',
     supportEmailPlain,
     subject: data.emailSubject,
     storeUrl: publicURL,
@@ -239,7 +240,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   const txtOutput = emailTxt(vars)
 
   const message = {
-    from: vars.supportEmail,
+    from: vars.fromEmail,
     to: `${vars.firstName} ${vars.lastName} <${vars.email}>`,
     subject: vars.subject,
     html: htmlOutput.html,
@@ -248,7 +249,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   }
 
   const messageVendor = {
-    from: vars.supportEmail,
+    from: vars.fromEmail,
     to: vars.supportEmail,
     subject: `[${vars.siteName}] Order #${cart.offerId}`,
     html: htmlOutputVendor.html,
@@ -309,7 +310,8 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
     name,
     verifyUrl,
     supportEmailPlain:
-      SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com'
+      SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com',
+    fromEmail: SUPPORT_EMAIL_OVERRIDE || config.fromEmail || 'no-reply.ogn.app'
   }
 
   const htmlOutput = mjml2html(verifyEmail(vars), { minify: true })
@@ -317,7 +319,7 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
   const txtOutput = verifyEmailTxt(vars)
 
   const message = {
-    from: vars.supportEmailPlain,
+    from: vars.fromEmail,
     to: `${name} <${email}>`,
     subject: 'Confirm your email address',
     html: htmlOutput.html,
@@ -369,14 +371,15 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
       SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com',
     message: opts ? opts.message : '',
     orderUrlAdmin: `${publicURL}/admin/orders/${cart.offerId}`,
-    siteName: data.fullTitle || data.title
+    siteName: data.fullTitle || data.title,
+    fromEmail: SUPPORT_EMAIL_OVERRIDE || config.fromEmail || 'no-reply.ogn.app'
   }
 
   const htmlOutput = mjml2html(printfulOrderFailed(vars), { minify: true })
   const txtOutput = printfulOrderFailedTxt(vars)
 
   const message = {
-    from: vars.supportEmail,
+    from: vars.fromEmail,
     to: vars.supportEmail,
     subject: 'Failed to create order on Printful',
     html: htmlOutput.html,
@@ -424,6 +427,7 @@ async function stripeWebhookErrorEmail(shopId, errorData, skip) {
     supportEmail:
       SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com',
     siteName: data.fullTitle || data.title,
+    fromEmail: SUPPORT_EMAIL_OVERRIDE || config.fromEmail || 'no-reply.ogn.app',
     ...errorData
   }
 
@@ -431,7 +435,7 @@ async function stripeWebhookErrorEmail(shopId, errorData, skip) {
   const txtOutput = stripeWebhookErrorTxt(vars)
 
   const message = {
-    from: vars.supportEmail,
+    from: vars.fromEmail,
     to: vars.supportEmail,
     subject: 'Failed to process stripe webhook event',
     html: htmlOutput.html,
