@@ -1,5 +1,3 @@
-const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
-const fetch = require('node-fetch')
 const fs = require('fs')
 const express = require('express')
 const session = require('express-session')
@@ -7,10 +5,11 @@ const SequelizeStore = require('connect-session-sequelize')(session.Store)
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const serveStatic = require('serve-static')
-const { findShopByHostname } = require('./utils/shop')
+
 const { sequelize, Network } = require('./models')
-const encConf = require('./utils/encryptedConfig')
 const { getLogger } = require('./utils/logger')
+const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
+const { Sentry, sentryEventPrefix } = require('./sentry')
 
 const log = getLogger('app')
 const app = express()
@@ -25,6 +24,9 @@ const BODYPARSER_EXCLUDES = ['/webhook', '/products/upload-images']
 app.set('trust proxy', true)
 
 const sessionStore = new SequelizeStore({ db: sequelize })
+
+// Must be the first middleware.
+app.use(Sentry.Handlers.requestHandler())
 
 app.use(
   cors({
@@ -76,46 +78,6 @@ require('./routes/domains')(app)
 require('./routes/shipping-zones')(app)
 require('./routes/health')(app)
 
-app.get(
-  '(/collections/:collection)?/products/:product',
-  findShopByHostname,
-  async (req, res) => {
-    if (!res.shop) {
-      return res.send('')
-    }
-    let html
-    try {
-      html = fs.readFileSync(`${__dirname}/public/index.html`).toString()
-    } catch (e) {
-      return res.send('')
-    }
-
-    const dataUrl = await encConf.get(req.shop.id, 'dataUrl')
-
-    const url = `${dataUrl}${req.params.product}/data.json`
-    const dataRaw = await fetch(url)
-
-    if (dataRaw.ok) {
-      const data = await dataRaw.json()
-      let modifiedHtml = html
-      if (data.title) {
-        modifiedHtml = modifiedHtml.replace(
-          /<title>.*<\/title>/,
-          `<title>${data.title}</title>`
-        )
-      }
-      if (data.head) {
-        modifiedHtml = modifiedHtml
-          .replace('</head>', data.head.join('\n') + '\n</head>')
-          .replace('DATA_URL', dataUrl)
-      }
-      res.send(modifiedHtml)
-    } else {
-      res.send(html)
-    }
-  }
-)
-
 app.use(serveStatic(`${__dirname}/dist`, { index: false }))
 app.get('/', async (req, res) => {
   let html
@@ -152,16 +114,22 @@ app.get('*', (req, res, next) => {
   serveStatic(dir)(req, res, next)
 })
 
+// must come after controllers and before other error middleware
+app.use(Sentry.Handlers.errorHandler())
+
 // The custom error handler must be defined last.
 // Note that it does need 4 args signature otherwise it does not get invoked.
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   log.error(err)
+  const sentryUrl = `${sentryEventPrefix}/${res.sentry}`
+  log.error('Sentry URL:', sentryUrl)
   return res.status(err.status || 500).json({
     error: {
       name: err.name,
       message: err.message,
-      text: err.toString()
+      text: err.toString(),
+      sentryUrl
     }
   })
 })
