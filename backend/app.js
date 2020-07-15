@@ -28,10 +28,6 @@ app.set('trust proxy', true)
 // Must be the first middleware.
 app.use(Sentry.Handlers.requestHandler())
 
-// Use express-promise-router which allows middleware to return promises.
-const router = Router()
-app.use(router)
-
 app.use(
   cors({
     origin: (origin, cb) => {
@@ -66,6 +62,12 @@ app.use((req, res, next) => {
   return jsonBodyParser(req, res, next)
 })
 
+app.use(serveStatic(`${__dirname}/dist`, { index: false }))
+
+// Use express-promise-router which allows middleware to return promises.
+const router = Router()
+app.use(router)
+
 require('./routes/networks')(router)
 require('./routes/auth')(router)
 require('./routes/users')(router)
@@ -84,7 +86,6 @@ require('./routes/domains')(router)
 require('./routes/shipping-zones')(router)
 require('./routes/health')(router)
 
-app.use(serveStatic(`${__dirname}/dist`, { index: false }))
 router.get('/', async (req, res) => {
   let html
   try {
