@@ -17,6 +17,7 @@ const discordWebhook = require('./discordWebhook')
 const { Network, Order, Shop, ExternalPayment } = require('../models')
 const { getLogger } = require('../utils/logger')
 const { autoFulfillOrder } = require('../utils/printful')
+const { Sentry } = require('../sentry')
 
 const log = getLogger('utils.handleLog')
 
@@ -38,7 +39,7 @@ const MarketplaceABI = Marketplace._jsonInterface
  * @param {Function} mockGetEventObj: for testing only. Mock function to call to parse the event.
  * @returns {Promise<void>}
  */
-const handleLog = async ({
+async function _handleLog({
   networkId,
   contractVersion,
   address,
@@ -49,7 +50,7 @@ const handleLog = async ({
   blockHash,
   mockGetEventObj,
   mockUpsert
-}) => {
+}) {
   const isTest = process.env.NODE_ENV === 'test'
 
   const network = await Network.findOne({ where: { networkId } })
@@ -97,6 +98,20 @@ const handleLog = async ({
 
   // Process the order.
   await processDShopEvent({ event, shop })
+}
+
+/**
+ * Wrapper function for recording any exception raised in handleLog in Sentry.
+ * @param {Object} params
+ * @returns {Promise<void>}
+ */
+async function handleLog(params) {
+  try {
+    return _handleLog(params)
+  } catch (e) {
+    Sentry.captureException(e)
+    throw e // Re-throw.
+  }
 }
 
 /**
@@ -282,7 +297,7 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
     }
   } catch (e) {
     log.error(e)
-    // Record the error in the DB.
+    // Record the error in the DB and in Sentry.
     order = await Order.create({
       networkId: event.networkId,
       shopId: shop.id,
@@ -294,6 +309,7 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
       createdBlock: event.blockNumber,
       ipfsHash: event.ipfsHash
     })
+    Sentry.captureException(e)
     return order
   }
 

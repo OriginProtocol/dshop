@@ -9,8 +9,8 @@ const { getLogger } = require('../utils/logger')
 
 const log = getLogger('routes.products')
 
-module.exports = function (app) {
-  app.post(
+module.exports = function (router) {
+  router.post(
     '/products',
     authSellerAndShop,
     authRole('admin'),
@@ -31,7 +31,7 @@ module.exports = function (app) {
     }
   )
 
-  app.delete(
+  router.delete(
     '/products/:productId',
     authSellerAndShop,
     authRole('admin'),
@@ -55,7 +55,7 @@ module.exports = function (app) {
     }
   )
 
-  app.post(
+  router.post(
     '/products/upload-images',
     authSellerAndShop,
     authRole('admin'),

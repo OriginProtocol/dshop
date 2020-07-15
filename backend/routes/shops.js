@@ -44,8 +44,8 @@ const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
 
 const log = getLogger('routes.shops')
 
-module.exports = function (app) {
-  app.get(
+module.exports = function (router) {
+  router.get(
     '/shop/users',
     authSellerAndShop,
     authRole('admin'),
@@ -72,7 +72,7 @@ module.exports = function (app) {
     }
   )
 
-  app.get('/shop', async (req, res) => {
+  router.get('/shop', async (req, res) => {
     const { sellerId } = req.session
 
     if (!sellerId) {
@@ -93,7 +93,7 @@ module.exports = function (app) {
     res.json({ success: true, shops })
   })
 
-  app.post(
+  router.post(
     '/shop/sync-printful',
     authSellerAndShop,
     authRole('admin'),
@@ -124,7 +124,7 @@ module.exports = function (app) {
     }
   )
 
-  app.get('/shops/:shopId/deployments', authSuperUser, async (req, res) => {
+  router.get('/shops/:shopId/deployments', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'no-such-shop' })
@@ -158,7 +158,7 @@ module.exports = function (app) {
     res.json({ deployments })
   })
 
-  app.get('/shops/:shopId/assets', authSuperUser, async (req, res) => {
+  router.get('/shops/:shopId/assets', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'no-such-shop' })
@@ -172,7 +172,7 @@ module.exports = function (app) {
     })
   })
 
-  app.delete('/shops/:shopId/assets', authSuperUser, async (req, res) => {
+  router.delete('/shops/:shopId/assets', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'no-such-shop' })
@@ -191,7 +191,7 @@ module.exports = function (app) {
     })
   })
 
-  app.post('/shops/:shopId/sync-cache', authSuperUser, async (req, res) => {
+  router.post('/shops/:shopId/sync-cache', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'no-such-shop' })
@@ -283,7 +283,7 @@ module.exports = function (app) {
   /**
    * Creates a new shop.
    */
-  app.post('/shop', authUser, async (req, res) => {
+  router.post('/shop', authUser, async (req, res) => {
     const { dataDir, printfulApi, hostname } = req.body
     const shopType = req.body.shopType || 'empty'
     const OutputDir = `${DSHOP_CACHE}/${dataDir}`
@@ -483,7 +483,7 @@ module.exports = function (app) {
     return res.json({ success: true, slug: dataDir })
   })
 
-  app.post(
+  router.post(
     '/shops/:shopId/save-files',
     authSuperUser,
     async (req, res, next) => {
@@ -533,7 +533,7 @@ module.exports = function (app) {
     }
   )
 
-  app.put(
+  router.put(
     '/shop/assets',
     authSellerAndShop,
     authRole('admin'),
@@ -601,7 +601,7 @@ module.exports = function (app) {
     }
   )
 
-  app.put(
+  router.put(
     '/shop/social-links',
     authSellerAndShop,
     authRole('admin'),
@@ -721,7 +721,7 @@ module.exports = function (app) {
     }
   }
 
-  app.put(
+  router.put(
     '/shop/config',
     authSellerAndShop,
     authRole('admin'),
@@ -840,7 +840,7 @@ module.exports = function (app) {
     }
   )
 
-  app.post(
+  router.post(
     '/shop/add-user',
     authSellerAndShop,
     authRole('admin'),
@@ -887,7 +887,7 @@ module.exports = function (app) {
     }
   )
 
-  app.delete('/shops/:shopId', authSuperUser, async (req, res) => {
+  router.delete('/shops/:shopId', authSuperUser, async (req, res) => {
     try {
       const shop = await Shop.findOne({
         where: { authToken: req.params.shopId }
@@ -918,7 +918,7 @@ module.exports = function (app) {
   /**
    * Called by super-admin for deploying a shop.
    */
-  app.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
+  router.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'shop-not-found' })
@@ -952,7 +952,7 @@ module.exports = function (app) {
   /**
    * Called by admin for deploying a shop.
    */
-  app.post(
+  router.post(
     '/shop/deploy',
     authSellerAndShop,
     authRole('admin'),
@@ -1016,7 +1016,7 @@ module.exports = function (app) {
     }
   )
 
-  app.get(
+  router.get(
     '/shop/deployments',
     authSellerAndShop,
     authRole('admin'),
@@ -1053,7 +1053,7 @@ module.exports = function (app) {
   /**
    * Create a shop deployment record
    */
-  app.post(
+  router.post(
     '/shops/:shopId/create-deployment',
     authSellerAndShop,
     authRole('admin'),
@@ -1093,7 +1093,7 @@ module.exports = function (app) {
   /**
    * Get names (DNS names, crypto names, etc) for a shop
    */
-  app.get(
+  router.get(
     '/shops/:shopId/get-names',
     authSellerAndShop,
     authRole('admin'),
@@ -1130,7 +1130,7 @@ module.exports = function (app) {
   /**
    * Set names (DNS names, crypto names, etc) for a shop deployment
    */
-  app.post(
+  router.post(
     '/shops/:shopId/set-names',
     authSellerAndShop,
     authRole('admin'),

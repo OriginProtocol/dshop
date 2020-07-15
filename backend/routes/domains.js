@@ -11,8 +11,8 @@ const { Network } = require('../models')
 
 const log = getLogger('routes.domains')
 
-module.exports = function (app) {
-  app.post(
+module.exports = function (router) {
+  router.post(
     '/domains/verify-dns',
     authSellerAndShop,
     authRole('admin'),
