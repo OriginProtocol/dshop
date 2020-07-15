@@ -84,7 +84,7 @@ require('./routes/domains')(router)
 require('./routes/shipping-zones')(router)
 require('./routes/health')(router)
 
-router.use(serveStatic(`${__dirname}/dist`, { index: false }))
+app.use(serveStatic(`${__dirname}/dist`, { index: false }))
 router.get('/', async (req, res) => {
   let html
   try {
