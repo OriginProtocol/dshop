@@ -135,8 +135,8 @@ app.use((err, req, res, next) => {
   if (IS_PROD) {
     // Send back a generic error message on prod.
     error = {
-      name: "Unexpected error",
-      message: "An unexpected error occurred. Our team has been notified. Please try again later.",
+      name: 'Unexpected error',
+      message: 'An unexpected error occurred. Our team has been notified. Please try again later.',
       sentryUrl
     }
   } else {
