@@ -22,8 +22,8 @@ const UpholdEndpoints = {
   }
 }
 
-module.exports = function (app) {
-  app.get('/uphold/authed', authShop, async (req, res) => {
+module.exports = function (router) {
+  router.get('/uphold/authed', authShop, async (req, res) => {
     const { upholdApi } = getConfig(req.shop.config)
     if (!UpholdEndpoints[upholdApi]) {
       return res.json({ authed: false, message: 'Uphold not configured' })
@@ -57,7 +57,7 @@ module.exports = function (app) {
     })
   })
 
-  app.get('/uphold/auth-response', async (req, res) => {
+  router.get('/uphold/auth-response', async (req, res) => {
     const { upholdAuth } = req.session
     const { code, state } = req.query
     if (!upholdAuth) {
@@ -106,7 +106,7 @@ module.exports = function (app) {
     res.send(`<script>window.opener.postMessage('ok', '*')</script>OK`)
   })
 
-  app.get('/uphold/cards', authShop, async (req, res) => {
+  router.get('/uphold/cards', authShop, async (req, res) => {
     const { upholdApi } = getConfig(req.shop.config)
     if (!UpholdEndpoints[upholdApi]) {
       return res.json({ success: false, message: 'Uphold not configured' })
@@ -143,7 +143,7 @@ module.exports = function (app) {
   })
 
   // body: { amount, listingId, data }
-  app.post(
+  router.post(
     '/uphold/pay',
     authShop,
     async (req, res, next) => {
@@ -193,7 +193,7 @@ module.exports = function (app) {
     makeOffer
   )
 
-  app.post('/uphold/logout', authShop, (req, res) => {
+  router.post('/uphold/logout', authShop, (req, res) => {
     req.session.upholdAccessToken = null
     req.session.upholdAuth = null
     req.session.save(function () {
