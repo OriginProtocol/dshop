@@ -18,7 +18,8 @@ function pickConfig(body) {
     'discordWebhook',
     'gcpCredentials',
     'defaultShopConfig',
-    'web3Pk'
+    'web3Pk',
+    'backendUrl'
   ])
 }
 

@@ -284,10 +284,11 @@ module.exports = function (app) {
    * Creates a new shop.
    */
   app.post('/shop', authUser, async (req, res) => {
-    const { dataDir, printfulApi, shopType, backend, hostname } = req.body
+    const { dataDir, printfulApi, hostname } = req.body
+    const shopType = req.body.shopType || 'empty'
     const OutputDir = `${DSHOP_CACHE}/${dataDir}`
 
-    if (fs.existsSync(OutputDir) && req.body.shopType !== 'local-dir') {
+    if (fs.existsSync(OutputDir) && shopType !== 'local-dir') {
       log.warn(`${OutputDir} alraedy exists`)
       return res.json({
         success: false,
@@ -346,7 +347,7 @@ module.exports = function (app) {
 
     let name = req.body.name
 
-    if (req.body.shopType === 'local-dir') {
+    if (shopType === 'local-dir') {
       const existingData = fs
         .readFileSync(`${OutputDir}/data/config.json`)
         .toString()
@@ -355,6 +356,7 @@ module.exports = function (app) {
     }
 
     const zone = networkConfig.domain
+    const backend = networkConfig.backendUrl
     const isLocal = zone === 'localhost'
     const publicUrl = isLocal ? backend : `https://${hostname}.${zone}`
     const dataUrl = `${publicUrl}/${dataDir}/`
@@ -632,9 +634,7 @@ module.exports = function (app) {
           )
         )
 
-        await req.shop.update({
-          hasChanges: true
-        })
+        await req.shop.update({ hasChanges: true })
 
         res.json({ success: true })
       } catch (e) {
@@ -683,7 +683,7 @@ module.exports = function (app) {
     return { success: true }
   }
 
-  async function registerStripeWebhooks(newConfig, oldConfig) {
+  async function registerStripeWebhooks(newConfig, oldConfig, backendUrl) {
     const { backendAuthToken } = oldConfig
     const { stripeBackend } = newConfig
 
@@ -692,27 +692,27 @@ module.exports = function (app) {
 
     // NOTE: Fails on localhost, try using a reverse proxy/tunnel like ngrok
     // Or setup manually using Stripe CLI
-    const webhookHost = get(oldConfig, `publicUrl`)
 
-    if (!webhookHost) {
+    if (!backendUrl) {
       log.error('Invalid webhook host')
       return { success: false }
     }
 
-    log.info('Trying to register webhook on host', webhookHost)
+    log.info('Trying to register webhook on host', backendUrl)
 
     try {
       const stripe = Stripe(stripeBackend)
 
       const endpoint = await stripe.webhookEndpoints.create({
-        url: `${webhookHost}/webhook`,
-        enabled_events: ['*'],
+        url: `${backendUrl}/webhook`,
+        enabled_events: ['payment_intent.succeeded'],
+        description: 'Origin Dshop payment processor',
         metadata: {
           dshopStore: backendAuthToken
         }
       })
 
-      log.info(`Registered webhook for host ${webhookHost}`)
+      log.info(`Registered webhook for host ${backendUrl}`)
 
       return { success: true, secret: endpoint.secret }
     } catch (err) {
@@ -801,9 +801,12 @@ module.exports = function (app) {
         additionalOpts.stripeWebhookSecret = ''
         additionalOpts.stripeBackend = ''
       } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
+        const network = await Network.findOne({ where: { active: true } })
+        const netConfig = getConfig(network.config)
         const { secret } = await registerStripeWebhooks(
           req.body,
-          existingConfig
+          existingConfig,
+          netConfig.backendUrl || existingConfig.publicUrl
         )
         additionalOpts.stripeWebhookSecret = secret
       } else if (req.body.stripeWebhookSecret) {

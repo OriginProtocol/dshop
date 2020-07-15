@@ -3,9 +3,10 @@ import { Redirect, Switch, Route } from 'react-router-dom'
 import get from 'lodash/get'
 
 import 'components/admin/Styles'
+import Toaster from 'components/Toaster'
 
 import { useStateValue } from 'data/state'
-import useConfig from 'utils/useConfig'
+import useAuth from 'utils/useAuth'
 
 import Login from './Login'
 import Menu from './_Menu'
@@ -27,29 +28,13 @@ import EditUser from './users/Edit'
 import Nav from '../admin/_Nav'
 
 const SuperAdmin = () => {
-  const { config } = useConfig()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState()
+  const { loading, error } = useAuth({ load: true })
   const [newShop, setNewShop] = useState()
 
   const [{ admin, reload }, dispatch] = useStateValue()
 
   useEffect(() => {
     document.title = 'Origin Dshop Admin'
-
-    fetch(`${config.backend}/auth`, { credentials: 'include' })
-      .then(async (response) => {
-        if (response.status === 200) {
-          const auth = await response.json()
-          dispatch({ type: 'setAuth', auth })
-        } else {
-          setError(true)
-        }
-        setLoading(false)
-      })
-      .catch(() => {
-        setError(true)
-      })
   }, [reload.auth])
 
   if (error) {
@@ -74,6 +59,7 @@ const SuperAdmin = () => {
 
   return (
     <div className="admin">
+      <Toaster />
       <Nav superAdmin={true} newShop={newShop} setNewShop={setNewShop} />
       <div className="sidebar-layout">
         <div className="sidebar-container">

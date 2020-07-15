@@ -40,9 +40,8 @@ const StoreSelector = ({ setActiveShop, admin, newShop, setNewShop }) => {
             <button
               className="btn btn-outline-primary btn-sm px-5"
               onClick={() => setNewShop(true)}
-            >
-              Add Store
-            </button>
+              children="Add Store"
+            />
           </div>
         </div>
       )}

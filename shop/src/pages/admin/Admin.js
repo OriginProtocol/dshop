@@ -28,7 +28,7 @@ import Nav from './_Nav'
 import StoreSelector from './StoreSelector'
 
 const Admin = () => {
-  const { loading, error } = useAuth()
+  const { loading, error } = useAuth({ load: true })
   const [newShop, setNewShop] = useState()
   const { config, setActiveShop } = useConfig()
   const [{ admin }] = useStateValue()
@@ -36,7 +36,7 @@ const Admin = () => {
 
   if (error) {
     return <div className="fixed-loader">Admin Connection Error</div>
-  } else if (loading) {
+  } else if (loading && !shops.length) {
     return <div className="fixed-loader">Loading...</div>
   }
 

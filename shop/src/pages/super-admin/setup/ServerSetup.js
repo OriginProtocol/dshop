@@ -1,25 +1,19 @@
 import React from 'react'
 
-import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
+import useBackendApi from 'utils/useBackendApi'
 
 import NetworkForm from '../networks/_Form'
 
 const ServerSetup = () => {
-  const { config } = useConfig()
+  const { post } = useBackendApi()
   const [, dispatch] = useStateValue()
 
   function onSave(network) {
-    fetch(`${config.backend}/networks`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ ...network, active: true })
-    })
-      .then(async (res) => {
-        if (res.ok) {
-          dispatch({ type: 'reload', target: 'auth' })
-        }
+    const body = JSON.stringify({ ...network, active: true })
+    post('/networks', { method: 'POST', body })
+      .then(() => {
+        dispatch({ type: 'reload', target: 'auth' })
       })
       .catch((err) => {
         console.error('Error signing in', err)
@@ -56,7 +50,7 @@ require('react-styl')(`
   .server-setup-form
     width: 100%
 
-    .desc 
+    .desc
       font-size: 1.125rem
       text-align: center
       color: #ffffff

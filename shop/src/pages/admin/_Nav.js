@@ -18,13 +18,14 @@ const Nav = ({ newShop, setNewShop }) => {
   const history = useHistory()
 
   const { config, setActiveShop } = useConfig()
-  useAuth({ only: () => localStorage.isAdmin })
-  if (!localStorage.isAdmin || !admin) {
-    return null
-  }
 
   const isSuperAdmin = location.pathname.indexOf('/super-admin') === 0
   const isAdmin = location.pathname.indexOf('/admin') === 0 || isSuperAdmin
+
+  useAuth({ only: () => localStorage.isAdmin, load: !isAdmin, from: 'nav' })
+  if (!localStorage.isAdmin || !admin) {
+    return null
+  }
 
   const shops = get(admin, 'shops', [])
   const activeShop = shops.find((s) => s.authToken === config.activeShop)

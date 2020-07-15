@@ -45,17 +45,33 @@ module.exports = function (app) {
     if (!userCount) {
       return res.json({ success: false, reason: 'no-users', setup: true })
     }
-
     if (!req.session.sellerId) {
       return res.json({ success: false, reason: 'not-logged-in' })
     }
+
+    const allNetworks = await Network.findAll()
+    const activeNet = allNetworks.find((n) => n.active)
+
+    if (!activeNet) {
+      return res.json({
+        success: false,
+        reason: 'no-active-network',
+        setup: true
+      })
+    }
+
+    const activeNetConfig = encConf.getConfig(activeNet.config)
+    const backendUrl = get(activeNetConfig, 'backendUrl')
+
+    if (!req.session.sellerId) {
+      return res.json({ success: false, reason: 'not-logged-in', backendUrl })
+    }
     const user = await Seller.findOne({ where: { id: req.session.sellerId } })
     if (!user) {
-      return res.json({ success: false, reason: 'no-such-user' })
+      return res.json({ success: false, reason: 'no-such-user', backendUrl })
     }
     const { email, emailVerified, name } = user
 
-    const allNetworks = await Network.findAll()
     const networks = allNetworks.map((n) => {
       const net = { ...encConf.getConfig(n.config), ...n.dataValues }
       if (user.superuser) {
@@ -68,18 +84,12 @@ module.exports = function (app) {
           'marketplaceContract',
           'marketplaceVersion',
           'active',
-          'domain'
+          'domain',
+          'backendUrl'
         ])
       }
     })
     const network = networks.find((n) => n.active)
-    if (!network) {
-      return res.json({
-        success: false,
-        reason: 'no-active-network',
-        setup: true
-      })
-    }
 
     const shopDataDir = DSHOP_CACHE
 
@@ -130,6 +140,7 @@ module.exports = function (app) {
       return res.json({
         success: false,
         reason: 'no-shops',
+        backendUrl,
         networks,
         network,
         email,
@@ -144,6 +155,7 @@ module.exports = function (app) {
       name,
       networks,
       network,
+      backendUrl,
       shops,
       localShops,
       emailVerified
