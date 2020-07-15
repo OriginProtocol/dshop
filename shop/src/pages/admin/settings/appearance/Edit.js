@@ -38,7 +38,8 @@ const configFields = [
   'instagram',
   'medium',
   'youtube',
-  'about'
+  'about',
+  'hostname'
 ]
 
 const ABOUT_FILENAME = 'about.html'
@@ -49,7 +50,9 @@ const ShopAppearance = () => {
   const { shopConfig } = useShopConfig()
   const { postRaw, post } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, { domain: '' })
-  const input = formInput(state, (newState) => setState(newState))
+  const input = formInput(state, (newState) =>
+    setState({ ...newState, hasChanges: true })
+  )
   const Feedback = formFeedback(state)
 
   const [saving, setSaving] = useState(false)
@@ -58,7 +61,6 @@ const ShopAppearance = () => {
 
   useEffect(() => {
     setState({
-      domain: get(shopConfig, 'domain'),
       hostname: get(shopConfig, 'hostname'),
       ...pick(config, configFields)
     })
@@ -83,7 +85,11 @@ const ShopAppearance = () => {
       <button type="button" className="btn btn-outline-primary">
         Cancel
       </button>
-      <button type="submit" className="btn btn-primary" disabled={saving}>
+      <button
+        type="submit"
+        className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
+        disabled={saving}
+      >
         Update
       </button>
     </div>
@@ -128,6 +134,7 @@ const ShopAppearance = () => {
             })
           }
 
+          setState({ hasChanges: false })
           setSaving(false)
           dispatch({
             type: 'setConfigSimple',
@@ -153,24 +160,21 @@ const ShopAppearance = () => {
         <div className="shop-settings col-md-8 col-lg-9">
           <div className="form-group">
             <label>Store Name</label>
-            <input
-              {...input('fullTitle')}
-              onChange={(e) => {
-                const existing = kebabCase(state.fullTitle)
-                const hostname = kebabCase(e.target.value)
-                if (state.hostname === existing || !state.hostname) {
-                  setState({ fullTitle: e.target.value, hostname })
-                } else {
-                  setState({ fullTitle: e.target.value })
-                }
-              }}
-            />
+            <input {...input('fullTitle')} />
             {Feedback('fullTitle')}
           </div>
           <div className="form-group">
             <label>Store Domain</label>
             <div className="suffix-wrap">
-              <input {...input('hostname')} />
+              <input
+                {...input('hostname')}
+                onChange={(e) =>
+                  setState({
+                    hostname: kebabCase(e.target.value),
+                    hostnameError: null
+                  })
+                }
+              />
               <div className="suffix">
                 <span>{state.hostname}</span>
                 {`.${get(admin, 'network.domain')}`}

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 
 import useShopConfig from 'utils/useShopConfig'
 import useEmailAppsList from 'utils/useEmailAppsList'
+import { useStateValue } from 'data/state'
 import maskSecret from 'utils/maskSecret'
 
 import Tabs from '../_Tabs'
@@ -16,6 +17,7 @@ import ProcessorsList from 'components/settings/ProcessorsList'
 
 const AppSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
+  const [{ admin }] = useStateValue()
 
   const [connectModal, setShowConnectModal] = useState(false)
 
@@ -36,41 +38,44 @@ const AppSettings = () => {
           : 'Import your products from Printful.',
         icon: <img src="images/printful.svg" width="70%" />,
         enabled: printfulEnabled,
-        actions: <PrintfulSync className="mr-2" />
+        actions: <PrintfulSync className="mr-2" />,
+        hide: admin.superuser ? false : true
       },
       ...emailAppsList
-    ].map((processor) => ({
-      // Add actions buttons
-      ...processor,
-      actions: (
-        <>
-          {processor.enabled ? (
-            <>
-              {processor.actions}
+    ]
+      .filter((processor) => !processor.hide)
+      .map((processor) => ({
+        // Add actions buttons
+        ...processor,
+        actions: (
+          <>
+            {processor.enabled ? (
+              <>
+                {processor.actions}
+                <button
+                  className="btn btn-outline-primary mr-2"
+                  type="button"
+                  onClick={() => setShowConnectModal(processor.id)}
+                >
+                  Configure
+                </button>
+                <DisconnectModal
+                  processor={processor}
+                  afterDelete={() => refetch()}
+                />
+              </>
+            ) : (
               <button
-                className="btn btn-outline-primary mr-2"
+                className="btn btn-outline-primary px-4"
                 type="button"
                 onClick={() => setShowConnectModal(processor.id)}
               >
-                Configure
+                Connect
               </button>
-              <DisconnectModal
-                processor={processor}
-                afterDelete={() => refetch()}
-              />
-            </>
-          ) : (
-            <button
-              className="btn btn-outline-primary px-4"
-              type="button"
-              onClick={() => setShowConnectModal(processor.id)}
-            >
-              Connect
-            </button>
-          )}
-        </>
-      )
-    }))
+            )}
+          </>
+        )
+      }))
   }, [shopConfig, emailAppsList])
 
   let ModalToRender

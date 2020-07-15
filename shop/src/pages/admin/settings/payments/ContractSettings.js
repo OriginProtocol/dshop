@@ -54,7 +54,7 @@ const ContractSettings = ({ state, setState, config }) => {
     <div className="contract-settings">
       <h4>Other Payment Settings</h4>
 
-      <div className="form-group">
+      {/* <div className="form-group">
         <label>Listing ID</label>
         <div className="d-flex">
           <div style={{ flex: 1 }}>
@@ -76,7 +76,7 @@ const ContractSettings = ({ state, setState, config }) => {
           </div>
         </div>
       </div>
-      {/* <div className="form-group">
+      <div className="form-group">
         <label>
           Arbitrator Address
           <span>
@@ -86,7 +86,7 @@ const ContractSettings = ({ state, setState, config }) => {
         </label>
         <input {...input('arbitrator')} />
         {Feedback('arbitrator')}
-      </div> */}
+      </div>
       <div className="form-group">
         <label>
           Dispute Window
@@ -97,7 +97,7 @@ const ContractSettings = ({ state, setState, config }) => {
         </label>
         <input {...input('disputeWindow')} />
         {Feedback('disputeWindow')}
-      </div>
+      </div> */}
 
       <label>Accepted Tokens</label>
       <div className="form-group">

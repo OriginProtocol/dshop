@@ -59,11 +59,9 @@ module.exports = function (router) {
   )
 
   router.post('/shipping', authShop, async (req, res) => {
-    // console.log(req.body)
     const apiKey = await encConf.get(req.shop.id, 'printful')
-    const { status, ...resp } = await fetchShippingEstimate(apiKey, req.body)
-
-    return res.status(status || 200).send(resp)
+    const result = await fetchShippingEstimate(apiKey, req.body)
+    return res.json(result)
   })
 
   router.post('/printful/webhooks/:shopId/:secret', async (req, res) => {

@@ -44,6 +44,17 @@ const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
 
 const log = getLogger('routes.shops')
 
+async function tryDataDir(dataDir, localDir) {
+  const hasDir = localDir ? fs.existsSync(`${DSHOP_CACHE}/${dataDir}`) : false
+  const existingShopWithAuthToken = await Shop.findOne({
+    where: { authToken: dataDir }
+  })
+  const existingShopWithHostname = await Shop.findOne({
+    where: { hostname: dataDir }
+  })
+  return !existingShopWithAuthToken && !hasDir && !existingShopWithHostname
+}
+
 module.exports = function (router) {
   router.get(
     '/shop/users',
@@ -284,40 +295,20 @@ module.exports = function (router) {
    * Creates a new shop.
    */
   router.post('/shop', authUser, async (req, res) => {
-    const { dataDir, printfulApi, hostname } = req.body
+    const { printfulApi } = req.body
     const shopType = req.body.shopType || 'empty'
+    let dataDir = kebabCase(req.body.dataDir)
+
+    if (shopType !== 'localDir') {
+      let postfix = 1
+      while (!(await tryDataDir(dataDir))) {
+        postfix++
+        dataDir = `${kebabCase(req.body.dataDir)}-${postfix}`
+      }
+    }
+
     const OutputDir = `${DSHOP_CACHE}/${dataDir}`
-
-    if (fs.existsSync(OutputDir) && shopType !== 'local-dir') {
-      log.warn(`${OutputDir} alraedy exists`)
-      return res.json({
-        success: false,
-        reason: 'invalid',
-        field: 'dataDir',
-        message: 'Already exists'
-      })
-    }
-
-    const existingShopWithAuthToken = await Shop.findOne({
-      where: { authToken: dataDir }
-    })
-    if (existingShopWithAuthToken) {
-      return res.json({
-        success: false,
-        reason: 'invalid',
-        field: 'dataDir',
-        message: 'Already exists'
-      })
-    }
-    const existingShopWithHostname = await Shop.findOne({ where: { hostname } })
-    if (existingShopWithHostname) {
-      return res.json({
-        success: false,
-        reason: 'invalid',
-        field: 'hostname',
-        message: 'Already exists'
-      })
-    }
+    const hostname = dataDir
 
     const network = await Network.findOne({ where: { active: true } })
     const networkConfig = getConfig(network.config)
@@ -788,7 +779,7 @@ module.exports = function (router) {
             field: 'hostname'
           })
         }
-        req.shop.hostname = req.body.hostname
+        req.shop.hostname = hostname
       }
       if (req.body.fullTitle) {
         req.shop.name = req.body.fullTitle
