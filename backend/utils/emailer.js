@@ -4,6 +4,7 @@ const nodemailer = require('nodemailer')
 const aws = require('aws-sdk')
 const fetch = require('node-fetch')
 const sharp = require('sharp')
+const get = require('lodash/get')
 
 const { getLogger } = require('../utils/logger')
 
@@ -45,48 +46,53 @@ function optionsForItem(item) {
   return options
 }
 
-async function getEmailTransporter(shop) {
-  let networkConfig = {}
+/**
+ * Returns config and email transporter object
+ * @param {Model.Shop} shop DB model
+ * @returns {{
+ *  transporter,
+ *  fromEmail,
+ *  supportEmail,
+ *  shopConfig, // Decrypted shop config
+ *  configJson // Shop's public config.json file
+ * }}
+ */
+async function getEmailTransporterAndConfig(shop) {
+  const network = await Network.findOne({
+    where: { networkId: shop.networkId, active: true }
+  })
+
+  const networkConfig = encConf.getConfig(network.config)
+
+  const backendUrl = get(networkConfig, 'backendUrl', '')
+  const configJson = await getSiteConfig(`${backendUrl}/${shop.authToken}/`)
 
   const shopConfig = encConf.getConfig(shop.config)
 
-  let config = {
+  let emailServerConfig = {
     ...shopConfig
   }
 
-  // Try network's default config,
-  try {
-    if (!shopConfig.email || shopConfig.email === 'disabled') {
-      // Has not configured email server, fallback to network config
-      const network = await Network.findOne({
-        where: { networkId: shop.networkId, active: true }
-      })
-
-      if (network) {
-        networkConfig = encConf.getConfig(network.config)
-        networkConfig = JSON.parse(networkConfig.defaultShopConfig)
-
-        config = {
-          ...networkConfig
-        }
-      }
+  if ((!shopConfig.email || shopConfig.email === 'disabled') && network) {
+    // Has not configured email server, fallback to network config
+    const fallbackConfig = get(networkConfig, 'fallbackShopConfig', {})
+    emailServerConfig = {
+      ...fallbackConfig
     }
-  } catch (err) {
-    log.error(`Failed to fetch network's default config`, err)
   }
 
   let transporter
-  if (config.email === 'sendgrid') {
+  if (emailServerConfig.email === 'sendgrid') {
     let auth
-    if (config.sendgridApiKey) {
+    if (emailServerConfig.sendgridApiKey) {
       auth = {
         user: 'apikey',
-        pass: config.sendgridApiKey
+        pass: emailServerConfig.sendgridApiKey
       }
     } else {
       auth = {
-        user: config.sendgridUsername,
-        pass: config.sendgridPassword
+        user: emailServerConfig.sendgridUsername,
+        pass: emailServerConfig.sendgridPassword
       }
     }
     transporter = nodemailer.createTransport({
@@ -94,33 +100,48 @@ async function getEmailTransporter(shop) {
       port: 587,
       auth
     })
-  } else if (config.email === 'mailgun') {
+  } else if (emailServerConfig.email === 'mailgun') {
     transporter = nodemailer.createTransport({
-      host: config.mailgunSmtpServer,
-      port: config.mailgunSmtpPort,
+      host: emailServerConfig.mailgunSmtpServer,
+      port: emailServerConfig.mailgunSmtpPort,
       auth: {
-        user: config.mailgunSmtpLogin,
-        pass: config.mailgunSmtpPassword
+        user: emailServerConfig.mailgunSmtpLogin,
+        pass: emailServerConfig.mailgunSmtpPassword
       }
     })
-  } else if (config.email === 'aws') {
+  } else if (emailServerConfig.email === 'aws') {
     const SES = new aws.SES({
       apiVersion: '2010-12-01',
-      region: config.awsRegion || 'us-east-1',
-      accessKeyId: config.awsAccessKey,
-      secretAccessKey: config.awsAccessSecret
+      region: emailServerConfig.awsRegion || 'us-east-1',
+      accessKeyId: emailServerConfig.awsAccessKey,
+      secretAccessKey: emailServerConfig.awsAccessSecret
     })
     transporter = nodemailer.createTransport({ SES })
   }
 
   return {
     transporter,
-    fromEmail: SUPPORT_EMAIL_OVERRIDE || config.fromEmail || 'no-reply@ogn.app'
+    fromEmail:
+      SUPPORT_EMAIL_OVERRIDE || shopConfig.fromEmail || 'no-reply@ogn.app',
+    supportEmail:
+      SUPPORT_EMAIL_OVERRIDE ||
+      configJson.supportEmail ||
+      'dshop@originprotocol.com',
+    networkConfig,
+    // Decrypted shop config
+    shopConfig,
+    // Shop's config.json
+    configJson
   }
 }
 
 async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
-  const { transporter, fromEmail } = await getEmailTransporter(shop)
+  const {
+    transporter,
+    supportEmail,
+    configJson: data,
+    shopConfig: config
+  } = await getEmailTransporterAndConfig(shop)
   if (!transporter) {
     log.info(
       `Emailer not configured for shop id ${shop.id}. Skipping sending new order email.`
@@ -133,11 +154,11 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     skip = true
   }
 
-  const config = encConf.getConfig(shop.config)
+  // const config = encConf.getConfig(shop.config)
 
   const dataURL = config.dataUrl
   let publicURL = config.publicUrl
-  const data = await getSiteConfig(dataURL)
+  // const data = await getSiteConfig(dataURL)
   const items = await cartData(dataURL, cart.items)
   const attachments = [],
     orderItems = []
@@ -178,7 +199,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     })
   })
 
-  let supportEmailPlain = SUPPORT_EMAIL_OVERRIDE || data.supportEmail
+  let supportEmailPlain = supportEmail
   if (supportEmailPlain.match(/<([^>]+)>/)[1]) {
     supportEmailPlain = supportEmailPlain.match(/<([^>]+)>/)[1]
   }
@@ -210,8 +231,8 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   const vars = {
     head,
     siteName: data.fullTitle || data.title,
-    supportEmail: SUPPORT_EMAIL_OVERRIDE || data.supportEmail,
-    fromEmail,
+    supportEmail,
+    fromEmail: supportEmail,
     supportEmailPlain,
     subject: data.emailSubject,
     storeUrl: publicURL,
@@ -265,7 +286,9 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
       if (err) {
         log.error('Error sending buyer confirmation email:', err)
       } else {
-        log.info('Buyer confirmation email sent')
+        log.info(
+          `Buyer confirmation email sent, from ${message.from} to ${message.to}`
+        )
         log.debug(msg.envelope)
       }
     })
@@ -275,7 +298,9 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
         if (err) {
           log.error('Error sending merchant confirmation email:', err)
         } else {
-          log.info('Merchant confirmation email sent')
+          log.info(
+            `Merchant confirmation email sent, from ${message.from} to ${message.to}`
+          )
           log.debug(msg.envelope)
         }
       })
@@ -287,7 +312,11 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
 
 async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
   const shop = await Shop.findOne({ where: { id: shopId } })
-  const { transporter, fromEmail } = await getEmailTransporter(shop)
+  const {
+    transporter,
+    fromEmail,
+    supportEmail
+  } = await getEmailTransporterAndConfig(shop)
   if (!transporter) {
     log.info(
       `Emailer not configured for shop id ${shopId}. Skipping sending verification email.`
@@ -302,18 +331,11 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
 
   const { name, email } = seller
 
-  const config = encConf.getConfig(shop.config)
-
-  const dataURL = config.dataUrl
-
-  const data = await getSiteConfig(dataURL)
-
   const vars = {
     head,
     name,
     verifyUrl,
-    supportEmailPlain:
-      SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com',
+    supportEmailPlain: supportEmail,
     fromEmail
   }
 
@@ -337,8 +359,10 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
         log.error('Error sending verification email', err)
         return resolve()
       } else {
+        log.info(
+          `Verification email sent, from ${message.from} to ${message.to}`
+        )
         log.debug(msg.envelope)
-        log.debug(msg)
       }
 
       resolve(message)
@@ -348,7 +372,13 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
 
 async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
   const shop = await Shop.findOne({ where: { id: shopId } })
-  const { transporter, fromEmail } = await getEmailTransporter(shop)
+  const {
+    transporter,
+    fromEmail,
+    supportEmail,
+    shopConfig: config,
+    configJson: data
+  } = await getEmailTransporterAndConfig(shop)
   if (!transporter) {
     log.info(
       `Emailer not configured for shop id ${shopId}. Skipping sending Printful order failed email.`
@@ -356,22 +386,18 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
     return
   }
 
-  const config = encConf.getConfig(shop.config)
   if (process.env.NODE_ENV === 'test') {
     log.info('Test environment. Email will be generated but not sent.')
     skip = true
   }
 
-  const dataURL = config.dataUrl
   const publicURL = config.publicUrl
 
-  const data = await getSiteConfig(dataURL)
   const cart = orderData.data
 
   const vars = {
     head,
-    supportEmail:
-      SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com',
+    supportEmail,
     message: opts ? opts.message : '',
     orderUrlAdmin: `${publicURL}/admin/orders/${cart.offerId}`,
     siteName: data.fullTitle || data.title,
@@ -396,8 +422,10 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
       if (err) {
         log.error('Error sending email', err)
       } else {
+        log.info(
+          `Printful Order fulfilment failed email sent, from ${message.from} to ${message.to}`
+        )
         log.debug(msg.envelope)
-        log.debug(msg)
       }
 
       resolve(message)
@@ -407,7 +435,12 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
 
 async function stripeWebhookErrorEmail(shopId, errorData, skip) {
   const shop = await Shop.findOne({ where: { id: shopId } })
-  const { transporter, fromEmail } = await getEmailTransporter(shop)
+  const {
+    transporter,
+    fromEmail,
+    supportEmail,
+    configJson: data
+  } = await getEmailTransporterAndConfig(shop)
   if (!transporter) {
     log.info(
       `Emailer not configured for shop id ${shopId}. Skipping sending Stripe error email.`
@@ -415,20 +448,14 @@ async function stripeWebhookErrorEmail(shopId, errorData, skip) {
     return
   }
 
-  const config = encConf.getConfig(shop.config)
   if (process.env.NODE_ENV === 'test') {
     log.info('Test environment. Email will be generated but not sent.')
     skip = true
   }
 
-  const dataURL = config.dataUrl
-
-  const data = await getSiteConfig(dataURL)
-
   const vars = {
     head,
-    supportEmail:
-      SUPPORT_EMAIL_OVERRIDE || data.supportEmail || 'dshop@originprotocol.com',
+    supportEmail,
     siteName: data.fullTitle || data.title,
     fromEmail,
     ...errorData
@@ -452,8 +479,10 @@ async function stripeWebhookErrorEmail(shopId, errorData, skip) {
       if (err) {
         log.error('Error sending email', err)
       } else {
+        log.info(
+          `Stripe webhook error email sent, from ${message.from} to ${message.to}`
+        )
         log.debug(msg.envelope)
-        log.debug(msg)
       }
 
       resolve(message)

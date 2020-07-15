@@ -5,14 +5,15 @@ import queryString from 'query-string'
 
 import usePaginate from 'utils/usePaginate'
 
-const Paginate = ({ total }) => {
+const Paginate = ({ total, perPage }) => {
   const history = useHistory()
   const location = useLocation()
   const opts = queryString.parse(location.search)
-  const { page, perPage } = usePaginate()
-  const pages = Math.ceil(total / perPage)
+  const { page, perPage: perPageDefault } = usePaginate()
+  const perPageVal = perPage || perPageDefault
+  const pages = Math.ceil(total / perPageVal)
 
-  if (pages <= 1) return null
+  if (!total || !pages || pages <= 1) return null
 
   const hasPrevious = page > pages
   const hasNext = page < pages

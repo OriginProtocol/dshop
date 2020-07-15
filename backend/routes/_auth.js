@@ -45,7 +45,7 @@ async function authSellerAndShop(req, res, next) {
   }
 
   if (req.seller.superuser) {
-    Shop.findOne({ where: { authToken } }).then((shop) => {
+    return Shop.findOne({ where: { authToken } }).then((shop) => {
       if (!shop) {
         return res.status(401).json({ success: false, message: 'No such shop' })
       }
@@ -56,7 +56,7 @@ async function authSellerAndShop(req, res, next) {
     })
   } else {
     const include = { model: Seller, where: { id: sellerId } }
-    Shop.findOne({ where: { authToken }, include }).then((shop) => {
+    return Shop.findOne({ where: { authToken }, include }).then((shop) => {
       if (!shop) {
         return res.status(401).json({ success: false, message: 'Unauthorized' })
       }
