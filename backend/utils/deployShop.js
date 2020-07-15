@@ -17,6 +17,10 @@ const LOCAL_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 const AUTOSSL_MAX_ATTEMPTS = 5
 const AUTOSSL_BACKOFF = 30000
 
+const PROTOCOL_LABS_GATEWAY = 'https://gateway.ipfs.io'
+const PINATA_API = 'https://api.pinata.cloud'
+const PINATA_GATEWAY = 'https://gateway.pinata.cloud'
+
 /**
  * Convert an HTTP URL into a multiaddr
  */
@@ -244,7 +248,7 @@ async function deployShop({
   const pinataConfigured = networkConfig.pinataKey && networkConfig.pinataSecret
 
   // Build a list of all configured pinners.
-  let pinnerUrl
+  let pinnerUrl, pinnerGatewayUrl
   const remotePinners = []
   const ipfsDeployCredentials = {}
   if (ipfsClusterConfigured) {
@@ -262,6 +266,7 @@ async function deployShop({
     remotePinners.push('ipfs-cluster')
     if (pinner === 'ipfs-cluster') {
       pinnerUrl = maddr
+      pinnerGatewayUrl = network.ipfs
     }
   }
 
@@ -273,7 +278,8 @@ async function deployShop({
     }
     remotePinners.push('pinata')
     if (pinner === 'pinata') {
-      pinnerUrl = 'https://api.pinata.cloud'
+      pinnerUrl = PINATA_API
+      pinnerGatewayUrl = PINATA_GATEWAY
     }
   }
 
@@ -294,9 +300,9 @@ async function deployShop({
 
     // Prime various IPFS gateways.
     log.info('Priming gateways...')
-    await prime(`https://gateway.ipfs.io/ipfs/${hash}`, publicDirPath)
+    await prime(`${PROTOCOL_LABS_GATEWAY}/ipfs/${hash}`, publicDirPath)
     if (networkConfig.pinataKey) {
-      await prime(`https://gateway.pinata.cloud/ipfs/${hash}`, publicDirPath)
+      await prime(`${PINATA_GATEWAY}/ipfs/${hash}`, publicDirPath)
     }
     if (network.ipfs) {
       await prime(`${network.ipfs}/ipfs/${hash}`, publicDirPath)
@@ -336,6 +342,7 @@ async function deployShop({
         shopId: shop.id,
         domain,
         ipfsPinner: pinnerUrl,
+        ipfsGateway: pinnerGatewayUrl,
         ipfsHash: hash
       })
 
