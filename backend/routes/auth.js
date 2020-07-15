@@ -45,12 +45,15 @@ module.exports = function (app) {
     if (!userCount) {
       return res.json({ success: false, reason: 'no-users', setup: true })
     }
-    if (!req.session.sellerId) {
-      return res.json({ success: false, reason: 'not-logged-in' })
-    }
 
     const allNetworks = await Network.findAll()
     const activeNet = allNetworks.find((n) => n.active)
+    const activeNetConfig = activeNet ? encConf.getConfig(activeNet.config) : {}
+    const backendUrl = get(activeNetConfig, 'backendUrl')
+
+    if (!req.session.sellerId) {
+      return res.json({ success: false, reason: 'not-logged-in', backendUrl })
+    }
 
     if (!activeNet) {
       return res.json({
@@ -60,12 +63,6 @@ module.exports = function (app) {
       })
     }
 
-    const activeNetConfig = encConf.getConfig(activeNet.config)
-    const backendUrl = get(activeNetConfig, 'backendUrl')
-
-    if (!req.session.sellerId) {
-      return res.json({ success: false, reason: 'not-logged-in', backendUrl })
-    }
     const user = await Seller.findOne({ where: { id: req.session.sellerId } })
     if (!user) {
       return res.json({ success: false, reason: 'no-such-user', backendUrl })

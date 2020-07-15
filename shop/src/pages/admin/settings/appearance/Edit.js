@@ -78,6 +78,17 @@ const ShopAppearance = () => {
     }
   }, [config && config.about])
 
+  const actions = (
+    <div className="actions">
+      <button type="button" className="btn btn-outline-primary">
+        Cancel
+      </button>
+      <button type="submit" className="btn btn-primary" disabled={saving}>
+        Update
+      </button>
+    </div>
+  )
+
   return (
     <form
       autoComplete="off"
@@ -135,14 +146,7 @@ const ShopAppearance = () => {
     >
       <h3 className="admin-title">
         Settings
-        <div className="actions">
-          <button type="button" className="btn btn-outline-primary">
-            Cancel
-          </button>
-          <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? 'Updating...' : 'Update'}
-          </button>
-        </div>
+        {actions}
       </h3>
       <Tabs />
       <div className="row mt-4">
@@ -351,6 +355,7 @@ const ShopAppearance = () => {
           <SocialLinks socialLinks={state} setSocialLinks={setState} />
         </div>
       </div>
+      <div className="footer-actions">{actions}</div>
     </form>
   )
 }

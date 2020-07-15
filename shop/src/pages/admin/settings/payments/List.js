@@ -203,8 +203,9 @@ const PaymentSettings = () => {
         {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
 
         <ContractSettings {...{ state, setState, config }} />
-
-        <div className="d-flex mt-4 justify-content-end">{actions}</div>
+      </div>
+      <div className="footer-actions">
+        <div className="actions">{actions}</div>
       </div>
     </form>
   )

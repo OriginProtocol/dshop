@@ -28,7 +28,7 @@ import EditUser from './users/Edit'
 import Nav from '../admin/_Nav'
 
 const SuperAdmin = () => {
-  const { loading, error } = useAuth({ load: true })
+  const { loading, error } = useAuth()
   const [newShop, setNewShop] = useState()
 
   const [{ admin, reload }, dispatch] = useStateValue()

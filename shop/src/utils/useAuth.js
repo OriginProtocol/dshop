@@ -25,7 +25,7 @@ function useAuth(opts = {}) {
 
   useEffect(() => {
     let isSubscribed = true
-    if (opts.load && (opts.only === undefined || opts.only())) {
+    if (opts.only === undefined || opts.only()) {
       setLoading(true)
       getAuth(`${reload.auth}-${backendUrl}`, get)
         .then((auth) => {
