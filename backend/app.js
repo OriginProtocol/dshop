@@ -131,14 +131,23 @@ app.use((err, req, res, next) => {
   log.error(err)
   const sentryUrl = `${sentryEventPrefix}/${res.sentry}`
   log.error('Sentry URL:', sentryUrl)
-  return res.status(err.status || 500).json({
-    error: {
-      name: err.name,
-      message: err.message,
-      text: err.toString(),
+  let error
+  if (IS_PROD) {
+    // Send back a generic error message on prod.
+    error = {
+      name: "Unexpected error",
+      message: "An unexpected error occurred. Our team has been notified. Please try again later.",
       sentryUrl
     }
-  })
+  } else {
+    // Development environment. Send back error details from the exception.
+    error = {
+      name: err.name,
+      message: err.message,
+      sentryUrl
+    }
+  }
+  return res.status(err.status || 500).json({ error })
 })
 
 const PORT = process.env.PORT || 3000
