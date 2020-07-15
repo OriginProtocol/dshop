@@ -460,7 +460,7 @@ module.exports = function (router) {
     }
 
     const netPath = `networks[${network.networkId}]`
-    shopConfig = set(shopConfig, `${netPath}.backend`, req.body.backend)
+    shopConfig = set(shopConfig, `${netPath}.backend`, backend)
     if (req.body.listingId) {
       shopConfig = set(shopConfig, `${netPath}.listingId`, req.body.listingId)
     }
