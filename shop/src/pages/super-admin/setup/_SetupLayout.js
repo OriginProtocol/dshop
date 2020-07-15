@@ -26,6 +26,15 @@ require('react-styl')(`
     padding-top: 4rem
     overflow: scroll
 
+    .actions
+      font-size: 18px
+      text-align: center
+      color: rgba(255, 255, 255, 0.8)
+      padding-top: 1rem
+      padding-bottom: 1rem
+      a
+        color: #fff
+
     .logo
       margin: 0 auto
       text-align: center

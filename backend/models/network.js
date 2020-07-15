@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
       marketplaceContract: DataTypes.STRING, // Ethereum address of the marketplace smart contract.
       marketplaceVersion: DataTypes.STRING, // Version of the marketplace. ex: '001'.
       active: DataTypes.BOOLEAN, // True if the network is active.
+      publicSignups: DataTypes.BOOLEAN, // True if anyone can sign up as a user.
       config: DataTypes.TEXT // Encrypted JSON blob storing the configuration.
     },
     {

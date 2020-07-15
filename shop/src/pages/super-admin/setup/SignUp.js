@@ -4,7 +4,7 @@ import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 import ErrorText from './_ErrorText'
 
-const SignUp = () => {
+const SignUp = ({ url = '/auth/registration' }) => {
   const { config } = useConfig()
   const [, dispatch] = useStateValue()
   const [state, setState] = useState({
@@ -16,9 +16,7 @@ const SignUp = () => {
 
   return (
     <div className="signup-form">
-      <div className="desc">
-        Start your free store in under 5 minutes. Get started now!
-      </div>
+      <div className="actions">Get started by creating a Dshop account.</div>
       <form
         className="sign-up"
         onSubmit={(e) => {
@@ -30,12 +28,9 @@ const SignUp = () => {
             password: state.password
           })
 
-          fetch(`${config.backend}/auth/registration`, {
+          fetch(`${config.backend}${url}`, {
             method: 'POST',
-            headers: {
-              authorization: `bearer ${config.backendAuthToken}`,
-              'content-type': 'application/json'
-            },
+            headers: { 'content-type': 'application/json' },
             credentials: 'include',
             body
           })

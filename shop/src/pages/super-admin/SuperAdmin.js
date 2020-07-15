@@ -8,7 +8,6 @@ import Toaster from 'components/Toaster'
 import { useStateValue } from 'data/state'
 import useAuth from 'utils/useAuth'
 
-import Login from './Login'
 import Menu from './_Menu'
 import FirstTime from './setup/FirstTime'
 
@@ -44,10 +43,6 @@ const SuperAdmin = () => {
   }
 
   if (!get(admin, 'success')) {
-    const reason = get(admin, 'reason', '')
-    if (!admin || reason.match(/^(not-logged-in|not-superuser)$/)) {
-      return <Login next={() => dispatch({ type: 'reload', target: 'auth' })} />
-    }
     return (
       <FirstTime next={() => dispatch({ type: 'reload', target: 'auth' })} />
     )

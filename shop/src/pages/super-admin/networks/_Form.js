@@ -282,6 +282,17 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           {Feedback('backendUrl')}
         </div>
       </div>
+      <div className="form-group">
+        <label className="m-0">
+          <input
+            className="mr-2"
+            type="checkbox"
+            checked={state.publicSignups ? true : false}
+            onChange={(e) => setState({ publicSignups: e.target.checked })}
+          />
+          Allow New User Signups
+        </label>
+      </div>
       <div className="form-row">
         <div className="form-group col-md-6">
           <label>Pinata Key</label>

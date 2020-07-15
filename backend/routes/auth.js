@@ -50,9 +50,15 @@ module.exports = function (router) {
     const activeNet = allNetworks.find((n) => n.active)
     const activeNetConfig = activeNet ? encConf.getConfig(activeNet.config) : {}
     const backendUrl = get(activeNetConfig, 'backendUrl')
+    const publicSignups = get(activeNet, 'publicSignups', false)
 
     if (!req.session.sellerId) {
-      return res.json({ success: false, reason: 'not-logged-in', backendUrl })
+      return res.json({
+        success: false,
+        reason: 'not-logged-in',
+        backendUrl,
+        publicSignups
+      })
     }
 
     if (!activeNet) {
@@ -65,7 +71,12 @@ module.exports = function (router) {
 
     const user = await Seller.findOne({ where: { id: req.session.sellerId } })
     if (!user) {
-      return res.json({ success: false, reason: 'no-such-user', backendUrl })
+      return res.json({
+        success: false,
+        reason: 'no-such-user',
+        backendUrl,
+        publicSignups
+      })
     }
     const { email, emailVerified, name } = user
 
@@ -82,7 +93,8 @@ module.exports = function (router) {
           'marketplaceVersion',
           'active',
           'domain',
-          'backendUrl'
+          'backendUrl',
+          'publicSignups'
         ])
       }
     })

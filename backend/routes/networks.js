@@ -33,6 +33,7 @@ module.exports = function (router) {
       ipfsApi: req.body.ipfsApi,
       marketplaceContract: req.body.marketplaceContract,
       marketplaceVersion: req.body.marketplaceVersion,
+      publicSignups: req.body.publicSignups ? true : false,
       active: req.body.active ? true : false,
       config: setConfig(pickConfig(req.body))
     }
@@ -76,7 +77,8 @@ module.exports = function (router) {
       {
         config: setConfig(config, network.dataValues.config),
         ipfs: req.body.ipfs,
-        ipfsApi: req.body.ipfsApi
+        ipfsApi: req.body.ipfsApi,
+        publicSignups: req.body.publicSignups ? true : false
       },
       { where }
     )
