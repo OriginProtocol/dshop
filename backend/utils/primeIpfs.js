@@ -1,5 +1,6 @@
 const fs = require('fs')
 const https = require('https')
+const http = require('http')
 const Bottleneck = require('bottleneck')
 const limiter = new Bottleneck({ maxConcurrent: 10 })
 const { readdir } = fs.promises
@@ -27,7 +28,8 @@ async function download(url) {
   await new Promise((resolve) => {
     const f = fs.createWriteStream('/dev/null').on('finish', resolve)
     log.info(`Priming ${url}`)
-    https
+    const httpModule = url.startsWith('https://') ? https : http
+    httpModule
       .get(url, (response) => response.pipe(f))
       .on('error', (err) => {
         log.error(`Error making GET request to ${url}:`, err)
@@ -37,7 +39,7 @@ async function download(url) {
 
 async function prime(urlPrefix, dir) {
   const filesWithPath = await getFiles(dir)
-  const files = filesWithPath.map((f) => f.split('public/')[1])
+  const files = filesWithPath.map((f) => f.split('public/')[1]).filter((f) => f)
   for (const file of files) {
     const url = `${urlPrefix}/${file}`
     limiter.schedule((url) => download(url), url)

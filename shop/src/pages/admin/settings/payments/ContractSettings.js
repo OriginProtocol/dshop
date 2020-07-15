@@ -1,9 +1,9 @@
 import React, { useMemo, useEffect } from 'react'
 
-import { formInput, formFeedback } from 'utils/formHelpers'
+import { formInput } from 'utils/formHelpers'
 import DefaultTokens from 'data/defaultTokens'
 
-import CreateListing from './_CreateListing'
+// import CreateListing from './_CreateListing'
 
 import CustomTokenModal from './_CustomTokenModal'
 
@@ -22,7 +22,7 @@ const dedupArray = (arr, prop) => {
 
 const ContractSettings = ({ state, setState, config }) => {
   const input = formInput(state, (newState) => setState(newState))
-  const Feedback = formFeedback(state)
+  // const Feedback = formFeedback(state)
 
   useEffect(() => {
     const acceptedTokens = config.acceptedTokens || []
