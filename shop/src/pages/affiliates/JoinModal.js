@@ -29,9 +29,9 @@ const NoWeb3 = ({ setShouldClose }) => (
 
 const ConnectWallet = ({ setState }) => (
   <div className="affiliate-modal connect">
-    <h3>Connect your web3 wallet</h3>
+    <h3>Connect your crypto wallet</h3>
     <div className="description">
-      Please click “Connect” and open your web3 wallet manually if it does not
+      Please click “Connect” and open your crypto wallet manually if it does not
       do so automatically
     </div>
     <button

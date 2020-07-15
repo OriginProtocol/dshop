@@ -190,6 +190,10 @@ const reducer = (state, action) => {
       )
       action.auth.role = get(shop, 'role')
     }
+    const backendUrl = get(action.auth, 'backendUrl')
+    if (backendUrl) {
+      newState = set(newState, 'config.backend', backendUrl)
+    }
     newState = set(newState, `admin`, action.auth)
   } else if (action.type === 'setPasswordAuthed') {
     newState = set(newState, `passwordAuthed`, action.authed)
@@ -242,6 +246,11 @@ const reducer = (state, action) => {
     newState = cloneDeep(getInitialState(activeShop))
     newState = set(newState, 'config', action.config)
     newState = set(newState, 'admin', cloneDeep(state.admin))
+    const backendUrl = get(state, 'admin.backendUrl')
+    if (backendUrl) {
+      newState = set(newState, 'config.backend', backendUrl)
+    }
+    newState = set(newState, 'reload', state.reload)
   } else if (action.type === 'setConfigSimple') {
     newState = set(newState, 'config', action.config)
   } else if (action.type === 'toast') {
@@ -285,7 +294,7 @@ const reducer = (state, action) => {
   }
 
   // setStorage(key, pick(newState, 'cart'))
-  // console.log('reduce', { action, state, newState })
+  // console.error(action.type, { action, state, newState })
   return cloneDeep(newState)
 }
 

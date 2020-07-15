@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useRouteMatch } from 'react-router-dom'
 import get from 'lodash/get'
 
-import useConfig from 'utils/useConfig'
 import useSetState from 'utils/useSetState'
+import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
@@ -11,18 +11,11 @@ import NetworkForm from './_Form'
 import MakeActiveButton from './_MakeActiveButton'
 
 const EditNetwork = () => {
-  const { config } = useConfig()
   const [{ admin }, dispatch] = useStateValue()
   const [state, setState] = useSetState()
+  const { post } = useBackendApi()
   const match = useRouteMatch('/super-admin/networks/:networkId')
   const { networkId } = match.params
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setState({ feedback: null }), 2000)
-    return function cleanup() {
-      clearTimeout(timeout)
-    }
-  }, [state.feedback])
 
   const network = get(admin, 'networks', []).find(
     (n) => String(n.networkId) === networkId
@@ -30,21 +23,16 @@ const EditNetwork = () => {
 
   function onSave(network) {
     setState({ feedback: 'Saving...' })
-    fetch(`${config.backend}/networks/${networkId}`, {
-      method: 'PUT',
-      headers: { 'content-type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(network)
-    })
-      .then(async (res) => {
-        if (res.ok) {
-          setState({ feedback: 'Saved OK' })
-          dispatch({ type: 'reload', target: 'auth' })
-        }
+    const body = JSON.stringify(network)
+    post(`/networks/${networkId}`, { method: 'PUT', body })
+      .then(() => {
+        setState({ feedback: null })
+        dispatch({ type: 'toast', message: 'Saved OK' })
+        dispatch({ type: 'reload', target: 'auth' })
       })
       .catch((err) => {
-        setState({ feedback: 'Error saving' })
-        console.error('Error signing in', err)
+        dispatch({ type: 'toast', style: 'error', message: 'Error saving' })
+        console.error('Error saving network', err)
       })
   }
 

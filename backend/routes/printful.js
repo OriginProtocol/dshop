@@ -15,11 +15,11 @@ const log = getLogger('routes.printful')
 
 const { ExternalEvent } = require('../models')
 
-module.exports = function (app) {
+module.exports = function (router) {
   /**
    * Makes an API call to Printful to get details about a specific order.
    */
-  app.get(
+  router.get(
     '/orders/:orderId/printful',
     authSellerAndShop,
     findOrder,
@@ -34,7 +34,7 @@ module.exports = function (app) {
     }
   )
 
-  app.post(
+  router.post(
     '/orders/:orderId/printful/create',
     authSellerAndShop,
     async (req, res) => {
@@ -46,7 +46,7 @@ module.exports = function (app) {
     }
   )
 
-  app.post(
+  router.post(
     '/orders/:orderId/printful/confirm',
     authSellerAndShop,
     findOrder,
@@ -58,15 +58,13 @@ module.exports = function (app) {
     }
   )
 
-  app.post('/shipping', authShop, async (req, res) => {
-    // console.log(req.body)
+  router.post('/shipping', authShop, async (req, res) => {
     const apiKey = await encConf.get(req.shop.id, 'printful')
-    const { status, ...resp } = await fetchShippingEstimate(apiKey, req.body)
-
-    return res.status(status || 200).send(resp)
+    const result = await fetchShippingEstimate(apiKey, req.body)
+    return res.json(result)
   })
 
-  app.post('/printful/webhooks/:shopId/:secret', async (req, res) => {
+  router.post('/printful/webhooks/:shopId/:secret', async (req, res) => {
     const { type, data } = req.body
     const { shopId, secret } = req.params
 

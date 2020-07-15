@@ -46,7 +46,7 @@ const Web3Modal = ({ onClose }) => {
 
   return (
     <ConnectModal
-      title="Connect Web3 Wallet"
+      title="Connect Crypto Wallet"
       validate={() => {
         const validateResponse = validate(state)
         setState(validateResponse.newState)

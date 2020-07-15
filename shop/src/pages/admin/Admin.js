@@ -36,7 +36,7 @@ const Admin = () => {
 
   if (error) {
     return <div className="fixed-loader">Admin Connection Error</div>
-  } else if (loading) {
+  } else if (loading && !shops.length) {
     return <div className="fixed-loader">Loading...</div>
   }
 

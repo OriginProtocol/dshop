@@ -83,4 +83,16 @@ require('react-styl')(`
     line-height: normal
   .modal-content .actions
     margin-top: 2rem
+  .modal-content .action-buttons
+    margin-top: 2rem
+    display: flex
+    justify-content: flex-end
+    > div
+      display: grid
+      grid-auto-columns: 1fr
+      grid-auto-flow: column
+      column-gap: 0.75rem
+      .btn
+        padding-left: 1.5rem
+        padding-right: 1.5rem
 `)

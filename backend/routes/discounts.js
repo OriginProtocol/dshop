@@ -5,8 +5,8 @@ const { authShop, authSellerAndShop } = require('./_auth')
 
 const { validateDiscount, getSafeDiscountProps } = require('../utils/discounts')
 
-module.exports = function (app) {
-  app.post('/check-discount', authShop, async (req, res) => {
+module.exports = function (router) {
+  router.post('/check-discount', authShop, async (req, res) => {
     const r = await validateDiscount(req.body.code, req.shop)
     if (r.discount) {
       r.discount = getSafeDiscountProps(r.discount)
@@ -14,7 +14,7 @@ module.exports = function (app) {
     res.json(r)
   })
 
-  app.get('/discounts', authSellerAndShop, async (req, res) => {
+  router.get('/discounts', authSellerAndShop, async (req, res) => {
     const discounts = await Discount.findAll({
       where: { shopId: req.shop.id },
       order: [['createdAt', 'desc']]
@@ -22,7 +22,7 @@ module.exports = function (app) {
     res.json(discounts)
   })
 
-  app.get('/discounts/:id', authSellerAndShop, async (req, res) => {
+  router.get('/discounts/:id', authSellerAndShop, async (req, res) => {
     const discount = await Discount.findOne({
       where: {
         id: req.params.id,
@@ -32,7 +32,7 @@ module.exports = function (app) {
     res.json(discount)
   })
 
-  app.post('/discounts', authSellerAndShop, async (req, res) => {
+  router.post('/discounts', authSellerAndShop, async (req, res) => {
     const discount = await Discount.create({
       ...req.body,
       shopId: req.shop.id
@@ -40,7 +40,7 @@ module.exports = function (app) {
     res.json({ success: true, discount })
   })
 
-  app.put('/discounts/:id', authSellerAndShop, async (req, res) => {
+  router.put('/discounts/:id', authSellerAndShop, async (req, res) => {
     const data = pick(req.body, [
       'status',
       'code',
@@ -72,7 +72,7 @@ module.exports = function (app) {
     res.json({ success: true, discount })
   })
 
-  app.delete('/discounts/:id', authSellerAndShop, async (req, res) => {
+  router.delete('/discounts/:id', authSellerAndShop, async (req, res) => {
     const discount = await Discount.destroy({
       where: {
         id: req.params.id,

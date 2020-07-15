@@ -13,7 +13,7 @@ const SortableTable = ({
   onChange,
   labels = ['Name', 'Number of Products']
 }) => {
-  const [state, setState] = useReducer(reducer, { items: [] })
+  const [state, setState] = useReducer(reducer, { items })
   useEffect(() => {
     setState({ items })
   }, [items])
@@ -99,6 +99,8 @@ require('react-styl')(`
       &.dragging
         .td
           color: transparent
+          > *
+            visibility: hidden
     &.clickable
       cursor: pointer
       .grid-row:hover .td
@@ -114,6 +116,7 @@ require('react-styl')(`
         stroke: #cdd7e0
       &:hover
         cursor: move
+        visibility: visible
     .title
       font-weight: bold
   `)

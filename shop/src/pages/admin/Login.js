@@ -1,12 +1,46 @@
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 import useBackendApi from 'utils/useBackendApi'
 import SetupLayout from 'pages/super-admin/setup/_SetupLayout'
 import ErrorText from 'pages/super-admin/setup/_ErrorText'
+import SignUp from 'pages/super-admin/setup/SignUp'
 
-const Login = () => {
+const LoginSignup = () => {
+  const [{ admin }] = useStateValue()
+  const [showSignup, setShowSignup] = useState()
+
+  const publicSignups = get(admin, 'publicSignups', false)
+  if (!publicSignups) {
+    return <Login />
+  }
+
+  return showSignup ? (
+    <SetupLayout>
+      <div className="mt-3">
+        <SignUp url="/register" />
+      </div>
+      <div className="actions">
+        Already have an account?
+        <a
+          className="ml-2"
+          href="#"
+          onClick={(e) => {
+            e.preventDefault()
+            setShowSignup(false)
+          }}
+          children="Login"
+        />
+      </div>
+    </SetupLayout>
+  ) : (
+    <Login onToggle={() => setShowSignup(true)} />
+  )
+}
+
+const Login = ({ onToggle }) => {
   const history = useHistory()
   const [state, setState] = useState({ email: '', password: '', error: '' })
   const [, dispatch] = useStateValue()
@@ -55,15 +89,29 @@ const Login = () => {
           />
         </div>
         <ErrorText>{state.error}</ErrorText>
-        <div className="form-group">
+        <div className="form-group mb-0">
           <button type="submit">Login</button>
         </div>
       </form>
+      {!onToggle ? null : (
+        <div className="actions">
+          Don&apos;t yet have an account?
+          <a
+            className="ml-2"
+            href="#"
+            onClick={(e) => {
+              e.preventDefault()
+              onToggle()
+            }}
+            children="Sign Up"
+          />
+        </div>
+      )}
     </SetupLayout>
   )
 }
 
-export default Login
+export default LoginSignup
 
 require('react-styl')(`
   .admin.login

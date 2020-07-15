@@ -68,6 +68,7 @@ const defaultShopConfig = JSON.stringify(
 
 function initialState() {
   const networkId = window.location.href.indexOf('https') === 0 ? '1' : '999'
+  const backendUrl = window.location.origin
   return {
     networkId,
     domain: '',
@@ -85,6 +86,7 @@ function initialState() {
     ipfsApi: '',
     marketplaceContract: '',
     marketplaceVersion: '',
+    backendUrl,
     ...Defaults[networkId]
   }
 }
@@ -110,6 +112,11 @@ function validate(state) {
   }
   if (!state.ipfsApi) {
     newState.ipfsApiError = 'IPFS API required'
+  }
+  if (!state.backendUrl) {
+    newState.backendUrlError = 'Backend URL required'
+  } else if (!state.backendUrl.match(/^https?:\/\//)) {
+    newState.backendUrlError = 'Should start https:// or http://'
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
@@ -263,10 +270,28 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           {Feedback('ipfsApi')}
         </div>
       </div>
+      <div className="form-row">
+        <div className="form-group col-md-6">
+          <label>Web3 PK</label>
+          <PasswordField field="web3Pk" input={input} />
+          {Feedback('web3Pk')}
+        </div>
+        <div className="form-group col-md-6">
+          <label>Backend Public URL</label>
+          <input {...input('backendUrl')} />
+          {Feedback('backendUrl')}
+        </div>
+      </div>
       <div className="form-group">
-        <label>Web3 PK</label>
-        <PasswordField field="web3Pk" input={input} />
-        {Feedback('web3Pk')}
+        <label className="m-0">
+          <input
+            className="mr-2"
+            type="checkbox"
+            checked={state.publicSignups ? true : false}
+            onChange={(e) => setState({ publicSignups: e.target.checked })}
+          />
+          Allow New User Signups
+        </label>
       </div>
       <div className="form-row">
         <div className="form-group col-md-6">

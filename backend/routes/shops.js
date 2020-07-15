@@ -44,8 +44,19 @@ const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
 
 const log = getLogger('routes.shops')
 
-module.exports = function (app) {
-  app.get(
+async function tryDataDir(dataDir, localDir) {
+  const hasDir = localDir ? fs.existsSync(`${DSHOP_CACHE}/${dataDir}`) : false
+  const existingShopWithAuthToken = await Shop.findOne({
+    where: { authToken: dataDir }
+  })
+  const existingShopWithHostname = await Shop.findOne({
+    where: { hostname: dataDir }
+  })
+  return !existingShopWithAuthToken && !hasDir && !existingShopWithHostname
+}
+
+module.exports = function (router) {
+  router.get(
     '/shop/users',
     authSellerAndShop,
     authRole('admin'),
@@ -72,7 +83,7 @@ module.exports = function (app) {
     }
   )
 
-  app.get('/shop', async (req, res) => {
+  router.get('/shop', async (req, res) => {
     const { sellerId } = req.session
 
     if (!sellerId) {
@@ -93,7 +104,7 @@ module.exports = function (app) {
     res.json({ success: true, shops })
   })
 
-  app.post(
+  router.post(
     '/shop/sync-printful',
     authSellerAndShop,
     authRole('admin'),
@@ -124,7 +135,7 @@ module.exports = function (app) {
     }
   )
 
-  app.get('/shops/:shopId/deployments', authSuperUser, async (req, res) => {
+  router.get('/shops/:shopId/deployments', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'no-such-shop' })
@@ -158,7 +169,7 @@ module.exports = function (app) {
     res.json({ deployments })
   })
 
-  app.get('/shops/:shopId/assets', authSuperUser, async (req, res) => {
+  router.get('/shops/:shopId/assets', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'no-such-shop' })
@@ -172,7 +183,7 @@ module.exports = function (app) {
     })
   })
 
-  app.delete('/shops/:shopId/assets', authSuperUser, async (req, res) => {
+  router.delete('/shops/:shopId/assets', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'no-such-shop' })
@@ -191,7 +202,7 @@ module.exports = function (app) {
     })
   })
 
-  app.post('/shops/:shopId/sync-cache', authSuperUser, async (req, res) => {
+  router.post('/shops/:shopId/sync-cache', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'no-such-shop' })
@@ -283,40 +294,21 @@ module.exports = function (app) {
   /**
    * Creates a new shop.
    */
-  app.post('/shop', authUser, async (req, res) => {
-    const { dataDir, printfulApi, shopType, backend, hostname } = req.body
+  router.post('/shop', authUser, async (req, res) => {
+    const { printfulApi } = req.body
+    const shopType = req.body.shopType || 'empty'
+    let dataDir = kebabCase(req.body.dataDir)
+
+    if (shopType !== 'localDir') {
+      let postfix = 1
+      while (!(await tryDataDir(dataDir))) {
+        postfix++
+        dataDir = `${kebabCase(req.body.dataDir)}-${postfix}`
+      }
+    }
+
     const OutputDir = `${DSHOP_CACHE}/${dataDir}`
-
-    if (fs.existsSync(OutputDir) && req.body.shopType !== 'local-dir') {
-      log.warn(`${OutputDir} alraedy exists`)
-      return res.json({
-        success: false,
-        reason: 'invalid',
-        field: 'dataDir',
-        message: 'Already exists'
-      })
-    }
-
-    const existingShopWithAuthToken = await Shop.findOne({
-      where: { authToken: dataDir }
-    })
-    if (existingShopWithAuthToken) {
-      return res.json({
-        success: false,
-        reason: 'invalid',
-        field: 'dataDir',
-        message: 'Already exists'
-      })
-    }
-    const existingShopWithHostname = await Shop.findOne({ where: { hostname } })
-    if (existingShopWithHostname) {
-      return res.json({
-        success: false,
-        reason: 'invalid',
-        field: 'hostname',
-        message: 'Already exists'
-      })
-    }
+    const hostname = dataDir
 
     const network = await Network.findOne({ where: { active: true } })
     const networkConfig = getConfig(network.config)
@@ -346,7 +338,7 @@ module.exports = function (app) {
 
     let name = req.body.name
 
-    if (req.body.shopType === 'local-dir') {
+    if (shopType === 'local-dir') {
       const existingData = fs
         .readFileSync(`${OutputDir}/data/config.json`)
         .toString()
@@ -355,6 +347,7 @@ module.exports = function (app) {
     }
 
     const zone = networkConfig.domain
+    const backend = networkConfig.backendUrl
     const isLocal = zone === 'localhost'
     const publicUrl = isLocal ? backend : `https://${hostname}.${zone}`
     const dataUrl = `${publicUrl}/${dataDir}/`
@@ -481,7 +474,7 @@ module.exports = function (app) {
     return res.json({ success: true, slug: dataDir })
   })
 
-  app.post(
+  router.post(
     '/shops/:shopId/save-files',
     authSuperUser,
     async (req, res, next) => {
@@ -531,7 +524,7 @@ module.exports = function (app) {
     }
   )
 
-  app.put(
+  router.put(
     '/shop/assets',
     authSellerAndShop,
     authRole('admin'),
@@ -599,7 +592,7 @@ module.exports = function (app) {
     }
   )
 
-  app.put(
+  router.put(
     '/shop/social-links',
     authSellerAndShop,
     authRole('admin'),
@@ -632,9 +625,7 @@ module.exports = function (app) {
           )
         )
 
-        await req.shop.update({
-          hasChanges: true
-        })
+        await req.shop.update({ hasChanges: true })
 
         res.json({ success: true })
       } catch (e) {
@@ -683,7 +674,7 @@ module.exports = function (app) {
     return { success: true }
   }
 
-  async function registerStripeWebhooks(newConfig, oldConfig) {
+  async function registerStripeWebhooks(newConfig, oldConfig, backendUrl) {
     const { backendAuthToken } = oldConfig
     const { stripeBackend } = newConfig
 
@@ -692,27 +683,27 @@ module.exports = function (app) {
 
     // NOTE: Fails on localhost, try using a reverse proxy/tunnel like ngrok
     // Or setup manually using Stripe CLI
-    const webhookHost = get(oldConfig, `publicUrl`)
 
-    if (!webhookHost) {
+    if (!backendUrl) {
       log.error('Invalid webhook host')
       return { success: false }
     }
 
-    log.info('Trying to register webhook on host', webhookHost)
+    log.info('Trying to register webhook on host', backendUrl)
 
     try {
       const stripe = Stripe(stripeBackend)
 
       const endpoint = await stripe.webhookEndpoints.create({
-        url: `${webhookHost}/webhook`,
-        enabled_events: ['*'],
+        url: `${backendUrl}/webhook`,
+        enabled_events: ['payment_intent.succeeded'],
+        description: 'Origin Dshop payment processor',
         metadata: {
           dshopStore: backendAuthToken
         }
       })
 
-      log.info(`Registered webhook for host ${webhookHost}`)
+      log.info(`Registered webhook for host ${backendUrl}`)
 
       return { success: true, secret: endpoint.secret }
     } catch (err) {
@@ -721,7 +712,7 @@ module.exports = function (app) {
     }
   }
 
-  app.put(
+  router.put(
     '/shop/config',
     authSellerAndShop,
     authRole('admin'),
@@ -788,7 +779,7 @@ module.exports = function (app) {
             field: 'hostname'
           })
         }
-        req.shop.hostname = req.body.hostname
+        req.shop.hostname = hostname
       }
       if (req.body.fullTitle) {
         req.shop.name = req.body.fullTitle
@@ -801,9 +792,12 @@ module.exports = function (app) {
         additionalOpts.stripeWebhookSecret = ''
         additionalOpts.stripeBackend = ''
       } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
+        const network = await Network.findOne({ where: { active: true } })
+        const netConfig = getConfig(network.config)
         const { secret } = await registerStripeWebhooks(
           req.body,
-          existingConfig
+          existingConfig,
+          netConfig.backendUrl || existingConfig.publicUrl
         )
         additionalOpts.stripeWebhookSecret = secret
       } else if (req.body.stripeWebhookSecret) {
@@ -837,7 +831,7 @@ module.exports = function (app) {
     }
   )
 
-  app.post(
+  router.post(
     '/shop/add-user',
     authSellerAndShop,
     authRole('admin'),
@@ -884,7 +878,7 @@ module.exports = function (app) {
     }
   )
 
-  app.delete('/shops/:shopId', authSuperUser, async (req, res) => {
+  router.delete('/shops/:shopId', authSuperUser, async (req, res) => {
     try {
       const shop = await Shop.findOne({
         where: { authToken: req.params.shopId }
@@ -915,7 +909,7 @@ module.exports = function (app) {
   /**
    * Called by super-admin for deploying a shop.
    */
-  app.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
+  router.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'shop-not-found' })
@@ -949,7 +943,7 @@ module.exports = function (app) {
   /**
    * Called by admin for deploying a shop.
    */
-  app.post(
+  router.post(
     '/shop/deploy',
     authSellerAndShop,
     authRole('admin'),
@@ -1013,7 +1007,7 @@ module.exports = function (app) {
     }
   )
 
-  app.get(
+  router.get(
     '/shop/deployments',
     authSellerAndShop,
     authRole('admin'),
@@ -1050,7 +1044,7 @@ module.exports = function (app) {
   /**
    * Create a shop deployment record
    */
-  app.post(
+  router.post(
     '/shops/:shopId/create-deployment',
     authSellerAndShop,
     authRole('admin'),
@@ -1090,7 +1084,7 @@ module.exports = function (app) {
   /**
    * Get names (DNS names, crypto names, etc) for a shop
    */
-  app.get(
+  router.get(
     '/shops/:shopId/get-names',
     authSellerAndShop,
     authRole('admin'),
@@ -1127,7 +1121,7 @@ module.exports = function (app) {
   /**
    * Set names (DNS names, crypto names, etc) for a shop deployment
    */
-  app.post(
+  router.post(
     '/shops/:shopId/set-names',
     authSellerAndShop,
     authRole('admin'),

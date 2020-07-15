@@ -18,6 +18,7 @@ const Nav = ({ newShop, setNewShop }) => {
   const history = useHistory()
 
   const { config, setActiveShop } = useConfig()
+
   useAuth({ only: () => localStorage.isAdmin })
   if (!localStorage.isAdmin || !admin) {
     return null

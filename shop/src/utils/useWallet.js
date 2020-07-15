@@ -79,12 +79,12 @@ function useWallet() {
     const onReload = () => dispatch({ type: 'reload', target: 'provider' })
 
     if (get(window, 'ethereum.on')) {
-      window.ethereum.on('networkChanged', onReload)
+      window.ethereum.on('chainChanged', onReload)
       window.ethereum.on('accountsChanged', onReload)
     }
     return function cleanup() {
       if (get(window, 'ethereum.on')) {
-        window.ethereum.off('networkChanged', onReload)
+        window.ethereum.off('chainChanged', onReload)
         window.ethereum.off('accountsChanged', onReload)
       }
     }

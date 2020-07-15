@@ -113,7 +113,7 @@ async function getEmailTransporter(shop) {
     transporter = nodemailer.createTransport({ SES })
   }
 
-  return { 
+  return {
     transporter,
     fromEmail: SUPPORT_EMAIL_OVERRIDE || config.fromEmail || 'no-reply@ogn.app'
   }

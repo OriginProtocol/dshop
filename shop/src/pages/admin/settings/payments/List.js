@@ -60,37 +60,40 @@ const PaymentSettings = () => {
           ? `Environment: ${upholdApi}`
           : 'Use Uphold to easily accept crypto payments in your shop.',
         icon: <Icons.Uphold />,
-        enabled: upholdEnabled
+        enabled: upholdEnabled,
+        hide: admin.superuser ? false : true
       }
-    ].map((processor) => ({
-      // Add actions buttons
-      ...processor,
-      actions: (
-        <>
-          {processor.enabled ? (
-            <>
+    ]
+      .filter((processor) => !processor.hide)
+      .map((processor) => ({
+        // Add actions buttons
+        ...processor,
+        actions: (
+          <>
+            {processor.enabled ? (
+              <>
+                <button
+                  className="btn btn-outline-primary mr-2"
+                  type="button"
+                  onClick={() => setShowConnectModal(processor.id)}
+                  children="Configure"
+                />
+                <DisconnectModal
+                  processor={processor}
+                  afterDelete={() => refetch()}
+                />
+              </>
+            ) : (
               <button
-                className="btn btn-outline-primary mr-2"
+                className="btn btn-outline-primary px-4"
                 type="button"
                 onClick={() => setShowConnectModal(processor.id)}
-                children="Configure"
+                children="Connect"
               />
-              <DisconnectModal
-                processor={processor}
-                afterDelete={() => refetch()}
-              />
-            </>
-          ) : (
-            <button
-              className="btn btn-outline-primary px-4"
-              type="button"
-              onClick={() => setShowConnectModal(processor.id)}
-              children="Connect"
-            />
-          )}
-        </>
-      )
-    }))
+            )}
+          </>
+        )
+      }))
   }, [shopConfig])
 
   const actions = (
@@ -167,7 +170,7 @@ const PaymentSettings = () => {
             <Icons.Web3 />
           </div>
           <div>
-            <div className="title">Web3 Wallet</div>
+            <div className="title">Crypto Wallet</div>
             {config.listingId ? (
               <>
                 <div className="description">
@@ -203,8 +206,9 @@ const PaymentSettings = () => {
         {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
 
         <ContractSettings {...{ state, setState, config }} />
-
-        <div className="d-flex mt-4 justify-content-end">{actions}</div>
+      </div>
+      <div className="footer-actions">
+        <div className="actions">{actions}</div>
       </div>
     </form>
   )

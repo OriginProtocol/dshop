@@ -8,14 +8,14 @@ const { getConfig } = require('./encryptedConfig')
 const { generateVerificationCode } = require('./emailVerification')
 
 async function sendVerificationEmail(seller, shopId) {
-  const shop = await Shop.findOne({
-    where: {
-      id: shopId
-    }
-  })
-
+  if (!shopId) {
+    return
+  }
+  const shop = await Shop.findOne({ where: { id: shopId } })
+  if (!shop) {
+    return
+  }
   const config = getConfig(shop.config)
-
   const publicUrl = config.publicUrl
 
   const { code, expires, verifyUrl } = generateVerificationCode(publicUrl)
@@ -57,7 +57,7 @@ async function createSeller({ name, email, password }, opts) {
     data: {}
   })
 
-  if (!skipEmailVerification) {
+  if (!skipEmailVerification && shopId) {
     // Send verification email
     await sendVerificationEmail(seller, shopId)
   }

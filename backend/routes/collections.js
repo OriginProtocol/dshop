@@ -1,12 +1,15 @@
+const fetch = require('node-fetch')
 const fs = require('fs')
 const path = require('path')
 const pick = require('lodash/pick')
 
 const { authSellerAndShop, authRole } = require('./_auth')
 const { DSHOP_CACHE } = require('../utils/const')
+const encConf = require('../utils/encryptedConfig')
+const { findShopByHostname } = require('../utils/shop')
 
-module.exports = function (app) {
-  app.put(
+module.exports = function (router) {
+  router.put(
     '/collections',
     authSellerAndShop,
     authRole('admin'),
@@ -21,9 +24,7 @@ module.exports = function (app) {
           JSON.stringify(collections, undefined, 2)
         )
 
-        await req.shop.update({
-          hasChanges: true
-        })
+        await req.shop.update({ hasChanges: true })
 
         res.send({ success: true })
       } catch (e) {
@@ -32,7 +33,7 @@ module.exports = function (app) {
     }
   )
 
-  app.put(
+  router.put(
     '/collections/:collectionId',
     authSellerAndShop,
     authRole('admin'),
@@ -46,8 +47,8 @@ module.exports = function (app) {
           (collection) => {
             if (collection.id === collectionId) {
               return {
-                ...pick(req.body, ['title', 'products']),
-                id: collectionId
+                ...collection,
+                ...pick(req.body, ['title', 'products'])
               }
             }
 
@@ -67,6 +68,46 @@ module.exports = function (app) {
         res.send({ success: true })
       } catch (e) {
         res.json({ success: false })
+      }
+    }
+  )
+
+  router.get(
+    '(/collections/:collection)?/products/:product',
+    findShopByHostname,
+    async (req, res) => {
+      if (!res.shop) {
+        return res.send('')
+      }
+      let html
+      try {
+        html = fs.readFileSync(`${__dirname}/public/index.html`).toString()
+      } catch (e) {
+        return res.send('')
+      }
+
+      const dataUrl = await encConf.get(req.shop.id, 'dataUrl')
+
+      const url = `${dataUrl}${req.params.product}/data.json`
+      const dataRaw = await fetch(url)
+
+      if (dataRaw.ok) {
+        const data = await dataRaw.json()
+        let modifiedHtml = html
+        if (data.title) {
+          modifiedHtml = modifiedHtml.replace(
+            /<title>.*<\/title>/,
+            `<title>${data.title}</title>`
+          )
+        }
+        if (data.head) {
+          modifiedHtml = modifiedHtml
+            .replace('</head>', data.head.join('\n') + '\n</head>')
+            .replace('DATA_URL', dataUrl)
+        }
+        res.send(modifiedHtml)
+      } else {
+        res.send(html)
       }
     }
   )

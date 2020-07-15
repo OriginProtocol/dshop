@@ -18,12 +18,13 @@ function pickConfig(body) {
     'discordWebhook',
     'gcpCredentials',
     'defaultShopConfig',
-    'web3Pk'
+    'web3Pk',
+    'backendUrl'
   ])
 }
 
-module.exports = function (app) {
-  app.post('/networks', authSuperUser, async (req, res) => {
+module.exports = function (router) {
+  router.post('/networks', authSuperUser, async (req, res) => {
     const networkObj = {
       networkId: req.body.networkId,
       provider: req.body.provider,
@@ -32,6 +33,7 @@ module.exports = function (app) {
       ipfsApi: req.body.ipfsApi,
       marketplaceContract: req.body.marketplaceContract,
       marketplaceVersion: req.body.marketplaceVersion,
+      publicSignups: req.body.publicSignups ? true : false,
       active: req.body.active ? true : false,
       config: setConfig(pickConfig(req.body))
     }
@@ -52,7 +54,7 @@ module.exports = function (app) {
     res.json({ success: true })
   })
 
-  app.get('/networks/:netId', authSuperUser, async (req, res) => {
+  router.get('/networks/:netId', authSuperUser, async (req, res) => {
     const where = { networkId: req.params.netId }
     const network = await Network.findOne({ where })
     if (!network) {
@@ -63,7 +65,7 @@ module.exports = function (app) {
     res.json({ ...omit(network.dataValues, 'config'), ...config })
   })
 
-  app.put('/networks/:netId', authSuperUser, async (req, res) => {
+  router.put('/networks/:netId', authSuperUser, async (req, res) => {
     const where = { networkId: req.params.netId }
     const network = await Network.findOne({ where })
     if (!network) {
@@ -75,7 +77,8 @@ module.exports = function (app) {
       {
         config: setConfig(config, network.dataValues.config),
         ipfs: req.body.ipfs,
-        ipfsApi: req.body.ipfsApi
+        ipfsApi: req.body.ipfsApi,
+        publicSignups: req.body.publicSignups ? true : false
       },
       { where }
     )
@@ -87,20 +90,24 @@ module.exports = function (app) {
     res.json({ success: true })
   })
 
-  app.post('/networks/:netId/make-active', authSuperUser, async (req, res) => {
-    const where = { networkId: req.params.netId }
-    const network = await Network.findOne({ where })
-    if (!network) {
-      return res.json({ success: false, reason: 'no-network' })
+  router.post(
+    '/networks/:netId/make-active',
+    authSuperUser,
+    async (req, res) => {
+      const where = { networkId: req.params.netId }
+      const network = await Network.findOne({ where })
+      if (!network) {
+        return res.json({ success: false, reason: 'no-network' })
+      }
+
+      await Network.update({ active: false }, { where: {} })
+      const result = await Network.update({ active: true }, { where })
+
+      if (!result || result[0] < 1) {
+        return res.json({ success: false })
+      }
+
+      res.json({ success: true })
     }
-
-    await Network.update({ active: false }, { where: {} })
-    const result = await Network.update({ active: true }, { where })
-
-    if (!result || result[0] < 1) {
-      return res.json({ success: false })
-    }
-
-    res.json({ success: true })
-  })
+  )
 }

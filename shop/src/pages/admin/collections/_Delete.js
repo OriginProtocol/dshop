@@ -17,7 +17,7 @@ const AdminDeleteDiscount = ({ className = '', collection }) => {
       className={`btn btn-outline-danger ${className}`}
       buttonText="Delete"
       confirmText="Are you sure you want to delete this collection?"
-      confirmedText="Collection deleted"
+      confirmedText={false}
       onConfirm={() =>
         post('/collections', {
           method: 'PUT',
@@ -28,6 +28,7 @@ const AdminDeleteDiscount = ({ className = '', collection }) => {
       }
       onSuccess={() => {
         dispatch({ type: 'reload', target: 'collections' })
+        dispatch({ type: 'toast', message: 'Deleted OK' })
         redirectTo('/admin/collections')
       }}
     />

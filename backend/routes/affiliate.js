@@ -102,11 +102,11 @@ async function fetchAffiliateProducts({ listingId, credentials, table }) {
     .map((row) => bqProductFormatter(row))
 }
 
-module.exports = function (app) {
+module.exports = function (router) {
   /**
    * Creates or updates an affiliate account.
    */
-  app.post(
+  router.post(
     '/affiliate/join',
     authShop,
     authAffiliate,
@@ -158,36 +158,41 @@ module.exports = function (app) {
     }
   )
 
-  app.post('/affiliate/login', authShop, authAffiliate, async (req, res) => {
+  router.post('/affiliate/login', authShop, authAffiliate, async (req, res) => {
     res.json({ authed: true, account: req.affiliate })
   })
 
-  app.post('/affiliate/earnings', authShop, authAffiliate, async (req, res) => {
-    const orders = await Order.findAll({
-      where: { shopId: req.shop.id, referrer: req.affiliate }
-    })
+  router.post(
+    '/affiliate/earnings',
+    authShop,
+    authAffiliate,
+    async (req, res) => {
+      const orders = await Order.findAll({
+        where: { shopId: req.shop.id, referrer: req.affiliate }
+      })
 
-    const results = {
-      pendingOrders: 0,
-      completedOrders: 0,
-      commissionPending: 0,
-      commissionPaid: 0
-    }
-
-    orders.forEach((order) => {
-      if (order.statusStr === 'OfferFinalized') {
-        results.completedOrders += 1
-      } else {
-        results.pendingOrders += 1
+      const results = {
+        pendingOrders: 0,
+        completedOrders: 0,
+        commissionPending: 0,
+        commissionPaid: 0
       }
-      results.commissionPending += order.commissionPending
-      results.commissionPaid += order.commissionPaid
-    })
 
-    res.send(results)
-  })
+      orders.forEach((order) => {
+        if (order.statusStr === 'OfferFinalized') {
+          results.completedOrders += 1
+        } else {
+          results.pendingOrders += 1
+        }
+        results.commissionPending += order.commissionPending
+        results.commissionPaid += order.commissionPaid
+      })
 
-  app.get('/affiliate/products', authShop, async (req, res) => {
+      res.send(results)
+    }
+  )
+
+  router.get('/affiliate/products', authShop, async (req, res) => {
     const shopConfig = getConfig(req.shop.config)
     // const listingId = req.shop ? req.shop.dataValues.listingId : null
 

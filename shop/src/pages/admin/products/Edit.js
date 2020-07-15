@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useRouteMatch, useHistory } from 'react-router'
+import { useRouteMatch, useHistory, Prompt } from 'react-router'
 
 import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
@@ -16,6 +16,7 @@ import fetchProduct from 'data/fetchProduct'
 // import { Countries } from '@origin/utils/Countries'
 // import ProcessingTimes from '@origin/utils/ProcessingTimes'
 
+import Redirect from 'components/Redirect'
 import ImagePicker from 'components/ImagePicker'
 import DeleteButton from './_Delete'
 import EditOption from './_EditOption'
@@ -114,16 +115,18 @@ const EditProduct = () => {
 
   const [formState, setFormState] = useSetState({
     options: [],
-    variants: []
+    variants: [],
+    collections: []
   })
-  const [selectedCollections, setSelectedCollections] = useState([])
 
   const [hasOptions, setHasOptions] = useState(false)
 
   const isNewProduct = productId === 'new'
   const externallyManaged = formState.externalId ? true : false
 
-  const input = formInput(formState, (newState) => setFormState(newState))
+  const input = formInput(formState, (newState) => {
+    setFormState({ ...newState, hasChanges: true })
+  })
   const Feedback = formFeedback(formState)
 
   // const procTimeState = get(formState, 'processingTimeOpts', {})
@@ -206,11 +209,11 @@ const EditProduct = () => {
 
   useEffect(() => {
     if (collections && collections.length) {
-      setSelectedCollections(
-        collections
+      setFormState({
+        collections: collections
           .filter((c) => c.products.includes(productId))
           .map((c) => c.id)
-      )
+      })
     }
   }, [collections, productId])
 
@@ -230,7 +233,7 @@ const EditProduct = () => {
     setSubmitError(null)
 
     const { valid, newState } = validate(formState, { hasOptions })
-    setFormState(newState)
+    setFormState({ ...newState, hasChanges: false })
 
     if (!valid) {
       setSubmitError('Please fill in all required fields')
@@ -245,13 +248,13 @@ const EditProduct = () => {
     setSubmitting(true)
 
     try {
-      await post(`/products`, {
+      const { product } = await post(`/products`, {
         method: 'POST',
         body: JSON.stringify({
           ...newState,
           price: newState.price * 100,
           images: media.map((file) => file.path),
-          collections: selectedCollections,
+          collections: newState.collections,
           variants: (newState.variants || []).map((variant) => ({
             ...variant,
             price: variant.price * 100
@@ -259,16 +262,14 @@ const EditProduct = () => {
         })
       })
 
-      if (newState.id) {
-        // Clear memoize cache for existing product
-        fetchProduct.cache.delete(`${config.dataSrc}-${newState.id}`)
-      }
+      // Clear memoize cache for existing product
+      fetchProduct.cache.delete(`${config.dataSrc}-${product.id}`)
 
       dispatch({ type: 'toast', message: 'Product saved OK' })
       dispatch({ type: 'reload', target: ['products', 'collections'] })
 
       if (!newState.id) {
-        history.push('/admin/products')
+        history.push(`/admin/products/${product.id}`)
       }
 
       return
@@ -287,29 +288,33 @@ const EditProduct = () => {
           className="btn btn-outline-primary"
           type="button"
           onClick={() => {
-            history.push('/admin/products')
+            setFormState({ hasChanges: false, redirectTo: '/admin/products' })
           }}
-        >
-          Discard
-        </button>
+          children="Discard"
+        />
       ) : (
         <DeleteButton type="button" product={product}>
           Delete
         </DeleteButton>
       )}
       <button
-        className={`btn btn-${
-          formState.hasChanges ? 'outline-' : ''
-        }primary ml-2`}
+        className={`btn btn-primary${formState.hasChanges ? '' : ' disabled'}`}
         type="submit"
-      >
-        Save
-      </button>
+        children="Save"
+      />
     </div>
   )
 
+  if (formState.redirectTo) {
+    return <Redirect to={formState.redirectTo} />
+  }
+
   return (
     <div className="admin-edit-product">
+      <Prompt
+        when={formState.hasChanges ? true : false}
+        message="Are you sure? You have unsaved changes."
+      />
       <form
         autoComplete="off"
         onSubmit={(e) => {
@@ -327,8 +332,14 @@ const EditProduct = () => {
             <div className="form-section">
               {!externallyManaged ? null : (
                 <div className="alert alert-info">
-                  This product was synced from Printful. Things you can update
-                  is limited. Update the other fields on Printful.
+                  Please manage this product
+                  <a
+                    className="ml-1"
+                    style={{ textDecoration: 'underline' }}
+                    href={`https://www.printful.com/dashboard/sync/update?id=${formState.externalId}`}
+                    children="via Printful"
+                  />
+                  .
                 </div>
               )}
               <div className="form-group">
@@ -471,12 +482,13 @@ const EditProduct = () => {
                     <button
                       className="btn btn-outline-primary"
                       type="button"
-                      onClick={() =>
+                      onClick={() => {
                         setFormState({
                           options: [...formState.options, ''],
-                          availableOptions: [...formState.availableOptions, []]
+                          availableOptions: [...formState.availableOptions, []],
+                          hasChanges: true
                         })
-                      }
+                      }}
                     >
                       Add option
                     </button>
@@ -489,7 +501,8 @@ const EditProduct = () => {
                   disabled={externallyManaged}
                   onChange={(updatedVariants) => {
                     setFormState({
-                      variants: updatedVariants
+                      variants: updatedVariants,
+                      hasChanges: true
                     })
                   }}
                 />
@@ -634,8 +647,10 @@ const EditProduct = () => {
           </div>
           <div className="col-md-3">
             <LinkCollections
-              selectedValues={selectedCollections}
-              onChange={setSelectedCollections}
+              selectedValues={formState.collections}
+              onChange={(collections) =>
+                setFormState({ collections, hasChanges: true })
+              }
             />
           </div>
         </div>

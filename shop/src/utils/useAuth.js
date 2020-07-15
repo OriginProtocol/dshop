@@ -9,15 +9,25 @@ const getAuth = memoize((as, get) => get('/auth', { suppressError: true }))
 function useAuth(opts = {}) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
-  const [{ auth, reload }, dispatch] = useStateValue()
+  const [{ admin, config, reload }, dispatch] = useStateValue()
   const { get, post } = useBackendApi()
+
+  const backendUrl = _get(admin, 'backendUrl', window.location.origin)
+
+  const shops = _get(admin, 'shops', [])
+  const hasActiveShop = shops.find((s) => s.authToken === config.activeShop)
+
+  useEffect(() => {
+    if (config.activeShop && !hasActiveShop) {
+      dispatch({ type: 'reload', target: 'auth' })
+    }
+  }, [config.activeShop, hasActiveShop])
 
   useEffect(() => {
     let isSubscribed = true
-    if (!auth && (opts.only === undefined || opts.only())) {
+    if (opts.only === undefined || opts.only()) {
       setLoading(true)
-
-      getAuth(reload.auth, get)
+      getAuth(`${reload.auth}-${backendUrl}`, get)
         .then((auth) => {
           if (!isSubscribed) return
           if (_get(auth, 'success')) {
@@ -34,7 +44,7 @@ function useAuth(opts = {}) {
     return function cleanup() {
       isSubscribed = false
     }
-  }, [reload.auth])
+  }, [reload.auth, backendUrl])
 
   function logout() {
     delete localStorage.isAdmin
@@ -45,7 +55,7 @@ function useAuth(opts = {}) {
     })
   }
 
-  return { auth, loading, error, logout }
+  return { auth: admin, loading, error, logout }
 }
 
 export default useAuth

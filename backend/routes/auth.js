@@ -39,23 +39,47 @@ async function getGcpSuperAdminPassword() {
   return password
 }
 
-module.exports = function (app) {
-  app.get('/auth', async (req, res) => {
+module.exports = function (router) {
+  router.get('/auth', async (req, res) => {
     const userCount = await Seller.count()
     if (!userCount) {
       return res.json({ success: false, reason: 'no-users', setup: true })
     }
 
+    const allNetworks = await Network.findAll()
+    const activeNet = allNetworks.find((n) => n.active)
+    const activeNetConfig = activeNet ? encConf.getConfig(activeNet.config) : {}
+    const backendUrl = get(activeNetConfig, 'backendUrl')
+    const publicSignups = get(activeNet, 'publicSignups', false)
+
     if (!req.session.sellerId) {
-      return res.json({ success: false, reason: 'not-logged-in' })
+      return res.json({
+        success: false,
+        reason: 'not-logged-in',
+        backendUrl,
+        publicSignups
+      })
     }
+
+    if (!activeNet) {
+      return res.json({
+        success: false,
+        reason: 'no-active-network',
+        setup: true
+      })
+    }
+
     const user = await Seller.findOne({ where: { id: req.session.sellerId } })
     if (!user) {
-      return res.json({ success: false, reason: 'no-such-user' })
+      return res.json({
+        success: false,
+        reason: 'no-such-user',
+        backendUrl,
+        publicSignups
+      })
     }
     const { email, emailVerified, name } = user
 
-    const allNetworks = await Network.findAll()
     const networks = allNetworks.map((n) => {
       const net = { ...encConf.getConfig(n.config), ...n.dataValues }
       if (user.superuser) {
@@ -68,18 +92,13 @@ module.exports = function (app) {
           'marketplaceContract',
           'marketplaceVersion',
           'active',
-          'domain'
+          'domain',
+          'backendUrl',
+          'publicSignups'
         ])
       }
     })
     const network = networks.find((n) => n.active)
-    if (!network) {
-      return res.json({
-        success: false,
-        reason: 'no-active-network',
-        setup: true
-      })
-    }
 
     const shopDataDir = DSHOP_CACHE
 
@@ -130,6 +149,7 @@ module.exports = function (app) {
       return res.json({
         success: false,
         reason: 'no-shops',
+        backendUrl,
         networks,
         network,
         email,
@@ -144,6 +164,7 @@ module.exports = function (app) {
       name,
       networks,
       network,
+      backendUrl,
       shops,
       localShops,
       emailVerified
@@ -156,14 +177,14 @@ module.exports = function (app) {
     res.json(response)
   })
 
-  app.get('/auth/:email', async (req, res) => {
+  router.get('/auth/:email', async (req, res) => {
     // TODO: Add some rate limiting here
     const { email } = req.params
     const seller = await Seller.findOne({ where: { email } })
     return res.sendStatus(seller === null ? 404 : 204)
   })
 
-  app.post('/superuser/login', async (req, res) => {
+  router.post('/superuser/login', async (req, res) => {
     const email = get(req.body, 'email', '').toLowerCase()
     const seller = await Seller.findOne({ where: { email, superuser: true } })
     if (!seller) {
@@ -178,7 +199,7 @@ module.exports = function (app) {
     }
   })
 
-  app.post('/auth/login', async (req, res) => {
+  router.post('/auth/login', async (req, res) => {
     const seller = await Seller.findOne({ where: { email: req.body.email } })
     if (!seller) {
       return res.status(404).send({
@@ -209,13 +230,13 @@ module.exports = function (app) {
     })
   }
 
-  app.post('/auth/logout', logoutHandler)
+  router.post('/auth/logout', logoutHandler)
 
   /**
    * Creates a super admin account.
    * Called during initial onboarding flow for standing up the system.
    */
-  app.post('/auth/registration', async (req, res) => {
+  router.post('/auth/registration', async (req, res) => {
     const sellerCount = await numSellers()
     if (sellerCount > 0) {
       log.warn(
@@ -268,7 +289,7 @@ module.exports = function (app) {
     res.json({ success: true })
   })
 
-  app.delete('/auth/registration', async (req, res) => {
+  router.delete('/auth/registration', async (req, res) => {
     const { sellerId } = req.session
 
     if (!sellerId) {
@@ -281,18 +302,23 @@ module.exports = function (app) {
     res.json({ success: false, destroy })
   })
 
-  app.get('/config', authSellerAndShop, authRole('admin'), async (req, res) => {
-    const config = encConf.getConfig(req.shop.config)
-    return res.json({
-      success: true,
-      config: {
-        ...config,
-        ...pick(req.shop.dataValues, ['hostname', 'hasChanges'])
-      }
-    })
-  })
+  router.get(
+    '/config',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const config = encConf.getConfig(req.shop.config)
+      return res.json({
+        success: true,
+        config: {
+          ...config,
+          ...pick(req.shop.dataValues, ['hostname', 'hasChanges'])
+        }
+      })
+    }
+  )
 
-  app.get('/password', authShop, async (req, res) => {
+  router.get('/password', authShop, async (req, res) => {
     const password = await encConf.get(req.shop.id, 'password')
     if (!password) {
       return res.json({ success: true })
@@ -302,7 +328,7 @@ module.exports = function (app) {
     res.json({ success: false })
   })
 
-  app.post('/password', authShop, async (req, res) => {
+  router.post('/password', authShop, async (req, res) => {
     const password = await encConf.get(req.shop.id, 'password')
     if (req.body.password === password) {
       req.session.authedShop = req.shop.id

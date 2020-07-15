@@ -19,11 +19,13 @@ const DeployShop = () => {
 
   return (
     <>
-      <h3 className="admin-title">Settings</h3>
+      <h3 className="admin-title">
+        Settings
+        <div className="actions">
+          <DeployButton className="btn-primary" />
+        </div>
+      </h3>
       <Tabs />
-      <div className="mt-4">
-        <DeployButton />
-      </div>
       {!deployments.length ? (
         <div className="mt-3">No deployments yet...</div>
       ) : (

@@ -1,4 +1,4 @@
-const { Seller, Shop, SellerShop } = require('../models')
+const { Network, Seller, Shop, SellerShop } = require('../models')
 const {
   authSuperUser,
   authSellerAndShop,
@@ -17,14 +17,14 @@ const { getLogger } = require('../utils/logger')
 
 const log = getLogger('routes.users')
 
-module.exports = function (app) {
-  app.get('/superuser/users', authSuperUser, async (req, res) => {
+module.exports = function (router) {
+  router.get('/superuser/users', authSuperUser, async (req, res) => {
     Seller.findAll().then((users) => {
       res.json({ users })
     })
   })
 
-  app.get('/superuser/users/:userId', authSuperUser, async (req, res) => {
+  router.get('/superuser/users/:userId', authSuperUser, async (req, res) => {
     Seller.findOne({
       where: { id: req.params.userId },
       include: Shop
@@ -41,7 +41,7 @@ module.exports = function (app) {
     })
   })
 
-  app.put('/superuser/users/:userId', authSuperUser, async (req, res) => {
+  router.put('/superuser/users/:userId', authSuperUser, async (req, res) => {
     const user = await Seller.findOne({ where: { id: req.params.userId } })
     if (!user) {
       return res.json({ success: false, reason: 'no-such-user' })
@@ -69,7 +69,7 @@ module.exports = function (app) {
     res.json({ success: true })
   })
 
-  app.post('/superuser/users', authSuperUser, async (req, res) => {
+  router.post('/superuser/users', authSuperUser, async (req, res) => {
     createSeller(req.body, {
       superuser: req.body.superuser,
       skipEmailVerification: true
@@ -78,7 +78,29 @@ module.exports = function (app) {
     })
   })
 
-  app.delete('/superuser/users/:userId', authSuperUser, async (req, res) => {
+  router.post('/register', async (req, res) => {
+    const network = await Network.findOne({ where: { active: true } })
+    if (!network || !network.publicSignups) {
+      res.json({ success: false, message: 'Public signups disabled' })
+      return
+    }
+
+    const fields = pick(req.body, 'name', 'email', 'password')
+    const { seller, status, error } = await createSeller(fields)
+
+    if (error) {
+      return res.status(status).json({ success: false, message: error })
+    }
+
+    if (!seller) {
+      return res.json({ success: false })
+    }
+
+    req.session.sellerId = seller.id
+    res.json({ success: true })
+  })
+
+  router.delete('/superuser/users/:userId', authSuperUser, async (req, res) => {
     const { userId } = req.params
     if (String(userId) === String(req.session.sellerId)) {
       return res.json({ success: false, reason: 'cannot-delete-self' })
@@ -95,7 +117,7 @@ module.exports = function (app) {
       .catch((err) => res.json({ success: false, reason: err.toString() }))
   })
 
-  app.get('/verify-email', async (req, res) => {
+  router.get('/verify-email', async (req, res) => {
     const { code } = req.query
     const seller = await Seller.findOne({
       where: {
@@ -122,7 +144,7 @@ module.exports = function (app) {
     res.send(resp)
   })
 
-  app.put('/resend-email', authSellerAndShop, async (req, res) => {
+  router.put('/resend-email', authSellerAndShop, async (req, res) => {
     let sent = false
 
     try {

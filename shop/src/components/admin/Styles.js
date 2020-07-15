@@ -47,6 +47,11 @@ require('react-styl')(`
     form
       label:not(.form-check-label)
         font-weight: 600
+    .footer-actions
+      display: flex
+      margin-top: 2rem
+      padding-top: 2rem
+      border-top: 1px solid #dee2ee
     .admin-title .actions,.footer-actions .actions
       margin-left: auto
       display: grid
