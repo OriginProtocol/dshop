@@ -1,17 +1,11 @@
+- 'Publish' modal should show resulting URL and IPFS link
+- 'No signer' on metamask
+
 - Hide preview switcher
 - Put logo text in advanced settings
 - 'Preview' should open storefront in new tab
 
 - New merchant signup
 - Fix user settings page
-
 - Fix up Uphold payment method
-
 - Validate listing exists / is owner on create shop
-- Default shop configs in network settings
-- 'Loading' for create listing
-
-
-# User feedback:
-
-Hover state on onboarding view
