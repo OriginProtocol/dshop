@@ -51,6 +51,11 @@ async function processor(job) {
     const web3 = new Web3(network.provider)
 
     // Use the Shop PK if there is one, otherwise fall back to Network PK.
+    if (!shopConfig.web3Pk) {
+      log.info(
+        `Shop ${shopId} does not have a PK configured. falling back to Network PK`
+      )
+    }
     const backendPk = shopConfig.web3Pk || networkConfig.web3Pk
     const account = web3.eth.accounts.wallet.add(backendPk)
     const walletAddress = account.address
