@@ -265,7 +265,7 @@ const EditProduct = () => {
       // Clear memoize cache for existing product
       fetchProduct.cache.delete(`${config.dataSrc}-${product.id}`)
 
-      dispatch({ type: 'toast', message: 'Product saved OK' })
+      dispatch({ type: 'toast', message: 'Product saved' })
       dispatch({ type: 'reload', target: ['products', 'collections'] })
 
       if (!newState.id) {
