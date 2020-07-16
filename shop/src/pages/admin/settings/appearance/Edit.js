@@ -67,17 +67,21 @@ const ShopAppearance = () => {
   }, [shopConfig, config])
 
   useEffect(() => {
+    let timeout
     if (config.about) {
       fetch(`${config.dataSrc}${config.about}`)
         .then((res) => {
           if (!res.ok) throw new Error('Failed to fetch')
           return res.text()
         })
-        .then((body) => setAboutText(body), 2000)
+        // NOTE: CKEditor takes a few seconds to load
+        .then((body) => (timeout = setTimeout(() => setAboutText(body), 2000)))
         .catch((err) => {
           console.error('Failed to load about page', err)
         })
     }
+
+    return () => clearTimeout(timeout)
   }, [config && config.about])
 
   const actions = (
@@ -107,11 +111,10 @@ const ShopAppearance = () => {
 
         try {
           const shopConfig = pickBy(state, (v, k) => !k.endsWith('Error'))
-          if (aboutText) {
-            shopConfig.about = ABOUT_FILENAME
-          } else {
-            shopConfig.about = ''
-          }
+
+          // About file data
+          shopConfig.about = ABOUT_FILENAME
+          shopConfig.aboutText = aboutText || ''
 
           const shopConfigRes = await post('/shop/config', {
             method: 'PUT',
@@ -125,14 +128,14 @@ const ShopAppearance = () => {
             return
           }
 
-          if (aboutText) {
-            const fileBody = new FormData()
-            const aboutFile = new File([aboutText], ABOUT_FILENAME)
-            fileBody.append('file', aboutFile)
-            await postRaw(`/shops/${config.activeShop}/save-files`, {
-              body: fileBody
-            })
-          }
+          // if (aboutText) {
+          //   const fileBody = new FormData()
+          //   const aboutFile = new File([aboutText], ABOUT_FILENAME)
+          //   fileBody.append('file', aboutFile)
+          //   await postRaw(`/shops/${config.activeShop}/save-files`, {
+          //     body: fileBody
+          //   })
+          // }
 
           setState({ hasChanges: false })
           setSaving(false)
