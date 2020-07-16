@@ -32,9 +32,10 @@ async function processor(job) {
     job.progress(progress)
   }
 
+  const { shopId, encryptedData, paymentCode } = job.data
+  log.info(`Creating offer for shop ${shopId}`)
+
   try {
-    const { shopId, encryptedData, paymentCode } = job.data
-    log.info(`Creating offer for shop ${shopId}`)
     const shop = await getShop(shopId)
     queueLog(5, 'Load encrypted shop config')
     const network = await getNetwork(shop.networkId)
