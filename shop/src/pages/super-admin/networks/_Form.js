@@ -124,6 +124,9 @@ function validate(state) {
 
 const NetworkForm = ({ onSave, network, feedback, className }) => {
   const [advanced, setAdvanced] = useState(false)
+  // NOTE: defaultShopConfig is stored as string, probably
+  // to make it editable from a text field.
+  // Should change it to JSON at some point in future like fallbackShopConfig
   if (network && !network.defaultShopConfig) {
     network.defaultShopConfig = defaultShopConfig
   }

@@ -68,7 +68,6 @@ const Admin = () => {
             <Route path="/admin/collections" component={Collections} />
             <Route path="/admin/settings" component={Settings} />
             <Route path="/admin/events" component={Events} />
-            {/* <Route path="/admin/orders/page/:pageId" component={Orders} /> */}
             <Route path="/admin/orders/:id" component={Order} />
             <Route path="/admin/orders" component={Orders} />
             <Route path="/admin/dashboard" component={Dashboard} />

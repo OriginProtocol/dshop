@@ -57,6 +57,7 @@ function optionsForItem(item) {
  *  configJson // Shop's public config.json file
  * }}
  */
+// TODO: Add unit test for this
 async function getEmailTransporterAndConfig(shop) {
   const network = await Network.findOne({
     where: { networkId: shop.networkId, active: true }
@@ -154,11 +155,8 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     skip = true
   }
 
-  // const config = encConf.getConfig(shop.config)
-
   const dataURL = config.dataUrl
   let publicURL = config.publicUrl
-  // const data = await getSiteConfig(dataURL)
   const items = await cartData(dataURL, cart.items)
   const attachments = [],
     orderItems = []

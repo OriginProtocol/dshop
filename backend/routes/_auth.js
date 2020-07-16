@@ -45,27 +45,25 @@ async function authSellerAndShop(req, res, next) {
   }
 
   if (req.seller.superuser) {
-    return Shop.findOne({ where: { authToken } }).then((shop) => {
-      if (!shop) {
-        return res.status(401).json({ success: false, message: 'No such shop' })
-      }
+    const shop = await Shop.findOne({ where: { authToken } })
+    if (!shop) {
+      return res.status(401).json({ success: false, message: 'No such shop' })
+    }
 
-      req.shop = shop
+    req.shop = shop
 
-      next()
-    })
+    next()
   } else {
     const include = { model: Seller, where: { id: sellerId } }
-    return Shop.findOne({ where: { authToken }, include }).then((shop) => {
-      if (!shop) {
-        return res.status(401).json({ success: false, message: 'Unauthorized' })
-      }
+    const shop = await Shop.findOne({ where: { authToken }, include })
+    if (!shop) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' })
+    }
 
-      req.shop = shop
-      req.sellerShop = get(shop, 'Sellers[0].SellerShop.dataValues')
+    req.shop = shop
+    req.sellerShop = get(shop, 'Sellers[0].SellerShop.dataValues')
 
-      next()
-    })
+    next()
   }
 }
 

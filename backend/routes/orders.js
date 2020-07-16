@@ -21,10 +21,15 @@ module.exports = function (router) {
     }
 
     if (search) {
+      // NOTE: Case-senstive when using sqlite
+      // Should not be problem as it is only used during dev/testing
+      // Could use sequelize.fn('lower') on the values if needed
+      const isSqlite = sequelize.options.dialect === 'sqlite'
+      const compareOp = isSqlite ? 'LIKE' : 'ILIKE'
       where[Op.or] = [
         sequelize.where(
           sequelize.cast(sequelize.col('data'), 'text'),
-          'ILIKE',
+          compareOp,
           `%${search}%`
         )
       ]
@@ -33,8 +38,12 @@ module.exports = function (router) {
     const { count, rows: orders } = await Order.findAndCountAll({
       where,
       order: [
-        // ['createdAt', 'desc'],
         [
+          // NOTE: Order.orderId is of the format xxxx-yyy-zz-aa
+          // Split the text on '-' and take the last component
+          // Cast it to number and sort by that value
+          // Expensive Operation, should probably replace it with
+          // just ['createdAt', 'desc'] if this turns out to be bottleneck
           sequelize.cast(
             sequelize.fn('split_part', sequelize.col('order_id'), '-', 4),
             'numeric'

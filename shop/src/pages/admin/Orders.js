@@ -36,7 +36,6 @@ const AdminOrders = () => {
     if (!searchRef.current) return
 
     const listener = (e) => {
-      // setSearch(e.target.value)
       const urlQueryObj = new URLSearchParams(urlQuery)
       if (e.target.value) {
         urlQueryObj.set('search', e.target.value)
@@ -55,11 +54,9 @@ const AdminOrders = () => {
       }
     }
 
-    // searchRef.current.addEventListener('search', listener)
     searchRef.current.addEventListener('keydown', keypressListener)
     return () => {
       if (searchRef.current) {
-        // searchRef.current.removeEventListener('search', listener)
         searchRef.current.removeEventListener('keydown', keypressListener)
       }
     }
@@ -68,7 +65,7 @@ const AdminOrders = () => {
   const headerSection = (
     <div className="d-flex align-items-center justify-content-between mb-4">
       <h3 className="m-0">Orders</h3>
-      {(!orders.length && !searchVal) ? null : (
+      {!orders.length && !searchVal ? null : (
         <>
           <input
             ref={searchRef}
