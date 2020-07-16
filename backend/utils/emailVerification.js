@@ -9,7 +9,7 @@ const generateVerificationCode = (backendUrl, publicUrl) => {
     code,
     expires,
     verifyUrl: verifyUrl.toString(),
-    redirectTo: publicUrl
+    redirectTo: backendUrl
   }
 }
 
