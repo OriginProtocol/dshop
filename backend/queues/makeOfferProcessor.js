@@ -52,8 +52,11 @@ async function processor(job) {
 
     // Use the Shop PK if there is one, otherwise fall back to Network PK.
     if (!shopConfig.web3Pk) {
+      if (!networkConfig.web3Pk) {
+        throw new Error('PK missing in both shop and network configs')
+      }
       log.info(
-        `Shop ${shopId} does not have a PK configured. falling back to Network PK`
+        `No PK configured for shop ${shopId}. Falling back to network PK`
       )
     }
     const backendPk = shopConfig.web3Pk || networkConfig.web3Pk
