@@ -66,6 +66,13 @@ const PayWithStripe = injectStripe(
         return
       }
 
+      if (!config.backend) {
+        setFormData({
+          cardError: 'Stripe configuration error. Please try again later.'
+        })
+        return
+      }
+
       const resetState = {
         loading: false,
         disabled: false,
@@ -146,7 +153,7 @@ const PayWithStripe = injectStripe(
               onChange(resetState)
             })
         })
-    }, [stripe, stripeSelected, submit])
+    }, [stripe, stripeSelected, submit, config])
 
     return (
       <>

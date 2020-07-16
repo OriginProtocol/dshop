@@ -1,17 +1,17 @@
 import React, { useState } from 'react'
 
-import useConfig from 'utils/useConfig'
-import useWallet from 'utils/useWallet'
+// import useConfig from 'utils/useConfig'
+// import useWallet from 'utils/useWallet'
 import useOrigin from 'utils/useOrigin'
 import { createListing, waitForCreateListing } from 'utils/listing'
 
 import Web3Transaction from 'components/Web3Transaction'
 
 const CreateListing = ({ className, children, onCreated }) => {
-  const { config } = useConfig()
+  // const { config } = useConfig()
   const { marketplace } = useOrigin()
   const [submit, setSubmit] = useState()
-  const { signer } = useWallet()
+  // const { signer } = useWallet()
 
   return (
     <>
@@ -24,7 +24,9 @@ const CreateListing = ({ className, children, onCreated }) => {
       <Web3Transaction
         shouldSubmit={submit}
         dependencies={[marketplace]}
-        execTx={() => createListing({ marketplace, config, signer })}
+        execTx={({ config, signer }) =>
+          createListing({ marketplace, config, signer })
+        }
         awaitTx={waitForCreateListing}
         onSuccess={onCreated}
         onReset={() => setSubmit(false)}

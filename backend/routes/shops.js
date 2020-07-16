@@ -766,6 +766,19 @@ module.exports = function (router) {
         }
       }
 
+      if (req.body.about) {
+        // Update about file
+        const dataDir = `${DSHOP_CACHE}/${req.shop.authToken}/data`
+        const aboutFile = `${dataDir}/${req.body.about}`
+
+        try {
+          fs.writeFileSync(aboutFile, req.body.aboutText)
+        } catch (e) {
+          log.error('Failed to update about file', dataDir, aboutFile, e)
+          return res.json({ success: false })
+        }
+      }
+
       const existingConfig = getConfig(req.shop.config)
       if (req.body.hostname) {
         const hostname = kebabCase(req.body.hostname)
