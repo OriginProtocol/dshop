@@ -1,7 +1,11 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
 
+import { useStateValue } from 'data/state'
+
 const SettingsTabs = () => {
+  const [{ admin }] = useStateValue()
+
   return (
     <ul className="nav nav-tabs">
       <li className="nav-item">
@@ -34,16 +38,20 @@ const SettingsTabs = () => {
           Publish
         </NavLink>
       </li>
-      <li className="nav-item">
-        <NavLink className="nav-link" to="/admin/settings/server">
-          Server
-        </NavLink>
-      </li>
-      <li className="nav-item">
-        <NavLink className="nav-link" to="/admin/settings/console">
-          Console
-        </NavLink>
-      </li>
+      {!admin.superuser ? null : (
+        <>
+          <li className="nav-item">
+            <NavLink className="nav-link" to="/admin/settings/server">
+              Server
+            </NavLink>
+          </li>
+          <li className="nav-item">
+            <NavLink className="nav-link" to="/admin/settings/console">
+              Console
+            </NavLink>
+          </li>
+        </>
+      )}
     </ul>
   )
 }

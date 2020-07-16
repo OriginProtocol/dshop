@@ -41,8 +41,8 @@ const AdminDeployShop = ({ className = 'btn-outline-primary', buttonText }) => {
       spinner={true}
       onConfirm={() => post(`/shop/deploy`)}
       onSuccess={() => {
-        dispatch({ type: 'hasChanges', value: false })
         dispatch({ type: 'reload', target: 'deployments' })
+        dispatch({ type: 'reload', target: 'shopConfig' })
       }}
     />
   )

@@ -1,4 +1,4 @@
-const { Seller, Shop, SellerShop } = require('../models')
+const { Network, Seller, Shop, SellerShop } = require('../models')
 const {
   authSuperUser,
   authSellerAndShop,
@@ -76,6 +76,28 @@ module.exports = function (router) {
     }).then((result) => {
       res.json(result)
     })
+  })
+
+  router.post('/register', async (req, res) => {
+    const network = await Network.findOne({ where: { active: true } })
+    if (!network || !network.publicSignups) {
+      res.json({ success: false, message: 'Public signups disabled' })
+      return
+    }
+
+    const fields = pick(req.body, 'name', 'email', 'password')
+    const { seller, status, error } = await createSeller(fields)
+
+    if (error) {
+      return res.status(status).json({ success: false, message: error })
+    }
+
+    if (!seller) {
+      return res.json({ success: false })
+    }
+
+    req.session.sellerId = seller.id
+    res.json({ success: true })
   })
 
   router.delete('/superuser/users/:userId', authSuperUser, async (req, res) => {

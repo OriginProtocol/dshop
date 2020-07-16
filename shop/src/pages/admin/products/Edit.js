@@ -248,7 +248,7 @@ const EditProduct = () => {
     setSubmitting(true)
 
     try {
-      await post(`/products`, {
+      const { product } = await post(`/products`, {
         method: 'POST',
         body: JSON.stringify({
           ...newState,
@@ -262,16 +262,14 @@ const EditProduct = () => {
         })
       })
 
-      if (newState.id) {
-        // Clear memoize cache for existing product
-        fetchProduct.cache.delete(`${config.dataSrc}-${newState.id}`)
-      }
+      // Clear memoize cache for existing product
+      fetchProduct.cache.delete(`${config.dataSrc}-${product.id}`)
 
       dispatch({ type: 'toast', message: 'Product saved OK' })
       dispatch({ type: 'reload', target: ['products', 'collections'] })
 
       if (!newState.id) {
-        history.push('/admin/products')
+        history.push(`/admin/products/${product.id}`)
       }
 
       return

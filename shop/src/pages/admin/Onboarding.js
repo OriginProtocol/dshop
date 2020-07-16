@@ -225,6 +225,9 @@ require('react-styl')(`
             line-height: normal
             align-items: center
             cursor: pointer
+            &:hover
+              background-color: #f8f8f8
+              border-radius: 10px
 
             .task-name
               flex: 1

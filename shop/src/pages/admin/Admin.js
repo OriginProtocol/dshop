@@ -28,7 +28,7 @@ import Nav from './_Nav'
 import StoreSelector from './StoreSelector'
 
 const Admin = () => {
-  const { loading, error } = useAuth({ load: true })
+  const { loading, error } = useAuth()
   const [newShop, setNewShop] = useState()
   const { config, setActiveShop } = useConfig()
   const [{ admin }] = useStateValue()

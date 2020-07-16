@@ -25,6 +25,10 @@ const validate = (state) => {
     newState.displayNameError = 'Display name is required'
   }
 
+  if (!state.apiProvider) {
+    newState.apiProviderError = 'Price information is required'
+  }
+
   if (!state.address) {
     newState.addressError = 'Token address is required'
   } else if (!web3.utils.isAddress(state.address)) {
