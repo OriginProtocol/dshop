@@ -191,7 +191,7 @@ const ShopAppearance = () => {
           <div className="form-group">
             <label>
               Tagline
-              <span>(will appear nex to your logo on the masthead)</span>
+              <span>(will appear next to your logo on the masthead)</span>
             </label>
             <input {...input('byline')} />
             {Feedback('byline')}
