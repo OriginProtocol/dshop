@@ -46,10 +46,7 @@ const DeployShop = () => {
                     ''
                   ) : (
                     <a
-                      href={`${deployment.ipfsPinner.replace(
-                        'api.pinata',
-                        'gateway.pinata'
-                      )}/ipfs/${deployment.ipfsHash}`}
+                      href={`${deployment.ipfsGateway}/ipfs/${deployment.ipfsHash}`}
                       target="_blank"
                       rel="noreferrer"
                       style={{ fontFamily: 'monospace' }}

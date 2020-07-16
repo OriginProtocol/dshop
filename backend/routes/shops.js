@@ -1030,6 +1030,7 @@ module.exports = function (router) {
           'shopId',
           'domain',
           'ipfsPinner',
+          'ipfsGateway',
           'ipfsHash',
           'createdAt',
           'updatedAt'
