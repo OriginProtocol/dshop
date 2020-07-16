@@ -62,7 +62,7 @@ module.exports = function (router) {
         return res.send({
           success: true,
           valid: false,
-          error: `Your DNS changes hasn't propagated yet.`
+          error: `Your DNS changes haven't propagated yet.`
         })
       } catch (err) {
         console.error('Failed to check DNS of domain', err)
