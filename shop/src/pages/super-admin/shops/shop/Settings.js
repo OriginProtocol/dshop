@@ -66,11 +66,6 @@ require('react-styl')(`
   .shop-settings
     label
       margin-top: 0.5rem
-      > span
-        font-size: 14px
-        font-weight: normal
-        color: #8293a4
-        margin-left: 0.25rem
     a
       color: #3b80ee
       font-size: 14px

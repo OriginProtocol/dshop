@@ -85,8 +85,9 @@ const AdminCreateCollection = ({
           onSuccess()
         } else if (!collection) {
           redirectTo(`/admin/collections/${newCollection.id}`, { isNew: true })
+          dispatch({ type: 'toast', message: 'Collection created' })
         } else {
-          dispatch({ type: 'toast', message: 'Saved OK' })
+          dispatch({ type: 'toast', message: 'Collection updated' })
         }
       }}
     >

@@ -82,165 +82,210 @@ const AdminEditDiscount = () => {
   const Feedback = formFeedback(state)
   const title = `${discountId === 'new' ? 'Create' : 'Edit'} Discount`
 
+  const actions = (
+    <div className="actions">
+      {!discount ? null : <DeleteButton discount={discount} />}
+      <button type="submit" className="btn btn-primary">
+        Save
+      </button>
+    </div>
+  )
+
   return (
-    <>
-      <form
-        autoComplete="off"
-        onSubmit={async (e) => {
-          e.preventDefault()
-          const { valid, newState } = validate(state)
-          setState(newState)
-          if (valid) {
-            let url = `${config.backend}/discounts`
-            if (discount && discount.id) {
-              url += `/${discount.id}`
-            }
-
-            const startTimeS = `${newState.startDate} ${newState.startTime}`
-            const endTimeS = `${newState.endDate} ${newState.endTime}`
-            const startTime = dayjs(startTimeS, 'YYYY-MM-DD HH:mm:ss').format()
-            const endTime = newState.endDateEnabled
-              ? dayjs(endTimeS, 'YYYY-MM-DD HH:mm:ss').format()
-              : null
-
-            const raw = await fetch(url, {
-              headers: {
-                authorization: `bearer ${config.backendAuthToken}`,
-                'content-type': 'application/json'
-              },
-              credentials: 'include',
-              method: discount && discount.id ? 'PUT' : 'POST',
-              body: JSON.stringify({
-                discountType: newState.discountType,
-                value: Number(newState.value),
-                startTime,
-                endTime,
-                code: newState.code,
-                status: newState.status,
-                maxUses: newState.maxUses ? Number(newState.maxUses) : null,
-                onePerCustomer: newState.onePerCustomer ? true : false,
-                excludeShipping: newState.excludeShipping ? true : false
-              })
-            })
-            if (raw.ok) {
-              dispatch({ type: 'toast', message: 'Discount created OK' })
-              redirectTo('/admin/discounts')
-            }
-          } else {
-            window.scrollTo(0, 0)
+    <form
+      autoComplete="off"
+      onSubmit={async (e) => {
+        e.preventDefault()
+        const { valid, newState } = validate(state)
+        setState(newState)
+        if (valid) {
+          let url = `${config.backend}/discounts`
+          if (discount && discount.id) {
+            url += `/${discount.id}`
           }
-        }}
-      >
-        <h3 className="admin-title with-border">
-          <Link to="/admin/discounts" className="muted">
-            Discounts
-          </Link>
-          <span className="chevron" />
-          {title}
-          <div className="actions">
-            {!discount ? null : <DeleteButton discount={discount} />}
-            <button type="submit" className="btn btn-primary">
-              Save
-            </button>
-          </div>
-        </h3>
-        <div className="form-row">
-          <div className="form-group col-md-6" style={{ maxWidth: '15rem' }}>
-            <label>Discount Code</label>
-            <input type="code" {...input('code')} autoFocus />
-            {Feedback('code')}
-          </div>
-          <div className="form-group col-md-6" style={{ maxWidth: '15rem' }}>
-            <label>Status</label>
-            <select {...input('status')}>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-            {Feedback('status')}
-          </div>
+
+          const startTimeS = `${newState.startDate} ${newState.startTime}`
+          const endTimeS = `${newState.endDate} ${newState.endTime}`
+          const startTime = dayjs(startTimeS, 'YYYY-MM-DD HH:mm:ss').format()
+          const endTime = newState.endDateEnabled
+            ? dayjs(endTimeS, 'YYYY-MM-DD HH:mm:ss').format()
+            : null
+
+          const raw = await fetch(url, {
+            headers: {
+              authorization: `bearer ${config.backendAuthToken}`,
+              'content-type': 'application/json'
+            },
+            credentials: 'include',
+            method: discount && discount.id ? 'PUT' : 'POST',
+            body: JSON.stringify({
+              discountType: newState.discountType,
+              value: Number(newState.value),
+              startTime,
+              endTime,
+              code: newState.code,
+              status: newState.status,
+              maxUses: newState.maxUses ? Number(newState.maxUses) : null,
+              onePerCustomer: newState.onePerCustomer ? true : false,
+              excludeShipping: newState.excludeShipping ? true : false
+            })
+          })
+          if (raw.ok) {
+            dispatch({ type: 'toast', message: 'Discount created OK' })
+            redirectTo('/admin/discounts')
+          }
+        } else {
+          window.scrollTo(0, 0)
+        }
+      }}
+    >
+      <h3 className="admin-title with-border">
+        <Link to="/admin/discounts" className="muted">
+          Discounts
+        </Link>
+        <span className="chevron" />
+        {title}
+        {actions}
+      </h3>
+      <div className="form-group" style={{ maxWidth: '30rem' }}>
+        <label>
+          Discount code
+          <span>(customers will enter this at the checkout)</span>
+        </label>
+        <input
+          autoFocus
+          className="form-control"
+          value={state.code || ''}
+          placeholder="e.g. SUMMERSALE"
+          onChange={(e) =>
+            setState({
+              code: e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, ''),
+              codeError: null
+            })
+          }
+        />
+        {Feedback('code')}
+      </div>
+      <div className="form-row">
+        <div className="form-group col-md-6" style={{ maxWidth: '15rem' }}>
+          <label>Status</label>
+          <select {...input('status')}>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          {Feedback('status')}
         </div>
-        <div className="form-row">
-          <div className="form-group col-md-6" style={{ maxWidth: '15rem' }}>
-            <label>Type</label>
-            <div className="form-check">
-              <label className="form-check-label">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="type"
-                  checked={state.discountType === 'percentage'}
-                  onChange={() => setState({ discountType: 'percentage' })}
-                />
-                Percentage
-              </label>
-            </div>
-            <div className="form-check">
-              <label className="form-check-label">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  name="type"
-                  checked={state.discountType === 'fixed'}
-                  onChange={() => setState({ discountType: 'fixed' })}
-                />
-                Fixed amount
-              </label>
-            </div>
-          </div>
-          <div className="form-group col-md-6" style={{ maxWidth: '15rem' }}>
-            <label>Discount Value</label>
-            <div className="input-group">
-              {state.discountType !== 'fixed' ? null : (
-                <div className="input-group-prepend">
-                  <span className="input-group-text">$</span>
-                </div>
-              )}
-              <input type="number" {...input('value')} />
-              {state.discountType === 'fixed' ? null : (
-                <div className="input-group-append">
-                  <span className="input-group-text">%</span>
-                </div>
-              )}
-            </div>
-            {Feedback('value')}
-          </div>
-        </div>
-        <div className="form-check mb-3">
+      </div>
+      <div className="form-group" style={{ maxWidth: '15rem' }}>
+        <label>Type</label>
+        <div className="form-check">
           <label className="form-check-label">
             <input
               className="form-check-input"
-              type="checkbox"
-              checked={state.excludeShipping ? true : false}
-              onChange={(e) => setState({ excludeShipping: e.target.checked })}
+              type="radio"
+              name="type"
+              checked={state.discountType === 'percentage'}
+              onChange={() => setState({ discountType: 'percentage' })}
             />
-            Exclude shipping price from discount
+            Percentage
           </label>
         </div>
-        <div className="form-group" style={{ maxWidth: '15rem' }}>
-          <label>Max Uses</label>
-          <input type="number" {...input('maxUses')} />
-          {Feedback('maxUses')}
-        </div>
-        <div className="form-check mb-3">
+        <div className="form-check">
           <label className="form-check-label">
             <input
               className="form-check-input"
-              type="checkbox"
-              checked={state.onePerCustomer ? true : false}
-              onChange={(e) => setState({ onePerCustomer: e.target.checked })}
+              type="radio"
+              name="type"
+              checked={state.discountType === 'fixed'}
+              onChange={() => setState({ discountType: 'fixed' })}
             />
-            One Per Customer
+            Fixed amount
           </label>
         </div>
+      </div>
+      <div className="form-group" style={{ maxWidth: '15rem' }}>
+        <label>Discount Value</label>
+        <div className="input-group">
+          {state.discountType !== 'fixed' ? null : (
+            <div className="input-group-prepend">
+              <span className="input-group-text">$</span>
+            </div>
+          )}
+          <input type="number" {...input('value')} />
+          {state.discountType === 'fixed' ? null : (
+            <div className="input-group-append">
+              <span className="input-group-text">%</span>
+            </div>
+          )}
+        </div>
+        {Feedback('value')}
+      </div>
+      <div className="form-check mb-3">
+        <label className="form-check-label">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={state.excludeShipping ? true : false}
+            onChange={(e) => setState({ excludeShipping: e.target.checked })}
+          />
+          Exclude shipping price from discount
+        </label>
+      </div>
+      <div className="form-group" style={{ maxWidth: '15rem' }}>
+        <label>Max Uses</label>
+        <input type="number" {...input('maxUses')} />
+        {Feedback('maxUses')}
+      </div>
+      <div className="form-check mb-3">
+        <label className="form-check-label">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            checked={state.onePerCustomer ? true : false}
+            onChange={(e) => setState({ onePerCustomer: e.target.checked })}
+          />
+          One Per Customer
+        </label>
+      </div>
+      <div className="form-row mb-3" style={{ maxWidth: '30rem' }}>
+        <div className="col-6">
+          <label>Start Date</label>
+          <input type="date" {...input('startDate')} required />
+          {Feedback('startDate')}
+        </div>
+        <div className="col-6">
+          <label>Start Time</label>
+          <select {...input('startTime')}>
+            {times.map((time, idx) => (
+              <option key={idx} value={time[0]}>
+                {time[1]}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="form-check mb-3">
+        <label className="form-check-label">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            name="type"
+            checked={state.endDateEnabled ? true : false}
+            onChange={(e) => setState({ endDateEnabled: e.target.checked })}
+          />
+          Set end date
+        </label>
+      </div>
+      {!state.endDateEnabled ? null : (
         <div className="form-row mb-3" style={{ maxWidth: '30rem' }}>
           <div className="col-6">
-            <label>Start Date</label>
-            <input type="date" {...input('startDate')} required />
-            {Feedback('startDate')}
+            <label>End Date</label>
+            <input type="date" {...input('endDate')} required />
+            {Feedback('endDate')}
           </div>
           <div className="col-6">
-            <label>Start Time</label>
-            <select {...input('startTime')}>
+            <label>End Time</label>
+            <select {...input('endTime')}>
               {times.map((time, idx) => (
                 <option key={idx} value={time[0]}>
                   {time[1]}
@@ -249,39 +294,9 @@ const AdminEditDiscount = () => {
             </select>
           </div>
         </div>
-        <div className="form-check mb-3">
-          <label className="form-check-label">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              name="type"
-              checked={state.endDateEnabled ? true : false}
-              onChange={(e) => setState({ endDateEnabled: e.target.checked })}
-            />
-            Set end date
-          </label>
-        </div>
-        {!state.endDateEnabled ? null : (
-          <div className="form-row mb-3" style={{ maxWidth: '30rem' }}>
-            <div className="col-6">
-              <label>End Date</label>
-              <input type="date" {...input('endDate')} required />
-              {Feedback('endDate')}
-            </div>
-            <div className="col-6">
-              <label>End Time</label>
-              <select {...input('endTime')}>
-                {times.map((time, idx) => (
-                  <option key={idx} value={time[0]}>
-                    {time[1]}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        )}
-      </form>
-    </>
+      )}
+      <div className="footer-actions">{actions}</div>
+    </form>
   )
 }
 

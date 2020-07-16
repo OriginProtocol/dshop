@@ -2,6 +2,7 @@ import React, { useReducer, useEffect } from 'react'
 import { useRouteMatch, useLocation } from 'react-router-dom'
 
 import get from 'lodash/get'
+import isEqual from 'lodash/isEqual'
 
 import { useStateValue } from 'data/state'
 
@@ -39,18 +40,22 @@ const ShowCollection = () => {
     const products = get(collection, 'products', [])
       .map((pId) => allProducts.find((p) => p.id === pId))
       .filter((p) => p)
-    if (state.products.length !== products.length) {
+    if (!isEqual(state.products, products)) {
       setState({ products })
     }
   }, [collection])
 
   const onSave = (products) => {
     setState({ products })
-
-    const body = JSON.stringify({ products: products.map((p) => p.id) })
+    const productIds = products.map((p) => p.id)
+    const body = JSON.stringify({ products: productIds })
     post(`/collections/${collection.id}`, { method: 'PUT', body })
       .then(() => {
-        dispatch({ type: 'reload', target: 'collections' })
+        dispatch({
+          type: 'updateCollectionProducts',
+          id: collection.id,
+          products: productIds
+        })
       })
       .catch((err) => {
         console.error(err)
@@ -87,17 +92,31 @@ const ShowCollection = () => {
           <SortableTable
             items={state.products}
             onChange={onSave}
-            labels={['Product']}
+            labels={['Product', <>&nbsp;</>]}
           >
             {(product, DragTarget) => {
               return (
-                <div className="td title">
-                  <div className="draggable-content" draggable>
-                    <DragTarget />
-                    <ProductImage product={product} className="mr-2" />
-                    {product.title}
+                <>
+                  <div className="td title">
+                    <div className="draggable-content" draggable>
+                      <DragTarget />
+                      <ProductImage product={product} className="mr-2" />
+                      {product.title}
+                    </div>
                   </div>
-                </div>
+                  <div className="td">
+                    <button
+                      className="btn btn-link btn-sm"
+                      onClick={() => {
+                        onSave(
+                          state.products.filter((p) => p.id !== product.id)
+                        )
+                      }}
+                    >
+                      <img src="images/delete-icon.svg" />
+                    </button>
+                  </div>
+                </>
               )
             }}
           </SortableTable>

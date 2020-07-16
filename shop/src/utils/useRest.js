@@ -4,6 +4,7 @@ import useConfig from 'utils/useConfig'
 function useRest(url, opts = {}) {
   const { config } = useConfig()
   const [data, setData] = useState({})
+  const [reload, setReload] = useState(0)
   const [loading, setLoading] = useState(data[url] === undefined)
   const [error, setError] = useState(false)
 
@@ -29,12 +30,17 @@ function useRest(url, opts = {}) {
         setError(true)
       }
     }
-    if (data[url] === undefined && !opts.skip) {
+    if (!opts.skip) {
       fetchData(url)
     }
-  }, [url])
+  }, [url, reload])
 
-  return { data: data[url], loading, error }
+  return {
+    data: data[url],
+    loading,
+    error,
+    reload: () => setReload(reload + 1)
+  }
 }
 
 export default useRest

@@ -7,6 +7,10 @@ const { Shop, Network } = require('../models')
 const { post, getBytes32FromIpfsHash } = require('../utils/_ipfs')
 const encConf = require('../utils/encryptedConfig')
 const abi = require('../utils/_abi')
+const { Sentry } = require('../sentry')
+const { getLogger } = require('../utils/logger')
+
+const log = getLogger('offerProcessor')
 
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
@@ -23,46 +27,63 @@ function attachToQueue() {
  * @param {*} job
  */
 async function processor(job) {
-  const log = (progress, str) => {
-    job.log(str)
+  const queueLog = (progress, str) => {
+    job.queueLog(str)
     job.progress(progress)
   }
 
   const { shopId, encryptedData, paymentCode } = job.data
-  const shop = await getShop(shopId)
-  log(5, 'Load encrypted shop config')
-  const shopConfig = getShopConfig(shop)
-  const network = await getNetwork(shop.networkId)
-  const networkConfig = encConf.getConfig(network.config)
+  log.info(`Creating offer for shop ${shopId}`)
 
-  log(10, 'Creating offer')
-  const lid = ListingID.fromFQLID(shop.listingId)
-  const offer = createOfferJson(lid, encryptedData, paymentCode)
-  const ires = await postOfferIPFS(network, offer)
+  try {
+    const shop = await getShop(shopId)
+    queueLog(5, 'Load encrypted shop config')
+    const network = await getNetwork(shop.networkId)
+    const networkConfig = encConf.getConfig(network.config)
+    const shopConfig = encConf.getConfig(shop.config)
 
-  log(20, 'Submitting Offer')
-  const web3 = new Web3(network.provider)
+    queueLog(10, 'Creating offer')
+    const lid = ListingID.fromFQLID(shop.listingId)
+    const offer = createOfferJson(lid, encryptedData, paymentCode)
+    const ires = await postOfferIPFS(network, offer)
 
-  // Use the Shop PK if there is one, otherwise fall back to Network PK.
-  const backendPk = shopConfig.web3Pk || networkConfig.web3Pk
-  const account = web3.eth.accounts.wallet.add(backendPk)
-  const walletAddress = account.address
-  log(22, `using walletAddress ${walletAddress}`)
-  log(25, 'Sending to marketplace')
-  const tx = await offerToMarketplace(
-    web3,
-    lid,
-    network,
-    walletAddress,
-    offer,
-    ires
-  )
-  log(50, JSON.stringify(tx))
+    queueLog(20, 'Submitting Offer')
+    const web3 = new Web3(network.provider)
 
-  // TODO: Code to prevent duplicate txs
-  // TODO Record tx and wait for TX to go through the blockchain
+    // Use the Shop PK if there is one, otherwise fall back to Network PK.
+    if (!shopConfig.web3Pk) {
+      if (!networkConfig.web3Pk) {
+        throw new Error('PK missing in both shop and network configs')
+      }
+      log.info(
+        `No PK configured for shop ${shopId}. Falling back to network PK`
+      )
+    }
+    const backendPk = shopConfig.web3Pk || networkConfig.web3Pk
+    const account = web3.eth.accounts.wallet.add(backendPk)
+    const walletAddress = account.address
+    queueLog(22, `Using walletAddress ${walletAddress}`)
+    queueLog(25, 'Sending to marketplace')
+    const tx = await offerToMarketplace(
+      web3,
+      lid,
+      network,
+      walletAddress,
+      offer,
+      ires
+    )
+    queueLog(50, JSON.stringify(tx))
 
-  log(100, 'Finished')
+    // TODO: Code to prevent duplicate txs
+    // TODO Record tx and wait for TX to go through the blockchain
+
+    queueLog(100, 'Finished')
+  } catch (e) {
+    // Log the exception and rethrow so that the job gets retried.
+    Sentry.captureException(e)
+    log.error(`Offer creation for shop ${shopId} failed:`, e)
+    throw e
+  }
 }
 
 async function getShop(id) {
@@ -89,14 +110,6 @@ async function getNetwork(networkId) {
   return network
 }
 
-function getShopConfig(shop) {
-  const shopConfig = encConf.getConfig(shop.config)
-  if (!shopConfig.web3Pk) {
-    throw new Error('No PK configured for shop')
-  }
-  return shopConfig
-}
-
 function createOfferJson(lid, encryptedData, paymentCode) {
   return {
     schemaId: 'https://schema.originprotocol.com/offer_2.0.0.json',
@@ -118,7 +131,7 @@ async function postOfferIPFS(network, offer) {
   try {
     return await post(network.ipfsApi, offer, true)
   } catch (err) {
-    err.message = `Error adding offer to ${network.ipfsApi}! ${err.message}`
+    err.message = `Error adding offer on listing ${offer.listingId} to ${network.ipfsApi}! ${err.message}`
     throw err
   }
 }

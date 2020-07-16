@@ -18,7 +18,8 @@ function useAuth(opts = {}) {
   const hasActiveShop = shops.find((s) => s.authToken === config.activeShop)
 
   useEffect(() => {
-    if (config.activeShop && !hasActiveShop) {
+    const noShops = _get(admin, 'reason', '') === 'no-shops'
+    if (config.activeShop && !hasActiveShop && !noShops) {
       dispatch({ type: 'reload', target: 'auth' })
     }
   }, [config.activeShop, hasActiveShop])

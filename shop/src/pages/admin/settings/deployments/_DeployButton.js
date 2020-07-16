@@ -36,7 +36,7 @@ const AdminDeployShop = ({ className = 'btn-outline-primary', buttonText }) => {
       className={`btn ${className}`}
       buttonText={buttonText || 'Publish'}
       confirmText="Are you sure you want to publish changes?"
-      confirmedText="Published OK"
+      confirmedText="Your changes have been successfully published."
       loadingText="Publishing..."
       spinner={true}
       onConfirm={() => post(`/shop/deploy`)}

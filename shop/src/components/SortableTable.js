@@ -53,7 +53,7 @@ const SortableTable = ({
       {sortedItems.map((item, idx) => {
         return (
           <div
-            key={idx}
+            key={`item-${item.id || idx}`}
             className={`grid-row${state.dragTarget === idx ? ' dragging' : ''}`}
             onClick={() => (onClick ? onClick(item) : null)}
             onDragEnter={() => setState({ dragTarget: idx })}

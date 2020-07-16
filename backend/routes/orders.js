@@ -37,20 +37,7 @@ module.exports = function (router) {
 
     const { count, rows: orders } = await Order.findAndCountAll({
       where,
-      order: [
-        [
-          // NOTE: Order.orderId is of the format xxxx-yyy-zz-aa
-          // Split the text on '-' and take the last component
-          // Cast it to number and sort by that value
-          // Expensive Operation, should probably replace it with
-          // just ['createdAt', 'desc'] if this turns out to be bottleneck
-          sequelize.cast(
-            sequelize.fn('split_part', sequelize.col('order_id'), '-', 4),
-            'numeric'
-          ),
-          'desc'
-        ]
-      ],
+      order: [['createdAt', 'desc']],
       limit,
       offset
     })
