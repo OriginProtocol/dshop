@@ -147,7 +147,7 @@ const ShopAppearance = () => {
             }
           })
           dispatch({ type: 'reload', target: 'shopConfig' })
-          dispatch({ type: 'toast', message: 'Saved settings OK' })
+          dispatch({ type: 'toast', message: 'Settings saved' })
         } catch (err) {
           console.error(err)
           setSaving(false)
