@@ -16,6 +16,7 @@ import fetchProduct from 'data/fetchProduct'
 // import { Countries } from '@origin/utils/Countries'
 // import ProcessingTimes from '@origin/utils/ProcessingTimes'
 
+import Link from 'components/Link'
 import Redirect from 'components/Redirect'
 import ImagePicker from 'components/ImagePicker'
 import DeleteButton from './_Delete'
@@ -323,6 +324,10 @@ const EditProduct = () => {
         }}
       >
         <h3 className="admin-title with-border">
+          <Link to="/admin/products" className="muted">
+            Products
+          </Link>
+          <span className="chevron" />
           {title}
           {actions}
         </h3>
@@ -371,7 +376,10 @@ const EditProduct = () => {
                 </label>
                 <ImagePicker
                   images={media}
-                  onChange={(media) => setMedia(media)}
+                  onChange={(media) => {
+                    setFormState({ hasChanges: true })
+                    setMedia(media)
+                  }}
                   disabled={externallyManaged}
                 />
               </div>

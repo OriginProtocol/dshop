@@ -2,6 +2,7 @@ import React, { useReducer, useEffect } from 'react'
 import { useRouteMatch, useLocation } from 'react-router-dom'
 
 import get from 'lodash/get'
+import isEqual from 'lodash/isEqual'
 
 import { useStateValue } from 'data/state'
 
@@ -39,7 +40,7 @@ const ShowCollection = () => {
     const products = get(collection, 'products', [])
       .map((pId) => allProducts.find((p) => p.id === pId))
       .filter((p) => p)
-    if (state.products.length !== products.length) {
+    if (!isEqual(state.products, products)) {
       setState({ products })
     }
   }, [collection])

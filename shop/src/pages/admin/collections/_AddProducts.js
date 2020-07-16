@@ -47,6 +47,7 @@ const AddProducts = ({ children, collection }) => {
           <div className="modal-body">
             <h4>Edit products</h4>
             <div className="collection-products">
+              {products.length ? null : 'No products found.'}
               {products.map((product) => (
                 <label key={product.id} className="d-flex align-items-center">
                   <input
