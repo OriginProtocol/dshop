@@ -310,7 +310,7 @@ const ShopAppearance = () => {
           <div className="form-group">
             <label>
               Meta Description
-              <span>(or SEO only. Will appear in HTML)</span>
+              <span>(for SEO only. Will appear in HTML)</span>
             </label>
             <input {...input('metaDescription')} />
           </div>
