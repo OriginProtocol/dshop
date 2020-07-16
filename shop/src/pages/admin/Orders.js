@@ -1,94 +1,131 @@
-import React, { useState, useRef, useEffect } from 'react'
-import { useHistory } from 'react-router-dom'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
+import { useHistory, useLocation } from 'react-router-dom'
 import dayjs from 'dayjs'
 import get from 'lodash/get'
 
 import formatPrice from 'utils/formatPrice'
 import Tooltip from 'components/Tooltip'
-// import Paginate from 'components/Paginate'
+import Paginate from 'components/Paginate'
 import NoItems from 'components/NoItems'
 
 import useOrders from 'utils/useOrders'
 
-function filterOrders(orders, search) {
-  if (!search) {
-    return orders
-  }
-  search = search.toLowerCase()
-  // Filter by order ids, eg: "ids:1-001-123-456,1-001-123-789"
-  if (search.startsWith('ids:')) {
-    const ids = search.substr(4).split(',')
-    return orders.filter((o) => ids.indexOf(o.orderId) >= 0)
-  }
-  // Otherwise do a basic text search on the order JSON
-  return orders.filter((o) => {
-    const lowered = JSON.stringify(o).toLowerCase()
-    return lowered.indexOf(search) >= 0
-  })
-}
-
 const AdminOrders = () => {
+  const location = useLocation()
+  const history = useHistory()
   const [searchInput, setSearchInput] = useState('')
-  const [search, setSearch] = useState('')
   const [csv, setCsv] = useState(false)
   const searchRef = useRef(null)
-  const { orders, loading, reload } = useOrders()
-  const filteredOrders = filterOrders(orders, search)
 
-  useEffect(() => {
-    if (searchRef.current) {
-      searchRef.current.addEventListener('search', (e) =>
-        setSearch(e.target.value)
-      )
+  const urlQuery = get(location, 'search', '')
+  const { searchVal, pageId } = useMemo(() => {
+    const urlQueryObj = new URLSearchParams(urlQuery)
+    return {
+      searchVal: urlQueryObj.get('search') || '',
+      pageId: urlQueryObj.get('page')
     }
-  }, [searchRef])
+  }, [urlQuery])
+
+  const { orders, ordersPagination, loading, reload } = useOrders(
+    pageId,
+    searchVal
+  )
+
+  useEffect(() => setSearchInput(searchVal), [searchVal])
+  useEffect(() => {
+    if (!searchRef.current) return
+
+    const listener = (e) => {
+      const urlQueryObj = new URLSearchParams(urlQuery)
+      if (e.target.value) {
+        urlQueryObj.set('search', e.target.value)
+        urlQueryObj.delete('page') // Reset pagination
+      } else {
+        urlQueryObj.delete('search')
+      }
+
+      history.push(`${location.pathname}?${urlQueryObj.toString()}`)
+    }
+
+    const keypressListener = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        listener(e)
+      }
+    }
+
+    searchRef.current.addEventListener('keydown', keypressListener)
+    return () => {
+      if (searchRef.current) {
+        searchRef.current.removeEventListener('keydown', keypressListener)
+      }
+    }
+  }, [searchRef.current, location, urlQuery])
+
+  const headerSection = (
+    <div className="d-flex align-items-center justify-content-between mb-4">
+      <h3 className="m-0">Orders</h3>
+      {!orders.length && !searchVal ? null : (
+        <>
+          <input
+            ref={searchRef}
+            type="search"
+            className="form-control mx-4"
+            placeholder="Search"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            onClick={() => reload()}
+          >
+            &#8635;
+          </button>
+          <button
+            className={`btn btn-sm btn${csv ? '' : '-outline'}-secondary ml-2`}
+            onClick={() => setCsv(!csv)}
+          >
+            CSV
+          </button>
+        </>
+      )}
+    </div>
+  )
 
   if (!orders.length) {
     return (
       <>
-        <h3 className="admin-title">Orders</h3>
-        <NoItems
-          heading="No orders yet!"
-          description="Generate some sales and orders will appear here."
-        />
+        {headerSection}
+        {searchVal ? (
+          <NoItems
+            heading="No matching orders!"
+            description={`Your search for ${searchVal} returned nothing.`}
+          />
+        ) : (
+          <NoItems
+            heading="No orders yet!"
+            description="Generate some sales and orders will appear here."
+          />
+        )}
       </>
     )
   }
 
   return (
     <>
-      <div className="d-flex align-items-center justify-content-between mb-4">
-        <h3 className="m-0">Orders</h3>
-        <input
-          ref={searchRef}
-          type="search"
-          className="form-control mx-4"
-          placeholder="Search"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-        />
-        <button
-          className="btn btn-sm btn-outline-secondary"
-          onClick={() => reload()}
-        >
-          &#8635;
-        </button>
-        <button
-          className={`btn btn-sm btn${csv ? '' : '-outline'}-secondary ml-2`}
-          onClick={() => setCsv(!csv)}
-        >
-          CSV
-        </button>
-      </div>
+      {headerSection}
       {loading ? (
         'Loading...'
       ) : csv ? (
-        <AdminOrdersCSV orders={filteredOrders} />
+        <AdminOrdersCSV orders={orders} />
       ) : (
-        <AdminOrdersTable orders={filteredOrders} />
+        <AdminOrdersTable orders={orders} />
       )}
 
-      {/* <Paginate total={orders.length} /> */}
+      <Paginate
+        total={ordersPagination.totalCount}
+        perPage={ordersPagination.perPage}
+      />
     </>
   )
 }

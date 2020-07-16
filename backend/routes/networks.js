@@ -19,7 +19,8 @@ function pickConfig(body) {
     'gcpCredentials',
     'defaultShopConfig',
     'web3Pk',
-    'backendUrl'
+    'backendUrl',
+    'fallbackShopConfig'
   ])
 }
 

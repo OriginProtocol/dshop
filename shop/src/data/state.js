@@ -16,6 +16,7 @@ const defaultState = {
   collections: [],
   shippingZones: [],
   orders: [],
+  ordersPagination: {},
   discounts: [],
   toasts: [],
   reload: {},
@@ -143,6 +144,8 @@ const reducer = (state, action) => {
     newState = set(newState, `shippingZones`, action.zones)
   } else if (action.type === 'setOrders') {
     newState = set(newState, `orders`, action.orders)
+  } else if (action.type === 'setOrdersPagination') {
+    newState = set(newState, `ordersPagination`, action.data)
   } else if (action.type === 'setDiscounts') {
     newState = set(newState, `discounts`, action.discounts)
   } else if (action.type === 'updateUserInfo') {
