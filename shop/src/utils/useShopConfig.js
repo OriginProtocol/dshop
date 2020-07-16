@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import memoize from 'lodash/memoize'
+
 import useConfig from 'utils/useConfig'
+import { useStateValue } from 'data/state'
 
 const getShopConfig = memoize(
   async function fetchShopConfig(backend, authToken) {
@@ -11,10 +13,11 @@ const getShopConfig = memoize(
 
     return result.config
   },
-  (...args) => args[1]
+  (...args) => `${args[1]}-${args[2]}`
 )
 
 function useShopConfig() {
+  const [{ reload }, dispatch] = useStateValue()
   const { config } = useConfig()
   const [loading, setLoading] = useState(false)
   const [shopConfig, setShopConfig] = useState()
@@ -23,22 +26,25 @@ function useShopConfig() {
     setLoading(true)
     const shopConfig = await getShopConfig(
       config.backend,
-      config.backendAuthToken
+      config.backendAuthToken,
+      reload.shopConfig
     )
     setLoading(false)
     setShopConfig(shopConfig)
   }
 
-  const refetch = async () => {
-    getShopConfig.cache.clear()
-    await fetchConfig()
-  }
-
   useEffect(() => {
     fetchConfig()
-  }, [config.activeShop])
+  }, [config.activeShop, reload.shopConfig])
 
-  return { loading, shopConfig, refetch }
+  return {
+    loading,
+    shopConfig,
+    refetch: () => {
+      getShopConfig.cache.clear()
+      dispatch({ type: 'reload', target: 'shopConfig' })
+    }
+  }
 }
 
 export default useShopConfig

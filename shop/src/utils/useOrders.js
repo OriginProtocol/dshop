@@ -1,36 +1,41 @@
 import { useEffect, useState } from 'react'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
-import sortBy from 'lodash/sortBy'
 
-function useOrders() {
+function useOrders(pageId, search) {
   const { config } = useConfig()
   const [loading, setLoading] = useState(false)
   const [shouldReload, setReload] = useState(1)
-  const [{ orders }, dispatch] = useStateValue()
+  const [{ orders, ordersPagination }, dispatch] = useStateValue()
 
   useEffect(() => {
     async function fetchOrders() {
       setLoading(true)
-      const raw = await fetch(`${config.backend}/orders`, {
+      const params = new URLSearchParams()
+      if (pageId) params.set('page', pageId)
+      if (search) params.set('search', search)
+      const raw = await fetch(`${config.backend}/orders?${params.toString()}`, {
         credentials: 'include',
         headers: { authorization: `bearer ${config.backendAuthToken}` }
       })
-      const orders = await raw.json()
-      const sortedOrders = sortBy(orders, (order) => {
-        return -Number(order.orderId.split('-')[3])
-      })
+      const { orders, pagination } = await raw.json()
 
       setLoading(false)
 
-      dispatch({ type: 'setOrders', orders: sortedOrders })
+      dispatch({ type: 'setOrders', orders })
+      dispatch({ type: 'setOrdersPagination', data: pagination })
     }
     if (config.backendAuthToken) {
       fetchOrders()
     }
-  }, [shouldReload])
+  }, [shouldReload, pageId, search])
 
-  return { orders, loading, reload: () => setReload(shouldReload + 1) }
+  return {
+    orders,
+    ordersPagination,
+    loading,
+    reload: () => setReload(shouldReload + 1)
+  }
 }
 
 export default useOrders

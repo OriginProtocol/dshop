@@ -40,31 +40,29 @@ const Defaults = {
   }
 }
 
-const defaultShopConfig = JSON.stringify(
-  {
-    web3Pk: '',
-    stripeBackend: '',
-    stripeWebhookSecret: '',
-    email: 'disabled',
-    sendgridApiKey: '',
-    sendgridUsername: '',
-    sendgridPassword: '',
-    mailgunSmtpServer: '',
-    mailgunSmtpPort: '',
-    mailgunSmtpLogin: '',
-    mailgunSmtpPassword: '',
-    awsRegion: '',
-    awsAccessKey: '',
-    awsAccessSecret: '',
-    upholdApi: '',
-    upholdClient: '',
-    upholdSecret: '',
-    bigQueryCredentials: '',
-    bigQueryTable: ''
-  },
-  null,
-  2
-)
+const _defaultShopConfigJSON = {
+  web3Pk: '',
+  stripeBackend: '',
+  stripeWebhookSecret: '',
+  email: 'disabled',
+  sendgridApiKey: '',
+  sendgridUsername: '',
+  sendgridPassword: '',
+  mailgunSmtpServer: '',
+  mailgunSmtpPort: '',
+  mailgunSmtpLogin: '',
+  mailgunSmtpPassword: '',
+  awsRegion: '',
+  awsAccessKey: '',
+  awsAccessSecret: '',
+  upholdApi: '',
+  upholdClient: '',
+  upholdSecret: '',
+  bigQueryCredentials: '',
+  bigQueryTable: ''
+}
+
+const defaultShopConfig = JSON.stringify(_defaultShopConfigJSON, null, 2)
 
 function initialState() {
   const networkId = window.location.href.indexOf('https') === 0 ? '1' : '999'
@@ -126,8 +124,14 @@ function validate(state) {
 
 const NetworkForm = ({ onSave, network, feedback, className }) => {
   const [advanced, setAdvanced] = useState(false)
+  // NOTE: defaultShopConfig is stored as string, probably
+  // to make it editable from a text field.
+  // Should change it to JSON at some point in future like fallbackShopConfig
   if (network && !network.defaultShopConfig) {
     network.defaultShopConfig = defaultShopConfig
+  }
+  if (network && !network.fallbackShopConfig) {
+    network.fallbackShopConfig = _defaultShopConfigJSON
   }
   const [state, setState] = useSetState(network || initialState())
   const input = formInput(state, (newState) => setState(newState))
@@ -139,16 +143,9 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
     }
   }, [state.networkId])
 
-  let parsedDefaultShopConfig
-  try {
-    parsedDefaultShopConfig = JSON.parse(state.defaultShopConfig)
-  } catch (_) {
-    console.error('Failed to parse existing shop config, falling back')
-  }
-
   const [configureEmailModal, setConfigureEmailModal] = useState(false)
   const { emailAppsList } = useEmailAppsList({
-    shopConfig: parsedDefaultShopConfig
+    shopConfig: state.fallbackShopConfig
   })
 
   const ProcessorIdToEmailComp = {
@@ -349,16 +346,16 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
         <ProcessorsList processors={emailProcessors} />
         {!ActiveEmailModalComp ? null : (
           <ActiveEmailModalComp
-            initialConfig={parsedDefaultShopConfig}
+            initialConfig={state.fallbackShopConfig}
             onClose={() => {
               setConfigureEmailModal(false)
             }}
             overrideOnConnect={(newState) =>
               setState({
-                defaultShopConfig: JSON.stringify({
-                  ...parsedDefaultShopConfig,
+                fallbackShopConfig: {
+                  ...state.fallbackShopConfig,
                   ...newState
-                })
+                }
               })
             }
           />
