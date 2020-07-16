@@ -194,7 +194,7 @@ function useOrigin({ marketplaceAddress, targetNetworkId } = {}) {
     )
     setMarketplace(marketplace)
     setLoading(false)
-  }, [status, netId])
+  }, [status, netId, signer, provider])
 
   function getOffer({ tx, password }) {
     return getOfferFromTx({ tx, password, config, provider, marketplace })

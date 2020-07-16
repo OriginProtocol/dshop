@@ -120,6 +120,7 @@ const Web3Transaction = ({
         onSuccess(result)
         setState({ shouldClose: true })
       } catch (err) {
+        console.error(err)
         if (!isSubscribed) return
         setState({
           modal: true,

@@ -134,11 +134,12 @@ module.exports = function (router) {
         emailVerified: true,
         data: omit(seller.data, [
           'emailVerificationCode',
-          'verificationExpiresAt'
+          'verificationExpiresAt',
+          'verificationRedirectTo'
         ])
       })
 
-      return res.redirect('/#/admin/settings/users')
+      return res.redirect(`${resp.redirectTo}/#/admin/settings/users`)
     }
 
     res.send(resp)

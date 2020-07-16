@@ -105,7 +105,7 @@ export async function createListing({
   network,
   signer
 }) {
-  const address = signer.getAddress()
+  const address = await signer.getAddress()
 
   const bytes32Hash = await post(config.ipfsApi || network.ipfsApi, {
     ...baseListing,
