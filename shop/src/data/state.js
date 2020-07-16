@@ -140,6 +140,11 @@ const reducer = (state, action) => {
     // )
   } else if (action.type === 'setCollections') {
     newState = set(newState, `collections`, action.collections)
+  } else if (action.type === 'updateCollectionProducts') {
+    const idx = newState.collections.findIndex((c) => c.id === action.id)
+    if (idx >= 0) {
+      newState = set(newState, `collections[${idx}].products`, action.products)
+    }
   } else if (action.type === 'setShippingZones') {
     newState = set(newState, `shippingZones`, action.zones)
   } else if (action.type === 'setOrders') {

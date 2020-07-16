@@ -59,6 +59,7 @@ const AdminConfirmationModal = ({
     btn = React.cloneElement(customEl, {
       onClick: (e) => {
         e.preventDefault()
+        e.stopPropagation()
         setState({ showModal: true })
       }
     })

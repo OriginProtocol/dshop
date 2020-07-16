@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react'
+import React, { useReducer, useEffect } from 'react'
 import omit from 'lodash/omit'
 
 import useProducts from 'utils/useProducts'
@@ -19,6 +19,10 @@ const AddProducts = ({ children, collection }) => {
     products: collection.products
   })
 
+  useEffect(() => {
+    setState({ products: collection.products })
+  }, [collection.products])
+
   function onCheck(product, checked) {
     if (checked) {
       setState({ products: [...state.products, product.id] })
@@ -36,12 +40,7 @@ const AddProducts = ({ children, collection }) => {
       />
       {state.modal && (
         <Modal
-          onClose={() => {
-            if (state.saving) {
-              dispatch({ type: 'reload', target: 'collections' })
-            }
-            setState({ reset: true, products: state.products })
-          }}
+          onClose={() => setState({ reset: true, products: state.products })}
           shouldClose={state.shouldClose}
         >
           <div className="modal-body">
@@ -79,6 +78,11 @@ const AddProducts = ({ children, collection }) => {
                       body
                     })
                       .then(() => {
+                        dispatch({
+                          type: 'updateCollectionProducts',
+                          id: collection.id,
+                          products: state.products
+                        })
                         dispatch({ type: 'toast', message: 'Saved OK' })
                         setState({ shouldClose: true })
                       })

@@ -57,4 +57,5 @@ require('react-styl')(`
         padding-right: 0.75rem
         border-radius: 5px
         line-height: normal
+        white-space: nowrap
 `)

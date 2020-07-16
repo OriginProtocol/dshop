@@ -7,6 +7,8 @@ import Link from 'components/Link'
 import Loading from 'components/Loading'
 import NoItems from 'components/NoItems'
 
+import DeleteDiscount from './_Delete'
+
 import useRest from 'utils/useRest'
 
 function description(discount) {
@@ -31,7 +33,7 @@ function active(discount) {
 
 const AdminDiscounts = () => {
   const history = useHistory()
-  const { data: discounts = [], loading } = useRest('/discounts')
+  const { data: discounts = [], loading, reload } = useRest('/discounts')
 
   return (
     <>
@@ -95,14 +97,9 @@ const AdminDiscounts = () => {
                           </Link>
                         </div>
 
-                        <div
-                          className="action-icon"
-                          onClick={async (e) => {
-                            e.preventDefault()
-                          }}
-                        >
+                        <DeleteDiscount discount={discount} reload={reload}>
                           <img src="images/delete-icon.svg" />
-                        </div>
+                        </DeleteDiscount>
                       </div>
                     </td>
                   </tr>

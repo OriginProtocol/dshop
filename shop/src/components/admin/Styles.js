@@ -47,6 +47,12 @@ require('react-styl')(`
     form
       label:not(.form-check-label)
         font-weight: 600
+        > span
+          font-size: 14px
+          font-weight: normal
+          color: #8293a4
+          margin-left: 0.25rem
+
     .footer-actions
       display: flex
       margin-top: 2rem
