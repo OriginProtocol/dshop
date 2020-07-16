@@ -1,4 +1,4 @@
-const generateVerificationCode = (backendUrl, publicUrl) => {
+const generateVerificationCode = (backendUrl) => {
   const code = Math.random().toString(36).substring(2)
   const expires = Date.now() + 24 * 60 * 60 * 1000 // 24 hours
 
@@ -9,7 +9,7 @@ const generateVerificationCode = (backendUrl, publicUrl) => {
     code,
     expires,
     verifyUrl: verifyUrl.toString(),
-    redirectTo: publicUrl
+    redirectTo: backendUrl
   }
 }
 
