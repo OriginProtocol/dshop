@@ -56,6 +56,13 @@ const all = [
     Object.assign(queueOpts, {
       prefix: '{events}'
     })
+  ),
+  new Queue(
+    'autossl',
+    backendUrl,
+    Object.assign(queueOpts, {
+      prefix: '{autossl}'
+    })
   )
 ]
 
