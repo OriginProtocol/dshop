@@ -9,8 +9,8 @@ const { authSuperUser } = require('../routes/_auth')
  * If we are not using bull for a queue, don't setup the UI for it.
  * @param {*} app
  */
-function noUi(app) {
-  app.get('/super-admin/queue', authSuperUser, function (req, res) {
+function noUi(router) {
+  router.get('/super-admin/queue', authSuperUser, function (req, res) {
     res.send('Redis is not configured. Queuing disabled.')
   })
 }
@@ -19,7 +19,7 @@ function noUi(app) {
  * Use the bull board queue UI, and attach it to all our queues.
  * @param {*} app
  */
-function bullBoardUI(app) {
+function bullBoardUI(router) {
   const { UI, setQueues } = require('bull-board')
   const queues = require('./queues')
 
@@ -32,13 +32,13 @@ function bullBoardUI(app) {
   setQueues(allQueues)
 
   // Use the UI
-  app.use('/super-admin/queue', authSuperUser, UI)
+  router.use('/super-admin/queue', authSuperUser, UI)
 }
 
-module.exports = function (app) {
+module.exports = function (router) {
   if (REDIS_URL != undefined) {
-    bullBoardUI(app)
+    bullBoardUI(router)
   } else {
-    noUi(app)
+    noUi(router)
   }
 }
