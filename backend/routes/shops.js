@@ -347,6 +347,7 @@ module.exports = function (router) {
     }
 
     const zone = networkConfig.domain
+    const backend = networkConfig.backendUrl
     const isLocal = zone === 'localhost'
     const publicUrl = isLocal ? backend : `https://${hostname}.${zone}`
     const dataUrl = `${publicUrl}/${dataDir}/`
