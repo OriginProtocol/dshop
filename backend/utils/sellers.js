@@ -21,16 +21,22 @@ async function sendVerificationEmail(seller, shopId) {
   })
 
   const networkConfig = getConfig(network.config)
+  const shopConfig = getConfig(shop.config)
 
+  const publicUrl = get(shopConfig, 'publicUrl', '')
   const backendUrl = get(networkConfig, 'backendUrl', '')
 
-  const { code, expires, verifyUrl } = generateVerificationCode(backendUrl)
+  const { code, expires, verifyUrl, redirectTo } = generateVerificationCode(
+    backendUrl,
+    publicUrl
+  )
 
   await seller.update({
     data: {
       ...seller.data,
       emailVerificationCode: code,
-      verificationExpiresAt: expires
+      verificationExpiresAt: expires,
+      verificationRedirectTo: redirectTo
     }
   })
 
