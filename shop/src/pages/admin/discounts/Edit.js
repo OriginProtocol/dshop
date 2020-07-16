@@ -147,7 +147,16 @@ const AdminEditDiscount = () => {
         <div className="form-row">
           <div className="form-group col-md-6" style={{ maxWidth: '15rem' }}>
             <label>Discount Code</label>
-            <input type="code" {...input('code')} autoFocus />
+            <input
+              autoFocus
+              className="form-control"
+              value={state.code}
+              onChange={(e) =>
+                setState({
+                  code: e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, '')
+                })
+              }
+            />
             {Feedback('code')}
           </div>
           <div className="form-group col-md-6" style={{ maxWidth: '15rem' }}>

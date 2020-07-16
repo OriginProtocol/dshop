@@ -267,7 +267,10 @@ const EditProduct = () => {
       fetchProduct.cache.delete(`${config.dataSrc}-${product.id}`)
 
       dispatch({ type: 'toast', message: 'Product saved' })
-      dispatch({ type: 'reload', target: ['products', 'collections'] })
+      dispatch({
+        type: 'reload',
+        target: ['products', 'collections', 'shopConfig']
+      })
 
       if (!newState.id) {
         history.push(`/admin/products/${product.id}`)
