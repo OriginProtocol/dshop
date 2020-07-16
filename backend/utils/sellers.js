@@ -1,4 +1,5 @@
-const { Seller, Shop } = require('../models')
+const get = require('lodash/get')
+const { Seller, Shop, Network } = require('../models')
 const { createSalt, hashPassword, checkPassword } = require('../routes/_auth')
 
 const { sendVerifyEmail } = require('./emailer')
@@ -15,10 +16,15 @@ async function sendVerificationEmail(seller, shopId) {
   if (!shop) {
     return
   }
-  const config = getConfig(shop.config)
-  const publicUrl = config.publicUrl
+  const network = await Network.findOne({
+    where: { networkId: shop.networkId, active: true }
+  })
 
-  const { code, expires, verifyUrl } = generateVerificationCode(publicUrl)
+  const networkConfig = getConfig(network.config)
+
+  const backendUrl = get(networkConfig, 'backendUrl', '')
+
+  const { code, expires, verifyUrl } = generateVerificationCode(backendUrl)
 
   await seller.update({
     data: {
