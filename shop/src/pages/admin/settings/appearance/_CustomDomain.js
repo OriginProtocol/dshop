@@ -5,6 +5,7 @@ import PlusIcon from 'components/icons/Plus'
 import Modal from 'components/Modal'
 
 import useBackendApi from 'utils/useBackendApi'
+import useAutoFocus from 'utils/useAutoFocus'
 import { useStateValue } from 'data/state'
 
 const CustomDomain = ({ netId, hostname = '' }) => {
@@ -14,37 +15,31 @@ const CustomDomain = ({ netId, hostname = '' }) => {
   const [verifyStatus, setVerifyStatus] = useState({})
   const { post } = useBackendApi({ authToken: true })
   const [{ admin }] = useStateValue()
+  const domainRef = useAutoFocus()
 
   const verifyDomain = async () => {
     if (verifyStatus.loading) return
-
-    setVerifyStatus({
-      loading: true
-    })
+    setVerifyStatus({ loading: true })
 
     try {
-      const body = JSON.stringify({
-        domain,
-        hostname,
-        networkId: Number(netId)
-      })
+      const networkId = Number(netId)
+      const body = JSON.stringify({ domain, hostname, networkId })
 
       const { success, valid, error } = await post('/domains/verify-dns', {
         body
       })
-
-      setVerifyStatus({
-        success,
-        valid,
-        error
-      })
+      setVerifyStatus({ success, valid, error })
     } catch (err) {
       console.error(err)
-      setVerifyStatus({
-        error: 'Something went wrong. Try again later.'
-      })
+      setVerifyStatus({ error: 'Something went wrong. Try again later.' })
     }
   }
+
+  const dnsLink = `dnslink=/ipns/${hostname}.${get(admin, 'network.domain')}`
+  const txtRecord = `_dnslink.${domain} TXT "${dnsLink}"`
+
+  const ipfsGateway = get(admin, 'network.ipfs', '').replace(/^https?:\/\//, '')
+  const cnameRecord = `${domain} CNAME ${ipfsGateway}`
 
   return (
     <>
@@ -74,6 +69,7 @@ const CustomDomain = ({ netId, hostname = '' }) => {
                 <label>Enter your domain:</label>
                 <input
                   value={domain}
+                  ref={domainRef}
                   onChange={(e) => setDomain(e.target.value)}
                   className="form-control"
                   placeholder="eg store.example.com"
@@ -81,18 +77,9 @@ const CustomDomain = ({ netId, hostname = '' }) => {
               </div>
               {!domain ? null : (
                 <div className="records">
-                  <div className="mb-2">
-                    Please set the following DNS records:
-                  </div>
-                  <div className="record">{`${domain} CNAME ${get(
-                    admin,
-                    'network.ipfs',
-                    ''
-                  ).replace(/^https?:\/\//, '')}`}</div>
-                  <div className="record">{`_dnslink.${domain} TXT "dnslink=/ipns/${hostname}.${get(
-                    admin,
-                    'network.domain'
-                  )}"`}</div>
+                  <div>Please set the following DNS records:</div>
+                  <div className="record">{cnameRecord}</div>
+                  <div className="record">{txtRecord}</div>
                 </div>
               )}
             </div>
@@ -133,5 +120,6 @@ require('react-styl')(`
     .records
       margin-top: 1rem
       .record
+        margin-top: 0.75rem
         font-family: monospace
 `)
