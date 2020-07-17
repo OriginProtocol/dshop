@@ -63,7 +63,7 @@ const EditShippingMethod = ({ onClose, shippingZone }) => {
     ...initialState,
 
     ...shippingZone,
-    amount: shippingZone ? (shippingZone.amount / 100).toFixed() : 0,
+    amount: shippingZone && shippingZone.amount ? (shippingZone.amount / 100).toFixed() : 0,
     shipInternational: get(shippingZone, 'countries.length', 0) > 0,
 
     showModal: false,

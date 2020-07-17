@@ -4,6 +4,8 @@ import _get from 'lodash/get'
 import memoize from 'lodash/memoize'
 import useBackendApi from 'utils/useBackendApi'
 
+import { isLoggedIn } from 'utils/auth'
+
 const getAuth = memoize((as, get) => get('/auth', { suppressError: true }))
 
 function useAuth(opts = {}) {
@@ -16,13 +18,18 @@ function useAuth(opts = {}) {
 
   const shops = _get(admin, 'shops', [])
   const hasActiveShop = shops.find((s) => s.authToken === config.activeShop)
+  const notLoggedIn = !isLoggedIn(admin)
 
   useEffect(() => {
+    if (notLoggedIn) {
+      return
+    }
+
     const noShops = _get(admin, 'reason', '') === 'no-shops'
     if (config.activeShop && !hasActiveShop && !noShops) {
       dispatch({ type: 'reload', target: 'auth' })
     }
-  }, [config.activeShop, hasActiveShop])
+  }, [config.activeShop, hasActiveShop, notLoggedIn])
 
   useEffect(() => {
     let isSubscribed = true

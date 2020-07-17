@@ -71,8 +71,7 @@ module.exports = function (router) {
 
   router.post('/superuser/users', authSuperUser, async (req, res) => {
     createSeller(req.body, {
-      superuser: req.body.superuser,
-      skipEmailVerification: true
+      superuser: req.body.superuser
     }).then((result) => {
       res.json(result)
     })
