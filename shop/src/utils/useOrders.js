@@ -18,12 +18,12 @@ function useOrders(pageId, search) {
         credentials: 'include',
         headers: { authorization: `bearer ${config.backendAuthToken}` }
       })
-      const { orders, pagination } = await raw.json()
-
       setLoading(false)
-
-      dispatch({ type: 'setOrders', orders })
-      dispatch({ type: 'setOrdersPagination', data: pagination })
+      if (!raw.ok) {
+        return
+      }
+      const { orders, pagination } = await raw.json()
+      dispatch({ type: 'setOrders', orders, pagination })
     }
     if (config.backendAuthToken) {
       fetchOrders()
