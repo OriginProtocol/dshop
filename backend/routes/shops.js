@@ -1020,6 +1020,7 @@ module.exports = function (router) {
 
         return res.json({ success: true, hash, domain, gateway: network.ipfs })
       } catch (e) {
+        log.error(e)
         return res.json({ success: false, reason: e.message })
       }
     }

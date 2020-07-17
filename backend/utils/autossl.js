@@ -39,8 +39,8 @@ async function triggerAutoSSL(url, autoSSLHost) {
       break
     } catch (err) {
       log.info(
-        `Error when attempting to trigger AutoSSL on attempt ${attempts}:`,
-        err
+        `Unable to trigger AutoSSL on attempt ${attempts}:`,
+        err.toString()
       )
 
       if (attempts <= AUTOSSL_MAX_ATTEMPTS) {
@@ -61,11 +61,7 @@ async function triggerAutoSSL(url, autoSSLHost) {
     }
   }
 
-  if (!success) {
-    log.error('Error trying to auto-trigger AutoSSL')
-  } else {
-    log.debug('AutoSSL trigger completed')
-  }
+  log.debug(`AutoSSL trigger ${success ? 'completed' : 'failed'}`)
 
   return success
 }

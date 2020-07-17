@@ -19,7 +19,13 @@ const processor = async (job) => {
 
   log(10, 'Making request AutoSSL priming request...')
 
-  await triggerAutoSSL(job.data.url, job.data.host)
+  const success = await triggerAutoSSL(job.data.url, job.data.host)
+
+  if (!success) {
+    const errMsg = 'AutoSSL priming failed'
+    logger.error(errMsg)
+    throw new Error(errMsg)
+  }
 
   log(100, 'Finished')
 }

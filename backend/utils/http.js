@@ -19,8 +19,7 @@ async function getHTTPS(opts) {
         resolve()
       })
       .on('error', (err) => {
-        console.trace(err)
-        log.error(`Error GETting ${opts.servername}${opts.path}`)
+        log.debug(`Error GETting ${opts.servername}${opts.path}`)
         reject(err)
       })
   })

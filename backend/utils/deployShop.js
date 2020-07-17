@@ -4,7 +4,7 @@ const fs = require('fs')
 const { execFile } = require('child_process')
 
 const { ShopDeployment, ShopDeploymentName } = require('../models')
-const { autosslQueue } = require('../queues')
+const { autosslQueue } = require('../queues/queues')
 const { getLogger } = require('../utils/logger')
 
 const { getConfig } = require('./encryptedConfig')
@@ -265,13 +265,10 @@ async function deployShop({
     await configureShopDNS({ network, subdomain, zone, hash, dnsProvider })
     if (domain && network.ipfs) {
       // Intentionally not awaiting on this so we can return to the user faster
-      await autosslQueue.add(
-        {
-          url: domain,
-          host: network.ipfs
-        },
-        { attempts: 3 }
-      )
+      await autosslQueue.add({
+        url: domain,
+        host: network.ipfs
+      })
     }
   }
 
