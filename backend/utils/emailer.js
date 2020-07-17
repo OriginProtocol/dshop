@@ -297,7 +297,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
           log.error('Error sending merchant confirmation email:', err)
         } else {
           log.info(
-            `Merchant confirmation email sent, from ${message.from} to ${message.to}`
+            `Merchant confirmation email sent, from ${messageVendor.from} to ${messageVendor.to}`
           )
           log.debug(msg.envelope)
         }
