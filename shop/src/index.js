@@ -1,8 +1,12 @@
+require('dotenv').config()
+
 import React from 'react'
 import ReactDOM from 'react-dom'
 
 import { HashRouter, BrowserRouter } from 'react-router-dom'
 import Styl from 'react-styl'
+
+import * as Sentry from '@sentry/react'
 
 import { StateProvider } from 'data/state'
 import App from './pages/App'
@@ -19,13 +23,39 @@ if (process.env.NODE_ENV === 'production') {
   }
 }
 
+const sentryOptions = {
+  dsn: process.env.SENTRY_DSN
+}
+
+Sentry.init(sentryOptions)
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+  }
+
+  componentDidCatch(error, errorInfo) {
+    const eventId = Sentry.captureException(error, { errorInfo })
+
+    if (typeof Sentry.showReportDialog === 'function') {
+      Sentry.showReportDialog({ eventId })
+    }
+  }
+
+  render() {
+    return this.props.children
+  }
+}
+
 const Providers = () => {
   return (
-    <Router>
-      <StateProvider>
-        <App />
-      </StateProvider>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <StateProvider>
+          <App />
+        </StateProvider>
+      </Router>
+    </ErrorBoundary>
   )
 }
 

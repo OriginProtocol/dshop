@@ -201,10 +201,13 @@ const PaymentSettings = () => {
 
         {connectModal === 'web3' && <Web3Modal onClose={onCloseModal} />}
         {connectModal === 'stripe' && (
-          <StripeModal onClose={onCloseModal} initialConfig={{
-            ...config,
-            ...shopConfig
-          }} />
+          <StripeModal
+            onClose={onCloseModal}
+            initialConfig={{
+              ...config,
+              ...shopConfig
+            }}
+          />
         )}
         {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
 

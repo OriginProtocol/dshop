@@ -179,7 +179,8 @@ const webpackConfig = {
       DATA_DIR: process.env.DATA_DIR || '',
       CONTENT_CDN: process.env.CONTENT_CDN || '',
       CONTENT_HASH: process.env.CONTENT_HASH || '',
-      ABSOLUTE: process.env.ABSOLUTE || ''
+      ABSOLUTE: process.env.ABSOLUTE || '',
+      SENTRY_DSN: process.env.SENTRY_DSN || ''
     })
   ],
 
