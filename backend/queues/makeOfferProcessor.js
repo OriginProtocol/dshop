@@ -28,7 +28,7 @@ function attachToQueue() {
  */
 async function processor(job) {
   const queueLog = (progress, str) => {
-    job.queueLog(str)
+    job.log(str)
     job.progress(progress)
   }
 
