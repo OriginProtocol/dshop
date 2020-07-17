@@ -112,26 +112,28 @@ const Main = () => {
   }
   return (
     <>
-      <AdminNav />
-      <Notice />
-      <Nav />
-      <div className="container">
-        <header>
-          <Link to="/">
-            <h1>
-              {config.logo ? (
-                <img src={`${config.dataSrc}${config.logo}`} />
-              ) : null}
-              {config.title}
-            </h1>
-          </Link>
-          {!config.byline ? null : (
-            <div dangerouslySetInnerHTML={{ __html: config.byline }} />
-          )}
-        </header>
-        <Content />
+      <div className="app-wrap">
+        <AdminNav only={() => localStorage.isAdmin} />
+        <Notice />
+        <Nav />
+        <div className="container">
+          <header>
+            <Link to="/">
+              <h1>
+                {config.logo ? (
+                  <img src={`${config.dataSrc}${config.logo}`} />
+                ) : null}
+                {config.title}
+              </h1>
+            </Link>
+            {!config.byline ? null : (
+              <div dangerouslySetInnerHTML={{ __html: config.byline }} />
+            )}
+          </header>
+          <Content />
+        </div>
+        <Notice footer={true} />
       </div>
-      <Notice footer={true} />
       <Footer />
     </>
   )
@@ -140,6 +142,14 @@ const Main = () => {
 export default Main
 
 require('react-styl')(`
+  #app
+    display: flex
+    flex-direction: column
+    min-height: 100vh
+  .app-wrap
+    flex: 1 0 auto
+  .footer
+    flex-shrink: 0
   header
     display: flex
     align-items: center

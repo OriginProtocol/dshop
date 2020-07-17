@@ -21,14 +21,13 @@ async function sendVerificationEmail(seller, shopId) {
   })
 
   const networkConfig = getConfig(network.config)
-  const shopConfig = getConfig(shop.config)
-
-  const publicUrl = get(shopConfig, 'publicUrl', '')
-  const backendUrl = get(networkConfig, 'backendUrl', '')
+  const backendUrl = get(networkConfig, 'backendUrl')
+  if (!backendUrl) {
+    throw new Error('backendUrl missing from network config')
+  }
 
   const { code, expires, verifyUrl, redirectTo } = generateVerificationCode(
-    backendUrl,
-    publicUrl
+    backendUrl
   )
 
   await seller.update({

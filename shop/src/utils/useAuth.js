@@ -18,21 +18,20 @@ function useAuth(opts = {}) {
   const hasActiveShop = shops.find((s) => s.authToken === config.activeShop)
 
   useEffect(() => {
-    if (config.activeShop && !hasActiveShop) {
+    const noShops = _get(admin, 'reason', '') === 'no-shops'
+    if (config.activeShop && !hasActiveShop && !noShops) {
       dispatch({ type: 'reload', target: 'auth' })
     }
   }, [config.activeShop, hasActiveShop])
 
   useEffect(() => {
     let isSubscribed = true
-    if (opts.only === undefined || opts.only()) {
+    if (!opts.only || opts.only()) {
       setLoading(true)
+      localStorage.isAdmin = true
       getAuth(`${reload.auth}-${backendUrl}`, get)
         .then((auth) => {
           if (!isSubscribed) return
-          if (_get(auth, 'success')) {
-            localStorage.isAdmin = true
-          }
           setLoading(false)
           dispatch({ type: 'setAuth', auth })
         })

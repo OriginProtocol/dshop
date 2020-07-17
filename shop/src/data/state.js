@@ -149,8 +149,7 @@ const reducer = (state, action) => {
     newState = set(newState, `shippingZones`, action.zones)
   } else if (action.type === 'setOrders') {
     newState = set(newState, `orders`, action.orders)
-  } else if (action.type === 'setOrdersPagination') {
-    newState = set(newState, `ordersPagination`, action.data)
+    newState = set(newState, `ordersPagination`, action.pagination)
   } else if (action.type === 'setDiscounts') {
     newState = set(newState, `discounts`, action.discounts)
   } else if (action.type === 'updateUserInfo') {
@@ -206,7 +205,7 @@ const reducer = (state, action) => {
   } else if (action.type === 'setPasswordAuthed') {
     newState = set(newState, `passwordAuthed`, action.authed)
   } else if (action.type === 'logout') {
-    newState = set(newState, 'admin', null)
+    newState = cloneDeep(defaultState)
   } else if (action.type === 'updateInstructions') {
     newState = set(newState, 'cart.instructions', action.value)
   } else if (action.type === 'setDiscount') {

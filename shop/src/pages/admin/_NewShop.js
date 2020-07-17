@@ -32,7 +32,7 @@ const defaultState = { title: '', shopType: 'empty' }
 const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
   const shopName = useAutoFocus()
   const redirectTo = useRedirect()
-  const [{ admin }] = useStateValue()
+  const [{ admin }, dispatch] = useStateValue()
   const { setActiveShop } = useConfig()
   const [state, setState] = useSetState(defaultState)
   const { post } = useBackendApi({ authToken: true })
@@ -82,6 +82,7 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
       onSuccess={(json) => {
         setState({}, true)
         setActiveShop(json.slug)
+        dispatch({ type: 'reload', target: 'auth' })
         redirectTo('/admin/onboarding')
       }}
     >

@@ -12,14 +12,14 @@ import AccountSelector from './_AccountSelector'
 import User from './_User'
 import NewShop from './_NewShop'
 
-const Nav = ({ newShop, setNewShop }) => {
+const Nav = ({ newShop, setNewShop, only }) => {
   const [{ admin, adminLocation }, dispatch] = useStateValue()
   const location = useLocation()
   const history = useHistory()
 
   const { config, setActiveShop } = useConfig()
 
-  useAuth({ only: () => localStorage.isAdmin })
+  useAuth({ only })
   if (!localStorage.isAdmin || !admin) {
     return null
   }

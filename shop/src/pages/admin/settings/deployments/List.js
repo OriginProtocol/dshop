@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
 
+import NoItems from 'components/NoItems'
 import DeployButton from './_DeployButton'
 import Tabs from '../_Tabs'
 
@@ -21,13 +22,20 @@ const DeployShop = () => {
     <>
       <h3 className="admin-title">
         Settings
-        <div className="actions">
-          <DeployButton className="btn-primary" />
-        </div>
+        {!deployments.length ? null : (
+          <div className="actions">
+            <DeployButton className="btn-primary" />
+          </div>
+        )}
       </h3>
       <Tabs />
       {!deployments.length ? (
-        <div className="mt-3">No deployments yet...</div>
+        <NoItems
+          heading="You haven't published yet"
+          description="Make you shop public for anyone to view"
+        >
+          <DeployButton className="btn-primary" buttonText="Publish" />
+        </NoItems>
       ) : (
         <table className="table mt-3">
           <thead>
@@ -64,7 +72,7 @@ const DeployShop = () => {
                         <span key={domIdx}>
                           {domIdx < 1 ? null : ', '}
                           <a
-                            href={`http://${dom}`}
+                            href={`https://${dom}`}
                             target="_blank"
                             rel="noreferrer"
                             children={dom}

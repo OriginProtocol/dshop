@@ -44,14 +44,11 @@ const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
 
 const log = getLogger('routes.shops')
 
-async function tryDataDir(dataDir, localDir) {
-  const hasDir = localDir ? fs.existsSync(`${DSHOP_CACHE}/${dataDir}`) : false
-  const existingShopWithAuthToken = await Shop.findOne({
-    where: { authToken: dataDir }
-  })
-  const existingShopWithHostname = await Shop.findOne({
-    where: { hostname: dataDir }
-  })
+async function tryDataDir(dataDir) {
+  const hasDir = fs.existsSync(`${DSHOP_CACHE}/${dataDir}`)
+  const [authToken, hostname] = [dataDir, dataDir]
+  const existingShopWithAuthToken = await Shop.findOne({ where: { authToken } })
+  const existingShopWithHostname = await Shop.findOne({ where: { hostname } })
   return !existingShopWithAuthToken && !hasDir && !existingShopWithHostname
 }
 
@@ -297,13 +294,21 @@ module.exports = function (router) {
   router.post('/shop', authUser, async (req, res) => {
     const { printfulApi } = req.body
     const shopType = req.body.shopType || 'empty'
+    let originalDataDir = kebabCase(req.body.dataDir)
     let dataDir = kebabCase(req.body.dataDir)
 
-    if (shopType !== 'localDir') {
+    if (shopType !== 'local-dir') {
+      // If dataDir already exists, try dataDir-1, dataDir-2 etc until it works
       let postfix = 1
+      const existingPostfix = dataDir.match(/^(.*)-([0-9]+)$/)
+      if (existingPostfix && existingPostfix[2]) {
+        postfix = Number(existingPostfix[2])
+        originalDataDir = existingPostfix[1]
+      }
+      if (postfix < 1) postfix = 1
       while (!(await tryDataDir(dataDir))) {
         postfix++
-        dataDir = `${kebabCase(req.body.dataDir)}-${postfix}`
+        dataDir = `${originalDataDir}-${postfix}`
       }
     }
 
