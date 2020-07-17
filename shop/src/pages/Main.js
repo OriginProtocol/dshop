@@ -113,7 +113,7 @@ const Main = () => {
   return (
     <>
       <div className="app-wrap">
-        <AdminNav />
+        <AdminNav only={() => localStorage.isAdmin} />
         <Notice />
         <Nav />
         <div className="container">

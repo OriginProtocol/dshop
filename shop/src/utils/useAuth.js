@@ -26,14 +26,12 @@ function useAuth(opts = {}) {
 
   useEffect(() => {
     let isSubscribed = true
-    if (opts.only === undefined || opts.only()) {
+    if (!opts.only || opts.only()) {
       setLoading(true)
+      localStorage.isAdmin = true
       getAuth(`${reload.auth}-${backendUrl}`, get)
         .then((auth) => {
           if (!isSubscribed) return
-          if (_get(auth, 'success')) {
-            localStorage.isAdmin = true
-          }
           setLoading(false)
           dispatch({ type: 'setAuth', auth })
         })
