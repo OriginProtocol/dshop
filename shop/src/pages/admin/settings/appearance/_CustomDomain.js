@@ -89,10 +89,10 @@ const CustomDomain = ({ netId, hostname = '' }) => {
                     'network.ipfs',
                     ''
                   ).replace(/^https?:\/\//, '')}`}</div>
-                  <div className="record">{`_dnslink.${domain} TXT ${hostname}.${get(
+                  <div className="record">{`_dnslink.${domain} TXT "dnslink=/ipns/${hostname}.${get(
                     admin,
                     'network.domain'
-                  )}`}</div>
+                  )}"`}</div>
                 </div>
               )}
             </div>
