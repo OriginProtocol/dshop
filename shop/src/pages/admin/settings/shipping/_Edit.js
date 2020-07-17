@@ -35,8 +35,8 @@ const validate = (state) => {
     newState.processingTimeError = 'Select a processing time estimate'
   }
 
-  if (Number.isNaN(state.amount)) {
-    newState.amountError = 'Amount is required'
+  if (state.amount && !state.amount.match(/^([0-9]+)(\.[0-9]{2})?$/)) {
+    newState.amountError = 'Amount must be a number'
   }
 
   if (
@@ -59,11 +59,11 @@ const validate = (state) => {
 }
 
 const EditShippingMethod = ({ onClose, shippingZone }) => {
+  const amount = get(shippingZone, 'amount', 0) / 100
   const [state, setState] = useReducer(reducer, {
     ...initialState,
-
     ...shippingZone,
-    amount: shippingZone ? (shippingZone.amount / 100).toFixed() : 0,
+    amount,
     shipInternational: get(shippingZone, 'countries.length', 0) > 0,
 
     showModal: false,
@@ -80,12 +80,9 @@ const EditShippingMethod = ({ onClose, shippingZone }) => {
   const upsertShippingMethod = async () => {
     const { valid, newState } = validate(state)
     setState(newState)
-
     if (!valid) return
 
-    setState({
-      saving: true
-    })
+    setState({ saving: true })
 
     try {
       await post(`/shipping-zones/${newState.id}`, {
@@ -98,9 +95,7 @@ const EditShippingMethod = ({ onClose, shippingZone }) => {
         })
       })
       dispatch({ type: 'reload', target: ['shippingZones'] })
-      setState({
-        shouldClose: true
-      })
+      setState({ shouldClose: true })
     } catch (err) {
       console.error(err)
       setState({
@@ -113,10 +108,7 @@ const EditShippingMethod = ({ onClose, shippingZone }) => {
     <Modal
       shouldClose={state.shouldClose}
       onClose={() => {
-        setState({
-          showModal: false,
-          shouldClose: false
-        })
+        setState({ showModal: false, shouldClose: false })
         onClose()
       }}
     >
