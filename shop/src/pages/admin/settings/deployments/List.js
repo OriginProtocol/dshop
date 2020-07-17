@@ -64,7 +64,7 @@ const DeployShop = () => {
                         <span key={domIdx}>
                           {domIdx < 1 ? null : ', '}
                           <a
-                            href={`http://${dom}`}
+                            href={`https://${dom}`}
                             target="_blank"
                             rel="noreferrer"
                             children={dom}
