@@ -23,6 +23,8 @@ const log = getLogger('utils.handleLog')
 
 const { validateDiscountOnOrder } = require('./discounts')
 
+const IPFS_TIMEOUT = 30000 // 30sec in msec
+
 const web3 = new Web3()
 const Marketplace = new web3.eth.Contract(abi)
 const MarketplaceABI = Marketplace._jsonInterface
@@ -38,6 +40,7 @@ const MarketplaceABI = Marketplace._jsonInterface
  * @param {Integer} blockNumber: block number
  * @param {Function} mockGetEventObj: for testing only. Mock function to call to parse the event.
  * @returns {Promise<void>}
+ * @throws In case of a recoverable error that should be re-tried.
  */
 async function _handleLog({
   networkId,
@@ -80,7 +83,7 @@ async function _handleLog({
   log.info(`Event ${eventObj.eventName} for listing Id ${listingId}`)
 
   // The listener calls handleLog for any event emitted by the marketplace.
-  // Skip processing any event that is not dshop related.
+  // Skip processing any event that is not shop related.
   const shop = await Shop.findOne({ where: { listingId } })
   if (!shop) {
     log.debug(`Event is not for a registered dshop. Skipping.`)
@@ -96,22 +99,236 @@ async function _handleLog({
     event: rawEvent
   })
 
-  // Process the order.
+  // Process the event.
   await processDShopEvent({ event, shop })
 }
 
 /**
- * Wrapper function for recording any exception raised in handleLog in Sentry.
- * @param {Object} params
- * @returns {Promise<void>}
+ * Refunds a Stripe payment.
+ *
+ * @param {Object} event: blockchain log.
+ * @param {models.Order} order: Order DB object.
+ * @returns {Promise<null|string>} Returns null or the reason for the Stripe failure.
+ * @throws In case of a recoverable error that should be re-tried.
+ * @private
  */
-async function handleLog(params) {
-  try {
-    return _handleLog(params)
-  } catch (e) {
-    Sentry.captureException(e)
-    throw e // Re-throw.
+async function _processStripeRefund({ event, order }) {
+  log.info('Trying to refund Stripe payment')
+  // Load the shop configuration.
+  const shopConfig = getConfig(shop.config)
+  const { dataUrl } = shopConfig
+  const ipfsGateway = await getIPFSGateway(dataUrl, event.networkId)
+  log.info('IPFS Gateway', ipfsGateway)
+
+  // Load the offer data to get the paymentCode
+  log.info(`Fetching offer data with hash ${order.ipfsHash}`)
+  const offerData = await getText(ipfsGateway, order.ipfsHash, IPFS_TIMEOUT)
+  const offer = JSON.parse(offerData)
+  log.info('Payment Code', offer.paymentCode)
+
+  // Load the external payment data to get the payment intent.
+  const externalPayment = await ExternalPayment.findOne({
+    where: {
+      paymentCode: offer.paymentCode
+    },
+    attributes: ['payment_code', 'payment_intent']
+  })
+  if (!externalPayment) {
+    throw new Error(
+      `Failed loading external payment with code ${offer.paymentCode}`
+    )
   }
+
+  const paymentIntent = externalPayment.get({ plain: true }).payment_intent
+  if (!paymentIntent) {
+    throw new Error(
+      `Missing payment_intent in external payment with id ${externalPayment.id}`
+    )
+  }
+  log.info('Payment Intent', paymentIntent)
+
+  // Call Stripe to perform the refund.
+  const stripe = Stripe(shopConfig.stripeBackend)
+  const piRefund = await stripe.refunds.create({
+    payment_intent: paymentIntent
+  })
+
+  const refundError = piRefund.reason
+  if (refundError) {
+    // If stripe returned an error, log it but do not throw an exception.
+    // TODO: finer grained error handling. Some reasons might be retryable.
+    log.error(
+      `Stripe refund for payment intent ${paymentIntent} failed: ${refundError}`
+    )
+    return refundError
+  }
+
+  log.info('Payment refunded')
+  return null
+}
+
+/**
+ * Processes a blockchain event for an order already recorded in the system.
+ *
+ * @param {Object} event: blockchain log.
+ * @param {models.Order} order: Order DB object.
+ * @returns {Promise<models.Order>} The updated order.
+ * @throws In case of a recoverable error that should be re-tried.
+ * @private
+ */
+async function _processEventForExistingOrder({ event, order }) {
+  const eventName = event.eventName
+
+  const updatedFields = {
+    statusStr: eventName,
+    updatedBlock: event.blockNumber
+  }
+
+  if (eventName === 'OfferWithdrawn') {
+    // If it's a Stripe payment, initiate a refund.
+    const paymentMethod = get(order, 'data.paymentMethod.id')
+    if (paymentMethod === 'stripe') {
+      const refundError = await _processStripeRefund({ event, order })
+      // Store the refund error in the order data.
+      updatedFields.data = {
+        ...order.data,
+        refundError
+      }
+    }
+  }
+
+  // Update the order in the DB and return it.
+  await order.update(updatedFields)
+  return order
+}
+
+/**
+ * Processes a blockchain event for a new order that has not been recorded yet in the system.
+ *
+ * @param {Object} event: blockchain event.
+ * @param {models.Shop} shop: SHop DB object.
+ * @param {boolean} skipEmail: whether to skip sending a notification email to the merchant and buyer.
+ * @param {boolean} skipDiscord: whether to skip sending a discord notification.
+ * @returns {Promise<models.Order>} Newly created order.
+ * @throws In case of a recoverable error that should be re-tried.
+ * @private
+ */
+async function _processEventForNewOrder({
+  event,
+  shop,
+  skipEmail,
+  skipDiscord
+}) {
+  const eventName = event.eventName
+
+  // We expect the event to be an offer creation.
+  if (eventName !== 'OfferCreated') {
+    throw new Error(`Unexpected event ${eventName} for offerId ${offerId}.`)
+  }
+  log.info(`${eventName} - ${event.offerId} by ${event.party}`)
+  log.info(`IPFS Hash: ${event.ipfsHash}`)
+
+  const network = await Network.findOne({ where: { active: true } })
+  const networkConfig = getConfig(network.config)
+
+  // Load the shop configuration to read things like PGP key and IPFS gateway to use.
+  const shopConfig = getConfig(shop.config)
+  const { dataUrl, pgpPrivateKey, pgpPrivateKeyPass } = shopConfig
+  const ipfsGateway = await getIPFSGateway(dataUrl, event.networkId)
+  log.info(`Using IPFS gateway ${ipfsGateway} for fetching offer data`)
+
+  // Load the offer data. The main thing we are looking for is the IPFS hash
+  // of the encrypted data.
+  log.info(`Fetching offer data with hash ${event.ipfsHash}`)
+  const offerData = await getText(ipfsGateway, event.ipfsHash, IPFS_TIMEOUT)
+  const offer = JSON.parse(offerData)
+  log.debug('Offer:', offer)
+
+  const encryptedHash = offer.encryptedData
+  if (!encryptedHash) {
+    throw new Error('No encrypted data found')
+  }
+
+  // Load the encrypted data from IPFS and decrypt it.
+  log.info(`Fetching encrypted offer data with hash ${encryptedHash}`)
+  const encryptedDataJson = await getText(
+    ipfsGateway,
+    encryptedHash,
+    IPFS_TIMEOUT
+  )
+  const encryptedData = JSON.parse(encryptedDataJson)
+
+  const privateKey = await openpgp.key.readArmored(pgpPrivateKey)
+  const privateKeyObj = privateKey.keys[0]
+  await privateKeyObj.decrypt(pgpPrivateKeyPass)
+
+  const message = await openpgp.message.readArmored(encryptedData.data)
+  const options = { message, privateKeys: [privateKeyObj] }
+
+  const plaintext = await openpgp.decrypt(options)
+  const data = JSON.parse(plaintext.data)
+  data.offerId = offerId
+  data.tx = event.transactionHash
+
+  // Insert a new row in the orders DB table.
+  const orderObj = {
+    networkId: event.networkId,
+    shopId: shop.id,
+    orderId: offerId,
+    data,
+    statusStr: eventName,
+    updatedBlock: event.blockNumber,
+    createdAt: new Date(event.timestamp * 1000),
+    createdBlock: event.blockNumber,
+    ipfsHash: event.ipfsHash,
+    encryptedIpfsHash: encryptedHash
+  }
+  if (data.referrer) {
+    orderObj.referrer = util.toChecksumAddress(data.referrer)
+    orderObj.commissionPending = Math.floor(data.subTotal / 200)
+  }
+  const { valid, error } = await validateDiscountOnOrder(orderObj, {
+    markIfValid: true
+  })
+  if (!valid) {
+    orderObj.data.error = error
+  }
+  const order = await Order.create(orderObj)
+  log.info(`Saved order ${order.orderId} to DB.`)
+
+  // TODO: move order fulfillment to a queue.
+  if (shopConfig.printful && shopConfig.printfulAutoFulfill) {
+    await autoFulfillOrder(order, shopConfig, shop)
+  }
+
+  // Send notifications via email and discord.
+  // This section is not critical so we log errors but do not throw any
+  // exception in order to avoid triggering a queue retry which would
+  // cause the order to get recorded multiple times in the DB.
+  if (!skipEmail) {
+    try {
+      await sendNewOrderEmail(shop, data)
+    } catch (e) {
+      log.error('Email sending failure:', e)
+      Sentry.captureException(e)
+    }
+  }
+  if (!skipDiscord) {
+    try {
+      await discordWebhook({
+        url: networkConfig.discordWebhook,
+        orderId: offerId,
+        shopName: shop.name,
+        total: `$${(data.total / 100).toFixed(2)}`,
+        items: data.items.map((i) => i.title).filter((t) => t)
+      })
+    } catch (e) {
+      log.error('Discord webhook failure:', e)
+      Sentry.captureException(e)
+    }
+  }
+
+  return order
 }
 
 /**
@@ -123,21 +340,21 @@ async function handleLog(params) {
  *   reprocessing events, to avoid sending duplicate emails to the users.
  * @param {boolean} skipDiscord: do not call the Discord webhook. Useful
  *   for ex. when reprocessing events.
- * @returns {Promise<void>}
+ * @returns {Promise<models.Order|null} Newly created or update order object.
+ *   Null in case event did not need to get processed.
  */
 async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
-  let data
   const eventName = event.eventName
 
   // Skip any event that is not offer related.
   if (eventName.indexOf('Offer') < 0) {
-    log.debug(`Not offer related. Ignoring event ${eventName}`)
-    return
+    log.info(`Not offer related. Ignoring event ${eventName}`)
+    return null
   }
 
   const offerId = `${shop.listingId}-${event.offerId}`
 
-  // Load the DB order associated with the blockchain offer.
+  // Load the order, if any already existing, associated with the blockchain offer.
   let order = await Order.findOne({
     where: {
       networkId: event.networkId,
@@ -146,184 +363,16 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
     }
   })
 
-  // If the order was already recorded, only update its status and we are done.
   if (order) {
-    log.debug(`Updating status of DB order ${order.orderId} to ${eventName}`)
-
-    const updatedFields = {
-      statusStr: eventName,
-      updatedBlock: event.blockNumber
-    }
-
-    let refundError
-
-    if (eventName === 'OfferWithdrawn') {
-      // Initiate payment refund
-      const paymentMethod = get(order, 'data.paymentMethod.id')
-
-      if (paymentMethod === 'stripe') {
-        log.info('Trying to refund Stripe payment')
-        try {
-          // Load the shop configuration.
-          const shopConfig = getConfig(shop.config)
-          const { dataUrl } = shopConfig
-          const ipfsGateway = await getIPFSGateway(dataUrl, event.networkId)
-          log.info('IPFS Gateway', ipfsGateway)
-
-          // Load the offer data to get the paymentCode
-          const offerData = await getText(ipfsGateway, order.ipfsHash, 10000)
-          const offer = JSON.parse(offerData)
-          log.info('Payment Code', offer.paymentCode)
-
-          const externalPayment = await ExternalPayment.findOne({
-            where: {
-              paymentCode: offer.paymentCode
-            },
-            attributes: ['payment_code', 'payment_intent']
-          })
-
-          const paymentIntent = externalPayment.get({ plain: true })
-            .payment_intent
-
-          log.info('Payment Intent', paymentIntent)
-
-          const stripe = Stripe(shopConfig.stripeBackend)
-          const piRefund = await stripe.refunds.create({
-            payment_intent: paymentIntent
-          })
-
-          refundError = piRefund.reason
-
-          if (!refundError) {
-            log.info('Payment refunded')
-          } else {
-            log.info('Failed to refund payment', refundError)
-          }
-        } catch (err) {
-          console.error(err)
-          log.error('Failed to refund payment')
-          refundError = 'Could not refund payment on Stripe'
-        }
-      }
-    }
-
-    updatedFields.data = {
-      ...order.data,
-      refundError
-    }
-
-    await order.update(updatedFields)
-
-    return order
-  }
-
-  // At this point we expect the event to be an offer creation since no existing
-  // order row was found in the DB.
-  if (eventName !== 'OfferCreated') {
-    log.error(
-      `Error: got event ${eventName} offerId ${offerId} but no order found in the DB.`
-    )
-    return
-  }
-
-  log.info(`${eventName} - ${event.offerId} by ${event.party}`)
-  log.info(`IPFS Hash: ${event.ipfsHash}`)
-
-  const network = await Network.findOne({ where: { active: true } })
-  const networkConfig = getConfig(network.config)
-
-  try {
-    // Load the shop configuration to read things like PGP key and IPFS gateway to use.
-    const shopConfig = getConfig(shop.config)
-    const { dataUrl, pgpPrivateKey, pgpPrivateKeyPass } = shopConfig
-    const ipfsGateway = await getIPFSGateway(dataUrl, event.networkId)
-    log.debug('IPFS Gateway', ipfsGateway)
-
-    // Load the offer data. The main thing we are looking for is the IPFS hash
-    // of the encrypted data.
-    const offerData = await getText(ipfsGateway, event.ipfsHash, 10000)
-    const offer = JSON.parse(offerData)
-    log.debug('Offer:', offer)
-
-    const encryptedHash = offer.encryptedData
-    if (!encryptedHash) {
-      throw new Error('No encrypted data found')
-    }
-
-    // Load the encrypted data from IPFS and decrypt it.
-    const encryptedDataJson = await getText(ipfsGateway, encryptedHash, 10000)
-    const encryptedData = JSON.parse(encryptedDataJson)
-
-    const privateKey = await openpgp.key.readArmored(pgpPrivateKey)
-    const privateKeyObj = privateKey.keys[0]
-    await privateKeyObj.decrypt(pgpPrivateKeyPass)
-
-    const message = await openpgp.message.readArmored(encryptedData.data)
-    const options = { message, privateKeys: [privateKeyObj] }
-
-    const plaintext = await openpgp.decrypt(options)
-    data = JSON.parse(plaintext.data)
-    data.offerId = offerId
-    data.tx = event.transactionHash
-
-    // Insert a new row in the orders DB table.
-    const orderObj = {
-      networkId: event.networkId,
-      shopId: shop.id,
-      orderId: offerId,
-      data,
-      statusStr: eventName,
-      updatedBlock: event.blockNumber,
-      createdAt: new Date(event.timestamp * 1000),
-      createdBlock: event.blockNumber,
-      ipfsHash: event.ipfsHash,
-      encryptedIpfsHash: encryptedHash
-    }
-    if (data.referrer) {
-      orderObj.referrer = util.toChecksumAddress(data.referrer)
-      orderObj.commissionPending = Math.floor(data.subTotal / 200)
-    }
-    const { valid, error } = await validateDiscountOnOrder(orderObj, {
-      markIfValid: true
-    })
-    if (!valid) {
-      orderObj.data.error = error
-    }
-    order = await Order.create(orderObj)
-    log.info(`Saved order ${order.orderId} to DB.`)
-
-    if (shopConfig.printful && shopConfig.printfulAutoFulfill) {
-      await autoFulfillOrder(order, shopConfig, shop)
-    }
-  } catch (e) {
-    log.error(e)
-    // Record the error in the DB and in Sentry.
-    order = await Order.create({
-      networkId: event.networkId,
-      shopId: shop.id,
-      orderId: offerId,
-      statusStr: 'error',
-      data: { error: e.message },
-      updatedBlock: event.blockNumber,
-      createdAt: new Date(event.timestamp * 1000),
-      createdBlock: event.blockNumber,
-      ipfsHash: event.ipfsHash
-    })
-    Sentry.captureException(e)
-    return order
-  }
-
-  // Send notifications via email and discord.
-  if (!skipEmail) {
-    await sendNewOrderEmail(shop, data)
-  }
-  if (!skipDiscord) {
-    await discordWebhook({
-      url: networkConfig.discordWebhook,
-      orderId: offerId,
-      shopName: shop.name,
-      total: `$${(data.total / 100).toFixed(2)}`,
-      items: data.items.map((i) => i.title).filter((t) => t)
+    // Existing order.
+    order = await _processEventForExistingOrder({ event, order })
+  } else {
+    // New order.
+    order = await _processEventForNewOrder({
+      event,
+      shop,
+      skipEmail,
+      skipDiscord
     })
   }
 
