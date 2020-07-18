@@ -42,7 +42,7 @@ const MarketplaceABI = Marketplace._jsonInterface
  * @returns {Promise<void>}
  * @throws In case of a recoverable error that should be re-tried.
  */
-async function _handleLog({
+async function handleLog({
   networkId,
   contractVersion,
   address,
@@ -107,12 +107,13 @@ async function _handleLog({
  * Refunds a Stripe payment.
  *
  * @param {Object} event: blockchain log.
+ * @param {models.Shop} shop: Shop DB object.
  * @param {models.Order} order: Order DB object.
  * @returns {Promise<null|string>} Returns null or the reason for the Stripe failure.
  * @throws In case of a recoverable error that should be re-tried.
  * @private
  */
-async function _processStripeRefund({ event, order }) {
+async function _processStripeRefund({ event, shop, order }) {
   log.info('Trying to refund Stripe payment')
   // Load the shop configuration.
   const shopConfig = getConfig(shop.config)
@@ -176,7 +177,7 @@ async function _processStripeRefund({ event, order }) {
  * @throws In case of a recoverable error that should be re-tried.
  * @private
  */
-async function _processEventForExistingOrder({ event, order }) {
+async function _processEventForExistingOrder({ event, shop, order }) {
   const eventName = event.eventName
 
   const updatedFields = {
@@ -188,8 +189,8 @@ async function _processEventForExistingOrder({ event, order }) {
     // If it's a Stripe payment, initiate a refund.
     const paymentMethod = get(order, 'data.paymentMethod.id')
     if (paymentMethod === 'stripe') {
-      const refundError = await _processStripeRefund({ event, order })
-      // Store the refund error in the order data.
+      const refundError = await _processStripeRefund({ event, shop, order })
+      // Store the refund error in the order's data JSON.
       updatedFields.data = {
         ...order.data,
         refundError
@@ -206,6 +207,7 @@ async function _processEventForExistingOrder({ event, order }) {
  * Processes a blockchain event for a new order that has not been recorded yet in the system.
  *
  * @param {Object} event: blockchain event.
+ * @param {string} offerId: fully qualified offer id.
  * @param {models.Shop} shop: SHop DB object.
  * @param {boolean} skipEmail: whether to skip sending a notification email to the merchant and buyer.
  * @param {boolean} skipDiscord: whether to skip sending a discord notification.
@@ -215,6 +217,7 @@ async function _processEventForExistingOrder({ event, order }) {
  */
 async function _processEventForNewOrder({
   event,
+  offerId,
   shop,
   skipEmail,
   skipDiscord
@@ -340,8 +343,8 @@ async function _processEventForNewOrder({
  *   reprocessing events, to avoid sending duplicate emails to the users.
  * @param {boolean} skipDiscord: do not call the Discord webhook. Useful
  *   for ex. when reprocessing events.
- * @returns {Promise<models.Order|null} Newly created or update order object.
- *   Null in case event did not need to get processed.
+ * @returns {Promise<models.Order|null} Newly created or updated DB order object.
+ *   Null in case the event did not need to get processed.
  */
 async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
   const eventName = event.eventName
@@ -352,9 +355,10 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
     return null
   }
 
+  // Construct a fully-qualified offerId.
   const offerId = `${shop.listingId}-${event.offerId}`
 
-  // Load the order, if any already existing, associated with the blockchain offer.
+  // Load any existing order associated with this blockchain offer.
   let order = await Order.findOne({
     where: {
       networkId: event.networkId,
@@ -365,11 +369,12 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
 
   if (order) {
     // Existing order.
-    order = await _processEventForExistingOrder({ event, order })
+    order = await _processEventForExistingOrder({ event, shop, order })
   } else {
     // New order.
     order = await _processEventForNewOrder({
       event,
+      offerId,
       shop,
       skipEmail,
       skipDiscord
