@@ -83,7 +83,7 @@ async function handleLog({
   log.info(`Event ${eventObj.eventName} for listing Id ${listingId}`)
 
   // The listener calls handleLog for any event emitted by the marketplace.
-  // Skip processing any event that is not shop related.
+  // Skip processing any event that is not dshop related.
   const shop = await Shop.findOne({ where: { listingId } })
   if (!shop) {
     log.debug(`Event is not for a registered dshop. Skipping.`)
@@ -170,6 +170,14 @@ async function _processStripeRefund({ event, shop, order }) {
 
 /**
  * Processes a blockchain event for an order already recorded in the system.
+ *
+ * TODO:
+ *  - This method assumes blockchain events are always processed in order.
+ * We should add safeguards based on the current status of the order before
+ * running any logic and updating the status.
+ *  - As opposed to updating the order row, it would be better to consider the
+ *  orders table as append-only and insert a new row every time an order is
+ *  updated. This way we would have an auditable log of the changes.
  *
  * @param {Object} event: blockchain log.
  * @param {models.Order} order: Order DB object.
