@@ -64,12 +64,12 @@
     "sharp": "0.25.4",
     "sqlite3": "^5.0.0",
     "stripe": "^8.69.0",
-    "web3": "1.2.9",
+    "web3": "1.2.11",
     "ws": "^7.3.1"
   },
   "devDependencies": {
     "chai": "4.2.0",
-    "eslint": "7.4.0",
+    "eslint": "7.5.0",
     "mocha": "8.0.1",
     "prettier": "2.0.5"
   },
