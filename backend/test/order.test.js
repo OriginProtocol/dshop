@@ -358,7 +358,7 @@ describe('Orders', () => {
 
     let failure = false
     try {
-      const order = await processDShopEvent({ event, shop })
+      await processDShopEvent({ event, shop })
     } catch (e) {
       failure = true
     }
