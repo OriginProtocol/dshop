@@ -23,7 +23,9 @@ const log = getLogger('utils.handleLog')
 
 const { validateDiscountOnOrder } = require('./discounts')
 
-const IPFS_TIMEOUT = 30000 // 30sec in msec
+const { IS_TEST } = require('../utils/const')
+
+const IPFS_TIMEOUT = 60000 // 60sec in msec
 
 const web3 = new Web3()
 const Marketplace = new web3.eth.Contract(abi)
@@ -40,7 +42,7 @@ const MarketplaceABI = Marketplace._jsonInterface
  * @param {Integer} blockNumber: block number
  * @param {Function} mockGetEventObj: for testing only. Mock function to call to parse the event.
  * @returns {Promise<void>}
- * @throws In case of a recoverable error that should be re-tried.
+ * @throws {Error}
  */
 async function handleLog({
   networkId,
@@ -110,10 +112,13 @@ async function handleLog({
  * @param {models.Shop} shop: Shop DB object.
  * @param {models.Order} order: Order DB object.
  * @returns {Promise<null|string>} Returns null or the reason for the Stripe failure.
- * @throws In case of a recoverable error that should be re-tried.
+ * @throws {Error}
  * @private
  */
 async function _processStripeRefund({ event, shop, order }) {
+  if (IS_TEST) {
+    return null
+  }
   log.info('Trying to refund Stripe payment')
   // Load the shop configuration.
   const shopConfig = getConfig(shop.config)
@@ -182,7 +187,7 @@ async function _processStripeRefund({ event, shop, order }) {
  * @param {Object} event: blockchain log.
  * @param {models.Order} order: Order DB object.
  * @returns {Promise<models.Order>} The updated order.
- * @throws In case of a recoverable error that should be re-tried.
+ * @throws {Error}
  * @private
  */
 async function _processEventForExistingOrder({ event, shop, order }) {
@@ -220,7 +225,7 @@ async function _processEventForExistingOrder({ event, shop, order }) {
  * @param {boolean} skipEmail: whether to skip sending a notification email to the merchant and buyer.
  * @param {boolean} skipDiscord: whether to skip sending a discord notification.
  * @returns {Promise<models.Order>} Newly created order.
- * @throws In case of a recoverable error that should be re-tried.
+ * @throws {Error}
  * @private
  */
 async function _processEventForNewOrder({

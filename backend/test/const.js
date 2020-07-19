@@ -1,4 +1,4 @@
-const TMP_DIR = `/tmp/dshop_cache-${new Date().toISOString()}`
+const TEST_TMP_DIR = process.env.TEST_TMP_DIR
 const BACKEND_PORT = 8357
 
 module.exports = {
@@ -6,9 +6,9 @@ module.exports = {
   ROOT_BACKEND_URL: `http://localhost:${BACKEND_PORT}`,
   IPFS_GATEWAY: `http://localhost:8080`,
   TEST_NETWORK_ID: 999,
-  TMP_DIR,
-  TEST_DATABASE_URL: `sqlite:${TMP_DIR}/dshop.db`,
-  TEST_DSHOP_CACHE: `${TMP_DIR}/dshop-cache`,
+  TEST_TMP_DIR,
+  TEST_DATABASE_URL: `sqlite:${TEST_TMP_DIR}/dshop.db`,
+  TEST_DSHOP_CACHE: `${TEST_TMP_DIR}/dshop-cache`,
   TEST_HASH_1: 'QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx',
   TEST_DOMAIN_1: 'originprotocol.com',
   BAD_DOMAIN_1: 'thisisnotarealdomaindotcom135.com',

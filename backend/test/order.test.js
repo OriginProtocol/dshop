@@ -256,7 +256,7 @@ describe('Orders', () => {
   it('It should insert an order from an event', async () => {
     const shop = await Shop.findByPk(shopId)
 
-    offerId = Math.round(Date.now() / 1000) // Use timestamp in second as a unique offer id.
+    offerId = Date.now() // Use timestamp in msec as a unique offer id.
     const fullOfferId = `${listingId}-${offerId}`
 
     // Create a fake OfferCreated blockchain event.
@@ -313,5 +313,55 @@ describe('Orders', () => {
     expect(order).to.be.an('object')
     expect(order.statusStr).to.equal('OfferAccepted')
     expect(order.updatedBlock).to.equal(2)
+  })
+
+  it('It should update an order on an OfferWithdrawn event', async () => {
+    const shop = await Shop.findByPk(shopId)
+
+    // Create a fake OfferWithdrawn blockchain event.
+    const event = {
+      eventName: 'OfferWithdrawn',
+      offerId,
+      party: '0xabcdef',
+      ipfsHash: offerIpfsHash, // TODO: use a separate offer withdrawn IPFS blob.
+      networkId: 999,
+      transactionHash: '0x12AB',
+      blockNumber: 3,
+      timestamp: Date.now() / 1000
+    }
+
+    // Call the logic for processing the event.
+    await processDShopEvent({ event, shop })
+
+    // Check the order status and updateBlock were updated.
+    const fullOfferId = `${listingId}-${offerId}`
+    const order = await Order.findOne({ where: { orderId: fullOfferId } })
+    expect(order).to.be.an('object')
+    expect(order.statusStr).to.equal('OfferWithdrawn')
+    expect(order.updatedBlock).to.equal(3)
+  })
+
+  it('It should throw an exception in case of failure to fetch the offer data from IPFS', async () => {
+    const shop = await Shop.findByPk(shopId)
+
+    // Create a fake OfferWithdrawn blockchain event.
+    const event = {
+      eventName: 'OfferCreated',
+      offerId: Date.now(), // Use timestamp in msec as a unique offer id.
+      party: '0xabcdef',
+      ipfsHash: 'invalidHash',
+      networkId: 999,
+      transactionHash: '0x12ABED789',
+      blockNumber: 4,
+      timestamp: Date.now() / 1000
+    }
+
+    let failure = false
+    try {
+      const order = await processDShopEvent({ event, shop })
+    } catch (e) {
+      failure = true
+    }
+    expect(failure).to.be.true
   })
 })

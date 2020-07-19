@@ -15,7 +15,7 @@ const {
   TEST_UNSTOPPABLE_DOMAIN_1
 } = require('./const')
 
-describe('Orders', () => {
+describe('Shops', () => {
   let shopId
   before(async () => {})
 
@@ -95,7 +95,6 @@ describe('Orders', () => {
         Authorization: `Bearer ${TEST_SHOP_TOKEN_1}`
       }
     })
-
     expect(jason.success).to.be.true
     expect(jason.deployment.id).to.be.a('number')
     expect(jason.deployment.shopId).to.be.a('number')
