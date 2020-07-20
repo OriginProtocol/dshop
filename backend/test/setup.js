@@ -62,13 +62,15 @@ if (isWatchMode) {
   after(async function () {
     await shutdownServices()
 
-    console.log(`Cleaning up test data in ${TEST_TMP_DIR}...`)
-    // Note: fs.rmdirSync(TEST_TMP_DIR, { recursive: true }) is still experimental and does not seem to work.
-    await new Promise((resolve, reject) => {
-      execFile('rm', ['-rf', TEST_TMP_DIR], (err) => {
-        if (err) return reject(err)
-        resolve()
+    if (TEST_TMP_DIR.startsWith('/tmp') && !process.env.LEAVE_TEST_TMP_DIR) {
+      console.log(`Cleaning up test data in ${TEST_TMP_DIR}...`)
+      // Note: fs.rmdirSync(TEST_TMP_DIR, { recursive: true }) is still experimental and does not seem to work.
+      await new Promise((resolve, reject) => {
+        execFile('rm', ['-rf', TEST_TMP_DIR], (err) => {
+          if (err) return reject(err)
+          resolve()
+        })
       })
-    })
+    }
   })
 }

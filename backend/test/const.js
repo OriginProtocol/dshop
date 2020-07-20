@@ -1,4 +1,5 @@
-const TEST_TMP_DIR = process.env.TEST_TMP_DIR
+const TEST_TMP_DIR =
+  process.env.TEST_TMP_DIR || `/tmp/dshop_cache-${new Date().toISOString()}`
 const BACKEND_PORT = 8357
 
 module.exports = {

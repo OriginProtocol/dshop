@@ -10,7 +10,8 @@ const db = {}
 let URI
 if (process.env.NODE_ENV === 'test') {
   // In test environment, always use SQLite with storage in a tmp directory.
-  URI = `sqlite:${process.env.TEST_TMP_DIR}/dshop.db`
+  const { TEST_TMP_DIR } = require('../test/const')
+  URI = `sqlite:${TEST_TMP_DIR}/dshop.db`
 } else {
   // In non-test environments, fallback to SQLite if DATABASE_URL is not defined.
   const sqliteURI = `sqlite:${__dirname}/../db/dshop.db`

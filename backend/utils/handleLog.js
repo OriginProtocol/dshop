@@ -117,6 +117,7 @@ async function handleLog({
  */
 async function _processStripeRefund({ event, shop, order }) {
   if (IS_TEST) {
+    log.info('Test environment. Skipping Stripe refund logic.')
     return null
   }
   log.info('Trying to refund Stripe payment')
