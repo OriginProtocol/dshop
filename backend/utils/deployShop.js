@@ -239,7 +239,10 @@ async function deployShop({
       .replace('DATA_DIR', dataDir)
       .replace('NETWORK', networkName)
       .replace('FAVICON', publicShopConfig.favicon || 'favicon.ico')
-      .replace('LOG_SENTRY_ERRORS', (!!publicShopConfig.logErrors || false).toString())
+      .replace(
+        'LOG_SENTRY_ERRORS',
+        (!!publicShopConfig.logErrors || false).toString()
+      )
   )
 
   // Note: for legacy reasons, the URLs for the IPFS Gateway and API are stored in
