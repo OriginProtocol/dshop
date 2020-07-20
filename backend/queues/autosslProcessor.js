@@ -1,3 +1,4 @@
+const { Sentry } = require('../sentry')
 const { triggerAutoSSL } = require('../utils/autossl')
 const { getLogger } = require('../utils/logger')
 
@@ -24,7 +25,9 @@ const processor = async (job) => {
   if (!success) {
     const errMsg = 'AutoSSL priming failed'
     logger.error(errMsg)
-    throw new Error(errMsg)
+    const e = new Error(errMsg)
+    Sentry.captureException(e)
+    throw e
   }
 
   log(100, 'Finished')
