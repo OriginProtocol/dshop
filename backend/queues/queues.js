@@ -6,12 +6,14 @@
  *
  * Example REDIS_URL=redis://0.0.0.0:6379
  */
-
+const { Sentry } = require('../sentry')
 const { REDIS_URL } = require('../utils/const')
+const { getLogger } = require('../utils/logger')
 
 const Queue = REDIS_URL ? require('bull') : require('./fallbackQueue')
 const backendUrl = REDIS_URL ? REDIS_URL : undefined
 const queueOpts = {}
+const log = getLogger('queues.autosslProcessor')
 
 const all = [
   new Queue(
@@ -65,6 +67,13 @@ const all = [
     })
   )
 ]
+
+all.forEach((q) =>
+  q.on('failed', function (job, err) {
+    Sentry.captureException(err)
+    log.error(`Job failed with error: ${err.toString()}`)
+  })
+)
 
 module.exports = {}
 for (const queue of all) {
