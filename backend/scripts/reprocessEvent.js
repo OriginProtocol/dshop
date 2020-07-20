@@ -38,14 +38,14 @@ async function reprocess(config) {
   const offerId = program.offerId
 
   // Load the event from the DB.
-  const event = await Event.findOne({ where: { networkId, listingId, offerId }})
+  const event = await Event.findOne({ where: { networkId, listingId, offerId } })
   if (!event) {
     throw new Error(`No event found for networkId=${networkId} listingId=${listingId} offerId=${offerId}`)
   }
   log.info('Found Event:', event.get({ plain: true }))
 
   // Load the associated shop.
-  const shop = await Shop.findOne({ where: { id: event.shopId }})
+  const shop = await Shop.findOne({ where: { id: event.shopId } })
   if (!shop) {
     throw new Error(`No shop with id ${event.shopId} found.`)
   }
@@ -53,7 +53,7 @@ async function reprocess(config) {
 
   // Sanity check that if there is already an order, its status is error.
   const orderId = `${networkId}-001-${listingId}-${offerId}`
-  const order = await Order.findOne({ where: { orderId }})
+  const order = await Order.findOne({ where: { orderId } })
   if (order) {
     if (order.statusStr !== 'error') {
       throw new Error(`Found existing order ${orderId} with non-error status ${order.statusStr}`)
