@@ -31,16 +31,19 @@ if (!process.argv.slice(2).length) {
 
 program.parse(process.argv)
 
-
 async function reprocess(config) {
   const networkId = program.networkId
   const listingId = program.listingId
   const offerId = program.offerId
 
   // Load the event from the DB.
-  const event = await Event.findOne({ where: { networkId, listingId, offerId } })
+  const event = await Event.findOne({
+    where: { networkId, listingId, offerId }
+  })
   if (!event) {
-    throw new Error(`No event found for networkId=${networkId} listingId=${listingId} offerId=${offerId}`)
+    throw new Error(
+      `No event found for networkId=${networkId} listingId=${listingId} offerId=${offerId}`
+    )
   }
   log.info('Found Event:', event.get({ plain: true }))
 
@@ -56,7 +59,9 @@ async function reprocess(config) {
   const order = await Order.findOne({ where: { orderId } })
   if (order) {
     if (order.statusStr !== 'error') {
-      throw new Error(`Found existing order ${orderId} with non-error status ${order.statusStr}`)
+      throw new Error(
+        `Found existing order ${orderId} with non-error status ${order.statusStr}`
+      )
     }
     log.info(`Found existing order ${orderId}:`, order.get({ plain: true }))
   } else {
