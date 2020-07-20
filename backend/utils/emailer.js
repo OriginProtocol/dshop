@@ -12,7 +12,7 @@ const { Network, Shop } = require('../models')
 
 const cartData = require('./cartData')
 const encConf = require('./encryptedConfig')
-const { SUPPORT_EMAIL_OVERRIDE } = require('./const')
+const { SUPPORT_EMAIL_OVERRIDE, IS_TEST } = require('./const')
 
 const head = require('./templates/head')
 const vendor = require('./templates/vendor')
@@ -59,6 +59,17 @@ function optionsForItem(item) {
  */
 // TODO: Add unit test for this
 async function getEmailTransporterAndConfig(shop) {
+  if (IS_TEST) {
+    return {
+      transporter: {},
+      supportEmail: 'support@ogn.app',
+      configJson: {},
+      shopConfig: {
+        dataURL: 'https://testshop.ogn.app/data',
+        publicURL: 'https://testshop.ogn.app'
+      }
+    }
+  }
   const network = await Network.findOne({
     where: { networkId: shop.networkId, active: true }
   })
@@ -150,14 +161,14 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     return
   }
 
-  if (process.env.NODE_ENV === 'test') {
+  if (IS_TEST) {
     log.info('Test environment. Email will be generated but not sent.')
     skip = true
   }
 
   const dataURL = config.dataUrl
   let publicURL = config.publicUrl
-  const items = await cartData(dataURL, cart.items)
+  const items = IS_TEST ? [] : await cartData(dataURL, cart.items)
   const attachments = [],
     orderItems = []
 
@@ -197,9 +208,12 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     })
   })
 
+  // Extract the email address from supportEmail in case its format is "name <email>".
+  // For example "Dshop Support <support@ogn.app>" -> "support@ogn.app".
   let supportEmailPlain = supportEmail
-  if (supportEmailPlain.match(/<([^>]+)>/)[1]) {
-    supportEmailPlain = supportEmailPlain.match(/<([^>]+)>/)[1]
+  const match = supportEmailPlain.match(/<([^>]+)>/)
+  if (match) {
+    supportEmailPlain = match[1]
   }
 
   if (!data.absolute) {
