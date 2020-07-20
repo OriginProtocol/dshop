@@ -341,7 +341,7 @@ describe('Orders', () => {
     expect(order.updatedBlock).to.equal(3)
   })
 
-  it('It should throw an exception in case of failure to fetch the offer data from IPFS', async () => {
+  it('It should throw an exception in case of a failure to fetch the offer data from IPFS', async () => {
     const shop = await Shop.findByPk(shopId)
 
     // Create a fake OfferWithdrawn blockchain event.

@@ -66,7 +66,7 @@ async function getEmailTransporterAndConfig(shop) {
       configJson: {},
       shopConfig: {
         dataURL: 'https://testshop.ogn.app/data',
-        publicURL: 'https://testshop.ogn.app/data'
+        publicURL: 'https://testshop.ogn.app'
       }
     }
   }
