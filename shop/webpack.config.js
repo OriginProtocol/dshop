@@ -173,7 +173,8 @@ const webpackConfig = {
       sentryDSN: process.env.SENTRY_DSN,
       logErrors: process.env.OVERRIDE_LOG_ERRORS
         ? true
-        : siteConfig.logErrors || false
+        : siteConfig.logErrors || false,
+      sentryEnvironment: process.env.ENVIRONMENT
     }),
     new webpack.EnvironmentPlugin({
       WEBPACK_BUILD: true,

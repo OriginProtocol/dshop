@@ -55,7 +55,8 @@
         window._sentryLoaded = true
 
         Sentry.init({ 
-          dsn: '<%= htmlWebpackPlugin.options.sentryDSN %>'
+          dsn: '<%= htmlWebpackPlugin.options.sentryDSN %>',
+          environment: '<%= htmlWebpackPlugin.options.sentryEnvironment %>',
         })
       }
     </script>
