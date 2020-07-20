@@ -7,6 +7,7 @@ function runProcessors() {
   require('./makeOfferProcessor').attachToQueue()
   require('./printfulSyncProcessor').attachToQueue()
   require('./eventsProcessor').attachToQueue()
+  require('./autosslProcessor').attachToQueue()
 }
 
 module.exports = {

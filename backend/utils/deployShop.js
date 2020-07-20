@@ -4,18 +4,16 @@ const fs = require('fs')
 const { execFile } = require('child_process')
 
 const { ShopDeployment, ShopDeploymentName } = require('../models')
+const { autosslQueue } = require('../queues/queues')
 const { getLogger } = require('../utils/logger')
 
 const { getConfig } = require('./encryptedConfig')
 const prime = require('./primeIpfs')
-const { getHTTPS } = require('./http')
 const setCloudflareRecords = require('./dns/cloudflare')
 const setCloudDNSRecords = require('./dns/clouddns')
 
 const log = getLogger('utils.deployShop')
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
-const AUTOSSL_MAX_ATTEMPTS = 5
-const AUTOSSL_BACKOFF = 30000
 
 const PROTOCOL_LABS_GATEWAY = 'https://gateway.ipfs.io'
 const PINATA_API = 'https://api.pinata.cloud'
@@ -49,70 +47,6 @@ function urlToMultiaddr(v, opts) {
     0,
     -1
   )}${url.pathname}`
-}
-
-/**
- * Trigger AutoSSL to generate cert
- *
- * @param url {T} URL object or string to connect to
- * @returns {boolean} if it was successful
- */
-async function triggerAutoSSL(url, autoSSLHost) {
-  let success = false
-  let attempts = 1
-
-  url = url instanceof URL ? url : new URL(url)
-  const hostname = url.hostname
-  url.hostname = autoSSLHost.includes('//')
-    ? autoSSLHost.split('//').slice(-1)
-    : autoSSLHost
-
-  log.debug(`Making request to ${url.hostname} with header (Host: ${hostname})`)
-
-  for (;;) {
-    try {
-      await getHTTPS({
-        host: url.hostname,
-        path: url.pathname,
-        port: url.port || 443,
-        servername: hostname,
-        headers: {
-          host: hostname
-        }
-      })
-      success = true
-      break
-    } catch (err) {
-      log.info(
-        `Error when attempting to trigger AutoSSL on attempt ${attempts}:`,
-        err
-      )
-
-      if (attempts <= AUTOSSL_MAX_ATTEMPTS) {
-        // sleep with backoff
-        await (async () => {
-          log.debug(
-            `AutoSSL trigger backing off by ${attempts * AUTOSSL_BACKOFF}ms`
-          )
-          return new Promise((resolve) =>
-            setTimeout(resolve, attempts * AUTOSSL_BACKOFF)
-          )
-        })()
-
-        attempts += 1
-      } else {
-        break
-      }
-    }
-  }
-
-  if (!success) {
-    log.error('Error trying to auto-trigger AutoSSL')
-  } else {
-    log.debug('AutoSSL trigger completed')
-  }
-
-  return success
 }
 
 async function configureShopDNS({
@@ -335,7 +269,10 @@ async function deployShop({
     await configureShopDNS({ network, subdomain, zone, hash, dnsProvider })
     if (domain && network.ipfs) {
       // Intentionally not awaiting on this so we can return to the user faster
-      triggerAutoSSL(domain, network.ipfs)
+      await autosslQueue.add({
+        url: domain,
+        host: network.ipfs
+      })
     }
   }
 
