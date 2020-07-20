@@ -18,6 +18,7 @@ class FallbackQueue {
     this.name = name
     this.processor = undefined
     this.opts = opts
+    this.eventHandlers = {}
   }
 
   /**
@@ -68,6 +69,14 @@ class FallbackQueue {
       delayed: -1,
       paused: -1
     }
+  }
+
+  /**
+   * Event handlers
+   */
+  on(name, cb) {
+    // TODO: implement event triggers?  ref: https://github.com/OptimalBits/bull/blob/712df1db6f132fa8198745be298d2d8befa203b1/lib/queue.js#L328-L331
+    this.eventHandlers[name] = cb
   }
 }
 
