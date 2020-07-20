@@ -108,7 +108,7 @@ async function handleLog({
 /**
  * Refunds a Stripe payment.
  *
- * @param {Object} event: blockchain log.
+ * @param {models.Event} event: Event DB object.
  * @param {models.Shop} shop: Shop DB object.
  * @param {models.Order} order: Order DB object.
  * @returns {Promise<null|string>} Returns null or the reason for the Stripe failure.
@@ -184,7 +184,7 @@ async function _processStripeRefund({ event, shop, order }) {
  *  orders table as append-only and insert a new row every time an order is
  *  updated. This way we would have an auditable log of the changes.
  *
- * @param {Object} event: blockchain log.
+ * @param {models.Event} event: Event DB object.
  * @param {models.Order} order: Order DB object.
  * @returns {Promise<models.Order>} The updated order.
  * @throws {Error}
@@ -219,7 +219,7 @@ async function _processEventForExistingOrder({ event, shop, order }) {
 /**
  * Processes a blockchain event for a new order that has not been recorded yet in the system.
  *
- * @param {Object} event: blockchain event.
+ * @param {models.Event} event: Event DB object.
  * @param {string} offerId: fully qualified offer id.
  * @param {models.Shop} shop: SHop DB object.
  * @param {boolean} skipEmail: whether to skip sending a notification email to the merchant and buyer.
@@ -350,8 +350,8 @@ async function _processEventForNewOrder({
 /**
  * Processes a dshop event
  * @param {string} listingId: fully qualified listing id
- * @param {Event} event: Event DB model object.
- * @param {Shop} shop: Shop DB model object.
+ * @param {models.Event} event: Event DB object.
+ * @param {models.Shop} shop: Shop DB object.
  * @param {boolean} skipEmail: do not send any email. Useful for ex. when
  *   reprocessing events, to avoid sending duplicate emails to the users.
  * @param {boolean} skipDiscord: do not call the Discord webhook. Useful
