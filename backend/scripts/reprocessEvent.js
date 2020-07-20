@@ -1,7 +1,8 @@
 // A utility script for reprocessing a blockchain event.
 // Can be used in case the listener errored out while processing an event.
+// The script expects the event to have been recorded in the events DB table.
 //
-// Note: easiest is to run the script from local after having setup
+// Note: The easiest is to run the script from local after having setup
 // a SQL proxy to prod and the ENCRYPTION_KEY env var.
 //
 // Examples:
