@@ -740,7 +740,8 @@ module.exports = function (router) {
         'instagram',
         'medium',
         'youtube',
-        'about'
+        'about',
+        'logErrors'
       )
       let listingId
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {

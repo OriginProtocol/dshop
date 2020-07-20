@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react'
+import React, { useReducer, useEffect } from 'react'
 import useSentry from 'utils/useSentry'
 
 import Modal from './Modal'
@@ -10,7 +10,8 @@ const ReportErrorModal = ({ onClose, errorEvent }) => {
 
   const [state, setState] = useReducer(reducer, {
     showModal: false,
-    shouldClose: false
+    shouldClose: false,
+    reportSent: false
   })
 
   const onConfirm = async () => {
@@ -19,9 +20,19 @@ const ReportErrorModal = ({ onClose, errorEvent }) => {
       skipProcessing: true
     })
     setState({
-      shouldClose: true
+      reportSent: true
     })
   }
+
+  useEffect(() => {
+    if (state.reportSent) {
+      const timeout = setTimeout(() => {
+        setState({ shouldClose: true })
+      }, 2000)
+
+      return () => clearTimeout(timeout)
+    }
+  }, [state.reportSent])
 
   return (
     <Modal
@@ -32,31 +43,41 @@ const ReportErrorModal = ({ onClose, errorEvent }) => {
       }}
     >
       <div className="modal-body report-error-modal">
-        <h5>It looks like we&apos;re having issues.</h5>
+        {state.reportSent ? (
+          <>
+            <h5>Thank you.</h5>
+            <div>Your report has been submitted.</div>
+          </>
+        ) : (
+          <>
+            <h5>It looks like we&apos;re having issues.</h5>
 
-        <div>
-          Would you like to send a report of the error so that we can fix it?
-        </div>
+            <div>
+              Would you like to send a report of the error so that we can fix
+              it?
+            </div>
 
-        <div className="actions">
-          <button
-            className="btn btn-outline-primary mr-2"
-            type="button"
-            onClick={() => {
-              setState({ shouldClose: true })
-            }}
-          >
-            Skip
-          </button>
-          <button
-            className="btn btn-primary"
-            type="button"
-            onClick={onConfirm}
-            disabled={state.saving}
-          >
-            Yes
-          </button>
-        </div>
+            <div className="actions">
+              <button
+                className="btn btn-outline-primary mr-2"
+                type="button"
+                onClick={() => {
+                  setState({ shouldClose: true })
+                }}
+              >
+                Skip
+              </button>
+              <button
+                className="btn btn-primary"
+                type="button"
+                onClick={onConfirm}
+                disabled={state.saving}
+              >
+                Yes
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </Modal>
   )

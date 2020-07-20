@@ -9,6 +9,7 @@ import Payments from './payments/List'
 import Apps from './apps/List'
 import Deployments from './deployments/List'
 import Shipping from './shipping/List'
+import Advanced from './Advanced'
 
 const AdminSettings = () => (
   <Switch>
@@ -32,6 +33,9 @@ const AdminSettings = () => (
     </Route>
     <Route path="/admin/settings/shipping">
       <Shipping />
+    </Route>
+    <Route path="/admin/settings/advanced">
+      <Advanced />
     </Route>
     <Route>
       <Appearance />
