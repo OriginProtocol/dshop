@@ -301,13 +301,6 @@ const ShopAppearance = () => {
               onChange={(e) => setAboutText(e.editor.getData())}
             />
           </div>
-          {/* <div className="form-group">
-            <label>
-              Meta Description
-              <span>(for SEO only. Will appear in HTML)</span>
-            </label>
-            <input {...input('metaDescription')} />
-          </div> */}
           <div className="form-group">
             <label>
               Cart Summary Note
@@ -342,10 +335,6 @@ const ShopAppearance = () => {
               <span>(for receipt emails)</span>
             </label>
             <textarea style={{ minHeight: '15vh' }} {...input('emailBody')} />
-          </div> */}
-          {/* <div className="form-group">
-            <label>Custom CSS</label>
-            <textarea style={{ minHeight: '15vh' }} {...input('css')} />
           </div> */}
         </div>
 

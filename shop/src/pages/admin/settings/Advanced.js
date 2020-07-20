@@ -25,7 +25,6 @@ const AdvancedSettings = () => {
   const input = formInput(state, (newState) =>
     setState({ ...newState, hasChanges: true })
   )
-  // const Feedback = formFeedback(state)
 
   useEffect(() => {
     setState({
