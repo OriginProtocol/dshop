@@ -45,6 +45,12 @@ const Admin = () => {
     return <Login />
   }
 
+  // Force admin users to backend URL
+  if (admin.backendUrl && admin.backendUrl !== window.location.origin) {
+    window.location = `${admin.backendUrl}/${window.location.hash}`
+    return <div className="fixed-loader">Redirecting...</div>
+  }
+
   if (!config.activeShop || !shops.length) {
     return <StoreSelector {...{ setActiveShop, admin, newShop, setNewShop }} />
   }

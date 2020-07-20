@@ -1,10 +1,12 @@
 import React from 'react'
 import get from 'lodash/get'
 
+import Link from 'components/Link'
 import Nav from './_Nav'
 
 const StoreSelector = ({ setActiveShop, admin, newShop, setNewShop }) => {
   const shops = get(admin, 'shops', [])
+  const superuser = get(admin, 'superuser', false)
   return (
     <div className="admin">
       <Nav newShop={newShop} setNewShop={setNewShop} />
@@ -42,6 +44,11 @@ const StoreSelector = ({ setActiveShop, admin, newShop, setNewShop }) => {
               onClick={() => setNewShop(true)}
               children="Add Store"
             />
+            {!superuser ? null : (
+              <Link to="/super-admin" className="btn btn-link">
+                Super admin
+              </Link>
+            )}
           </div>
         </div>
       )}
@@ -85,6 +92,9 @@ require('react-styl')(`
     flex: 1
     .create-shop
       margin-top: 2rem
+      display: flex
+      flex-direction: column
+      align-items: center
     .shops
       margin-top: 1.5rem
       &.multi

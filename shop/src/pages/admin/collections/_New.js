@@ -56,7 +56,7 @@ const AdminCreateCollection = ({
 
   return (
     <ConfirmationModal
-      className={children ? className : `btn btn-primary px-4 ${className}`}
+      className={children ? className : `btn btn-primary px-5 ${className}`}
       buttonText={children || buttonText}
       confirmText={collection ? 'Edit Collection' : 'Add a Collection'}
       confirmedText={false}
@@ -93,7 +93,12 @@ const AdminCreateCollection = ({
     >
       <div className="form-row mt-3">
         <label>Collection name</label>
-        <input ref={title} {...input('title')} autoFocus />
+        <input
+          ref={title}
+          {...input('title')}
+          autoFocus
+          placeholder="e.g. Apparel"
+        />
         {Feedback('title')}
       </div>
     </ConfirmationModal>

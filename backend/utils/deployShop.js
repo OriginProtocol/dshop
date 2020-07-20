@@ -311,12 +311,12 @@ async function deployShop({
   } else if (network.ipfsApi.indexOf('localhost') > 0) {
     // Local dev deployment.
     const ipfs = ipfsClient(network.ipfsApi)
-    const allFiles = []
-    const glob = ipfsClient.globSource(publicDirPath, { recursive: true })
-    for await (const file of ipfs.add(glob)) {
-      allFiles.push(file)
-    }
-    hash = String(allFiles[allFiles.length - 1].cid)
+    const file = await ipfs.add(
+      ipfsClient.globSource(publicDirPath, { recursive: true })
+    )
+    hash = String(file.cid)
+    pinnerUrl = network.ipfsApi
+    pinnerGatewayUrl = network.ipfs
     log.info(`Deployed shop on local IPFS. Hash=${hash}`)
   } else {
     log.warn(

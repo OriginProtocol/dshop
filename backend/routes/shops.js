@@ -297,7 +297,7 @@ module.exports = function (router) {
     let originalDataDir = kebabCase(req.body.dataDir)
     let dataDir = kebabCase(req.body.dataDir)
 
-    if (shopType !== 'localDir') {
+    if (shopType !== 'local-dir') {
       // If dataDir already exists, try dataDir-1, dataDir-2 etc until it works
       let postfix = 1
       const existingPostfix = dataDir.match(/^(.*)-([0-9]+)$/)
@@ -992,7 +992,7 @@ module.exports = function (router) {
       } else if (networkConfig.pinataKey) {
         pinner = 'pinata'
       }
-      if (!pinner) {
+      if (!pinner && network.ipfsApi.indexOf('http://localhost') < 0) {
         return res.json({ success: false, reason: 'no-pinner-configured' })
       }
 
