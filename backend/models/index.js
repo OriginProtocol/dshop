@@ -3,11 +3,21 @@ require('dotenv').config()
 const fs = require('fs')
 const path = require('path')
 const Sequelize = require('sequelize')
+
 const basename = path.basename(__filename)
 const db = {}
 
-const SqliteURI = `sqlite:${__dirname}/../db/dshop.db`
-const URI = process.env.DATABASE_URL || SqliteURI
+let URI
+if (process.env.NODE_ENV === 'test') {
+  // In test environment, always use SQLite with storage in a tmp directory.
+  const { TEST_TMP_DIR } = require('../test/const')
+  URI = `sqlite:${TEST_TMP_DIR}/dshop.db`
+} else {
+  // In non-test environments, fallback to SQLite if DATABASE_URL is not defined.
+  const sqliteURI = `sqlite:${__dirname}/../db/dshop.db`
+  URI = process.env.DATABASE_URL || sqliteURI
+}
+
 const sequelize = new Sequelize(URI, {
   logging: false,
   underscored: true,

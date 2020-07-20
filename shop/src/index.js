@@ -1,8 +1,12 @@
+require('dotenv').config()
+
 import React from 'react'
 import ReactDOM from 'react-dom'
 
 import { HashRouter, BrowserRouter } from 'react-router-dom'
 import Styl from 'react-styl'
+
+import SentryErrorBoundary from 'components/SentryErrorBoundary'
 
 import { StateProvider } from 'data/state'
 import App from './pages/App'
@@ -21,11 +25,13 @@ if (process.env.NODE_ENV === 'production') {
 
 const Providers = () => {
   return (
-    <Router>
-      <StateProvider>
-        <App />
-      </StateProvider>
-    </Router>
+    <SentryErrorBoundary>
+      <Router>
+        <StateProvider>
+          <App />
+        </StateProvider>
+      </Router>
+    </SentryErrorBoundary>
   )
 }
 

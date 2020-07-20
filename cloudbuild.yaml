@@ -36,6 +36,8 @@ steps:
         docker build \
             -f ./devops/Dockerfile \
             -t "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+            --build-arg SENTRY_DSN=${_SENTRY_DSN} \
+            --build-arg ENVIRONMENT=${_ENVIRONMENT} \
             $(pwd)
 
   - id: 'Push the image to GCR'
@@ -87,5 +89,5 @@ steps:
 
         kubectl -n ${_NAMESPACE} patch statefulset $$STS_NAME --type='json' \
           -p="$$PATCH_JSON"
-
+      
 timeout: '1800s'

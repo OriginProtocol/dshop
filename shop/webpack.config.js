@@ -169,7 +169,12 @@ const webpackConfig = {
       title: siteConfig.metaTitle || siteConfig.fullTitle,
       metaDescription: siteConfig.metaDescription,
       dataDir: process.env.DATA_DIR,
-      absolute
+      absolute,
+      sentryDSN: process.env.SENTRY_DSN,
+      logErrors: process.env.OVERRIDE_LOG_ERRORS
+        ? true
+        : siteConfig.logErrors || false,
+      sentryEnvironment: process.env.ENVIRONMENT
     }),
     new webpack.EnvironmentPlugin({
       WEBPACK_BUILD: true,

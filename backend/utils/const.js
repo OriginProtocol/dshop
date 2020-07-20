@@ -67,6 +67,7 @@ module.exports = {
   DATA_URL,
   NODE_ENV,
   IS_PROD,
+  IS_TEST,
   SESSION_SECRET,
   WEB3_PK,
   PROVIDER_WS,
