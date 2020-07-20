@@ -200,6 +200,10 @@ const reducer = (state, action) => {
     const backendUrl = get(action.auth, 'backendUrl')
     if (backendUrl) {
       newState = set(newState, 'config.backend', backendUrl)
+      const dataSrc = get(newState, 'config.dataSrc', '')
+      if (dataSrc.indexOf(backendUrl) < 0) {
+        newState = set(newState, 'config.dataSrc', `${backendUrl}/${dataSrc}`)
+      }
     }
     newState = set(newState, `admin`, action.auth)
   } else if (action.type === 'setPasswordAuthed') {

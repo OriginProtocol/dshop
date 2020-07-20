@@ -38,6 +38,11 @@ const SettingsTabs = () => {
           Publish
         </NavLink>
       </li>
+      <li className="nav-item">
+        <NavLink className="nav-link" to="/admin/settings/advanced">
+          Advanced
+        </NavLink>
+      </li>
       {!admin.superuser ? null : (
         <>
           <li className="nav-item">

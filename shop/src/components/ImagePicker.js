@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useReducer, useMemo } from 'react'
+import useBackendApi from 'utils/useBackendApi'
 import useConfig from 'utils/useConfig'
 import loadImage from 'utils/loadImage'
 
@@ -14,7 +15,14 @@ function reducer(state, newState) {
 }
 
 const PreviewImages = (props) => {
-  const { dragging, dragTarget, onChange, onDragStateChange, disabled } = props
+  const {
+    dragging,
+    dragTarget,
+    onChange,
+    onDragStateChange,
+    disabled,
+    backend
+  } = props
 
   const images = useMemo(() => {
     const a = [...(props.images || [])]
@@ -64,7 +72,10 @@ const PreviewImages = (props) => {
 
     return (
       <div key={image.src} {...eventProps}>
-        <div className="img" style={{ backgroundImage: `url(${image.src})` }} />
+        <div
+          className="img"
+          style={{ backgroundImage: `url(${backend}${image.src})` }}
+        />
         <div className="info">
           <div className="img-title">{image.name || image.path}</div>
           <div className="img-subtitle">
@@ -92,8 +103,9 @@ const PreviewImages = (props) => {
 const ImagePicker = (props) => {
   const { onChange, disabled } = props
   const [state, setState] = useReducer(reducer, {})
-
   const { config } = useConfig()
+
+  const { postRaw } = useBackendApi({ authToken: true })
 
   const uploadRef = useRef()
 
@@ -123,16 +135,9 @@ const ImagePicker = (props) => {
         formData.append('file', processedFile)
       }
 
-      const resp = await fetch(`/products/upload-images`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          Authorization: `bearer ${config.backendAuthToken}`
-        }
-      })
-
-      const jsonResp = await resp.json()
-      return jsonResp.uploadedFiles
+      const body = formData
+      const response = await postRaw(`/products/upload-images`, { body })
+      return response.uploadedFiles
     } catch (error) {
       console.error('Could not upload images', error)
     }
@@ -159,7 +164,11 @@ const ImagePicker = (props) => {
     return (
       <div className="image-picker">
         {!hasImages ? null : (
-          <PreviewImages images={state.images} disabled={true} />
+          <PreviewImages
+            backend={config.backend}
+            images={state.images}
+            disabled={true}
+          />
         )}
       </div>
     )
@@ -211,6 +220,7 @@ const ImagePicker = (props) => {
     >
       {!hasImages ? null : (
         <PreviewImages
+          backend={config.backend}
           images={state.images}
           dragging={state.dragging}
           dragTarget={state.dragTarget}

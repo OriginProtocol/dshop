@@ -128,15 +128,6 @@ const ShopAppearance = () => {
             return
           }
 
-          // if (aboutText) {
-          //   const fileBody = new FormData()
-          //   const aboutFile = new File([aboutText], ABOUT_FILENAME)
-          //   fileBody.append('file', aboutFile)
-          //   await postRaw(`/shops/${config.activeShop}/save-files`, {
-          //     body: fileBody
-          //   })
-          // }
-
           setState({ hasChanges: false })
           setSaving(false)
           dispatch({
@@ -312,13 +303,6 @@ const ShopAppearance = () => {
           </div>
           <div className="form-group">
             <label>
-              Meta Description
-              <span>(for SEO only. Will appear in HTML)</span>
-            </label>
-            <input {...input('metaDescription')} />
-          </div>
-          <div className="form-group">
-            <label>
               Cart Summary Note
               <span>
                 (appears under summary in checkout process. Use it for any
@@ -352,10 +336,6 @@ const ShopAppearance = () => {
             </label>
             <textarea style={{ minHeight: '15vh' }} {...input('emailBody')} />
           </div> */}
-          <div className="form-group">
-            <label>Custom CSS</label>
-            <textarea style={{ minHeight: '15vh' }} {...input('css')} />
-          </div>
         </div>
 
         <div className="col-lg-3 col-md-4">

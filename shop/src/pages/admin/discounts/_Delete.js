@@ -16,7 +16,7 @@ const AdminDeleteDiscount = ({
   return (
     <ConfirmationModal
       className={`btn btn-outline-danger ${className}`}
-      customEl={children}
+      customEl={<div>{children}</div>}
       buttonText="Delete"
       confirmText="Are you sure you want to delete this discount?"
       confirmedText="Discount deleted"

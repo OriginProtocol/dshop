@@ -740,7 +740,8 @@ module.exports = function (router) {
         'instagram',
         'medium',
         'youtube',
-        'about'
+        'about',
+        'logErrors'
       )
       let listingId
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
@@ -992,7 +993,7 @@ module.exports = function (router) {
       } else if (networkConfig.pinataKey) {
         pinner = 'pinata'
       }
-      if (!pinner) {
+      if (!pinner && network.ipfsApi.indexOf('http://localhost') < 0) {
         return res.json({ success: false, reason: 'no-pinner-configured' })
       }
 
