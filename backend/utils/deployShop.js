@@ -229,7 +229,9 @@ async function deployShop({
       publicDirPath,
       remotePinners,
       siteDomain: dataDir,
-      credentials: ipfsDeployCredentials
+      credentials: ipfsDeployCredentials,
+      writeLog: log.info,
+      writeError: log.error
     })
     if (!hash) {
       throw new Error('IPFS deploy error')
