@@ -169,7 +169,11 @@ const webpackConfig = {
       title: siteConfig.metaTitle || siteConfig.fullTitle,
       metaDescription: siteConfig.metaDescription,
       dataDir: process.env.DATA_DIR,
-      absolute
+      absolute,
+      sentryDSN: process.env.SENTRY_DSN,
+      logErrors: process.env.OVERRIDE_LOG_ERRORS
+        ? true
+        : siteConfig.logErrors || false
     }),
     new webpack.EnvironmentPlugin({
       WEBPACK_BUILD: true,
@@ -179,8 +183,7 @@ const webpackConfig = {
       DATA_DIR: process.env.DATA_DIR || '',
       CONTENT_CDN: process.env.CONTENT_CDN || '',
       CONTENT_HASH: process.env.CONTENT_HASH || '',
-      ABSOLUTE: process.env.ABSOLUTE || '',
-      SENTRY_DSN: process.env.SENTRY_DSN || ''
+      ABSOLUTE: process.env.ABSOLUTE || ''
     })
   ],
 

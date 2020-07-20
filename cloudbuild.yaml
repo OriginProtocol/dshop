@@ -27,30 +27,16 @@ steps:
       - '-c'
       - 'date +%Y%m%d%H%M%s > .tag'
 
-  - id: 'Decrypt secrets required for build'
-    name: 'gcr.io/cloud-builders/gcloud'
-    entrypoint: 'sh'
-    args:
-      - '-c'
-      - |
-        _VALUES_PATH=./devops/secrets
-        gcloud kms decrypt \
-          --ciphertext-file=$${_VALUES_PATH}/secrets-$(cat .network).enc \
-          --plaintext-file=$(cat .network).env \
-          --location=global \
-          --keyring=origin \
-          --key=cloudbuild
-
   - id: 'Build docker image'
     name: 'gcr.io/cloud-builders/docker'
     entrypoint: '/bin/bash'
     args:
       - '-c'
       - |
-        source $(cat .network).env
         docker build \
             -f ./devops/Dockerfile \
             -t "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+            --build-arg SENTRY_DSN=${_SENTRY_DSN} \
             $(pwd)
 
   - id: 'Push the image to GCR'
