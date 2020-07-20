@@ -13,7 +13,8 @@ const { getLogger } = require('../utils/logger')
 const Queue = REDIS_URL ? require('bull') : require('./fallbackQueue')
 const backendUrl = REDIS_URL ? REDIS_URL : undefined
 const queueOpts = {}
-const log = getLogger('queues.autosslProcessor')
+const log = getLogger('queues.queues')
+const CAPTURE_FAILED_QUEUES = ['autossl']
 
 const all = [
   new Queue(
@@ -68,12 +69,14 @@ const all = [
   )
 ]
 
-all.forEach((q) =>
-  q.on('failed', function (job, err) {
-    Sentry.captureException(err)
-    log.error(`Job failed with error: ${err.toString()}`)
-  })
-)
+all.forEach((q) => {
+  if (CAPTURE_FAILED_QUEUES.includes(q.name)) {
+    q.on('failed', function (job, err) {
+      Sentry.captureException(err)
+      log.error(`Job failed with error: ${err.toString()}`)
+    })
+  }
+})
 
 module.exports = {}
 for (const queue of all) {
