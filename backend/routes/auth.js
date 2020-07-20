@@ -273,7 +273,7 @@ module.exports = function (router) {
 
     const { seller, status, error } = await createSeller(req.body, {
       superuser: true,
-      // TODO: Explore some ways to send email before a shop is setup?
+      // TODO: Explore some ways to send email before a superadmin account is created?
       skipEmailVerification: true
     })
 

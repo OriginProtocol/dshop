@@ -69,7 +69,9 @@ function getUniqueID(title, shop) {
 function readProductsFile(shop) {
   const outDir = path.resolve(`${DSHOP_CACHE}/${shop.authToken}/data`)
   const productsPath = `${outDir}/products.json`
-  return require(productsPath)
+  const fileData = fs.readFileSync(productsPath)
+
+  return JSON.parse(fileData)
 }
 
 function writeProductsFile(shop, data) {
@@ -257,10 +259,11 @@ async function deleteProduct(shop, productId) {
     }
   }
 
-  const [product] = allProducts.splice(existingIndex, 1)
+  const product = allProducts[existingIndex]
+  const updatedProducts = allProducts.filter((p) => p.id !== productId)
 
+  writeProductsFile(shop, updatedProducts)
   await removeProductData(shop, productId)
-  writeProductsFile(shop, allProducts)
 
   return {
     status: 200,

@@ -6,6 +6,7 @@ import get from 'lodash/get'
 import { useStateValue } from 'data/state'
 import useAuth from 'utils/useAuth'
 import useConfig from 'utils/useConfig'
+import { isLoggedIn } from 'utils/auth'
 
 import Toaster from 'components/Toaster'
 
@@ -40,8 +41,7 @@ const Admin = () => {
     return <div className="fixed-loader">Loading...</div>
   }
 
-  const reason = get(admin, 'reason', '')
-  if (!admin || reason === 'not-logged-in') {
+  if (!admin || !isLoggedIn(admin)) {
     return <Login />
   }
 
