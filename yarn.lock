@@ -9342,10 +9342,10 @@ ethers@4.0.0-beta.3:
     uuid "2.0.1"
     xmlhttprequest "1.8.0"
 
-ethers@5.0.6:
-  version "5.0.6"
-  resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.0.6.tgz#a11c5cd96d3f1ae59c1f551111529af99cff4b05"
-  integrity sha512-lVcu1uLn8SKuluY8Q/TmvV2REZ8o2+alkotEmHniyFMY9qx9yBZcicpaV4nKRV/STJyMSrclMqln2RHQG2MpHg==
+ethers@5.0.7:
+  version "5.0.7"
+  resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.0.7.tgz#41c3d774e0a57bfde12b0198885789fb41a14976"
+  integrity sha512-1Zu9s+z4BgsDAZcGIYACJdWBB6mVtCCmUonj68Njul7STcSdgwOyj0sCAxCUr2Nsmsamckr4E12q3ecvZPGAUw==
   dependencies:
     "@ethersproject/abi" "^5.0.0"
     "@ethersproject/abstract-provider" "^5.0.0"
@@ -16600,17 +16600,6 @@ ndjson@^1.5.0:
     minimist "^1.2.0"
     split2 "^2.1.0"
     through2 "^2.0.3"
-
-"neat-frame@git+https://github.com/agentofuser/neat-frame.git#wrap-ansi-options":
-  version "1.0.2"
-  uid b244ca11078bd35f63b2d7cb22d5e4b5c12ae2aa
-  resolved "git+https://github.com/agentofuser/neat-frame.git#b244ca11078bd35f63b2d7cb22d5e4b5c12ae2aa"
-  dependencies:
-    inspect-with-kind "^1.0.5"
-    merge-options "^1.0.1"
-    string-width "^2.1.1"
-    term-size "^1.2.0"
-    wrap-ansi "^4.0.0"
 
 "neat-frame@https://github.com/agentofuser/neat-frame#wrap-ansi-options":
   version "1.0.2"
