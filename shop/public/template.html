@@ -62,6 +62,11 @@
     </script>
   <% } %>
 
+  <script>
+    localStorage.ognNetwork = "NETWORK"
+    window.ognNetwork = "NETWORK"
+  </script>
+
   <link rel="data-dir" href="<%= htmlWebpackPlugin.options.dataDir || 'DATA_DIR' %>" />
 
   <link rel="icon" href="FAVICON" />
@@ -88,7 +93,6 @@
     openpgp.config.show_version = false
     openpgp.initWorker({ path: '<%= htmlWebpackPlugin.options.absolute ? '/' : '' %>dist/openpgp.worker.min.js' })
   }
-  localStorage.ognNetwork = "NETWORK"
 </script>
 <% _.forEach(htmlWebpackPlugin.files.js, function(file, index) { %>
 <% if (htmlWebpackPlugin.files.jsIntegrity) { %>

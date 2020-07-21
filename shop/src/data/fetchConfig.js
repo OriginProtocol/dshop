@@ -20,7 +20,7 @@ const DefaultPaymentMethods = [
 let config
 
 export async function fetchConfig(dataSrc, activeShop) {
-  const net = localStorage.ognNetwork
+  const net = window.ognNetwork || localStorage.ognNetwork
   const activeNetwork = NetworksByIdStr[net] || NetworksByIdStr['localhost']
   const netId = String(activeNetwork.id)
 

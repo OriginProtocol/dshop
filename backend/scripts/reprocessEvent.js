@@ -23,7 +23,10 @@ program
   .requiredOption('-n, --networkId <id>', 'Network id: [1,4,999]')
   .requiredOption('-l, --listingId <id>', 'Listing id')
   .requiredOption('-l, --offerId <id>', 'Offer id')
-  .option('-d, --doIt', 'Non dry-run mode. Persists the data in the DB.')
+  .option(
+    '-d, --doIt <boolean>',
+    'Non dry-run mode. Persists the data in the DB.'
+  )
 
 if (!process.argv.slice(2).length) {
   program.outputHelp()
@@ -73,6 +76,8 @@ async function reprocess(config) {
     log.info('Calling processDShopEvent to reprocess the event.')
     const order = await processDShopEvent({ event, shop })
     log.info('Created order:', order.get({ plain: true }))
+    log.info('Sleeping 5sec to wait for async calls to complete...')
+    await new Promise((resolve) => setTimeout(resolve, 5000))
   } else {
     log.info(`Would call processDShopEvent`)
   }
