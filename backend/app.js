@@ -105,7 +105,7 @@ router.get('/', async (req, res) => {
   html = html
     .replace('DATA_DIR', '')
     .replace('TITLE', 'Origin Dshop')
-    .replace('NETWORK', NETWORK)
+    .replace(/NETWORK/g, NETWORK)
 
   res.send(html)
 })
