@@ -32,7 +32,7 @@
     "bull-board": "^0.9.0",
     "cids": "^0.8.3",
     "cloudflare": "^2.7.0",
-    "commander": "^5.1.0",
+    "commander": "^6.0.0",
     "connect-session-sequelize": "^7.0.0",
     "cors": "^2.8.5",
     "dayjs": "^1.8.29",
