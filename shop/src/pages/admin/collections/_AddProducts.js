@@ -79,9 +79,8 @@ const AddProducts = ({ children, collection }) => {
                     })
                       .then(() => {
                         dispatch({
-                          type: 'updateCollectionProducts',
-                          id: collection.id,
-                          products: state.products
+                          type: 'reload',
+                          target: 'collections'
                         })
                         dispatch({ type: 'toast', message: 'Saved OK' })
                         setState({ shouldClose: true })
