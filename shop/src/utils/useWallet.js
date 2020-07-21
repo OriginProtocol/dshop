@@ -69,7 +69,7 @@ function useWallet() {
     }
 
     return () => (isSubscribed = false)
-  }, [providerUrl, reload.provider])
+  }, [providerUrl, reload.provider, window.ethereum])
 
   useEffect(() => {
     if (state.status !== 'enabled' || state.signerStatus !== 'enabled') {
@@ -88,7 +88,7 @@ function useWallet() {
         window.ethereum.off('accountsChanged', onReload)
       }
     }
-  })
+  }, [window.ethereum, state.status, state.signerStatus])
 
   function enable() {
     return new Promise((resolve) => {
