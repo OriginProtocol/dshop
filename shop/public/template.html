@@ -43,22 +43,13 @@
       integrity="sha384-JpEWxJ7oLRn+baXBgcCKEv73uYWsgouzEResgJneOXvTjDZ+1crAXcNAKZoiL96Z"
       crossorigin="<%= webpackConfig.output.crossOriginLoading %>"></script>
     <script>
-      if ('<%= htmlWebpackPlugin.options.logErrors || "LOG_SENTRY_ERRORS" %>' === 'true') {
-        <%
-          // Ref: backend/utils/deployShop.js
-          // This check is here for shop-level config
-          // "LOG_SENTRY_ERRORS" is replaced with 'true' if logging is enabled 
-          // during a deploy, thus initializing Sentry
-        %>
+      <% /* To listen on react */ %>
+      window._sentryLoaded = true
 
-        <% /* To listen on react */ %>
-        window._sentryLoaded = true
-
-        Sentry.init({ 
-          dsn: '<%= htmlWebpackPlugin.options.sentryDSN %>',
-          environment: '<%= htmlWebpackPlugin.options.sentryEnvironment %>',
-        })
-      }
+      Sentry.init({ 
+        dsn: '<%= htmlWebpackPlugin.options.sentryDSN %>',
+        environment: '<%= htmlWebpackPlugin.options.sentryEnvironment %>',
+      })
     </script>
   <% } %>
 

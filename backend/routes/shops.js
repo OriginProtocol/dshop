@@ -806,20 +806,25 @@ module.exports = function (router) {
 
       const additionalOpts = {}
       // Stripe webhooks
-      if (req.body.stripe === false) {
-        await deregisterStripeWebhooks(existingConfig)
-        additionalOpts.stripeWebhookSecret = ''
-        additionalOpts.stripeBackend = ''
-      } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
-        const network = await Network.findOne({ where: { active: true } })
-        const netConfig = getConfig(network.config)
-        const { secret } = await registerStripeWebhooks(
-          req.body,
-          existingConfig,
-          netConfig.backendUrl || existingConfig.publicUrl
-        )
-        additionalOpts.stripeWebhookSecret = secret
-      } else if (req.body.stripeWebhookSecret) {
+      if (process.env.NODE_ENV !== 'development') {
+        // Skip webhooks on dev
+        if (req.body.stripe === false) {
+          await deregisterStripeWebhooks(existingConfig)
+          additionalOpts.stripeWebhookSecret = ''
+          additionalOpts.stripeBackend = ''
+        } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
+          const network = await Network.findOne({ where: { active: true } })
+          const netConfig = getConfig(network.config)
+          const { secret } = await registerStripeWebhooks(
+            req.body,
+            existingConfig,
+            netConfig.backendUrl || existingConfig.publicUrl
+          )
+          additionalOpts.stripeWebhookSecret = secret
+        } else if (req.body.stripeWebhookSecret) {
+          additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
+        }
+      } else {
         additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
       }
 

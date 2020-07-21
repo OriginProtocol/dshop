@@ -82,11 +82,13 @@ const StripeModal = ({ onClose, initialConfig }) => {
         <PasswordField input={input} field="stripeBackend" />
         {Feedback('stripeBackend')}
       </div>
-      <div className="form-group">
-        <label>Stripe Webhook Key</label>
-        <PasswordField input={input} field="stripeWebhookSecret" />
-        {Feedback('stripeWebhookSecret')}
-      </div>
+      {process.env.NODE_ENV !== 'development' ? null : (
+        <div className="form-group">
+          <label>Stripe Webhook Key</label>
+          <PasswordField input={input} field="stripeWebhookSecret" />
+          {Feedback('stripeWebhookSecret')}
+        </div>
+      )}
     </ConnectModal>
   )
 }
