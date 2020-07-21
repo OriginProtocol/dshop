@@ -171,7 +171,7 @@ async function deployShop({
       .replace('TITLE', publicShopConfig.fullTitle)
       .replace('META_DESC', publicShopConfig.metaDescription || '')
       .replace('DATA_DIR', dataDir)
-      .replace('NETWORK', networkName)
+      .replace(/NETWORK/g, networkName)
       .replace('FAVICON', publicShopConfig.favicon || 'favicon.ico')
       .replace(
         'LOG_SENTRY_ERRORS',

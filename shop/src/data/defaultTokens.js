@@ -11,7 +11,7 @@ try {
   /* Ignore */
 }
 
-const net = localStorage.ognNetwork
+const net = window.ognNetwork || localStorage.ognNetwork
 const activeNetwork = NetworksByIdStr[net] || NetworksByIdStr['localhost']
 const contracts = networks[activeNetwork.idStr] || {}
 
