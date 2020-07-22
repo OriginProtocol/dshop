@@ -20,7 +20,7 @@ const AdvancedSettings = () => {
   const [, dispatch] = useStateValue()
 
   const { post } = useBackendApi({ authToken: true })
-  const [state, setState] = useReducer(reducer, { logErrors: false })
+  const [state, setState] = useReducer(reducer, { logErrors: true })
 
   const input = formInput(state, (newState) =>
     setState({ ...newState, hasChanges: true })

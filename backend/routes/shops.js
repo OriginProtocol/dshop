@@ -1,5 +1,7 @@
 const omit = require('lodash/omit')
 const pick = require('lodash/pick')
+const sortBy = require('lodash/sortBy')
+
 const Stripe = require('stripe')
 const {
   Seller,
@@ -8,6 +10,7 @@ const {
   Network,
   ShopDeployment,
   ShopDeploymentName,
+  Order,
   Sequelize
 } = require('../models')
 const {
@@ -32,7 +35,7 @@ const http = require('http')
 const mv = require('mv')
 
 const { configureShopDNS, deployShop } = require('../utils/deployShop')
-const { DSHOP_CACHE } = require('../utils/const')
+const { DSHOP_CACHE, IS_PROD } = require('../utils/const')
 const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
 const {
@@ -43,6 +46,9 @@ const {
 const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
 
 const log = getLogger('routes.shops')
+
+const dayjs = require('dayjs')
+const { readProductsFile } = require('../utils/products')
 
 async function tryDataDir(dataDir) {
   const hasDir = fs.existsSync(`${DSHOP_CACHE}/${dataDir}`)
@@ -806,20 +812,25 @@ module.exports = function (router) {
 
       const additionalOpts = {}
       // Stripe webhooks
-      if (req.body.stripe === false) {
-        await deregisterStripeWebhooks(existingConfig)
-        additionalOpts.stripeWebhookSecret = ''
-        additionalOpts.stripeBackend = ''
-      } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
-        const network = await Network.findOne({ where: { active: true } })
-        const netConfig = getConfig(network.config)
-        const { secret } = await registerStripeWebhooks(
-          req.body,
-          existingConfig,
-          netConfig.backendUrl || existingConfig.publicUrl
-        )
-        additionalOpts.stripeWebhookSecret = secret
-      } else if (req.body.stripeWebhookSecret) {
+      if (IS_PROD) {
+        // Register webhooks only on prod
+        if (req.body.stripe === false) {
+          await deregisterStripeWebhooks(existingConfig)
+          additionalOpts.stripeWebhookSecret = ''
+          additionalOpts.stripeBackend = ''
+        } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
+          const network = await Network.findOne({ where: { active: true } })
+          const netConfig = getConfig(network.config)
+          const { secret } = await registerStripeWebhooks(
+            req.body,
+            existingConfig,
+            netConfig.backendUrl || existingConfig.publicUrl
+          )
+          additionalOpts.stripeWebhookSecret = secret
+        } else if (req.body.stripeWebhookSecret) {
+          additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
+        }
+      } else {
         additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
       }
 
@@ -1201,4 +1212,93 @@ module.exports = function (router) {
       return res.json({ success: true, ipfsHash, names: hostnames })
     }
   )
+
+  const getConstraintForRange = (range) => {
+    const { Op } = Sequelize
+
+    const startOfDay = dayjs().startOf('day')
+    const endOfDay = dayjs().endOf('day')
+
+    let startDate, endDate
+
+    switch (range) {
+      case '30-days':
+        startDate = startOfDay.subtract(30, 'days')
+        endDate = endOfDay
+        break
+
+      case '7-days':
+        startDate = startOfDay.subtract(7, 'days')
+        endDate = endOfDay
+        break
+
+      case 'yesterday':
+        startDate = startOfDay.subtract(1, 'days')
+        endDate = endOfDay.subtract(1, 'days')
+        break
+
+      case 'today':
+        startDate = startOfDay
+        endDate = endOfDay
+        break
+    }
+
+    if (!startDate || !endDate) return {}
+
+    return {
+      [Op.and]: [
+        { createdAt: { [Op.gte]: startDate.toDate() } },
+        { createdAt: { [Op.lt]: endDate.toDate() } }
+      ]
+    }
+  }
+
+  router.get('/dashboard-stats', authSellerAndShop, async (req, res) => {
+    const shop = req.shop
+    const { range, sort } = req.query
+
+    const orders = await Order.findAll({
+      where: {
+        shopId: shop.id,
+        ...getConstraintForRange(range)
+      }
+    })
+
+    const totalOrders = orders.length
+    const totalRevenue = orders.reduce(
+      (sum, order) => sum + order.data.total,
+      0
+    )
+
+    const products = readProductsFile(shop)
+
+    const topProductsRaw = orders
+      .reduce((items, order) => [...items, ...order.data.items], [])
+      .filter((item) => item)
+      .reduce((m, o) => {
+        m[o.product] = m[o.product] || { revenue: 0, orders: 0 }
+        m[o.product].orders += o.quantity
+        m[o.product].revenue += o.price * o.quantity
+        return m
+      }, {})
+
+    const topProducts = sortBy(
+      Object.entries(topProductsRaw),
+      (o) => -o[1][sort]
+    )
+      .slice(0, 10)
+      .map(([productId, stats]) => {
+        const product = products.find((p) => p.id === productId)
+        return product ? { ...product, ...stats } : null
+      })
+      .filter((p) => p)
+
+    res.send({
+      success: true,
+      totalOrders,
+      totalRevenue,
+      orders,
+      topProducts
+    })
+  })
 }

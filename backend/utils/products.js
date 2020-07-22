@@ -272,4 +272,4 @@ async function deleteProduct(shop, productId) {
   }
 }
 
-module.exports = { upsertProduct, deleteProduct }
+module.exports = { upsertProduct, deleteProduct, readProductsFile }
