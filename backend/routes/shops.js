@@ -812,8 +812,8 @@ module.exports = function (router) {
 
       const additionalOpts = {}
       // Stripe webhooks
-      if (process.env.NODE_ENV !== 'development') {
-        // Skip webhooks on dev
+      if (process.env.NODE_ENV === 'production') {
+        // Register webhooks only on prod
         if (req.body.stripe === false) {
           await deregisterStripeWebhooks(existingConfig)
           additionalOpts.stripeWebhookSecret = ''
