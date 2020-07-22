@@ -35,7 +35,7 @@ const http = require('http')
 const mv = require('mv')
 
 const { configureShopDNS, deployShop } = require('../utils/deployShop')
-const { DSHOP_CACHE } = require('../utils/const')
+const { DSHOP_CACHE, IS_PROD } = require('../utils/const')
 const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
 const {
@@ -812,7 +812,7 @@ module.exports = function (router) {
 
       const additionalOpts = {}
       // Stripe webhooks
-      if (process.env.NODE_ENV === 'production') {
+      if (IS_PROD) {
         // Register webhooks only on prod
         if (req.body.stripe === false) {
           await deregisterStripeWebhooks(existingConfig)
