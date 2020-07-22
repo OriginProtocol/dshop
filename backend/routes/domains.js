@@ -1,12 +1,10 @@
 const fetch = require('node-fetch')
-
 const get = require('lodash/get')
 
-const { authSellerAndShop, authRole } = require('./_auth')
-
 const { getLogger } = require('../utils/logger')
-
 const { Op, Network, ShopDeployment } = require('../models')
+
+const { authSellerAndShop, authRole } = require('./_auth')
 
 const log = getLogger('routes.domains')
 
