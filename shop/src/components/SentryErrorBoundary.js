@@ -31,7 +31,7 @@ const SentryErrorBoundary = ({ children }) => {
   const [errorEvent, setErrorEvent] = useState()
   const [sentryInitialized, setSentryInitialized] = useState(false)
 
-  const shouldLogUserErrors = _get(config, 'logErrors', false)
+  const shouldLogUserErrors = _get(config, 'logErrors', true)
 
   const eventProcessor = (event) => {
     if (!event.skipProcessing) {

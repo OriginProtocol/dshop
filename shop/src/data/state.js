@@ -20,6 +20,7 @@ const defaultState = {
   discounts: [],
   toasts: [],
   reload: {},
+  dashboardStats: {},
 
   cart: {
     items: [],
@@ -270,6 +271,8 @@ const reducer = (state, action) => {
       id: +new Date(),
       type: action.style
     })
+  } else if (action.type === 'setDashboardStats') {
+    newState = set(newState, 'dashboardStats', action.stats)
   }
 
   // IMPORTANT: Keep this function's total calculation in sync with the calculation
