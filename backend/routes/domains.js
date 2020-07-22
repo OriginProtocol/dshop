@@ -49,8 +49,7 @@ module.exports = function (router) {
               [Op.like]: `%${domain}%`
             }
           },
-          order: [['created_at', 'DESC']],
-          limit: 1
+          order: [['created_at', 'DESC']]
         })
 
         if (!deployment) {
