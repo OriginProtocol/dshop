@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import _omit from 'lodash/omit'
+import _get from 'lodash/get'
 import useSentry from 'utils/useSentry'
 import ReportErrorModal from 'components/ReportErrorModal'
+import useConfig from '../utils/useConfig'
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -19,33 +21,58 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+const isAdminPage = (locationHash) =>
+  /^#\/(super-)?admin(\/.*)?$/.test(locationHash)
+
 const SentryErrorBoundary = ({ children }) => {
   const { enabled: sentryEnabled, sentry } = useSentry()
+  const { config } = useConfig()
 
   const [errorEvent, setErrorEvent] = useState()
+  const [sentryInitialized, setSentryInitialized] = useState(false)
+
+  const shouldLogUserErrors = _get(config, 'logErrors', true)
 
   const eventProcessor = (event) => {
-    if (event.skipProcessing) return _omit(event, ['skipProcessing'])
+    if (!event.skipProcessing) {
+      const pathname = new URL(event.request.url)
+      const adminPage = isAdminPage(pathname.hash)
 
-    const pathname = new URL(event.request.url)
-    const isAdminPage = /^#\/(super-)?admin(\/.*)?$/.test(pathname.hash)
-    if (!isAdminPage) {
-      // Ask permission from the user, if it is not in admin page
-      setErrorEvent(event)
+      if (!adminPage) {
+        if (!window.shouldLogUserErrors) {
+          console.error('Exception occurred', event)
+          return null
+        }
+
+        // Ask permission from the user, if it is not in admin page
+        setErrorEvent(event)
+        return null
+      }
+    }
+
+    if (process.env.NODE_ENV !== 'production') {
+      // Let's not pollute things from dev environment on Sentry
+      console.error('Would have logged the following event to sentry:', event)
       return null
     }
 
     // Let the event log otherwise
-    return event
+    return _omit(event, ['skipProcessing'])
   }
 
   useEffect(() => {
-    if (sentryEnabled) {
+    if (sentryEnabled && sentry && !sentryInitialized) {
       sentry.configureScope((scope) => {
         scope.addEventProcessor(eventProcessor)
       })
+
+      setSentryInitialized(true)
     }
-  }, [sentryEnabled, sentry])
+  }, [sentryEnabled, sentry, sentryInitialized])
+
+  useEffect(() => {
+    window.shouldLogUserErrors = shouldLogUserErrors
+  }, [shouldLogUserErrors])
 
   const onCatch = (error, errorInfo) => {
     if (!sentryEnabled) {
@@ -61,9 +88,7 @@ const SentryErrorBoundary = ({ children }) => {
       {!errorEvent ? null : (
         <ReportErrorModal
           errorEvent={errorEvent}
-          onClose={() => {
-            setErrorEvent(null)
-          }}
+          onClose={() => setErrorEvent(null)}
         />
       )}
       <ErrorBoundary onCatch={onCatch}>{children}</ErrorBoundary>

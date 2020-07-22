@@ -171,9 +171,6 @@ const webpackConfig = {
       dataDir: process.env.DATA_DIR,
       absolute,
       sentryDSN: process.env.SENTRY_DSN,
-      logErrors: process.env.OVERRIDE_LOG_ERRORS
-        ? true
-        : siteConfig.logErrors || false,
       sentryEnvironment: process.env.ENVIRONMENT
     }),
     new webpack.EnvironmentPlugin({

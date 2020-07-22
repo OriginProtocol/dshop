@@ -25,13 +25,13 @@ if (process.env.NODE_ENV === 'production') {
 
 const Providers = () => {
   return (
-    <SentryErrorBoundary>
-      <Router>
-        <StateProvider>
+    <StateProvider>
+      <SentryErrorBoundary>
+        <Router>
           <App />
-        </StateProvider>
-      </Router>
-    </SentryErrorBoundary>
+        </Router>
+      </SentryErrorBoundary>
+    </StateProvider>
   )
 }
 

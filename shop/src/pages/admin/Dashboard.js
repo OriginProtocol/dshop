@@ -1,75 +1,24 @@
 import React, { useState } from 'react'
-import sortBy from 'lodash/sortBy'
-import dayjs from 'dayjs'
-
+import get from 'lodash/get'
 import formatPrice from 'utils/formatPrice'
 
-import useOrders from 'utils/useOrders'
-import useProducts from 'utils/useProducts'
+import useDashboardStats from 'utils/useDashboardStats'
 
 import Chart from './_Chart'
 import Loading from 'components/Loading'
 import ProductImage from 'components/ProductImage'
 
 const AdminDashboard = () => {
-  const { orders, loading } = useOrders()
-  const { products } = useProducts()
   const [sort, setSort] = useState('orders')
   const [range, setRange] = useState('all-time')
+
+  const { dashboardStats, loading } = useDashboardStats(range, sort)
+
+  const { orders, topProducts, totalRevenue, totalOrders } = dashboardStats
 
   if (loading && !orders) {
     return <Loading />
   }
-
-  const startOfDay = dayjs().startOf('day')
-  const filteredSales = orders.filter((i) => {
-    if (!i || !i.data || !i.data.total) return false
-    const createdDay = dayjs(i.createdAt).startOf('day')
-    if (
-      range === '7-days' &&
-      createdDay.isBefore(startOfDay.subtract(7, 'days'))
-    ) {
-      return false
-    } else if (
-      range === '30-days' &&
-      createdDay.isBefore(startOfDay.subtract(30, 'days'))
-    ) {
-      return false
-    } else if (range === 'today' && createdDay.isBefore(startOfDay)) {
-      return false
-    } else if (
-      range === 'yesterday' &&
-      (createdDay.isBefore(startOfDay.subtract(1, 'days')) ||
-        createdDay.isAfter(startOfDay))
-    ) {
-      return false
-    }
-    return true
-  })
-
-  const totalSales = filteredSales.reduce((m, o) => {
-    m += o.data.total
-    return m
-  }, 0)
-
-  const topProductsRaw = orders
-    .map((o) => o.data.items)
-    .flat()
-    .filter((i) => i)
-    .reduce((m, o) => {
-      m[o.product] = m[o.product] || { revenue: 0, orders: 0 }
-      m[o.product].orders += o.quantity
-      m[o.product].revenue += o.price * o.quantity
-      return m
-    }, {})
-
-  const topProducts = sortBy(Object.entries(topProductsRaw), (o) => -o[1][sort])
-    .slice(0, 10)
-    .map(([productId, stats]) => {
-      const product = products.find((p) => p.id === productId)
-      return product ? { ...product, ...stats } : null
-    })
-    .filter((p) => p)
 
   return (
     <>
@@ -94,19 +43,19 @@ const AdminDashboard = () => {
         <div className="stat-item">
           <img src="images/box.svg" className="stat-image" />
           <div className="stat-name">Total orders</div>
-          <div className="stat-value">{filteredSales.length}</div>
+          <div className="stat-value">{totalOrders}</div>
         </div>
         <div className="stat-item">
           <img src="images/coins.svg" className="stat-image" />
           <div className="stat-name">Total revenue</div>
-          <div className="stat-value">{formatPrice(totalSales)}</div>
+          <div className="stat-value">{formatPrice(totalRevenue)}</div>
         </div>
-        {/* <h5 className="ml-4">{`${formatPrice(totalSales * 0.05)} profit`}</h5> */}
+        {/* <h5 className="ml-4">{`${formatPrice(totalRevenue * 0.05)} profit`}</h5> */}
       </div>
       <div className="mt-4">
         <Chart orders={orders} />
       </div>
-      {topProducts.length === 0 ? null : (
+      {get(topProducts, 'length', 0) === 0 ? null : (
         <table className="table admin-products mt-4">
           <thead>
             <tr>
