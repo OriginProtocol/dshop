@@ -50,7 +50,7 @@ const SentryErrorBoundary = ({ children }) => {
       }
     }
 
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV !== 'production') {
       // Let's not pollute things from dev environment on Sentry
       console.error('Would have logged the following event to sentry:', event)
       return null
