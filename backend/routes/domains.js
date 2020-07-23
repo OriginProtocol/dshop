@@ -118,11 +118,11 @@ module.exports = function (router) {
     }
 
     // A gateway with an unusual port won't work for this
-    /*if (network.ipfs.includes(':')) {
-        log.warn('Invalid IFPS gateway. Cannot use as AutoSSL gateway')
-        success = false
-        error = 'Cannot use this IFPS gateway for DNS configuration'
-      }*/
+    if (network.ipfs.includes(':')) {
+      log.warn('Invalid IFPS gateway. Cannot use as AutoSSL gateway')
+      success = false
+      error = 'Cannot use this IFPS gateway for DNS configuration'
+    }
 
     // If success so far...
     if (success) {
