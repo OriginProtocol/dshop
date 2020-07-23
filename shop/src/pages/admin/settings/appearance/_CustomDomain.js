@@ -41,7 +41,7 @@ const CustomDomain = ({ netId, hostname = '' }) => {
 
   useEffect(() => {
     if (!domain) return
-    console.log('DOMAINNNN:', domain)
+
     if (isValidDNSName(domain)) {
       setDomainExists(true)
 
