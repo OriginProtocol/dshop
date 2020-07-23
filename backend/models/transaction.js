@@ -1,4 +1,4 @@
-const { TransactionTypes, TransactionStatuses} = require('../enums')
+const { TransactionTypes, TransactionStatuses } = require('../enums')
 
 module.exports = (sequelize, DataTypes) => {
   const Transaction = sequelize.define(
@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       blockNumber: DataTypes.INTEGER, // The block the transaction was mined at.
       ipfsHash: DataTypes.STRING, // IPFS hash. Optional. Depends on the transaction type.
       listingId: DataTypes.STRING, // Fully qualified listing id. Optional. Depends on the transaction type.
-      offerid: DataTypes.STRING // Fully qualified offer id. Optional. Depends on the transaction type.
+      offerid: DataTypes.STRING, // Fully qualified offer id. Optional. Depends on the transaction type.
       jobId: DataTypes.STRING // ID of the job in the queue that created the transaction.
     },
     {

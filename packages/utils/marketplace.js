@@ -1,5 +1,3 @@
-
-
 const marketplaceAbi = [
   'function makeOffer(uint listingID, bytes32 ipfsHash, uint finalizes, address affiliate, uint256 commission, uint value, address currency, address arbitrator) payable',
   'function acceptOffer(uint listingID, uint offerID, bytes32 ipfsHash) public',

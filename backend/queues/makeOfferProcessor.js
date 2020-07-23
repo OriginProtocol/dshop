@@ -11,7 +11,7 @@ const { post, getBytes32FromIpfsHash } = require('../utils/_ipfs')
 const encConf = require('../utils/encryptedConfig')
 const { Sentry } = require('../sentry')
 const { getLogger } = require('../utils/logger')
-const { TransactionTypes, TransactionStatuses} = require('../enums')
+const { TransactionTypes, TransactionStatuses } = require('../enums')
 
 const log = getLogger('offerProcessor')
 const BN = ethers.utils.BigNumber // Ethers' BigNumber implementation.
@@ -26,7 +26,6 @@ const NUM_BLOCKS_CONFIRMATION = 2
 // Since ethers BigNumber does not support float, we define a multiplier and a divider.
 const gasPriceMultiplier = BN.from(101)
 const gasPriceDivider = BN.from(100)
-
 
 function attachToQueue() {
   const queue = queues['makeOfferQueue']
@@ -85,8 +84,12 @@ async function processor(job) {
     const pk = shopConfig.web3Pk || networkConfig.web3Pk
     const provider = new ethers.providers.JsonRpcProvider(network.provider)
     const wallet = new ethers.Wallet(pk, provider)
-    const walletAddress= wallet.address
-    const marketplace = new ethers.Contract(network.marketplaceContract, marketplaceAbi, provider)
+    const walletAddress = wallet.address
+    const marketplace = new ethers.Contract(
+      network.marketplaceContract,
+      marketplaceAbi,
+      provider
+    )
     queueLog(22, `Using walletAddress ${walletAddress}`)
 
     let tx, transaction
@@ -94,20 +97,25 @@ async function processor(job) {
     // Check if there is a pending transaction for the wallet.
     // It's possible the processing got interrupted while waiting for the tx to get mined.
     // For example due to a server maintenance or a crash.
-    transaction = await Transaction.findOne({ where: {
+    transaction = await Transaction.findOne({
+      where: {
         networkId: network.networkId,
         wallet: walletAddress,
-        status: TransactionStatuses.Pending,
+        status: TransactionStatuses.Pending
       }
     })
     if (transaction) {
-      log.info(`Found pending transaction ${transaction.id} job ${job.jobId} hash ${transaction.hash} for wallet ${walletAddress}`)
+      log.info(
+        `Found pending transaction ${transaction.id} job ${job.jobId} hash ${transaction.hash} for wallet ${walletAddress}`
+      )
 
       // If it is not the transaction from our job. Do not try to recover it.
       // Let it get recovered by the job that created it.
       // Fail our job for now, it will get retried.
       if (transaction.jobId === job.jobId) {
-        throw new Error(`Pending transaction does not belongs to job ${job.jobId}. Bailing.`)
+        throw new Error(
+          `Pending transaction does not belongs to job ${job.jobId}. Bailing.`
+        )
       }
 
       // Try to recover by loading the tx from its hash.
@@ -115,20 +123,15 @@ async function processor(job) {
       if (!tx) {
         // The transaction was not mined and is not in the transaction pool.
         // Something went really wrong...
-        throw new Error(`Transaction ${transaction.id} with hash ${transaction.hash} not found`)
+        throw new Error(
+          `Transaction ${transaction.id} with hash ${transaction.hash} not found`
+        )
       }
       log.info('Recovered tx', tx)
-
     } else {
       // Send a blockchain transaction to make an offer on the marketplace contract.
       queueLog(25, 'Sending to marketplace')
-      tx = await _createOffer(
-        marketplace,
-        wallet,
-        lid,
-        offer,
-        ipfsHash
-      )
+      tx = await _createOffer(marketplace, wallet, lid, offer, ipfsHash)
       log.info('Transaction sent:', tx)
 
       // Record the transaction in the DB.
@@ -150,7 +153,10 @@ async function processor(job) {
     // it could take a long time for a tx to get mined.
     queueLog(50, `Waiting for tx ${txHash} to get confirmed`)
     log.info('Waiting for tx confirmation...')
-    const { receipt, offerId } = await _waitForMakeOfferTxConfirmation(marketplace, tx)
+    const { receipt, offerId } = await _waitForMakeOfferTxConfirmation(
+      marketplace,
+      tx
+    )
 
     // Update the transaction in the DB.
     const oid = new OfferID(lid.listingId, offerId)
@@ -244,13 +250,7 @@ async function _postOfferIPFS(network, offer) {
  * @returns {Promise<ethers.Transaction>}
  * @private
  */
-async function _createOffer(
-  marketplace,
-  wallet,
-  lid,
-  offer,
-  ipfsHash
-) {
+async function _createOffer(marketplace, wallet, lid, offer, ipfsHash) {
   const ethBalance = await wallet.getBalance()
   const gasPrice = await provider.getGasPrice()
   const gasLimit = new BN(350000) // Amount of gas needed to make an offer.
