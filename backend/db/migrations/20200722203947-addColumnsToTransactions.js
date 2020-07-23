@@ -1,7 +1,7 @@
 
 const tableName = 'transactions'
 
-const { TransactionTypes, TransactionStatuses} = require('../../enums')
+const { TransactionTypes, TransactionStatuses } = require('../../enums')
 
 module.exports = {
   up: (queryInterface, Sequelize) => {

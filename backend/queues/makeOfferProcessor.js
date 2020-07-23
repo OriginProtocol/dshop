@@ -1,5 +1,3 @@
-import { get } from '@origin/ipfs'
-
 const ethers = require('ethers')
 
 const { marketplaceAbi } = require('@origin/utils/marketplace')
@@ -131,7 +129,14 @@ async function processor(job) {
     } else {
       // Send a blockchain transaction to make an offer on the marketplace contract.
       queueLog(25, 'Sending to marketplace')
-      tx = await _createOffer(marketplace, wallet, lid, offer, ipfsHash)
+      tx = await _createOffer(
+        provider,
+        marketplace,
+        wallet,
+        lid,
+        offer,
+        ipfsHash
+      )
       log.info('Transaction sent:', tx)
 
       // Record the transaction in the DB.
@@ -151,7 +156,7 @@ async function processor(job) {
     // Wait for the tx to get mined.
     // Note: this is blocking with no timeout. Depending on the network conditions,
     // it could take a long time for a tx to get mined.
-    queueLog(50, `Waiting for tx ${txHash} to get confirmed`)
+    queueLog(50, `Waiting for tx ${tx.hash} to get confirmed`)
     log.info('Waiting for tx confirmation...')
     const { receipt, offerId } = await _waitForMakeOfferTxConfirmation(
       marketplace,
@@ -242,6 +247,7 @@ async function _postOfferIPFS(network, offer) {
 /**
  * Sends an offer transaction to the blockchain.
  *
+ * @param {ethers.Provider} provider
  * @param {ethers.Contract} marketplace
  * @param {ethers.Wallet} wallet
  * @param {ListingID} lid
@@ -250,7 +256,14 @@ async function _postOfferIPFS(network, offer) {
  * @returns {Promise<ethers.Transaction>}
  * @private
  */
-async function _createOffer(marketplace, wallet, lid, offer, ipfsHash) {
+async function _createOffer(
+  provider,
+  marketplace,
+  wallet,
+  lid,
+  offer,
+  ipfsHash
+) {
   const ethBalance = await wallet.getBalance()
   const gasPrice = await provider.getGasPrice()
   const gasLimit = new BN(350000) // Amount of gas needed to make an offer.
