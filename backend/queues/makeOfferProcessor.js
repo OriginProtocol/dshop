@@ -1,18 +1,32 @@
+import { get } from '@origin/ipfs'
+
+const ethers = require('ethers')
+
+const { marketplaceAbi } = require('@origin/utils/marketplace')
+
 const queues = require('./queues')
-
-const Web3 = require('web3')
-
-const { ListingID } = require('../utils/id')
-const { Shop, Network } = require('../models')
+const { ListingID, OfferID } = require('../utils/id')
+const { Network, Shop, Transaction } = require('../models')
 const { post, getBytes32FromIpfsHash } = require('../utils/_ipfs')
 const encConf = require('../utils/encryptedConfig')
-const abi = require('../utils/_abi')
 const { Sentry } = require('../sentry')
 const { getLogger } = require('../utils/logger')
+const { TransactionTypes, TransactionStatuses} = require('../enums')
 
 const log = getLogger('offerProcessor')
+const BN = ethers.utils.BigNumber // Ethers' BigNumber implementation.
 
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
+
+// Wait for 2 blocks confirmation before considering a tx mined.
+const NUM_BLOCKS_CONFIRMATION = 2
+
+// Gas premium.
+// We use 1% extra gas to be ahead of other transactions submitted to the network using default gas prices.
+// Since ethers BigNumber does not support float, we define a multiplier and a divider.
+const gasPriceMultiplier = BN.from(101)
+const gasPriceDivider = BN.from(100)
+
 
 function attachToQueue() {
   const queue = queues['makeOfferQueue']
@@ -21,10 +35,16 @@ function attachToQueue() {
 }
 
 /**
- * Processes a credit card transaction and submit it to the blockchain.
+ * Records a credit card purchase on the blockchain by making
+ * an offer on the marketplace contract.
  *
- * job.data should have {shopId, amount, encryptedData}
- * @param {*} job
+ * @param {Object} job: Bull job object.
+ * job.data is expected to have the following fields:
+ *   {string} shopID
+ *   {string} amount: Credit card payment amount, in cents.
+ *   {string} encryptedData: IPFS hash of the PGP encrypted offer data.
+ *   {string} paymentCode: unique payment code passed by the credit card processor.
+ * @returns {Promise<void>}
  */
 async function processor(job) {
   const queueLog = (progress, str) => {
@@ -36,46 +56,109 @@ async function processor(job) {
   log.info(`Creating offer for shop ${shopId}`)
 
   try {
-    const shop = await getShop(shopId)
+    const shop = await Shop.findOne({ where: { id: shopId } })
+    if (!shop) {
+      throw new Error(`Failed loading shop with id ${shopId}`)
+    }
+
     queueLog(5, 'Load encrypted shop config')
-    const network = await getNetwork(shop.networkId)
+    const network = await _getNetwork(shop.networkId)
     const networkConfig = encConf.getConfig(network.config)
     const shopConfig = encConf.getConfig(shop.config)
 
     queueLog(10, 'Creating offer')
     const lid = ListingID.fromFQLID(shop.listingId)
-    const offer = createOfferJson(lid, encryptedData, paymentCode)
-    const ires = await postOfferIPFS(network, offer)
+    const offer = _createOfferJson(lid, encryptedData, paymentCode)
+    const ipfsHash = await _postOfferIPFS(network, offer)
 
     queueLog(20, 'Submitting Offer')
-    const web3 = new Web3(network.provider)
 
     // Use the Shop PK if there is one, otherwise fall back to Network PK.
     if (!shopConfig.web3Pk) {
       if (!networkConfig.web3Pk) {
-        throw new Error('PK missing in both shop and network configs')
+        throw new Error(`PK missing in both shop ${shopId} and network configs`)
       }
       log.info(
         `No PK configured for shop ${shopId}. Falling back to network PK`
       )
     }
-    const backendPk = shopConfig.web3Pk || networkConfig.web3Pk
-    const account = web3.eth.accounts.wallet.add(backendPk)
-    const walletAddress = account.address
+    const pk = shopConfig.web3Pk || networkConfig.web3Pk
+    const provider = new ethers.providers.JsonRpcProvider(network.provider)
+    const wallet = new ethers.Wallet(pk, provider)
+    const walletAddress= wallet.address
+    const marketplace = new ethers.Contract(network.marketplaceContract, marketplaceAbi, provider)
     queueLog(22, `Using walletAddress ${walletAddress}`)
-    queueLog(25, 'Sending to marketplace')
-    const tx = await offerToMarketplace(
-      web3,
-      lid,
-      network,
-      walletAddress,
-      offer,
-      ires
-    )
-    queueLog(50, JSON.stringify(tx))
 
-    // TODO: Code to prevent duplicate txs
-    // TODO Record tx and wait for TX to go through the blockchain
+    let tx, transaction
+
+    // Check if there is a pending transaction for the wallet.
+    // It's possible the processing got interrupted while waiting for the tx to get mined.
+    // For example due to a server maintenance or a crash.
+    transaction = await Transaction.findOne({ where: {
+        networkId: network.networkId,
+        wallet: walletAddress,
+        status: TransactionStatuses.Pending,
+      }
+    })
+    if (transaction) {
+      log.info(`Found pending transaction ${transaction.id} job ${job.jobId} hash ${transaction.hash} for wallet ${walletAddress}`)
+
+      // If it is not the transaction from our job. Do not try to recover it.
+      // Let it get recovered by the job that created it.
+      // Fail our job for now, it will get retried.
+      if (transaction.jobId === job.jobId) {
+        throw new Error(`Pending transaction does not belongs to job ${job.jobId}. Bailing.`)
+      }
+
+      // Try to recover by loading the tx from its hash.
+      tx = await provider.getTransaction(transaction.hash)
+      if (!tx) {
+        // The transaction was not mined and is not in the transaction pool.
+        // Something went really wrong...
+        throw new Error(`Transaction ${transaction.id} with hash ${transaction.hash} not found`)
+      }
+      log.info('Recovered tx', tx)
+
+    } else {
+      // Send a blockchain transaction to make an offer on the marketplace contract.
+      queueLog(25, 'Sending to marketplace')
+      tx = await _createOffer(
+        marketplace,
+        wallet,
+        lid,
+        offer,
+        ipfsHash
+      )
+      log.info('Transaction sent:', tx)
+
+      // Record the transaction in the DB.
+      transaction = await Transaction.create({
+        shopId,
+        networkId: network.networkId,
+        wallet: walletAddress,
+        type: TransactionTypes.OfferCreated,
+        status: TransactionStatuses.Pending,
+        hash: tx.hash,
+        listingId: lid.toString(),
+        ipfsHash,
+        jobId: job.jobId
+      })
+    }
+
+    // Wait for the tx to get mined.
+    // Note: this is blocking with no timeout. Depending on the network conditions,
+    // it could take a long time for a tx to get mined.
+    queueLog(50, `Waiting for tx ${txHash} to get confirmed`)
+    log.info('Waiting for tx confirmation...')
+    const { receipt, offerId } = await _waitForMakeOfferTxConfirmation(marketplace, tx)
+
+    // Update the transaction in the DB.
+    const oid = new OfferID(lid.listingId, offerId)
+    await transaction.update({
+      status: TransactionStatuses.Confirmed,
+      blockNumber: receipt.blockNumber,
+      offerId: oid.toString() // Store the fully qualified offerId.
+    })
 
     queueLog(100, 'Finished')
   } catch (e) {
@@ -86,16 +169,13 @@ async function processor(job) {
   }
 }
 
-async function getShop(id) {
-  try {
-    return await Shop.findOne({ where: { id } })
-  } catch (err) {
-    err.message = `Could not load shop from ID '${id}'. ${err.message}`
-    throw err
-  }
-}
-
-async function getNetwork(networkId) {
+/**
+ * Utility method. Loads a network DB object based on its id
+ * @param {number} networkId
+ * @returns {Promise<{models.Network}>}
+ * @private
+ */
+async function _getNetwork(networkId) {
   const network = await Network.findOne({
     where: { networkId: networkId, active: true }
   })
@@ -110,7 +190,16 @@ async function getNetwork(networkId) {
   return network
 }
 
-function createOfferJson(lid, encryptedData, paymentCode) {
+/**
+ * Utility method. Creates a JSON object for an offer.
+ *
+ * @param {ListingID} lid
+ * @param {string} encryptedData
+ * @param paymentCode
+ * @returns {{finalizes: number, paymentCode: *, totalPrice: {amount: number, currency: string}, schemaId: string, encryptedData: *, listingType: string, commission: {amount: string, currency: string}, listingId: *, unitsPurchased: number}}
+ * @private
+ */
+function _createOfferJson(lid, encryptedData, paymentCode) {
   return {
     schemaId: 'https://schema.originprotocol.com/offer_2.0.0.json',
     listingId: lid.toString(),
@@ -127,7 +216,15 @@ function createOfferJson(lid, encryptedData, paymentCode) {
   }
 }
 
-async function postOfferIPFS(network, offer) {
+/**
+ * Utility method. Uploads an offer data to IPFS and gets the hash back.
+ *
+ * @param {models.Network} network
+ * @param {Object} offer
+ * @returns {Promise<string>} IPFS hash
+ * @private
+ */
+async function _postOfferIPFS(network, offer) {
   try {
     return await post(network.ipfsApi, offer, true)
   } catch (err) {
@@ -136,27 +233,88 @@ async function postOfferIPFS(network, offer) {
   }
 }
 
-async function offerToMarketplace(
-  web3,
+/**
+ * Sends an offer transaction to the blockchain.
+ *
+ * @param {ethers.Contract} marketplace
+ * @param {ethers.Wallet} wallet
+ * @param {ListingID} lid
+ * @param {Object} offer
+ * @param {string} ipfsHash
+ * @returns {Promise<ethers.Transaction>}
+ * @private
+ */
+async function _createOffer(
+  marketplace,
+  wallet,
   lid,
-  network,
-  walletAddress,
   offer,
-  ires
+  ipfsHash
 ) {
-  const Marketplace = new web3.eth.Contract(abi, network.marketplaceContract)
-  const offerTx = Marketplace.methods.makeOffer(
+  const ethBalance = await wallet.getBalance()
+  const gasPrice = await provider.getGasPrice()
+  const gasLimit = new BN(350000) // Amount of gas needed to make an offer.
+  const gasCost = gasPrice
+    .mul(gasLimit)
+    .mul(gasPriceMultiplier)
+    .div(gasPriceDivider)
+
+  log.info(`Account:           ${wallet.address}`)
+  log.info(`ETH balance:       ${ethers.utils.formatEther(ethBalance)}`)
+  log.info(`Gas cost estimate: ${ethers.utils.formatEther(gasCost)}`)
+
+  if (ethBalance.lt(gasCost)) {
+    throw new Error(`Insufficient ETH balance to pay for gas cost`)
+  }
+
+  const options = { gasLimit, gasPrice }
+  const tx = await marketplace.makeOffer(
     lid.listingId,
-    getBytes32FromIpfsHash(ires),
+    getBytes32FromIpfsHash(ipfsHash),
     offer.finalizes,
     ZeroAddress, // Affiliate
-    '0',
-    '0',
-    ZeroAddress,
-    walletAddress // Arbitrator
+    '0', // Commission
+    '0', // Value
+    ZeroAddress, // Currency
+    wallet.address, // Arbitrator
+    options
   )
-  const tx = await offerTx.send({ from: walletAddress, gas: 350000 })
   return tx
+}
+
+/**
+ * Waits for a blockchain transaction to get mined.
+ * Note: no timeout is set so this is blocking.
+ *
+ * @param {ethers.Contract} marketplace
+ * @param {ethers.Transaction} tx
+ * @returns {Promise<{ipfsHash: string, offerId: number, receipt: Ethers.TransactionReceipt, listingId: number}>}
+ * @private
+ */
+async function _waitForMakeOfferTxConfirmation(marketplace, tx) {
+  const receipt = await tx.wait(NUM_BLOCKS_CONFIRMATION)
+
+  // Extracts the offer id from the logs.
+  const offerLog = receipt.logs
+    .map((l) => {
+      try {
+        return marketplace.interface.parseLog(l)
+      } catch (e) {
+        /* Ignore */
+      }
+    })
+    .filter((l) => l)
+    .find((e) => e.name === 'OfferCreated')
+
+  if (!offerLog) {
+    throw new Error(`No OfferCreated log found in tx ${tx.hash}`)
+  }
+
+  const listingId = offerLog.args.listingID.toNumber()
+  const offerId = offerLog.args.offerID.toNumber()
+  const ipfsHash = offerLog.args.ipfsHash
+
+  return { receipt, listingId, offerId, ipfsHash }
 }
 
 module.exports = { processor, attachToQueue }
