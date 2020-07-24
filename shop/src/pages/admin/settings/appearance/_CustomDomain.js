@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import get from 'lodash/get'
 
 import PlusIcon from 'components/icons/Plus'
@@ -6,12 +6,15 @@ import Modal from 'components/Modal'
 
 import useBackendApi from 'utils/useBackendApi'
 import useAutoFocus from 'utils/useAutoFocus'
+import { isValidDNSName } from 'utils/dns'
 import { useStateValue } from 'data/state'
 
 const CustomDomain = ({ netId, hostname = '' }) => {
   const [show, setShow] = useState()
   const [shouldClose, setShouldClose] = useState()
   const [domain, setDomain] = useState('')
+  const [domainExists, setDomainExists] = useState(false)
+  const [records, setRecords] = useState(false)
   const [verifyStatus, setVerifyStatus] = useState({})
   const { post } = useBackendApi({ authToken: true })
   const [{ admin }] = useStateValue()
@@ -19,6 +22,7 @@ const CustomDomain = ({ netId, hostname = '' }) => {
 
   const verifyDomain = async () => {
     if (verifyStatus.loading) return
+
     setVerifyStatus({ loading: true })
 
     try {
@@ -35,11 +39,37 @@ const CustomDomain = ({ netId, hostname = '' }) => {
     }
   }
 
+  useEffect(() => {
+    if (!domain) return
+
+    if (isValidDNSName(domain)) {
+      setDomainExists(true)
+
+      const networkId = Number(netId)
+      const body = JSON.stringify({ domain, networkId })
+
+      post('/domains/records', {
+        body
+      })
+        .then((res) => {
+          const { isApex, rrtype, rvalue } = res
+          setRecords({ isApex, rrtype, rvalue })
+        })
+        .catch((err) => {
+          console.error(err)
+          setVerifyStatus({ error: 'Something went wrong. Try again later.' })
+        })
+    } else {
+      setDomainExists(false)
+    }
+  }, [domain])
+
   const dnsLink = `dnslink=/ipns/${hostname}.${get(admin, 'network.domain')}`
   const txtRecord = `_dnslink.${domain} TXT "${dnsLink}"`
 
-  const ipfsGateway = get(admin, 'network.ipfs', '').replace(/^https?:\/\//, '')
-  const cnameRecord = `${domain} CNAME ${ipfsGateway}`
+  const record = records
+    ? `${domain} ${records.rrtype} ${records.rvalue}`
+    : null
 
   return (
     <>
@@ -77,9 +107,13 @@ const CustomDomain = ({ netId, hostname = '' }) => {
               </div>
               {!domain ? null : (
                 <div className="records">
-                  <div>Please set the following DNS records:</div>
-                  <div className="record">{cnameRecord}</div>
-                  <div className="record">{txtRecord}</div>
+                  {!domainExists ? null : (
+                    <>
+                      <div>Please set the following DNS records:</div>
+                      <div className="record">{record}</div>
+                      <div className="record">{txtRecord}</div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
