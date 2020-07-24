@@ -1,102 +1,28 @@
 const chai = require('chai')
 const expect = chai.expect
-const openpgp = require('openpgp')
 
-const { Order, Network, Shop } = require('../models')
-const { defaults } = require('../config')
+const { Order, Shop } = require('../models')
 const { processDShopEvent, handleLog } = require('../utils/handleLog')
-const { post, getBytes32FromIpfsHash } = require('../utils/_ipfs')
-const { createShop } = require('../utils/shop')
-const { setConfig } = require('../utils/encryptedConfig')
+const { post } = require('../utils/_ipfs')
 
-openpgp.config.show_comment = false
-openpgp.config.show_version = false
-
-/**
- * Utility method to generate a PGP key.
- *
- * @param {string} name
- * @param {string} passphrase
- * @returns {Promise<{publicKeyArmored: string, privateKeyArmored: string}>}
- */
-async function generatePgpKey(name, passphrase) {
-  const key = await openpgp.generateKey({
-    userIds: [{ name, email: `${name}@test.com` }],
-    curve: 'ed25519',
-    passphrase
-  })
-  return key
-}
-
-/**
- * Utility function copied from shop/src/data/addData.js
- * TODO: refactor into a common package.
- *
- * @param {Object} data
- * @param {string} pgpPublicKey
- * @param {string} ipfsApi
- * @returns {Promise<{auth: string, bytes32: string, hash: string}>}
- */
-async function addData(data, { pgpPublicKey, ipfsApi }) {
-  const pubKeyObj = await openpgp.key.readArmored(pgpPublicKey)
-
-  data.dataKey = 'testDataKey'
-
-  const buyerData = await openpgp.encrypt({
-    message: openpgp.message.fromText(JSON.stringify(data)),
-    passwords: [data.dataKey]
-  })
-
-  const encrypted = await openpgp.encrypt({
-    message: openpgp.message.fromText(JSON.stringify(data)),
-    publicKeys: pubKeyObj.keys
-  })
-
-  const res = await post(
-    ipfsApi,
-    { data: encrypted.data, buyerData: buyerData.data },
-    true
-  )
-  return { hash: res, auth: data.dataKey, bytes32: getBytes32FromIpfsHash(res) }
-}
+const {
+  addData,
+  getTestWallet,
+  createTestShop,
+  getOrCreateTestNetwork,
+  generatePgpKey
+} = require('./utils')
 
 describe('Orders', () => {
   const listingId = '999-001-1'
   let offerIpfsHash, shopId, data, offerId
 
   before(async () => {
-    const config = defaults['999']
+    const network = await getOrCreateTestNetwork()
 
-    // Create a network row in the DB if it does not already exist.
-    const networkObj = {
-      networkId: 999,
-      provider: config.provider,
-      providerWs: config.providerWs,
-      ipfs: config.ipfsGateway,
-      ipfsApi: config.ipfsApi,
-      marketplaceContract: config.marketplaceContract,
-      marketplaceVersion: '001',
-      active: true,
-      config: setConfig({
-        pinataKey: 'pinataKey',
-        pinataSecret: 'pinataSecret',
-        cloudflareEmail: 'cloudflareEmail',
-        cloudflareApiKey: 'cloudflareApiKey',
-        gcpCredentials: 'gcpCredentials',
-        domain: 'domain.com',
-        deployDir: 'deployDir'
-      })
-    }
-    const existing = await Network.findOne({
-      where: { networkId: networkObj.networkId }
-    })
-    if (existing) {
-      await Network.update(networkObj, {
-        where: { networkId: networkObj.networkId }
-      })
-    } else {
-      await Network.create(networkObj)
-    }
+    // Use account 1 as the merchant's.
+    const sellerWallet = getTestWallet(1)
+    const sellerPk = sellerWallet.privateKey
 
     // Create the merchant's PGP key.
     const pgpPrivateKeyPass = 'password123'
@@ -104,28 +30,14 @@ describe('Orders', () => {
     const pgpPublicKey = key.publicKeyArmored
     const pgpPrivateKey = key.privateKeyArmored
 
-    // Create a shop in the DB.
-    const shopCreationResult = await createShop({
-      name: 'TestShop',
-      listingId,
-      sellerId: 1,
-      authToken: 'testToken',
-      config: setConfig({
-        dataUrl: undefined,
-        publicUrl: undefined,
-        printful: undefined,
-        stripeBackend: undefined,
-        stripeWebhookSecret: undefined,
-        pgpPublicKey,
-        pgpPrivateKey,
-        pgpPrivateKeyPass,
-        web3Pk: '0x123'
-      })
+    const shop = await createTestShop({
+      network,
+      sellerPk,
+      pgpPrivateKeyPass,
+      pgpPublicKey,
+      pgpPrivateKey
     })
-    if (!shopCreationResult || !shopCreationResult.shop) {
-      throw new Error(`Failed creating shop: ${shopCreationResult}`)
-    }
-    shopId = shopCreationResult.shop.id
+    shopId = shop.id
 
     // Create an order data and store it encrypted on IPFS
     data = {
@@ -169,7 +81,7 @@ describe('Orders', () => {
     }
     const { hash } = await addData(data, {
       pgpPublicKey: key.publicKeyArmored,
-      ipfsApi: config.ipfsApi
+      ipfsApi: network.ipfsApi
     })
 
     // Create an offer on IPFS.
@@ -189,7 +101,7 @@ describe('Orders', () => {
       finalizes: 1209600,
       encryptedData: hash
     }
-    offerIpfsHash = await post(config.ipfsApi, offer, true)
+    offerIpfsHash = await post(network.ipfsApi, offer, true)
   })
 
   it('It should ignore an OfferCreated event unrelated to dshop', async () => {

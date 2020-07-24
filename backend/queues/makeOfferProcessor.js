@@ -5,14 +5,18 @@ const { marketplaceAbi } = require('@origin/utils/marketplace')
 const queues = require('./queues')
 const { ListingID, OfferID } = require('../utils/id')
 const { Network, Shop, Transaction } = require('../models')
-const { post, getBytes32FromIpfsHash } = require('../utils/_ipfs')
+const {
+  post,
+  getBytes32FromIpfsHash,
+  getIpfsHashFromBytes32
+} = require('../utils/_ipfs')
 const encConf = require('../utils/encryptedConfig')
 const { Sentry } = require('../sentry')
 const { getLogger } = require('../utils/logger')
 const { TransactionTypes, TransactionStatuses } = require('../enums')
 
 const log = getLogger('offerProcessor')
-const BN = ethers.utils.BigNumber // Ethers' BigNumber implementation.
+const BN = ethers.BigNumber // Ethers' BigNumber implementation.
 
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
@@ -41,7 +45,8 @@ function attachToQueue() {
  *   {string} amount: Credit card payment amount, in cents.
  *   {string} encryptedData: IPFS hash of the PGP encrypted offer data.
  *   {string} paymentCode: unique payment code passed by the credit card processor.
- * @returns {Promise<void>}
+ * @returns {Promise<{receipt: ethers.TransactionReceipt, listingId: number, offerId: number, ipfsHash: string }>}
+ * @throws
  */
 async function processor(job) {
   const queueLog = (progress, str) => {
@@ -51,6 +56,7 @@ async function processor(job) {
 
   const { shopId, encryptedData, paymentCode } = job.data
   log.info(`Creating offer for shop ${shopId}`)
+  let confirmation
 
   try {
     const shop = await Shop.findOne({ where: { id: shopId } })
@@ -155,13 +161,13 @@ async function processor(job) {
 
     // Wait for the tx to get mined.
     // Note: this is blocking with no timeout. Depending on the network conditions,
-    // it could take a long time for a tx to get mined.
+    // it could take a long time for a tx to get mined. This will become a bottleneck
+    // in the future when the transaction volume scales up. A potential solution
+    // will be to run the confirmation logic as a separate queue with multiple workers.
     queueLog(50, `Waiting for tx ${tx.hash} to get confirmed`)
     log.info('Waiting for tx confirmation...')
-    const { receipt, offerId } = await _waitForMakeOfferTxConfirmation(
-      marketplace,
-      tx
-    )
+    confirmation = await _waitForMakeOfferTxConfirmation(marketplace, tx)
+    const { receipt, offerId } = confirmation
 
     // Update the transaction in the DB.
     const oid = new OfferID(lid.listingId, offerId)
@@ -178,6 +184,8 @@ async function processor(job) {
     log.error(`Offer creation for shop ${shopId} failed:`, e)
     throw e
   }
+
+  return confirmation
 }
 
 /**
@@ -301,10 +309,11 @@ async function _createOffer(
  *
  * @param {ethers.Contract} marketplace
  * @param {ethers.Transaction} tx
- * @returns {Promise<{ipfsHash: string, offerId: number, receipt: Ethers.TransactionReceipt, listingId: number}>}
+ * @returns {Promise<{receipt: ethers.TransactionReceipt, listingId: number, offerId: number, ipfsHash: string }>}
  * @private
  */
 async function _waitForMakeOfferTxConfirmation(marketplace, tx) {
+  // Wait on the blockchain to mine the transaction.
   const receipt = await tx.wait(NUM_BLOCKS_CONFIRMATION)
 
   // Extracts the offer id from the logs.
@@ -320,12 +329,12 @@ async function _waitForMakeOfferTxConfirmation(marketplace, tx) {
     .find((e) => e.name === 'OfferCreated')
 
   if (!offerLog) {
-    throw new Error(`No OfferCreated log found in tx ${tx.hash}`)
+    throw new Error(`No OfferCreated log found for tx ${tx.hash}`)
   }
 
   const listingId = offerLog.args.listingID.toNumber()
   const offerId = offerLog.args.offerID.toNumber()
-  const ipfsHash = offerLog.args.ipfsHash
+  const ipfsHash = getIpfsHashFromBytes32(offerLog.args.ipfsHash)
 
   return { receipt, listingId, offerId, ipfsHash }
 }

@@ -2,8 +2,8 @@ module.exports = (sequelize, DataTypes) => {
   const Shop = sequelize.define(
     'Shop',
     {
-      networkId: DataTypes.INTEGER,
-      listingId: DataTypes.STRING, // e.g. 1-001-1212
+      networkId: DataTypes.INTEGER, // 1=Mainnet, 4=Rinkeby, 999=local, etc...
+      listingId: DataTypes.STRING, // Fully qualified listing Id. Ex: 1-001-1212
       sellerId: DataTypes.INTEGER,
       hostname: DataTypes.STRING,
       name: DataTypes.STRING,
