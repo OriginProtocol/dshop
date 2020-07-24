@@ -9,7 +9,6 @@ class ListingID {
     networkId = DEFAULT_NET_ID,
     contractVersion = DEFAULT_CONTRACT_VERSION
   ) {
-    if (!listingId) return
     this.listingId = listingId
     this.networkId = networkId
     this.contractVersion = contractVersion
@@ -39,7 +38,6 @@ class OfferID {
     networkId = DEFAULT_NET_ID,
     contractVersion = DEFAULT_CONTRACT_VERSION
   ) {
-    if (!listingId) return
     this.listingId = listingId
     this.offerId = offerId
     this.networkId = networkId

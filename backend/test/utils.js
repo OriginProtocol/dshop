@@ -5,7 +5,7 @@ openpgp.config.show_comment = false
 openpgp.config.show_version = false
 
 const { ROOT_BACKEND_URL } = require('./const')
-const { getBytes32FromIpfsHash } = require('../utils/_ipfs')
+const { getBytes32FromIpfsHash, post: postIpfs } = require('../utils/_ipfs')
 
 const { Network } = require('../models')
 const { defaults } = require('../config')
@@ -133,7 +133,7 @@ async function addData(data, { pgpPublicKey, ipfsApi }) {
     publicKeys: pubKeyObj.keys
   })
 
-  const res = await post(
+  const res = await postIpfs(
     ipfsApi,
     { data: encrypted.data, buyerData: buyerData.data },
     true
@@ -147,6 +147,21 @@ async function addData(data, { pgpPublicKey, ipfsApi }) {
  */
 async function getOrCreateTestNetwork() {
   const config = defaults['999']
+
+  // The default config relies on env variable MARKETPLACE_CONTRACT for
+  // getting the marketplace contract address. If it is not set,
+  // load up the address from the contracts build directory where addresses
+  // are written after running truffle's contract deployments.
+  if (!config.marketplaceContract) {
+    let marketplaceContractAddress
+    try {
+      const contracts = require('../../packages/contracts/build/contracts.json')
+      marketplaceContractAddress = contracts.Marketplace_V01
+    } catch (e) {
+      throw new Error(`Contracts not deployed on local blockchain: ${e}`)
+    }
+    config.marketplaceContract = marketplaceContractAddress
+  }
 
   // Create a network row in the DB if it does not already exist.
   const networkObj = {
@@ -207,6 +222,7 @@ async function createTestShop({
   // Create the shop in the DB.
   const { shop } = await createShop({
     name: 'TestShop' + Date.now(), // Make shop's name unique.
+    networkId: network.networkId,
     listingId,
     sellerId: 1,
     authToken: 'testToken',
@@ -241,11 +257,23 @@ function getTestWallet(index) {
   const path = "m/44'/60'/0'/0"
 
   // Get a node and derive it to get a pk.
-  const node = ethers.HDNode.fromMnemonic(mnemonic)
+  const node = ethers.utils.HDNode.fromMnemonic(mnemonic)
   const pk = node.derivePath(`${path}/${index}`).privateKey
 
   // Create a wallet based on the pk.
   return new ethers.Wallet(pk)
+}
+
+/**
+ * Simple mock class for a Bull job.
+ */
+class MockBullJob {
+  constructor(data) {
+    this.id = Date.now() // unique and monotonically increasing job id.
+    this.data = data
+    this.log = console.log
+    this.progress = (x) => console.log(`Queue progress: ${x}%`)
+  }
 }
 
 module.exports = {
@@ -257,5 +285,6 @@ module.exports = {
   addData,
   createTestShop,
   getTestWallet,
-  getOrCreateTestNetwork
+  getOrCreateTestNetwork,
+  MockBullJob
 }

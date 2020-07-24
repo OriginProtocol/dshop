@@ -1,7 +1,7 @@
 const chai = require('chai')
 const expect = chai.expect
 
-const { Order, Shop } = require('../models')
+const { Order } = require('../models')
 const { processDShopEvent, handleLog } = require('../utils/handleLog')
 const { post } = require('../utils/_ipfs')
 
@@ -14,8 +14,7 @@ const {
 } = require('./utils')
 
 describe('Orders', () => {
-  const listingId = '999-001-1'
-  let offerIpfsHash, shopId, data, offerId
+  let shop, offerIpfsHash, data, offerId
 
   before(async () => {
     const network = await getOrCreateTestNetwork()
@@ -30,14 +29,13 @@ describe('Orders', () => {
     const pgpPublicKey = key.publicKeyArmored
     const pgpPrivateKey = key.privateKeyArmored
 
-    const shop = await createTestShop({
+    shop = await createTestShop({
       network,
       sellerPk,
       pgpPrivateKeyPass,
       pgpPublicKey,
       pgpPrivateKey
     })
-    shopId = shop.id
 
     // Create an order data and store it encrypted on IPFS
     data = {
@@ -87,7 +85,7 @@ describe('Orders', () => {
     // Create an offer on IPFS.
     const offer = {
       schemaId: 'https://schema.originprotocol.com/offer_2.0.0.json',
-      listingId,
+      listingId: shop.listingId,
       listingType: 'unit',
       unitsPurchased: 1,
       totalPrice: {
@@ -140,7 +138,7 @@ describe('Orders', () => {
       '0x470503ad37642fff73a57bac35e69733b6b38281a893f39b50c285aad1f040e0'
     const event = {
       eventName: 'ListingUpdated',
-      listingId: 1,
+      listingId: shop.listingId,
       offerId: 1,
       party: '0xabcdef',
       ipfsHash: 'TESTHASH',
@@ -166,10 +164,8 @@ describe('Orders', () => {
   })
 
   it('It should insert an order from an event', async () => {
-    const shop = await Shop.findByPk(shopId)
-
     offerId = Date.now() // Use timestamp in msec as a unique offer id.
-    const fullOfferId = `${listingId}-${offerId}`
+    const fullOfferId = `${shop.listingId}-${offerId}`
 
     // Create a fake OfferCreated blockchain event.
     const event = {
@@ -190,7 +186,7 @@ describe('Orders', () => {
     const order = await Order.findOne({ where: { orderId: fullOfferId } })
     expect(order).to.be.an('object')
     expect(order.networkId).to.equal(999)
-    expect(order.shopId).to.equal(shopId)
+    expect(order.shopId).to.equal(shop.id)
     expect(order.statusStr).to.equal('OfferCreated')
     expect(order.ipfsHash).to.equal(offerIpfsHash)
     expect(order.createdBlock).to.equal(1)
@@ -202,8 +198,6 @@ describe('Orders', () => {
   })
 
   it('It should update an order on an OfferAccepted event', async () => {
-    const shop = await Shop.findByPk(shopId)
-
     // Create a fake OfferCreated blockchain event.
     const event = {
       eventName: 'OfferAccepted',
@@ -220,7 +214,7 @@ describe('Orders', () => {
     await processDShopEvent({ event, shop })
 
     // Check the order status and updateBlock were updated.
-    const fullOfferId = `${listingId}-${offerId}`
+    const fullOfferId = `${shop.listingId}-${offerId}`
     const order = await Order.findOne({ where: { orderId: fullOfferId } })
     expect(order).to.be.an('object')
     expect(order.statusStr).to.equal('OfferAccepted')
@@ -228,8 +222,6 @@ describe('Orders', () => {
   })
 
   it('It should update an order on an OfferWithdrawn event', async () => {
-    const shop = await Shop.findByPk(shopId)
-
     // Create a fake OfferWithdrawn blockchain event.
     const event = {
       eventName: 'OfferWithdrawn',
@@ -246,7 +238,7 @@ describe('Orders', () => {
     await processDShopEvent({ event, shop })
 
     // Check the order status and updateBlock were updated.
-    const fullOfferId = `${listingId}-${offerId}`
+    const fullOfferId = `${shop.listingId}-${offerId}`
     const order = await Order.findOne({ where: { orderId: fullOfferId } })
     expect(order).to.be.an('object')
     expect(order.statusStr).to.equal('OfferWithdrawn')
@@ -254,8 +246,6 @@ describe('Orders', () => {
   })
 
   it('It should throw an exception in case of a failure to fetch the offer data from IPFS', async () => {
-    const shop = await Shop.findByPk(shopId)
-
     // Create a fake OfferWithdrawn blockchain event.
     const event = {
       eventName: 'OfferCreated',

@@ -67,7 +67,7 @@ async function createListing({ network, pk, listing }) {
   const marketplace = new ethers.Contract(
     network.marketplaceContract,
     marketplaceAbi,
-    provider
+    wallet
   )
   log.info(`Using wallet ${wallet.address}`)
 

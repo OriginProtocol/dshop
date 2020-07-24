@@ -9,12 +9,12 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM(TransactionTypes), // The type of transaction.
       status: DataTypes.ENUM(TransactionStatuses), // The status of the transaction.
       wallet: DataTypes.STRING, // The ETH address used for sending the transaction.
-      transactionHash: DataTypes.STRING, // The hash of the blockchain transaction.
+      hash: DataTypes.STRING, // The hash of the blockchain transaction.
       blockNumber: DataTypes.INTEGER, // The block the transaction was mined at.
       ipfsHash: DataTypes.STRING, // IPFS hash. Optional. Depends on the transaction type.
       listingId: DataTypes.STRING, // Fully qualified listing id. Optional. Depends on the transaction type.
-      offerid: DataTypes.STRING, // Fully qualified offer id. Optional. Depends on the transaction type.
-      jobId: DataTypes.STRING // ID of the job in the queue that created the transaction.
+      offerId: DataTypes.STRING, // Fully qualified offer id. Optional. Depends on the transaction type.
+      jobId: DataTypes.STRING // Optional. ID of the job in the queue that created the transaction.
     },
     {
       underscored: true,

@@ -2,17 +2,18 @@ const ethers = require('ethers')
 
 const { marketplaceAbi } = require('@origin/utils/marketplace')
 
+const { Network, Shop, Transaction } = require('../models')
 const queues = require('./queues')
 const { ListingID, OfferID } = require('../utils/id')
-const { Network, Shop, Transaction } = require('../models')
 const {
   post,
   getBytes32FromIpfsHash,
   getIpfsHashFromBytes32
 } = require('../utils/_ipfs')
 const encConf = require('../utils/encryptedConfig')
-const { Sentry } = require('../sentry')
 const { getLogger } = require('../utils/logger')
+const { IS_TEST } = require('../utils/const')
+const { Sentry } = require('../sentry')
 const { TransactionTypes, TransactionStatuses } = require('../enums')
 
 const log = getLogger('offerProcessor')
@@ -21,7 +22,7 @@ const BN = ethers.BigNumber // Ethers' BigNumber implementation.
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
 // Wait for 2 blocks confirmation before considering a tx mined.
-const NUM_BLOCKS_CONFIRMATION = 2
+const NUM_BLOCKS_CONFIRMATION = IS_TEST ? 0 : 2
 
 // Gas premium.
 // We use 1% extra gas to be ahead of other transactions submitted to the network using default gas prices.
@@ -41,7 +42,7 @@ function attachToQueue() {
  *
  * @param {Object} job: Bull job object.
  * job.data is expected to have the following fields:
- *   {string} shopID
+ *   {string} shopId
  *   {string} amount: Credit card payment amount, in cents.
  *   {string} encryptedData: IPFS hash of the PGP encrypted offer data.
  *   {string} paymentCode: unique payment code passed by the credit card processor.
@@ -92,7 +93,7 @@ async function processor(job) {
     const marketplace = new ethers.Contract(
       network.marketplaceContract,
       marketplaceAbi,
-      provider
+      wallet
     )
     queueLog(22, `Using walletAddress ${walletAddress}`)
 
@@ -110,15 +111,15 @@ async function processor(job) {
     })
     if (transaction) {
       log.info(
-        `Found pending transaction ${transaction.id} job ${job.jobId} hash ${transaction.hash} for wallet ${walletAddress}`
+        `Found pending transaction ${transaction.id} job ${job.id} hash ${transaction.hash} for wallet ${walletAddress}`
       )
 
       // If it is not the transaction from our job. Do not try to recover it.
       // Let it get recovered by the job that created it.
       // Fail our job for now, it will get retried.
-      if (transaction.jobId === job.jobId) {
+      if (transaction.jobId === job.id) {
         throw new Error(
-          `Pending transaction does not belongs to job ${job.jobId}. Bailing.`
+          `Pending transaction does not belongs to job ${job.id}. Bailing.`
         )
       }
 
@@ -155,7 +156,7 @@ async function processor(job) {
         hash: tx.hash,
         listingId: lid.toString(),
         ipfsHash,
-        jobId: job.jobId
+        jobId: job.id.toString()
       })
     }
 
@@ -170,7 +171,7 @@ async function processor(job) {
     const { receipt, offerId } = confirmation
 
     // Update the transaction in the DB.
-    const oid = new OfferID(lid.listingId, offerId)
+    const oid = new OfferID(lid.listingId, offerId, network.networkId)
     await transaction.update({
       status: TransactionStatuses.Confirmed,
       blockNumber: receipt.blockNumber,
@@ -274,7 +275,7 @@ async function _createOffer(
 ) {
   const ethBalance = await wallet.getBalance()
   const gasPrice = await provider.getGasPrice()
-  const gasLimit = new BN(350000) // Amount of gas needed to make an offer.
+  const gasLimit = BN.from(350000) // Amount of gas needed to make an offer.
   const gasCost = gasPrice
     .mul(gasLimit)
     .mul(gasPriceMultiplier)
