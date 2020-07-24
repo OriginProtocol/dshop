@@ -83,10 +83,12 @@ Add new migration:
 ## Running unit tests
     yarn run test
 
-Optionnally, if you are going to run tests several times in a row (typically during development), you can speed up the test setup phase by:
-  - Starting the services in a separate terminal and leave them up and running.
+Optionnally, if you are going to run tests several times in a row (typically during development), you can speed up the test setup phase by starting the services in a separate terminal and leave them up and running.
+
     cd ../packages/services
     yarn run start -g -i -d
+
 Then in another window:
+
     env USE_RUNNING_SERVICES=true yarn run test
     
