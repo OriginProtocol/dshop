@@ -54,7 +54,8 @@ module.exports = function (router) {
           log.debug(`${domain} has no deployments`)
           return res.send({
             success: true,
-            error: 'No deployments'
+            error:
+              'No deployments found.  You must publish the shop before setting a custom domain.'
           })
         }
 
