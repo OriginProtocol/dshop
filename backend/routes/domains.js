@@ -117,9 +117,13 @@ module.exports = function (router) {
       error = 'Invalid network'
     }
 
+    const ipfsURL = network ? new URL(network.ipfs) : null
+
     // A gateway with an unusual port won't work for this
-    if (network && network.ipfs.includes(':')) {
-      log.warn('Invalid IFPS gateway. Cannot use as AutoSSL gateway')
+    if (network && !['', '443', '80'].includes(ipfsURL.port)) {
+      log.warn(
+        `Invalid IFPS gateway(${network.ipfs}). Cannot use as AutoSSL gateway`
+      )
       success = false
       error = 'Cannot use this IFPS gateway for DNS configuration'
     }
@@ -130,13 +134,12 @@ module.exports = function (router) {
         isApex = await hasNS(domain)
 
         if (isApex) {
-          const ipfsURL = new URL(network.ipfs)
           const ips = await dnsResolve(ipfsURL.hostname, 'A')
           rrtype = 'A'
           rvalue = ips[0]
         } else {
           rrtype = 'CNAME'
-          rvalue = network.ipfs
+          rvalue = `${ipfsURL.hostname}.` // Trailing dot is DNS root terminator
         }
       } catch (err) {
         log.error('Error checking DNS: ', err)

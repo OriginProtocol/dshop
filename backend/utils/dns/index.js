@@ -120,7 +120,6 @@ async function hasSOA(v) {
   } catch (err) {
     if (
       !(
-        err.toString().includes('ENODATA') ||
         err.toString().includes('EBADRESP') ||
         err.toString().includes('ENOTFOUND')
       )
@@ -135,9 +134,11 @@ async function hasSOA(v) {
  * Does the given DNS name have NS records?  Is this a zone?
  *
  * @param v {string} - The name to check
+ * @param opts {object} - Options object
+ * @param opts {object.followCNAME} - If a CNAME should be followed for a result
  * @returns {boolean} - if the given name is a DNS zone
  */
-async function hasNS(v) {
+async function hasNS(v, opts = {}) {
   if (!isValidDNSName(v)) {
     throw new Error('Invalid DNS name')
   }
@@ -147,12 +148,24 @@ async function hasNS(v) {
 
   // If there's NS records this is the apex of a zone
   try {
+    if (!opts.followCNAME) {
+      try {
+        const cnRes = await dnsResolve(v, 'CNAME')
+
+        if (cnRes) {
+          return false
+        }
+      } catch (err) {
+        if (!err.toString().includes('ENODATA')) {
+          throw err
+        }
+      }
+    }
     await dnsResolve(v, 'NS')
     return true
   } catch (err) {
     if (
       !(
-        err.toString().includes('ENODATA') ||
         err.toString().includes('EBADRESP') ||
         err.toString().includes('ENOTFOUND')
       )
