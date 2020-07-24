@@ -18,6 +18,12 @@ const { DSHOP_CACHE } = require('../utils/const')
 const { getLogger } = require('../utils/logger')
 const log = getLogger('routes.auth')
 
+const AUTH_FAILURE_MESSAGE = 'Authentication failed'
+const AUTH_FAILURE_RESPOSNE = {
+  success: false,
+  message: AUTH_FAILURE_MESSAGE
+}
+
 /**
  * Utility function. Gets the secure random password automatically generated
  * during the GCP marketplace deployment of the instance.
@@ -188,34 +194,32 @@ module.exports = function (router) {
     const email = get(req.body, 'email', '').toLowerCase()
     const seller = await Seller.findOne({ where: { email, superuser: true } })
     if (!seller) {
-      return res.status(404).send({ success: false, reason: 'no-such-user' })
+      log.debug('Login failed: no such user')
+      return res.send(AUTH_FAILURE_RESPOSNE)
     }
     const check = await checkPassword(req.body.password, seller.password)
     if (check === true) {
       req.session.sellerId = seller.id
       res.json({ success: true, email: seller.email, role: 'superuser' })
     } else {
-      res.json({ success: false, reason: 'incorrect-pass' })
+      log.debug('Login failed: invalid password')
+      res.json(AUTH_FAILURE_RESPOSNE)
     }
   })
 
   router.post('/auth/login', async (req, res) => {
     const seller = await Seller.findOne({ where: { email: req.body.email } })
     if (!seller) {
-      return res.status(404).send({
-        success: false,
-        message: 'Invalid email'
-      })
+      log.debug('Login failed: no such user')
+      return res.send(AUTH_FAILURE_RESPOSNE)
     }
     const check = await checkPassword(req.body.password, seller.password)
     if (check === true) {
       req.session.sellerId = seller.id
       req.seller = seller
     } else {
-      return res.status(404).send({
-        success: false,
-        message: 'Invalid password'
-      })
+      log.debug('Login failed: invalid password')
+      return res.send(AUTH_FAILURE_RESPOSNE)
     }
     res.json({
       success: true,

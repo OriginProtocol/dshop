@@ -1,15 +1,15 @@
 const fetch = require('node-fetch')
-
 const get = require('lodash/get')
+
+const { getLogger } = require('../utils/logger')
+const { Op, Network, ShopDeployment } = require('../models')
 
 const { authSellerAndShop, authRole } = require('./_auth')
 
-const { getLogger } = require('../utils/logger')
-const { getConfig } = require('../utils/encryptedConfig')
-
-const { Network } = require('../models')
-
 const log = getLogger('routes.domains')
+
+// eslint-disable-next-line no-useless-escape
+const DNS_VALID = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
 
 module.exports = function (router) {
   router.post(
@@ -21,23 +21,50 @@ module.exports = function (router) {
 
       log.debug('Trying to verify DNS records of domain', domain, hostname)
 
+      // Verify the domain is RFC-valid
+      if (!domain.match(DNS_VALID)) {
+        log.debug(`${domain} is not a valid domain`)
+        return res.send({
+          success: true,
+          error: 'Invalid domain'
+        })
+      }
+
       try {
         const network = await Network.findOne({
           where: { networkId }
         })
 
         if (!network) {
-          return {
+          log.debug(`${networkId} is not a valid network for this node`)
+          return res.send({
             success: true,
             error: 'Invalid network ID'
-          }
+          })
         }
 
-        const networkConfig = getConfig(network.config)
+        const deployment = await ShopDeployment.findOne({
+          where: {
+            domain: {
+              [Op.like]: `%${domain}%`
+            }
+          },
+          order: [['created_at', 'DESC']]
+        })
+
+        if (!deployment) {
+          log.debug(`${domain} has no deployments`)
+          return res.send({
+            success: true,
+            error: 'No deployments'
+          })
+        }
 
         const ipfsURL = `${network.ipfsApi}/api/v0/dns?arg=${encodeURIComponent(
           domain
         )}`
+
+        log.debug(`Making request to ${ipfsURL}`)
 
         const r = await fetch(ipfsURL, {
           method: 'POST'
@@ -46,8 +73,8 @@ module.exports = function (router) {
         if (r.ok) {
           const respJson = await r.json()
 
-          const path = get(respJson, 'Path', '').toLowerCase()
-          const expectedValue = `/ipns/${hostname}.${networkConfig.domain}`.toLowerCase()
+          const path = get(respJson, 'Path', '')
+          const expectedValue = `/ipfs/${deployment.ipfsHash}`
 
           if (path === expectedValue) {
             return res.send({
@@ -65,7 +92,7 @@ module.exports = function (router) {
           error: `Your DNS changes haven't propagated yet.`
         })
       } catch (err) {
-        console.error('Failed to check DNS of domain', err)
+        log.error('Failed to check DNS of domain', err)
         res.send({
           error: 'Unknown error occured'
         })
