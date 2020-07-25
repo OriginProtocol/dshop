@@ -1,6 +1,9 @@
 const ethers = require('ethers')
 
-const { marketplaceAbi } = require('@origin/utils/marketplace')
+const {
+  marketplaceAbi,
+  marketplaceTxGasLimit
+} = require('@origin/utils/marketplace')
 
 const { post, getBytes32FromIpfsHash } = require('./_ipfs')
 const { getLogger } = require('../utils/logger')
@@ -86,7 +89,7 @@ async function createListing({ network, pk, listing }) {
   }
 
   // Send the transaction to the network and wait for it to get mined.
-  const options = { gasLimit: 350000 }
+  const options = { gasLimit: marketplaceTxGasLimit }
   const tx = await marketplace.createListing(
     ipfsBytes,
     0,

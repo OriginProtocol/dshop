@@ -170,7 +170,7 @@ async function getOrCreateTestNetwork() {
     providerWs: config.providerWs,
     ipfs: config.ipfsGateway,
     ipfsApi: config.ipfsApi,
-    marketplaceContract: config.marketplaceContract,
+    marketplaceContract: ethers.utils.getAddress(config.marketplaceContract), // call getAddress to checksum the address.
     marketplaceVersion: '001',
     active: true,
     config: setConfig({

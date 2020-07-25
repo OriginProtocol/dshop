@@ -1,6 +1,9 @@
 const ethers = require('ethers')
 
-const { marketplaceAbi } = require('@origin/utils/marketplace')
+const {
+  marketplaceAbi,
+  marketplaceTxGasLimit
+} = require('@origin/utils/marketplace')
 
 const { Network, Shop, Transaction } = require('../models')
 const queues = require('./queues')
@@ -30,9 +33,11 @@ const NUM_BLOCKS_CONFIRMATION = IS_TEST ? 0 : 2
 const gasPriceMultiplier = BN.from(101)
 const gasPriceDivider = BN.from(100)
 
+// Important: Do not increase concurrency!
+// The logic for processing relies on concurrency being set 1.
 function attachToQueue() {
   const queue = queues['makeOfferQueue']
-  queue.process(processor)
+  queue.process(processor) // Start the queue with default concurrency of 1 (single worker).
   queue.resume() // Start if paused
 }
 
@@ -105,7 +110,7 @@ async function processor(job) {
     transaction = await Transaction.findOne({
       where: {
         networkId: network.networkId,
-        wallet: walletAddress,
+        from: walletAddress,
         status: TransactionStatuses.Pending
       }
     })
@@ -117,7 +122,7 @@ async function processor(job) {
       // If it is not the transaction from our job. Do not try to recover it.
       // Let it get recovered by the job that created it.
       // Fail our job for now, it will get retried.
-      if (transaction.jobId === job.id) {
+      if (transaction.jobId !== job.id) {
         throw new Error(
           `Pending transaction does not belongs to job ${job.id}. Bailing.`
         )
@@ -150,7 +155,8 @@ async function processor(job) {
       transaction = await Transaction.create({
         shopId,
         networkId: network.networkId,
-        wallet: walletAddress,
+        from: walletAddress,
+        to: network.marketplaceContract,
         type: TransactionTypes.OfferCreated,
         status: TransactionStatuses.Pending,
         hash: tx.hash,
@@ -275,7 +281,7 @@ async function _createOffer(
 ) {
   const ethBalance = await wallet.getBalance()
   const gasPrice = await provider.getGasPrice()
-  const gasLimit = BN.from(350000) // Amount of gas needed to make an offer.
+  const gasLimit = BN.from(marketplaceTxGasLimit) // Amount of gas needed to make an offer.
   const gasCost = gasPrice
     .mul(gasLimit)
     .mul(gasPriceMultiplier)
