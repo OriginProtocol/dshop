@@ -33,17 +33,20 @@ const NUM_BLOCKS_CONFIRMATION = IS_TEST ? 0 : 2
 const gasPriceMultiplier = BN.from(101)
 const gasPriceDivider = BN.from(100)
 
-// Important: Do not increase concurrency!
-// The logic for processing relies on concurrency being set 1.
+/**
+ * Function to start the queue processing.
+ */
 function attachToQueue() {
   const queue = queues['makeOfferQueue']
-  queue.process(processor) // Start the queue with default concurrency of 1 (single worker).
+  queue.process(processor)
   queue.resume() // Start if paused
 }
 
 /**
  * Records a credit card purchase on the blockchain by making
  * an offer on the marketplace contract.
+ * Note: several processors may get started, resulting in
+ * multiple jobs getting processed concurrently.
  *
  * @param {Object} job: Bull job object.
  * job.data is expected to have the following fields:
@@ -59,7 +62,7 @@ async function processor(job) {
     job.log(str)
     job.progress(progress)
   }
-
+  const jobId = `${job.queue.name}-${job.id}` // Prefix with queue name since job ids are not unique across queues.
   const { shopId, encryptedData, paymentCode } = job.data
   log.info(`Creating offer for shop ${shopId}`)
   let confirmation
@@ -104,9 +107,17 @@ async function processor(job) {
 
     let tx, transaction
 
-    // Check if there is a pending transaction for the wallet.
-    // It's possible the processing got interrupted while waiting for the tx to get mined.
-    // For example due to a server maintenance or a crash.
+    // In order to avoid re-using the same nonce, we want to prevent more than 1 transaction
+    // being sent by a given wallet at a time.
+    // Check if there is any existing pending transaction for the same wallet address.
+    // Different scenarios could cause that:
+    //  - Since multiple processors run concurrently, another job for the same wallet
+    //    could be getting processed.
+    //  - The processing a job could get interrupted while waiting for the tx to get mined.
+    //    For example due to a server maintenance or a crash.
+    // TODO: In order to avoid any possible race condition, hold a lock on a DB row
+    //       associated with the wallet address while doing the pending transaction check
+    //       and sending the tx.
     transaction = await Transaction.findOne({
       where: {
         networkId: network.networkId,
@@ -120,9 +131,9 @@ async function processor(job) {
       )
 
       // If it is not the transaction from our job. Do not try to recover it.
-      // Let it get recovered by the job that created it.
+      // Let it get recovered by the job that created it when it gets retried.
       // Fail our job for now, it will get retried.
-      if (transaction.jobId !== job.id.toString()) {
+      if (transaction.jobId !== jobId) {
         throw new Error(
           `Pending transaction is not from job ${job.id} but ${transaction.jobId}. Bailing.`
         )
@@ -162,7 +173,7 @@ async function processor(job) {
         hash: tx.hash,
         listingId: lid.toString(),
         ipfsHash,
-        jobId: job.id.toString()
+        jobId
       })
     }
 

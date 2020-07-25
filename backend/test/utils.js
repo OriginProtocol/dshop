@@ -271,6 +271,7 @@ class MockBullJob {
   constructor(data) {
     this.id = Date.now() // unique and monotonically increasing job id.
     this.data = data
+    this.queue = { name: 'testQueue' }
     this.log = console.log
     this.progress = (x) => console.log(`Queue progress: ${x}%`)
   }

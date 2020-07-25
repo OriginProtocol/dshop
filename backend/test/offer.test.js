@@ -15,7 +15,7 @@ const { TransactionTypes, TransactionStatuses } = require('../enums')
 const { ListingID, OfferID } = require('../utils/id')
 
 describe('Offers', () => {
-  let network, shop, job, trans
+  let network, shop, job, jobId, trans
 
   before(async () => {
     network = await getOrCreateTestNetwork()
@@ -48,6 +48,7 @@ describe('Offers', () => {
       paymentCode: 'testPaymentCode' + Date.now()
     }
     job = new MockBullJob(data)
+    jobId = `${job.queue.name}-${job.id}`
 
     // Call the processor to record the offer on the blockchain.
     const { receipt, listingId, offerId, ipfsHash } = await processor(job)
@@ -58,7 +59,7 @@ describe('Offers', () => {
     expect(oid.toString()).to.startsWith(lid.toString())
 
     // A transaction row should have been created.
-    trans = await Transaction.findOne({ where: { jobId: job.id.toString() } })
+    trans = await Transaction.findOne({ where: { jobId } })
     expect(trans).to.be.an('object')
     expect(trans.shopId).to.be.equal(shop.id)
     expect(trans.networkId).to.be.equal(999)
@@ -70,7 +71,7 @@ describe('Offers', () => {
     expect(trans.listingId).to.be.equal(lid.toString())
     expect(trans.offerId).to.be.equal(oid.toString())
     expect(trans.ipfsHash).to.be.equal(ipfsHash)
-    expect(trans.jobId).to.be.equal(job.id.toString())
+    expect(trans.jobId).to.be.equal(jobId)
   })
 
   it('It should recover from a process interruption', async () => {
@@ -89,7 +90,7 @@ describe('Offers', () => {
     expect(oid.toString()).to.startsWith(lid.toString())
 
     // A transaction row should have been created.
-    trans = await Transaction.findOne({ where: { jobId: job.id.toString() } })
+    trans = await Transaction.findOne({ where: { jobId } })
     expect(trans).to.be.an('object')
     expect(trans.shopId).to.be.equal(shop.id)
     expect(trans.networkId).to.be.equal(999)
@@ -101,7 +102,7 @@ describe('Offers', () => {
     expect(trans.listingId).to.be.equal(lid.toString())
     expect(trans.offerId).to.be.equal(oid.toString())
     expect(trans.ipfsHash).to.be.equal(ipfsHash)
-    expect(trans.jobId).to.be.equal(job.id.toString())
+    expect(trans.jobId).to.be.equal(jobId)
   })
 
   it('It should not recover a tx from another job', async () => {
@@ -119,7 +120,7 @@ describe('Offers', () => {
       jobId: Date.now() // different job id.
     })
 
-    // Reprocess the job. The logc should load up the new pending transaction
+    // Reprocess the job. The logic should load up the new pending transaction
     // and bail when it detects the job id differs.
     let failure = false
     try {
