@@ -122,9 +122,9 @@ async function processor(job) {
       // If it is not the transaction from our job. Do not try to recover it.
       // Let it get recovered by the job that created it.
       // Fail our job for now, it will get retried.
-      if (transaction.jobId !== job.id) {
+      if (transaction.jobId !== job.id.toString()) {
         throw new Error(
-          `Pending transaction does not belongs to job ${job.id}. Bailing.`
+          `Pending transaction is not from job ${job.id} but ${transaction.jobId}. Bailing.`
         )
       }
 

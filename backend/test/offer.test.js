@@ -15,14 +15,14 @@ const { TransactionTypes, TransactionStatuses } = require('../enums')
 const { ListingID, OfferID } = require('../utils/id')
 
 describe('Offers', () => {
-  let shop, job, trans
+  let network, shop, job, trans
 
   before(async () => {
-    const network = await getOrCreateTestNetwork()
+    network = await getOrCreateTestNetwork()
 
     // Use account 1 as the merchant's.
     const sellerWallet = getTestWallet(1)
-    const sellerPk = sellerWalletrans.privateKey
+    const sellerPk = sellerWallet.privateKey
 
     // Create the merchant's PGP key.
     const pgpPrivateKeyPass = 'password123'
@@ -40,7 +40,7 @@ describe('Offers', () => {
   })
 
   it('It should make an offer', async () => {
-    // Create a mock Bull job objectrans.
+    // Create a mock Bull job object.
     const data = {
       shopId: shop.id,
       amount: '100',
@@ -93,15 +93,40 @@ describe('Offers', () => {
     expect(trans).to.be.an('object')
     expect(trans.shopId).to.be.equal(shop.id)
     expect(trans.networkId).to.be.equal(999)
-    expect(trans.from).to.be.equal(receiptrans.from)
-    expect(trans.to).to.be.equal(receiptrans.to)
+    expect(trans.from).to.be.equal(receipt.from)
+    expect(trans.to).to.be.equal(receipt.to)
     expect(trans.type).to.be.equal(TransactionTypes.OfferCreated)
     expect(trans.status).to.be.equal(TransactionStatuses.Confirmed)
-    expect(trans.hash).to.be.equal(receiptrans.transactionHash)
+    expect(trans.hash).to.be.equal(receipt.transactionHash)
     expect(trans.listingId).to.be.equal(lid.toString())
     expect(trans.offerId).to.be.equal(oid.toString())
     expect(trans.ipfsHash).to.be.equal(ipfsHash)
     expect(trans.jobId).to.be.equal(job.id.toString())
   })
-  
+
+  it('It should not recover a tx from another job', async () => {
+    // Create a pending transaction from the same wallet but with a different jobId.
+    await Transaction.create({
+      shopId: shop.id,
+      networkId: network.networkId,
+      from: trans.from,
+      to: network.marketplaceContract,
+      type: TransactionTypes.OfferCreated,
+      status: TransactionStatuses.Pending,
+      hash: trans.hash,
+      listingId: trans.listingId,
+      ipfsHash: trans.ipfsHash,
+      jobId: Date.now() // different job id.
+    })
+
+    // Reprocess the job. The logc should load up the new pending transaction
+    // and bail when it detects the job id differs.
+    let failure = false
+    try {
+      await processor(job)
+    } catch (e) {
+      failure = true
+    }
+    expect(failure).to.be.true
+  })
 })
