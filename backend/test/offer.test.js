@@ -63,8 +63,8 @@ describe('Offers', () => {
     expect(trans).to.be.an('object')
     expect(trans.shopId).to.be.equal(shop.id)
     expect(trans.networkId).to.be.equal(999)
-    expect(trans.from).to.be.equal(receipt.from)
-    expect(trans.to).to.be.equal(receipt.to)
+    expect(trans.fromAddress).to.be.equal(receipt.from)
+    expect(trans.toAddress).to.be.equal(receipt.to)
     expect(trans.type).to.be.equal(TransactionTypes.OfferCreated)
     expect(trans.status).to.be.equal(TransactionStatuses.Confirmed)
     expect(trans.hash).to.be.equal(receipt.transactionHash)
@@ -94,8 +94,8 @@ describe('Offers', () => {
     expect(trans).to.be.an('object')
     expect(trans.shopId).to.be.equal(shop.id)
     expect(trans.networkId).to.be.equal(999)
-    expect(trans.from).to.be.equal(receipt.from)
-    expect(trans.to).to.be.equal(receipt.to)
+    expect(trans.fromAddress).to.be.equal(receipt.from)
+    expect(trans.toAddress).to.be.equal(receipt.to)
     expect(trans.type).to.be.equal(TransactionTypes.OfferCreated)
     expect(trans.status).to.be.equal(TransactionStatuses.Confirmed)
     expect(trans.hash).to.be.equal(receipt.transactionHash)
@@ -111,8 +111,8 @@ describe('Offers', () => {
     await Transaction.create({
       shopId: shop.id,
       networkId: network.networkId,
-      from: trans.from,
-      to: network.marketplaceContract,
+      fromAddress: trans.fromAddress,
+      toAddress: network.marketplaceContract,
       type: TransactionTypes.OfferCreated,
       status: TransactionStatuses.Pending,
       hash: trans.hash,

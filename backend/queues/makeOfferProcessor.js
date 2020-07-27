@@ -121,7 +121,7 @@ async function processor(job) {
     transaction = await Transaction.findOne({
       where: {
         networkId: network.networkId,
-        from: walletAddress,
+        fromAddress: walletAddress,
         status: TransactionStatuses.Pending
       }
     })
@@ -166,8 +166,8 @@ async function processor(job) {
       transaction = await Transaction.create({
         shopId,
         networkId: network.networkId,
-        from: walletAddress,
-        to: network.marketplaceContract,
+        fromAddress: walletAddress,
+        toAddress: network.marketplaceContract,
         type: TransactionTypes.OfferCreated,
         status: TransactionStatuses.Pending,
         hash: tx.hash,

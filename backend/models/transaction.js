@@ -8,8 +8,8 @@ module.exports = (sequelize, DataTypes) => {
       shopId: DataTypes.INTEGER, // Id of the shop associated with the transaction.
       type: DataTypes.ENUM(TransactionTypes), // The type of transaction.
       status: DataTypes.ENUM(TransactionStatuses), // The status of the transaction.
-      from: DataTypes.STRING, // The ETH address used for sending the transaction.
-      to: DataTypes.STRING, // The ETH address the transaction was sent to.
+      fromAddress: DataTypes.STRING, // The ETH address used for sending the transaction.
+      toAddress: DataTypes.STRING, // The ETH address the transaction was sent to.
       hash: DataTypes.STRING, // The hash of the blockchain transaction.
       blockNumber: DataTypes.INTEGER, // The block the transaction was mined at.
       ipfsHash: DataTypes.STRING, // IPFS hash. Optional. Depends on the transaction type.
