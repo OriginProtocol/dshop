@@ -966,6 +966,7 @@ module.exports = function (router) {
       const { hash, domain } = await deployShop(deployOpts)
       return res.json({ success: true, hash, domain, gateway: network.ipfs })
     } catch (e) {
+      log.error(`Shop ${shop.id} deploy failed: ${e}`)
       return res.json({ success: false, reason: e.message })
     }
   })
@@ -1032,7 +1033,7 @@ module.exports = function (router) {
 
         return res.json({ success: true, hash, domain, gateway: network.ipfs })
       } catch (e) {
-        log.error(e)
+        log.error(`Shop ${req.shop.id} initial deploy failed: ${e}`)
         return res.json({ success: false, reason: e.message })
       }
     }
