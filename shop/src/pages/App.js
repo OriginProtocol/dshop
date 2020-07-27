@@ -56,7 +56,7 @@ const App = ({ location }) => {
     if (location.state && location.state.scrollToTop) {
       window.scrollTo(0, 0)
     }
-    if (gaTag) {
+    if (gaTag && isAdmin) {
       gtag('config', gaTag, { page_path: location.pathname })
     }
   }, [location.pathname])
