@@ -3,7 +3,7 @@ const get = require('lodash/get')
 
 const { getLogger } = require('../utils/logger')
 const { dnsResolve, isValidDNSName, hasNS } = require('../utils/dns')
-const { Op, Network, ShopDeployment } = require('../models')
+const { Network, ShopDeployment } = require('../models')
 
 const { authSellerAndShop, authRole } = require('./_auth')
 
@@ -43,9 +43,7 @@ module.exports = function (router) {
 
         const deployment = await ShopDeployment.findOne({
           where: {
-            domain: {
-              [Op.like]: `%${domain}%`
-            }
+            shopId: req.shop.id
           },
           order: [['created_at', 'DESC']]
         })
