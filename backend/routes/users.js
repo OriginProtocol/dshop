@@ -19,7 +19,7 @@ const log = getLogger('routes.users')
 
 module.exports = function (router) {
   router.get('/superuser/users', authSuperUser, async (req, res) => {
-    Seller.findAll().then((users) => {
+    Seller.findAll({ order: [['createdAt', 'desc']] }).then((users) => {
       res.json({ users })
     })
   })

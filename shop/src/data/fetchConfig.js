@@ -19,7 +19,7 @@ const DefaultPaymentMethods = [
 
 let config
 
-export async function fetchConfig(dataSrc, activeShop) {
+export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
   const net = window.ognNetwork || localStorage.ognNetwork
   const activeNetwork = NetworksByIdStr[net] || NetworksByIdStr['localhost']
   const netId = String(activeNetwork.id)
@@ -53,12 +53,20 @@ export async function fetchConfig(dataSrc, activeShop) {
 
     const networkConfig = activeNetworkConfig(config, netId)
 
-    return {
+    const result = {
       ...config,
       ...networkConfig,
       dataSrc,
       activeShop
     }
+
+    // If UI is being served from backend, override 'backend' from config.json
+    // returned by shops to prevent auth issues
+    if (overrideBackend) {
+      result.backend = ''
+    }
+
+    return result
   } catch (err) {
     return config
   }
