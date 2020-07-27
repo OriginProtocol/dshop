@@ -14,7 +14,6 @@ module.exports = {
   TEST_DOMAIN_1: 'originprotocol.com',
   BAD_DOMAIN_1: 'thisisnotarealdomaindotcom135.com',
   TEST_LISTING_ID_1: '999-001-999',
-  TEST_SHOP_TOKEN_1: 'test-shop',
   TEST_UNSTOPPABLE_DOMAIN_1: 'testname.crypto',
   USER_EMAIL_1: 'test@originprotocol.com',
   USER_PASS_1: 'asdf1234',

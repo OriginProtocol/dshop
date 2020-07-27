@@ -7,10 +7,13 @@ function useConfig() {
   const [error, setError] = useState()
 
   function setActiveShop(shopSlug) {
+    const dataDir = document
+      .querySelector('link[rel="data-dir"]')
+      .getAttribute('href')
+
+    const isBackend = dataDir === 'DATA_DIR'
     if (shopSlug === true) {
-      shopSlug =
-        localStorage.activeShop ||
-        document.querySelector('link[rel="data-dir"]').getAttribute('href')
+      shopSlug = localStorage.activeShop || dataDir
     }
 
     const dataSrc = !shopSlug
@@ -19,7 +22,7 @@ function useConfig() {
       ? shopSlug
       : `${shopSlug}/`
 
-    fetchConfig(dataSrc, shopSlug)
+    fetchConfig(dataSrc, shopSlug, isBackend)
       .then((config) => {
         setError(false)
         dispatch({ type: 'setConfig', config })

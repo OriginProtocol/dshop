@@ -5,9 +5,7 @@ import get from 'lodash/get'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 
-function reducer(state, newState) {
-  return { ...state, ...newState }
-}
+const reducer = (state, newState) => ({ ...state, ...newState })
 
 function useWallet() {
   const [{ admin, reload }, dispatch] = useStateValue()
@@ -23,7 +21,8 @@ function useWallet() {
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()
       const mm = get(window, 'ethereum._metamask', {})
-      provider.send('net_version').then((netId) => {
+      provider.getNetwork().then((network) => {
+        const netId = String(network.chainId === 1337 ? 999 : network.chainId)
         if (!isSubscribed) return
         if (mm.isEnabled) {
           Promise.all([mm.isEnabled(), mm.isUnlocked(), mm.isApproved()]).then(
@@ -31,37 +30,72 @@ function useWallet() {
               if (!isSubscribed) return
               const enabled = isEnabled && isUnlocked && isApproved
               const signerStatus = enabled ? 'enabled' : 'disabled'
-              setState({
-                provider,
-                signer: enabled ? signer : null,
-                status: 'enabled',
-                signerStatus,
-                netId
-              })
+              signer
+                .getAddress()
+                .then((address) => {
+                  if (!isSubscribed) return
+                  setState({
+                    provider,
+                    signer: enabled ? signer : null,
+                    status: 'enabled',
+                    signerStatus,
+                    netId,
+                    address
+                  })
+                })
+                .catch(() => {
+                  setState({
+                    provider,
+                    signer: null,
+                    status: 'disabled',
+                    signerStatus: 'disabled',
+                    netId,
+                    address: null
+                  })
+                })
             }
           )
         } else {
-          setState({
-            provider,
-            signer,
-            status: 'enabled',
-            signerStatus: 'enabled',
-            netId
-          })
+          signer
+            .getAddress()
+            .then((address) => {
+              if (!isSubscribed) return
+
+              setState({
+                provider,
+                signer,
+                status: 'enabled',
+                signerStatus: 'enabled',
+                netId,
+                address
+              })
+            })
+            .catch(() => {
+              setState({
+                provider,
+                signer: null,
+                status: 'disabled',
+                signerStatus: 'disabled',
+                netId,
+                address: null
+              })
+            })
         }
       })
     } else if (providerUrl) {
       // Fall back to provider specified by Network
       const provider = new ethers.providers.JsonRpcProvider(providerUrl)
       const signer = provider.getSigner()
-      provider.send('net_version').then((netId) => {
+      provider.getNetwork().then((network) => {
+        const netId = String(network.chainId === 1337 ? 999 : network.chainId)
         if (!isSubscribed) return
         setState({
           provider,
           signer,
           status: 'enabled',
           signerStatus: 'disabled',
-          netId
+          netId,
+          address: null
         })
       })
     } else {
@@ -72,23 +106,20 @@ function useWallet() {
   }, [providerUrl, reload.provider, window.ethereum])
 
   useEffect(() => {
-    if (state.status !== 'enabled' || state.signerStatus !== 'enabled') {
-      return
-    }
-
     const onReload = () => dispatch({ type: 'reload', target: 'provider' })
 
     if (get(window, 'ethereum.on')) {
-      window.ethereum.on('chainChanged', onReload)
+      // Using chainIdChanged instead of chainChanged until Brave updates
+      window.ethereum.on('chainIdChanged', onReload)
       window.ethereum.on('accountsChanged', onReload)
     }
     return function cleanup() {
       if (get(window, 'ethereum.on')) {
-        window.ethereum.off('chainChanged', onReload)
+        window.ethereum.off('chainIdChanged', onReload)
         window.ethereum.off('accountsChanged', onReload)
       }
     }
-  }, [window.ethereum, state.status, state.signerStatus])
+  }, [window.ethereum])
 
   function enable() {
     return new Promise((resolve) => {
@@ -109,9 +140,7 @@ function useWallet() {
             resolve(false)
           }
         })
-        .catch(() => {
-          resolve(false)
-        })
+        .catch(() => resolve(false))
     })
   }
 

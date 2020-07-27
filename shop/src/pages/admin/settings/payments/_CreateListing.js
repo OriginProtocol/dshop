@@ -8,10 +8,8 @@ import { createListing, waitForCreateListing } from 'utils/listing'
 import Web3Transaction from 'components/Web3Transaction'
 
 const CreateListing = ({ className, children, onCreated }) => {
-  // const { config } = useConfig()
   const { marketplace } = useOrigin()
   const [submit, setSubmit] = useState()
-  // const { signer } = useWallet()
 
   return (
     <>

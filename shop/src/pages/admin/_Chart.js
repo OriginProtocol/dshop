@@ -37,7 +37,7 @@ const Chart = ({ orders = [], numDays = 10 }) => {
     const chart = new Chartist.Bar(
       chartEl.current,
       { labels, series },
-      { axisY: { offset: 20 }, axisX: { showGrid: false } }
+      { axisY: { offset: 20, onlyInteger: true }, axisX: { showGrid: false } }
     )
 
     chart.on('draw', function (data) {

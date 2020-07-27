@@ -47,11 +47,14 @@ before(async function () {
   await sequelizeMigrate()
   require('../app')
 
-  // Start services: Ganache (in-memory) and IPFS
-  shutdownServices = await services({
-    ganache: { inMemory: true, total_accounts: 6 },
-    ipfs: true
-  })
+  // Unless instructed to use already running services, start services and deploy contracts.
+  if (!process.env.USE_RUNNING_SERVICES) {
+    shutdownServices = await services({
+      ganache: { inMemory: true, total_accounts: 6 },
+      deployContracts: true,
+      ipfs: true
+    })
+  }
 })
 
 // Override exit code to prevent error when using Ctrl-c after `npm run test:watch`
@@ -60,8 +63,9 @@ if (isWatchMode) {
 } else {
   // Shutdown services and clean up if we're not in watch mode and tests are finished.
   after(async function () {
-    await shutdownServices()
-
+    if (shutdownServices) {
+      await shutdownServices()
+    }
     if (TEST_TMP_DIR.startsWith('/tmp') && !process.env.LEAVE_TEST_TMP_DIR) {
       console.log(`Cleaning up test data in ${TEST_TMP_DIR}...`)
       // Note: fs.rmdirSync(TEST_TMP_DIR, { recursive: true }) is still experimental and does not seem to work.
