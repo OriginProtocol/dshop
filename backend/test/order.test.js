@@ -1,102 +1,27 @@
 const chai = require('chai')
 const expect = chai.expect
-const openpgp = require('openpgp')
 
-const { Order, Network, Shop } = require('../models')
-const { defaults } = require('../config')
+const { Order } = require('../models')
 const { processDShopEvent, handleLog } = require('../utils/handleLog')
-const { post, getBytes32FromIpfsHash } = require('../utils/_ipfs')
-const { createShop } = require('../utils/shop')
-const { setConfig } = require('../utils/encryptedConfig')
+const { post } = require('../utils/_ipfs')
 
-openpgp.config.show_comment = false
-openpgp.config.show_version = false
-
-/**
- * Utility method to generate a PGP key.
- *
- * @param {string} name
- * @param {string} passphrase
- * @returns {Promise<{publicKeyArmored: string, privateKeyArmored: string}>}
- */
-async function generatePgpKey(name, passphrase) {
-  const key = await openpgp.generateKey({
-    userIds: [{ name, email: `${name}@test.com` }],
-    curve: 'ed25519',
-    passphrase
-  })
-  return key
-}
-
-/**
- * Utility function copied from shop/src/data/addData.js
- * TODO: refactor into a common package.
- *
- * @param {Object} data
- * @param {string} pgpPublicKey
- * @param {string} ipfsApi
- * @returns {Promise<{auth: string, bytes32: string, hash: string}>}
- */
-async function addData(data, { pgpPublicKey, ipfsApi }) {
-  const pubKeyObj = await openpgp.key.readArmored(pgpPublicKey)
-
-  data.dataKey = 'testDataKey'
-
-  const buyerData = await openpgp.encrypt({
-    message: openpgp.message.fromText(JSON.stringify(data)),
-    passwords: [data.dataKey]
-  })
-
-  const encrypted = await openpgp.encrypt({
-    message: openpgp.message.fromText(JSON.stringify(data)),
-    publicKeys: pubKeyObj.keys
-  })
-
-  const res = await post(
-    ipfsApi,
-    { data: encrypted.data, buyerData: buyerData.data },
-    true
-  )
-  return { hash: res, auth: data.dataKey, bytes32: getBytes32FromIpfsHash(res) }
-}
+const {
+  addData,
+  getTestWallet,
+  createTestShop,
+  getOrCreateTestNetwork,
+  generatePgpKey
+} = require('./utils')
 
 describe('Orders', () => {
-  const listingId = '999-001-1'
-  let offerIpfsHash, shopId, data, offerId
+  let shop, offerIpfsHash, data, offerId
 
   before(async () => {
-    const config = defaults['999']
+    const network = await getOrCreateTestNetwork()
 
-    // Create a network row in the DB if it does not already exist.
-    const networkObj = {
-      networkId: 999,
-      provider: config.provider,
-      providerWs: config.providerWs,
-      ipfs: config.ipfsGateway,
-      ipfsApi: config.ipfsApi,
-      marketplaceContract: config.marketplaceContract,
-      marketplaceVersion: '001',
-      active: true,
-      config: setConfig({
-        pinataKey: 'pinataKey',
-        pinataSecret: 'pinataSecret',
-        cloudflareEmail: 'cloudflareEmail',
-        cloudflareApiKey: 'cloudflareApiKey',
-        gcpCredentials: 'gcpCredentials',
-        domain: 'domain.com',
-        deployDir: 'deployDir'
-      })
-    }
-    const existing = await Network.findOne({
-      where: { networkId: networkObj.networkId }
-    })
-    if (existing) {
-      await Network.update(networkObj, {
-        where: { networkId: networkObj.networkId }
-      })
-    } else {
-      await Network.create(networkObj)
-    }
+    // Use account 1 as the merchant's.
+    const sellerWallet = getTestWallet(1)
+    const sellerPk = sellerWallet.privateKey
 
     // Create the merchant's PGP key.
     const pgpPrivateKeyPass = 'password123'
@@ -104,28 +29,13 @@ describe('Orders', () => {
     const pgpPublicKey = key.publicKeyArmored
     const pgpPrivateKey = key.privateKeyArmored
 
-    // Create a shop in the DB.
-    const shopCreationResult = await createShop({
-      name: 'TestShop',
-      listingId,
-      sellerId: 1,
-      authToken: 'testToken',
-      config: setConfig({
-        dataUrl: undefined,
-        publicUrl: undefined,
-        printful: undefined,
-        stripeBackend: undefined,
-        stripeWebhookSecret: undefined,
-        pgpPublicKey,
-        pgpPrivateKey,
-        pgpPrivateKeyPass,
-        web3Pk: '0x123'
-      })
+    shop = await createTestShop({
+      network,
+      sellerPk,
+      pgpPrivateKeyPass,
+      pgpPublicKey,
+      pgpPrivateKey
     })
-    if (!shopCreationResult || !shopCreationResult.shop) {
-      throw new Error(`Failed creating shop: ${shopCreationResult}`)
-    }
-    shopId = shopCreationResult.shop.id
 
     // Create an order data and store it encrypted on IPFS
     data = {
@@ -169,13 +79,13 @@ describe('Orders', () => {
     }
     const { hash } = await addData(data, {
       pgpPublicKey: key.publicKeyArmored,
-      ipfsApi: config.ipfsApi
+      ipfsApi: network.ipfsApi
     })
 
     // Create an offer on IPFS.
     const offer = {
       schemaId: 'https://schema.originprotocol.com/offer_2.0.0.json',
-      listingId,
+      listingId: shop.listingId,
       listingType: 'unit',
       unitsPurchased: 1,
       totalPrice: {
@@ -189,7 +99,7 @@ describe('Orders', () => {
       finalizes: 1209600,
       encryptedData: hash
     }
-    offerIpfsHash = await post(config.ipfsApi, offer, true)
+    offerIpfsHash = await post(network.ipfsApi, offer, true)
   })
 
   it('It should ignore an OfferCreated event unrelated to dshop', async () => {
@@ -228,7 +138,7 @@ describe('Orders', () => {
       '0x470503ad37642fff73a57bac35e69733b6b38281a893f39b50c285aad1f040e0'
     const event = {
       eventName: 'ListingUpdated',
-      listingId: 1,
+      listingId: shop.listingId,
       offerId: 1,
       party: '0xabcdef',
       ipfsHash: 'TESTHASH',
@@ -254,10 +164,8 @@ describe('Orders', () => {
   })
 
   it('It should insert an order from an event', async () => {
-    const shop = await Shop.findByPk(shopId)
-
     offerId = Date.now() // Use timestamp in msec as a unique offer id.
-    const fullOfferId = `${listingId}-${offerId}`
+    const fullOfferId = `${shop.listingId}-${offerId}`
 
     // Create a fake OfferCreated blockchain event.
     const event = {
@@ -278,7 +186,7 @@ describe('Orders', () => {
     const order = await Order.findOne({ where: { orderId: fullOfferId } })
     expect(order).to.be.an('object')
     expect(order.networkId).to.equal(999)
-    expect(order.shopId).to.equal(shopId)
+    expect(order.shopId).to.equal(shop.id)
     expect(order.statusStr).to.equal('OfferCreated')
     expect(order.ipfsHash).to.equal(offerIpfsHash)
     expect(order.createdBlock).to.equal(1)
@@ -290,8 +198,6 @@ describe('Orders', () => {
   })
 
   it('It should update an order on an OfferAccepted event', async () => {
-    const shop = await Shop.findByPk(shopId)
-
     // Create a fake OfferCreated blockchain event.
     const event = {
       eventName: 'OfferAccepted',
@@ -308,7 +214,7 @@ describe('Orders', () => {
     await processDShopEvent({ event, shop })
 
     // Check the order status and updateBlock were updated.
-    const fullOfferId = `${listingId}-${offerId}`
+    const fullOfferId = `${shop.listingId}-${offerId}`
     const order = await Order.findOne({ where: { orderId: fullOfferId } })
     expect(order).to.be.an('object')
     expect(order.statusStr).to.equal('OfferAccepted')
@@ -316,8 +222,6 @@ describe('Orders', () => {
   })
 
   it('It should update an order on an OfferWithdrawn event', async () => {
-    const shop = await Shop.findByPk(shopId)
-
     // Create a fake OfferWithdrawn blockchain event.
     const event = {
       eventName: 'OfferWithdrawn',
@@ -334,7 +238,7 @@ describe('Orders', () => {
     await processDShopEvent({ event, shop })
 
     // Check the order status and updateBlock were updated.
-    const fullOfferId = `${listingId}-${offerId}`
+    const fullOfferId = `${shop.listingId}-${offerId}`
     const order = await Order.findOne({ where: { orderId: fullOfferId } })
     expect(order).to.be.an('object')
     expect(order.statusStr).to.equal('OfferWithdrawn')
@@ -342,8 +246,6 @@ describe('Orders', () => {
   })
 
   it('It should throw an exception in case of a failure to fetch the offer data from IPFS', async () => {
-    const shop = await Shop.findByPk(shopId)
-
     // Create a fake OfferWithdrawn blockchain event.
     const event = {
       eventName: 'OfferCreated',

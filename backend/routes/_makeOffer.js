@@ -18,8 +18,15 @@ async function makeOffer(req, res) {
       encryptedData: encryptedData,
       paymentCode: paymentCode
     },
-    { attempts: 6 }
-  ) // Allow up to six attempts
+    {
+      // Up to 6 attempts with exponential backoff with a 60sec initial delay.
+      attempts: 6,
+      backoff: {
+        type: 'exponential',
+        delay: 60000
+      }
+    }
+  )
 
   res.sendStatus(200)
 }

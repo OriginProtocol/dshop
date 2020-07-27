@@ -79,3 +79,16 @@ Add new migration:
 
     npm run build:dist
     rsync -rv --exclude=.git --exclude=.gitignore --exclude=/db/dshop.db --exclude=/node_modules --exclude=/data --delete backend/ DESTINATION
+
+## Running unit tests
+    yarn run test
+
+Optionnally, if you are going to run tests several times in a row (typically during development), you can speed up the test setup phase by starting the services in a separate terminal and leave them up and running.
+
+    cd ../packages/services
+    yarn run start -g -i -d
+
+Then in another window:
+
+    env USE_RUNNING_SERVICES=true yarn run test
+    

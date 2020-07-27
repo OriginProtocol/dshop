@@ -1,5 +1,8 @@
 const chai = require('chai')
+chai.use(require('chai-string'))
 const expect = chai.expect
+
+const { Shop } = require('../models')
 
 const { apiRequest } = require('./utils')
 const {
@@ -11,12 +14,11 @@ const {
   TEST_LISTING_ID_1,
   TEST_HASH_1,
   IPFS_GATEWAY,
-  TEST_SHOP_TOKEN_1,
   TEST_UNSTOPPABLE_DOMAIN_1
 } = require('./const')
 
 describe('Shops', () => {
-  let shopId
+  let shopId, dataDir
   before(async () => {})
 
   // TODO: Move this to setup/fixture?
@@ -62,14 +64,15 @@ describe('Shops', () => {
   })
 
   it('should create a shop', async () => {
+    const shopName = 'test-shop-' + Date.now() // unique shop name.
+    dataDir = shopName
     const body = {
-      name: 'Test Shop',
-      dataDir: TEST_SHOP_TOKEN_1,
+      name: shopName,
+      dataDir,
       pgpPublicKey: PGP_PUBLIC_KEY,
       shopType: 'single-product',
       backend: ROOT_BACKEND_URL,
-      listingId: TEST_LISTING_ID_1,
-      hostname: 'test-shop'
+      listingId: TEST_LISTING_ID_1
     }
 
     const jason = await apiRequest({
@@ -79,7 +82,14 @@ describe('Shops', () => {
     })
 
     expect(jason.success).to.be.true
-    shopId = jason.shopId
+
+    const shop = await Shop.findOne({ where: { name: shopName } })
+    expect(shop).to.be.an('object')
+    expect(shop.name).to.equal(body.name)
+    expect(shop.hostname).to.startsWith(body.dataDir)
+    // TODO: check shop.config
+
+    shopId = shop.id
   })
 
   it('should add a deployment', async () => {
@@ -92,7 +102,7 @@ describe('Shops', () => {
         ipfsGateway: IPFS_GATEWAY
       },
       headers: {
-        Authorization: `Bearer ${TEST_SHOP_TOKEN_1}`
+        Authorization: `Bearer ${dataDir}`
       }
     })
     expect(jason.success).to.be.true
@@ -113,7 +123,7 @@ describe('Shops', () => {
         hostnames: [TEST_UNSTOPPABLE_DOMAIN_1]
       },
       headers: {
-        Authorization: `Bearer ${TEST_SHOP_TOKEN_1}`
+        Authorization: `Bearer ${dataDir}`
       }
     })
 
@@ -128,7 +138,7 @@ describe('Shops', () => {
     const jason = await apiRequest({
       endpoint: `/shops/${shopId}/get-names`,
       headers: {
-        Authorization: `Bearer ${TEST_SHOP_TOKEN_1}`
+        Authorization: `Bearer ${dataDir}`
       }
     })
 
