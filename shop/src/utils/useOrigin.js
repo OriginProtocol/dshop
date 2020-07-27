@@ -167,15 +167,11 @@ async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
   }
 }
 
-function useOrigin({ marketplaceAddress, targetNetworkId } = {}) {
+function useOrigin({ marketplaceAddress } = {}) {
   const [loading, setLoading] = useState(true)
   const [marketplace, setMarketplace] = useState()
   const { config } = useConfig()
-  const { status, provider, signer, netId } = useWallet()
-
-  targetNetworkId = targetNetworkId
-    ? String(targetNetworkId)
-    : String(config.netId)
+  const { status, provider, signer, netId, networkOk } = useWallet()
 
   marketplaceAddress = marketplaceAddress
     ? marketplaceAddress
@@ -183,7 +179,7 @@ function useOrigin({ marketplaceAddress, targetNetworkId } = {}) {
 
   useEffect(() => {
     if (status === 'loading') return
-    if (status !== 'enabled' || netId !== targetNetworkId) {
+    if (status !== 'enabled' || !networkOk) {
       setLoading(false)
       return
     }

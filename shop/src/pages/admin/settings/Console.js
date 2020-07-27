@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 
 import { get } from '@origin/ipfs'
+import omit from 'lodash/omit'
 
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
 import useBackendApi from 'utils/useBackendApi'
 import useSetState from 'utils/useSetState'
+import useWallet from 'utils/useWallet'
 import { updateListing } from 'utils/listing'
 import { formInput, formFeedback } from 'utils/formHelpers'
 
@@ -13,6 +15,7 @@ import Tabs from './_Tabs'
 
 const AdminConsole = () => {
   const { config } = useConfig()
+  const wallet = useWallet()
   const { shopConfig } = useShopConfig()
   const [encryptedData, setEncryptedData] = useState('')
   const [orderId, setOrderId] = useState('')
@@ -31,6 +34,7 @@ const AdminConsole = () => {
       <Tabs />
 
       <div className="mt-4">
+        <pre>{JSON.stringify(omit(wallet, 'provider', 'signer'), null, 4)}</pre>
         <label className="font-weight-bold">Create order via IPFS hash</label>
         <form
           autoComplete="off"
