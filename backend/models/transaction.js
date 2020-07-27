@@ -15,7 +15,8 @@ module.exports = (sequelize, DataTypes) => {
       ipfsHash: DataTypes.STRING, // IPFS hash. Optional. Depends on the transaction type.
       listingId: DataTypes.STRING, // Fully qualified listing id. Optional. Depends on the transaction type.
       offerId: DataTypes.STRING, // Fully qualified offer id. Optional. Depends on the transaction type.
-      jobId: DataTypes.STRING // Optional. ID of the job in the queue that created the transaction.
+      jobId: DataTypes.STRING, // Optional. ID of the job in the queue that created the transaction.
+      customId: DataTypes.STRING // Optional. Depends on the transaction type. For OfferCreated, stores the paymentCode (from external_payments table)..
     },
     {
       underscored: true,

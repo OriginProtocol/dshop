@@ -21,6 +21,7 @@ module.exports = {
         listing_id: Sequelize.STRING,
         offer_id: Sequelize.STRING,
         job_id: Sequelize.STRING,
+        custom_id: Sequelize.STRING,
         created_at: Sequelize.DATE,
         updated_at: Sequelize.DATE
       })

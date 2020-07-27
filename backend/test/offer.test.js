@@ -72,6 +72,7 @@ describe('Offers', () => {
     expect(trans.offerId).to.be.equal(oid.toString())
     expect(trans.ipfsHash).to.be.equal(ipfsHash)
     expect(trans.jobId).to.be.equal(jobId)
+    expect(trans.customId).to.be.equal(job.data.paymentCode)
   })
 
   it('It should recover from a process interruption', async () => {
@@ -89,7 +90,6 @@ describe('Offers', () => {
     expect(shop.listingId).to.equal(lid.toString())
     expect(oid.toString()).to.startsWith(lid.toString())
 
-    // A transaction row should have been created.
     trans = await Transaction.findOne({ where: { jobId } })
     expect(trans).to.be.an('object')
     expect(trans.shopId).to.be.equal(shop.id)
@@ -103,6 +103,7 @@ describe('Offers', () => {
     expect(trans.offerId).to.be.equal(oid.toString())
     expect(trans.ipfsHash).to.be.equal(ipfsHash)
     expect(trans.jobId).to.be.equal(jobId)
+    expect(trans.customId).to.be.equal(job.data.paymentCode)
   })
 
   it('It should not recover a tx from another job', async () => {
@@ -117,7 +118,8 @@ describe('Offers', () => {
       hash: trans.hash,
       listingId: trans.listingId,
       ipfsHash: trans.ipfsHash,
-      jobId: Date.now() // different job id.
+      jobId: 'job' + Date.now(), // different job id.
+      paymentCode: 'code' + Date.now()
     })
 
     // Reprocess the job. The logic should load up the new pending transaction

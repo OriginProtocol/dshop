@@ -173,7 +173,8 @@ async function processor(job) {
         hash: tx.hash,
         listingId: lid.toString(),
         ipfsHash,
-        jobId
+        jobId,
+        customId: paymentCode // Allows to join the transactions and external_payments table.
       })
     }
 
@@ -188,9 +189,14 @@ async function processor(job) {
     const { receipt, offerId } = confirmation
 
     // Update the transaction in the DB.
+    // Note: Failed transactions (e.g. caused by an EVM revert) are not retried since
+    // it's unlikely they would succeed given the arguments of the transaction would not change
+    // as part of the retry. Those failures will need to get manually retried by the operator.
     const oid = new OfferID(lid.listingId, offerId, network.networkId)
     await transaction.update({
-      status: TransactionStatuses.Confirmed,
+      status: receipt.status
+        ? TransactionStatuses.Confirmed
+        : TransactionStatuses.Failed,
       blockNumber: receipt.blockNumber,
       offerId: oid.toString() // Store the fully qualified offerId.
     })
