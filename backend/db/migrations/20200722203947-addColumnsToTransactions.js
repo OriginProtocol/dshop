@@ -26,8 +26,8 @@ module.exports = {
         updated_at: Sequelize.DATE
       })
       await queryInterface.addIndex(tableName, ['shop_id'])
+      await queryInterface.addIndex(tableName, ['from_address'])
       await queryInterface.addIndex(tableName, ['hash'])
-      await queryInterface.addIndex(tableName, ['listing_id'])
       await queryInterface.addIndex(tableName, ['offer_id'])
       await queryInterface.addIndex(tableName, ['job_id'])
     })
