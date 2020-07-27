@@ -59,7 +59,8 @@ const _defaultShopConfigJSON = {
   upholdClient: '',
   upholdSecret: '',
   bigQueryCredentials: '',
-  bigQueryTable: ''
+  bigQueryTable: '',
+  googleAnalytics: ''
 }
 
 const defaultShopConfig = JSON.stringify(_defaultShopConfigJSON, null, 2)
@@ -84,6 +85,7 @@ function initialState() {
     ipfsApi: '',
     marketplaceContract: '',
     marketplaceVersion: '',
+    googleAnalytics: '',
     backendUrl,
     ...Defaults[networkId]
   }
@@ -338,6 +340,13 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           <label>Discord Webhook</label>
           <PasswordField field="discordWebhook" input={input} />
           {Feedback('discordWebhook')}
+        </div>
+      </div>
+      <div className="form-row">
+        <div className="form-group col-md-6">
+          <label>Google Analytics</label>
+          <input {...input('googleAnalytics')} />
+          {Feedback('googleAnalytics')}
         </div>
       </div>
 

@@ -13,12 +13,19 @@ import SuperAdmin from './super-admin/SuperAdmin'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 
+window.dataLayer = window.dataLayer || []
+const gtag = function () {
+  window.dataLayer.push(arguments)
+}
+window.gtag = gtag
+
 const App = ({ location }) => {
   const history = useHistory()
   const [passwordLoading, setPasswordLoading] = useState(false)
   const { setActiveShop, config, error } = useConfig()
   const [{ admin, affiliate, passwordAuthed }, dispatch] = useStateValue()
   const q = queryString.parse(location.search)
+  const gaTag = get(admin, 'network.googleAnalytics')
 
   const isSuperAdmin = location.pathname.indexOf('/super-admin') === 0
   const isAdmin = location.pathname.indexOf('/admin') === 0 || isSuperAdmin
@@ -48,6 +55,9 @@ const App = ({ location }) => {
   useEffect(() => {
     if (location.state && location.state.scrollToTop) {
       window.scrollTo(0, 0)
+    }
+    if (gaTag && isAdmin) {
+      gtag('config', gaTag, { page_path: location.pathname })
     }
   }, [location.pathname])
 
@@ -101,6 +111,18 @@ const App = ({ location }) => {
       setActiveShop(true)
     }
   }, [config])
+
+  useEffect(() => {
+    if (gaTag) {
+      const gaEl = document.createElement('script')
+      gaEl.async = 'async'
+      gaEl.src = `https://www.googletagmanager.com/gtag/js?id=${gaTag}`
+      document.head.appendChild(gaEl)
+      gtag('js', new Date())
+      gtag('set', 'transport', 'beacon')
+      gtag('config', gaTag, { page_path: location.pathname })
+    }
+  }, [gaTag])
 
   if (!config) {
     return null
