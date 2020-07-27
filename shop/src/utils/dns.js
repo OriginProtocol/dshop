@@ -1,5 +1,7 @@
 const UNSTOPPABLE_TLDS = ['crypto']
 const CRYPTO_TLDS = [...UNSTOPPABLE_TLDS]
+// eslint-disable-next-line no-useless-escape
+const DNS_VALID = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/
 
 /**
  * Is the given hostname an unstoppable domain name?
@@ -39,4 +41,14 @@ export function isPublicDNSName(v) {
   return (
     !isCryptoName(v) && typeof v === 'string' && v.length > 3 && v.includes('.')
   )
+}
+
+/**
+ * Is the given hostname a valid DNS name
+ *
+ * @param v {string} - The string to check
+ * @returns {boolean} - if the given name is a valid DNS name
+ */
+export function isValidDNSName(v) {
+  return v.includes('.') && v.match(DNS_VALID)
 }
