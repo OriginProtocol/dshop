@@ -969,6 +969,7 @@ module.exports = function (router) {
       const { hash, domain } = await deployShop(deployOpts)
       return res.json({ success: true, hash, domain, gateway: network.ipfs })
     } catch (e) {
+      log.error(`Shop ${shop.id} deploy failed: ${e}`)
       return res.json({ success: false, reason: e.message })
     }
   })
@@ -1035,7 +1036,7 @@ module.exports = function (router) {
 
         return res.json({ success: true, hash, domain, gateway: network.ipfs })
       } catch (e) {
-        log.error(e)
+        log.error(`Shop ${req.shop.id} initial deploy failed: ${e}`)
         return res.json({ success: false, reason: e.message })
       }
     }
@@ -1073,46 +1074,6 @@ module.exports = function (router) {
       }))
 
       res.json({ success: true, deployments })
-    }
-  )
-
-  /**
-   * Create a shop deployment record
-   */
-  router.post(
-    '/shops/:shopId/create-deployment',
-    authSellerAndShop,
-    authRole('admin'),
-    async (req, res) => {
-      // Only used for testing
-      if (process.env.NODE_ENV !== 'test') {
-        return res.status(404).json({ success: false })
-      }
-
-      const shopId = req.shop.id
-      const { ipfsHash, ipfsGateway } = req.body
-
-      let deployment = await ShopDeployment.findOne({
-        where: {
-          shopId: shopId,
-          ipfsHash
-        },
-        order: [['createdAt', 'desc']]
-      })
-
-      if (deployment) {
-        return res
-          .status(400)
-          .json({ success: false, message: 'Deployment exists' })
-      }
-
-      deployment = await ShopDeployment.create({
-        shopId: shopId,
-        ipfsGateway,
-        ipfsHash
-      })
-
-      return res.status(200).json({ success: true, deployment })
     }
   )
 
