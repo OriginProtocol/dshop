@@ -23,7 +23,7 @@ const PINATA_API = 'https://api.pinata.cloud'
 const PINATA_GATEWAY = 'https://gateway.pinata.cloud'
 
 // Max age of a deployment before it is considered as failed.
-const MAX_PENDING_DEPLOYMENT_AGE = 5 * 60 * 1000 // 5 min
+const MAX_PENDING_DEPLOYMENT_AGE = 10 * 60 * 1000 // 10 min
 
 /**
  * Convert an HTTP URL into a multiaddr
@@ -320,21 +320,22 @@ async function deployShop(args) {
     // may have been interrupted by server crash or a maintenance, causing it
     // to never finish.
     const age = Date.now() - pendingDeployment.createdAt
-    log.error('AGE=', age)
     if (age > MAX_PENDING_DEPLOYMENT_AGE) {
       // Mark the deployment as failed.
       log.warn(
         `Found stale pending deployment ${pendingDeployment.id}. Updating it as failed.`
       )
       await pendingDeployment.update({
-        status: ShopDeploymentStatuses.Failed,
+        status: ShopDeploymentStatuses.Failure,
         error: `Stale pending deployment`
       })
     } else {
       log.error(
         `Shop ${shop.id}: concurrent deployment running. Can not start a new deploy.`
       )
-      throw new Error(`Deployment failed. Detected concurrent deployment.`)
+      throw new Error(
+        `The shop is already being published. Try again in a few minutes.`
+      )
     }
   }
 
@@ -353,7 +354,7 @@ async function deployShop(args) {
     log.error(`Shop ${shop.id} deployment failure: ${e}`)
     // Record the deployment failure in the DB.
     await deployment.update({
-      status: ShopDeploymentStatuses.Failed,
+      status: ShopDeploymentStatuses.Failure,
       error: e.toString()
     })
     // Rethrow to notify the caller of the failure.

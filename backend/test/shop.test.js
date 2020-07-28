@@ -35,31 +35,6 @@ describe('Shops', () => {
     expect(network).to.be.an('object')
   })
 
-  /*
-  let network, shop, job, jobId, trans
-
-  before(async () => {
-    network = await getOrCreateTestNetwork()
-
-    // Use account 1 as the merchant's.
-    const sellerWallet = getTestWallet(1)
-    const sellerPk = sellerWallet.privateKey
-
-    // Create the merchant's PGP key.
-    const pgpPrivateKeyPass = 'password123'
-    const key = await generatePgpKey('tester', pgpPrivateKeyPass)
-    const pgpPublicKey = key.publicKeyArmored
-    const pgpPrivateKey = key.privateKeyArmored
-
-    shop = await createTestShop({
-      network,
-      sellerPk,
-      pgpPrivateKeyPass,
-      pgpPublicKey,
-      pgpPrivateKey
-    })
-  })*/
-
   // TODO: Move this to setup/fixture?
   it('create super admin', async () => {
     // This explicitly only works in testing to avoid actual deployments
@@ -196,14 +171,13 @@ describe('Shops', () => {
     }
     expect(error).to.not.be.undefined
     expect(error.message).to.equal(
-      'Deployment failed. Detected concurrent deployment.'
+      'The shop is already being published. Try again in a few minutes.'
     )
   })
 
   it('should deploy a shop if an old deploy is pending', async () => {
     // Update the previous deployment to be pending and old.
-
-    // await deployment.update({ status: ShopDeploymentStatuses.Pending, createdAt: new Date(Date.now() - 30 * 60 * 1000 ) })
+    // Note: we use a raw query since Sequelize doesn't allow to update the created_at column.
     const anHourAgo = new Date(Date.now() - 60 * 60 * 1000)
     await deployment.sequelize.query(
       `UPDATE shop_deployments SET status='Pending', created_at='${anHourAgo}' WHERE id = ${deployment.id};`
@@ -233,9 +207,9 @@ describe('Shops', () => {
     expect(hash).to.be.an('string')
     expect(domain).to.be.equal(testDomain)
 
-    // Check the old deployment status was changed to Failed.
+    // Check the old deployment status was changed to a failure.
     await deployment.reload()
-    expect(deployment.status).to.equal(ShopDeploymentStatuses.Failed)
+    expect(deployment.status).to.equal(ShopDeploymentStatuses.Failure)
 
     // Check a new deployment row was created.
     const newDeployment = await ShopDeployment.findOne({
