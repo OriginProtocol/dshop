@@ -20,7 +20,8 @@ function pickConfig(body) {
     'defaultShopConfig',
     'web3Pk',
     'backendUrl',
-    'fallbackShopConfig'
+    'fallbackShopConfig',
+    'googleAnalytics'
   ])
 }
 

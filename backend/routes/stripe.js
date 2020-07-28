@@ -66,13 +66,20 @@ module.exports = function (router) {
   })
 
   async function handleWebhook(req, res, next) {
-    let json
+    let bodyText, json
     try {
-      json = JSON.parse(req.body.toString())
+      bodyText = req.body.toString()
+      json = JSON.parse(bodyText)
       const id = get(json, 'data.object.metadata.shopId')
+      if (!id) {
+        log.error('Webhook body data does not include shopId!')
+        log.debug('JSON received:', json)
+        return res.sendStatus(400)
+      }
       req.shop = await Shop.findOne({ where: { id } })
     } catch (err) {
       log.error('Error parsing body: ', err)
+      log.debug('Body received:', bodyText)
       return res.sendStatus(400)
     }
 

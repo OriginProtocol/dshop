@@ -100,7 +100,8 @@ module.exports = function (router) {
           'active',
           'domain',
           'backendUrl',
-          'publicSignups'
+          'publicSignups',
+          'googleAnalytics'
         ])
       }
     })
