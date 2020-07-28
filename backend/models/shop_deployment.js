@@ -1,13 +1,16 @@
+const { ShopDeploymentStatuses } = require('../enums')
+
 module.exports = (sequelize, DataTypes) => {
   const ShopDeployment = sequelize.define(
     'ShopDeployment',
     {
       shopId: DataTypes.INTEGER,
-      // Depreciated.  should be added to shop_deployment_names
-      domain: DataTypes.STRING,
+      status: DataTypes.ENUM(ShopDeploymentStatuses),
+      domain: DataTypes.STRING, // Depreciated.  should be added to shop_deployment_names
       ipfsPinner: DataTypes.STRING, // URL of the IPFS pinner service used for the deployment.
       ipfsGateway: DataTypes.STRING, // URL of the gateway associated with the pinner used for deployment.
-      ipfsHash: DataTypes.STRING // IPFS hash of the deployment.
+      ipfsHash: DataTypes.STRING, // IPFS hash of the deployment.
+      error: DataTypes.STRING // Optional. Only populated when status is 'Failure'.
     },
     {
       underscored: true,

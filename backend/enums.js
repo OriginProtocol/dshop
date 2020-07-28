@@ -17,7 +17,10 @@ const TransactionStatuses = new Enum('Pending', 'Confirmed', 'Failed')
 
 const TransactionTypes = new Enum('OfferCreated')
 
+const ShopDeploymentStatuses = new Enum('Pending', 'Success', 'Failure')
+
 module.exports = {
   TransactionStatuses,
-  TransactionTypes
+  TransactionTypes,
+  ShopDeploymentStatuses
 }

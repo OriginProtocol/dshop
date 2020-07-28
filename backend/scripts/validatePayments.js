@@ -82,9 +82,16 @@ async function validateShopPayments(shop) {
         type: 'payment_intent.succeeded',
         starting_after: after
       }
-      log.info(`Fetching events after ${after}`)
+      log.debug(`Fetching events after ${after}`)
 
       stripe.events.list(eventArgs, function (err, events) {
+        if (!events) {
+          return
+        }
+        if (!events.data) {
+          log.warning('Events object with no data:', events)
+          return
+        }
         log.debug(
           `Found ${events.data.length} completed Stripe payments for key (may be shared with multiple dshops)`
         )
@@ -95,7 +102,7 @@ async function validateShopPayments(shop) {
             // Note: the same Stripe key can be shared across multiple shops
             // which explains why we may be getting events for other shops.
           } else if (encryptedHashes.indexOf(encryptedData) < 0) {
-            log.info(
+            log.error(
               `No order with hash ${encryptedData}. Created ${new Date(
                 item.created * 1000
               )}. Amount ${item.data.object.amount}`
@@ -151,7 +158,7 @@ async function validateConfigs() {
         'stripeWebhookSecret'
       )
     } catch (e) {
-      log.error(`Failed loading config`)
+      log.error(`Failed loading config: ${e}`)
       continue
     }
 
