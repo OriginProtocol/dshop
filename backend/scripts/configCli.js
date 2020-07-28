@@ -5,11 +5,13 @@
 //
 // Examples:
 //  - dump network and shop config
-//  node configCli.js --shopName=Origin --action=dump
+//  node configCli.js --networkId=1 --shopName=<shopName> --operation=dump
 //  - get a shop's config value for a specific key
-//  node configCli.js --networkId=1 --shopName=<shopName> --action=get --key=<key>
+//  node configCli.js --networkId=1 --shopName=<shopName> --operation=get --key=<key>
+//  - get a config value for all the shops
+//  node configCli.js --networkId=1 --allShops --operation=get --key=<key>
 //  - set a shop's config value
-//  node configCli.js --networkId=1 --shopName=<shopName> --action=get --key=<key> --value=<value>
+//  node configCli.js --networkId=1 --shopName=<shopName> --operation=get --key=<key> --value=<value>
 //
 
 const { Network, Shop } = require('../models')
@@ -22,12 +24,13 @@ const program = require('commander')
 
 program
   .requiredOption(
-    '-a, --action <action>',
+    '-o, --operation <operation>',
     'Action to perform: [dump|get|set|del]'
   )
   .requiredOption('-n, --networkId <id>', 'Network id: [1,4,999]')
   .option('-i, --shopId <id>', 'Shop Id')
   .option('-n, --shopName <name>', 'Shop Name')
+  .option('-a, --allShops', 'Apply the operation to all shops')
   .option('-k, --key <name>', 'Shop config key')
   .option('-v, --value <name>', 'Shop config value')
 
@@ -44,28 +47,42 @@ program.parse(process.argv)
  * @param {models.Shop} shop
  * @returns {Promise<void>}
  */
-async function dump(network, shop) {
+async function dump(network, shops) {
   const networkConfig = getConfig(network.config)
   log.info('Network Id:', network.networkId)
   log.info('Network Config:')
   log.info(networkConfig)
 
-  const shopConfig = getConfig(shop.config)
-  log.info('Shop Id:', shop.id)
-  log.info('Shop Name:', shop.name)
-  log.info('Shop Config:')
-  log.info(shopConfig)
+  for (const shop of shops) {
+    const shopConfig = getConfig(shop.config)
+    log.info('Shop Id:', shop.id)
+    log.info('Shop Name:', shop.name)
+    log.info('Shop Config:')
+    log.info(shopConfig)
+  }
 }
 
-async function getKey(shop, key) {
+async function getKey(shops, key) {
   if (!key) {
     throw new Error('Argument key must be defined')
   }
-  const shopConfig = getConfig(shop.config)
-  log.info(`Shop config: ${key}=${shopConfig[key]}`)
+  for (const shop of shops) {
+    try {
+      const shopConfig = getConfig(shop.config)
+      log.info(`Shop ${shop.id} ${shop.name} config: ${key}=${shopConfig[key]}`)
+    } catch (e) {
+      log.error(
+        `Failed loading shop config for shop ${shop.id} ${shop.name}: ${e}`
+      )
+    }
+  }
 }
 
-async function setKey(shop, key, val) {
+async function setKey(shops, key, val) {
+  if (shops.length > 1) {
+    throw new Error('Set operation not supported on more than 1 shop.')
+  }
+  const shop = shops[0]
   if (!key) {
     throw new Error('Argument key must be defined')
   }
@@ -80,10 +97,14 @@ async function setKey(shop, key, val) {
   log.info('Done')
 }
 
-async function delKey(shop, key) {
+async function delKey(shops, key) {
+  if (shops.length > 1) {
+    throw new Error('Del operation not supported on more than 1 shop.')
+  }
   if (!key) {
     throw new Error('Argument key must be defined')
   }
+  const shop = shops[0]
   log.info(`Deleting ${key} from the shop's config...`)
   const shopConfig = getConfig(shop.config)
   delete shopConfig[key]
@@ -102,39 +123,45 @@ async function _getNetwork(config) {
   return network
 }
 
-async function _getShop(config) {
-  let shop
+async function _getShops(config) {
+  let shops
   if (config.shopId) {
-    shop = await Shop.findOne({ where: { id: config.shopId } })
+    const shop = await Shop.findOne({ where: { id: config.shopId } })
     if (!shop) {
       throw new Error(`No shop with id ${config.shopId}`)
     }
+    log.info(`Loaded shop ${shop.name} (${shop.id})`)
+    shops = [shop]
   } else if (config.shopName) {
-    shop = await Shop.findOne({ where: { name: config.shopName } })
+    const shop = await Shop.findOne({ where: { name: config.shopName } })
     if (!shop) {
       throw new Error(`No shop with name ${config.shopName}`)
     }
+    log.info(`Loaded shop ${shop.name} (${shop.id})`)
+    shops = [shop]
+  } else if (config.allShops) {
+    shops = await Shop.findAll({ order: [['id', 'asc']] })
+    log.info(`Loaded ${shops.length} shops`)
   } else {
     throw new Error('Must specify shopId or shopName')
   }
-  log.info(`Loaded shop ${shop.name} (${shop.id})`)
-  return shop
+  return shops
 }
 
 async function main(config) {
   const network = await _getNetwork(config)
-  const shop = await _getShop(config)
+  const shops = await _getShops(config)
 
-  if (config.action === 'dump') {
-    await dump(network, shop)
-  } else if (config.action === 'get') {
-    await getKey(shop, config.key)
-  } else if (config.action === 'set') {
-    await setKey(shop, config.key, config.value)
-  } else if (config.action === 'del') {
-    await delKey(shop, config.key, config.value)
+  if (config.operation === 'dump') {
+    await dump(network, shops)
+  } else if (config.operation === 'get') {
+    await getKey(shops, config.key)
+  } else if (config.operation === 'set') {
+    await setKey(shops, config.key, config.value)
+  } else if (config.operation === 'del') {
+    await delKey(shops, config.key, config.value)
   } else {
-    throw new Error(`Unsupported action ${config.action}`)
+    throw new Error(`Unsupported operation ${config.operation}`)
   }
 }
 
