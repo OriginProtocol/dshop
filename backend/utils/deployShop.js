@@ -127,7 +127,7 @@ async function _deployShop({
   const networkConfig = getConfig(network.config)
   const zone = networkConfig.domain
 
-  log.info('Shop ${shop.id}: Preparing data for deploy...')
+  log.info(`Shop ${shop.id}: Preparing data for deploy...`)
   await new Promise((resolve, reject) => {
     execFile('rm', ['-rf', `${OutputDir}/public`], (error, stdout) => {
       if (error) reject(error)
@@ -312,18 +312,20 @@ async function deployShop(args) {
 
   // Check if there is any pending deployment to prevent concurrent deployments.
   const pendingDeployment = await ShopDeployment.findOne({
-    shopId: shop.id,
-    status: ShopDeploymentStatuses.Pending
+    where: {
+      shopId: shop.id,
+      status: ShopDeploymentStatuses.Pending
+    }
   })
   if (pendingDeployment) {
     // There is a pending deployment. There is a slight chance a deployment
-    // may have been interrupted by server crash or a maintenance, causing it
+    // may have been interrupted by a server crash or a maintenance, causing it
     // to never finish.
     const age = Date.now() - pendingDeployment.createdAt
     if (age > MAX_PENDING_DEPLOYMENT_AGE) {
       // Mark the deployment as failed.
       log.warn(
-        `Found stale pending deployment ${pendingDeployment.id}. Updating it as failed.`
+        `Shop ${shop.id}: Found stale pending deployment ${pendingDeployment.id}. Updating it as failed.`
       )
       await pendingDeployment.update({
         status: ShopDeploymentStatuses.Failure,
