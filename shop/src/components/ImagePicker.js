@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useReducer, useMemo } from 'react'
+import get from 'lodash/get'
 import useBackendApi from 'utils/useBackendApi'
 import useConfig from 'utils/useConfig'
 import loadImage from 'utils/loadImage'
@@ -101,7 +102,7 @@ const PreviewImages = (props) => {
 }
 
 const ImagePicker = (props) => {
-  const { onChange, disabled } = props
+  const { onChange, disabled, children, maxImages } = props
   const [state, setState] = useReducer(reducer, {})
   const { config } = useConfig()
 
@@ -158,7 +159,9 @@ const ImagePicker = (props) => {
     uploadRef.current.value = ''
   }
 
-  const hasImages = !!(state.images && state.images.length > 0)
+  const imgLength = get(state, 'images.length', 0)
+  const hasImages = imgLength > 0
+  const canAddMoreImages = Number(maxImages) > 0 ? imgLength < maxImages : true
 
   if (disabled) {
     return (
@@ -245,15 +248,25 @@ const ImagePicker = (props) => {
         )}
         {!hasImages ? (
           <div className="add-first-photo">
-            <div>
-              Drag files here to upload
-              <br />
-              or select a photo from your computer
-            </div>
-            <div className="btn btn-outline-primary">Select photo</div>
+            {children || (
+              <>
+                <div>
+                  Drag files here to upload
+                  <br />
+                  or select a photo from your computer
+                </div>
+                <div className="btn btn-outline-primary">Select photo</div>
+              </>
+            )}
           </div>
         ) : (
-          <div className={`add-photos${state.uploading ? ' uploading' : ''}`} />
+          <>
+            {!canAddMoreImages ? null : (
+              <div
+                className={`add-photos${state.uploading ? ' uploading' : ''}`}
+              />
+            )}
+          </>
         )}
       </label>
       {!state.externalDrop ? null : (
@@ -324,6 +337,7 @@ require('react-styl')(`
         background: rgba(255, 255, 255, 0.75)
         line-height: normal
         border-radius: 0 0 0 2px
+        margin: 0
         > a
           height: 1rem
           width: 1rem

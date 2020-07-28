@@ -15,6 +15,7 @@ import Web3Modal from './Web3Modal'
 import StripeModal from './StripeModal'
 import UpholdModal from './UpholdModal'
 import ContractSettings from './ContractSettings'
+import ManualPayment from './ManualPayment'
 import DisconnectModal from './_DisconnectModal'
 import CreateListing from './_CreateListing'
 
@@ -210,6 +211,8 @@ const PaymentSettings = () => {
           />
         )}
         {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
+
+        <ManualPayment />
 
         <ContractSettings {...{ state, setState, config }} />
       </div>

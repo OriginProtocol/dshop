@@ -98,10 +98,24 @@ export default ConnectModal
 
 require('react-styl')(`
   .payment-method-modal
+    overflow-y: scroll
+    max-height: 90vh
     h5
       margin-top: 1rem
+      margin-bottom: 1rem
       text-align: center
-    .actions
+
+    .form-group
+      label
+        margin-bottom: 0
+        font-weight: bold
+        & + :not(.desc)
+          margin-top: 0.5rem
+      .desc
+        color: #8293a4
+        font-size: 0.875rem
+        margin-bottom: 0.5rem
+    > .actions
       border-top: 1px solid #cdd7e0
       padding-top: 1.25rem
       margin-top: 1.5rem

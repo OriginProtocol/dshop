@@ -33,6 +33,7 @@ const formidable = require('formidable')
 const https = require('https')
 const http = require('http')
 const mv = require('mv')
+const path = require('path')
 
 const { configureShopDNS, deployShop } = require('../utils/deployShop')
 const { DSHOP_CACHE, IS_PROD } = require('../utils/const')
@@ -723,6 +724,43 @@ module.exports = function (router) {
     }
   }
 
+  async function movePaymentMethodImages(paymentMethods, dataDir) {
+    const out = []
+    const tmpDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/__tmp`)
+
+    for (const m of paymentMethods) {
+      const imagePath = m.qrImage
+      if (imagePath && imagePath.includes('/__tmp/')) {
+        const fileName = imagePath.split('/__tmp/', 2)[1]
+        const tmpFilePath = `${tmpDir}/${fileName}`
+
+        const targetDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/uploads`)
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true })
+        }
+        const targetPath = `${targetDir}/${fileName}`
+
+        const movedFileName = await new Promise((resolve) => {
+          mv(tmpFilePath, targetPath, (err) => {
+            if (err) {
+              console.error(`Couldn't move file`, tmpFilePath, targetPath, err)
+            }
+            resolve(fileName)
+          })
+        })
+
+        out.push({
+          ...m,
+          qrImage: movedFileName
+        })
+      } else {
+        out.push(m)
+      }
+    }
+
+    return out
+  }
+
   router.put(
     '/shop/config',
     authSellerAndShop,
@@ -747,7 +785,8 @@ module.exports = function (router) {
         'medium',
         'youtube',
         'about',
-        'logErrors'
+        'logErrors',
+        'manualPaymentMethods'
       )
       let listingId
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
@@ -770,6 +809,14 @@ module.exports = function (router) {
             const [netId] = listingId.split('-')
             set(newConfig, `networks.${netId}.listingId`, listingId)
           }
+
+          if (jsonConfig.manualPaymentMethods) {
+            newConfig.manualPaymentMethods = await movePaymentMethodImages(
+              jsonConfig.manualPaymentMethods,
+              req.shop.authToken
+            )
+          }
+
           const jsonStr = JSON.stringify(newConfig, null, 2)
           fs.writeFileSync(configFile, jsonStr)
         } catch (e) {

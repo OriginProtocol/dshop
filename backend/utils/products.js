@@ -47,8 +47,9 @@ function getUniqueID(title, shop) {
 
   const existingProductIds = products.map((p) => p.id)
 
-  // Blacklisting new keyword
+  // Blacklisting some keywords
   existingProductIds.push('new')
+  existingProductIds.push('uploads')
 
   if (!existingProductIds.includes(rawId)) return rawId
 
