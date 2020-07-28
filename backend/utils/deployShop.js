@@ -13,6 +13,8 @@ const prime = require('./primeIpfs')
 const setCloudflareRecords = require('./dns/cloudflare')
 const setCloudDNSRecords = require('./dns/clouddns')
 
+const { IS_TEST } = require('../utils/const')
+
 const log = getLogger('utils.deployShop')
 const LOCAL_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
@@ -302,7 +304,6 @@ async function _deployShop({
  *        NOTE: Currently this argument is ignored and the data is deployed to all the pinners configured.
  *        If for example an IPFS cluster and Pinata are configured, both are used for deployment.
  * @param {string} dnsProvider: DNS provider to use for configuring the domain. 'gcp' or 'cloudflare'
- * @param {models.ShopDeployment}: deployment DB row.
  * @returns {Promise<{domain: string, hash: string}>} Domain configured and IPFS hash of the deployment.
  * @throws
  */
@@ -318,7 +319,8 @@ async function deployShop(args) {
     // There is a pending deployment. There is a slight chance a deployment
     // may have been interrupted by server crash or a maintenance, causing it
     // to never finish.
-    const age = pendingDeployment.createdAt - Date.now()
+    const age = Date.now() - pendingDeployment.createdAt
+    log.error('AGE=', age)
     if (age > MAX_PENDING_DEPLOYMENT_AGE) {
       // Mark the deployment as failed.
       log.warn(
@@ -345,7 +347,8 @@ async function deployShop(args) {
   let result
   try {
     // Deploy the shop.
-    result = await _deployShop(args)
+    const deployFn = IS_TEST && args.deployFn ? args.deployFn : _deployShop
+    result = await deployFn(args)
   } catch (e) {
     log.error(`Shop ${shop.id} deployment failure: ${e}`)
     // Record the deployment failure in the DB.
