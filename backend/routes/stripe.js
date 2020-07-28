@@ -92,7 +92,7 @@ module.exports = function (router) {
     })
 
     if (!req.shop) {
-      log.warning('Missing shopId from /webhook request')
+      log.warn('Missing shopId from /webhook request')
       log.debug('JSON received:', json)
       return res.sendStatus(400)
     }
