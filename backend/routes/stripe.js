@@ -71,12 +71,9 @@ module.exports = function (router) {
       bodyText = req.body.toString()
       json = JSON.parse(bodyText)
       const id = get(json, 'data.object.metadata.shopId')
-      if (!id) {
-        log.error('Webhook body data does not include shopId!')
-        log.debug('JSON received:', json)
-        return res.sendStatus(400)
+      if (id) {
+        req.shop = await Shop.findOne({ where: { id } })
       }
-      req.shop = await Shop.findOne({ where: { id } })
     } catch (err) {
       log.error('Error parsing body: ', err)
       log.debug('Body received:', bodyText)
@@ -96,6 +93,7 @@ module.exports = function (router) {
 
     if (!req.shop) {
       log.warning('Missing shopId from /webhook request')
+      log.debug('JSON received:', json)
       return res.sendStatus(400)
     }
 
