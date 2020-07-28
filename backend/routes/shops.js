@@ -33,6 +33,7 @@ const formidable = require('formidable')
 const https = require('https')
 const http = require('http')
 const mv = require('mv')
+const { isHexPrefixed, addHexPrefix } = require('ethereumjs-util')
 
 const { configureShopDNS, deployShop } = require('../utils/deployShop')
 const { DSHOP_CACHE, IS_PROD } = require('../utils/const')
@@ -382,7 +383,9 @@ module.exports = function (router) {
       deliveryApi: req.body.printfulApi ? true : false
     }
     if (req.body.web3Pk && !config.web3Pk) {
-      config.web3Pk = req.body.web3Pk
+      config.web3Pk = isHexPrefixed(req.body.web3Pk)
+        ? req.body.web3Pk
+        : addHexPrefix(req.body.web3Pk)
     }
     const shopResponse = await createShop({
       networkId: network.networkId,
