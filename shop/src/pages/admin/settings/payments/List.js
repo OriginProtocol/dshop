@@ -29,8 +29,8 @@ const PaymentSettings = () => {
   const { listing } = useListingData(state.listingId)
 
   useEffect(() => {
-    const { listingId, acceptedTokens } = config
-    setState({ listingId, acceptedTokens })
+    const { listingId, acceptedTokens, manualPaymentMethods } = config
+    setState({ listingId, acceptedTokens, manualPaymentMethods })
   }, [config.activeShop])
 
   const [connectModal, setShowConnectModal] = useState(false)
@@ -153,6 +153,8 @@ const PaymentSettings = () => {
           }
 
           dispatch({ type: 'toast', message: 'Saved OK' })
+          refetch()
+          refetchConfig()
           setSaving(false)
         } catch (err) {
           console.error(err)
@@ -212,7 +214,10 @@ const PaymentSettings = () => {
         )}
         {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
 
-        <ManualPayment />
+        <ManualPayment
+          onChange={setState}
+          manualPaymentMethods={state.manualPaymentMethods}
+        />
 
         <ContractSettings {...{ state, setState, config }} />
       </div>

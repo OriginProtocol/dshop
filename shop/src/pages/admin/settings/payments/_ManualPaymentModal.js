@@ -11,7 +11,6 @@ import Modal from 'components/Modal'
 import ImagePicker from 'components/ImagePicker'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
-import useBackendApi from 'utils/useBackendApi'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
 
@@ -52,10 +51,8 @@ const validate = (state, qrImages) => {
   }
 }
 
-const ManualPaymentModal = ({ paymentMethod, onClose }) => {
-  const [{ config }, dispatch] = useStateValue()
-
-  const { post } = useBackendApi({ authToken: true })
+const ManualPaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
+  const [{ config }] = useStateValue()
 
   const [state, setState] = useReducer(reducer, {
     showModal: false,
@@ -113,59 +110,23 @@ const ManualPaymentModal = ({ paymentMethod, onClose }) => {
     const newMethod = {
       ...pick(newState, Object.keys(initialState)),
       qrImage: get(qrImages, '0.path', ''),
-      id: uniqId
+      id: uniqId,
+      disabled: isEdit ? get(paymentMethod, 'disabled', false) : false
     }
 
-    try {
-      const manualPaymentMethods = get(config, 'manualPaymentMethods', [])
-      const allMethods = [...(manualPaymentMethods || [])]
-      const existingIndex = allMethods.findIndex((m) => m.id === uniqId)
+    onUpdate(newMethod)
 
-      if (existingIndex >= 0) {
-        allMethods[existingIndex] = newMethod
-      } else {
-        allMethods[allMethods.length] = newMethod
-      }
-
-      await post('/shop/config', {
-        method: 'PUT',
-        body: JSON.stringify({
-          manualPaymentMethods: allMethods
-        })
-      })
-
-      dispatch({
-        type: 'setManualPaymentMethods',
-        manualPaymentMethods: allMethods
-      })
-
-      dispatch({
-        type: 'toast',
-        message: 'Your changes have been saved'
-      })
-
-      setState({
-        ...initialState,
-        saving: false,
-        shouldClose: true
-      })
-    } catch (err) {
-      console.error(err)
-      dispatch({
-        type: 'toast',
-        message: 'Something went wrong. Please try again.',
-        style: 'error'
-      })
-      setState({
-        saving: false
-      })
-    }
+    setState({
+      ...initialState,
+      saving: false,
+      shouldClose: true
+    })
   }
 
   return (
     <>
       <button
-        className="btn btn-outline-primary"
+        className="btn btn-outline-primary mt-3"
         type="button"
         onClick={() => setState({ showModal: true })}
       >
