@@ -45,7 +45,9 @@ const Shipping = () => {
               return (
                 <tr key={zone.id}>
                   <td>{zone.label}</td>
-                  <td><Price amount={zone.amount} /></td>
+                  <td>
+                    <Price amount={zone.amount} />
+                  </td>
                   <td>
                     {zone.countries
                       ? zone.countries.join(', ')
