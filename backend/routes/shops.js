@@ -401,11 +401,11 @@ module.exports = function (router) {
       log.error(`Error creating shop: ${shopResponse.error}`)
       return res
         .status(400)
-        .json({ success: false, message: 'Invalid shop data' })
+        .json({ success: false, message: shopResponse.error })
     }
 
     const shopId = shopResponse.shop.id
-    log.info(`Created shop ${shopId}`)
+    log.info(`Created shop ${shopId} with name ${shopResponse.name}`)
 
     const role = 'admin'
     await SellerShop.create({ sellerId: req.session.sellerId, shopId, role })
