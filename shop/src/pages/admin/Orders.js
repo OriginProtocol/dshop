@@ -10,6 +10,8 @@ import NoItems from 'components/NoItems'
 
 import useOrders from 'utils/useOrders'
 
+import OfferStates from 'data/OfferStates'
+
 const AdminOrders = () => {
   const location = useLocation()
   const history = useHistory()
@@ -147,8 +149,9 @@ const AdminOrdersTable = ({ orders }) => {
           <th>Time</th>
           <th>Customer</th>
           <th>Payment</th>
-          {/* <th>Status</th> */}
           <th>Total</th>
+          <th>Status</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -173,8 +176,11 @@ const AdminOrdersTable = ({ orders }) => {
             <td>{dayjs(order.createdAt).format('MMM D, h:mm A')}</td>
             <td>{customerName(order)}</td>
             <td>{get(order, 'data.paymentMethod.label')}</td>
-            {/* <td>{order.status}</td> */}
             <td>{formatPrice(get(order, 'data.total'))}</td>
+            <td>{order.statusStr === OfferStates.Accepted ? '🟢 Paid' : (
+              order.statusStr === OfferStates.Created ? '🟠 Pending' : null
+            )}</td>
+            <td></td>
           </tr>
         ))}
       </tbody>

@@ -15,7 +15,7 @@ import Web3Modal from './Web3Modal'
 import StripeModal from './StripeModal'
 import UpholdModal from './UpholdModal'
 import ContractSettings from './ContractSettings'
-import ManualPayment from './ManualPayment'
+import OfflinePayments from './OfflinePayments'
 import DisconnectModal from './_DisconnectModal'
 import CreateListing from './_CreateListing'
 
@@ -29,9 +29,16 @@ const PaymentSettings = () => {
   const { listing } = useListingData(state.listingId)
 
   useEffect(() => {
-    const { listingId, acceptedTokens, manualPaymentMethods } = config
-    setState({ listingId, acceptedTokens, manualPaymentMethods })
+    const { listingId, acceptedTokens } = config
+    setState({ listingId, acceptedTokens })
   }, [config.activeShop])
+
+  useEffect(() => {
+    if (shopConfig) {
+      const { offlinePaymentMethods } = shopConfig
+      setState({ offlinePaymentMethods })
+    }
+  }, [shopConfig && shopConfig.offlinePaymentMethods])
 
   const [connectModal, setShowConnectModal] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -214,9 +221,9 @@ const PaymentSettings = () => {
         )}
         {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
 
-        <ManualPayment
+        <OfflinePayments
           onChange={setState}
-          manualPaymentMethods={state.manualPaymentMethods}
+          offlinePaymentMethods={state.offlinePaymentMethods}
         />
 
         <ContractSettings {...{ state, setState, config }} />

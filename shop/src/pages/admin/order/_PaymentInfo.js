@@ -16,15 +16,9 @@ import {
 
 import Web3Transaction from 'components/Web3Transaction'
 
-const reducer = (state, newState) => ({ ...state, ...newState })
+import OfferStates from 'data/OfferStates'
 
-const OfferStates = {
-  Created: 'OfferCreated',
-  Accepted: 'OfferAccepted',
-  Finalized: 'OfferFinalized',
-  Withdrawn: 'OfferWithdrawn',
-  Disputed: 'OfferDisputed'
-}
+const reducer = (state, newState) => ({ ...state, ...newState })
 
 const getStatusText = (orderState, paymentMethod, refundError) => {
   const isCryptoPayment = paymentMethod.id === 'crypto'

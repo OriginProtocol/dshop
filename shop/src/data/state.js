@@ -273,11 +273,11 @@ const reducer = (state, action) => {
     })
   } else if (action.type === 'setDashboardStats') {
     newState = set(newState, 'dashboardStats', action.stats)
-  } else if (action.type === 'setManualPaymentMethods') {
+  } else if (action.type === 'setOfflinePaymentMethods') {
     newState = set(
       newState,
-      'config.manualPaymentMethods',
-      action.manualPaymentMethods
+      'config.offlinePaymentMethods',
+      action.offlinePaymentMethods
     )
   }
 

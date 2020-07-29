@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 
-import ManualPaymentModal from './_ManualPaymentModal'
-import DeleteButton from './_DeleteManualPayment'
+import OfflinePaymentModal from './_OfflinePaymentModal'
+import DeleteButton from './_DeleteOfflinePayment'
 
-const ManualPayment = ({ manualPaymentMethods, onChange }) => {
-  const paymentMethods = manualPaymentMethods || []
+const OfflinePayment = ({ offlinePaymentMethods, onChange }) => {
+  const paymentMethods = offlinePaymentMethods || []
 
   const [editMethod, setEditMethod] = useState()
 
@@ -21,7 +21,7 @@ const ManualPayment = ({ manualPaymentMethods, onChange }) => {
     })
 
     onChange({
-      manualPaymentMethods: updatedMethods
+      offlinePaymentMethods: updatedMethods
     })
   }
 
@@ -57,7 +57,7 @@ const ManualPayment = ({ manualPaymentMethods, onChange }) => {
               className="action-icon"
               onConfirm={async () => {
                 onChange({
-                  manualPaymentMethods: manualPaymentMethods.filter(
+                  offlinePaymentMethods: offlinePaymentMethods.filter(
                     (m) => m.id !== method.id
                   )
                 })
@@ -69,7 +69,7 @@ const ManualPayment = ({ manualPaymentMethods, onChange }) => {
         </div>
       ))}
 
-      <ManualPaymentModal
+      <OfflinePaymentModal
         paymentMethod={editMethod}
         onClose={() => setEditMethod(null)}
         onUpdate={(method) => {
@@ -83,7 +83,7 @@ const ManualPayment = ({ manualPaymentMethods, onChange }) => {
           }
 
           onChange({
-            manualPaymentMethods: allMethods
+            offlinePaymentMethods: allMethods
           })
         }}
       />
@@ -91,7 +91,7 @@ const ManualPayment = ({ manualPaymentMethods, onChange }) => {
   )
 }
 
-export default ManualPayment
+export default OfflinePayment
 
 require('react-styl')(`
   .manual-payment

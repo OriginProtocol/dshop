@@ -785,8 +785,7 @@ module.exports = function (router) {
         'medium',
         'youtube',
         'about',
-        'logErrors',
-        'manualPaymentMethods'
+        'logErrors'
       )
       let listingId
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
@@ -808,13 +807,6 @@ module.exports = function (router) {
           if (listingId) {
             const [netId] = listingId.split('-')
             set(newConfig, `networks.${netId}.listingId`, listingId)
-          }
-
-          if (jsonConfig.manualPaymentMethods) {
-            newConfig.manualPaymentMethods = await movePaymentMethodImages(
-              jsonConfig.manualPaymentMethods,
-              req.shop.authToken
-            )
           }
 
           const jsonStr = JSON.stringify(newConfig, null, 2)
@@ -895,6 +887,14 @@ module.exports = function (router) {
       } else if (existingConfig.printful && !req.body.printful) {
         await deregisterPrintfulWebhook(existingConfig)
         additionalOpts.printfulWebhookSecret = ''
+      }
+
+      // Offline payments
+      if (req.body.offlinePaymentMethods) {
+        additionalOpts.offlinePaymentMethods = await movePaymentMethodImages(
+          req.body.offlinePaymentMethods,
+          req.shop.authToken
+        )
       }
 
       const newConfig = setConfig(

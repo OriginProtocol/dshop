@@ -51,7 +51,7 @@ const validate = (state, qrImages) => {
   }
 }
 
-const ManualPaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
+const OfflinePaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
   const [{ config }] = useStateValue()
 
   const [state, setState] = useReducer(reducer, {
@@ -76,7 +76,7 @@ const ManualPaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
           {
             src: image.includes('/__tmp/')
               ? image
-              : `/${config.activeShop}/uploads/${image}`,
+              : `${config.activeShop}/uploads/${image}`,
             path: image
           }
         ]
@@ -244,7 +244,7 @@ const ManualPaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
   )
 }
 
-export default ManualPaymentModal
+export default OfflinePaymentModal
 
 require('react-styl')(`
   .form-check-label

@@ -1,5 +1,5 @@
 const ethers = require('ethers')
-
+const get = require('lodash/get')
 const {
   marketplaceAbi,
   marketplaceTxGasLimit
@@ -62,7 +62,7 @@ async function processor(job) {
     job.log(str)
     job.progress(progress)
   }
-  const jobId = `${job.queue.name}-${job.id}` // Prefix with queue name since job ids are not unique across queues.
+  const jobId = `${get(job, 'queue.name')}-${job.id}` // Prefix with queue name since job ids are not unique across queues.
   const { shopId, encryptedData, paymentCode } = job.data
   log.info(`Creating offer for shop ${shopId}`)
   let confirmation
