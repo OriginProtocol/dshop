@@ -3,7 +3,7 @@ import { useHistory, useLocation } from 'react-router-dom'
 import dayjs from 'dayjs'
 import get from 'lodash/get'
 
-import formatPrice from 'utils/formatPrice'
+import Price from 'components/Price'
 import Tooltip from 'components/Tooltip'
 import Paginate from 'components/Paginate'
 import NoItems from 'components/NoItems'
@@ -174,7 +174,9 @@ const AdminOrdersTable = ({ orders }) => {
             <td>{customerName(order)}</td>
             <td>{get(order, 'data.paymentMethod.label')}</td>
             {/* <td>{order.status}</td> */}
-            <td>{formatPrice(get(order, 'data.total'))}</td>
+            <td>
+              <Price amount={get(order, 'data.total')} />
+            </td>
           </tr>
         ))}
       </tbody>

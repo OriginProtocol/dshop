@@ -101,7 +101,9 @@ const CheckoutShipping = () => {
                 <div className="description">{zone.detail}</div>
               </div>
               <span className="ml-auto">
-                {zone.amount ? formatPrice(zone.amount) : 'Free'}
+                {zone.amount
+                  ? formatPrice(zone.amount, { currency: config.currency })
+                  : 'Free'}
               </span>
             </label>
           ))

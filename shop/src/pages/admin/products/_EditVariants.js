@@ -1,8 +1,16 @@
 import React from 'react'
 
+import formatPrice from 'utils/formatPrice'
 import SelectVariantImage from './_SelectVariantImage'
 
-const EditVariants = ({ options, variants, media, onChange, disabled }) => {
+const EditVariants = ({
+  options,
+  variants,
+  media,
+  onChange,
+  disabled,
+  currency
+}) => {
   if (!options || !variants) return null
 
   return (
@@ -44,7 +52,9 @@ const EditVariants = ({ options, variants, media, onChange, disabled }) => {
                 <div className="form-group m-0">
                   <div className="input-group" style={{ maxWidth: 150 }}>
                     <div className="input-group-prepend">
-                      <span className="input-group-text">$</span>
+                      <span className="input-group-text">
+                        {formatPrice(0, { symbolOnly: true, currency })}
+                      </span>
                     </div>
                     <input
                       value={variant.price}

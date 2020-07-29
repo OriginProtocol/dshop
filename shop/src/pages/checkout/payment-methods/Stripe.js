@@ -31,7 +31,7 @@ const PayWithStripe = injectStripe(
       try {
         const paymentRequest = stripe.paymentRequest({
           country: 'US',
-          currency: 'usd',
+          currency: get(config, 'currency', 'usd').toLowerCase(),
           total: { label: 'Item Total', amount: cart.subTotal },
           requestPayerName: true,
           requestPayerEmail: true,
@@ -55,7 +55,9 @@ const PayWithStripe = injectStripe(
     useEffect(() => {
       if (stripeSelected) {
         onChange({
-          buttonText: `Pay ${formatPrice(cart.total)}`,
+          buttonText: `Pay ${formatPrice(cart.total, {
+            currency: config.currency
+          })}`,
           disabled: paymentReq ? false : true
         })
       }
@@ -76,7 +78,9 @@ const PayWithStripe = injectStripe(
       const resetState = {
         loading: false,
         disabled: false,
-        buttonText: `Pay ${formatPrice(cart.total)}`,
+        buttonText: `Pay ${formatPrice(cart.total, {
+          currency: config.currency
+        })}`,
         submit: 0
       }
 
@@ -90,6 +94,7 @@ const PayWithStripe = injectStripe(
         credentials: 'include',
         method: 'POST',
         body: JSON.stringify({
+          currency: get(config, 'currency', 'usd').toLowerCase(),
           amount: cart.total,
           data: encryptedData.hash,
           listingId: config.listingId

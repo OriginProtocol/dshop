@@ -5,6 +5,7 @@ import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
 
 import { useStateValue } from 'data/state'
+import formatPrice from 'utils/formatPrice'
 import useProduct from 'utils/useProduct'
 import useCollections from 'utils/useCollections'
 import useBackendApi from 'utils/useBackendApi'
@@ -393,7 +394,12 @@ const EditProduct = () => {
                     <label>Price</label>
                     <div className="input-group">
                       <div className="input-group-prepend">
-                        <span className="input-group-text">$</span>
+                        <span className="input-group-text">
+                          {formatPrice(0, {
+                            symbolOnly: true,
+                            currency: config.currency
+                          })}
+                        </span>
                       </div>
                       <input {...input('price')} disabled={externallyManaged} />
                     </div>
@@ -506,6 +512,7 @@ const EditProduct = () => {
                   )}
                 </div>
                 <EditVariants
+                  currency={config.currency}
                   options={formState.options}
                   variants={formState.variants}
                   media={media}

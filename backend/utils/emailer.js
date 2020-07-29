@@ -5,7 +5,7 @@ const aws = require('aws-sdk')
 const fetch = require('node-fetch')
 const sharp = require('sharp')
 const get = require('lodash/get')
-
+const formatPrice = require('@origin/utils/formatPrice')
 const { getLogger } = require('../utils/logger')
 
 const { Network, Shop } = require('../models')
@@ -31,10 +31,6 @@ const stripeWebhookError = require('./templates/stripeWebhookError')
 const stripeWebhookErrorTxt = require('./templates/stripeWebhookErrorTxt')
 
 const log = getLogger('utils.emailer')
-
-function formatPrice(num) {
-  return `$${(num / 100).toFixed(2)}`
-}
 
 function optionsForItem(item) {
   const options = []
@@ -190,7 +186,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
         img: img ? `cid:${cid}` : null,
         title: item.product.title,
         quantity: item.quantity,
-        price: formatPrice(item.price),
+        price: formatPrice(item.price, { currency: data.currency }),
         options: options.length
           ? `<div class="options">${options.join(', ')}</div>`
           : ''
@@ -203,7 +199,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     return orderItemTxt({
       title: item.product.title,
       quantity: item.quantity,
-      price: formatPrice(item.price),
+      price: formatPrice(item.price, { currency: data.currency }),
       options: options.length ? `\n(${options.join(', ')})` : ''
     })
   })
@@ -257,13 +253,13 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     orderUrlAdmin: `${publicURL}/admin/orders/${cart.offerId}`,
     orderItems,
     orderItemsTxt,
-    subTotal: formatPrice(cart.subTotal),
+    subTotal: formatPrice(cart.subTotal, { currency: data.currency }),
     hasDiscount: cart.discount > 0 ? true : false,
-    discount: formatPrice(cart.discount),
+    discount: formatPrice(cart.discount, { currency: data.currency }),
     hasDonation: cart.donation > 0 ? true : false,
-    donation: formatPrice(cart.donation),
-    shipping: formatPrice(cart.shipping.amount),
-    total: formatPrice(cart.total),
+    donation: formatPrice(cart.donation, { currency: data.currency }),
+    shipping: formatPrice(cart.shipping.amount, { currency: data.currency }),
+    total: formatPrice(cart.total, { currency: data.currency }),
     shippingAddress,
     billingAddress,
     shippingMethod: cart.shipping.label,

@@ -71,7 +71,7 @@ module.exports = function (router) {
     const stripe = Stripe(shopConfig.stripeBackend)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: req.body.amount,
-      currency: 'usd',
+      currency: req.body.currency || 'usd',
       statement_descriptor: normalizeDescriptor(req.shop.name),
       metadata: {
         shopId: req.shop.id,
@@ -197,20 +197,14 @@ module.exports = function (router) {
 
     try {
       const { stripeBackend } = req.body
-
       const stripe = Stripe(stripeBackend)
-
       await stripe.customers.list({ limit: 1 })
-
       valid = true
     } catch (err) {
       log.error('Failed to verify stripe credentials', err)
       valid = false
     }
 
-    return res.status(200).send({
-      success: true,
-      valid
-    })
+    return res.json({ success: true, valid })
   })
 }
