@@ -18,6 +18,27 @@ const log = getLogger('routes.stripe')
 
 const rawJson = bodyParser.raw({ type: 'application/json' })
 
+/**
+ * Try and make sure this Stripe webhook call is one created by Dshop and not
+ * some other eCommerce software.
+ *
+ * @param reqJSON {object} - Parsed JSON request body
+ * @returns {boolean} - If it looksl ike our payment
+ */
+function hasDshopMetadata(reqJSON) {
+  if (!reqJSON || typeof reqJSON !== 'object') return false
+
+  const metadata = get(reqJSON, 'data.object.metadata')
+
+  return (
+    typeof metadata === 'object' &&
+    metadata.shopId &&
+    metadata.shopStr &&
+    metadata.listingId &&
+    metadata.encryptedData
+  )
+}
+
 // Stripe CLI for testing webhook:
 //    stripe login
 //    stripe listen --forward-to localhost:3000/webhook
@@ -70,7 +91,23 @@ module.exports = function (router) {
     try {
       bodyText = req.body.toString()
       json = JSON.parse(bodyText)
+
+      /**
+       * Probably not a payment created by Dshop or one we can't do aything
+       * with. We should fail gracefully here so we can coexist with other
+       * payment software on the same Stripe account/key.  Otherwise, it will
+       * appear to be errors to Stripe and they will alert the user.
+       */
+      if (!hasDshopMetadata(json)) {
+        const stripeID = get(json, 'id')
+        log.info(
+          `Webhook request received is not recognized as a Dshop payment (${stripeID})`
+        )
+        return res.sendStatus(204)
+      }
+
       const id = get(json, 'data.object.metadata.shopId')
+
       if (id) {
         req.shop = await Shop.findOne({ where: { id } })
       }
@@ -96,6 +133,8 @@ module.exports = function (router) {
       log.debug('JSON received:', json)
       return res.sendStatus(400)
     }
+
+    log.info(`Processing webhook call for shop ${req.shop.id}...`)
 
     const shopConfig = getConfig(req.shop.config)
     const stripe = Stripe(shopConfig.stripeBackend)
