@@ -1,8 +1,11 @@
 const chai = require('chai')
 chai.use(require('chai-string'))
 const expect = chai.expect
+const kebabCase = require('lodash/kebabCase')
 
+const { createShop } = require('../utils/shop')
 const { deployShop } = require('../utils/deployShop')
+const { setConfig } = require('../utils/encryptedConfig')
 const { ShopDeploymentStatuses } = require('../enums')
 
 const {
@@ -267,5 +270,63 @@ describe('Shops', () => {
     expect(jason.names).to.be.an('array')
     expect(jason.names).to.have.lengthOf(3)
     expect(jason.names[0]).to.be.equal(TEST_UNSTOPPABLE_DOMAIN_1)
+  })
+
+  it('create shop logic should create a shop', async () => {
+    const data = {
+      networkId: 999,
+      name: ' cool shoop name',
+      listingId: '999-001-' + Date.now(),
+      authToken: 'token',
+      config: setConfig({}),
+      sellerId: 1,
+      hostname: kebabCase('cool shoop hostname')
+    }
+    const resp = await createShop(data)
+    const newShop = resp.shop
+
+    expect(newShop).to.be.an('object')
+    expect(newShop.name).to.be.equal(data.name.trim())
+    expect(newShop.networkId).to.be.equal(data.networkId)
+    expect(newShop.listingId).to.be.equal(data.listingId)
+    expect(newShop.authToken).to.be.equal(data.authToken)
+    expect(newShop.sellerId).to.be.equal(data.sellerId)
+    expect(newShop.hostname).to.be.equal(data.hostname)
+    expect(newShop.config).to.be.a('string')
+  })
+
+  it('create shop logic should refuse creating a shop with invalid arguments', async () => {
+    // Shop with an empty name
+    const data = {
+      networkId: 999,
+      name: undefined,
+      listingId: '999-001-' + Date.now(),
+      authToken: 'token',
+      config: setConfig({}),
+      sellerId: 1,
+      hostname: kebabCase('cool shoop hostname')
+    }
+    let resp = await createShop(data)
+    expect(resp.status).to.equal(400)
+    expect(resp.error).to.be.a('string')
+
+    // Shop with a non alphanumeric character in its name.
+    data.name = '*bad shoop name'
+    resp = await createShop(data)
+    expect(resp.status).to.equal(400)
+    expect(resp.error).to.be.a('string')
+
+    // Shop with invalid listing ID
+    data.name = 'good name'
+    data.listingId = 'abcde'
+    resp = await createShop(data)
+    expect(resp.status).to.equal(400)
+    expect(resp.error).to.be.a('string')
+
+    // Shop with listing ID on incorrect network
+    data.listingId = '1-001-1'
+    resp = await createShop(data)
+    expect(resp.status).to.equal(400)
+    expect(resp.error).to.be.a('string')
   })
 })

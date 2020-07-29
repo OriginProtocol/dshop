@@ -11,9 +11,10 @@
 //       node validatePayments.js --type=payment --shopId=2
 //    To valide Stripe config for all the shops:
 //       node validatePayments.js --type=config
-
+const get = require('lodash/get')
 const stripeRaw = require('stripe')
 require('dotenv').config()
+
 const { Shop, Order } = require('../models')
 const encConf = require('../utils/encryptedConfig')
 const { getLogger } = require('../utils/logger')
@@ -53,6 +54,7 @@ async function _getShop() {
   } else {
     throw new Error('Must specify shopId or shopName')
   }
+  log.info('Loaded shop', shop.name, shop.id)
   return shop
 }
 
@@ -102,11 +104,8 @@ async function validateShopPayments(shop) {
             // Note: the same Stripe key can be shared across multiple shops
             // which explains why we may be getting events for other shops.
           } else if (encryptedHashes.indexOf(encryptedData) < 0) {
-            log.error(
-              `No order with hash ${encryptedData}. Created ${new Date(
-                item.created * 1000
-              )}. Amount ${item.data.object.amount}`
-            )
+            log.error(`Event id: ${item.id}`)
+            log.error(`Event metadata: ${get(item, 'data.object.metadata')}`)
           } else {
             log.info(`Found hash ${encryptedData} OK`)
           }
@@ -215,6 +214,8 @@ async function main() {
     await validatePayments()
   } else if (program.type === 'config') {
     await validateConfigs()
+  } else {
+    throw new Error(`Unsupported type ${program.type}`)
   }
 }
 
