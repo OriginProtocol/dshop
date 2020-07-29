@@ -14,6 +14,8 @@
 //  node configCli.js --networkId=1 --shopName=<shopName> --operation=get --key=<key> --value=<value>
 //
 
+const Stripe = require('stripe')
+
 const { Network, Shop } = require('../models')
 const { getLogger } = require('../utils/logger')
 const log = getLogger('cli')
@@ -52,7 +54,7 @@ async function dump(network, shops) {
   log.info('Network Id:', network.networkId)
   log.info('Network Config:')
   log.info(networkConfig)
-
+  log.info('======================')
   for (const shop of shops) {
     const shopConfig = getConfig(shop.config)
     log.info('Shop Id:', shop.id)
@@ -113,6 +115,48 @@ async function delKey(shops, key) {
   log.info('Done')
 }
 
+async function checkStripeConfig(network, shops) {
+  const networkConfig = getConfig(network.config)
+  const validWebhhokUrls = [
+    `${networkConfig.backendUrl}/webhook`,
+    `https://dshopapi.ogn.app/webhook` // Legacy URL. Still supported.
+  ]
+
+  for (const shop of shops) {
+    log.info(`Checking Stripe config for shop ${shop.id} ${shop.name}`)
+    try {
+      const shopConfig = getConfig(shop.config)
+      if (!shopConfig.stripeBackend) {
+        log.info(
+          `Stripe not configured for shop ${shop.id} ${shop.name} - Skipping.`
+        )
+        continue
+      }
+      const stripe = Stripe(shopConfig.stripeBackend)
+      const response = await stripe.webhookEndpoints.list()
+      const webhooks = response.data
+
+      let success = false
+      for (const webhook of webhooks) {
+        if (validWebhhokUrls.includes(webhook.url)) {
+          log.info('Webhook properly configured. Pointing to', webhook.url)
+          success = true
+          break
+        } else {
+          log.warn(
+            `Webhook id ${webhook.id} points to non-Dshop or invalid URL ${webhook.url}`
+          )
+        }
+      }
+      if (!success) {
+        log.error(`Webhook not properly configured.`)
+      }
+    } catch (e) {
+      log.error(`Failed checking webhook config: ${e}`)
+    }
+  }
+}
+
 async function _getNetwork(config) {
   const network = await Network.findOne({
     where: { networkId: config.networkId, active: true }
@@ -160,6 +204,8 @@ async function main(config) {
     await setKey(shops, config.key, config.value)
   } else if (config.operation === 'del') {
     await delKey(shops, config.key, config.value)
+  } else if (config.operation === 'checkStripeConfig') {
+    await checkStripeConfig(network, shops)
   } else {
     throw new Error(`Unsupported operation ${config.operation}`)
   }

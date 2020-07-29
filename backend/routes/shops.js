@@ -752,6 +752,8 @@ module.exports = function (router) {
         'about',
         'logErrors'
       )
+      const shopId = req.shop.id
+      log.info(`Shop ${shopId} - Saving config`)
       let listingId
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
         listingId = req.body.listingId
@@ -794,6 +796,7 @@ module.exports = function (router) {
         }
       }
 
+      // Check the hostname picked by the merchant is available.
       const existingConfig = getConfig(req.shop.config)
       if (req.body.hostname) {
         const hostname = kebabCase(req.body.hostname)
@@ -818,16 +821,18 @@ module.exports = function (router) {
       if (IS_PROD) {
         // Register webhooks only on prod
         if (req.body.stripe === false) {
+          log.info(`Shop ${shopId} - Deregistering Stripe webhook`)
           await deregisterStripeWebhooks(existingConfig)
           additionalOpts.stripeWebhookSecret = ''
           additionalOpts.stripeBackend = ''
         } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
+          log.info(`Shop ${shopId} - Registering Stripe webhook`)
           const network = await Network.findOne({ where: { active: true } })
           const netConfig = getConfig(network.config)
           const { secret } = await registerStripeWebhooks(
             req.body,
             existingConfig,
-            netConfig.backendUrl || existingConfig.publicUrl
+            netConfig.backendUrl
           )
           additionalOpts.stripeWebhookSecret = secret
         } else if (req.body.stripeWebhookSecret) {
@@ -839,6 +844,7 @@ module.exports = function (router) {
 
       // Printful webhooks
       if (req.body.printful) {
+        log.info(`Shop ${shopId} - Registering Printful webhook`)
         const printfulWebhookSecret = await registerPrintfulWebhook(
           req.shop.id,
           {
@@ -849,10 +855,13 @@ module.exports = function (router) {
 
         additionalOpts.printfulWebhookSecret = printfulWebhookSecret
       } else if (existingConfig.printful && !req.body.printful) {
+        log.info(`Shop ${shopId} - Deregistering Printful webhook`)
         await deregisterPrintfulWebhook(existingConfig)
         additionalOpts.printfulWebhookSecret = ''
       }
 
+      // Save the config in the DB.
+      log.info(`Shop ${shopId} - Saving config in the DB.`)
       const newConfig = setConfig(
         { ...existingConfig, ...req.body, ...additionalOpts },
         req.shop.config
