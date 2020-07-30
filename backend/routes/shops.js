@@ -754,6 +754,7 @@ module.exports = function (router) {
       )
       const shopId = req.shop.id
       log.info(`Shop ${shopId} - Saving config`)
+
       let listingId
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
         listingId = req.body.listingId
@@ -801,7 +802,7 @@ module.exports = function (router) {
       if (req.body.hostname) {
         const hostname = kebabCase(req.body.hostname)
         const existingShops = await Shop.findAll({
-          where: { hostname, [Sequelize.Op.not]: { id: req.shop.id } }
+          where: { hostname, [Sequelize.Op.not]: { id: shopId } }
         })
         if (existingShops.length) {
           return res.json({
@@ -816,8 +817,13 @@ module.exports = function (router) {
         req.shop.name = req.body.fullTitle
       }
 
+      // Load the network config.
+      const network = await Network.findOne({ where: { active: true } })
+      const netConfig = getConfig(network.config)
+
       const additionalOpts = {}
-      // Stripe webhooks
+
+      // Configure Stripe webhooks
       if (IS_PROD) {
         // Register webhooks only on prod
         if (req.body.stripe === false) {
@@ -827,8 +833,6 @@ module.exports = function (router) {
           additionalOpts.stripeBackend = ''
         } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
           log.info(`Shop ${shopId} - Registering Stripe webhook`)
-          const network = await Network.findOne({ where: { active: true } })
-          const netConfig = getConfig(network.config)
           const { secret } = await registerStripeWebhooks(
             req.body,
             existingConfig,
@@ -842,21 +846,22 @@ module.exports = function (router) {
         additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
       }
 
-      // Printful webhooks
+      // Configure Printful webhooks
       if (req.body.printful) {
         log.info(`Shop ${shopId} - Registering Printful webhook`)
         const printfulWebhookSecret = await registerPrintfulWebhook(
-          req.shop.id,
+          shopId,
           {
             ...existingConfig,
             ...req.body
-          }
+          },
+          netConfig.backendUrl
         )
 
         additionalOpts.printfulWebhookSecret = printfulWebhookSecret
       } else if (existingConfig.printful && !req.body.printful) {
         log.info(`Shop ${shopId} - Deregistering Printful webhook`)
-        await deregisterPrintfulWebhook(existingConfig)
+        await deregisterPrintfulWebhook(shopId, existingConfig)
         additionalOpts.printfulWebhookSecret = ''
       }
 
@@ -975,7 +980,17 @@ module.exports = function (router) {
         pinner: req.body.pinner,
         dnsProvider: req.body.dnsProvider
       }
+
+      const start = +new Date()
+
       const { hash, domain } = await deployShop(deployOpts)
+
+      const end = +new Date()
+      const deployTimeSeconds = Math.floor((end - start) / 1000)
+      log.info(
+        `Deploy duration (shop_id: ${req.params.shopId}): ${deployTimeSeconds}s`
+      )
+
       return res.json({ success: true, hash, domain, gateway: network.ipfs })
     } catch (e) {
       log.error(`Shop ${shop.id} deploy failed: ${e}`)
@@ -1037,11 +1052,20 @@ module.exports = function (router) {
           pinner,
           dnsProvider
         }
+
+        const start = +new Date()
+
         const { hash, domain } = await deployShop(deployOpts)
 
         await req.shop.update({
           hasChanges: false
         })
+
+        const end = +new Date()
+        const deployTimeSeconds = Math.floor((end - start) / 1000)
+        log.info(
+          `Deploy duration (shop_id: ${req.shop.id}): ${deployTimeSeconds}s`
+        )
 
         return res.json({ success: true, hash, domain, gateway: network.ipfs })
       } catch (e) {
