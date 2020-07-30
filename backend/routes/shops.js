@@ -1270,7 +1270,7 @@ module.exports = function (router) {
     const products = readProductsFile(shop)
 
     const topProductsRaw = orders
-      .reduce((items, order) => [...items, ...order.data.items], [])
+      .reduce((items, order) => [...items, ...(order.data.items || [])], [])
       .filter((item) => item)
       .reduce((m, o) => {
         m[o.product] = m[o.product] || { revenue: 0, orders: 0 }
