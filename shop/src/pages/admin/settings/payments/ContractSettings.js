@@ -140,8 +140,8 @@ const AdminDeleteCustomToken = ({ className = '', onConfirm }) => {
         </a>
       }
       buttonText="Delete"
-      confirmText="Are you sure you want to delete this link?"
-      confirmedText="Link deleted"
+      confirmText="Are you sure you want to delete this token?"
+      confirmedText="Token deleted"
       onConfirm={async () => onConfirm()}
       onSuccess={() => {}}
     />
