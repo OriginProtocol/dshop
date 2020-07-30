@@ -980,7 +980,17 @@ module.exports = function (router) {
         pinner: req.body.pinner,
         dnsProvider: req.body.dnsProvider
       }
+
+      const start = +new Date()
+
       const { hash, domain } = await deployShop(deployOpts)
+
+      const end = +new Date()
+      const deployTimeSeconds = Math.floor((end - start) / 1000)
+      log.info(
+        `Deploy duration (shop_id: ${req.params.shopId}): ${deployTimeSeconds}s`
+      )
+
       return res.json({ success: true, hash, domain, gateway: network.ipfs })
     } catch (e) {
       log.error(`Shop ${shop.id} deploy failed: ${e}`)
@@ -1042,11 +1052,20 @@ module.exports = function (router) {
           pinner,
           dnsProvider
         }
+
+        const start = +new Date()
+
         const { hash, domain } = await deployShop(deployOpts)
 
         await req.shop.update({
           hasChanges: false
         })
+
+        const end = +new Date()
+        const deployTimeSeconds = Math.floor((end - start) / 1000)
+        log.info(
+          `Deploy duration (shop_id: ${req.shop.id}): ${deployTimeSeconds}s`
+        )
 
         return res.json({ success: true, hash, domain, gateway: network.ipfs })
       } catch (e) {
