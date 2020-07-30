@@ -754,6 +754,7 @@ module.exports = function (router) {
       )
       const shopId = req.shop.id
       log.info(`Shop ${shopId} - Saving config`)
+
       let listingId
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
         listingId = req.body.listingId
@@ -801,7 +802,7 @@ module.exports = function (router) {
       if (req.body.hostname) {
         const hostname = kebabCase(req.body.hostname)
         const existingShops = await Shop.findAll({
-          where: { hostname, [Sequelize.Op.not]: { id: req.shop.id } }
+          where: { hostname, [Sequelize.Op.not]: { id: shopId } }
         })
         if (existingShops.length) {
           return res.json({
@@ -849,7 +850,7 @@ module.exports = function (router) {
       if (req.body.printful) {
         log.info(`Shop ${shopId} - Registering Printful webhook`)
         const printfulWebhookSecret = await registerPrintfulWebhook(
-          req.shop.id,
+          shopId,
           {
             ...existingConfig,
             ...req.body
