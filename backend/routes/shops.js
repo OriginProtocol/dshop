@@ -816,8 +816,13 @@ module.exports = function (router) {
         req.shop.name = req.body.fullTitle
       }
 
+      // Load the network config.
+      const network = await Network.findOne({ where: { active: true } })
+      const netConfig = getConfig(network.config)
+
       const additionalOpts = {}
-      // Stripe webhooks
+
+      // Configure Stripe webhooks
       if (IS_PROD) {
         // Register webhooks only on prod
         if (req.body.stripe === false) {
@@ -827,8 +832,6 @@ module.exports = function (router) {
           additionalOpts.stripeBackend = ''
         } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
           log.info(`Shop ${shopId} - Registering Stripe webhook`)
-          const network = await Network.findOne({ where: { active: true } })
-          const netConfig = getConfig(network.config)
           const { secret } = await registerStripeWebhooks(
             req.body,
             existingConfig,
@@ -842,7 +845,7 @@ module.exports = function (router) {
         additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
       }
 
-      // Printful webhooks
+      // Configure Printful webhooks
       if (req.body.printful) {
         log.info(`Shop ${shopId} - Registering Printful webhook`)
         const printfulWebhookSecret = await registerPrintfulWebhook(
@@ -850,13 +853,14 @@ module.exports = function (router) {
           {
             ...existingConfig,
             ...req.body
-          }
+          },
+          netConfig.backendUrl
         )
 
         additionalOpts.printfulWebhookSecret = printfulWebhookSecret
       } else if (existingConfig.printful && !req.body.printful) {
         log.info(`Shop ${shopId} - Deregistering Printful webhook`)
-        await deregisterPrintfulWebhook(existingConfig)
+        await deregisterPrintfulWebhook(shopId, existingConfig)
         additionalOpts.printfulWebhookSecret = ''
       }
 
