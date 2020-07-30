@@ -9,8 +9,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 
 import useTokenDataProviders from 'utils/useTokenDataProviders'
 
-import Web3 from 'web3'
-const web3 = new Web3()
+import ethers from 'ethers'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
 
@@ -19,6 +18,8 @@ const validate = (state) => {
 
   if (!state.name) {
     newState.nameError = 'Token symbol is required'
+  } else if (state.name.length > 4) {
+    newState.nameError = 'Token symbol too long'
   }
 
   if (!state.displayName) {
@@ -31,7 +32,7 @@ const validate = (state) => {
 
   if (!state.address) {
     newState.addressError = 'Token address is required'
-  } else if (!web3.utils.isAddress(state.address)) {
+  } else if (!ethers.utils.isAddress(state.address)) {
     newState.addressError = 'Invalid contract address'
   }
 
@@ -127,26 +128,39 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
           onClose={() => {
             setState({
               showModal: false,
-              shouldClose: false
+              shouldClose: false,
+              name: '',
+              displayName: '',
+              address: ''
             })
           }}
         >
-          <div className="modal-body payment-method-modal">
+          <form
+            className="modal-body payment-method-modal"
+            onSubmit={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              testAndAdd()
+            }}
+          >
             <h5>Add a custom ERC20 token</h5>
 
             <div className="form-group">
               <label>Token Symbol</label>
-              <input {...input('name')} />
+              <input {...input('name')} placeholder="eg OGN" />
               {Feedback('name')}
             </div>
             <div className="form-group">
               <label>Token Name</label>
-              <input {...input('displayName')} />
+              <input {...input('displayName')} placeholder="Origin Token" />
               {Feedback('displayName')}
             </div>
             <div className="form-group">
               <label>Token Address</label>
-              <input {...input('address')} />
+              <input
+                {...input('address')}
+                placeholder="eg 0x8207c1ffc5b6804f6024322ccf34f29c3541ae26"
+              />
               {Feedback('address')}
             </div>
 
@@ -170,24 +184,19 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
               <button
                 className="btn btn-outline-primary mr-2"
                 type="button"
-                onClick={() =>
-                  setState({
-                    shouldClose: true
-                  })
-                }
+                onClick={() => setState({ shouldClose: true })}
               >
                 Cancel
               </button>
               <button
                 className="btn btn-primary"
-                type="button"
-                onClick={testAndAdd}
+                type="submit"
                 disabled={state.saving}
               >
                 {state.saving ? 'Adding...' : 'Add'}
               </button>
             </div>
-          </div>
+          </form>
         </Modal>
       )}
     </>
