@@ -215,7 +215,9 @@ const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
 
   const shopId = shop.id
   try {
-    log.info(`Shop ${shopId} - Trying to auto fulfill order ${orderObj.id} on printful...`)
+    log.info(
+      `Shop ${shopId} - Trying to auto fulfill order ${orderObj.id} on printful...`
+    )
 
     const apiKey = shopConfig.printful
     if (!apiKey) {
@@ -290,9 +292,16 @@ const registerPrintfulWebhook = async (shopId, shopConfig, backendUrl) => {
     const respJSON = await resp.json()
 
     if (resp.ok) {
-      log.info(`Shop ${shopId} - Registered printful webhook`, webhookURL, respJSON)
+      log.info(
+        `Shop ${shopId} - Registered printful webhook`,
+        webhookURL,
+        respJSON
+      )
     } else {
-      log.error(`Shop ${shopId} - Failed to register printful webhook`, respJSON)
+      log.error(
+        `Shop ${shopId} - Failed to register printful webhook`,
+        respJSON
+      )
     }
 
     return secret
@@ -370,7 +379,9 @@ const processUpdatedEvent = async (event, shopId) => {
 
   const apiKey = await encConf.get(shopId, 'printful')
 
-  log.debug(`Shop ${shopId} - Product ${id} updated. Started to sync all products...`)
+  log.debug(
+    `Shop ${shopId} - Product ${id} updated. Started to sync all products...`
+  )
 
   await printfulSyncQueue.add(
     {
