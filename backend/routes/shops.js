@@ -34,6 +34,7 @@ const https = require('https')
 const http = require('http')
 const mv = require('mv')
 const path = require('path')
+const { isHexPrefixed, addHexPrefix } = require('ethereumjs-util')
 
 const { configureShopDNS, deployShop } = require('../utils/deployShop')
 const { DSHOP_CACHE, IS_PROD } = require('../utils/const')
@@ -383,7 +384,9 @@ module.exports = function (router) {
       deliveryApi: req.body.printfulApi ? true : false
     }
     if (req.body.web3Pk && !config.web3Pk) {
-      config.web3Pk = req.body.web3Pk
+      config.web3Pk = isHexPrefixed(req.body.web3Pk)
+        ? req.body.web3Pk
+        : addHexPrefix(req.body.web3Pk)
     }
     const shopResponse = await createShop({
       networkId: network.networkId,
@@ -399,11 +402,11 @@ module.exports = function (router) {
       log.error(`Error creating shop: ${shopResponse.error}`)
       return res
         .status(400)
-        .json({ success: false, message: 'Invalid shop data' })
+        .json({ success: false, message: shopResponse.error })
     }
 
     const shopId = shopResponse.shop.id
-    log.info(`Created shop ${shopId}`)
+    log.info(`Created shop ${shopId} with name ${shopResponse.name}`)
 
     const role = 'admin'
     await SellerShop.create({ sellerId: req.session.sellerId, shopId, role })
@@ -787,6 +790,8 @@ module.exports = function (router) {
         'about',
         'logErrors'
       )
+      const shopId = req.shop.id
+      log.info(`Shop ${shopId} - Saving config`)
       let listingId
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
         listingId = req.body.listingId
@@ -830,6 +835,7 @@ module.exports = function (router) {
         }
       }
 
+      // Check the hostname picked by the merchant is available.
       const existingConfig = getConfig(req.shop.config)
       if (req.body.hostname) {
         const hostname = kebabCase(req.body.hostname)
@@ -854,16 +860,18 @@ module.exports = function (router) {
       if (IS_PROD) {
         // Register webhooks only on prod
         if (req.body.stripe === false) {
+          log.info(`Shop ${shopId} - Deregistering Stripe webhook`)
           await deregisterStripeWebhooks(existingConfig)
           additionalOpts.stripeWebhookSecret = ''
           additionalOpts.stripeBackend = ''
         } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
+          log.info(`Shop ${shopId} - Registering Stripe webhook`)
           const network = await Network.findOne({ where: { active: true } })
           const netConfig = getConfig(network.config)
           const { secret } = await registerStripeWebhooks(
             req.body,
             existingConfig,
-            netConfig.backendUrl || existingConfig.publicUrl
+            netConfig.backendUrl
           )
           additionalOpts.stripeWebhookSecret = secret
         } else if (req.body.stripeWebhookSecret) {
@@ -875,6 +883,7 @@ module.exports = function (router) {
 
       // Printful webhooks
       if (req.body.printful) {
+        log.info(`Shop ${shopId} - Registering Printful webhook`)
         const printfulWebhookSecret = await registerPrintfulWebhook(
           req.shop.id,
           {
@@ -885,6 +894,7 @@ module.exports = function (router) {
 
         additionalOpts.printfulWebhookSecret = printfulWebhookSecret
       } else if (existingConfig.printful && !req.body.printful) {
+        log.info(`Shop ${shopId} - Deregistering Printful webhook`)
         await deregisterPrintfulWebhook(existingConfig)
         additionalOpts.printfulWebhookSecret = ''
       }
@@ -897,6 +907,8 @@ module.exports = function (router) {
         )
       }
 
+      // Save the config in the DB.
+      log.info(`Shop ${shopId} - Saving config in the DB.`)
       const newConfig = setConfig(
         { ...existingConfig, ...req.body, ...additionalOpts },
         req.shop.config
@@ -1013,6 +1025,7 @@ module.exports = function (router) {
       const { hash, domain } = await deployShop(deployOpts)
       return res.json({ success: true, hash, domain, gateway: network.ipfs })
     } catch (e) {
+      log.error(`Shop ${shop.id} deploy failed: ${e}`)
       return res.json({ success: false, reason: e.message })
     }
   })
@@ -1079,7 +1092,7 @@ module.exports = function (router) {
 
         return res.json({ success: true, hash, domain, gateway: network.ipfs })
       } catch (e) {
-        log.error(e)
+        log.error(`Shop ${req.shop.id} initial deploy failed: ${e}`)
         return res.json({ success: false, reason: e.message })
       }
     }
@@ -1117,46 +1130,6 @@ module.exports = function (router) {
       }))
 
       res.json({ success: true, deployments })
-    }
-  )
-
-  /**
-   * Create a shop deployment record
-   */
-  router.post(
-    '/shops/:shopId/create-deployment',
-    authSellerAndShop,
-    authRole('admin'),
-    async (req, res) => {
-      // Only used for testing
-      if (process.env.NODE_ENV !== 'test') {
-        return res.status(404).json({ success: false })
-      }
-
-      const shopId = req.shop.id
-      const { ipfsHash, ipfsGateway } = req.body
-
-      let deployment = await ShopDeployment.findOne({
-        where: {
-          shopId: shopId,
-          ipfsHash
-        },
-        order: [['createdAt', 'desc']]
-      })
-
-      if (deployment) {
-        return res
-          .status(400)
-          .json({ success: false, message: 'Deployment exists' })
-      }
-
-      deployment = await ShopDeployment.create({
-        shopId: shopId,
-        ipfsGateway,
-        ipfsHash
-      })
-
-      return res.status(200).json({ success: true, deployment })
     }
   )
 
