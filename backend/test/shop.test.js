@@ -275,7 +275,7 @@ describe('Shops', () => {
   it('create shop logic should create a shop', async () => {
     const data = {
       networkId: 999,
-      name: ' Cool Shoop Name 2020 ',
+      name: " Robinette's Shoop-2020 ",
       listingId: '999-001-' + Date.now(),
       authToken: 'token',
       config: setConfig({}),
