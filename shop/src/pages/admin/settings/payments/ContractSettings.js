@@ -1,58 +1,80 @@
-import React, { useMemo, useEffect } from 'react'
+import React from 'react'
+import uniqBy from 'lodash/uniqBy'
 
 import { formInput } from 'utils/formHelpers'
 import DefaultTokens from 'data/defaultTokens'
-
-// import CreateListing from './_CreateListing'
-
+import ConfirmationModal from 'components/ConfirmationModal'
 import CustomTokenModal from './_CustomTokenModal'
 
-const dedupArray = (arr, prop) => {
-  const m = new Map()
+const ContractSettings = ({ state, setState }) => {
+  const input = formInput(state, (newState) =>
+    setState({ ...newState, hasChanges: true })
+  )
 
-  return arr.reduce((out, el) => {
-    if (m.has(el[prop])) {
-      return out
-    }
-
-    m.set(el[prop])
-    return [...out, el]
-  }, [])
-}
-
-const ContractSettings = ({ state, setState, config }) => {
-  const input = formInput(state, (newState) => setState(newState))
-  // const Feedback = formFeedback(state)
-
-  useEffect(() => {
-    const acceptedTokens = config.acceptedTokens || []
-    setState({ acceptedTokens })
-  }, [config.acceptedTokens])
-
-  const acceptedTokenIds = useMemo(() => {
-    return (state.acceptedTokens || []).map((t) => t.id)
-  }, [state.acceptedTokens])
-
-  const allTokensList = useMemo(() => {
-    // Merge DefaultTokens and any custom tokens and return a deduplicated list of tokens
-    return dedupArray([...DefaultTokens, ...(state.acceptedTokens || [])], 'id')
-  }, [DefaultTokens, state.acceptedTokens])
-
-  const updateAcceptedTokens = (tokenObj, selected) => {
-    let acceptedTokens = [...state.acceptedTokens]
-    if (selected) {
-      acceptedTokens.push(tokenObj)
-      acceptedTokens = dedupArray([...acceptedTokens, tokenObj], 'id')
-    } else {
-      acceptedTokens = acceptedTokens.filter((t) => t.id !== tokenObj.id)
-    }
-
-    setState({ acceptedTokens })
-  }
+  const acceptedTokens = state.acceptedTokens || []
+  const customTokens = state.customTokens || []
+  const customTokenIds = customTokens.map((t) => t.id)
+  const acceptedTokenIds = acceptedTokens.map((t) => t.id)
+  const allCustomTokens = uniqBy([...acceptedTokens, ...customTokens], 'id')
+  const allTokens = uniqBy(
+    [...DefaultTokens, ...allCustomTokens].filter((t) => t.address),
+    'id'
+  )
 
   return (
     <div className="contract-settings">
       <h4>Other Payment Settings</h4>
+
+      <label>Accepted Tokens</label>
+      <div className="form-group">
+        {allTokens.map((token) => (
+          <div key={token.id} className="form-check d-flex">
+            <label className="form-check-label">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                checked={acceptedTokenIds.includes(token.id)}
+                onChange={(e) => {
+                  const updatedList = e.target.checked
+                    ? [...acceptedTokens, token]
+                    : acceptedTokens.filter((t) => t.id !== token.id)
+                  setState({ acceptedTokens: updatedList, hasChanges: true })
+                }}
+              />
+              {token.displayName
+                ? `${token.displayName} (${token.name})`
+                : token.name}
+            </label>
+            {!customTokenIds.includes(token.id) ? null : (
+              <AdminDeleteCustomToken
+                onConfirm={async () => {
+                  const newAcceptedTokens = acceptedTokens.filter(
+                    (t) => t.id !== token.id
+                  )
+                  const newCustomTokens = customTokens.filter(
+                    (t) => t.id !== token.id
+                  )
+                  setState({
+                    acceptedTokens: newAcceptedTokens,
+                    customTokens: newCustomTokens,
+                    hasChanges: true
+                  })
+                }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
+      <CustomTokenModal
+        onNewTokenAdded={(token) =>
+          setState({
+            customTokens: [...customTokens, token],
+            acceptedTokens: [...acceptedTokens, token],
+            hasChanges: true
+          })
+        }
+      />
 
       {/* <div className="form-group">
         <label>Listing ID</label>
@@ -98,34 +120,31 @@ const ContractSettings = ({ state, setState, config }) => {
         <input {...input('disputeWindow')} />
         {Feedback('disputeWindow')}
       </div> */}
-
-      <label>Accepted Tokens</label>
-      <div className="form-group">
-        {allTokensList
-          .filter((t) => t.address)
-          .map((token) => (
-            <div key={token.id} className="form-check">
-              <label className="form-check-label">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  checked={acceptedTokenIds.includes(token.id)}
-                  onChange={(e) =>
-                    updateAcceptedTokens(token, e.target.checked)
-                  }
-                />
-                {token.displayName
-                  ? `${token.displayName} (${token.name})`
-                  : token.name}
-              </label>
-            </div>
-          ))}
-      </div>
-
-      <CustomTokenModal
-        onNewTokenAdded={(tokenObj) => updateAcceptedTokens(tokenObj, true)}
-      />
     </div>
+  )
+}
+
+const AdminDeleteCustomToken = ({ className = '', onConfirm }) => {
+  return (
+    <ConfirmationModal
+      className={`btn btn-outline-danger ${className}`}
+      customEl={
+        <a
+          href="#remove"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+        >
+          <img className="ml-3" src="images/delete-icon.svg" />
+        </a>
+      }
+      buttonText="Delete"
+      confirmText="Are you sure you want to delete this link?"
+      confirmedText="Link deleted"
+      onConfirm={async () => onConfirm()}
+      onSuccess={() => {}}
+    />
   )
 }
 

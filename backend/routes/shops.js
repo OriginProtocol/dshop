@@ -742,6 +742,7 @@ module.exports = function (router) {
         'stripe',
         'stripeKey',
         'acceptedTokens',
+        'customTokens',
         'title',
         'fullTitle',
         'facebook',

@@ -1,12 +1,14 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
+import uniqBy from 'lodash/uniqBy'
 
 import useShopConfig from 'utils/useShopConfig'
 import useSetState from 'utils/useSetState'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import useListingData from 'utils/useListingData'
+import DefaultTokens from 'data/defaultTokens'
 import { useStateValue } from 'data/state'
 
 import * as Icons from 'components/icons/Admin'
@@ -28,8 +30,14 @@ const PaymentSettings = () => {
   const { listing } = useListingData(state.listingId)
 
   useEffect(() => {
-    const { listingId, acceptedTokens } = config
-    setState({ listingId, acceptedTokens })
+    const { listingId } = config
+    const acceptedTokens = config.acceptedTokens || []
+    const configCustomTokens = config.customTokens || []
+    const customTokens = uniqBy(
+      [...acceptedTokens, ...configCustomTokens],
+      'id'
+    ).filter((t) => !DefaultTokens.map((t) => t.id).includes(t.id))
+    setState({ acceptedTokens, customTokens, listingId })
   }, [config.activeShop])
 
   const [connectModal, setShowConnectModal] = useState(false)
@@ -101,9 +109,12 @@ const PaymentSettings = () => {
       <button type="button" className="btn btn-outline-primary">
         Cancel
       </button>
-      <button type="submit" className="btn btn-primary" disabled={saving}>
-        {saving ? 'Updating...' : 'Update'}
-      </button>
+      <button
+        type="submit"
+        className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
+        disabled={saving}
+        children={saving ? 'Updating...' : 'Update'}
+      />
     </>
   )
 
@@ -152,6 +163,7 @@ const PaymentSettings = () => {
           }
 
           dispatch({ type: 'toast', message: 'Saved OK' })
+          setState({ hasChanges: false })
           setSaving(false)
         } catch (err) {
           console.error(err)
