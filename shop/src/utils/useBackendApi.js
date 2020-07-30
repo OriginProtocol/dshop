@@ -19,7 +19,7 @@ function useBackendApi(opts = {}) {
         ...opts,
         headers
       })
-        .then((res) => opts.rawData ? res.text() : res.json())
+        .then((res) => (opts.rawData ? res.text() : res.json()))
         .then((json) => {
           if (opts.suppressError) {
             resolve(json)

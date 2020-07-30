@@ -11,7 +11,7 @@ async function makeOffer(req, res) {
   const encryptedData = req.body.data
   const paymentCode = req.paymentCode
 
-  makeOfferQueue.add(
+  await makeOfferQueue.add(
     {
       shopId: shop.id,
       amount: amount,

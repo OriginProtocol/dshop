@@ -83,7 +83,11 @@ const ChoosePayment = () => {
   const input = formInput(formState, (newState) => setFormState(newState))
 
   const paymentMethods = get(config, 'paymentMethods', [])
-  const offlinePaymentMethods = get(shopConfig, 'offlinePaymentMethods', [])
+  const offlinePaymentMethods = get(
+    shopConfig,
+    'offlinePaymentMethods',
+    []
+  ).filter((method) => !method.disabled)
 
   useEffect(() => {
     if (paymentMethods.length === 1) {

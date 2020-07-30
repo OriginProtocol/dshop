@@ -12,8 +12,8 @@ const DeleteModal = ({
     <ConfirmationModal
       className={`${className || 'btn btn-outline-danger'}`}
       buttonText={<>{children || 'Delete'}</>}
-      confirmText={`Are you sure you want to delete ${paymentMethod.name}?`}
-      confirmedText={`${paymentMethod.name} deleted`}
+      confirmText={`Are you sure you want to delete ${paymentMethod.label}?`}
+      confirmedText={`${paymentMethod.label} deleted`}
       onConfirm={onConfirm}
     />
   )

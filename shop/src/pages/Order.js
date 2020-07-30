@@ -59,15 +59,13 @@ const OrderDetails = ({ cart }) => {
           </div>
           <div className="col-md-6">
             <h5>Payment method</h5>
-            {isOfflinePayment ? (
+            <div className="value">{get(cart, 'paymentMethod.label')}</div>
+            {!isOfflinePayment ? null : (
               <>
-                <div className="value">{get(cart, 'paymentMethod.name')}</div>
                 <PaymentInstructions
                   paymentMethod={get(cart, 'paymentMethod')}
                 />
               </>
-            ) : (
-              <div className="value">{get(cart, 'paymentMethod.label')}</div>
             )}
           </div>
         </div>

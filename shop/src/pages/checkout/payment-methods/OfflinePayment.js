@@ -48,7 +48,7 @@ const OfflinePayment = ({
         suppressError: true,
         rawData: true
       })
-      
+
       if (data === 'OK') {
         onChange({
           tx: dataHash,
@@ -98,7 +98,7 @@ const OfflinePayment = ({
             })
           }}
         />
-        {paymentMethod.name}
+        {paymentMethod.label}
       </label>
       {!isSelected ? null : (
         <div className="offline-payment-details">

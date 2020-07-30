@@ -15,7 +15,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 const reducer = (state, newState) => ({ ...state, ...newState })
 
 const initialState = {
-  name: '',
+  label: '',
   details: '',
   instructions: '',
   qrImage: ''
@@ -24,8 +24,8 @@ const initialState = {
 const validate = (state, qrImages) => {
   const newState = {}
 
-  if (!state.name) {
-    newState.nameError = 'Name is required'
+  if (!state.label) {
+    newState.labelError = 'Name is required'
   }
 
   if (!state.details) {
@@ -76,7 +76,7 @@ const OfflinePaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
           {
             src: image.includes('/__tmp/')
               ? image
-              : `${config.activeShop}/uploads/${image}`,
+              : `/${config.activeShop}/uploads/${image}`,
             path: image
           }
         ]
@@ -106,7 +106,7 @@ const OfflinePaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
 
     const uniqId = isEdit
       ? existingId
-      : `${kebabCase(newState.name)}-${Date.now()}`
+      : `${kebabCase(newState.label)}-${Date.now()}`
     const newMethod = {
       ...pick(newState, Object.keys(initialState)),
       qrImage: get(qrImages, '0.path', ''),
@@ -148,8 +148,8 @@ const OfflinePaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
 
             <div className="form-group">
               <label>Payment method name</label>
-              <input {...input('name')} />
-              {Feedback('name')}
+              <input {...input('label')} />
+              {Feedback('label')}
             </div>
 
             <div className="form-group">

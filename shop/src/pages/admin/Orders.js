@@ -7,10 +7,11 @@ import formatPrice from 'utils/formatPrice'
 import Tooltip from 'components/Tooltip'
 import Paginate from 'components/Paginate'
 import NoItems from 'components/NoItems'
+import PaymentStatusText from 'components/PaymentStatusText'
 
 import useOrders from 'utils/useOrders'
-
 import OfferStates from 'data/OfferStates'
+import PaymentActions from './order/_PaymentActions'
 
 const AdminOrders = () => {
   const location = useLocation()
@@ -177,10 +178,16 @@ const AdminOrdersTable = ({ orders }) => {
             <td>{customerName(order)}</td>
             <td>{get(order, 'data.paymentMethod.label')}</td>
             <td>{formatPrice(get(order, 'data.total'))}</td>
-            <td>{order.statusStr === OfferStates.Accepted ? '🟢 Paid' : (
-              order.statusStr === OfferStates.Created ? '🟠 Pending' : null
-            )}</td>
-            <td></td>
+            <td>
+              <PaymentStatusText status={order.statusStr} />
+            </td>
+            <td>
+              {![OfferStates.Created, OfferStates.Accepted].includes(
+                order.statusStr
+              ) ? null : (
+                <PaymentActions order={order} />
+              )}
+            </td>
           </tr>
         ))}
       </tbody>

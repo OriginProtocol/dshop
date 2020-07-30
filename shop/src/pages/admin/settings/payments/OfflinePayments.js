@@ -46,7 +46,7 @@ const OfflinePayment = ({ offlinePaymentMethods, onChange }) => {
               checked={!method.disabled}
               onChange={(e) => updateCheckedState(method.id, e.target.checked)}
             />
-            {method.name}
+            {method.label}
           </label>
           <div className="actions">
             <div className="action-icon" onClick={() => setEditMethod(method)}>
