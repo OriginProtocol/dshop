@@ -4,6 +4,11 @@ const bodyParser = require('body-parser')
 const randomstring = require('randomstring')
 const Stripe = require('stripe')
 
+const {
+  validatePublishableKey,
+  validateSecretKey
+} = require('@origin/utils/stripe')
+
 const { Shop, ExternalPayment, Network } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
@@ -194,18 +199,20 @@ module.exports = function (router) {
 
   router.post('/stripe/check-creds', authShop, async (req, res) => {
     let valid = false
+    const { stripeKey, stripeBackend } = req.body
 
-    try {
-      const { stripeBackend } = req.body
+    if (validatePublishableKey(stripeKey) && validateSecretKey(stripeBackend)) {
+      try {
+        const stripe = Stripe(stripeBackend)
 
-      const stripe = Stripe(stripeBackend)
+        await stripe.customers.list({ limit: 1 })
 
-      await stripe.customers.list({ limit: 1 })
-
-      valid = true
-    } catch (err) {
-      log.error('Failed to verify stripe credentials', err)
-      valid = false
+        valid = true
+      } catch (err) {
+        log.error('Failed to verify stripe credentials')
+        log.debug(err)
+        valid = false
+      }
     }
 
     return res.status(200).send({

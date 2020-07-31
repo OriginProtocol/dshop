@@ -2,6 +2,7 @@ import React, { useReducer } from 'react'
 
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
+import { validatePublishableKey, validateSecretKey } from '@origin/utils/stripe'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConnectModal from './_ConnectModal'
@@ -23,11 +24,11 @@ const initialState = {
 const validate = (state) => {
   const newState = {}
 
-  if (!state.stripeBackend) {
+  if (!state.stripeBackend || !validateSecretKey(state.stripeBackend)) {
     newState.stripeBackendError = 'Secret key is required'
   }
 
-  if (!state.stripeKey) {
+  if (!state.stripeKey || !validatePublishableKey(state.stripeKey)) {
     newState.stripeKeyError = 'Client key is required'
   }
 
