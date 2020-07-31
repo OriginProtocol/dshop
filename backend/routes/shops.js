@@ -405,7 +405,7 @@ module.exports = function (router) {
     }
 
     const shopId = shopResponse.shop.id
-    log.info(`Created shop ${shopId} with name ${shopResponse.name}`)
+    log.info(`Created shop ${shopId} with name ${shopResponse.shop.name}`)
 
     const role = 'admin'
     await SellerShop.create({ sellerId: req.session.sellerId, shopId, role })
