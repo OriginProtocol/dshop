@@ -46,6 +46,8 @@ const {
 
 const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
 
+const paypalUtils = require('../utils/paypal')
+
 const log = getLogger('routes.shops')
 
 const dayjs = require('dayjs')
@@ -731,6 +733,23 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
+      // Check paypal creds
+      // TODO: Should this be moved to an middleware?
+      if (req.body.paypal) {
+        const { paypalClientId, paypalClientSecret } = req.body
+        const valid = await paypalUtils.validateCredentials(
+          paypalClientId,
+          paypalClientSecret
+        )
+
+        if (!valid) {
+          return res.json({
+            success: false,
+            reason: 'Invalid PayPal credentials'
+          })
+        }
+      }
+
       const jsonConfig = pick(
         req.body,
         'metaDescription',
@@ -750,8 +769,10 @@ module.exports = function (router) {
         'medium',
         'youtube',
         'about',
-        'logErrors'
+        'logErrors',
+        'paypalClientId'
       )
+
       const shopId = req.shop.id
       log.info(`Shop ${shopId} - Saving config`)
 

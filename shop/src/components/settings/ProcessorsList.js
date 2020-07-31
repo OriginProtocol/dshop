@@ -43,7 +43,7 @@ require('react-styl')(`
         background-color: #00cc58
       &.web3 .icon
         background-color: #3b80ee
-      &.printful .icon, &.sendgrid .icon, &.aws .icon, &.mailgun .icon
+      &.printful .icon, &.sendgrid .icon, &.aws .icon, &.mailgun .icon, &.paypal .icon
         border: 1px solid #cdd7e0
 
       > div:nth-child(2)

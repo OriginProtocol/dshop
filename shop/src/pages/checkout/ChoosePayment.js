@@ -14,6 +14,7 @@ import Link from 'components/Link'
 import PayWithCrypto from './payment-methods/Crypto'
 import PayWithStripe from './payment-methods/Stripe'
 import PayWithUphold from './payment-methods/Uphold'
+import PayWithPayPal from './payment-methods/PayPal'
 import BillingAddress from './_BillingAddress'
 
 function validate(state) {
@@ -130,6 +131,9 @@ const ChoosePayment = () => {
         )}
         {!paymentMethods.find((p) => p.id === 'uphold') ? null : (
           <PayWithUphold {...paymentState} onChange={setPaymentState} />
+        )}
+        {!paymentMethods.find((p) => p.id === 'paypal') ? null : (
+          <PayWithPayPal {...paymentState} onChange={setPaymentState} />
         )}
       </div>
 

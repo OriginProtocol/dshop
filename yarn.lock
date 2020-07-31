@@ -2659,6 +2659,18 @@
   dependencies:
     "@types/node" ">= 8"
 
+"@paypal/checkout-server-sdk@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@paypal/checkout-server-sdk/-/checkout-server-sdk-1.0.2.tgz#ce6434723a8796eb2f236d0ba906ae4466ac12c2"
+  integrity sha512-9wNxqgXrolEPfX62PEwyUB3SBGVF7v9N28rNJpXNp89qEpLoLStM+CT4wm/fcfYiVj9BHpimKcB4B7CBbLirxQ==
+  dependencies:
+    "@paypal/paypalhttp" "^1.0.0"
+
+"@paypal/paypalhttp@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@paypal/paypalhttp/-/paypalhttp-1.0.0.tgz#a591c1da39c63e2b9c62735348b82abed5037e01"
+  integrity sha512-6gHT5HhPLObICXU8LFFiuoH0vCh3y1y0jl0OWDRuTZvptZ1WRS2eKcHigheytqxk+CWTH0qh0M3S5vEf1PJrSw==
+
 "@popperjs/core@^2.4.4":
   version "2.4.4"
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.4.4.tgz#11d5db19bd178936ec89cd84519c4de439574398"
@@ -16184,7 +16196,6 @@ ndjson@^1.5.0:
 
 "neat-frame@https://github.com/agentofuser/neat-frame#wrap-ansi-options":
   version "1.0.2"
-  uid b244ca11078bd35f63b2d7cb22d5e4b5c12ae2aa
   resolved "https://github.com/agentofuser/neat-frame#b244ca11078bd35f63b2d7cb22d5e4b5c12ae2aa"
   dependencies:
     inspect-with-kind "^1.0.5"
