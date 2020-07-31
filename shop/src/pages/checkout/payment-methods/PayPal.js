@@ -8,7 +8,7 @@ import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
 // import { useLocation } from 'react-router-dom'
 
-const PayPal = ({ onChange, loading, encryptedData, submit }) => {
+const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
   const { config } = useConfig()
   const [{ cart }, dispatch] = useStateValue()
 
@@ -67,13 +67,13 @@ const PayPal = ({ onChange, loading, encryptedData, submit }) => {
   }, [submit, loading, encryptedData])
 
   useEffect(() => {
-    if (isSelected) {
+    if (isSelected && !loading && disabled && !submit) {
       onChange({
         buttonText: `Pay ${formatPrice(cart.total)}`,
         disabled: false
       })
     }
-  }, [isSelected])
+  }, [isSelected, disabled, loading, submit])
 
   return (
     <>

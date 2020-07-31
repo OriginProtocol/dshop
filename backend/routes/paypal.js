@@ -70,7 +70,7 @@ module.exports = function (router) {
             custom_id: randomstring.generate()
           }
         ],
-        order_application_context: {
+        application_context: {
           user_action: 'PAY_NOW',
           return_url: req.body.returnUrl,
           cancel_url: req.body.cancelUrl
