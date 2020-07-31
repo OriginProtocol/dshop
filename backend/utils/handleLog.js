@@ -82,7 +82,7 @@ async function handleLog({
   const eventObj = getEventObjFn(rawEvent)
 
   const listingId = `${networkId}-${contractVersion}-${eventObj.listingId}`
-  log.info(`Event ${eventObj.eventName} for listing Id ${listingId}`)
+  log.info(`Received event ${eventObj.eventName} for listing ${listingId}`)
 
   // Lookup the Dshop associated with the event, if any.
   const shop = await Shop.findOne({ where: { listingId } })
@@ -92,18 +92,22 @@ async function handleLog({
   const upsertEventFn = isTest && mockUpsert ? mockUpsert : upsertEvent
   const event = await upsertEventFn({
     web3,
-    shopId: shop.id || null,
+    shopId: shop ? shop.id : null,
     networkId,
     event: rawEvent
   })
 
   // We only processes the event if it is associated with a Dshop.
   if (!shop) {
-    log.info(`Event is not for a registered dshop. Skipping.`)
+    log.info(
+      `Event ${eventObj.eventName} on listing ${listingId} is not for a registered shop. Skipping.`
+    )
     return
   }
 
-  log.info(`Processing event ${eventObj.eventName} for shop ${shop.id}`)
+  log.info(
+    `Processing event ${eventObj.eventName} on listing ${listingId} for shop ${shop.id}`
+  )
   await processDShopEvent({ event, shop })
 }
 
