@@ -272,6 +272,10 @@ async function _processEventForNewOrder({
     throw new Error('No encrypted data found')
   }
 
+  // Extract the optional paymentCode data from the offer.
+  // It is populated for example in case of a Credit Card payment.
+  const paymentCode = offer.paymentCode
+
   // Load the encrypted data from IPFS and decrypt it.
   log.info(`Fetching encrypted offer data with hash ${encryptedHash}`)
   const encryptedDataJson = await getText(
@@ -304,7 +308,8 @@ async function _processEventForNewOrder({
     createdAt: new Date(event.timestamp * 1000),
     createdBlock: event.blockNumber,
     ipfsHash: event.ipfsHash,
-    encryptedIpfsHash: encryptedHash
+    encryptedIpfsHash: encryptedHash,
+    paymentCode
   }
   if (data.referrer) {
     orderObj.referrer = util.toChecksumAddress(data.referrer)
