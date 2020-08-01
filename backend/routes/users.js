@@ -8,9 +8,10 @@ const {
 const { createSeller } = require('../utils/sellers')
 const pick = require('lodash/pick')
 const omit = require('lodash/omit')
+const get = require('lodash/get')
 const { Op } = require('sequelize')
 
-const { sendVerificationEmail } = require('../utils/sellers')
+const { sendVerificationEmail, sendPasswordReset } = require('../utils/sellers')
 const { verifyEmailCode } = require('../utils/emailVerification')
 
 const { getLogger } = require('../utils/logger')
@@ -97,6 +98,43 @@ module.exports = function (router) {
 
     req.session.sellerId = seller.id
     res.json({ success: true })
+  })
+
+  router.post('/forgot-password', async (req, res) => {
+    const email = get(req.body, 'email', '').toLowerCase()
+    const seller = await Seller.findOne({ where: { email } })
+    if (seller) {
+      await sendPasswordReset(seller)
+    }
+    return res.json({ success: true })
+  })
+
+  router.post('/reset-password', async (req, res) => {
+    const code = req.body.code
+    const where = { data: { passwordResetCode: code } }
+    const seller = await Seller.findOne({ where })
+
+    if (!seller || !seller.data) {
+      return res.json({ success: false, error: 'Invalid code' })
+    }
+
+    if (seller.data.passwordResetCode !== code) {
+      return res.json({ success: false, error: 'Invalid code' })
+    }
+
+    if (Date.now() > seller.data.passwordResetExpiresAt) {
+      return res.json({ success: false, error: 'Invalid code' })
+    }
+
+    const salt = await createSalt()
+    const passwordHash = await hashPassword(salt, req.body.password)
+
+    await seller.update({
+      data: omit(seller.data, ['passwordResetCode', 'passwordResetExpiresAt']),
+      password: passwordHash
+    })
+
+    return res.json({ success: true })
   })
 
   router.delete('/superuser/users/:userId', authSuperUser, async (req, res) => {

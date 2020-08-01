@@ -24,6 +24,9 @@ const orderItemTxt = require('./templates/orderItemTxt')
 const verifyEmail = require('./templates/verifyEmail')
 const verifyEmailTxt = require('./templates/verifyEmailTxt')
 
+const forgotPassEmail = require('./templates/forgotPassEmail')
+const forgotPassEmailTxt = require('./templates/forgotPassEmailTxt')
+
 const printfulOrderFailed = require('./templates/printfulOrderFailed')
 const printfulOrderFailedTxt = require('./templates/printfulOrderFailedTxt')
 
@@ -70,19 +73,18 @@ async function getEmailTransporterAndConfig(shop) {
       }
     }
   }
-  const network = await Network.findOne({
-    where: { networkId: shop.networkId, active: true }
-  })
-
+  const network = await Network.findOne({ where: { active: true } })
   const networkConfig = encConf.getConfig(network.config)
-
   const backendUrl = get(networkConfig, 'backendUrl', '')
-  const configJson = await getSiteConfig(`${backendUrl}/${shop.authToken}/`)
 
-  const shopConfig = encConf.getConfig(shop.config)
+  let emailServerConfig = {},
+    configJson = {},
+    shopConfig = {}
 
-  let emailServerConfig = {
-    ...shopConfig
+  if (shop) {
+    configJson = await getSiteConfig(`${backendUrl}/${shop.authToken}/`)
+    shopConfig = encConf.getConfig(shop.config)
+    emailServerConfig = { ...shopConfig }
   }
 
   if ((!shopConfig.email || shopConfig.email === 'disabled') && network) {
@@ -134,7 +136,9 @@ async function getEmailTransporterAndConfig(shop) {
   return {
     transporter,
     fromEmail:
-      SUPPORT_EMAIL_OVERRIDE || shopConfig.fromEmail || 'no-reply@ogn.app',
+      SUPPORT_EMAIL_OVERRIDE ||
+      shopConfig.fromEmail ||
+      'Origin Dshop <no-reply@ogn.app>',
     supportEmail:
       SUPPORT_EMAIL_OVERRIDE ||
       configJson.supportEmail ||
@@ -382,6 +386,62 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
   })
 }
 
+async function sendPasswordResetEmail(seller, verifyUrl, skip) {
+  const {
+    transporter,
+    fromEmail,
+    supportEmail
+  } = await getEmailTransporterAndConfig()
+  if (!transporter) {
+    log.info(`Emailer not configured. Skipping sending verification email.`)
+    return
+  }
+
+  if (process.env.NODE_ENV === 'test') {
+    log.info('Test environment. Email will be generated but not sent.')
+    skip = true
+  }
+
+  const { name, email } = seller
+
+  const vars = {
+    head,
+    name,
+    verifyUrl,
+    supportEmailPlain: supportEmail,
+    fromEmail
+  }
+
+  const htmlOutput = mjml2html(forgotPassEmail(vars), { minify: true })
+  const txtOutput = forgotPassEmailTxt(vars)
+
+  const message = {
+    from: vars.fromEmail,
+    to: `${name} <${email}>`,
+    subject: 'Reset your password',
+    html: htmlOutput.html,
+    text: txtOutput
+  }
+
+  if (skip) return message
+
+  return new Promise((resolve) => {
+    transporter.sendMail(message, (err, msg) => {
+      if (err) {
+        log.error('Error sending forgot password email', err)
+        return resolve()
+      } else {
+        log.info(
+          `Forgot password email sent, from ${message.from} to ${message.to}`
+        )
+        log.debug(msg.envelope)
+      }
+
+      resolve(message)
+    })
+  })
+}
+
 async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
   const shop = await Shop.findOne({ where: { id: shopId } })
   const {
@@ -506,5 +566,6 @@ module.exports = {
   sendNewOrderEmail,
   sendVerifyEmail,
   sendPrintfulOrderFailedEmail,
-  stripeWebhookErrorEmail
+  stripeWebhookErrorEmail,
+  sendPasswordResetEmail
 }

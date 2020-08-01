@@ -2,11 +2,33 @@ const get = require('lodash/get')
 const { Seller, Shop, Network } = require('../models')
 const { createSalt, hashPassword, checkPassword } = require('../routes/_auth')
 
-const { sendVerifyEmail } = require('./emailer')
+const { sendVerifyEmail, sendPasswordResetEmail } = require('./emailer')
 
 const { getConfig } = require('./encryptedConfig')
 
 const { generateVerificationCode } = require('./emailVerification')
+
+async function sendPasswordReset(seller) {
+  const network = await Network.findOne({ where: { active: true } })
+  const networkConfig = getConfig(network.config)
+  const backendUrl = get(networkConfig, 'backendUrl')
+
+  if (!backendUrl) {
+    throw new Error('backendUrl missing from network config')
+  }
+
+  const { code, expires } = generateVerificationCode(backendUrl)
+
+  await seller.update({
+    data: {
+      ...seller.data,
+      passwordResetCode: code,
+      passwordResetExpiresAt: expires
+    }
+  })
+  const verifyUrl = `${backendUrl}/#/admin/reset-password?code=${code}`
+  return sendPasswordResetEmail(seller.get({ plain: true }), verifyUrl)
+}
 
 async function sendVerificationEmail(seller, shopId) {
   if (!shopId) {
@@ -95,5 +117,6 @@ module.exports = {
   createSeller,
   authSeller,
   numSellers,
-  sendVerificationEmail
+  sendVerificationEmail,
+  sendPasswordReset
 }
