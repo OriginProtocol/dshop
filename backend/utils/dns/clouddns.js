@@ -152,7 +152,7 @@ async function updateDNSLink(existing, zone, name, ipfsHash) {
  *  credentials
  * @param {string} args.zone - The DNS zone we're adding records to
  * @param {string} args.subdomain - The name of the record we're setting
- * @param {string} args.ipfsGateway - The IFPS gateway to use for DNSLink
+ * @param {string} args.ipfsGateway - The IPFS gateway to use for DNSLink
  * @param {string} args.hash - The IPFS hash to use for DNSLink
  * @returns {array} of Change
  */

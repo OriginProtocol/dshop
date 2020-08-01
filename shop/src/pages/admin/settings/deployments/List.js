@@ -41,7 +41,7 @@ const DeployShop = () => {
           <thead>
             <tr>
               <th>Deployments</th>
-              <th>IFPS</th>
+              <th>IPFS</th>
               <th>Domain</th>
             </tr>
           </thead>
