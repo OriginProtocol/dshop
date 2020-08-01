@@ -53,7 +53,9 @@ module.exports = (sequelize, DataTypes) => {
       // Amount of OGN commission paid to the referrer.
       commissionPaid: DataTypes.INTEGER,
       // Date at which the offer was recorded on-chain.
-      createdAt: DataTypes.DATE
+      createdAt: DataTypes.DATE,
+      // Optional. Links an external payment (ex: credit card) to an order. See external_payments.payment_code
+      paymentCode: DataTypes.STRING
     },
     {
       underscored: true,
