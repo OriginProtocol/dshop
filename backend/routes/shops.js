@@ -401,11 +401,11 @@ module.exports = function (router) {
       log.error(`Error creating shop: ${shopResponse.error}`)
       return res
         .status(400)
-        .json({ success: false, message: 'Invalid shop data' })
+        .json({ success: false, message: shopResponse.error })
     }
 
     const shopId = shopResponse.shop.id
-    log.info(`Created shop ${shopId}`)
+    log.info(`Created shop ${shopId} with name ${shopResponse.shop.name}`)
 
     const role = 'admin'
     await SellerShop.create({ sellerId: req.session.sellerId, shopId, role })
@@ -731,6 +731,10 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
+      // Load the network config.
+      const network = await Network.findOne({ where: { active: true } })
+      const netConfig = getConfig(network.config)
+
       const jsonConfig = pick(
         req.body,
         'currency',
@@ -742,7 +746,6 @@ module.exports = function (router) {
         'discountCodes',
         'stripe',
         'stripeKey',
-        'acceptedTokens',
         'title',
         'fullTitle',
         'facebook',
@@ -753,15 +756,22 @@ module.exports = function (router) {
         'about',
         'logErrors'
       )
+      const jsonNetConfig = pick(
+        req.body,
+        'acceptedTokens',
+        'customTokens',
+        'listingId'
+      )
       const shopId = req.shop.id
       log.info(`Shop ${shopId} - Saving config`)
+
       let listingId
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
         listingId = req.body.listingId
         req.shop.listingId = listingId
       }
 
-      if (Object.keys(jsonConfig).length || listingId) {
+      if (Object.keys(jsonConfig).length || Object.keys(jsonNetConfig).length) {
         const configFile = `${DSHOP_CACHE}/${req.shop.authToken}/data/config.json`
 
         if (!fs.existsSync(configFile)) {
@@ -772,9 +782,11 @@ module.exports = function (router) {
           const raw = fs.readFileSync(configFile).toString()
           const config = JSON.parse(raw)
           const newConfig = { ...config, ...jsonConfig }
-          if (listingId) {
-            const [netId] = listingId.split('-')
-            set(newConfig, `networks.${netId}.listingId`, listingId)
+          if (Object.keys(jsonNetConfig).length) {
+            set(newConfig, `networks.${network.networkId}`, {
+              ...get(newConfig, `networks.${network.networkId}`),
+              ...jsonNetConfig
+            })
           }
           const jsonStr = JSON.stringify(newConfig, null, 2)
           fs.writeFileSync(configFile, jsonStr)
@@ -802,7 +814,7 @@ module.exports = function (router) {
       if (req.body.hostname) {
         const hostname = kebabCase(req.body.hostname)
         const existingShops = await Shop.findAll({
-          where: { hostname, [Sequelize.Op.not]: { id: req.shop.id } }
+          where: { hostname, [Sequelize.Op.not]: { id: shopId } }
         })
         if (existingShops.length) {
           return res.json({
@@ -818,7 +830,8 @@ module.exports = function (router) {
       }
 
       const additionalOpts = {}
-      // Stripe webhooks
+
+      // Configure Stripe webhooks
       if (IS_PROD) {
         // Register webhooks only on prod
         if (req.body.stripe === false) {
@@ -828,8 +841,6 @@ module.exports = function (router) {
           additionalOpts.stripeBackend = ''
         } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
           log.info(`Shop ${shopId} - Registering Stripe webhook`)
-          const network = await Network.findOne({ where: { active: true } })
-          const netConfig = getConfig(network.config)
           const { secret } = await registerStripeWebhooks(
             req.body,
             existingConfig,
@@ -843,30 +854,60 @@ module.exports = function (router) {
         additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
       }
 
-      // Printful webhooks
+      // Configure Printful webhooks
       if (req.body.printful) {
         log.info(`Shop ${shopId} - Registering Printful webhook`)
         const printfulWebhookSecret = await registerPrintfulWebhook(
-          req.shop.id,
+          shopId,
           {
             ...existingConfig,
             ...req.body
-          }
+          },
+          netConfig.backendUrl
         )
 
         additionalOpts.printfulWebhookSecret = printfulWebhookSecret
       } else if (existingConfig.printful && !req.body.printful) {
         log.info(`Shop ${shopId} - Deregistering Printful webhook`)
-        await deregisterPrintfulWebhook(existingConfig)
+        await deregisterPrintfulWebhook(shopId, existingConfig)
         additionalOpts.printfulWebhookSecret = ''
       }
 
       // Save the config in the DB.
       log.info(`Shop ${shopId} - Saving config in the DB.`)
-      const newConfig = setConfig(
+      const shopConfigFields = pick(
         { ...existingConfig, ...req.body, ...additionalOpts },
-        req.shop.config
+        'awsAccessKey',
+        'awsAccessSecret',
+        'awsRegion',
+        'bigQueryCredentials',
+        'bigQueryTable',
+        'dataUrl',
+        'deliveryApi',
+        'email',
+        'hostname',
+        'listener',
+        'mailgunSmtpLogin',
+        'mailgunSmtpPassword',
+        'mailgunSmtpPort',
+        'mailgunSmtpServer',
+        'password',
+        'pgpPrivateKey',
+        'pgpPrivateKeyPass',
+        'pgpPublicKey',
+        'printful',
+        'publicUrl',
+        'sendgridApiKey',
+        'sendgridPassword',
+        'sendgridUsername',
+        'stripeBackend',
+        'stripeWebhookSecret',
+        'upholdApi',
+        'upholdClient',
+        'upholdSecret',
+        'web3Pk'
       )
+      const newConfig = setConfig(shopConfigFields, req.shop.config)
       req.shop.config = newConfig
       req.shop.hasChanges = true
       await req.shop.save()
@@ -976,7 +1017,17 @@ module.exports = function (router) {
         pinner: req.body.pinner,
         dnsProvider: req.body.dnsProvider
       }
+
+      const start = +new Date()
+
       const { hash, domain } = await deployShop(deployOpts)
+
+      const end = +new Date()
+      const deployTimeSeconds = Math.floor((end - start) / 1000)
+      log.info(
+        `Deploy duration (shop_id: ${req.params.shopId}): ${deployTimeSeconds}s`
+      )
+
       return res.json({ success: true, hash, domain, gateway: network.ipfs })
     } catch (e) {
       log.error(`Shop ${shop.id} deploy failed: ${e}`)
@@ -1038,11 +1089,20 @@ module.exports = function (router) {
           pinner,
           dnsProvider
         }
+
+        const start = +new Date()
+
         const { hash, domain } = await deployShop(deployOpts)
 
         await req.shop.update({
           hasChanges: false
         })
+
+        const end = +new Date()
+        const deployTimeSeconds = Math.floor((end - start) / 1000)
+        log.info(
+          `Deploy duration (shop_id: ${req.shop.id}): ${deployTimeSeconds}s`
+        )
 
         return res.json({ success: true, hash, domain, gateway: network.ipfs })
       } catch (e) {
@@ -1247,7 +1307,7 @@ module.exports = function (router) {
     const products = readProductsFile(shop)
 
     const topProductsRaw = orders
-      .reduce((items, order) => [...items, ...order.data.items], [])
+      .reduce((items, order) => [...items, ...(order.data.items || [])], [])
       .filter((item) => item)
       .reduce((m, o) => {
         m[o.product] = m[o.product] || { revenue: 0, orders: 0 }

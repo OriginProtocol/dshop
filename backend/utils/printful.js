@@ -192,6 +192,14 @@ const fetchShippingEstimate = async (apiKey, data) => {
   }
 }
 
+/**
+ * Automatically fullfills an order on Printful.
+ *
+ * @param {models.Order} orderObj
+ * @param {object} shopConfig
+ * @param {models.Shop} shop
+ * @returns {Promise<void>}
+ */
 const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
   const sendFailureEmail = async (message) => {
     try {
@@ -205,8 +213,11 @@ const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
     }
   }
 
+  const shopId = shop.id
   try {
-    log.info('Trying to auto fulfill order on printful...')
+    log.info(
+      `Shop ${shopId} - Trying to auto fulfill order ${orderObj.id} on printful...`
+    )
 
     const apiKey = shopConfig.printful
     if (!apiKey) {
@@ -229,24 +240,30 @@ const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
     })
 
     if (!success) {
-      log.error('Failed to auto-fulfill order', message)
+      log.error(`Shop ${shopId} - Failed to auto-fulfill order`, message)
       await sendFailureEmail(message)
     } else {
-      log.info('Order created on printful')
+      log.info(`Shop ${shopId} - Order created on printful`)
     }
   } catch (err) {
-    log.error('Failed to auto-fulfill order', err)
+    log.error(`Shop ${shopId} - Failed to auto-fulfill order`, err)
     await sendFailureEmail()
   }
 }
 
-const registerPrintfulWebhook = async (shopId, shopConfig) => {
+/**
+ * Registers a webhook with Printful.
+ * @param {number} shopId
+ * @param {object} shopConfig
+ * @param {string} backendUrl
+ * @returns {Promise<string|null>} Webhook's secret
+ */
+const registerPrintfulWebhook = async (shopId, shopConfig, backendUrl) => {
   try {
-    const webhookHost = get(shopConfig, `publicUrl`)
-
     const apiKey = shopConfig.printful
     if (!apiKey) {
-      return
+      log.error(`Shop ${shopId} - No Printful API key in config`)
+      return null
     }
 
     const apiAuth = Buffer.from(apiKey).toString('base64')
@@ -255,7 +272,7 @@ const registerPrintfulWebhook = async (shopId, shopConfig) => {
 
     const secret = Math.random().toString(36).substring(2)
 
-    const webhookURL = `${webhookHost}/printful/webhooks/${shopId}/${secret}`
+    const webhookURL = `${backendUrl}/printful/webhooks/${shopId}/${secret}`
 
     const registerData = {
       url: webhookURL,
@@ -275,21 +292,29 @@ const registerPrintfulWebhook = async (shopId, shopConfig) => {
     const respJSON = await resp.json()
 
     if (resp.ok) {
-      log.info(`Registered printful webhook`, webhookURL, respJSON)
+      log.info(
+        `Shop ${shopId} - Registered printful webhook`,
+        webhookURL,
+        respJSON
+      )
     } else {
-      log.error('Failed to register printful webhook', respJSON)
+      log.error(
+        `Shop ${shopId} - Failed to register printful webhook`,
+        respJSON
+      )
     }
 
     return secret
   } catch (err) {
-    log.error('Failed to register printful webhook', err)
+    log.error(`Shop ${shopId} - Failed to register printful webhook`, err)
   }
 }
 
-const deregisterPrintfulWebhook = async (shopConfig) => {
+const deregisterPrintfulWebhook = async (shopId, shopConfig) => {
   try {
     const apiKey = shopConfig.printful
     if (!apiKey) {
+      log.error(`Shop ${shopId} - No Printful API key in config`)
       return
     }
 
@@ -306,9 +331,9 @@ const deregisterPrintfulWebhook = async (shopConfig) => {
       method: 'DELETE'
     })
 
-    log.info(`Deregistered printful webhook`)
+    log.info(`Shop ${shopId} - Deregistered printful webhook`)
   } catch (err) {
-    log.error('Failed to deregister printful webhook', err)
+    log.error(`Shop ${shopId} - Failed to deregister printful webhook`, err)
   }
 }
 
@@ -326,7 +351,7 @@ const processShippedEvent = async (event, shopId) => {
     })
 
     if (!dbOrder) {
-      log.error('Invalid order, not found in DB', order)
+      log.error(`Shop ${shopId} - Invalid order, not found in DB`, order)
       return
     }
 
@@ -339,7 +364,7 @@ const processShippedEvent = async (event, shopId) => {
       skipVendorMail: true
     })
   } catch (err) {
-    log.error('Failed to process shipped event', err)
+    log.error(`Shop ${shopId} - Failed to process shipped event`, err)
   }
 }
 
@@ -354,7 +379,9 @@ const processUpdatedEvent = async (event, shopId) => {
 
   const apiKey = await encConf.get(shopId, 'printful')
 
-  log.debug(`Product ${id} updated. Started to sync all products...`)
+  log.debug(
+    `Shop ${shopId} - Product ${id} updated. Started to sync all products...`
+  )
 
   await printfulSyncQueue.add(
     {

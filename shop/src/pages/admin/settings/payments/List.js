@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
+import uniqBy from 'lodash/uniqBy'
 
 import { AllCurrencies } from 'data/Currencies'
 import useShopConfig from 'utils/useShopConfig'
@@ -8,6 +9,7 @@ import useSetState from 'utils/useSetState'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import useListingData from 'utils/useListingData'
+import DefaultTokens from 'data/defaultTokens'
 import { useStateValue } from 'data/state'
 
 import * as Icons from 'components/icons/Admin'
@@ -29,8 +31,19 @@ const PaymentSettings = () => {
   const { listing } = useListingData(state.listingId)
 
   useEffect(() => {
-    const { listingId, acceptedTokens, currency } = config
-    setState({ listingId, acceptedTokens, currency: currency || 'USD' })
+    const { listingId, currency } = config
+    const acceptedTokens = config.acceptedTokens || []
+    const configCustomTokens = config.customTokens || []
+    const customTokens = uniqBy(
+      [...acceptedTokens, ...configCustomTokens],
+      'id'
+    ).filter((t) => !DefaultTokens.map((t) => t.id).includes(t.id))
+    setState({
+      acceptedTokens,
+      customTokens,
+      listingId,
+      currency: currency || 'USD'
+    })
   }, [config.activeShop])
 
   const [connectModal, setShowConnectModal] = useState(false)
@@ -102,9 +115,12 @@ const PaymentSettings = () => {
       <button type="button" className="btn btn-outline-primary">
         Cancel
       </button>
-      <button type="submit" className="btn btn-primary" disabled={saving}>
-        {saving ? 'Updating...' : 'Update'}
-      </button>
+      <button
+        type="submit"
+        className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
+        disabled={saving}
+        children={saving ? 'Updating...' : 'Update'}
+      />
     </>
   )
 
@@ -157,6 +173,7 @@ const PaymentSettings = () => {
             type: 'setConfigSimple',
             config: { ...config, ...shopConfig }
           })
+          setState({ hasChanges: false })
           setSaving(false)
         } catch (err) {
           console.error(err)

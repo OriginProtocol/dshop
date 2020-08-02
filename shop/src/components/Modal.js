@@ -57,10 +57,10 @@ const Modal = ({ children, onClose, className, shouldClose }) => {
         className="modal d-block"
         tabIndex="-1"
         style={modalProps}
-        onClick={() => setShouldCloseInt(true)}
+        onMouseDown={() => setShouldCloseInt(true)}
       >
         <div
-          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
           className={`modal-dialog modal-dialog-centered ${className || ''}`}
           role="document"
         >
