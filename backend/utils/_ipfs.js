@@ -38,9 +38,14 @@ function getBytes32FromIpfsHash(hash) {
   return `0x${bs58.decode(hash).slice(2).toString('hex')}`
 }
 
-// Return base58 encoded ipfs hash from bytes32 hex string,
-// E.g. "0x017dfd85d4f6cb4dcd715a88101f7b1f06cd1e009b2327a0809d01eb9c91f231"
-// --> "QmNSUYVKDSvPUnRLKmuxk9diJ6yS96r1TrAXzjTiBcCLAL"
+/**
+ * Returns base58 encoded ipfs hash from bytes32 hex string.
+ * Ex.: "0x017dfd85d4f6cb4dcd715a88101f7b1f06cd1e009b2327a0809d01eb9c91f231"
+ *      ->"QmNSUYVKDSvPUnRLKmuxk9diJ6yS96r1TrAXzjTiBcCLAL"
+ *
+ * @param {string} bytes32Hex
+ * @returns {string}
+ */
 function getIpfsHashFromBytes32(bytes32Hex) {
   // Add our default ipfs values for first 2 bytes:
   // function:0x12=sha2, size:0x20=256 bits
@@ -55,6 +60,7 @@ function getIpfsHashFromBytes32(bytes32Hex) {
  * Takes an IPFS hash url (for example: ipfs://QmUwefhweuf...12322a) and
  * returns a url to that resource on the gateway.
  * Ensures that the IPFS hash does not contain anything evil and is the correct length.
+ *
  * @param {string} gateway
  * @param {string} ipfsUrl
  * @returns {string}
@@ -69,15 +75,14 @@ function gatewayUrl(gateway, ipfsUrl) {
   }
 }
 
-// async function postFile(gateway, file) {
-//   const body = new FormData()
-//   body.append('file', file)
-//
-//   const rawRes = await fetch(`${gateway}/api/v0/add`, { method: 'POST', body })
-//   const res = await rawRes.json()
-//   return res.Hash
-// }
-
+/**
+ * Stores a JSON object as a text in IPFS.
+ *
+ * @param {string} gateway: URL of the IPFS gateway to use for the upload.
+ * @param {object} json: JSON object to upload.
+ * @param {boolean} rawHash: whether to return the hash in its raw format or as bytes32
+ * @returns {Promise<string>}
+ */
 async function post(gateway, json, rawHash) {
   const formData = new FormData()
   let file
@@ -101,12 +106,12 @@ async function post(gateway, json, rawHash) {
 }
 
 /**
- * Posts binary data to IPFS and return the base 58 encoded hash.
- * Throws in case of an error.
+ * Posts binary data to IPFS and returns the base 58 encoded hash.
  *
  * @param {string} gateway: URL of the IPFS gateway to use.
  * @param {Buffer} buffer: binary data to upload.
  * @returns {Promise<{string}>}
+ * @throws
  */
 async function postBinary(gateway, buffer) {
   const formData = new FormData()
@@ -119,41 +124,15 @@ async function postBinary(gateway, buffer) {
   return res.Hash
 }
 
-// async function postEnc(gateway, json, pubKeys) {
-//   const formData = new FormData()
-//
-//   const publicKeys = pubKeys.reduce(
-//     (acc, val) => acc.concat(openpgp.key.readArmored(val).keys),
-//     []
-//   )
-//
-//   const encrypted = await openpgp.encrypt({
-//     data: JSON.stringify(json),
-//     publicKeys
-//   })
-//
-//   formData.append('file', new Blob([encrypted.data]))
-//
-//   const rawRes = await fetch(`${gateway}/api/v0/add`, {
-//     method: 'POST',
-//     body: formData
-//   })
-//   const res = await rawRes.json()
-//
-//   return getBytes32FromIpfsHash(res.Hash)
-// }
-
-// async function decode(text, key, pass) {
-//   const privKeyObj = openpgp.key.readArmored(key).keys[0]
-//   await privKeyObj.decrypt(pass)
-//
-//   const decrypted = await openpgp.decrypt({
-//     message: openpgp.message.readArmored(text),
-//     privateKeys: [privKeyObj]
-//   })
-//   return decrypted.data
-// }
-
+/**
+ * Fetches content from IPFS and returns it as a string.
+ *
+ * @param {string} gateway: URL of the IPFS gateway to use.
+ * @param {string} hashAsBytes: IPFS hash.
+ * @param {number} timeoutMS: Timeout in msec.
+ * @returns {Promise<string>}
+ * @throws
+ */
 async function getTextFn(gateway, hashAsBytes, timeoutMS) {
   const hash =
     hashAsBytes.indexOf('0x') === 0
@@ -186,20 +165,44 @@ async function getTextFn(gateway, hashAsBytes, timeoutMS) {
   return await response.text()
 }
 
-const getText = memoize(getTextFn, (...args) => args[1])
+const getTextCache = memoize(getTextFn, (...args) => args[1])
 
+/**
+ * Fetches content from IPFS and returns it as a string.
+ * Uses an in-memory cache.
+ *
+ * @param {string} gateway: URL of the IPFS gateway to use.
+ * @param {string} hashAsBytes: IPFS hash.
+ * @param {number} timeoutMS: Timeout in msec.
+ * @returns {Promise<string>}
+ * @throws
+ */
+async function getText(gateway, hashAsBytes, timeoutMS) {
+  try {
+    return getTextCache(gateway, hashAsBytes, timeoutMS)
+  } catch (e) {
+    // Note: when used on an async function, memoize caches the returned promise,
+    // regardless of it being resolved or rejected.
+    // If getTextFn raises an exception (for ex. due to an IPFS timeout), we clear
+    // the memoize cache so that a retry causes the function to get executed again.
+    getTextCache.cache.delete(hashAsBytes)
+    throw e
+  }
+}
+
+/**
+ * Fetches content from IPFS and returns it as a JSON object.
+ *
+ * @param {string} gateway: URL of the IPFS gateway to use.
+ * @param {string} hashAsBytes: IPFS hash.
+ * @param {number} timeoutMS: Timeout in msec.
+ * @returns {Promise<object>}
+ * @throws
+ */
 async function get(gateway, hashAsBytes, timeoutMS = 10000) {
-  // }, party) {
   if (!hashAsBytes) return null
 
   const text = await getText(gateway, hashAsBytes, timeoutMS)
-  // if (text.indexOf('-----BEGIN PGP MESSAGE-----') === 0 && party) {
-  //   try {
-  //     text = await decode(text, party.privateKey, party.pgpPass)
-  //   } catch (e) {
-  //     return { encrypted: true, decryptError: e }
-  //   }
-  // }
 
   return JSON.parse(text)
 }
