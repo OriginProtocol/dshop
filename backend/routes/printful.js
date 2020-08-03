@@ -77,6 +77,7 @@ module.exports = function (router) {
       }
     } catch (err) {
       log.error('Failed to validate secret on request', shopId, err)
+      return res.status(500).end()
     }
 
     try {

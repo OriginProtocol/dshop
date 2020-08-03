@@ -732,24 +732,8 @@ module.exports = function (router) {
     '/shop/config',
     authSellerAndShop,
     authRole('admin'),
+    paypalUtils.validateMiddleware,
     async (req, res) => {
-      // Check paypal creds
-      // TODO: Should this be moved to an middleware?
-      if (req.body.paypal) {
-        const { paypalClientId, paypalClientSecret } = req.body
-        const valid = await paypalUtils.validateCredentials(
-          paypalClientId,
-          paypalClientSecret
-        )
-
-        if (!valid) {
-          return res.json({
-            success: false,
-            reason: 'Invalid PayPal credentials'
-          })
-        }
-      }
-
       const jsonConfig = pick(
         req.body,
         'metaDescription',
@@ -884,6 +868,23 @@ module.exports = function (router) {
         log.info(`Shop ${shopId} - Deregistering Printful webhook`)
         await deregisterPrintfulWebhook(shopId, existingConfig)
         additionalOpts.printfulWebhookSecret = ''
+      }
+
+      if (req.body.paypal) {
+        log.info(`Shop ${shopId} - Registering PayPal webhook`)
+        await paypalUtils.deregisterWebhook(shopId, existingConfig)
+        const { webhookId } = await paypalUtils.registerWebhooks(
+          shopId,
+          {
+            ...existingConfig,
+            ...req.body
+          },
+          netConfig.backendUrl
+        )
+        additionalOpts.paypalWebhookId = webhookId
+      } else if (existingConfig.paypal) {
+        await paypalUtils.deregisterWebhook(shopId, existingConfig)
+        additionalOpts.paypalWebhookId = null
       }
 
       // Save the config in the DB.

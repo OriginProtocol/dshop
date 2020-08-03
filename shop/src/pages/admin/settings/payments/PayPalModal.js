@@ -16,7 +16,8 @@ const reducer = (state, newState) => ({ ...state, ...newState })
 
 const initialState = {
   paypalClientId: '',
-  paypalClientSecret: ''
+  paypalClientSecret: '',
+  paypalWebhookHost: ''
 }
 
 const validate = (state) => {
@@ -81,6 +82,16 @@ const PayPalModal = ({ onClose, initialConfig }) => {
         <PasswordField input={input} field="paypalClientSecret" />
         {Feedback('paypalClientSecret')}
       </div>
+      {process.env.NODE_ENV === 'production' ? null : (
+        <div className="form-group">
+          <label>Webhook Host (To test locally):</label>
+          <input
+            {...input('paypalWebhookHost')}
+            placeholder="https://backend.dshop.originprotocol.com"
+          />
+          {Feedback('paypalWebhookHost')}
+        </div>
+      )}
     </ConnectModal>
   )
 }

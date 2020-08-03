@@ -1,9 +1,11 @@
+const get = require('lodash/get')
+const bodyParser = require('body-parser')
 const randomstring = require('randomstring')
 const fs = require('fs')
 
 const PayPal = require('@paypal/checkout-server-sdk')
 
-const { Network } = require('../models')
+const { Network, ExternalPayment, Shop } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
 const { getLogger } = require('../utils/logger')
@@ -11,6 +13,9 @@ const { DSHOP_CACHE } = require('../utils/const')
 
 const { validateCredentials, getClient } = require('../utils/paypal')
 
+const makeOffer = require('./_makeOffer')
+
+const rawJson = bodyParser.raw({ type: 'application/json' })
 const log = getLogger('routes.paypal')
 
 module.exports = function (router) {
@@ -67,7 +72,10 @@ module.exports = function (router) {
               currency_code: 'USD',
               value: req.body.amount
             },
-            custom_id: randomstring.generate()
+            // PayPal doesn't support metadata,
+            // so using invoice_id and custom_id instead
+            invoice_id: randomstring.generate(), // paymentCode
+            custom_id: req.body.data // encryptedData IPFS hash
           }
         ],
         application_context: {
@@ -79,13 +87,16 @@ module.exports = function (router) {
 
       const response = await client.execute(request)
 
+      log.debug(response.result)
+
       const authorizeUrl = response.result.links.find(
         (l) => l.rel === 'approve'
       ).href
 
       res.send({
         success: true,
-        authorizeUrl
+        authorizeUrl,
+        orderId: response.result.id
       })
     } catch (err) {
       log.error(`[Shop ${req.shop.id}] Failed to create order on PayPal`, err)
@@ -94,4 +105,132 @@ module.exports = function (router) {
       })
     }
   })
+
+  router.post('/paypal/capture', authShop, async (req, res) => {
+    try {
+      const network = await Network.findOne({
+        where: { networkId: req.shop.networkId }
+      })
+
+      const networkConfig = getConfig(network.config)
+      const shopConfig = getConfig(req.shop.config)
+      const config = JSON.parse(
+        fs.readFileSync(`${DSHOP_CACHE}/${req.shop.authToken}/data/config.json`)
+      )
+      const web3Pk = shopConfig.web3Pk || networkConfig.web3Pk
+
+      const { paypalClientId } = config
+      const { paypalClientSecret } = shopConfig
+
+      if (!web3Pk || !paypalClientSecret || !paypalClientId) {
+        return res.status(400).send({
+          success: false,
+          reason: 'PayPal payment is disabled'
+        })
+      }
+
+      log.info(
+        `[Shop ${req.shop.id}] Çapturing payment on PayPal`,
+        req.body.orderId
+      )
+
+      const client = getClient(paypalClientId, paypalClientSecret)
+
+      const request = new PayPal.orders.OrdersCaptureRequest(req.body.orderId)
+
+      const response = await client.execute(request)
+
+      log.debug(response.result)
+
+      res.send({
+        success: true
+      })
+    } catch (err) {
+      log.error(`[Shop ${req.shop.id}] Failed to create order on PayPal`, err)
+      res.send({
+        success: false
+      })
+    }
+  })
+
+  const verifySign = (req, res, next) => {
+    // TODO
+    next()
+  }
+
+  const webhookHandler = async (req, res, next) => {
+    const { shopId } = req.params
+
+    try {
+      const event = req.body
+
+      const externalPayment = await ExternalPayment.create({
+        payment_at: new Date(event.create_time),
+        external_id: event.id,
+        data: event,
+        accepted: false
+      })
+
+      const shop = await Shop.findOne({ where: { id: shopId } })
+      req.shop = shop
+
+      // Save parsed data into the external_payment table.
+      externalPayment.authenticated = true
+      externalPayment.type = get(event, 'event_type')
+      externalPayment.paymentCode = get(
+        event,
+        'resource.purchase_units[0].invoice_id',
+        get(event, 'resource.invoice_id')
+      )
+      externalPayment.amount = get(
+        event,
+        'resource.purchase_units[0].amount.value',
+        get(event, 'resource.amount.value')
+      )
+      externalPayment.currency = get(
+        event,
+        'resource.purchase_units[0].amount.currency_code',
+        get(event, 'resource.amount.currency_code')
+      )
+      externalPayment.fee = get(
+        event,
+        'resource.transaction_fee.value',
+        get(event, 'resource.seller_receivable_breakdown.paypal_fee.value')
+      )
+
+      if (externalPayment.amount !== undefined) {
+        externalPayment.amount = Number(externalPayment.amount) * 100
+      }
+      if (externalPayment.fee !== undefined) {
+        externalPayment.fee = Number(externalPayment.fee) * 100
+        externalPayment.net = externalPayment.amount - externalPayment.fee
+      }
+      await externalPayment.save()
+
+      log.debug(JSON.stringify(event, null, 4))
+
+      if (event.event_type !== 'PAYMENT.CAPTURE.COMPLETED') {
+        log.debug(`Ignoring event ${event.type}`)
+        return res.sendStatus(200)
+      }
+
+      req.body.data = get(event, 'resource.custom_id')
+      req.amount = externalPayment.amount
+      req.paymentCode = externalPayment.paymentCode
+
+      next()
+    } catch (err) {
+      log.error(`[Shop ${shopId}] Failed to process PayPal event`, err)
+      log.debug('Body received:', req.body)
+      return res.sendStatus(400)
+    }
+  }
+
+  router.post(
+    '/paypal/webhooks/:shopId',
+    rawJson,
+    verifySign,
+    webhookHandler,
+    makeOffer
+  )
 }

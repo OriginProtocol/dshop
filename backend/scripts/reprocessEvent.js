@@ -22,7 +22,7 @@ const log = getLogger('cli')
 program
   .requiredOption('-n, --networkId <id>', 'Network id: [1,4,999]')
   .requiredOption('-l, --listingId <id>', 'Listing id')
-  .requiredOption('-l, --offerId <id>', 'Offer id')
+  .requiredOption('-o, --offerId <id>', 'Offer id')
   .option(
     '-d, --doIt <boolean>',
     'Non dry-run mode. Persists the data in the DB.'

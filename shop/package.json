@@ -38,6 +38,7 @@
     "openpgp": "^4.10.4",
     "prettier": "^2.0.5",
     "query-string": "^6.13.1",
+    "randomstring": "^1.1.5",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-image-crop": "^8.6.4",

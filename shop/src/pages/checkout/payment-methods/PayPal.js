@@ -6,6 +6,8 @@ import formatPrice from 'utils/formatPrice'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
+import randomstring from 'randomstring'
+import { useRouteMatch } from 'react-router-dom'
 // import { useLocation } from 'react-router-dom'
 
 const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
@@ -19,6 +21,9 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
   const paymentMethods = get(config, 'paymentMethods', [])
   const isSelected = get(cart, 'paymentMethod.id') === 'paypal'
   const paypalPaymentMethod = paymentMethods.find((o) => o.id === 'paypal')
+
+  const match = useRouteMatch('/checkout/payment/:intentId?')
+  const { intentId } = match.params
 
   // const location = useLocation()
 
@@ -38,8 +43,10 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
     setError(null)
 
     try {
-      const returnUrl = `${window.location.origin}/#/order/${encryptedData.hash}?auth=${encryptedData.auth}`
-      const { authorizeUrl } = await post('/paypal/pay', {
+      // const returnUrl = `${window.location.origin}/#/order/${encryptedData.hash}?auth=${encryptedData.auth}`
+      const randomKey = randomstring.generate()
+      const returnUrl = `${window.location.origin}/#/checkout/payment/${randomKey}`
+      const { authorizeUrl, orderId } = await post('/paypal/pay', {
         body: JSON.stringify({
           amount: (cart.total / 100).toFixed(2),
           data: encryptedData.hash,
@@ -50,6 +57,11 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
       })
 
       window.location = authorizeUrl
+      localStorage[`paymentIntent${randomKey}`] = JSON.stringify({
+        hash: encryptedData.hash,
+        auth: encryptedData.auth,
+        orderId
+      })
 
       return
     } catch (err) {
@@ -59,6 +71,53 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
       onChange(resetState)
     }
   }
+
+  const capturePayment = async () => {
+    // Capture payment
+    onChange({
+      loading: true,
+      disabled: true,
+      buttonText: 'Confirming payment...'
+    })
+
+    const resetState = {
+      loading: false,
+      disabled: false,
+      submit: 0,
+      buttonText: `Pay ${formatPrice(cart.total)}`
+    }
+
+    setError(null)
+
+    try {
+      const { orderId, ...encryptedData } = JSON.parse(
+        localStorage[`paymentIntent${intentId}`]
+      )
+
+      await post('/paypal/capture', {
+        body: JSON.stringify({
+          orderId: orderId
+        })
+      })
+
+      delete localStorage[`paymentIntent${intentId}`]
+      onChange({
+        tx: encryptedData.hash,
+        encryptedData
+      })
+    } catch (err) {
+      console.error(err)
+      setError('Something went wrong. Please try again later.')
+    } finally {
+      onChange(resetState)
+    }
+  }
+
+  useEffect(() => {
+    if (!intentId) return
+
+    capturePayment()
+  }, [])
 
   useEffect(() => {
     if (loading || !submit) return
