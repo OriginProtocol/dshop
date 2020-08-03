@@ -11,7 +11,8 @@ const {
   ShopDeployment,
   ShopDeploymentName,
   Order,
-  Sequelize
+  Sequelize,
+  Transaction
 } = require('../models')
 const {
   authSellerAndShop,
@@ -23,6 +24,7 @@ const { createSeller } = require('../utils/sellers')
 const { getConfig, setConfig } = require('../utils/encryptedConfig')
 const { createShop } = require('../utils/shop')
 const genPGP = require('../utils/pgp')
+const { listingCreatedQueue } = require('../queues/queues')
 const get = require('lodash/get')
 const set = require('lodash/set')
 const kebabCase = require('lodash/kebabCase')
@@ -50,6 +52,8 @@ const log = getLogger('routes.shops')
 
 const dayjs = require('dayjs')
 const { readProductsFile } = require('../utils/products')
+
+const { TransactionStatuses, TransactionTypes } = require('../enums')
 
 async function tryDataDir(dataDir) {
   const hasDir = fs.existsSync(`${DSHOP_CACHE}/${dataDir}`)
@@ -1243,6 +1247,82 @@ module.exports = function (router) {
       })
 
       return res.json({ success: true, ipfsHash, names: hostnames })
+    }
+  )
+
+  /**
+   * Returns the listing associated with the shop, if any yet.
+   */
+  router.get(
+    '/shop/listing',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      return res.json({ success: true, listingId: req.shop.listingId })
+    }
+  )
+
+  /**
+   * Enqueues a background job that waits for a ListingCreated blockchain
+   * transaction to get mined and updates the shop's listingId field in the DB.
+   */
+  router.post(
+    '/shop/listing',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const shop = req.shop
+      const { txHash, fromAddress } = req.body
+      if (!txHash) {
+        return res.json({ success: false, message: 'No txHash specified' })
+      }
+      if (!fromAddress) {
+        return res.json({ success: false, message: 'No fromAddress specified' })
+      }
+
+      const network = await Network.findOne({
+        where: { networkId: req.shop.networkId, active: true }
+      })
+
+      // Check if there is an existing row tracking this tx hash. Create one if not
+      const transaction = await Transaction.findOne({
+        networkId: network.id,
+        hash: txHash
+      })
+      if (!transaction) {
+        await Transaction.create({
+          shopId: shop.id,
+          networkId: network.networkId,
+          fromAddress: fromAddress,
+          toAddress: network.marketplaceContract,
+          type: TransactionTypes.ListingCreated,
+          status: TransactionStatuses.Pending,
+          hash: txHash
+        })
+        log.info(
+          `Created transaction ${transaction.id} for tracking ListingCreated tx with hash ${txHash}`
+        )
+      } else {
+        // This route must have been called more than once by the UI.
+        // Nothing to do since the first call enqueued the job.
+        log.warning(
+          `Existing transaction ${transaction.id} found for hash ${txHash} - nothing to do.`
+        )
+        return res.json({ success: true })
+      }
+
+      // Enqueue a job in the queue for waiting for the tx to get mined
+      // and to update the shop's listingId.
+      const job = await listingCreatedQueue.add({
+        txHash: req.body.txHash,
+        fromAddress: req.body.fromAddress,
+        shopId: shop.id
+      })
+      log.info(
+        `Enqueued job ${job.id} for tracking ListingCreated tx with hash ${txHash}`
+      )
+
+      return res.json({ success: true })
     }
   )
 

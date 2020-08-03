@@ -8,6 +8,7 @@ function runProcessors() {
   require('./printfulSyncProcessor').attachToQueue()
   require('./eventsProcessor').attachToQueue()
   require('./autosslProcessor').attachToQueue()
+  require('./listingCreatedProcessor').attachToQueue()
 }
 
 module.exports = {

@@ -66,6 +66,13 @@ const all = [
     Object.assign(queueOpts, {
       prefix: '{autossl}'
     })
+  ),
+  new Queue(
+    'listingCreated',
+    backendUrl,
+    Object.assign(queueOpts, {
+      prefix: '{listingCreated}'
+    })
   )
 ]
 
