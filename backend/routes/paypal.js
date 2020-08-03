@@ -11,7 +11,11 @@ const { getConfig } = require('../utils/encryptedConfig')
 const { getLogger } = require('../utils/logger')
 const { DSHOP_CACHE } = require('../utils/const')
 
-const { validateCredentials, getClient } = require('../utils/paypal')
+const {
+  validateCredentials,
+  getClient,
+  verifySignMiddleware
+} = require('../utils/paypal')
 
 const makeOffer = require('./_makeOffer')
 
@@ -153,8 +157,10 @@ module.exports = function (router) {
     }
   })
 
-  const verifySign = (req, res, next) => {
-    // TODO
+  const findShop = async (req, res, next) => {
+    const { shopId } = req.params
+    const shop = await Shop.findOne({ where: { id: shopId } })
+    req.shop = shop
     next()
   }
 
@@ -170,9 +176,6 @@ module.exports = function (router) {
         data: event,
         accepted: false
       })
-
-      const shop = await Shop.findOne({ where: { id: shopId } })
-      req.shop = shop
 
       // Save parsed data into the external_payment table.
       externalPayment.authenticated = true
@@ -229,7 +232,8 @@ module.exports = function (router) {
   router.post(
     '/paypal/webhooks/:shopId',
     rawJson,
-    verifySign,
+    findShop,
+    verifySignMiddleware,
     webhookHandler,
     makeOffer
   )

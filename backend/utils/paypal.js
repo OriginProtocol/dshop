@@ -1,6 +1,7 @@
 const PayPal = require('@paypal/checkout-server-sdk')
 const { IS_PROD } = require('./const')
 const { getLogger } = require('./logger')
+const { getConfig } = require('./encryptedConfig')
 
 const log = getLogger('utils.paypal')
 
@@ -34,6 +35,26 @@ class WebhookListRequest {
     this.path = `/v1/notifications/webhooks`
     this.verb = 'GET'
     this.body = null
+    this.headers = {
+      'Content-Type': 'application/json'
+    }
+  }
+}
+
+class WebhookVerifySignRequest {
+  constructor(headers, event, webhookId) {
+    this.path = '/v1/notifications/verify-webhook-signature'
+    this.verb = 'POST'
+    this.body = {
+      auth_algo: headers['paypal-auth-algo'],
+      cert_url: headers['paypal-cert-url'],
+      transmission_id: headers['paypal-transmission-id'],
+      transmission_sig: headers['paypal-transmission-sig'],
+      transmission_time: headers['paypal-transmission-time'],
+      webhook_id: webhookId,
+      webhook_event: event
+    }
+    log.debug(this.body)
     this.headers = {
       'Content-Type': 'application/json'
     }
@@ -161,10 +182,40 @@ const deregisterAllWebhooks = async (shopConfig) => {
   return false
 }
 
+const verifySignMiddleware = async (req, res, next) => {
+  try {
+    const shopConfig = getConfig(req.shop.config)
+    const { paypalClientId, paypalClientSecret, paypalWebhookId } = shopConfig
+
+    const client = getClient(paypalClientId, paypalClientSecret)
+
+    const request = new WebhookVerifySignRequest(
+      req.headers,
+      req.body,
+      paypalWebhookId
+    )
+
+    const response = await client.execute(request)
+
+    const { verification_status } = response.result
+
+    log.debug(response)
+
+    if (verification_status !== 'SUCCESS') {
+      return res.sendStatus(400)
+    }
+  } catch (err) {
+    log.error('Failed to verify sign', err)
+    return res.sendStatus(500)
+  }
+
+  next()
+}
 module.exports = {
   getClient,
   validateCredentials,
   validateMiddleware,
   registerWebhooks,
-  deregisterWebhook
+  deregisterWebhook,
+  verifySignMiddleware
 }
