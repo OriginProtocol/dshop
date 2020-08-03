@@ -68,6 +68,16 @@ require('react-styl')(`
 
         &::placeholder
           color: #a3a3a3
+        &.is-invalid
+          background-color: transparent
+
+      .invalid-feedback
+        color: #fff
+        background-image: url(images/error-icon.svg)
+        background-repeat: no-repeat
+        padding-left: 25px
+        line-height: 20px
+        margin-top: 6px
 
       .input-group-prepend, .input-group-append
         .input-group-text

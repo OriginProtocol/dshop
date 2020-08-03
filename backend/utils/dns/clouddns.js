@@ -1,7 +1,7 @@
 /**
  * DNS utilities for GCP CLoud DNS
  */
-
+const get = require('lodash/get')
 const { DNS } = require('@google-cloud/dns')
 
 const { getLogger } = require('../../utils/logger')
@@ -152,7 +152,7 @@ async function updateDNSLink(existing, zone, name, ipfsHash) {
  *  credentials
  * @param {string} args.zone - The DNS zone we're adding records to
  * @param {string} args.subdomain - The name of the record we're setting
- * @param {string} args.ipfsGateway - The IFPS gateway to use for DNSLink
+ * @param {string} args.ipfsGateway - The IPFS gateway to use for DNSLink
  * @param {string} args.hash - The IPFS hash to use for DNSLink
  * @returns {array} of Change
  */
@@ -171,17 +171,17 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
     return
   }
 
-  const recordsRaw = await zoneObj.getRecords({ maxResults: 250 })
-  const records = recordsRaw ? recordsRaw[0] : []
-
   const changes = []
-
-  const existingCNAME = records.find(
-    (rec) => rec.name === fqSubdomain && rec.type === 'CNAME'
-  )
-  const existingTXT = records.find(
-    (rec) => rec.name === `_dnslink.${fqSubdomain}` && rec.type === 'TXT'
-  )
+  const existingCNAMERecords = await zoneObj.getRecords({
+    name: fqSubdomain,
+    type: 'CNAME'
+  })
+  const existingCNAME = get(existingCNAMERecords, '[0][0]')
+  const existingTXTRecords = await zoneObj.getRecords({
+    name: `_dnslink.${fqSubdomain}`,
+    type: 'TXT'
+  })
+  const existingTXT = get(existingTXTRecords, '[0][0]')
 
   if (existingCNAME) {
     // Update CNAME record pointing to the IPFS gateway

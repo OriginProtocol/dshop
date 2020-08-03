@@ -127,7 +127,7 @@ async function processor(job) {
     })
     if (transaction) {
       log.info(
-        `Found pending transaction ${transaction.id} job ${job.id} hash ${transaction.hash} for wallet ${walletAddress}`
+        `Found pending transaction ${transaction.id} job ${transaction.jobId} hash ${transaction.hash} for wallet ${walletAddress}`
       )
 
       // If it is not the transaction from our job. Do not try to recover it.
@@ -135,7 +135,7 @@ async function processor(job) {
       // Fail our job for now, it will get retried.
       if (transaction.jobId !== jobId) {
         throw new Error(
-          `Pending transaction is not from job ${job.id} but ${transaction.jobId}. Bailing.`
+          `Pending transaction is not from job ${jobId} but ${transaction.jobId}. Bailing.`
         )
       }
 
