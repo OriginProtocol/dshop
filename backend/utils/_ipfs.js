@@ -142,7 +142,7 @@ async function getTextFn(gateway, hashAsBytes, timeoutMS) {
     let didTimeOut = false
     const timeout = setTimeout(() => {
       didTimeOut = true
-      reject('IPFS gateway timeout')
+      reject(new Error('IPFS gateway timeout'))
     }, timeoutMS)
     fetch(`${gateway}/ipfs/${hash}`)
       .then((response) => {
@@ -165,30 +165,29 @@ async function getTextFn(gateway, hashAsBytes, timeoutMS) {
   return await response.text()
 }
 
-const getTextCache = memoize(getTextFn, (...args) => args[1])
-
 /**
- * Fetches content from IPFS and returns it as a string.
- * Uses an in-memory cache.
+ * Utility method to use as a wrapper for for memoize when used with async function.
+ * Prevents memoize from caching the result in case the function threw an exception.
  *
- * @param {string} gateway: URL of the IPFS gateway to use.
- * @param {string} hashAsBytes: IPFS hash.
- * @param {number} timeoutMS: Timeout in msec.
- * @returns {Promise<string>}
- * @throws
+ * @param {function} f: the function to call and cache result for
+ * @param {function} resolver: function to get the cache key to use
+ * @returns {function}
  */
-async function getText(gateway, hashAsBytes, timeoutMS) {
-  try {
-    return getTextCache(gateway, hashAsBytes, timeoutMS)
-  } catch (e) {
-    // Note: when used on an async function, memoize caches the returned promise,
-    // regardless of it being resolved or rejected.
-    // If getTextFn raises an exception (for ex. due to an IPFS timeout), we clear
-    // the memoize cache so that a retry causes the function to get executed again.
-    getTextCache.cache.delete(hashAsBytes)
-    throw e
-  }
+function memoizePromise(f, resolver = (k) => k) {
+  const memorizedFunction = memoize(async function (...args) {
+    try {
+      return await f(...args)
+    } catch (e) {
+      // Function threw an exception. Do not cache the result.
+      memorizedFunction.cache.delete(resolver(...args))
+      throw e
+    }
+  }, resolver)
+  return memorizedFunction
 }
+
+// Memoized version of getTextFn
+const getText = memoizePromise(getTextFn, (...args) => args[1])
 
 /**
  * Fetches content from IPFS and returns it as a JSON object.
