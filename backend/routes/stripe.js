@@ -73,7 +73,7 @@ module.exports = function (router) {
     const stripe = Stripe(shopConfig.stripeBackend)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: req.body.amount,
-      currency: 'usd',
+      currency: req.body.currency || 'usd',
       statement_descriptor: normalizeDescriptor(req.shop.name),
       metadata: {
         shopId: req.shop.id,
@@ -216,9 +216,6 @@ module.exports = function (router) {
       }
     }
 
-    return res.status(200).send({
-      success: true,
-      valid
-    })
+    return res.json({ success: true, valid })
   })
 }

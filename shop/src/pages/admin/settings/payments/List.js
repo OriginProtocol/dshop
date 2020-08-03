@@ -3,6 +3,7 @@ import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
 import uniqBy from 'lodash/uniqBy'
 
+import { AllCurrencies } from 'data/Currencies'
 import useShopConfig from 'utils/useShopConfig'
 import useSetState from 'utils/useSetState'
 import useConfig from 'utils/useConfig'
@@ -30,14 +31,19 @@ const PaymentSettings = () => {
   const { listing } = useListingData(state.listingId)
 
   useEffect(() => {
-    const { listingId } = config
+    const { listingId, currency } = config
     const acceptedTokens = config.acceptedTokens || []
     const configCustomTokens = config.customTokens || []
     const customTokens = uniqBy(
       [...acceptedTokens, ...configCustomTokens],
       'id'
     ).filter((t) => !DefaultTokens.map((t) => t.id).includes(t.id))
-    setState({ acceptedTokens, customTokens, listingId })
+    setState({
+      acceptedTokens,
+      customTokens,
+      listingId,
+      currency: currency || 'USD'
+    })
   }, [config.activeShop])
 
   const [connectModal, setShowConnectModal] = useState(false)
@@ -163,6 +169,10 @@ const PaymentSettings = () => {
           }
 
           dispatch({ type: 'toast', message: 'Saved OK' })
+          dispatch({
+            type: 'setConfigSimple',
+            config: { ...config, ...shopConfig }
+          })
           setState({ hasChanges: false })
           setSaving(false)
         } catch (err) {
@@ -176,7 +186,30 @@ const PaymentSettings = () => {
         <div className="actions">{actions}</div>
       </h3>
       <Tabs />
-      <div className="admin-payment-settings shop-settings processors-list">
+      <div className="shop-settings processors-list">
+        <div className="select-currency">
+          <h4>Store currency</h4>
+          <div>
+            <div className="description">
+              You should review any potential legal and tax considerations
+              involved with selling in a currency that is different from the one
+              associated with the country your store is located in.
+            </div>
+            <select
+              className="form-control"
+              value={state.currency}
+              onChange={(e) => setState({ currency: e.target.value })}
+            >
+              {AllCurrencies.map((currency) => (
+                <option key={currency[0]} value={currency[0]}>
+                  {currency[1]}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <h4>Integrations</h4>
         <div className="processor web3">
           <div className="icon">
             <Icons.Web3 />
@@ -235,4 +268,17 @@ const PaymentSettings = () => {
 export default PaymentSettings
 
 require('react-styl')(`
+  .shop-settings
+    .select-currency
+      margin-top: 1.5rem
+      padding-bottom: 2.5rem
+      border-bottom: 1px solid #cdd7e0
+      margin-bottom: 2rem
+      line-height: normal
+      > div
+        color: #8293a4
+        max-width: 530px
+        .description
+          font-size: 14px
+          margin-bottom: 1rem
 `)

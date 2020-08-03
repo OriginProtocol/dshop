@@ -737,6 +737,7 @@ module.exports = function (router) {
 
       const jsonConfig = pick(
         req.body,
+        'currency',
         'metaDescription',
         'css',
         'emailSubject',

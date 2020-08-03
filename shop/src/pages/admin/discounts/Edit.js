@@ -10,6 +10,7 @@ import { useStateValue } from 'data/state'
 import useSetState from 'utils/useSetState'
 import Link from 'components/Link'
 import DeleteButton from './_Delete'
+import formatPrice from 'utils/formatPrice'
 
 const times = Array(48)
   .fill(0)
@@ -208,7 +209,12 @@ const AdminEditDiscount = () => {
         <div className="input-group">
           {state.discountType !== 'fixed' ? null : (
             <div className="input-group-prepend">
-              <span className="input-group-text">$</span>
+              <span className="input-group-text">
+                {formatPrice(0, {
+                  symbolOnly: true,
+                  currency: config.currency
+                })}
+              </span>
             </div>
           )}
           <input type="number" {...input('value')} />

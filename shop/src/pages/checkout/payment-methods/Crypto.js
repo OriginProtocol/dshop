@@ -39,7 +39,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
   const [activeToken, setActiveToken] = useState({})
   const [tokenPrice, setTokenPrice] = useState('')
   const token = useToken(activeToken, cart.total)
-  const { exchangeRates, toTokenPrice } = usePrice()
+  const { toTokenPrice, toFiatPrice } = usePrice(config.currency)
   const [approveUnlockTx, setApproveUnlockTx] = useState(false)
   const [unlockTx, setUnlockTx] = useState(false)
   const wallet = useWallet({ needSigner: true })
@@ -172,11 +172,10 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
                     <td>{`${toTokenPrice(cart.total, token.name)} ${
                       token.name
                     }`}</td>
-                    <td>
-                      {`1 ${token.name} = $${(
-                        1 / exchangeRates[token.name]
-                      ).toFixed(2)}`}
-                    </td>
+                    <td>{`1 ${token.name} = ${toFiatPrice(
+                      100,
+                      token.name
+                    )}`}</td>
                   </tr>
                 )
               })}

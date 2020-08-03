@@ -63,7 +63,9 @@ const CartItem = ({ item }) => {
           </a>
         </div>
       </div>
-      <div className="price">{formatPrice(variant.price)}</div>
+      <div className="price">
+        {formatPrice(variant.price, { currency: config.currency })}
+      </div>
       <div className="quantity">
         {quantities.length === 1 ? (
           quantities[0]
@@ -82,7 +84,11 @@ const CartItem = ({ item }) => {
           </select>
         )}
       </div>
-      <div className="total">{formatPrice(item.quantity * variant.price)}</div>
+      <div className="total">
+        {formatPrice(item.quantity * variant.price, {
+          currency: config.currency
+        })}
+      </div>
     </>
   )
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import formatPrice from 'utils/formatPrice'
+import Price from 'components/Price'
 import useShippingZones from 'utils/useShippingZones'
 
 import Tabs from '../_Tabs'
@@ -45,7 +45,9 @@ const Shipping = () => {
               return (
                 <tr key={zone.id}>
                   <td>{zone.label}</td>
-                  <td>{formatPrice(zone.amount)}</td>
+                  <td>
+                    <Price amount={zone.amount} />
+                  </td>
                   <td>
                     {zone.countries
                       ? zone.countries.join(', ')

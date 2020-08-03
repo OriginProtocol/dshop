@@ -19,7 +19,7 @@ function useMakeOffer({
 }) {
   const { signer, marketplace } = useOrigin()
   const { config } = useConfig()
-  const { toTokenPrice } = usePrice()
+  const { toTokenPrice } = usePrice(config.currency)
   const [{ cart }] = useStateValue()
   const cryptoSelected = get(cart, 'paymentMethod.id') === 'crypto'
 

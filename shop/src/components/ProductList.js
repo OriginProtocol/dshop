@@ -48,7 +48,7 @@ const ProductList = ({ products }) => {
                 {product.title}
               </Link>
               <div className="price">
-                {formatPrice(product.price)}
+                {formatPrice(product.price, { currency: config.currency })}
                 {config.freeShipping ? (
                   <span className="shipping">FREE Shipping</span>
                 ) : null}

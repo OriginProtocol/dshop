@@ -27,20 +27,25 @@ const AutoWidthImg = ({ src }) => {
 
 const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
   const [shouldClose, setShouldClose] = useState(0)
+  const [search, setSearch] = useState('')
   const { config, setActiveShop } = useConfig()
   const [{ admin }] = useStateValue()
   const redirectTo = useRedirect()
   const location = useLocation()
-  const shops = get(admin, 'shops', [])
+  const allShops = get(admin, 'shops', [])
 
   const isSuperAdmin = location.pathname.indexOf('/super-admin') === 0
   const isAdmin = location.pathname.indexOf('/admin') === 0 || isSuperAdmin
 
-  if (!shops.length || (!config.activeShop && !superAdmin)) {
+  if (!allShops.length || (!config.activeShop && !superAdmin)) {
     return null
   }
 
   const logo = config.logo ? `${config.dataSrc}${config.logo}` : ''
+
+  const shops = allShops.filter(
+    (s) => s.name.toLowerCase().indexOf(search.toLowerCase()) >= 0
+  )
 
   return (
     <Popover
@@ -63,6 +68,20 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
       }
     >
       <>
+        {allShops.length < 15 ? null : (
+          <div className="shop-search">
+            <input
+              type="search"
+              className="form-control form-control-sm"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search..."
+            />
+          </div>
+        )}
+        {shops.length > 0 ? null : (
+          <div className="pb-3 text-center muted">No results</div>
+        )}
         {shops.map((shop) => (
           <div
             className={`shop-el${
@@ -136,6 +155,11 @@ require('react-styl')(`
     max-height: calc(100vh - 5rem)
 
     padding: 1.5rem
+
+    .shop-search
+      padding-bottom: 1rem
+      border-bottom: 1px solid #dfe2e6
+      margin-bottom: 1rem
 
     .new-shop-link
       cursor: pointer

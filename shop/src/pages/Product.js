@@ -245,7 +245,7 @@ const Product = ({ history, location, match }) => {
           )}
           {onSale}
           <div className="price mb-4">
-            {formatPrice(get(variant, 'price'))}
+            {formatPrice(get(variant, 'price'), { currency: config.currency })}
             {config.freeShipping ? (
               <span className="shipping">FREE shipping</span>
             ) : null}
