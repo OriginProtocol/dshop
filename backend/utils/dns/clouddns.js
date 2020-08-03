@@ -1,7 +1,7 @@
 /**
  * DNS utilities for GCP CLoud DNS
  */
-
+const get = require('lodash/get')
 const { DNS } = require('@google-cloud/dns')
 
 const { getLogger } = require('../../utils/logger')
@@ -171,17 +171,17 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
     return
   }
 
-  const recordsRaw = await zoneObj.getRecords({ maxResults: 250 })
-  const records = recordsRaw ? recordsRaw[0] : []
-
   const changes = []
-
-  const existingCNAME = records.find(
-    (rec) => rec.name === fqSubdomain && rec.type === 'CNAME'
-  )
-  const existingTXT = records.find(
-    (rec) => rec.name === `_dnslink.${fqSubdomain}` && rec.type === 'TXT'
-  )
+  const existingCNAMERecords = await zoneObj.getRecords({
+    name: fqSubdomain,
+    type: 'CNAME'
+  })
+  const existingCNAME = get(existingCNAMERecords, '[0][0]')
+  const existingTXTRecords = await zoneObj.getRecords({
+    name: `_dnslink.${fqSubdomain}`,
+    type: 'TXT'
+  })
+  const existingTXT = get(existingTXTRecords, '[0][0]')
 
   if (existingCNAME) {
     // Update CNAME record pointing to the IPFS gateway
