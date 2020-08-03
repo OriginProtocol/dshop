@@ -26,16 +26,14 @@ function attachToQueue() {
 }
 
 /**
- * Records a credit card purchase on the blockchain by making
- * an offer on the marketplace contract.
- * Note: several processors may get started, resulting in
- * multiple jobs getting processed concurrently.
+ * Waits for a blockchain ListingCreated transaction to get confirmed,
+ * then updates the associate shop's ListingId.
  *
  * @param {Object} job: Bull job object.
  * job.data is expected to have the following fields:
- *   txHash
- *   fromAddress
- *   shopId
+ *   {string} txHash: hash of the ListingCreated tx to watch.
+ *   {string} fromAddress: Address that sent the transaction
+ *   {number} shopId: Id of the shop
  * @returns {Promise<null||{receipt: ethers.TransactionReceipt, listingId: number, offerId: number, ipfsHash: string}>}
  * @throws
  */
@@ -109,7 +107,9 @@ async function processor(job) {
       // have been mined while we were waiting for this tx to get mined).
       await shop.load()
       if (shop.listingId) {
-        log.info(`ListingId ${shop.listingId} linked to shop ${shopId} while waiting for ${txHash}.`)
+        log.info(
+          `ListingId ${shop.listingId} linked to shop ${shopId} while waiting for ${txHash}.`
+        )
       } else {
         await shop.update({ listingId: lid })
         log.info(

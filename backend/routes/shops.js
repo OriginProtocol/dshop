@@ -1311,7 +1311,7 @@ module.exports = function (router) {
         return res.json({ success: true })
       }
 
-      // Enqueue a job in the queue for waiting for the tx to get mined
+      // Enqueue a job to wait for the tx to get mined
       // and to update the shop's listingId.
       const job = await listingCreatedQueue.add({
         txHash: req.body.txHash,
