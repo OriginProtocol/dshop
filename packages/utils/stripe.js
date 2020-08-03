@@ -39,8 +39,30 @@ function validateSecretKey(key) {
   return SECRET_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))
 }
 
+/**
+ * Validate secret key
+ *
+ * @param args {object} - args
+ * @param args.publishableKey {string} - The Strie publishable key
+ * @param args.secretKey {string} - The Strie secret key
+ * @returns {boolean} - if the keys appear to be valid
+ */
+function validateStripeKeys({ publishableKey, secretKey }) {
+  if (!publishableKey || !secretKey) {
+    return false
+  }
+
+  // Make sure they're not a mix of live and test keys
+  if (publishableKey.includes('live') && !secretKey.includes('live')) {
+    return false
+  }
+
+  return validatePublishableKey(publishableKey) && validateSecretKey(secretKey)
+}
+
 module.exports = {
   normalizeDescriptor,
   validatePublishableKey,
-  validateSecretKey
+  validateSecretKey,
+  validateStripeKeys
 }

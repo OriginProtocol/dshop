@@ -2,7 +2,11 @@ import React, { useReducer } from 'react'
 
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
-import { validatePublishableKey, validateSecretKey } from '@origin/utils/stripe'
+import {
+  validateStripeKeys,
+  validatePublishableKey,
+  validateSecretKey
+} from '@origin/utils/stripe'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConnectModal from './_ConnectModal'
@@ -30,6 +34,19 @@ const validate = (state) => {
 
   if (!state.stripeKey || !validatePublishableKey(state.stripeKey)) {
     newState.stripeKeyError = 'Client key is required'
+  }
+
+  // Validate them as a pair
+  if (
+    !newState.stripeKeyError &&
+    !newState.stripeBackendError &&
+    !validateStripeKeys({
+      publishableKey: state.stripeKey,
+      secretKey: state.stripeBackend
+    })
+  ) {
+    newState.stripeKeyError = "Stripe keys don't match"
+    newState.stripeBackendError = "Stripe keys don't match"
   }
 
   const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))

@@ -4,10 +4,7 @@ const bodyParser = require('body-parser')
 const randomstring = require('randomstring')
 const Stripe = require('stripe')
 
-const {
-  validatePublishableKey,
-  validateSecretKey
-} = require('@origin/utils/stripe')
+const { validateStripeKeys } = require('@origin/utils/stripe')
 
 const { Shop, ExternalPayment, Network } = require('../models')
 const { authShop } = require('./_auth')
@@ -201,7 +198,12 @@ module.exports = function (router) {
     let valid = false
     const { stripeKey, stripeBackend } = req.body
 
-    if (validatePublishableKey(stripeKey) && validateSecretKey(stripeBackend)) {
+    if (
+      validateStripeKeys({
+        publishableKey: stripeKey,
+        secretKey: stripeBackend
+      })
+    ) {
       try {
         const stripe = Stripe(stripeBackend)
 
@@ -211,7 +213,6 @@ module.exports = function (router) {
       } catch (err) {
         log.error('Failed to verify stripe credentials')
         log.debug(err)
-        valid = false
       }
     }
 
