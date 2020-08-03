@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "lodash": "^4.17.19",
-    "logplease": "^1.2.15"
+    "logplease": "^1.2.15",
+    "@origin/utils": "^0.1.0"
   },
   "devDependencies": {
     "eslint": "7.6.0",

@@ -4,6 +4,8 @@ const expect = chai.expect
 const { getOrCreateTestNetwork } = require('./utils')
 const { getText, get, post, getIpfsHashFromBytes32 } = require('../utils/_ipfs')
 
+const IPFS_TEST_TIMEOUT = 500 // 500msec
+
 describe('IPFS Utils', () => {
   let network, data1, data1Hash, data2, data2Hash
 
@@ -24,13 +26,13 @@ describe('IPFS Utils', () => {
   })
 
   it('should getText', async () => {
-    const data1Text = await getText(network.ipfs, data1Hash, 1000)
+    const data1Text = await getText(network.ipfs, data1Hash, IPFS_TEST_TIMEOUT)
 
     expect(data1Text).to.be.equal(JSON.stringify(data1))
   })
 
   it('should get', async () => {
-    const data2Json = await get(network.ipfs, data2Hash, 1000)
+    const data2Json = await get(network.ipfs, data2Hash, IPFS_TEST_TIMEOUT)
 
     expect(data2Json).to.be.a('object')
     expect(data2Json.name).to.be.equal('data2')
@@ -47,7 +49,7 @@ describe('IPFS Utils', () => {
     // Request a non-existent yet piece of content - we expect a timeout.
     let failure = false
     try {
-      await get(network.ipfs, expectedData3Hash, 1000)
+      await get(network.ipfs, expectedData3Hash, IPFS_TEST_TIMEOUT)
     } catch (e) {
       failure = true
     }
@@ -58,7 +60,7 @@ describe('IPFS Utils', () => {
     expect(data3Hash).to.be.equal(expectedData3Hash)
 
     // Request the content again. This time it should work.
-    const data3Json = await get(network.ipfs, data3Hash, 1000)
+    const data3Json = await get(network.ipfs, data3Hash, IPFS_TEST_TIMEOUT)
     expect(data3Json).to.be.a('object')
     expect(data3Json.name).to.be.equal('data3')
   })
