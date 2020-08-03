@@ -264,20 +264,14 @@ const PaymentSettings = () => {
         {connectModal === 'stripe' && (
           <StripeModal
             onClose={onCloseModal}
-            initialConfig={{
-              ...config,
-              ...shopConfig
-            }}
+            initialConfig={{ ...config, ...shopConfig }}
           />
         )}
         {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
         {connectModal === 'paypal' && (
           <PayPalModal
             onClose={onCloseModal}
-            initialConfig={{
-              ...config,
-              ...shopConfig
-            }}
+            initialConfig={{ ...config, ...shopConfig }}
           />
         )}
 

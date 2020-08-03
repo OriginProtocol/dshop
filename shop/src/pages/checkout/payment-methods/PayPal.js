@@ -95,16 +95,11 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
       )
 
       await post('/paypal/capture', {
-        body: JSON.stringify({
-          orderId: orderId
-        })
+        body: JSON.stringify({ orderId: orderId })
       })
 
       delete localStorage[`paymentIntent${intentId}`]
-      onChange({
-        tx: encryptedData.hash,
-        encryptedData
-      })
+      onChange({ tx: encryptedData.hash, encryptedData })
     } catch (err) {
       console.error(err)
       setError('Something went wrong. Please try again later.')
@@ -115,13 +110,11 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
 
   useEffect(() => {
     if (!intentId) return
-
     capturePayment()
   }, [])
 
   useEffect(() => {
     if (loading || !submit) return
-
     createOrderAndRedirect()
   }, [submit, loading, encryptedData])
 
@@ -157,7 +150,13 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
         />
         PayPal
       </label>
-      {!submitError ? null : (
+      {!submitError ? (
+        !isSelected ? null : (
+          <div style={{ margin: '-0.5rem 1rem 1rem 2.25rem' }}>
+            You will be redirected to PayPal to complete payment
+          </div>
+        )
+      ) : (
         <div className="invalid-feedback px-3 mb-3 d-block">{submitError}</div>
       )}
     </>

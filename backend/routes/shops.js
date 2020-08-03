@@ -880,7 +880,7 @@ module.exports = function (router) {
       if (req.body.paypal) {
         log.info(`Shop ${shopId} - Registering PayPal webhook`)
         await paypalUtils.deregisterWebhook(shopId, existingConfig)
-        const { webhookId } = await paypalUtils.registerWebhooks(
+        const result = await paypalUtils.registerWebhooks(
           shopId,
           {
             ...existingConfig,
@@ -888,7 +888,7 @@ module.exports = function (router) {
           },
           netConfig.backendUrl
         )
-        additionalOpts.paypalWebhookId = webhookId
+        additionalOpts.paypalWebhookId = result.webhookId
       } else if (existingConfig.paypal) {
         await paypalUtils.deregisterWebhook(shopId, existingConfig)
         additionalOpts.paypalWebhookId = null
@@ -913,6 +913,11 @@ module.exports = function (router) {
         'mailgunSmtpPort',
         'mailgunSmtpServer',
         'password',
+        'paypal',
+        'paypalClientId',
+        'paypalClientSecret',
+        'paypalWebhookHost',
+        'paypalWebhookId',
         'pgpPrivateKey',
         'pgpPrivateKeyPass',
         'pgpPublicKey',
