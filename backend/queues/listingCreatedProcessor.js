@@ -59,18 +59,6 @@ async function processor(job) {
       throw new Error(`Failed loading shop with id ${shopId}`)
     }
 
-    // No need to wait for the transaction in case a listingId is already
-    // linked to the shop. Perhaps the user submitted by mistake multiple
-    // transactions. Whichever transaction gets mined first takes precedence
-    // and its listing id gets linked to the shop.
-    if (shop.listingId !== undefined) {
-      log.info(
-        `Shop ${shopId} already linked to listingId ${shop.listingId}. No need to wait for tx.`
-      )
-      queueLog(100, 'Found existing listing Id for shop')
-      return null
-    }
-
     const network = await Network.findOne({
       where: { networkId: shop.networkId, active: true }
     })
@@ -117,13 +105,17 @@ async function processor(job) {
         listingId: lid,
         jobId
       })
-      // Update the shop.
-      await shop.update({
-        listingId: lid
-      })
-      log.info(
-        `Shop ${shopId}: tx ${txHash} mined, updated listingId to ${lid}`
-      )
+      // Check the shop still does not have a listingId (a concurrent ListingCreated tx could
+      // have been mined while we were waiting for this tx to get mined).
+      await shop.load()
+      if (shop.listingId) {
+        log.info(`ListingId ${shop.listingId} linked to shop ${shopId} while waiting for ${txHash}.`)
+      } else {
+        await shop.update({ listingId: lid })
+        log.info(
+          `Shop ${shopId}: tx ${txHash} mined, updated listingId to ${lid}`
+        )
+      }
     } else {
       log.info(`Shop ${shopId}: tx with hash ${txHash} was reverted.`)
       await transaction.update({
