@@ -38,8 +38,8 @@ describe('IPFS Utils', () => {
     expect(data2Json.name).to.be.equal('data2')
   })
 
-  // Know issue: this test fails if run multiples times.
-  // As a workaround, clar the IPTS service data before running it.
+  // Known issue: this test fails if run multiples times.
+  // As a workaround, clear the IPTS service data before running it.
   // TODO(franck): dynamically generate random data and figure the
   //  associated hash in order to make this test idempotent.
   it('should throw a timeout error and succeed on 2nd try', async () => {

@@ -4,7 +4,7 @@ const fetch = require('cross-fetch')
 
 const { memoizePromise } = require('@origin/utils/memoize')
 
-// NOTE: tests for methods are under src/backend/tests/ipfs.utils.test.js
+// NOTE: tests for these methods are under src/backend/tests/ipfs.utils.test.js
 
 /**
  * Takes an IPFS base58 encoded hash and returns it bytes32 encoded.
@@ -19,9 +19,9 @@ function getBytes32FromIpfsHash(hash) {
 }
 
 /**
- * Returns base58 encoded ipfs hash from bytes32 hex string.
+ * Returns base58 encoded IPFS hash from bytes32 hex string.
  * Ex.: "0x017dfd85d4f6cb4dcd715a88101f7b1f06cd1e009b2327a0809d01eb9c91f231"
- *      ->"QmNSUYVKDSvPUnRLKmuxk9diJ6yS96r1TrAXzjTiBcCLAL"
+ *      -> "QmNSUYVKDSvPUnRLKmuxk9diJ6yS96r1TrAXzjTiBcCLAL"
  *
  * @param {string} bytes32Hex
  * @returns {string}
