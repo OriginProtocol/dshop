@@ -97,7 +97,8 @@ describe('Orders', () => {
         currency: 'OGN'
       },
       finalizes: 1209600,
-      encryptedData: hash
+      encryptedData: hash,
+      paymentCode: 'code123'
     }
     offerIpfsHash = await post(network.ipfsApi, offer, true)
   })
@@ -126,7 +127,8 @@ describe('Orders', () => {
       topics: [offerCreatedSignature],
       transactionHash: '0x12345',
       blockNumber: 1,
-      mockGetEventObj: () => event
+      mockGetEventObj: () => event,
+      mockUpsert: () => event
     })
 
     expect(order).to.be.undefined
@@ -191,6 +193,7 @@ describe('Orders', () => {
     expect(order.ipfsHash).to.equal(offerIpfsHash)
     expect(order.createdBlock).to.equal(1)
     expect(order.updatedBlock).to.equal(1)
+    expect(order.paymentCode).to.equal('code123')
     expect(order.data).to.eql({
       ...data,
       ...{ offerId: fullOfferId, tx: event.transactionHash }

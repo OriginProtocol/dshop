@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 import get from 'lodash/get'
-import formatPrice from 'utils/formatPrice'
 
 import useDashboardStats from 'utils/useDashboardStats'
 
 import Chart from './_Chart'
 import Loading from 'components/Loading'
 import ProductImage from 'components/ProductImage'
+import Price from 'components/Price'
 
 const AdminDashboard = () => {
   const [sort, setSort] = useState('orders')
@@ -48,7 +48,9 @@ const AdminDashboard = () => {
         <div className="stat-item">
           <img src="images/coins.svg" className="stat-image" />
           <div className="stat-name">Total revenue</div>
-          <div className="stat-value">{formatPrice(totalRevenue)}</div>
+          <div className="stat-value">
+            <Price amount={totalRevenue} />
+          </div>
         </div>
         {/* <h5 className="ml-4">{`${formatPrice(totalRevenue * 0.05)} profit`}</h5> */}
       </div>
@@ -92,10 +94,14 @@ const AdminDashboard = () => {
                 </td>
                 <td>
                   <div className="title">{product.title}</div>
-                  <div className="price">{formatPrice(product.price)}</div>
+                  <div className="price">
+                    <Price amount={product.price} />
+                  </div>
                 </td>
                 <td className="text-center">{product.orders}</td>
-                <td className="text-center">{formatPrice(product.revenue)}</td>
+                <td className="text-center">
+                  <Price amount={product.revenue} />
+                </td>
               </tr>
             ))}
           </tbody>

@@ -1,53 +1,31 @@
 import React, { useState } from 'react'
-import { useHistory } from 'react-router-dom'
-import get from 'lodash/get'
+import { useHistory, useLocation } from 'react-router-dom'
 
 import { useStateValue } from 'data/state'
 import useBackendApi from 'utils/useBackendApi'
 import SetupLayout from 'pages/super-admin/setup/_SetupLayout'
 import ErrorText from 'pages/super-admin/setup/_ErrorText'
-import SignUp from 'pages/super-admin/setup/SignUp'
+import Link from 'components/Link'
 
-const LoginSignup = () => {
-  const [{ admin }] = useStateValue()
-  const [showSignup, setShowSignup] = useState()
-
-  const publicSignups = get(admin, 'publicSignups', false)
-  if (!publicSignups) {
-    return <Login />
-  }
-
-  return showSignup ? (
-    <SetupLayout>
-      <div className="mt-3">
-        <SignUp url="/register" />
-      </div>
-      <div className="actions">
-        Already have an account?
-        <a
-          className="ml-2"
-          href="#"
-          onClick={(e) => {
-            e.preventDefault()
-            setShowSignup(false)
-          }}
-          children="Login"
-        />
-      </div>
-    </SetupLayout>
-  ) : (
-    <Login onToggle={() => setShowSignup(true)} />
-  )
-}
-
-const Login = ({ onToggle }) => {
+const Login = ({ publicSignups }) => {
   const history = useHistory()
+  const location = useLocation()
   const [state, setState] = useState({ email: '', password: '', error: '' })
   const [, dispatch] = useStateValue()
   const { post } = useBackendApi()
 
+  const changedPw = location.search.indexOf('newPassword') > 0
+
   return (
     <SetupLayout>
+      {!changedPw ? null : (
+        <div
+          className="actions"
+          style={{ marginTop: '1rem', marginBottom: '-2rem ' }}
+        >
+          Your password has been updated. Please login to continue.
+        </div>
+      )}
       <form
         className="admin login"
         onSubmit={(e) => {
@@ -93,17 +71,16 @@ const Login = ({ onToggle }) => {
           <button type="submit">Login</button>
         </div>
       </form>
-      {!onToggle ? null : (
+      {!publicSignups ? null : (
         <div className="actions">
           Don&apos;t yet have an account?
-          <a
+          <Link className="ml-2" to="/admin/signup" children="Sign Up" />
+          <br />
+          Forgot password?
+          <Link
             className="ml-2"
-            href="#"
-            onClick={(e) => {
-              e.preventDefault()
-              onToggle()
-            }}
-            children="Sign Up"
+            to="/admin/forgot-password"
+            children="Click here"
           />
         </div>
       )}
@@ -111,15 +88,4 @@ const Login = ({ onToggle }) => {
   )
 }
 
-export default LoginSignup
-
-require('react-styl')(`
-  .admin.login
-    width: 500px
-    border-radius: 5px
-    margin: 3rem auto 1rem auto
-    box-shadow: 1px 1px 0 0 #006ee3, -1px -1px 0 0 #0e83ff
-    background-image: linear-gradient(313deg, #007cff 100%, #0076f4 7%)
-    padding: 2rem 2.5rem
-    min-height: auto
-`)
+export default Login

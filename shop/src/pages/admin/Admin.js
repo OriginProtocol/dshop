@@ -10,7 +10,7 @@ import { isLoggedIn } from 'utils/auth'
 
 import Toaster from 'components/Toaster'
 
-import Login from './Login'
+import Auth from './auth/Auth'
 import Products from './products/List'
 import EditProduct from './products/Edit'
 import Collections from './collections/List'
@@ -42,7 +42,7 @@ const Admin = () => {
   }
 
   if (!admin || !isLoggedIn(admin)) {
-    return <Login />
+    return <Auth />
   }
 
   // Force admin users to backend URL

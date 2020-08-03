@@ -1,17 +1,21 @@
-import React from 'react'
+import React, { useState } from 'react'
 import get from 'lodash/get'
 
 import Link from 'components/Link'
 import Nav from './_Nav'
 
 const StoreSelector = ({ setActiveShop, admin, newShop, setNewShop }) => {
-  const shops = get(admin, 'shops', [])
+  const allShops = get(admin, 'shops', [])
+  const [search, setSearch] = useState('')
   const superuser = get(admin, 'superuser', false)
+  const shops = allShops.filter(
+    (s) => s.name.toLowerCase().indexOf(search.toLowerCase()) >= 0
+  )
   return (
     <div className="admin">
       <Nav newShop={newShop} setNewShop={setNewShop} />
 
-      {!shops.length ? (
+      {!allShops.length ? (
         <div className="shop-chooser-empty">
           <div>
             <h1>Welcome to Dshop</h1>
@@ -29,6 +33,20 @@ const StoreSelector = ({ setActiveShop, admin, newShop, setNewShop }) => {
       ) : (
         <div className="shop-chooser">
           <h3>Select a store</h3>
+          {allShops.length < 15 ? null : (
+            <div className="shop-search">
+              <input
+                type="search"
+                className="form-control"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search..."
+              />
+            </div>
+          )}
+          {shops.length > 0 ? null : (
+            <div className="mt-4 text-center muted">No results</div>
+          )}
           <div className={`shops${shops.length > 1 ? ' multi' : ''}`}>
             {shops.map((shop) => (
               <div

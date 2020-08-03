@@ -49,7 +49,7 @@ const {
   PROVIDER,
   PROVIDER_WS,
   REDIS_URL,
-  IPFS_GATEWAY, // IFPS gateway override
+  IPFS_GATEWAY, // IPFS gateway override
   SUPPORT_EMAIL_OVERRIDE
 } = process.env
 

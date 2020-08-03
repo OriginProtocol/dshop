@@ -10,9 +10,12 @@ import CheckoutItem from './CheckoutItem'
 import Discount from './Discount'
 import Donation from './Donation'
 
-function summaryNote(note, cart) {
+function summaryNote(note, cart, currency) {
   const donation = cart.donation || 0
-  return note.replace(/\{subTotal\}/g, formatPrice(cart.subTotal + donation))
+  return note.replace(
+    /\{subTotal\}/g,
+    formatPrice(cart.subTotal + donation, { currency })
+  )
 }
 
 const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
@@ -38,7 +41,7 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
           <Caret />
         </div>
         <div>
-          <b>{formatPrice(cart.total)}</b>
+          <b>{formatPrice(cart.total, { currency: config.currency })}</b>
         </div>
       </a>
       <div className={`order-summary ${summary ? ' show' : ''}`}>
@@ -53,14 +56,16 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
           <div>
             <div>Subtotal</div>
             <div>
-              <b>{formatPrice(cart.subTotal)}</b>
+              <b>{formatPrice(cart.subTotal, { currency: config.currency })}</b>
             </div>
           </div>
           {!cart.donation ? null : (
             <div>
               <div>{`Donation${donateTo ? ` to ${donateTo}` : ''}`}</div>
               <div>
-                <b>{formatPrice(cart.donation)}</b>
+                <b>
+                  {formatPrice(cart.donation, { currency: config.currency })}
+                </b>
               </div>
             </div>
           )}
@@ -69,7 +74,10 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
             {cart.shipping ? (
               <div>
                 <b>
-                  {formatPrice(get(cart, 'shipping.amount'), { free: true })}
+                  {formatPrice(get(cart, 'shipping.amount'), {
+                    currency: config.currency,
+                    free: true
+                  })}
                 </b>
               </div>
             ) : (
@@ -84,7 +92,9 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
                 ''
               ).toUpperCase()}`}</div>
               <div>
-                <b>{formatPrice(cart.discount)}</b>
+                <b>
+                  {formatPrice(cart.discount, { currency: config.currency })}
+                </b>
               </div>
             </div>
           )}
@@ -93,14 +103,14 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
           <div>
             <div>Total</div>
             <div>
-              <b>{formatPrice(cart.total)}</b>
+              <b>{formatPrice(cart.total, { currency: config.currency })}</b>
             </div>
           </div>
         </div>
         {!config.cartSummaryNote ? null : (
           <div
             dangerouslySetInnerHTML={{
-              __html: summaryNote(config.cartSummaryNote, cart)
+              __html: summaryNote(config.cartSummaryNote, cart, config.currency)
             }}
             className="note"
           />

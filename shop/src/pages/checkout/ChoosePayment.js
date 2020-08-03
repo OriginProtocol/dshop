@@ -61,7 +61,7 @@ const ChoosePayment = () => {
   const { config } = useConfig()
   const [{ cart, referrer }, dispatch] = useStateValue()
   const [paymentState, setPaymentState] = useReducer(reducer, {
-    buttonText: `Pay ${formatPrice(cart.total)}`,
+    buttonText: `Pay ${formatPrice(cart.total, { currency: config.currency })}`,
     submit: 0
   })
 

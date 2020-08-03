@@ -5,7 +5,7 @@ const aws = require('aws-sdk')
 const fetch = require('node-fetch')
 const sharp = require('sharp')
 const get = require('lodash/get')
-
+const formatPrice = require('@origin/utils/formatPrice')
 const { getLogger } = require('../utils/logger')
 
 const { Network, Shop } = require('../models')
@@ -24,6 +24,9 @@ const orderItemTxt = require('./templates/orderItemTxt')
 const verifyEmail = require('./templates/verifyEmail')
 const verifyEmailTxt = require('./templates/verifyEmailTxt')
 
+const forgotPassEmail = require('./templates/forgotPassEmail')
+const forgotPassEmailTxt = require('./templates/forgotPassEmailTxt')
+
 const printfulOrderFailed = require('./templates/printfulOrderFailed')
 const printfulOrderFailedTxt = require('./templates/printfulOrderFailedTxt')
 
@@ -31,10 +34,6 @@ const stripeWebhookError = require('./templates/stripeWebhookError')
 const stripeWebhookErrorTxt = require('./templates/stripeWebhookErrorTxt')
 
 const log = getLogger('utils.emailer')
-
-function formatPrice(num) {
-  return `$${(num / 100).toFixed(2)}`
-}
 
 function optionsForItem(item) {
   const options = []
@@ -70,19 +69,18 @@ async function getEmailTransporterAndConfig(shop) {
       }
     }
   }
-  const network = await Network.findOne({
-    where: { networkId: shop.networkId, active: true }
-  })
-
+  const network = await Network.findOne({ where: { active: true } })
   const networkConfig = encConf.getConfig(network.config)
-
   const backendUrl = get(networkConfig, 'backendUrl', '')
-  const configJson = await getSiteConfig(`${backendUrl}/${shop.authToken}/`)
 
-  const shopConfig = encConf.getConfig(shop.config)
+  let emailServerConfig = {},
+    configJson = {},
+    shopConfig = {}
 
-  let emailServerConfig = {
-    ...shopConfig
+  if (shop) {
+    configJson = await getSiteConfig(`${backendUrl}/${shop.authToken}/`)
+    shopConfig = encConf.getConfig(shop.config)
+    emailServerConfig = { ...shopConfig }
   }
 
   if ((!shopConfig.email || shopConfig.email === 'disabled') && network) {
@@ -134,7 +132,9 @@ async function getEmailTransporterAndConfig(shop) {
   return {
     transporter,
     fromEmail:
-      SUPPORT_EMAIL_OVERRIDE || shopConfig.fromEmail || 'no-reply@ogn.app',
+      SUPPORT_EMAIL_OVERRIDE ||
+      shopConfig.fromEmail ||
+      'Origin Dshop <no-reply@ogn.app>',
     supportEmail:
       SUPPORT_EMAIL_OVERRIDE ||
       configJson.supportEmail ||
@@ -190,7 +190,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
         img: img ? `cid:${cid}` : null,
         title: item.product.title,
         quantity: item.quantity,
-        price: formatPrice(item.price),
+        price: formatPrice(item.price, { currency: data.currency }),
         options: options.length
           ? `<div class="options">${options.join(', ')}</div>`
           : ''
@@ -203,7 +203,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     return orderItemTxt({
       title: item.product.title,
       quantity: item.quantity,
-      price: formatPrice(item.price),
+      price: formatPrice(item.price, { currency: data.currency }),
       options: options.length ? `\n(${options.join(', ')})` : ''
     })
   })
@@ -257,13 +257,13 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     orderUrlAdmin: `${publicURL}/admin/orders/${cart.offerId}`,
     orderItems,
     orderItemsTxt,
-    subTotal: formatPrice(cart.subTotal),
+    subTotal: formatPrice(cart.subTotal, { currency: data.currency }),
     hasDiscount: cart.discount > 0 ? true : false,
-    discount: formatPrice(cart.discount),
+    discount: formatPrice(cart.discount, { currency: data.currency }),
     hasDonation: cart.donation > 0 ? true : false,
-    donation: formatPrice(cart.donation),
-    shipping: formatPrice(cart.shipping.amount),
-    total: formatPrice(cart.total),
+    donation: formatPrice(cart.donation, { currency: data.currency }),
+    shipping: formatPrice(cart.shipping.amount, { currency: data.currency }),
+    total: formatPrice(cart.total, { currency: data.currency }),
     shippingAddress,
     billingAddress,
     shippingMethod: cart.shipping.label,
@@ -373,6 +373,62 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
       } else {
         log.info(
           `Verification email sent, from ${message.from} to ${message.to}`
+        )
+        log.debug(msg.envelope)
+      }
+
+      resolve(message)
+    })
+  })
+}
+
+async function sendPasswordResetEmail(seller, verifyUrl, skip) {
+  const {
+    transporter,
+    fromEmail,
+    supportEmail
+  } = await getEmailTransporterAndConfig()
+  if (!transporter) {
+    log.info(`Emailer not configured. Skipping sending verification email.`)
+    return
+  }
+
+  if (process.env.NODE_ENV === 'test') {
+    log.info('Test environment. Email will be generated but not sent.')
+    skip = true
+  }
+
+  const { name, email } = seller
+
+  const vars = {
+    head,
+    name,
+    verifyUrl,
+    supportEmailPlain: supportEmail,
+    fromEmail
+  }
+
+  const htmlOutput = mjml2html(forgotPassEmail(vars), { minify: true })
+  const txtOutput = forgotPassEmailTxt(vars)
+
+  const message = {
+    from: vars.fromEmail,
+    to: `${name} <${email}>`,
+    subject: 'Reset your password',
+    html: htmlOutput.html,
+    text: txtOutput
+  }
+
+  if (skip) return message
+
+  return new Promise((resolve) => {
+    transporter.sendMail(message, (err, msg) => {
+      if (err) {
+        log.error('Error sending forgot password email', err)
+        return resolve()
+      } else {
+        log.info(
+          `Forgot password email sent, from ${message.from} to ${message.to}`
         )
         log.debug(msg.envelope)
       }
@@ -506,5 +562,6 @@ module.exports = {
   sendNewOrderEmail,
   sendVerifyEmail,
   sendPrintfulOrderFailedEmail,
-  stripeWebhookErrorEmail
+  stripeWebhookErrorEmail,
+  sendPasswordResetEmail
 }

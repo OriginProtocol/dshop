@@ -2,29 +2,34 @@ import { useState, useEffect } from 'react'
 import memoize from 'lodash/memoize'
 
 import useConfig from 'utils/useConfig'
+import formatPrice from 'utils/formatPrice'
 
 import useTokenDataProviders from 'utils/useTokenDataProviders'
 
-const ratesUrl = 'https://bridge.originprotocol.com/utils/exchange-rates'
-
-const memoFetch = memoize(async function (url) {
-  return fetch(url).then((raw) => raw.json())
+const memoFetch = memoize(async function (url, body = {}) {
+  return fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(body)
+  }).then((raw) => raw.json())
 })
 
-function usePrice() {
+function usePrice(targetCurrency = 'USD') {
   const [exchangeRates, setRates] = useState({})
   const { config } = useConfig()
 
   const { tokenDataProviders } = useTokenDataProviders()
 
   async function fetchExchangeRates() {
-    let json = await memoFetch(ratesUrl)
+    let json = await memoFetch(
+      `${config.backend}/exchange-rates?target=${targetCurrency}`
+    )
+    json.USD = 1
     const acceptedTokens = config.acceptedTokens || []
 
     // Find tokens that don't have rates and look them up by contract address
-    const withoutRates = acceptedTokens.filter((token) => {
-      return !json[token.name] && token.address
-    })
+    const withoutRates = acceptedTokens.filter(
+      (token) => !json[token.name] && token.address
+    )
     if (withoutRates.length) {
       const rates = await tokenDataProviders.reduce(async (rates, provider) => {
         const filteredTokens = withoutRates.filter((token) =>
@@ -57,13 +62,17 @@ function usePrice() {
   }, [])
 
   function toTokenPrice(fiat, token) {
-    if (!exchangeRates[token]) return ''
-    return String((fiat / 100) * exchangeRates[token]).substr(0, 6)
+    const tokenPriceUsd = exchangeRates[token]
+    if (!tokenPriceUsd || !exchangeRates[targetCurrency]) return ''
+    const tokenPrice = tokenPriceUsd / exchangeRates[targetCurrency]
+    return String((fiat / 100) * tokenPrice).substr(0, 6)
   }
 
   function toFiatPrice(value, token) {
-    if (!exchangeRates[token]) return ''
-    return ((value * 1) / exchangeRates[token]).toFixed(2)
+    const tokenPriceUsd = exchangeRates[token]
+    if (!tokenPriceUsd || !exchangeRates[targetCurrency]) return ''
+    const tokenPrice = tokenPriceUsd / exchangeRates[targetCurrency]
+    return formatPrice(value / tokenPrice, { currency: targetCurrency })
   }
 
   return {

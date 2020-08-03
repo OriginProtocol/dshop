@@ -93,7 +93,11 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
       variantImages = {},
       printfulSyncIds = {}
     syncProduct.sync_variants.forEach((syncVariant, idx) => {
-      const vId = syncVariant.product.variant_id
+      const vId = get(syncVariant, 'product.variant_id')
+      if (!vId) {
+        log.warn(`Could not find variant on product ${row.id}`)
+        return
+      }
       printfulSyncIds[vId] = syncVariant.id
       const v = product.variants.find((v) => v.id === vId)
       if (!v) {
@@ -138,7 +142,11 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
 
     const variants = syncProduct.sync_variants
       .map((variant, idx) => {
-        const id = variant.product.variant_id
+        const id = get(variant, 'product.variant_id')
+        if (!id) {
+          log.warn(`Variant not found on sync variant ${get(variant, 'id')}`)
+          return
+        }
         const v = product.variants.find((v) => v.id === id)
         if (!v) {
           return

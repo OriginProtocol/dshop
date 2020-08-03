@@ -734,8 +734,13 @@ module.exports = function (router) {
     authRole('admin'),
     paypalUtils.validateMiddleware,
     async (req, res) => {
+      // Load the network config.
+      const network = await Network.findOne({ where: { active: true } })
+      const netConfig = getConfig(network.config)
+
       const jsonConfig = pick(
         req.body,
+        'currency',
         'metaDescription',
         'css',
         'emailSubject',
@@ -744,7 +749,6 @@ module.exports = function (router) {
         'discountCodes',
         'stripe',
         'stripeKey',
-        'acceptedTokens',
         'title',
         'fullTitle',
         'facebook',
@@ -756,7 +760,12 @@ module.exports = function (router) {
         'logErrors',
         'paypalClientId'
       )
-
+      const jsonNetConfig = pick(
+        req.body,
+        'acceptedTokens',
+        'customTokens',
+        'listingId'
+      )
       const shopId = req.shop.id
       log.info(`Shop ${shopId} - Saving config`)
 
@@ -766,7 +775,7 @@ module.exports = function (router) {
         req.shop.listingId = listingId
       }
 
-      if (Object.keys(jsonConfig).length || listingId) {
+      if (Object.keys(jsonConfig).length || Object.keys(jsonNetConfig).length) {
         const configFile = `${DSHOP_CACHE}/${req.shop.authToken}/data/config.json`
 
         if (!fs.existsSync(configFile)) {
@@ -777,9 +786,11 @@ module.exports = function (router) {
           const raw = fs.readFileSync(configFile).toString()
           const config = JSON.parse(raw)
           const newConfig = { ...config, ...jsonConfig }
-          if (listingId) {
-            const [netId] = listingId.split('-')
-            set(newConfig, `networks.${netId}.listingId`, listingId)
+          if (Object.keys(jsonNetConfig).length) {
+            set(newConfig, `networks.${network.networkId}`, {
+              ...get(newConfig, `networks.${network.networkId}`),
+              ...jsonNetConfig
+            })
           }
           const jsonStr = JSON.stringify(newConfig, null, 2)
           fs.writeFileSync(configFile, jsonStr)
@@ -821,10 +832,6 @@ module.exports = function (router) {
       if (req.body.fullTitle) {
         req.shop.name = req.body.fullTitle
       }
-
-      // Load the network config.
-      const network = await Network.findOne({ where: { active: true } })
-      const netConfig = getConfig(network.config)
 
       const additionalOpts = {}
 
@@ -889,10 +896,39 @@ module.exports = function (router) {
 
       // Save the config in the DB.
       log.info(`Shop ${shopId} - Saving config in the DB.`)
-      const newConfig = setConfig(
+      const shopConfigFields = pick(
         { ...existingConfig, ...req.body, ...additionalOpts },
-        req.shop.config
+        'awsAccessKey',
+        'awsAccessSecret',
+        'awsRegion',
+        'bigQueryCredentials',
+        'bigQueryTable',
+        'dataUrl',
+        'deliveryApi',
+        'email',
+        'hostname',
+        'listener',
+        'mailgunSmtpLogin',
+        'mailgunSmtpPassword',
+        'mailgunSmtpPort',
+        'mailgunSmtpServer',
+        'password',
+        'pgpPrivateKey',
+        'pgpPrivateKeyPass',
+        'pgpPublicKey',
+        'printful',
+        'publicUrl',
+        'sendgridApiKey',
+        'sendgridPassword',
+        'sendgridUsername',
+        'stripeBackend',
+        'stripeWebhookSecret',
+        'upholdApi',
+        'upholdClient',
+        'upholdSecret',
+        'web3Pk'
       )
+      const newConfig = setConfig(shopConfigFields, req.shop.config)
       req.shop.config = newConfig
       req.shop.hasChanges = true
       await req.shop.save()
