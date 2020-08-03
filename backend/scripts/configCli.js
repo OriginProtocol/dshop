@@ -13,9 +13,11 @@
 //  - set a shop's config value
 //  node configCli.js --networkId=1 --shopName=<shopName> --operation=get --key=<key> --value=<value>
 //  - get a shop's raw config
-//  node configCli.js --networkId=1 --shopName=<shopName> --operation=getraw
+//  node configCli.js --networkId=1 --shopName=<shopName> --operation=getRaw
 //  - set a shop's raw config
-//  node configCli.js --networkId=1 --shopName=<shopName> --operation=setraw --value=<value>
+//  node configCli.js --networkId=1 --shopName=<shopName> --operation=setRaw --value=<value>
+//  - check a shop's config
+//  node configCli.js --networkId=1 --allShops --operation=checkConfig
 //
 
 const Stripe = require('stripe')
@@ -188,6 +190,16 @@ async function checkStripeConfig(network, shops) {
   }
 }
 
+async function checkShopConfig(shops) {
+  for (const shop of shops) {
+    try {
+      getConfig(shop.config)
+    } catch (e) {
+      log.error(`Failed checking config for shop ${shop.id} ${shop.name}: ${e}`)
+    }
+  }
+}
+
 async function _getNetwork(config) {
   const network = await Network.findOne({
     where: { networkId: config.networkId, active: true }
@@ -233,14 +245,16 @@ async function main(config) {
     await getKey(shops, config.key)
   } else if (config.operation === 'set') {
     await setKey(shops, config.key, config.value)
-  } else if (config.operation === 'setraw') {
+  } else if (config.operation === 'setRaw') {
     await setRawConfig(shops, config.value)
-  } else if (config.operation === 'getraw') {
+  } else if (config.operation === 'getRaw') {
     await getRawConfig(shops)
   } else if (config.operation === 'del') {
     await delKey(shops, config.key, config.value)
   } else if (config.operation === 'checkStripeConfig') {
     await checkStripeConfig(network, shops)
+  } else if (config.operation === 'checkConfig') {
+    await checkShopConfig(shops)
   } else {
     throw new Error(`Unsupported operation ${config.operation}`)
   }
