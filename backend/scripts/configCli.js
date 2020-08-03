@@ -12,6 +12,10 @@
 //  node configCli.js --networkId=1 --allShops --operation=get --key=<key>
 //  - set a shop's config value
 //  node configCli.js --networkId=1 --shopName=<shopName> --operation=get --key=<key> --value=<value>
+//  - get a shop's raw config
+//  node configCli.js --networkId=1 --shopName=<shopName> --operation=getraw
+//  - set a shop's raw config
+//  node configCli.js --networkId=1 --shopName=<shopName> --operation=setraw --value=<value>
 //
 
 const Stripe = require('stripe')
@@ -20,7 +24,7 @@ const { Network, Shop } = require('../models')
 const { getLogger } = require('../utils/logger')
 const log = getLogger('cli')
 
-const { getConfig, setConfig } = require('../utils/encryptedConfig')
+const { getConfig, setConfig, decrypt } = require('../utils/encryptedConfig')
 
 const program = require('commander')
 
@@ -96,6 +100,33 @@ async function setKey(shops, key, val) {
   shopConfig[key] = val
   shop.config = setConfig(shopConfig, shop.config)
   await shop.save()
+  log.info('Done')
+}
+
+async function setRawConfig(shops, val) {
+  if (shops.length > 1) {
+    throw new Error('Set operation not supported on more than 1 shop.')
+  }
+  const shop = shops[0]
+  if (!val) {
+    throw new Error('Argument value must be defined')
+  }
+  log.info(`Setting shop's raw config...`)
+  const shopConfig = val
+  shop.config = setConfig(shopConfig, shop.config)
+  await shop.save()
+  log.info('Done')
+}
+
+async function getRawConfig(shops) {
+  if (shops.length > 1) {
+    throw new Error('Set operation not supported on more than 1 shop.')
+  }
+  const shop = shops[0]
+  log.info('Shop Raw Config:')
+
+  const [iv, configRaw] = shop.config.split(':')
+  log.info(decrypt(Buffer.from(iv, 'hex'), configRaw))
   log.info('Done')
 }
 
@@ -202,6 +233,10 @@ async function main(config) {
     await getKey(shops, config.key)
   } else if (config.operation === 'set') {
     await setKey(shops, config.key, config.value)
+  } else if (config.operation === 'setraw') {
+    await setRawConfig(shops, config.value)
+  } else if (config.operation === 'getraw') {
+    await getRawConfig(shops)
   } else if (config.operation === 'del') {
     await delKey(shops, config.key, config.value)
   } else if (config.operation === 'checkStripeConfig') {
