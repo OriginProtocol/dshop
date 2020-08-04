@@ -64,14 +64,8 @@ function getIV(shopId) {
  * @returns {string} - encrypted data
  */
 function encrypt(iv, str) {
-  const msg = []
-
   const cypher = crypto.createCipheriv(CYPHER_ALGO, ENCRYPTION_KEY_HASH, iv)
-
-  msg.push(cypher.update(str, 'binary', 'hex'))
-  msg.push(cypher.final('hex'))
-
-  return msg.join('')
+  return cypher.update(str, 'utf8', 'base64') + cypher.final('base64')
 }
 
 /**
@@ -93,14 +87,8 @@ function encryptJSON(iv, obj) {
  * @returns {string} - decrypted data
  */
 function decrypt(iv, enc) {
-  const msg = []
-
   const decypher = crypto.createDecipheriv('aes256', ENCRYPTION_KEY_HASH, iv)
-
-  msg.push(decypher.update(enc, 'hex', 'binary'))
-  msg.push(decypher.final('binary'))
-
-  return msg.join('')
+  return decypher.update(enc, 'base64', 'utf8') + decypher.final('utf8')
 }
 
 /**
