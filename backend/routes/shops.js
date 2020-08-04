@@ -796,7 +796,8 @@ module.exports = function (router) {
         'youtube',
         'about',
         'logErrors',
-        'paypalClientId'
+        'paypalClientId',
+        'offlinePaymentMethods'
       )
       const jsonNetConfig = pick(
         req.body,
@@ -811,6 +812,14 @@ module.exports = function (router) {
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
         listingId = req.body.listingId
         req.shop.listingId = listingId
+      }
+
+      // Offline payments
+      if (req.body.offlinePaymentMethods) {
+        jsonConfig.offlinePaymentMethods = await movePaymentMethodImages(
+          req.body.offlinePaymentMethods,
+          req.shop.authToken
+        )
       }
 
       if (Object.keys(jsonConfig).length || Object.keys(jsonNetConfig).length) {
@@ -916,18 +925,15 @@ module.exports = function (router) {
         additionalOpts.printfulWebhookSecret = ''
       }
 
-      // Offline payments
-      if (req.body.offlinePaymentMethods) {
-        additionalOpts.offlinePaymentMethods = await movePaymentMethodImages(
-          req.body.offlinePaymentMethods,
-          req.shop.authToken
-        )
+      // Duplicate `offlinePaymentMethods` to encrypted config
+      if (jsonConfig.offlinePaymentMethods) {
+        additionalOpts.offlinePaymentMethods = jsonConfig.offlinePaymentMethods
       }
 
       // PayPal
       if (req.body.paypal) {
         log.info(`Shop ${shopId} - Registering PayPal webhook`)
-        if (existingConfig.paypalWebhookId) {
+        if (existingConfig.paypal && existingConfig.paypalWebhookId) {
           await paypalUtils.deregisterWebhook(shopId, existingConfig)
         }
         const result = await paypalUtils.registerWebhooks(
@@ -962,6 +968,7 @@ module.exports = function (router) {
         'mailgunSmtpPassword',
         'mailgunSmtpPort',
         'mailgunSmtpServer',
+        'offlinePaymentMethods',
         'password',
         'paypal',
         'paypalClientId',

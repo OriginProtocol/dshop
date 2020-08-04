@@ -112,14 +112,14 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
   }
 
   useEffect(() => {
-    if (!intentId) return
+    if (!intentId || !isSelected) return
     capturePayment()
   }, [])
 
   useEffect(() => {
-    if (loading || !submit) return
+    if (loading || !submit || !isSelected) return
     createOrderAndRedirect()
-  }, [submit, loading, encryptedData])
+  }, [submit, loading, encryptedData, isSelected])
 
   useEffect(() => {
     if (isSelected && !loading && disabled && !submit) {

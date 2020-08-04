@@ -33,7 +33,7 @@ const PaymentSettings = () => {
   const { listing } = useListingData(state.listingId)
 
   useEffect(() => {
-    const { listingId, currency } = config
+    const { listingId, currency, offlinePaymentMethods } = config
     const acceptedTokens = config.acceptedTokens || []
     const configCustomTokens = config.customTokens || []
     const customTokens = uniqBy(
@@ -44,16 +44,10 @@ const PaymentSettings = () => {
       acceptedTokens,
       customTokens,
       listingId,
-      currency: currency || 'USD'
+      currency: currency || 'USD',
+      offlinePaymentMethods
     })
   }, [config.activeShop])
-
-  useEffect(() => {
-    if (shopConfig) {
-      const { offlinePaymentMethods } = shopConfig
-      setState({ offlinePaymentMethods })
-    }
-  }, [shopConfig && shopConfig.offlinePaymentMethods])
 
   const [connectModal, setShowConnectModal] = useState(false)
   const [saving, setSaving] = useState(false)

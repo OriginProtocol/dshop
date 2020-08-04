@@ -8,7 +8,6 @@ import formatPrice from 'utils/formatPrice'
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 import { Countries } from '@origin/utils/Countries'
-import useShopConfig from 'utils/useShopConfig'
 
 import Link from 'components/Link'
 
@@ -61,7 +60,6 @@ const reducer = (state, newState) => ({ ...state, ...newState })
 const ChoosePayment = () => {
   const history = useHistory()
   const { config } = useConfig()
-  const { shopConfig } = useShopConfig()
   const [{ cart, referrer }, dispatch] = useStateValue()
   const [paymentState, setPaymentState] = useReducer(reducer, {
     buttonText: `Pay ${formatPrice(cart.total, { currency: config.currency })}`,
@@ -84,11 +82,9 @@ const ChoosePayment = () => {
   const input = formInput(formState, (newState) => setFormState(newState))
 
   const paymentMethods = get(config, 'paymentMethods', [])
-  const offlinePaymentMethods = get(
-    shopConfig,
-    'offlinePaymentMethods',
-    []
-  ).filter((method) => !method.disabled)
+  const offlinePaymentMethods = get(config, 'offlinePaymentMethods', []).filter(
+    (method) => !method.disabled
+  )
 
   useEffect(() => {
     if (paymentMethods.length === 1) {

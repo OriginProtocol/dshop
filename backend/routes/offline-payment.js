@@ -2,7 +2,7 @@ const randomstring = require('randomstring')
 
 const get = require('lodash/get')
 
-const { authSellerAndShop, authShop } = require('./_auth')
+const { authShop } = require('./_auth')
 const { Network } = require('../models')
 const { getConfig } = require('../utils/encryptedConfig')
 const makeOffer = require('./_makeOffer')
@@ -12,6 +12,8 @@ module.exports = function (router) {
     '/offline-payments/order',
     authShop,
     async (req, res, next) => {
+      const { encryptedData, methodId } = req.body
+
       const network = await Network.findOne({
         where: { networkId: req.shop.networkId }
       })
@@ -19,11 +21,13 @@ module.exports = function (router) {
       const shopConfig = getConfig(req.shop.config)
       const web3Pk = shopConfig.web3Pk || networkConfig.web3Pk
 
+      // NOTE: `offlinePaymentMethods` values is duplicated
+      // in both `config.json` and encrypted shop's config
       const availableOfflinePaymentMethods = get(
         shopConfig,
         'offlinePaymentMethods',
         []
-      ).filter((method) => !method.disabled)
+      ).filter((method) => method.id === methodId && !method.disabled)
 
       if (!web3Pk || !availableOfflinePaymentMethods.length) {
         return res.status(400).send({
@@ -32,7 +36,6 @@ module.exports = function (router) {
         })
       }
 
-      const { encryptedData } = req.body
       if (!encryptedData) {
         return res.json({ success: false, message: 'Missing order data' })
       }
@@ -44,9 +47,4 @@ module.exports = function (router) {
     },
     makeOffer
   )
-
-  router.put('/offline-payments', authSellerAndShop, (req, res) => {
-    //
-    return res.status(200)
-  })
 }

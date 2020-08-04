@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
@@ -11,9 +11,11 @@ const OfflinePayment = ({
   encryptedData,
   submit,
   loading,
+  disabled,
   paymentMethod
 }) => {
   const [{ cart }, dispatch] = useStateValue()
+  const [submitError, setError] = useState()
 
   const selectedMethodId = get(cart, 'paymentMethod.id')
 
@@ -24,12 +26,12 @@ const OfflinePayment = ({
   const { post } = useBackendApi({ authToken: true })
 
   useEffect(() => {
-    if (isSelected) {
+    if (isSelected && !loading && disabled && !submit) {
       onChange({
         disabled: false
       })
     }
-  }, [isSelected])
+  }, [isSelected, disabled, loading, submit])
 
   const dataHash = get(encryptedData, 'hash')
 
@@ -39,10 +41,13 @@ const OfflinePayment = ({
       loading: true
     })
 
+    setError(null)
+
     try {
       const data = await post('/offline-payments/order', {
         body: JSON.stringify({
-          encryptedData: dataHash
+          encryptedData: dataHash,
+          methodId
         }),
         method: 'POST',
         suppressError: true,
@@ -57,15 +62,16 @@ const OfflinePayment = ({
           disabled: false
         })
       } else {
-        throw new Error(JSON.parse(data).message)
+        setError(JSON.parse(data).message)
+        onChange({
+          loading: false,
+          submit: 0,
+          disabled: false
+        })
       }
     } catch (err) {
       console.error(err)
-      // dispatch({
-      //   type: 'toast',
-      //   message: 'Failed to place order. Contact support.',
-      //   style: 'error'
-      // })
+      setError('Payment server error. Please try again later.')
       onChange({
         loading: false,
         submit: 0,
@@ -100,6 +106,9 @@ const OfflinePayment = ({
         />
         {paymentMethod.label}
       </label>
+      {!submitError ? null : (
+        <div className="invalid-feedback px-3 mb-3 d-block">{submitError}</div>
+      )}
       {!isSelected ? null : (
         <div className="offline-payment-details">
           {paymentMethod.details}
