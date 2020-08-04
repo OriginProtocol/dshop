@@ -351,6 +351,9 @@ export default ShopAppearance
 
 require('react-styl')(`
   .shop-settings
+    h4
+      font-size: 18px
+      font-weight: bold
     .upload-file
       max-width: 100%
     .add

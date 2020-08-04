@@ -9,7 +9,7 @@ import ProductImage from 'components/ProductImage'
 import Paginate from 'components/Paginate'
 import NoItems from 'components/NoItems'
 import Link from 'components/Link'
-import formatPrice from 'utils/formatPrice'
+import Price from 'components/Price'
 import sortProducts from 'utils/sortProducts'
 import useCollections from 'utils/useCollections'
 
@@ -120,7 +120,9 @@ const AdminProducts = () => {
                   <div className="title">{product.title}</div>
                 </td>
                 <td>
-                  <div className="price">{formatPrice(product.price)}</div>
+                  <div className="price">
+                    <Price amount={product.price} />
+                  </div>
                 </td>
                 <td>{getCollections(product)}</td>
                 <td>

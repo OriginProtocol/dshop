@@ -82,26 +82,32 @@ async function handleLog({
   const eventObj = getEventObjFn(rawEvent)
 
   const listingId = `${networkId}-${contractVersion}-${eventObj.listingId}`
-  log.info(`Event ${eventObj.eventName} for listing Id ${listingId}`)
+  log.info(`Received event ${eventObj.eventName} for listing ${listingId}`)
 
-  // The listener calls handleLog for any event emitted by the marketplace.
-  // Skip processing any event that is not dshop related.
+  // Lookup the Dshop associated with the event, if any.
   const shop = await Shop.findOne({ where: { listingId } })
-  if (!shop) {
-    log.debug(`Event is not for a registered dshop. Skipping.`)
-    return
-  }
 
-  // Persist the event in the database.
+  // Note: we persist all marketplace events in the DB, not only dshop related ones.
+  // This is to facilitate troubleshooting.
   const upsertEventFn = isTest && mockUpsert ? mockUpsert : upsertEvent
   const event = await upsertEventFn({
     web3,
-    shopId: shop.id,
+    shopId: shop ? shop.id : null,
     networkId,
     event: rawEvent
   })
 
-  // Process the event.
+  // We only processes the event if it is associated with a Dshop.
+  if (!shop) {
+    log.info(
+      `Event ${eventObj.eventName} on listing ${listingId} is not for a registered shop. Skipping.`
+    )
+    return
+  }
+
+  log.info(
+    `Processing event ${eventObj.eventName} on listing ${listingId} for shop ${shop.id}`
+  )
   await processDShopEvent({ event, shop })
 }
 
@@ -266,6 +272,10 @@ async function _processEventForNewOrder({
     throw new Error('No encrypted data found')
   }
 
+  // Extract the optional paymentCode data from the offer.
+  // It is populated for example in case of a Credit Card payment.
+  const paymentCode = offer.paymentCode
+
   // Load the encrypted data from IPFS and decrypt it.
   log.info(`Fetching encrypted offer data with hash ${encryptedHash}`)
   const encryptedDataJson = await getText(
@@ -298,7 +308,8 @@ async function _processEventForNewOrder({
     createdAt: new Date(event.timestamp * 1000),
     createdBlock: event.blockNumber,
     ipfsHash: event.ipfsHash,
-    encryptedIpfsHash: encryptedHash
+    encryptedIpfsHash: encryptedHash,
+    paymentCode
   }
   if (data.referrer) {
     orderObj.referrer = util.toChecksumAddress(data.referrer)

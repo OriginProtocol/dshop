@@ -39,6 +39,7 @@ const CONTRACTS = {
 const NODE_ENV = process.env.NODE_ENV
 const IS_PROD = NODE_ENV === 'production'
 const IS_TEST = NODE_ENV === 'test'
+const IS_DEV = NODE_ENV === 'development' || (!IS_PROD && !IS_TEST)
 
 const {
   SESSION_SECRET = randomstring.generate(),
@@ -48,7 +49,7 @@ const {
   PROVIDER,
   PROVIDER_WS,
   REDIS_URL,
-  IPFS_GATEWAY, // IFPS gateway override
+  IPFS_GATEWAY, // IPFS gateway override
   SUPPORT_EMAIL_OVERRIDE
 } = process.env
 
@@ -68,6 +69,7 @@ module.exports = {
   NODE_ENV,
   IS_PROD,
   IS_TEST,
+  IS_DEV,
   SESSION_SECRET,
   WEB3_PK,
   PROVIDER_WS,

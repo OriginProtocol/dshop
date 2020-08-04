@@ -30,11 +30,11 @@ async function createShop({
   // Store name must only contain alpha-numeric characters and space.
   // TODO: Add support for UTF_8 characters. This requires changes throughout the stack
   //       and in particular encoding/decoding shop name in URLs.
-  if (!name.match(/^[a-zA-Z0-9 ]+$/)) {
+  if (!name.match(/^[a-zA-Z0-9\-' ]+$/)) {
     return {
       status: 400,
       error:
-        'Shop name contains non alphanumeric character. Please only use [a-zA-Z0-9 ] characters.'
+        'The shop name contains invalid character. Only alphabetical characters, numbers, space, hyphen and apostrophe are allowed.'
     }
   }
   if (listingId && !String(listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {

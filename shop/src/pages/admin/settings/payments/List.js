@@ -1,12 +1,15 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
+import uniqBy from 'lodash/uniqBy'
 
+import { AllCurrencies } from 'data/Currencies'
 import useShopConfig from 'utils/useShopConfig'
 import useSetState from 'utils/useSetState'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import useListingData from 'utils/useListingData'
+import DefaultTokens from 'data/defaultTokens'
 import { useStateValue } from 'data/state'
 
 import * as Icons from 'components/icons/Admin'
@@ -14,6 +17,7 @@ import Tabs from '../_Tabs'
 import Web3Modal from './Web3Modal'
 import StripeModal from './StripeModal'
 import UpholdModal from './UpholdModal'
+import PayPalModal from './PayPalModal'
 import ContractSettings from './ContractSettings'
 import OfflinePayments from './OfflinePayments'
 import DisconnectModal from './_DisconnectModal'
@@ -29,8 +33,19 @@ const PaymentSettings = () => {
   const { listing } = useListingData(state.listingId)
 
   useEffect(() => {
-    const { listingId, acceptedTokens } = config
-    setState({ listingId, acceptedTokens })
+    const { listingId, currency } = config
+    const acceptedTokens = config.acceptedTokens || []
+    const configCustomTokens = config.customTokens || []
+    const customTokens = uniqBy(
+      [...acceptedTokens, ...configCustomTokens],
+      'id'
+    ).filter((t) => !DefaultTokens.map((t) => t.id).includes(t.id))
+    setState({
+      acceptedTokens,
+      customTokens,
+      listingId,
+      currency: currency || 'USD'
+    })
   }, [config.activeShop])
 
   useEffect(() => {
@@ -47,7 +62,13 @@ const PaymentSettings = () => {
   const Processors = useMemo(() => {
     if (!shopConfig) return []
 
-    const { stripeBackend, upholdApi, upholdClient, upholdSecret } = shopConfig
+    const {
+      stripeBackend,
+      upholdApi,
+      upholdClient,
+      upholdSecret,
+      paypal
+    } = shopConfig
     const stripeEnabled = !!stripeBackend
     const upholdEnabled = !!upholdApi && !!upholdClient && !!upholdSecret
 
@@ -56,7 +77,7 @@ const PaymentSettings = () => {
         id: 'stripe',
         title: 'Stripe',
         description: stripeEnabled
-          ? 'Your stripe account has been connected'
+          ? 'Your Stripe account has been connected'
           : 'Use Stripe to easily accept Visa, MasterCard, American Express and almost any other kind of credit or debit card in your shop.',
         icon: <Icons.Stripe />,
         enabled: stripeEnabled
@@ -70,6 +91,15 @@ const PaymentSettings = () => {
         icon: <Icons.Uphold />,
         enabled: upholdEnabled,
         hide: admin.superuser ? false : true
+      },
+      {
+        id: 'paypal',
+        title: 'PayPal',
+        description: paypal
+          ? 'Your PayPal account has been connected'
+          : 'Use PayPal to easily accept Visa, MasterCard, American Express and almost any other kind of credit or debit card in your shop.',
+        icon: <Icons.PayPal />,
+        enabled: paypal
       }
     ]
       .filter((processor) => !processor.hide)
@@ -109,9 +139,12 @@ const PaymentSettings = () => {
       <button type="button" className="btn btn-outline-primary">
         Cancel
       </button>
-      <button type="submit" className="btn btn-primary" disabled={saving}>
-        {saving ? 'Updating...' : 'Update'}
-      </button>
+      <button
+        type="submit"
+        className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
+        disabled={saving}
+        children={saving ? 'Updating...' : 'Update'}
+      />
     </>
   )
 
@@ -160,8 +193,11 @@ const PaymentSettings = () => {
           }
 
           dispatch({ type: 'toast', message: 'Saved OK' })
-          refetch()
-          refetchConfig()
+          dispatch({
+            type: 'setConfigSimple',
+            config: { ...config, ...shopConfig }
+          })
+          setState({ hasChanges: false })
           setSaving(false)
         } catch (err) {
           console.error(err)
@@ -174,7 +210,30 @@ const PaymentSettings = () => {
         <div className="actions">{actions}</div>
       </h3>
       <Tabs />
-      <div className="admin-payment-settings shop-settings processors-list">
+      <div className="shop-settings processors-list">
+        <div className="select-currency">
+          <h4>Store currency</h4>
+          <div>
+            <div className="description">
+              You should review any potential legal and tax considerations
+              involved with selling in a currency that is different from the one
+              associated with the country your store is located in.
+            </div>
+            <select
+              className="form-control"
+              value={state.currency}
+              onChange={(e) => setState({ currency: e.target.value })}
+            >
+              {AllCurrencies.map((currency) => (
+                <option key={currency[0]} value={currency[0]}>
+                  {currency[1]}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <h4>Integrations</h4>
         <div className="processor web3">
           <div className="icon">
             <Icons.Web3 />
@@ -213,13 +272,16 @@ const PaymentSettings = () => {
         {connectModal === 'stripe' && (
           <StripeModal
             onClose={onCloseModal}
-            initialConfig={{
-              ...config,
-              ...shopConfig
-            }}
+            initialConfig={{ ...config, ...shopConfig }}
           />
         )}
         {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
+        {connectModal === 'paypal' && (
+          <PayPalModal
+            onClose={onCloseModal}
+            initialConfig={{ ...config, ...shopConfig }}
+          />
+        )}
 
         <OfflinePayments
           onChange={setState}
@@ -238,4 +300,17 @@ const PaymentSettings = () => {
 export default PaymentSettings
 
 require('react-styl')(`
+  .shop-settings
+    .select-currency
+      margin-top: 1.5rem
+      padding-bottom: 2.5rem
+      border-bottom: 1px solid #cdd7e0
+      margin-bottom: 2rem
+      line-height: normal
+      > div
+        color: #8293a4
+        max-width: 530px
+        .description
+          font-size: 14px
+          margin-bottom: 1rem
 `)

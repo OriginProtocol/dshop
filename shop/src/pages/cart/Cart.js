@@ -9,7 +9,7 @@ import CartItem from './CartItem'
 import { useStateValue } from 'data/state'
 
 const CartItems = () => {
-  const [{ cart }, dispatch] = useStateValue()
+  const [{ cart, config }, dispatch] = useStateValue()
   const isMobile = useIsMobile()
   const lg = isMobile ? ' btn-lg' : ''
 
@@ -39,7 +39,9 @@ const CartItems = () => {
         </div>
         <div className="col-md-6 text-right mb-4">
           <div className="mb-2">
-            <b>{`Subtotal ${formatPrice(cart.subTotal)}`}</b>
+            <b>{`Subtotal ${formatPrice(cart.subTotal, {
+              currency: config.currency
+            })}`}</b>
           </div>
           <div>
             <i>Shipping & taxes calculated at checkout</i>

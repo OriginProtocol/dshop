@@ -16,6 +16,7 @@ import PayWithCrypto from './payment-methods/Crypto'
 import PayWithStripe from './payment-methods/Stripe'
 import PayWithUphold from './payment-methods/Uphold'
 import PayOffline from './payment-methods/OfflinePayment'
+import PayWithPayPal from './payment-methods/PayPal'
 import BillingAddress from './_BillingAddress'
 
 function validate(state) {
@@ -63,7 +64,7 @@ const ChoosePayment = () => {
   const { shopConfig } = useShopConfig()
   const [{ cart, referrer }, dispatch] = useStateValue()
   const [paymentState, setPaymentState] = useReducer(reducer, {
-    buttonText: `Pay ${formatPrice(cart.total)}`,
+    buttonText: `Pay ${formatPrice(cart.total, { currency: config.currency })}`,
     submit: 0
   })
 
@@ -149,6 +150,9 @@ const ChoosePayment = () => {
         )}
         {!paymentMethods.find((p) => p.id === 'uphold') ? null : (
           <PayWithUphold {...paymentState} onChange={setPaymentState} />
+        )}
+        {!paymentMethods.find((p) => p.id === 'paypal') ? null : (
+          <PayWithPayPal {...paymentState} onChange={setPaymentState} />
         )}
         {offlinePaymentMethods.map((method) => (
           <PayOffline

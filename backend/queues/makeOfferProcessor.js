@@ -15,7 +15,7 @@ const {
 } = require('../utils/_ipfs')
 const encConf = require('../utils/encryptedConfig')
 const { getLogger } = require('../utils/logger')
-const { IS_TEST } = require('../utils/const')
+const { IS_TEST, IS_DEV } = require('../utils/const')
 const { Sentry } = require('../sentry')
 const { TransactionTypes, TransactionStatuses } = require('../enums')
 
@@ -25,7 +25,7 @@ const BN = ethers.BigNumber // Ethers' BigNumber implementation.
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
 // Wait for 2 blocks confirmation before considering a tx mined.
-const NUM_BLOCKS_CONFIRMATION = IS_TEST ? 0 : 2
+const NUM_BLOCKS_CONFIRMATION = IS_TEST || IS_DEV ? 0 : 2
 
 // Gas premium.
 // We use 1% extra gas to be ahead of other transactions submitted to the network using default gas prices.
@@ -62,7 +62,7 @@ async function processor(job) {
     job.log(str)
     job.progress(progress)
   }
-  const jobId = `${get(job, 'queue.name')}-${job.id}` // Prefix with queue name since job ids are not unique across queues.
+  const jobId = `${get(job, 'queue.name', '')}-${job.id}` // Prefix with queue name since job ids are not unique across queues.
   const { shopId, encryptedData, paymentCode } = job.data
   log.info(`Creating offer for shop ${shopId}`)
   let confirmation
@@ -127,7 +127,7 @@ async function processor(job) {
     })
     if (transaction) {
       log.info(
-        `Found pending transaction ${transaction.id} job ${job.id} hash ${transaction.hash} for wallet ${walletAddress}`
+        `Found pending transaction ${transaction.id} job ${transaction.jobId} hash ${transaction.hash} for wallet ${walletAddress}`
       )
 
       // If it is not the transaction from our job. Do not try to recover it.
@@ -135,7 +135,7 @@ async function processor(job) {
       // Fail our job for now, it will get retried.
       if (transaction.jobId !== jobId) {
         throw new Error(
-          `Pending transaction is not from job ${job.id} but ${transaction.jobId}. Bailing.`
+          `Pending transaction is not from job ${jobId} but ${transaction.jobId}. Bailing.`
         )
       }
 

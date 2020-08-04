@@ -2,6 +2,7 @@ import ethers from 'ethers'
 import { useEffect, useReducer } from 'react'
 
 import usePrice from 'utils/usePrice'
+import useConfig from 'utils/useConfig'
 import useOrigin from 'utils/useOrigin'
 
 const tokenAbi = [
@@ -17,8 +18,9 @@ function reducer(state, newState) {
 }
 
 function useToken(activeToken = {}, totalUsd) {
+  const { config } = useConfig()
   const { marketplace, status, provider, signer, signerStatus } = useOrigin()
-  const { exchangeRates } = usePrice()
+  const { exchangeRates } = usePrice(config.currency)
   const [state, setState] = useReducer(reducer, {
     shouldRefetchBalance: 0,
     hasBalance: false,
@@ -27,7 +29,11 @@ function useToken(activeToken = {}, totalUsd) {
   })
 
   useEffect(() => {
-    const exchangeRate = exchangeRates[activeToken.name]
+    const exchangeRateUsd = exchangeRates[activeToken.name]
+    const exchangeRate = exchangeRateUsd
+      ? exchangeRateUsd * exchangeRates[config.currency]
+      : undefined
+
     async function getBalance() {
       setState({ loading: true })
       try {

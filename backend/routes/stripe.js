@@ -4,6 +4,8 @@ const bodyParser = require('body-parser')
 const randomstring = require('randomstring')
 const Stripe = require('stripe')
 
+const { validateStripeKeys } = require('@origin/utils/stripe')
+
 const { Shop, ExternalPayment, Network } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
@@ -71,7 +73,7 @@ module.exports = function (router) {
     const stripe = Stripe(shopConfig.stripeBackend)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: req.body.amount,
-      currency: 'usd',
+      currency: req.body.currency || 'usd',
       statement_descriptor: normalizeDescriptor(req.shop.name),
       metadata: {
         shopId: req.shop.id,
@@ -194,23 +196,26 @@ module.exports = function (router) {
 
   router.post('/stripe/check-creds', authShop, async (req, res) => {
     let valid = false
+    const { stripeKey, stripeBackend } = req.body
 
-    try {
-      const { stripeBackend } = req.body
+    if (
+      validateStripeKeys({
+        publishableKey: stripeKey,
+        secretKey: stripeBackend
+      })
+    ) {
+      try {
+        const stripe = Stripe(stripeBackend)
 
-      const stripe = Stripe(stripeBackend)
+        await stripe.customers.list({ limit: 1 })
 
-      await stripe.customers.list({ limit: 1 })
-
-      valid = true
-    } catch (err) {
-      log.error('Failed to verify stripe credentials', err)
-      valid = false
+        valid = true
+      } catch (err) {
+        log.error('Failed to verify stripe credentials')
+        log.debug(err)
+      }
     }
 
-    return res.status(200).send({
-      success: true,
-      valid
-    })
+    return res.json({ success: true, valid })
   })
 }

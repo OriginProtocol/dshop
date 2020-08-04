@@ -4,6 +4,8 @@ import useBackendApi from 'utils/useBackendApi'
 
 import Modal from 'components/Modal'
 
+import { useStateValue } from 'data/state'
+
 const reducer = (state, newState) => ({ ...state, ...newState })
 
 const ConnectModal = ({
@@ -21,6 +23,8 @@ const ConnectModal = ({
     verified: false
   })
 
+  const [, dispatch] = useStateValue()
+
   const { post } = useBackendApi({ authToken: true })
 
   const onConnect = async () => {
@@ -36,16 +40,31 @@ const ConnectModal = ({
     setState({ saving: 'saving' })
 
     try {
-      await post('/shop/config', {
+      const { success, reason } = await post('/shop/config', {
         method: 'PUT',
-        body: JSON.stringify(newState)
+        body: JSON.stringify(newState),
+        suppressError: true
       })
-      setState({ saving: 'ok' })
-      setTimeout(() => {
-        setState({ saving: '', shouldClose: true })
-      }, 1500)
+      if (success) {
+        setState({ saving: 'ok' })
+        setTimeout(() => {
+          setState({ saving: '', shouldClose: true })
+        }, 1500)
+      } else {
+        setState({ saving: '' })
+        dispatch({
+          type: 'toast',
+          message: reason || 'Failed to save your credentials. Try again.',
+          style: 'error'
+        })
+      }
     } catch (err) {
       console.error(err)
+      dispatch({
+        type: 'toast',
+        message: 'Failed to save your credentials. Try again.',
+        style: 'error'
+      })
       setState({
         saving: ''
       })

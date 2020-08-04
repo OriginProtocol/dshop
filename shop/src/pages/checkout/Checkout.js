@@ -55,7 +55,7 @@ const Checkout = () => {
           <div className="user-details">
             <Switch>
               <Route path="/checkout/shipping" component={Shipping} />
-              <Route path="/checkout/payment" component={Payment} />
+              <Route path="/checkout/payment/:intentId?" component={Payment} />
               <Route path="/checkout" component={Information} />
             </Switch>
           </div>
