@@ -50,15 +50,12 @@ module.exports = function (router) {
 
       const networkConfig = getConfig(network.config)
       const shopConfig = getConfig(req.shop.config)
-      const config = JSON.parse(
-        fs.readFileSync(`${DSHOP_CACHE}/${req.shop.authToken}/data/config.json`)
-      )
       const web3Pk = shopConfig.web3Pk || networkConfig.web3Pk
 
-      const { paypalClientId } = config
-      const { paypalClientSecret } = shopConfig
+      const { clientId } = req.body
+      const { paypalClientSecret, paypalClientId } = shopConfig
 
-      if (!web3Pk || !paypalClientSecret || !paypalClientId) {
+      if (!web3Pk || !paypalClientSecret || !paypalClientId || clientId !== paypalClientId) {
         return res.status(400).send({
           success: false,
           reason: 'PayPal payment is disabled'
@@ -118,20 +115,18 @@ module.exports = function (router) {
 
       const networkConfig = getConfig(network.config)
       const shopConfig = getConfig(req.shop.config)
-      const config = JSON.parse(
-        fs.readFileSync(`${DSHOP_CACHE}/${req.shop.authToken}/data/config.json`)
-      )
       const web3Pk = shopConfig.web3Pk || networkConfig.web3Pk
+      
+      const { clientId } = req.body
+      const { paypalClientSecret, paypalClientId } = shopConfig
 
-      const { paypalClientId } = config
-      const { paypalClientSecret } = shopConfig
-
-      if (!web3Pk || !paypalClientSecret || !paypalClientId) {
+      if (!web3Pk || !paypalClientSecret || !paypalClientId || clientId !== paypalClientId) {
         return res.status(400).send({
           success: false,
           reason: 'PayPal payment is disabled'
         })
       }
+
 
       log.info(
         `[Shop ${req.shop.id}] Çapturing payment on PayPal`,

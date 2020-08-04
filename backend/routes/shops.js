@@ -879,7 +879,9 @@ module.exports = function (router) {
 
       if (req.body.paypal) {
         log.info(`Shop ${shopId} - Registering PayPal webhook`)
-        await paypalUtils.deregisterWebhook(shopId, existingConfig)
+        if (existingConfig.paypalWebhookId) {
+          await paypalUtils.deregisterWebhook(shopId, existingConfig)
+        }
         const result = await paypalUtils.registerWebhooks(
           shopId,
           {

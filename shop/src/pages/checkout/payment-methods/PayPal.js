@@ -52,7 +52,8 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
           data: encryptedData.hash,
           listingId: config.listingId,
           returnUrl,
-          cancelUrl: window.location.href
+          cancelUrl: window.location.href,
+          clientId: config.paypalClientId
         })
       })
 
@@ -60,7 +61,8 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
       localStorage[`paymentIntent${randomKey}`] = JSON.stringify({
         hash: encryptedData.hash,
         auth: encryptedData.auth,
-        orderId
+        orderId,
+        clientId: config.paypalClientId
       })
 
       return
@@ -90,12 +92,12 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
     setError(null)
 
     try {
-      const { orderId, ...encryptedData } = JSON.parse(
+      const { orderId, clientId, ...encryptedData } = JSON.parse(
         localStorage[`paymentIntent${intentId}`]
       )
 
       await post('/paypal/capture', {
-        body: JSON.stringify({ orderId: orderId })
+        body: JSON.stringify({ orderId, clientId })
       })
 
       delete localStorage[`paymentIntent${intentId}`]
