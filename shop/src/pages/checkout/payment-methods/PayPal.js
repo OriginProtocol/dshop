@@ -53,7 +53,8 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
           listingId: config.listingId,
           returnUrl,
           cancelUrl: window.location.href,
-          clientId: config.paypalClientId
+          clientId: config.paypalClientId,
+          currency: config.currency
         })
       })
 

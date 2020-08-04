@@ -1,7 +1,6 @@
 const get = require('lodash/get')
 const bodyParser = require('body-parser')
 const randomstring = require('randomstring')
-const fs = require('fs')
 
 const PayPal = require('@paypal/checkout-server-sdk')
 
@@ -9,7 +8,6 @@ const { Network, ExternalPayment, Shop } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
 const { getLogger } = require('../utils/logger')
-const { DSHOP_CACHE } = require('../utils/const')
 
 const {
   validateCredentials,
@@ -52,7 +50,7 @@ module.exports = function (router) {
       const shopConfig = getConfig(req.shop.config)
       const web3Pk = shopConfig.web3Pk || networkConfig.web3Pk
 
-      const { clientId } = req.body
+      const { clientId, currency } = req.body
       const { paypalClientSecret, paypalClientId } = shopConfig
 
       if (!web3Pk || !paypalClientSecret || !paypalClientId || clientId !== paypalClientId) {
@@ -70,7 +68,7 @@ module.exports = function (router) {
         purchase_units: [
           {
             amount: {
-              currency_code: 'USD',
+              currency_code: (currency || 'USD'),
               value: req.body.amount
             },
             // PayPal doesn't support metadata,
