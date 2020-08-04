@@ -4,6 +4,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       networkId: DataTypes.INTEGER, // 1=Mainnet, 4=Rinkeby, 999=local, etc...
       listingId: DataTypes.STRING, // Fully qualified listing Id. Ex: 1-001-1212
+      walletAddress: DataTypes.STRING, // Address of the wallet used for sending the ListingCreated transaction.
       sellerId: DataTypes.INTEGER,
       hostname: DataTypes.STRING,
       name: DataTypes.STRING,

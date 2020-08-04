@@ -1,3 +1,4 @@
+const ethers = require('ethers')
 const omit = require('lodash/omit')
 const pick = require('lodash/pick')
 const sortBy = require('lodash/sortBy')
@@ -1244,6 +1245,39 @@ module.exports = function (router) {
       })
 
       return res.json({ success: true, ipfsHash, names: hostnames })
+    }
+  )
+
+  /**
+   * Registers a wallet address associated with a shop.
+   * TODO: Validate ownership of the wallet by the shop's admin calling this API.
+   */
+  router.post(
+    '/shop/wallet',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const shop = req.shop
+      const { walletAddressRaw } = req.body
+      if (!walletAddressRaw) {
+        return res.json({
+          success: false,
+          message: 'No walletAddress specified'
+        })
+      }
+
+      // Check it is a valid eth address and checksum it.
+      let walletAddress
+      try {
+        walletAddress = ethers.utils.getAddress(walletAddressRaw)
+      } catch (e) {
+        return res.json({ success: false, message: 'Invalid Ethereum address' })
+      }
+
+      // Store the address along with the shop.
+      await shop.update({ walletAddress })
+
+      return res.json({ success: true })
     }
   )
 
