@@ -383,7 +383,9 @@ module.exports = function (router) {
       hostname,
       publicUrl,
       printful: req.body.printfulApi,
-      deliveryApi: req.body.printfulApi ? true : false
+      deliveryApi: req.body.printfulApi ? true : false,
+      supportEmail: req.body.supportEmail,
+      storeEmail: req.body.storeEmail
     }
     if (req.body.web3Pk && !config.web3Pk) {
       config.web3Pk = isHexPrefixed(req.body.web3Pk)
@@ -470,7 +472,8 @@ module.exports = function (router) {
         title: name,
         fullTitle: name,
         backendAuthToken: dataDir,
-        supportEmail: `${name} Store <${dataDir}@ogn.app>`,
+        supportEmail: req.body.supportEmail,
+        storeEmail: req.body.storeEmail,
         emailSubject: `Your ${name} Order`,
         pgpPublicKey: pgpKeys.pgpPublicKey.replace(/\\r/g, '')
       }
@@ -797,7 +800,8 @@ module.exports = function (router) {
         'about',
         'logErrors',
         'paypalClientId',
-        'offlinePaymentMethods'
+        'offlinePaymentMethods',
+        'supportEmail'
       )
       const jsonNetConfig = pick(
         req.body,
@@ -983,8 +987,10 @@ module.exports = function (router) {
         'sendgridApiKey',
         'sendgridPassword',
         'sendgridUsername',
+        'storeEmail',
         'stripeBackend',
         'stripeWebhookSecret',
+        'supportEmail',
         'upholdApi',
         'upholdClient',
         'upholdSecret',

@@ -11,6 +11,8 @@ import useAutoFocus from 'utils/useAutoFocus'
 import useRedirect from 'utils/useRedirect'
 import { useStateValue } from 'data/state'
 
+const emailRegex = /^[a-z0-9-._+]+@[a-z0-9-]+(\.[a-z]+)*(\.[a-z]{2,})$/i
+
 function validate(state) {
   const newState = {}
 
@@ -20,6 +22,18 @@ function validate(state) {
     } else if (state.name.length < 3) {
       newState.nameError = 'Shop name is too short'
     }
+  }
+
+  if (!state.supportEmail) {
+    newState.supportEmailError = 'Support Email is required'
+  } else if (!emailRegex.test(state.supportEmail)) {
+    newState.supportEmailError = 'Invalid email address'
+  }
+
+  if (!state.storeEmail) {
+    newState.storeEmailError = 'Store Email is required'
+  } else if (!emailRegex.test(state.storeEmail)) {
+    newState.storeEmailError = 'Invalid email address'
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
@@ -59,7 +73,9 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
           shopType: state.shopType,
           name: state.name,
           dataDir: kebabCase(state.name),
-          hostname: kebabCase(state.name)
+          hostname: kebabCase(state.name),
+          supportEmail: state.supportEmail,
+          storeEmail: state.storeEmail
         }
         if (state.shopType === 'local-dir') {
           data.hostname = data.dataDir = state.dataDir || localShops[0]
@@ -100,6 +116,23 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
             {Feedback('name')}
           </div>
         )}
+        <div className="form-group">
+          <label>Store contact email</label>
+          <input {...input('storeEmail')} />
+          {Feedback('storeEmail')}
+          <div className="desc">
+            We&apos;ll use this address if we need to contact you about your
+            store.
+          </div>
+        </div>
+        <div className="form-group">
+          <label>Customer email</label>
+          <input {...input('supportEmail')} />
+          {Feedback('supportEmail')}
+          <div className="desc">
+            Your customers will see this address if you email them.
+          </div>
+        </div>
         {!get(admin, 'superuser') ? null : (
           <div className="form-row">
             <div className="form-group col-md-6">

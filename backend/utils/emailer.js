@@ -12,7 +12,7 @@ const { Network, Shop } = require('../models')
 
 const cartData = require('./cartData')
 const encConf = require('./encryptedConfig')
-const { SUPPORT_EMAIL_OVERRIDE, IS_TEST } = require('./const')
+const { SUPPORT_EMAIL_OVERRIDE, IS_TEST, IS_DEV } = require('./const')
 
 const head = require('./templates/head')
 const vendor = require('./templates/vendor')
@@ -35,6 +35,12 @@ const stripeWebhookErrorTxt = require('./templates/stripeWebhookErrorTxt')
 
 const log = getLogger('utils.emailer')
 
+const getPlainEmail = (emailAddress) => {
+  const match = emailAddress.match(/<([^>]+)>/)
+
+  return match ? match[1] : emailAddress
+}
+
 function optionsForItem(item) {
   const options = []
   if (item.product.options && item.product.options.length && item.variant) {
@@ -44,6 +50,8 @@ function optionsForItem(item) {
   }
   return options
 }
+
+const DEFAULT_SUPPORT_EMAIL = 'support@ogn.app'
 
 /**
  * Returns config and email transporter object
@@ -76,6 +84,7 @@ async function getEmailTransporterAndConfig(shop) {
   let emailServerConfig = {},
     configJson = {},
     shopConfig = {}
+  let usingNetworkFallbacks = false
 
   if (shop) {
     configJson = await getSiteConfig(`${backendUrl}/${shop.authToken}/`)
@@ -86,6 +95,7 @@ async function getEmailTransporterAndConfig(shop) {
   if ((!shopConfig.email || shopConfig.email === 'disabled') && network) {
     // Has not configured email server, fallback to network config
     const fallbackConfig = get(networkConfig, 'fallbackShopConfig', {})
+    usingNetworkFallbacks = true
     emailServerConfig = {
       ...fallbackConfig
     }
@@ -129,16 +139,39 @@ async function getEmailTransporterAndConfig(shop) {
     transporter = nodemailer.createTransport({ SES })
   }
 
+  let fromEmail
+  let replyTo
+
+  let supportEmail =
+    configJson.supportEmail || shopConfig.supportEmail || DEFAULT_SUPPORT_EMAIL
+  let storeEmail =
+    shopConfig.supportEmail || shopConfig.fromEmail || supportEmail
+
+  if (usingNetworkFallbacks) {
+    fromEmail = DEFAULT_SUPPORT_EMAIL
+    replyTo = supportEmail
+  } else {
+    fromEmail = supportEmail
+  }
+
+  if (IS_DEV) {
+    fromEmail = SUPPORT_EMAIL_OVERRIDE
+    replyTo = undefined
+  }
+
+  fromEmail = getPlainEmail(fromEmail)
+  supportEmail = getPlainEmail(supportEmail)
+  replyTo = getPlainEmail(replyTo)
+  storeEmail = getPlainEmail(storeEmail)
+
   return {
     transporter,
-    fromEmail:
-      SUPPORT_EMAIL_OVERRIDE ||
-      shopConfig.fromEmail ||
-      'Origin Dshop <no-reply@ogn.app>',
-    supportEmail:
-      SUPPORT_EMAIL_OVERRIDE ||
-      configJson.supportEmail ||
-      'dshop@originprotocol.com',
+
+    fromEmail,
+    replyTo,
+    supportEmail,
+    storeEmail,
+
     networkConfig,
     // Decrypted shop config
     shopConfig,
@@ -150,6 +183,9 @@ async function getEmailTransporterAndConfig(shop) {
 async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   const {
     transporter,
+    fromEmail,
+    storeEmail,
+    replyTo,
     supportEmail,
     configJson: data,
     shopConfig: config
@@ -208,14 +244,6 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     })
   })
 
-  // Extract the email address from supportEmail in case its format is "name <email>".
-  // For example "Dshop Support <support@ogn.app>" -> "support@ogn.app".
-  let supportEmailPlain = supportEmail
-  const match = supportEmailPlain.match(/<([^>]+)>/)
-  if (match) {
-    supportEmailPlain = match[1]
-  }
-
   if (!data.absolute) {
     publicURL += '/#'
   }
@@ -244,8 +272,8 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     head,
     siteName: data.fullTitle || data.title,
     supportEmail,
-    fromEmail: supportEmail,
-    supportEmailPlain,
+    fromEmail,
+    supportEmailPlain: supportEmail,
     subject: data.emailSubject,
     storeUrl: publicURL,
 
@@ -276,21 +304,23 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   const txtOutput = emailTxt(vars)
 
   const message = {
-    from: vars.fromEmail,
+    from: supportEmail,
     to: `${vars.firstName} ${vars.lastName} <${vars.email}>`,
     subject: vars.subject,
     html: htmlOutput.html,
     text: txtOutput,
-    attachments
+    attachments,
+    replyTo
   }
 
   const messageVendor = {
-    from: vars.fromEmail,
-    to: vars.supportEmail,
+    from: supportEmail,
+    to: storeEmail,
     subject: `[${vars.siteName}] Order #${cart.offerId}`,
     html: htmlOutputVendor.html,
     text: txtOutput,
-    attachments
+    attachments,
+    replyTo
   }
 
   if (!skip) {
@@ -327,6 +357,7 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
   const {
     transporter,
     fromEmail,
+    replyTo,
     supportEmail
   } = await getEmailTransporterAndConfig(shop)
   if (!transporter) {
@@ -356,11 +387,12 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
   const txtOutput = verifyEmailTxt(vars)
 
   const message = {
-    from: vars.fromEmail,
+    from: fromEmail,
     to: `${name} <${email}>`,
     subject: 'Confirm your email address',
     html: htmlOutput.html,
-    text: txtOutput
+    text: txtOutput,
+    replyTo
   }
 
   if (skip) return message
@@ -386,6 +418,7 @@ async function sendPasswordResetEmail(seller, verifyUrl, skip) {
   const {
     transporter,
     fromEmail,
+    replyTo,
     supportEmail
   } = await getEmailTransporterAndConfig()
   if (!transporter) {
@@ -412,11 +445,12 @@ async function sendPasswordResetEmail(seller, verifyUrl, skip) {
   const txtOutput = forgotPassEmailTxt(vars)
 
   const message = {
-    from: vars.fromEmail,
+    from: fromEmail,
     to: `${name} <${email}>`,
     subject: 'Reset your password',
     html: htmlOutput.html,
-    text: txtOutput
+    text: txtOutput,
+    replyTo
   }
 
   if (skip) return message
@@ -445,7 +479,9 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
     fromEmail,
     supportEmail,
     shopConfig: config,
-    configJson: data
+    configJson: data,
+    replyTo,
+    storeEmail
   } = await getEmailTransporterAndConfig(shop)
   if (!transporter) {
     log.info(
@@ -476,11 +512,12 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
   const txtOutput = printfulOrderFailedTxt(vars)
 
   const message = {
-    from: vars.fromEmail,
-    to: vars.supportEmail,
+    from: fromEmail,
+    to: storeEmail,
     subject: 'Failed to create order on Printful',
     html: htmlOutput.html,
-    text: txtOutput
+    text: txtOutput,
+    replyTo
   }
 
   if (skip) return message
@@ -507,7 +544,9 @@ async function stripeWebhookErrorEmail(shopId, errorData, skip) {
     transporter,
     fromEmail,
     supportEmail,
-    configJson: data
+    configJson: data,
+    replyTo,
+    storeEmail
   } = await getEmailTransporterAndConfig(shop)
   if (!transporter) {
     log.info(
@@ -533,11 +572,12 @@ async function stripeWebhookErrorEmail(shopId, errorData, skip) {
   const txtOutput = stripeWebhookErrorTxt(vars)
 
   const message = {
-    from: vars.fromEmail,
-    to: vars.supportEmail,
+    from: fromEmail,
+    to: storeEmail,
     subject: 'Failed to process stripe webhook event',
     html: htmlOutput.html,
-    text: txtOutput
+    text: txtOutput,
+    replyTo
   }
 
   if (skip) return message

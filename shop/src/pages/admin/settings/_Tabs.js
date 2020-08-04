@@ -10,7 +10,7 @@ const SettingsTabs = () => {
     <ul className="nav nav-tabs">
       <li className="nav-item">
         <NavLink className="nav-link" to="/admin/settings" exact>
-          Appearance
+          General
         </NavLink>
       </li>
       <li className="nav-item">
