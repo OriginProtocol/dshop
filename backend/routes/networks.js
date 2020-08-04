@@ -21,7 +21,8 @@ function pickConfig(body) {
     'web3Pk',
     'backendUrl',
     'fallbackShopConfig',
-    'googleAnalytics'
+    'googleAnalytics',
+    'paypalEnvironment'
   ])
 }
 

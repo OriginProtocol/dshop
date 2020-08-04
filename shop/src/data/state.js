@@ -258,6 +258,7 @@ const reducer = (state, action) => {
     newState = cloneDeep(getInitialState(activeShop))
     newState = set(newState, 'config', action.config)
     newState = set(newState, 'admin', cloneDeep(state.admin))
+    newState = set(newState, 'toasts', cloneDeep(state.toasts))
     const backendUrl = get(state, 'admin.backendUrl')
     if (backendUrl) {
       newState = set(newState, 'config.backend', backendUrl)

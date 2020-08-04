@@ -25,10 +25,18 @@ module.exports = function (router) {
     let valid = false
 
     try {
-      // Try generating an auth token
-      const { paypalClientId, paypalClientSecret } = req.body
+      const network = await Network.findOne({
+        where: { networkId: req.shop.networkId }
+      })
 
-      valid = await validateCredentials(paypalClientId, paypalClientSecret)
+      const networkConfig = getConfig(network.config)
+
+      const client = getClient(
+        networkConfig.paypalEnvironment,
+        req.body.paypalClientId,
+        req.body.paypalClientSecret
+      )
+      valid = await validateCredentials(client)
     } catch (err) {
       log.error('Failed to verify paypal credentials', err)
       valid = false
@@ -65,7 +73,8 @@ module.exports = function (router) {
         })
       }
 
-      const client = getClient(paypalClientId, paypalClientSecret)
+      const paypalEnv = networkConfig.paypalEnvironment
+      const client = getClient(paypalEnv, paypalClientId, paypalClientSecret)
 
       const request = new PayPal.orders.OrdersCreateRequest()
       request.requestBody({
@@ -136,14 +145,14 @@ module.exports = function (router) {
       }
 
       log.info(
-        `[Shop ${req.shop.id}] Çapturing payment on PayPal`,
+        `[Shop ${req.shop.id}] Capturing payment on PayPal`,
         req.body.orderId
       )
 
-      const client = getClient(paypalClientId, paypalClientSecret)
+      const paypalEnv = networkConfig.paypalEnvironment
+      const client = getClient(paypalEnv, paypalClientId, paypalClientSecret)
 
       const request = new PayPal.orders.OrdersCaptureRequest(req.body.orderId)
-
       const response = await client.execute(request)
 
       log.debug(response.result)

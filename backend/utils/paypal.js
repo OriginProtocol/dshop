@@ -2,6 +2,7 @@ const PayPal = require('@paypal/checkout-server-sdk')
 const { IS_PROD } = require('./const')
 const { getLogger } = require('./logger')
 const { getConfig } = require('./encryptedConfig')
+const { Network } = require('../models')
 
 const log = getLogger('utils.paypal')
 
@@ -61,17 +62,14 @@ class WebhookVerifySignRequest {
   }
 }
 
-const getClient = (clientId, clientSecret) => {
-  const Environment = IS_PROD
-    ? PayPal.core.LiveEnvironment
-    : PayPal.core.SandboxEnvironment
-  const env = new Environment(clientId, clientSecret)
-
+const getClient = (paypalEnv, clientId, clientSecret) => {
+  const { SandboxEnvironment, LiveEnvironment } = PayPal.core
+  const Env = paypalEnv === 'sandbox' ? SandboxEnvironment : LiveEnvironment
+  const env = new Env(clientId, clientSecret)
   return new PayPal.core.PayPalHttpClient(env)
 }
 
-const validateCredentials = async (clientId, clientSecret) => {
-  const client = getClient(clientId, clientSecret)
+const validateCredentials = async (client) => {
   try {
     await client.fetchAccessToken()
     return true
@@ -80,29 +78,14 @@ const validateCredentials = async (clientId, clientSecret) => {
   }
 }
 
-const validateMiddleware = async (req, res, next) => {
-  if (req.body.paypal) {
-    const { paypalClientId, paypalClientSecret } = req.body
-    const valid = await validateCredentials(paypalClientId, paypalClientSecret)
-
-    if (!valid) {
-      return res.json({
-        success: false,
-        reason: 'Invalid PayPal credentials'
-      })
-    }
-  }
-
-  next()
-}
-
-const registerWebhooks = async (shopId, shopConfig, backendUrl) => {
+const registerWebhooks = async (shopId, shopConfig, netConfig) => {
   const { paypalClientId, paypalClientSecret, paypalWebhookHost } = shopConfig
 
   try {
-    const client = getClient(paypalClientId, paypalClientSecret)
+    const paypalEnv = netConfig.paypalEnvironment
+    const client = getClient(paypalEnv, paypalClientId, paypalClientSecret)
 
-    let webhookUrl = `${backendUrl}/paypal/webhooks/${shopId}`
+    let webhookUrl = `${netConfig.backendUrl}/paypal/webhooks/${shopId}`
 
     if (!IS_PROD && paypalWebhookHost) {
       webhookUrl = `${paypalWebhookHost}/paypal/webhooks/${shopId}`
@@ -128,15 +111,16 @@ const registerWebhooks = async (shopId, shopConfig, backendUrl) => {
   return {}
 }
 
-const deregisterWebhook = async (shopId, shopConfig) => {
+const deregisterWebhook = async (shopId, shopConfig, netConfig) => {
   if (!IS_PROD) {
-    return deregisterAllWebhooks(shopConfig)
+    return deregisterAllWebhooks(shopConfig, netConfig)
   }
 
   const { paypalClientId, paypalClientSecret, paypalWebhookId } = shopConfig
 
   try {
-    const client = getClient(paypalClientId, paypalClientSecret)
+    const paypalEnv = netConfig.paypalEnvironment
+    const client = getClient(paypalEnv, paypalClientId, paypalClientSecret)
 
     const request = new WebhookDeleteRequest(paypalWebhookId)
     await client.execute(request)
@@ -156,11 +140,12 @@ const deregisterWebhook = async (shopId, shopConfig) => {
   return false
 }
 
-const deregisterAllWebhooks = async (shopConfig) => {
+const deregisterAllWebhooks = async (shopConfig, netConfig) => {
   const { paypalClientId, paypalClientSecret } = shopConfig
 
   try {
-    const client = getClient(paypalClientId, paypalClientSecret)
+    const paypalEnv = netConfig.paypalEnvironment
+    const client = getClient(paypalEnv, paypalClientId, paypalClientSecret)
 
     const request = new WebhookListRequest()
 
@@ -184,10 +169,19 @@ const deregisterAllWebhooks = async (shopConfig) => {
 
 const verifySignMiddleware = async (req, res, next) => {
   try {
+    const network = await Network.findOne({
+      where: { networkId: req.shop.networkId }
+    })
+    if (!network) {
+      return res.sendStatus(500)
+    }
+    const networkConfig = getConfig(network.config)
+
     const shopConfig = getConfig(req.shop.config)
     const { paypalClientId, paypalClientSecret, paypalWebhookId } = shopConfig
 
-    const client = getClient(paypalClientId, paypalClientSecret)
+    const paypalEnv = networkConfig.paypalEnvironment
+    const client = getClient(paypalEnv, paypalClientId, paypalClientSecret)
 
     const request = new WebhookVerifySignRequest(
       req.headers,
@@ -214,7 +208,6 @@ const verifySignMiddleware = async (req, res, next) => {
 module.exports = {
   getClient,
   validateCredentials,
-  validateMiddleware,
   registerWebhooks,
   deregisterWebhook,
   verifySignMiddleware

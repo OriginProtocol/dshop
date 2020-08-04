@@ -770,7 +770,6 @@ module.exports = function (router) {
     '/shop/config',
     authSellerAndShop,
     authRole('admin'),
-    paypalUtils.validateMiddleware,
     async (req, res) => {
       // Load the network config.
       const network = await Network.findOne({ where: { active: true } })
@@ -932,9 +931,22 @@ module.exports = function (router) {
 
       // PayPal
       if (req.body.paypal) {
+        const client = paypalUtils.getClient(
+          netConfig.paypalEnvironment,
+          req.body.paypalClientId,
+          req.body.paypalClientSecret
+        )
+        const valid = await paypalUtils.validateCredentials(client)
+        if (!valid) {
+          return res.json({
+            success: false,
+            reason: 'Invalid PayPal credentials'
+          })
+        }
+
         log.info(`Shop ${shopId} - Registering PayPal webhook`)
         if (existingConfig.paypal && existingConfig.paypalWebhookId) {
-          await paypalUtils.deregisterWebhook(shopId, existingConfig)
+          await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
         }
         const result = await paypalUtils.registerWebhooks(
           shopId,
@@ -942,11 +954,11 @@ module.exports = function (router) {
             ...existingConfig,
             ...req.body
           },
-          netConfig.backendUrl
+          netConfig
         )
         additionalOpts.paypalWebhookId = result.webhookId
       } else if (existingConfig.paypal) {
-        await paypalUtils.deregisterWebhook(shopId, existingConfig)
+        await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
         additionalOpts.paypalWebhookId = null
       }
 
