@@ -17,6 +17,7 @@ import Tabs from '../_Tabs'
 import Web3Modal from './Web3Modal'
 import StripeModal from './StripeModal'
 import UpholdModal from './UpholdModal'
+import PayPalModal from './PayPalModal'
 import ContractSettings from './ContractSettings'
 import DisconnectModal from './_DisconnectModal'
 import CreateListing from './_CreateListing'
@@ -53,7 +54,13 @@ const PaymentSettings = () => {
   const Processors = useMemo(() => {
     if (!shopConfig) return []
 
-    const { stripeBackend, upholdApi, upholdClient, upholdSecret } = shopConfig
+    const {
+      stripeBackend,
+      upholdApi,
+      upholdClient,
+      upholdSecret,
+      paypal
+    } = shopConfig
     const stripeEnabled = !!stripeBackend
     const upholdEnabled = !!upholdApi && !!upholdClient && !!upholdSecret
 
@@ -62,7 +69,7 @@ const PaymentSettings = () => {
         id: 'stripe',
         title: 'Stripe',
         description: stripeEnabled
-          ? 'Your stripe account has been connected'
+          ? 'Your Stripe account has been connected'
           : 'Use Stripe to easily accept Visa, MasterCard, American Express and almost any other kind of credit or debit card in your shop.',
         icon: <Icons.Stripe />,
         enabled: stripeEnabled
@@ -76,6 +83,15 @@ const PaymentSettings = () => {
         icon: <Icons.Uphold />,
         enabled: upholdEnabled,
         hide: admin.superuser ? false : true
+      },
+      {
+        id: 'paypal',
+        title: 'PayPal',
+        description: paypal
+          ? 'Your PayPal account has been connected'
+          : 'Use PayPal to easily accept Visa, MasterCard, American Express and almost any other kind of credit or debit card in your shop.',
+        icon: <Icons.PayPal />,
+        enabled: paypal
       }
     ]
       .filter((processor) => !processor.hide)
@@ -248,13 +264,16 @@ const PaymentSettings = () => {
         {connectModal === 'stripe' && (
           <StripeModal
             onClose={onCloseModal}
-            initialConfig={{
-              ...config,
-              ...shopConfig
-            }}
+            initialConfig={{ ...config, ...shopConfig }}
           />
         )}
         {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
+        {connectModal === 'paypal' && (
+          <PayPalModal
+            onClose={onCloseModal}
+            initialConfig={{ ...config, ...shopConfig }}
+          />
+        )}
 
         <ContractSettings {...{ state, setState, config }} />
       </div>

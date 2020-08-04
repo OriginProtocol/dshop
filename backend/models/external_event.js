@@ -7,8 +7,8 @@ module.exports = (sequelize, DataTypes) => {
     'ExternalEvent',
     {
       shopId: DataTypes.INTEGER,
-      service: DataTypes.ENUM(...Object.values(PrintfulWebhookEvents)),
-      event_type: DataTypes.ENUM(...Object.values(ExternalServices)),
+      service: DataTypes.ENUM(...Object.values(ExternalServices)),
+      eventType: DataTypes.ENUM(...Object.values(PrintfulWebhookEvents)),
       data: isPostgres ? DataTypes.JSONB : DataTypes.JSON
     },
     {

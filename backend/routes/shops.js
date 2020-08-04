@@ -46,6 +46,8 @@ const {
 
 const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
 
+const paypalUtils = require('../utils/paypal')
+
 const log = getLogger('routes.shops')
 
 const dayjs = require('dayjs')
@@ -730,6 +732,7 @@ module.exports = function (router) {
     '/shop/config',
     authSellerAndShop,
     authRole('admin'),
+    paypalUtils.validateMiddleware,
     async (req, res) => {
       // Load the network config.
       const network = await Network.findOne({ where: { active: true } })
@@ -754,7 +757,8 @@ module.exports = function (router) {
         'medium',
         'youtube',
         'about',
-        'logErrors'
+        'logErrors',
+        'paypalClientId'
       )
       const jsonNetConfig = pick(
         req.body,
@@ -873,6 +877,25 @@ module.exports = function (router) {
         additionalOpts.printfulWebhookSecret = ''
       }
 
+      if (req.body.paypal) {
+        log.info(`Shop ${shopId} - Registering PayPal webhook`)
+        if (existingConfig.paypalWebhookId) {
+          await paypalUtils.deregisterWebhook(shopId, existingConfig)
+        }
+        const result = await paypalUtils.registerWebhooks(
+          shopId,
+          {
+            ...existingConfig,
+            ...req.body
+          },
+          netConfig.backendUrl
+        )
+        additionalOpts.paypalWebhookId = result.webhookId
+      } else if (existingConfig.paypal) {
+        await paypalUtils.deregisterWebhook(shopId, existingConfig)
+        additionalOpts.paypalWebhookId = null
+      }
+
       // Save the config in the DB.
       log.info(`Shop ${shopId} - Saving config in the DB.`)
       const shopConfigFields = pick(
@@ -892,6 +915,11 @@ module.exports = function (router) {
         'mailgunSmtpPort',
         'mailgunSmtpServer',
         'password',
+        'paypal',
+        'paypalClientId',
+        'paypalClientSecret',
+        'paypalWebhookHost',
+        'paypalWebhookId',
         'pgpPrivateKey',
         'pgpPrivateKeyPass',
         'pgpPublicKey',

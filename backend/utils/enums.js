@@ -1,6 +1,10 @@
 // NOTE: Add migration files to update `ExternalEvents.event_type` and
 // `ExternalEvents.service` when changing this file
 
+const ExternalServices = {
+  Printful: 'printful'
+}
+
 const PrintfulWebhookEvents = {
   PackageShipped: 'package_shipped',
   PackageReturned: 'package_returned',
@@ -10,10 +14,6 @@ const PrintfulWebhookEvents = {
   ProductUpdated: 'product_updated',
   OrderPutHold: 'order_put_hold',
   OrderRemoveHold: 'order_remove_hold'
-}
-
-const ExternalServices = {
-  Printful: 'printful'
 }
 
 module.exports = {
