@@ -68,7 +68,7 @@ function encrypt(iv, str) {
 
   const cypher = crypto.createCipheriv(CYPHER_ALGO, ENCRYPTION_KEY_HASH, iv)
 
-  msg.push(cypher.update(str, 'binary', 'hex'))
+  msg.push(cypher.update(str, 'utf8', 'hex'))
   msg.push(cypher.final('hex'))
 
   return msg.join('')
@@ -97,8 +97,8 @@ function decrypt(iv, enc) {
 
   const decypher = crypto.createDecipheriv('aes256', ENCRYPTION_KEY_HASH, iv)
 
-  msg.push(decypher.update(enc, 'hex', 'binary'))
-  msg.push(decypher.final('binary'))
+  msg.push(decypher.update(enc, 'hex', 'utf8'))
+  msg.push(decypher.final('utf8'))
 
   return msg.join('')
 }
@@ -328,6 +328,7 @@ async function dump(shopId) {
 }
 
 module.exports = {
+  IV_LENGTH,
   encrypt,
   encryptJSON,
   decrypt,
