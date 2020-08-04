@@ -53,7 +53,12 @@ module.exports = function (router) {
       const { clientId, currency } = req.body
       const { paypalClientSecret, paypalClientId } = shopConfig
 
-      if (!web3Pk || !paypalClientSecret || !paypalClientId || clientId !== paypalClientId) {
+      if (
+        !web3Pk ||
+        !paypalClientSecret ||
+        !paypalClientId ||
+        clientId !== paypalClientId
+      ) {
         return res.status(400).send({
           success: false,
           reason: 'PayPal payment is disabled'
@@ -68,7 +73,7 @@ module.exports = function (router) {
         purchase_units: [
           {
             amount: {
-              currency_code: (currency || 'USD'),
+              currency_code: currency || 'USD',
               value: req.body.amount
             },
             // PayPal doesn't support metadata,
@@ -114,17 +119,21 @@ module.exports = function (router) {
       const networkConfig = getConfig(network.config)
       const shopConfig = getConfig(req.shop.config)
       const web3Pk = shopConfig.web3Pk || networkConfig.web3Pk
-      
+
       const { clientId } = req.body
       const { paypalClientSecret, paypalClientId } = shopConfig
 
-      if (!web3Pk || !paypalClientSecret || !paypalClientId || clientId !== paypalClientId) {
+      if (
+        !web3Pk ||
+        !paypalClientSecret ||
+        !paypalClientId ||
+        clientId !== paypalClientId
+      ) {
         return res.status(400).send({
           success: false,
           reason: 'PayPal payment is disabled'
         })
       }
-
 
       log.info(
         `[Shop ${req.shop.id}] Çapturing payment on PayPal`,

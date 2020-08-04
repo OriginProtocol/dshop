@@ -11,7 +11,7 @@ const useOfferData = (orderId) => {
   const [listing, setListing] = useState()
   const [sellerProxy, setSellerProxy] = useState()
   const { marketplace, provider, signer } = useOrigin()
-  const splitOrder = orderId.split('-')
+  const splitOrder = (orderId || '').split('-')
 
   useEffect(() => {
     if (!marketplace || !orderId) {
@@ -52,7 +52,7 @@ const useOfferData = (orderId) => {
         }
       })
     })
-  }, [marketplace])
+  }, [marketplace, orderId])
 
   return {
     offer,

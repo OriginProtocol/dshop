@@ -19,6 +19,7 @@ import StripeModal from './StripeModal'
 import UpholdModal from './UpholdModal'
 import PayPalModal from './PayPalModal'
 import ContractSettings from './ContractSettings'
+import OfflinePayments from './OfflinePayments'
 import DisconnectModal from './_DisconnectModal'
 import CreateListing from './_CreateListing'
 
@@ -32,7 +33,7 @@ const PaymentSettings = () => {
   const { listing } = useListingData(state.listingId)
 
   useEffect(() => {
-    const { listingId, currency } = config
+    const { listingId, currency, offlinePaymentMethods } = config
     const acceptedTokens = config.acceptedTokens || []
     const configCustomTokens = config.customTokens || []
     const customTokens = uniqBy(
@@ -43,7 +44,8 @@ const PaymentSettings = () => {
       acceptedTokens,
       customTokens,
       listingId,
-      currency: currency || 'USD'
+      currency: currency || 'USD',
+      offlinePaymentMethods
     })
   }, [config.activeShop])
 
@@ -274,6 +276,11 @@ const PaymentSettings = () => {
             initialConfig={{ ...config, ...shopConfig }}
           />
         )}
+
+        <OfflinePayments
+          onChange={setState}
+          offlinePaymentMethods={state.offlinePaymentMethods}
+        />
 
         <ContractSettings {...{ state, setState, config }} />
       </div>

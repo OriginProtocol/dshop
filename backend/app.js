@@ -85,6 +85,7 @@ require('./routes/collections')(router)
 require('./routes/domains')(router)
 require('./routes/shipping-zones')(router)
 require('./routes/health')(router)
+require('./routes/offline-payment')(router)
 require('./routes/paypal')(router)
 require('./routes/exchange-rates')(router)
 

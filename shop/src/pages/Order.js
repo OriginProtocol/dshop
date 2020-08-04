@@ -7,6 +7,7 @@ import Styl from 'react-styl'
 
 import Link from 'components/Link'
 import CheckCircle from 'components/icons/CheckCircle'
+import PaymentInstructions from 'components/OfflinePaymentInstructions'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
@@ -21,6 +22,8 @@ const OrderDetails = ({ cart }) => {
   }
 
   const phone = get(cart, 'userInfo.phone')
+
+  const isOfflinePayment = !!get(cart, 'paymentMethod.instructions', false)
 
   return (
     <div className="checkout-confirmation">
@@ -57,6 +60,13 @@ const OrderDetails = ({ cart }) => {
           <div className="col-md-6">
             <h5>Payment method</h5>
             <div className="value">{get(cart, 'paymentMethod.label')}</div>
+            {!isOfflinePayment ? null : (
+              <>
+                <PaymentInstructions
+                  paymentMethod={get(cart, 'paymentMethod')}
+                />
+              </>
+            )}
           </div>
         </div>
         <div className="row">

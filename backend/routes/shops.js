@@ -33,6 +33,7 @@ const formidable = require('formidable')
 const https = require('https')
 const http = require('http')
 const mv = require('mv')
+const path = require('path')
 const { isHexPrefixed, addHexPrefix } = require('ethereumjs-util')
 
 const { configureShopDNS, deployShop } = require('../utils/deployShop')
@@ -728,6 +729,43 @@ module.exports = function (router) {
     }
   }
 
+  async function movePaymentMethodImages(paymentMethods, dataDir) {
+    const out = []
+    const tmpDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/__tmp`)
+
+    for (const m of paymentMethods) {
+      const imagePath = m.qrImage
+      if (imagePath && imagePath.includes('/__tmp/')) {
+        const fileName = imagePath.split('/__tmp/', 2)[1]
+        const tmpFilePath = `${tmpDir}/${fileName}`
+
+        const targetDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/uploads`)
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true })
+        }
+        const targetPath = `${targetDir}/${fileName}`
+
+        const movedFileName = await new Promise((resolve) => {
+          mv(tmpFilePath, targetPath, (err) => {
+            if (err) {
+              console.error(`Couldn't move file`, tmpFilePath, targetPath, err)
+            }
+            resolve(fileName)
+          })
+        })
+
+        out.push({
+          ...m,
+          qrImage: movedFileName
+        })
+      } else {
+        out.push(m)
+      }
+    }
+
+    return out
+  }
+
   router.put(
     '/shop/config',
     authSellerAndShop,
@@ -758,7 +796,8 @@ module.exports = function (router) {
         'youtube',
         'about',
         'logErrors',
-        'paypalClientId'
+        'paypalClientId',
+        'offlinePaymentMethods'
       )
       const jsonNetConfig = pick(
         req.body,
@@ -773,6 +812,14 @@ module.exports = function (router) {
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
         listingId = req.body.listingId
         req.shop.listingId = listingId
+      }
+
+      // Offline payments
+      if (req.body.offlinePaymentMethods) {
+        jsonConfig.offlinePaymentMethods = await movePaymentMethodImages(
+          req.body.offlinePaymentMethods,
+          req.shop.authToken
+        )
       }
 
       if (Object.keys(jsonConfig).length || Object.keys(jsonNetConfig).length) {
@@ -792,6 +839,7 @@ module.exports = function (router) {
               ...jsonNetConfig
             })
           }
+
           const jsonStr = JSON.stringify(newConfig, null, 2)
           fs.writeFileSync(configFile, jsonStr)
         } catch (e) {
@@ -877,9 +925,15 @@ module.exports = function (router) {
         additionalOpts.printfulWebhookSecret = ''
       }
 
+      // Duplicate `offlinePaymentMethods` to encrypted config
+      if (jsonConfig.offlinePaymentMethods) {
+        additionalOpts.offlinePaymentMethods = jsonConfig.offlinePaymentMethods
+      }
+
+      // PayPal
       if (req.body.paypal) {
         log.info(`Shop ${shopId} - Registering PayPal webhook`)
-        if (existingConfig.paypalWebhookId) {
+        if (existingConfig.paypal && existingConfig.paypalWebhookId) {
           await paypalUtils.deregisterWebhook(shopId, existingConfig)
         }
         const result = await paypalUtils.registerWebhooks(
@@ -914,6 +968,7 @@ module.exports = function (router) {
         'mailgunSmtpPassword',
         'mailgunSmtpPort',
         'mailgunSmtpServer',
+        'offlinePaymentMethods',
         'password',
         'paypal',
         'paypalClientId',

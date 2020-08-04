@@ -273,6 +273,12 @@ const reducer = (state, action) => {
     })
   } else if (action.type === 'setDashboardStats') {
     newState = set(newState, 'dashboardStats', action.stats)
+  } else if (action.type === 'setOfflinePaymentMethods') {
+    newState = set(
+      newState,
+      'config.offlinePaymentMethods',
+      action.offlinePaymentMethods
+    )
   }
 
   // IMPORTANT: Keep this function's total calculation in sync with the calculation
