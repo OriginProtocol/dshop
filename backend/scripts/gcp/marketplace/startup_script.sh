@@ -15,6 +15,11 @@ apt upgrade -y
 apt-get install -y nodejs build-essential git wget gnupg ca-certificates
 npm install -g yarn pm2
 
+###############
+# Redis install
+###############
+apt-get -y install redis
+
 ###################
 # Openresty install
 ###################
@@ -64,6 +69,9 @@ echo "GCP_MARKETPLACE_DEPLOYMENT=true" >> .env
 
 # Encryption key for storing data securely in the DB.
 echo "ENCRYPTION_KEY=`openssl rand -base64 48`" >> .env
+
+# Redis config.
+echo "REDIS_URL=redis://127.0.0.1:6379" >> .env
 
 # Auth for BigQuery read access
 GOOGLE_APPLICATION_CREDENTIALS="/home/dshop/service_creds.json"
