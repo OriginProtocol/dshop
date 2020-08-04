@@ -365,7 +365,7 @@ async function _processEventListingCreated({ event }) {
   const walletAddress = event.party
 
   // Lookup for any shop linked to that address and that does not have a listingId yet.
-  // There could be more than one if the merchant create multiple shops
+  // There could be more than one if the merchant created multiple shops
   // using the same wallet. We pick the most recently updated shop.
   const shop = await Shop.findOne({
     where: { walletAddress, listingId: null },

@@ -1260,10 +1260,7 @@ module.exports = function (router) {
       const shop = req.shop
       const { walletAddressRaw } = req.body
       if (!walletAddressRaw) {
-        return res.json({
-          success: false,
-          message: 'No walletAddress specified'
-        })
+        return res.json({ success: false, message: 'walletAddress missing' })
       }
 
       // Check it is a valid eth address and checksum it.
@@ -1274,7 +1271,7 @@ module.exports = function (router) {
         return res.json({ success: false, message: 'Invalid Ethereum address' })
       }
 
-      // Store the address along with the shop.
+      // Associate the address to the shop in the DB.
       await shop.update({ walletAddress })
 
       return res.json({ success: true })
