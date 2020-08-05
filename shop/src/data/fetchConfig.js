@@ -37,6 +37,7 @@ export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
 
     config = await fetch(url).then((raw) => raw.json())
     if (!config.backend) config.backend = ''
+    if (!config.currency) config.currency = 'USD'
     if (!config.paymentMethods) {
       config.paymentMethods = DefaultPaymentMethods
     }
