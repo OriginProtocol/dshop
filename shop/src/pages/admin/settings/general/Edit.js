@@ -11,6 +11,7 @@ import useShopConfig from 'utils/useShopConfig'
 import useBackendApi from 'utils/useBackendApi'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
+import parsePlainEmail from 'utils/parsePlainEmail'
 
 import Tabs from '../_Tabs'
 import CustomDomain from './_CustomDomain'
@@ -45,14 +46,6 @@ const configFields = [
 
 const ABOUT_FILENAME = 'about.html'
 
-const parsePlain = (emailAddress) => {
-  if (!emailAddress || !emailAddress.includes('<')) return emailAddress
-
-  const extract = /<[^>]*>/.exec(emailAddress)
-
-  return extract ? extract[0].replace(/[<>]/g, '') : emailAddress
-}
-
 const GeneralSettings = () => {
   const { config } = useConfig()
   const [{ admin }, dispatch] = useStateValue()
@@ -70,9 +63,9 @@ const GeneralSettings = () => {
 
   useEffect(() => {
     let storeEmail = get(shopConfig, 'storeEmail', get(shopConfig, 'fromEmail'))
-    storeEmail = parsePlain(storeEmail)
+    storeEmail = parsePlainEmail(storeEmail)
 
-    const supportEmail = parsePlain(get(config, 'supportEmail'))
+    const supportEmail = parsePlainEmail(get(config, 'supportEmail'))
 
     setState({
       hostname: get(shopConfig, 'hostname'),

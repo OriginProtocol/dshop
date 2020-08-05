@@ -2,6 +2,7 @@ import ethers from 'ethers'
 
 import { NetworksByIdStr, NetworksById } from 'data/Networks'
 import DefaultTokens from './defaultTokens'
+import parsePlainEmail from 'utils/parsePlainEmail'
 
 const networks = {}
 try {
@@ -47,12 +48,8 @@ export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
       }
       return true
     })
-    let supportEmailPlain = config.supportEmail
-    if (supportEmailPlain.match(/<([^>]+)>/)[1]) {
-      supportEmailPlain = supportEmailPlain.match(/<([^>]+)>/)[1]
-    }
 
-    config.supportEmailPlain = supportEmailPlain
+    config.supportEmailPlain = parsePlainEmail(config.supportEmail)
 
     const networkConfig = activeNetworkConfig(config, netId)
 
@@ -71,6 +68,7 @@ export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
 
     return result
   } catch (err) {
+    console.error(err)
     return config
   }
 }
