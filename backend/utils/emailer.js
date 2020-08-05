@@ -36,6 +36,7 @@ const stripeWebhookErrorTxt = require('./templates/stripeWebhookErrorTxt')
 const log = getLogger('utils.emailer')
 
 const getPlainEmail = (emailAddress) => {
+  if (!emailAddress) return emailAddress
   const match = emailAddress.match(/<([^>]+)>/)
 
   return match ? match[1] : emailAddress
@@ -65,10 +66,12 @@ const DEFAULT_SUPPORT_EMAIL = 'support@ogn.app'
  * }}
  */
 // TODO: Add unit test for this
-async function getEmailTransporterAndConfig(shop) {
-  if (IS_TEST) {
+async function getEmailTransporterAndConfig(shop, skipTestCheck = false) {
+  if (IS_TEST && !skipTestCheck) {
     return {
-      transporter: {},
+      transporter: {
+        sendMail: (message, cb) => cb(null, message)
+      },
       supportEmail: 'support@ogn.app',
       configJson: {},
       shopConfig: {
@@ -102,7 +105,13 @@ async function getEmailTransporterAndConfig(shop) {
   }
 
   let transporter
-  if (emailServerConfig.email === 'sendgrid') {
+  if (IS_TEST && skipTestCheck) {
+    // Skip creating nodemailer transport object
+    // while running unit tests for this function
+    transporter = {
+      config: emailServerConfig
+    }
+  } else if (emailServerConfig.email === 'sendgrid') {
     let auth
     if (emailServerConfig.sendgridApiKey) {
       auth = {
@@ -144,8 +153,7 @@ async function getEmailTransporterAndConfig(shop) {
 
   let supportEmail =
     configJson.supportEmail || shopConfig.supportEmail || DEFAULT_SUPPORT_EMAIL
-  let storeEmail =
-    shopConfig.supportEmail || shopConfig.fromEmail || supportEmail
+  let storeEmail = shopConfig.storeEmail || shopConfig.fromEmail || supportEmail
 
   if (usingNetworkFallbacks) {
     fromEmail = DEFAULT_SUPPORT_EMAIL
@@ -304,7 +312,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   const txtOutput = emailTxt(vars)
 
   const message = {
-    from: supportEmail,
+    from: fromEmail,
     to: `${vars.firstName} ${vars.lastName} <${vars.email}>`,
     subject: vars.subject,
     html: htmlOutput.html,
@@ -314,7 +322,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   }
 
   const messageVendor = {
-    from: supportEmail,
+    from: fromEmail,
     to: storeEmail,
     subject: `[${vars.siteName}] Order #${cart.offerId}`,
     html: htmlOutputVendor.html,
@@ -599,6 +607,7 @@ async function stripeWebhookErrorEmail(shopId, errorData, skip) {
 }
 
 module.exports = {
+  getEmailTransporterAndConfig,
   sendNewOrderEmail,
   sendVerifyEmail,
   sendPrintfulOrderFailedEmail,

@@ -130,7 +130,8 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
           <input {...input('supportEmail')} />
           {Feedback('supportEmail')}
           <div className="desc">
-            Your customers will see this address if you email them.
+            Your customers will see this address when receiving emails about
+            their order.
           </div>
         </div>
         {!get(admin, 'superuser') ? null : (
