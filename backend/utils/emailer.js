@@ -12,7 +12,7 @@ const { Network, Shop } = require('../models')
 
 const cartData = require('./cartData')
 const encConf = require('./encryptedConfig')
-const { SUPPORT_EMAIL_OVERRIDE, IS_TEST, IS_DEV } = require('./const')
+const { SUPPORT_EMAIL_OVERRIDE, IS_TEST } = require('./const')
 
 const head = require('./templates/head')
 const vendor = require('./templates/vendor')
@@ -52,7 +52,7 @@ function optionsForItem(item) {
   return options
 }
 
-const DEFAULT_SUPPORT_EMAIL = 'support@ogn.app'
+const DEFAULT_SUPPORT_EMAIL = SUPPORT_EMAIL_OVERRIDE || 'support@ogn.app'
 
 /**
  * Returns config and email transporter object
@@ -160,11 +160,6 @@ async function getEmailTransporterAndConfig(shop, skipTestCheck = false) {
     replyTo = supportEmail
   } else {
     fromEmail = supportEmail
-  }
-
-  if (IS_DEV) {
-    fromEmail = SUPPORT_EMAIL_OVERRIDE
-    replyTo = undefined
   }
 
   fromEmail = getPlainEmail(fromEmail)
