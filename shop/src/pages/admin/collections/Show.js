@@ -47,7 +47,7 @@ const ShowCollection = () => {
 
   const onSave = (products) => {
     setState({ products })
-    const productIds = products.map((p) => p.id)
+    const productIds = products.map((p) => p.id).filter((p) => p)
     const body = JSON.stringify({ products: productIds })
     post(`/collections/${collection.id}`, { method: 'PUT', body })
       .then(() => {
