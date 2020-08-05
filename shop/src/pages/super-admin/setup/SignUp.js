@@ -1,18 +1,51 @@
-import React, { useState } from 'react'
+import React from 'react'
+import pick from 'lodash/pick'
 
-import useConfig from 'utils/useConfig'
+import useBackendApi from 'utils/useBackendApi'
+import { formInput, formFeedback } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
+import useSetState from 'utils/useSetState'
 import ErrorText from './_ErrorText'
 
+const emailRegex = /^[a-z0-9-._+]+@[a-z0-9-]+(\.[a-z]+)*(\.[a-z]{2,})$/i
+
+function validate(state) {
+  const newState = {}
+
+  if (!state.name) {
+    newState.nameError = 'Please enter a name'
+  } else if (state.name.length < 3) {
+    newState.nameError = 'Name is too short'
+  }
+
+  if (!state.email) {
+    newState.emailError = 'Please enter an email address'
+  } else if (!emailRegex.test(state.email)) {
+    newState.emailError = 'Please enter a valid email address'
+  }
+
+  if (!state.password) {
+    newState.passwordError = 'Please enter a password'
+  } else if (state.password.length < 6) {
+    newState.passwordError = 'Password is too short'
+  }
+
+  const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
+
+  return { valid, newState: { ...state, ...newState } }
+}
+
 const SignUp = ({ url = '/auth/registration' }) => {
-  const { config } = useConfig()
   const [, dispatch] = useStateValue()
-  const [state, setState] = useState({
+  const { post } = useBackendApi()
+  const [state, setState] = useSetState({
     name: '',
     email: '',
     password: '',
     error: ''
   })
+  const input = formInput(state, (newState) => setState(newState))
+  const Feedback = formFeedback(state)
 
   return (
     <div className="signup-form">
@@ -22,25 +55,21 @@ const SignUp = ({ url = '/auth/registration' }) => {
         onSubmit={(e) => {
           e.preventDefault()
 
-          const body = JSON.stringify({
-            name: state.name,
-            email: state.email,
-            password: state.password
-          })
+          const { valid, newState } = validate(state)
+          setState(newState)
+          if (!valid) {
+            return
+          }
 
-          fetch(`${config.backend}${url}`, {
-            method: 'POST',
-            headers: { 'content-type': 'application/json' },
-            credentials: 'include',
-            body
-          })
-            .then(async (res) => {
-              if (res.ok) {
+          const body = JSON.stringify(pick(state, 'name', 'email', 'password'))
+
+          post(url, { body, suppressError: true })
+            .then((jsonData) => {
+              if (jsonData.success) {
                 setState({ ...state, error: '' })
                 dispatch({ type: 'reload', target: 'auth' })
               } else {
-                const jsonData = await res.json()
-                setState({ ...state, error: jsonData.message })
+                setState({ ...state, error: 'Unauthorized' })
               }
             })
             .catch((err) => {
@@ -51,32 +80,18 @@ const SignUp = ({ url = '/auth/registration' }) => {
       >
         <div className="form-group">
           <label>Name</label>
-          <input
-            autoFocus
-            className="form-control"
-            name="name"
-            value={state.name}
-            onChange={(e) => setState({ ...state, name: e.target.value })}
-          />
+          <input autoFocus {...input('name')} />
+          {Feedback('name')}
         </div>
         <div className="form-group">
           <label>Email</label>
-          <input
-            className="form-control"
-            name="email"
-            value={state.email}
-            onChange={(e) => setState({ ...state, email: e.target.value })}
-          />
+          <input type="email" {...input('email')} />
+          {Feedback('email')}
         </div>
         <div className="form-group">
           <label>Password</label>
-          <input
-            value={state.password}
-            onChange={(e) => setState({ ...state, password: e.target.value })}
-            name="password"
-            type="password"
-            className="form-control"
-          />
+          <input type="password" {...input('password')} />
+          {Feedback('password')}
         </div>
         <ErrorText>{state.error}</ErrorText>
         <button type="submit">Submit</button>
