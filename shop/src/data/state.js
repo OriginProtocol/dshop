@@ -249,7 +249,11 @@ const reducer = (state, action) => {
   } else if (action.type === 'setStorefrontLocation') {
     newState = set(newState, 'storefrontLocation', action.location)
   } else if (action.type === 'setConfig') {
-    const activeShop = get(action, 'config.activeShop')
+    const activeShop = get(
+      action,
+      'config.activeShop',
+      get(action, 'config.backendAuthToken')
+    )
     if (activeShop) {
       localStorage.activeShop = activeShop
     } else {

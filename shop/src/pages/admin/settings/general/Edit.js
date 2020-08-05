@@ -39,12 +39,21 @@ const configFields = [
   'medium',
   'youtube',
   'about',
-  'hostname'
+  'hostname',
+  'supportEmail'
 ]
 
 const ABOUT_FILENAME = 'about.html'
 
-const ShopAppearance = () => {
+const parsePlain = (emailAddress) => {
+  if (!emailAddress || !emailAddress.includes('<')) return emailAddress
+
+  const extract = /<[^>]*>/.exec(emailAddress)
+
+  return extract ? extract[0].replace(/[<>]/g, '') : emailAddress
+}
+
+const GeneralSettings = () => {
   const { config } = useConfig()
   const [{ admin }, dispatch] = useStateValue()
   const { shopConfig } = useShopConfig()
@@ -60,9 +69,16 @@ const ShopAppearance = () => {
   const [aboutText, setAboutText] = useState('')
 
   useEffect(() => {
+    let storeEmail = get(shopConfig, 'storeEmail', get(shopConfig, 'fromEmail'))
+    storeEmail = parsePlain(storeEmail)
+
+    const supportEmail = parsePlain(get(config, 'supportEmail'))
+
     setState({
       hostname: get(shopConfig, 'hostname'),
-      ...pick(config, configFields)
+      ...pick(config, configFields),
+      supportEmail,
+      storeEmail
     })
   }, [shopConfig, config])
 
@@ -156,6 +172,30 @@ const ShopAppearance = () => {
             <label>Store Name</label>
             <input {...input('fullTitle')} />
             {Feedback('fullTitle')}
+          </div>
+          <div className="row">
+            <div className="col-md-6">
+              <div className="form-group">
+                <label>Store contact email</label>
+                <input {...input('storeEmail')} />
+                {Feedback('storeEmail')}
+                <div className="desc">
+                  We&apos;ll use this address if we need to contact you about
+                  your store.
+                </div>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <div className="form-group">
+                <label>Customer email</label>
+                <input {...input('supportEmail')} />
+                {Feedback('supportEmail')}
+                <div className="desc">
+                  Your customers will see this address when receiving emails
+                  about their order.
+                </div>
+              </div>
+            </div>
           </div>
           <div className="form-group">
             <label>Store Domain</label>
@@ -347,7 +387,7 @@ const ShopAppearance = () => {
   )
 }
 
-export default ShopAppearance
+export default GeneralSettings
 
 require('react-styl')(`
   .shop-settings
@@ -387,4 +427,11 @@ require('react-styl')(`
         margin: 8px 0 0 15px
         > span
           visibility: hidden
+
+  .form-group .desc
+    font-size: 14px
+    font-weight: normal
+    color: #8293a4
+    margin-left: 0.25rem
+    margin-top: 0.25rem
 `)
