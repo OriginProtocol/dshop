@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "commander": "^6.0.0",
-    "ganache-core": "2.10.2",
+    "ganache-core": "2.11.0",
     "ipfs": "^0.48.0",
     "memdown": "^5.1.0"
   },
