@@ -366,6 +366,7 @@ module.exports = function (router) {
     const isLocal = zone === 'localhost'
     const publicUrl = isLocal ? backend : `https://${hostname}.${zone}`
     const dataUrl = `${publicUrl}/${dataDir}/`
+    const supportEmail = req.body.supportEmail || req.seller.email
 
     let defaultShopConfig = {}
     if (networkConfig.defaultShopConfig) {
@@ -384,8 +385,8 @@ module.exports = function (router) {
       publicUrl,
       printful: req.body.printfulApi,
       deliveryApi: req.body.printfulApi ? true : false,
-      supportEmail: req.body.supportEmail,
-      storeEmail: req.body.storeEmail
+      supportEmail,
+      emailSubject: `Your order from ${name}`
     }
     if (req.body.web3Pk && !config.web3Pk) {
       config.web3Pk = isHexPrefixed(req.body.web3Pk)
@@ -472,9 +473,7 @@ module.exports = function (router) {
         title: name,
         fullTitle: name,
         backendAuthToken: dataDir,
-        supportEmail: req.body.supportEmail,
-        storeEmail: req.body.storeEmail,
-        emailSubject: `Your ${name} Order`,
+        supportEmail,
         pgpPublicKey: pgpKeys.pgpPublicKey.replace(/\\r/g, '')
       }
     }
@@ -978,6 +977,7 @@ module.exports = function (router) {
         'dataUrl',
         'deliveryApi',
         'email',
+        'emailSubject',
         'hostname',
         'listener',
         'mailgunSmtpLogin',
@@ -999,7 +999,6 @@ module.exports = function (router) {
         'sendgridApiKey',
         'sendgridPassword',
         'sendgridUsername',
-        'storeEmail',
         'stripeBackend',
         'stripeWebhookSecret',
         'supportEmail',

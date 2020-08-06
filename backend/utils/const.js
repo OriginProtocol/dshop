@@ -49,8 +49,7 @@ const {
   PROVIDER,
   PROVIDER_WS,
   REDIS_URL,
-  IPFS_GATEWAY, // IPFS gateway override
-  SUPPORT_EMAIL_OVERRIDE
+  IPFS_GATEWAY // IPFS gateway override
 } = process.env
 
 /**
@@ -78,7 +77,6 @@ module.exports = {
   IPFS_GATEWAY,
   NETWORK,
   NETWORK_ID: NETWORK_NAME_TO_ID[NETWORK] || 999,
-  SUPPORT_EMAIL_OVERRIDE,
   PRINTFUL_URL,
   DSHOP_CACHE
 }

@@ -309,6 +309,7 @@ const reducer = (state, action) => {
 
   const donation = get(newState, 'cart.donation', 0)
 
+  newState.cart.currency = get(newState, 'config.currency', 'USD')
   newState.cart.discount = discount
   newState.cart.total = newState.cart.subTotal + shipping - discount + donation
 

@@ -10,7 +10,8 @@ const { DSHOP_CACHE } = require('./const')
 
 const generatePrintfulOrder = require('@origin/utils/generatePrintfulOrder')
 
-const { sendPrintfulOrderFailedEmail, sendNewOrderEmail } = require('./emailer')
+const sendPrintfulOrderFailedEmail = require('./emails/printfulOrderFailed')
+const sendNewOrderEmail = require('./emails/newOrder')
 
 const { Order, Shop } = require('../models')
 
@@ -355,13 +356,17 @@ const processShippedEvent = async (event, shopId) => {
       return
     }
 
-    await sendNewOrderEmail(shop, dbOrder.data, {
-      trackingInfo: {
-        trackingNumber: shipment.tracking_number,
-        trackingUrl: shipment.tracking_url,
-        trackingService: shipment.service
-      },
-      skipVendorMail: true
+    await sendNewOrderEmail({
+      shop,
+      cart: dbOrder.data,
+      varsOverride: {
+        trackingInfo: {
+          trackingNumber: shipment.tracking_number,
+          trackingUrl: shipment.tracking_url,
+          trackingService: shipment.service
+        },
+        skipVendorMail: true
+      }
     })
   } catch (err) {
     log.error(`Shop ${shopId} - Failed to process shipped event`, err)

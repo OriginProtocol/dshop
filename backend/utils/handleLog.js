@@ -10,7 +10,7 @@ const get = require('lodash/get')
 
 const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
-const { sendNewOrderEmail } = require('./emailer')
+const sendNewOrderEmail = require('./emails/newOrder')
 const { upsertEvent, getEventObj } = require('./events')
 const { getConfig } = require('./encryptedConfig')
 const discordWebhook = require('./discordWebhook')
@@ -335,7 +335,7 @@ async function _processEventForNewOrder({
   // cause the order to get recorded multiple times in the DB.
   if (!skipEmail) {
     try {
-      await sendNewOrderEmail(shop, data)
+      await sendNewOrderEmail({ shop, cart: data, network })
     } catch (e) {
       log.error('Email sending failure:', e)
       Sentry.captureException(e)
