@@ -9,7 +9,7 @@ const { validateStripeKeys } = require('@origin/utils/stripe')
 const { Shop, ExternalPayment, Network } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
-const { normalizeDescriptor } = require('../utils/stripe')
+const stripeUtils = require('../utils/stripe')
 const { getLogger } = require('../utils/logger')
 
 const makeOffer = require('./_makeOffer')
@@ -62,7 +62,13 @@ module.exports = function (router) {
     const shopConfig = getConfig(req.shop.config)
     const web3Pk = shopConfig.web3Pk || networkConfig.web3Pk
 
-    if (!web3Pk || !shopConfig.stripeBackend) {
+    const valid = await stripeUtils.webhookValidation(
+      req.shop,
+      shopConfig,
+      shopConfig.stripeWebhookHost || networkConfig.backendUrl
+    )
+
+    if (!web3Pk || !valid) {
       return res.status(400).send({
         success: false,
         message: 'CC payments unavailable'
@@ -74,7 +80,7 @@ module.exports = function (router) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: req.body.amount,
       currency: req.body.currency || 'usd',
-      statement_descriptor: normalizeDescriptor(req.shop.name),
+      statement_descriptor: stripeUtils.normalizeDescriptor(req.shop.name),
       metadata: {
         shopId: req.shop.id,
         shopStr: req.shop.authToken,
@@ -196,7 +202,11 @@ module.exports = function (router) {
 
   router.post('/stripe/check-creds', authShop, async (req, res) => {
     let valid = false
-    const { stripeKey, stripeBackend } = req.body
+    let shouldUpdateWebhooks = true
+
+    const { stripeKey, stripeBackend, stripeWebhookHost } = req.body
+
+    let backendUrl = stripeWebhookHost
 
     if (
       validateStripeKeys({
@@ -209,13 +219,30 @@ module.exports = function (router) {
 
         await stripe.customers.list({ limit: 1 })
 
+        if (!backendUrl) {
+          const network = await Network.findOne({
+            where: { networkId: req.shop.networkId }
+          })
+          const networkConfig = getConfig(network.config)
+
+          backendUrl = networkConfig.backendUrl
+        }
+
         valid = true
+
+        shouldUpdateWebhooks = !(await stripeUtils.webhookValidation(
+          req.shop.id,
+          {
+            stripeBackend
+          },
+          backendUrl
+        ))
       } catch (err) {
         log.error('Failed to verify stripe credentials')
         log.debug(err)
       }
     }
 
-    return res.json({ success: true, valid })
+    return res.json({ success: true, valid, shouldUpdateWebhooks })
   })
 }

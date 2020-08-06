@@ -73,7 +73,8 @@ const validateCredentials = async (client) => {
   try {
     await client.fetchAccessToken()
     return true
-  } catch (_) {
+  } catch (err) {
+    log.debug('Failed to validate paypal creds', err)
     return false
   }
 }

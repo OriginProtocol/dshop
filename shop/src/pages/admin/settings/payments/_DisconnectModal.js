@@ -20,7 +20,8 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
               stripe: false,
               stripeKey: '',
               stripeBackend: '',
-              stripeWebhookSecret: ''
+              stripeWebhookSecret: '',
+              stripeWebhookHost: ''
             }
             break
           case 'uphold':

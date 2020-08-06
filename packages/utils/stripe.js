@@ -43,8 +43,8 @@ function validateSecretKey(key) {
  * Validate secret key
  *
  * @param args {object} - args
- * @param args.publishableKey {string} - The Strie publishable key
- * @param args.secretKey {string} - The Strie secret key
+ * @param args.publishableKey {string} - The Stripe publishable key
+ * @param args.secretKey {string} - The Stripe secret key
  * @returns {boolean} - if the keys appear to be valid
  */
 function validateStripeKeys({ publishableKey, secretKey }) {

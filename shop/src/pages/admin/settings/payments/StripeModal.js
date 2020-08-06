@@ -22,7 +22,8 @@ const reducer = (state, newState) => ({ ...state, ...newState })
 const initialState = {
   stripeKey: '',
   stripeBackend: '',
-  stripeWebhookSecret: ''
+  stripeWebhookSecret: '',
+  stripeWebhookHost: ''
 }
 
 const validate = (state) => {
@@ -101,11 +102,21 @@ const StripeModal = ({ onClose, initialConfig }) => {
         {Feedback('stripeBackend')}
       </div>
       {process.env.NODE_ENV === 'production' ? null : (
-        <div className="form-group">
-          <label>Stripe Webhook Key</label>
-          <PasswordField input={input} field="stripeWebhookSecret" />
-          {Feedback('stripeWebhookSecret')}
-        </div>
+        <>
+          <div className="form-group">
+            <label>Webhook Host Tunnel (To test locally)</label>
+            <input
+              {...input('stripeWebhookHost')}
+              placeholder="https://blahblah.yourtunnel.com"
+            />
+            {Feedback('stripeWebhookHost')}
+          </div>
+          {/* <div className="form-group">
+            <label>Stripe Webhook Key</label>
+            <PasswordField input={input} field="stripeWebhookSecret" />
+            {Feedback('stripeWebhookSecret')}
+          </div> */}
+        </>
       )}
     </ConnectModal>
   )

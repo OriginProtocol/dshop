@@ -2,7 +2,6 @@ const omit = require('lodash/omit')
 const pick = require('lodash/pick')
 const sortBy = require('lodash/sortBy')
 
-const Stripe = require('stripe')
 const {
   Seller,
   Shop,
@@ -37,7 +36,7 @@ const path = require('path')
 const { isHexPrefixed, addHexPrefix } = require('ethereumjs-util')
 
 const { configureShopDNS, deployShop } = require('../utils/deployShop')
-const { DSHOP_CACHE, IS_PROD } = require('../utils/const')
+const { DSHOP_CACHE } = require('../utils/const')
 const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
 const {
@@ -53,6 +52,8 @@ const log = getLogger('routes.shops')
 
 const dayjs = require('dayjs')
 const { readProductsFile } = require('../utils/products')
+
+const stripeUtils = require('../utils/stripe')
 
 async function tryDataDir(dataDir) {
   const hasDir = fs.existsSync(`${DSHOP_CACHE}/${dataDir}`)
@@ -655,83 +656,6 @@ module.exports = function (router) {
     }
   )
 
-  async function deregisterStripeWebhooks(config) {
-    const { stripeBackend, backendAuthToken } = config
-
-    if (!stripeBackend || !backendAuthToken) {
-      return
-    }
-
-    try {
-      log.info('Trying to deregister any existing webhook...')
-      const stripe = Stripe(stripeBackend)
-
-      const webhookEndpoints = await stripe.webhookEndpoints.list({
-        limit: 100
-      })
-
-      const endpointsToDelete = webhookEndpoints.data
-        .filter(
-          (endpoint) =>
-            get(endpoint, 'metadata.dshopStore') === backendAuthToken
-        )
-        .map((endpoint) => endpoint.id)
-
-      for (const endpointId of endpointsToDelete) {
-        try {
-          await stripe.webhookEndpoints.del(endpointId)
-        } catch (err) {
-          log.error('Failed to deregister webhook', endpointId, err)
-        }
-      }
-
-      log.info(`${endpointsToDelete} webhooks deregisterd`)
-    } catch (err) {
-      log.error('Failed to deregister webhooks', err)
-      return { success: false }
-    }
-
-    return { success: true }
-  }
-
-  async function registerStripeWebhooks(newConfig, oldConfig, backendUrl) {
-    const { backendAuthToken } = oldConfig
-    const { stripeBackend } = newConfig
-
-    // Deregister old webhooks
-    await deregisterStripeWebhooks(oldConfig)
-
-    // NOTE: Fails on localhost, try using a reverse proxy/tunnel like ngrok
-    // Or setup manually using Stripe CLI
-
-    if (!backendUrl) {
-      log.error('Invalid webhook host')
-      return { success: false }
-    }
-
-    log.info('Trying to register webhook on host', backendUrl)
-
-    try {
-      const stripe = Stripe(stripeBackend)
-
-      const endpoint = await stripe.webhookEndpoints.create({
-        url: `${backendUrl}/webhook`,
-        enabled_events: ['payment_intent.succeeded'],
-        description: 'Origin Dshop payment processor',
-        metadata: {
-          dshopStore: backendAuthToken
-        }
-      })
-
-      log.info(`Registered webhook for host ${backendUrl}`)
-
-      return { success: true, secret: endpoint.secret }
-    } catch (err) {
-      console.error('Failed to register webhooks', err)
-      return { success: false }
-    }
-  }
-
   async function movePaymentMethodImages(paymentMethods, dataDir) {
     const out = []
     const tmpDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/__tmp`)
@@ -887,26 +811,23 @@ module.exports = function (router) {
       const additionalOpts = {}
 
       // Configure Stripe webhooks
-      if (IS_PROD) {
-        // Register webhooks only on prod
-        if (req.body.stripe === false) {
-          log.info(`Shop ${shopId} - Deregistering Stripe webhook`)
-          await deregisterStripeWebhooks(existingConfig)
-          additionalOpts.stripeWebhookSecret = ''
-          additionalOpts.stripeBackend = ''
-        } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
-          log.info(`Shop ${shopId} - Registering Stripe webhook`)
-          const { secret } = await registerStripeWebhooks(
-            req.body,
-            existingConfig,
-            netConfig.backendUrl
-          )
-          additionalOpts.stripeWebhookSecret = secret
-        } else if (req.body.stripeWebhookSecret) {
-          additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
-        }
-      } else {
-        additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
+      if (req.body.stripe === false) {
+        log.info(`Shop ${shopId} - Deregistering Stripe webhook`)
+        await stripeUtils.deregisterWebhooks(req.shop, existingConfig)
+        additionalOpts.stripeWebhookSecret = ''
+        additionalOpts.stripeWebhookHost = ''
+        additionalOpts.stripeBackend = ''
+      } else if (req.body.stripe) {
+        log.info(`Shop ${shopId} - Registering Stripe webhook`)
+        const { secret } = await stripeUtils.registerWebhooks(
+          req.shop,
+          req.body,
+          existingConfig,
+          req.body.stripeWebhookHost || netConfig.backendUrl
+        )
+        additionalOpts.stripeWebhookSecret = secret
+        // } else if (req.body.stripeWebhookSecret) {
+        //   additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
       }
 
       // Configure Printful webhooks
@@ -922,7 +843,7 @@ module.exports = function (router) {
         )
 
         additionalOpts.printfulWebhookSecret = printfulWebhookSecret
-      } else if (existingConfig.printful && !req.body.printful) {
+      } else if (existingConfig.printful && req.body.printful === false) {
         log.info(`Shop ${shopId} - Deregistering Printful webhook`)
         await deregisterPrintfulWebhook(shopId, existingConfig)
         additionalOpts.printfulWebhookSecret = ''
@@ -961,7 +882,7 @@ module.exports = function (router) {
           netConfig
         )
         additionalOpts.paypalWebhookId = result.webhookId
-      } else if (existingConfig.paypal) {
+      } else if (existingConfig.paypal && req.body.paypal === false) {
         await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
         additionalOpts.paypalWebhookId = null
       }
@@ -1002,6 +923,7 @@ module.exports = function (router) {
         'storeEmail',
         'stripeBackend',
         'stripeWebhookSecret',
+        'stripeWebhookHost',
         'supportEmail',
         'upholdApi',
         'upholdClient',
