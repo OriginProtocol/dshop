@@ -10,7 +10,7 @@ const { getBytes32FromIpfsHash, post: postIpfs } = require('../utils/_ipfs')
 const { Network } = require('../models')
 const { defaults } = require('../config')
 const { createShop } = require('../utils/shop')
-const { setConfig } = require('../utils/encryptedConfig')
+const { setConfig, getConfig } = require('../utils/encryptedConfig')
 const { createListing, baseListing } = require('../utils/createListing')
 
 let _cookies = {}
@@ -145,7 +145,7 @@ async function addData(data, { pgpPublicKey, ipfsApi }) {
  * Creates or return existing network model
  * @returns {Promise<models.Network>}
  */
-async function getOrCreateTestNetwork() {
+async function getOrCreateTestNetwork(configOverride = {}) {
   const config = defaults['999']
 
   // The default config relies on env variable MARKETPLACE_CONTRACT for
@@ -180,7 +180,8 @@ async function getOrCreateTestNetwork() {
       cloudflareApiKey: 'cloudflareApiKey',
       gcpCredentials: 'gcpCredentials',
       domain: 'domain.com',
-      deployDir: 'deployDir'
+      deployDir: 'deployDir',
+      ...configOverride
     })
   }
   // Note: For unclear reasons, the migration file 20200317190719-addIpfs.js
@@ -248,6 +249,23 @@ async function createTestShop({
 }
 
 /**
+ * Updates test shop's encrypted config
+ * @param {Shop} shop
+ * @param {Object} shopConfig
+ * @returns {Shop}
+ */
+async function updateShopConfig(shop, shopConfig) {
+  await shop.update({
+    config: setConfig({
+      ...getConfig(shop.config),
+      ...shopConfig
+    })
+  })
+
+  return shop
+}
+
+/**
  * Returns test wallets provisioned by ganache and that have ETH.
  * @param {number} index
  * @returns {Wallet}
@@ -289,5 +307,6 @@ module.exports = {
   createTestShop,
   getTestWallet,
   getOrCreateTestNetwork,
-  MockBullJob
+  MockBullJob,
+  updateShopConfig
 }

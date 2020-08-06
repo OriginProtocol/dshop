@@ -2,6 +2,7 @@ import ethers from 'ethers'
 
 import { NetworksByIdStr, NetworksById } from 'data/Networks'
 import DefaultTokens from './defaultTokens'
+import parsePlainEmail from 'utils/parsePlainEmail'
 
 const networks = {}
 try {
@@ -14,7 +15,8 @@ try {
 
 const DefaultPaymentMethods = [
   { id: 'crypto', label: 'Crypto Currency' },
-  { id: 'stripe', label: 'Credit Card' }
+  { id: 'stripe', label: 'Credit Card' },
+  { id: 'paypal', label: 'PayPal' }
 ]
 
 let config
@@ -35,21 +37,20 @@ export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
 
     config = await fetch(url).then((raw) => raw.json())
     if (!config.backend) config.backend = ''
+    if (!config.currency) config.currency = 'USD'
     if (!config.paymentMethods) {
       config.paymentMethods = DefaultPaymentMethods
     }
     config.paymentMethods = config.paymentMethods.filter((m) => {
       if (m.id === 'stripe' && !config.stripeKey) {
         return false
+      } else if (m.id === 'paypal' && !config.paypalClientId) {
+        return false
       }
       return true
     })
-    let supportEmailPlain = config.supportEmail
-    if (supportEmailPlain.match(/<([^>]+)>/)[1]) {
-      supportEmailPlain = supportEmailPlain.match(/<([^>]+)>/)[1]
-    }
 
-    config.supportEmailPlain = supportEmailPlain
+    config.supportEmailPlain = parsePlainEmail(config.supportEmail)
 
     const networkConfig = activeNetworkConfig(config, netId)
 
@@ -68,6 +69,7 @@ export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
 
     return result
   } catch (err) {
+    console.error(err)
     return config
   }
 }

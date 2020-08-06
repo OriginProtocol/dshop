@@ -66,6 +66,13 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
               mailgunSmtpPassword: ''
             }
             break
+          case 'paypal':
+            updatedConfig = {
+              paypal: false,
+              paypalClientId: '',
+              paypalClientSecret: ''
+            }
+            break
         }
 
         return post('/shop/config', {

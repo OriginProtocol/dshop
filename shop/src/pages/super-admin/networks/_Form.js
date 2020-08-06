@@ -86,6 +86,7 @@ function initialState() {
     marketplaceContract: '',
     marketplaceVersion: '',
     googleAnalytics: '',
+    paypalEnvironment: 'prod',
     backendUrl,
     ...Defaults[networkId]
   }
@@ -347,6 +348,14 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           <label>Google Analytics</label>
           <input {...input('googleAnalytics')} />
           {Feedback('googleAnalytics')}
+        </div>
+        <div className="form-group col-md-6">
+          <label>PayPal Environment</label>
+          <select {...input('paypalEnvironment')}>
+            <option value="prod">Production</option>
+            <option value="sandbox">Sandbox</option>
+          </select>
+          {Feedback('paypalEnvironment')}
         </div>
       </div>
 

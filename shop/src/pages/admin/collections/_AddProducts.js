@@ -1,5 +1,6 @@
 import React, { useReducer, useEffect } from 'react'
 import omit from 'lodash/omit'
+import sortBy from 'lodash/sortBy'
 
 import useProducts from 'utils/useProducts'
 import useBackendApi from 'utils/useBackendApi'
@@ -16,12 +17,22 @@ const AddProducts = ({ children, collection }) => {
   const { products } = useProducts()
   const [, dispatch] = useStateValue()
   const [state, setState] = useReducer(reducer, {
-    products: collection.products
+    products: collection.products,
+    sortedProducts: products || []
   })
 
   useEffect(() => {
     setState({ products: collection.products })
   }, [collection.products])
+
+  useEffect(() => {
+    setState({
+      sortedProducts: sortBy(products, (p) => {
+        const idx = collection.products.indexOf(p.id)
+        return idx < 0 ? Infinity : idx
+      })
+    })
+  }, [products, collection.products])
 
   function onCheck(product, checked) {
     if (checked) {
@@ -40,14 +51,20 @@ const AddProducts = ({ children, collection }) => {
       />
       {state.modal && (
         <Modal
-          onClose={() => setState({ reset: true, products: state.products })}
+          onClose={() =>
+            setState({
+              reset: true,
+              products: state.products,
+              sortedProducts: state.sortedProducts
+            })
+          }
           shouldClose={state.shouldClose}
         >
           <div className="modal-body">
             <h4>Edit products</h4>
             <div className="collection-products">
               {products.length ? null : 'No products found.'}
-              {products.map((product) => (
+              {state.sortedProducts.map((product) => (
                 <label key={product.id} className="d-flex align-items-center">
                   <input
                     type="checkbox"
@@ -71,7 +88,9 @@ const AddProducts = ({ children, collection }) => {
                     state.saving ? ' disabled' : ''
                   }`}
                   onClick={() => {
-                    const body = JSON.stringify({ products: state.products })
+                    const body = JSON.stringify({
+                      products: state.products.filter((p) => p)
+                    })
                     setState({ saving: true })
                     post(`/collections/${collection.id}`, {
                       method: 'PUT',

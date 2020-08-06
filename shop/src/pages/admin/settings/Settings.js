@@ -4,7 +4,7 @@ import { Switch, Route } from 'react-router-dom'
 import ServerSettings from './Server'
 import UsersList from './users/List'
 import Console from './Console'
-import Appearance from './appearance/Edit'
+import General from './general/Edit'
 import Payments from './payments/List'
 import Apps from './apps/List'
 import Deployments from './deployments/List'
@@ -38,7 +38,7 @@ const AdminSettings = () => (
       <Advanced />
     </Route>
     <Route>
-      <Appearance />
+      <General />
     </Route>
   </Switch>
 )

@@ -1,4 +1,4 @@
-const { authSellerAndShop } = require('./_auth')
+const { authSellerAndShop, authShop } = require('./_auth')
 const {
   Order,
   sequelize,
@@ -80,6 +80,22 @@ module.exports = function (router) {
       if (!encryptedData) {
         return res.json({ success: false })
       }
+      req.body.data = encryptedData
+      req.amount = 0
+      next()
+    },
+    makeOffer
+  )
+
+  router.post(
+    '/orders/offline-payment-order',
+    authShop,
+    (req, res, next) => {
+      const { encryptedData } = req.body
+      if (!encryptedData) {
+        return res.json({ success: false })
+      }
+
       req.body.data = encryptedData
       req.amount = 0
       next()

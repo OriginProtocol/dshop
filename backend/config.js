@@ -2,7 +2,7 @@ require('dotenv').config()
 
 const fetch = require('node-fetch')
 const memoize = require('lodash/memoize')
-const { PROVIDER, NETWORK_ID } = require('./utils/const')
+const { PROVIDER, NETWORK_ID, IS_TEST } = require('./utils/const')
 const { getLogger } = require('./utils/logger')
 
 const log = getLogger('config')
@@ -29,29 +29,31 @@ const Defaults = {
   }
 }
 
-const getSiteConfig = memoize(async function getSiteConfig(
-  dataURL,
-  netId = NETWORK_ID
-) {
-  let data
-  if (dataURL) {
-    const url = `${dataURL}config.json`
-    log.debug(`Loading config from ${url}`)
-    const dataRaw = await fetch(url)
-    data = await dataRaw.json()
-  } else {
-    log.warn('dataURL not provided')
-  }
-  const defaultData = Defaults[netId] || {}
-  const networkData = data ? data.networks[netId] : null || {}
-  const siteConfig = {
-    provider: PROVIDER,
-    ...data,
-    ...defaultData,
-    ...networkData
-  }
-  return siteConfig
-})
+const getSiteConfig = memoize(
+  async function getSiteConfig(dataURL, netId = NETWORK_ID) {
+    if (IS_TEST) return {}
+
+    let data
+    if (dataURL) {
+      const url = `${dataURL}config.json`
+      log.debug(`Loading config from ${url}`)
+      const dataRaw = await fetch(url)
+      data = await dataRaw.json()
+    } else {
+      log.warn('dataURL not provided')
+    }
+    const defaultData = Defaults[netId] || {}
+    const networkData = data ? data.networks[netId] : null || {}
+    const siteConfig = {
+      provider: PROVIDER,
+      ...data,
+      ...defaultData,
+      ...networkData
+    }
+    return siteConfig
+  },
+  (...args) => args.join('-')
+)
 
 module.exports = {
   defaults: Defaults,
