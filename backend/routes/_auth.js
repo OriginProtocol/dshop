@@ -84,10 +84,10 @@ async function authUser(req, res, next) {
   if (!req.session.sellerId) {
     return res.status(401).json({ success: false, message: 'Not logged in' })
   }
-  const seller = await Seller.findOne({
+  req.seller = await Seller.findOne({
     where: { id: req.session.sellerId }
   })
-  if (!seller) {
+  if (!req.seller) {
     return res.status(401).json({ success: false, message: 'Not logged in' })
   }
   next()

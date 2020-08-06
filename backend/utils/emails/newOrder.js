@@ -106,7 +106,7 @@ async function sendNewOrderEmail({ shop, network, cart, varsOverride, skip }) {
     ]
   }
 
-  const subject = shopConfig.emailSubject || `Your order from ${shop.name}`
+  const subject = shopConfig.emailSubject || `Your ${shop.name} order`
 
   const vars = {
     head,

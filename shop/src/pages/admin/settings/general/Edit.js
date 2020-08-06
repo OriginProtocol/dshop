@@ -11,7 +11,6 @@ import useShopConfig from 'utils/useShopConfig'
 import useBackendApi from 'utils/useBackendApi'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
-import parsePlainEmail from 'utils/parsePlainEmail'
 
 import Tabs from '../_Tabs'
 import CustomDomain from './_CustomDomain'
@@ -31,7 +30,6 @@ const configFields = [
   'metaDescription',
   'cartSummaryNote',
   'discountCodes',
-  'emailSubject',
   'css',
   'facebook',
   'twitter',
@@ -39,8 +37,7 @@ const configFields = [
   'medium',
   'youtube',
   'about',
-  'hostname',
-  'supportEmail'
+  'hostname'
 ]
 
 const ABOUT_FILENAME = 'about.html'
@@ -55,18 +52,13 @@ const GeneralSettings = () => {
     setState({ ...newState, hasChanges: true })
   )
   const Feedback = formFeedback(state)
-
   const [saving, setSaving] = useState(false)
-
   const [aboutText, setAboutText] = useState('')
 
   useEffect(() => {
-    const supportEmail = parsePlainEmail(get(config, 'supportEmail'))
-
     setState({
-      hostname: get(shopConfig, 'hostname'),
       ...pick(config, configFields),
-      supportEmail
+      ...pick(shopConfig, ['hostname', 'emailSubject', 'supportEmail'])
     })
   }, [shopConfig, config])
 
@@ -343,6 +335,7 @@ const GeneralSettings = () => {
                 Email subject <span>(for receipt emails)</span>
               </label>
               <input {...input('emailSubject')} />
+              {Feedback('emailSubject')}
             </div>
           </div>
         </div>

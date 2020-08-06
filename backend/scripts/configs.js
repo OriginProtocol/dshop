@@ -8,7 +8,6 @@ const shopConfig = {
   favicon: 'favicon.png',
 
   supportEmail: 'Store <store@ogn.app>',
-  emailSubject: 'Your Order',
   twitter: '',
   medium: '',
   facebook: '',

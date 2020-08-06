@@ -48,18 +48,19 @@ function getNetworkTransport(network) {
 function getShopTransport(shop, network) {
   const shopConfig = encConf.getConfig(shop.config)
   const shopTransport = getTransportFromConfig(shopConfig)
+
+  const netConfig = encConf.getConfig(network.config)
+  const netTransport = getTransportFromConfig(netConfig.fallbackShopConfig)
+  const netEmailAddress = netConfig.notificationEmail
+
   const displayName = shop.name
-  const emailAddress = shopConfig.supportEmail
+  const emailAddress = shopConfig.supportEmail || netEmailAddress
   if (shopTransport) {
     return {
       from: `${displayName} <${emailAddress}>`,
       transporter: shopTransport
     }
   }
-
-  const netConfig = encConf.getConfig(network.config)
-  const netTransport = getTransportFromConfig(netConfig.fallbackShopConfig)
-  const netEmailAddress = netConfig.notificationEmail
 
   return {
     from: `${displayName} <${netEmailAddress}>`,
