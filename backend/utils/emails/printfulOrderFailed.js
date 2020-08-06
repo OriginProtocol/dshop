@@ -1,10 +1,11 @@
 const mjml2html = require('mjml')
-const { Shop } = require('../../models')
+const { Network, Shop } = require('../../models')
 
-const getEmailTransporterAndConfig = require('./_getTransport')
+const { getShopTransport } = require('./_getTransport')
+const encConf = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
 
-const head = require('./templates/head')
+const head = require('./templates/_head')
 const printfulOrderFailed = require('./templates/printfulOrderFailed')
 const printfulOrderFailedTxt = require('./templates/printfulOrderFailedTxt')
 
@@ -12,19 +13,10 @@ const log = getLogger('utils.emailer')
 
 async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
   const shop = await Shop.findOne({ where: { id: shopId } })
-  const {
-    transporter,
-    fromEmail,
-    supportEmail,
-    shopConfig: config,
-    configJson: data,
-    replyTo,
-    storeEmail
-  } = await getEmailTransporterAndConfig(shop)
+  const network = await Network.fineOne({ where: { active: true } })
+  const { transporter, from, replyTo } = await getShopTransport(shop, network)
   if (!transporter) {
-    log.info(
-      `Emailer not configured for shop id ${shopId}. Skipping sending Printful order failed email.`
-    )
+    log.info(`No email transport configured. Skiped sending new order email.`)
     return
   }
 
@@ -33,25 +25,26 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
     skip = true
   }
 
-  const publicURL = config.publicUrl
+  const shopConfig = encConf.getConfig(shop.config)
+  const publicURL = `${shopConfig.publicUrl}/#`
 
   const cart = orderData.data
 
   const vars = {
     head,
-    supportEmail,
+    supportEmail: replyTo || from,
     message: opts ? opts.message : '',
     orderUrlAdmin: `${publicURL}/admin/orders/${cart.offerId}`,
-    siteName: data.fullTitle || data.title,
-    fromEmail
+    siteName: shop.name,
+    fromEmail: from
   }
 
   const htmlOutput = mjml2html(printfulOrderFailed(vars), { minify: true })
   const txtOutput = printfulOrderFailedTxt(vars)
 
   const message = {
-    from: fromEmail,
-    to: storeEmail,
+    from,
+    to: replyTo || from,
     subject: 'Failed to create order on Printful',
     html: htmlOutput.html,
     text: txtOutput,

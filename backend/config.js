@@ -55,8 +55,25 @@ const getSiteConfig = memoize(
   (...args) => args.join('-')
 )
 
+async function getShopConfigJson(dataURL, netId) {
+  const url = `${dataURL}config.json`
+  try {
+    const data = fetch(url).then((res) => res.json())
+    const defaultData = Defaults[netId] || {}
+    const networkData = data ? data.networks[netId] : null || {}
+    return {
+      ...data,
+      ...defaultData,
+      ...networkData
+    }
+  } catch (e) {
+    log.error(`Error fetching config.json from ${url}`)
+  }
+}
+
 module.exports = {
   defaults: Defaults,
   getSiteConfig,
-  provider: PROVIDER
+  provider: PROVIDER,
+  getShopConfigJson
 }

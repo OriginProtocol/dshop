@@ -12,11 +12,24 @@ const get = require('lodash/get')
 const { Op } = require('sequelize')
 
 const { sendVerificationEmail, sendPasswordReset } = require('../utils/sellers')
-const { verifyEmailCode } = require('../utils/emailVerification')
 
 const { getLogger } = require('../utils/logger')
 
 const log = getLogger('routes.users')
+
+const verifyEmailCode = (code, seller) => {
+  if (!seller || !seller.data) {
+    return { error: 'Invalid code' }
+  } else if (seller.data.emailVerificationCode !== code) {
+    return { error: 'Invalid code' }
+  } else if (Date.now() > seller.data.verificationExpiresAt) {
+    return { error: 'Code expired' }
+  }
+  return {
+    success: true,
+    redirectTo: seller.data.verificationRedirectTo
+  }
+}
 
 module.exports = function (router) {
   router.get('/superuser/users', authSuperUser, async (req, res) => {

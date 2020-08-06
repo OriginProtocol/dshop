@@ -1,151 +1,71 @@
-const { getSiteConfig } = require('../../config')
 const nodemailer = require('nodemailer')
 const aws = require('aws-sdk')
-const get = require('lodash/get')
-
-const { Network } = require('../../models')
-
+// const { IS_TEST } = require('../const')
 const encConf = require('../encryptedConfig')
-const { IS_TEST, SUPPORT_EMAIL_OVERRIDE } = require('../const')
 
-const getPlainEmail = (emailAddress) => {
-  if (!emailAddress) return emailAddress
-  const match = emailAddress.match(/<([^>]+)>/)
+function getTransportFromConfig(config) {
+  // if (IS_TEST) {
+  //   return { sendMail: (message, cb) => cb(null, message) }
+  // }
 
-  return match ? match[1] : emailAddress
-}
-
-const DEFAULT_SUPPORT_EMAIL = SUPPORT_EMAIL_OVERRIDE || 'support@ogn.app'
-
-/**
- * Returns config and email transporter object
- * @param {Model.Shop} shop DB model
- * @returns {{
- *  transporter,
- *  fromEmail,
- *  supportEmail,
- *  shopConfig, // Decrypted shop config
- *  configJson // Shop's public config.json file
- * }}
- **/
-// TODO: Add unit test for this
-async function getEmailTransporterAndConfig(shop, skipTestCheck = false) {
-  if (IS_TEST && !skipTestCheck) {
-    return {
-      transporter: {
-        sendMail: (message, cb) => cb(null, message)
-      },
-      supportEmail: 'support@ogn.app',
-      configJson: {},
-      shopConfig: {
-        dataURL: 'https://testshop.ogn.app/data',
-        publicURL: 'https://testshop.ogn.app'
-      }
-    }
-  }
-
-  const network = await Network.findOne({ where: { active: true } })
-  const networkConfig = encConf.getConfig(network.config)
-  const backendUrl = get(networkConfig, 'backendUrl', '')
-
-  let emailServerConfig = {},
-    configJson = {},
-    shopConfig = {}
-
-  let usingNetworkFallbacks = false
-
-  if (shop) {
-    configJson = await getSiteConfig(`${backendUrl}/${shop.authToken}/`)
-    shopConfig = encConf.getConfig(shop.config)
-    emailServerConfig = { ...shopConfig }
-  }
-
-  if ((!shopConfig.email || shopConfig.email === 'disabled') && network) {
-    // Has not configured email server, fallback to network config
-    const fallbackConfig = get(networkConfig, 'fallbackShopConfig', {})
-    usingNetworkFallbacks = true
-    emailServerConfig = {
-      ...fallbackConfig
-    }
-  }
-
-  let transporter
-  if (IS_TEST && skipTestCheck) {
-    // Skip creating nodemailer transport object
-    // while running unit tests for this function
-    transporter = {
-      config: emailServerConfig
-    }
-  } else if (emailServerConfig.email === 'sendgrid') {
-    let auth
-    if (emailServerConfig.sendgridApiKey) {
-      auth = {
-        user: 'apikey',
-        pass: emailServerConfig.sendgridApiKey
-      }
-    } else {
-      auth = {
-        user: emailServerConfig.sendgridUsername,
-        pass: emailServerConfig.sendgridPassword
-      }
-    }
-    transporter = nodemailer.createTransport({
-      host: 'smtp.sendgrid.net',
-      port: 587,
-      auth
-    })
-  } else if (emailServerConfig.email === 'mailgun') {
-    transporter = nodemailer.createTransport({
-      host: emailServerConfig.mailgunSmtpServer,
-      port: emailServerConfig.mailgunSmtpPort,
+  if (config.email === 'sendgrid') {
+    const auth = config.sendgridApiKey
+      ? { user: 'apikey', pass: config.sendgridApiKey }
+      : { user: config.sendgridUsername, pass: config.sendgridPassword }
+    const host = 'smtp.sendgrid.net'
+    return nodemailer.createTransport({ host, port: 587, auth })
+  } else if (config.email === 'mailgun') {
+    return nodemailer.createTransport({
+      host: config.mailgunSmtpServer,
+      port: config.mailgunSmtpPort,
       auth: {
-        user: emailServerConfig.mailgunSmtpLogin,
-        pass: emailServerConfig.mailgunSmtpPassword
+        user: config.mailgunSmtpLogin,
+        pass: config.mailgunSmtpPassword
       }
     })
-  } else if (emailServerConfig.email === 'aws') {
+  } else if (config.email === 'aws') {
     const SES = new aws.SES({
       apiVersion: '2010-12-01',
-      region: emailServerConfig.awsRegion || 'us-east-1',
-      accessKeyId: emailServerConfig.awsAccessKey,
-      secretAccessKey: emailServerConfig.awsAccessSecret
+      region: config.awsRegion,
+      accessKeyId: config.awsAccessKey,
+      secretAccessKey: config.awsAccessSecret
     })
-    transporter = nodemailer.createTransport({ SES })
-  }
-
-  let fromEmail
-  let replyTo
-
-  let supportEmail =
-    configJson.supportEmail || shopConfig.supportEmail || DEFAULT_SUPPORT_EMAIL
-  let storeEmail = shopConfig.storeEmail || shopConfig.fromEmail || supportEmail
-
-  if (usingNetworkFallbacks) {
-    fromEmail = DEFAULT_SUPPORT_EMAIL
-    replyTo = supportEmail
-  } else {
-    fromEmail = supportEmail
-  }
-
-  fromEmail = getPlainEmail(fromEmail)
-  supportEmail = getPlainEmail(supportEmail)
-  replyTo = getPlainEmail(replyTo)
-  storeEmail = getPlainEmail(storeEmail)
-
-  return {
-    transporter,
-
-    fromEmail,
-    replyTo,
-    supportEmail,
-    storeEmail,
-
-    networkConfig,
-    // Decrypted shop config
-    shopConfig,
-    // Shop's config.json
-    configJson
+    return nodemailer.createTransport({ SES })
   }
 }
 
-module.exports = getEmailTransporterAndConfig
+function getNetworkTransport(network) {
+  const netConfig = encConf.getConfig(network.config)
+  const transporter = getTransportFromConfig(netConfig.fallbackShopConfig)
+  const displayName = netConfig.notificationEmailDisplayName
+  const emailAddress = netConfig.notificationEmail
+  return {
+    from: displayName ? `${displayName} <${emailAddress}>` : emailAddress,
+    transporter
+  }
+}
+
+function getShopTransport(shop, network) {
+  const shopConfig = encConf.getConfig(shop.config)
+  const shopTransport = getTransportFromConfig(shopConfig)
+  const displayName = shop.name
+  const emailAddress = shopConfig.supportEmail
+  if (shopTransport) {
+    return {
+      from: `${displayName} <${emailAddress}>`,
+      transporter: shopTransport
+    }
+  }
+
+  const netConfig = encConf.getConfig(network.config)
+  const netTransport = getTransportFromConfig(netConfig.fallbackShopConfig)
+  const netEmailAddress = netConfig.notificationEmail
+
+  return {
+    from: `${displayName} <${netEmailAddress}>`,
+    transporter: netTransport,
+    replyTo: `${displayName} <${emailAddress}>`
+  }
+}
+
+module.exports = { getShopTransport, getNetworkTransport }

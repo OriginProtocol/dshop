@@ -1,5 +1,5 @@
 const get = require('lodash/get')
-const { Seller, Shop, Network } = require('../models')
+const { Seller, Network } = require('../models')
 const { createSalt, hashPassword, checkPassword } = require('../routes/_auth')
 
 const sendVerifyEmail = require('./emails/verifyEmail')
@@ -7,7 +7,20 @@ const sendPasswordResetEmail = require('./emails/passwordReset')
 
 const { getConfig } = require('./encryptedConfig')
 
-const { generateVerificationCode } = require('./emailVerification')
+const generateVerificationCode = (backendUrl) => {
+  const code = Math.random().toString(36).substring(2)
+  const expires = Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+
+  const verifyUrl = new URL(`${backendUrl}/verify-email`)
+  verifyUrl.searchParams.set('code', code)
+
+  return {
+    code,
+    expires,
+    verifyUrl: verifyUrl.toString(),
+    redirectTo: backendUrl
+  }
+}
 
 async function sendPasswordReset(seller) {
   const network = await Network.findOne({ where: { active: true } })
@@ -28,21 +41,15 @@ async function sendPasswordReset(seller) {
     }
   })
   const verifyUrl = `${backendUrl}/#/admin/reset-password?code=${code}`
-  return sendPasswordResetEmail(seller.get({ plain: true }), verifyUrl)
+  return sendPasswordResetEmail({
+    network,
+    seller: seller.get({ plain: true }),
+    verifyUrl
+  })
 }
 
-async function sendVerificationEmail(seller, shopId) {
-  if (!shopId) {
-    return
-  }
-  const shop = await Shop.findOne({ where: { id: shopId } })
-  if (!shop) {
-    return
-  }
-  const network = await Network.findOne({
-    where: { networkId: shop.networkId, active: true }
-  })
-
+async function sendVerificationEmail(seller) {
+  const network = await Network.findOne({ where: { active: true } })
   const networkConfig = getConfig(network.config)
   const backendUrl = get(networkConfig, 'backendUrl')
   if (!backendUrl) {
@@ -62,14 +69,18 @@ async function sendVerificationEmail(seller, shopId) {
     }
   })
 
-  return sendVerifyEmail(seller.get({ plain: true }), verifyUrl, shopId)
+  return sendVerifyEmail({
+    seller: seller.get({ plain: true }),
+    verifyUrl,
+    network
+  })
 }
 
 async function createSeller({ name, email, password }, opts) {
   if (!name || !email || !password) {
     return { status: 400, error: 'Invalid registration' }
   }
-  const { superuser, skipEmailVerification, shopId } = opts || {} // Superuser creation must be done explicitly
+  const { superuser, skipEmailVerification } = opts || {} // Superuser creation must be done explicitly
 
   const sellerCheck = await Seller.findOne({
     where: { email: email.toLowerCase() }
@@ -91,9 +102,9 @@ async function createSeller({ name, email, password }, opts) {
     data: {}
   })
 
-  if (!skipEmailVerification && shopId) {
+  if (!skipEmailVerification) {
     // Send verification email
-    await sendVerificationEmail(seller, shopId)
+    await sendVerificationEmail(seller)
   }
 
   return { success: true, seller }

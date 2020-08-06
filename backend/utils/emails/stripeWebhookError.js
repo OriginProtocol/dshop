@@ -1,10 +1,10 @@
 const mjml2html = require('mjml')
-const { Shop } = require('../../models')
+const { Shop, Network } = require('../../models')
 
-const getEmailTransporterAndConfig = require('./_getTransport')
+const { getShopTransport } = require('./_getTransport')
 const { getLogger } = require('../../utils/logger')
 
-const head = require('./templates/head')
+const head = require('./templates/_head')
 const stripeWebhookError = require('./templates/stripeWebhookError')
 const stripeWebhookErrorTxt = require('./templates/stripeWebhookErrorTxt')
 
@@ -12,18 +12,10 @@ const log = getLogger('utils.emailer')
 
 async function stripeWebhookErrorEmail(shopId, errorData, skip) {
   const shop = await Shop.findOne({ where: { id: shopId } })
-  const {
-    transporter,
-    fromEmail,
-    supportEmail,
-    configJson: data,
-    replyTo,
-    storeEmail
-  } = await getEmailTransporterAndConfig(shop)
+  const network = await Network.fineOne({ where: { active: true } })
+  const { transporter, from, replyTo } = await getShopTransport(shop, network)
   if (!transporter) {
-    log.info(
-      `Emailer not configured for shop id ${shopId}. Skipping sending Stripe error email.`
-    )
+    log.info(`No email transport configured. Skiped sending new order email.`)
     return
   }
 
@@ -34,9 +26,9 @@ async function stripeWebhookErrorEmail(shopId, errorData, skip) {
 
   const vars = {
     head,
-    supportEmail,
-    siteName: data.fullTitle || data.title,
-    fromEmail,
+    supportEmail: replyTo || from,
+    siteName: shop.name,
+    fromEmail: from,
     ...errorData
   }
 
@@ -44,8 +36,8 @@ async function stripeWebhookErrorEmail(shopId, errorData, skip) {
   const txtOutput = stripeWebhookErrorTxt(vars)
 
   const message = {
-    from: fromEmail,
-    to: storeEmail,
+    from,
+    to: replyTo || from,
     subject: 'Failed to process stripe webhook event',
     html: htmlOutput.html,
     text: txtOutput,

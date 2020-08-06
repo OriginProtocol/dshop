@@ -1,7 +1,7 @@
 const chai = require('chai')
 const expect = chai.expect
 
-const getEmailTransporterAndConfig = require('../utils/emails/getTransport')
+const { getShopTransport } = require('../utils/emails/_getTransport')
 
 const {
   getTestWallet,
@@ -38,44 +38,40 @@ describe('Orders', () => {
 
   it(`Should fallback to network's config`, async () => {
     network = await getOrCreateTestNetwork({
-      fallbackShopConfig: {
-        email: 'aws'
-      }
+      fallbackShopConfig: { email: 'aws' },
+      notificationEmail: 'no-reply@server.com',
+      notificationEmailDisplayName: 'Dshop Test'
     })
 
     const updatedShop = await updateShopConfig(shop, {
-      supportEmail: 'test@support.email',
-      storeEmail: 'test@store.email'
+      supportEmail: 'test@support.email'
     })
 
-    const out = await getEmailTransporterAndConfig(updatedShop, true)
+    const out = await getShopTransport(updatedShop, network)
 
-    expect(out.transporter.config.email).to.be.equal('aws')
-    expect(out.fromEmail).to.be.equal('support@ogn.app')
-    expect(out.replyTo).to.be.equal('test@support.email')
-    expect(out.supportEmail).to.be.equal('test@support.email')
-    expect(out.storeEmail).to.be.equal('test@store.email')
+    expect(out.transporter.transporter.ses).to.be.ok
+    expect(out.from).to.be.equal(`${shop.name} <no-reply@server.com>`)
+    expect(out.replyTo).to.be.equal(`${shop.name} <test@support.email>`)
   })
 
   it(`Should use shop's config if available`, async () => {
     network = await getOrCreateTestNetwork({
-      fallbackShopConfig: {
-        email: 'aws'
-      }
+      fallbackShopConfig: { email: 'aws' },
+      notificationEmail: 'no-reply@server.com',
+      notificationEmailDisplayName: 'Dshop Test'
     })
 
     const updatedShop = await updateShopConfig(shop, {
       supportEmail: 'test@support.email',
-      storeEmail: 'test@store.email',
       email: 'sendgrid'
     })
 
-    const out = await getEmailTransporterAndConfig(updatedShop, true)
+    const out = await getShopTransport(updatedShop, network)
 
-    expect(out.transporter.config.email).to.be.equal('sendgrid')
-    expect(out.fromEmail).to.be.equal('test@support.email')
-    expect(out.replyTo).to.be.undefined
-    expect(out.supportEmail).to.be.equal('test@support.email')
-    expect(out.storeEmail).to.be.equal('test@store.email')
+    expect(out.transporter.transporter.options.host).to.be.equal(
+      'smtp.sendgrid.net'
+    )
+    expect(out.from).to.be.equal(`${shop.name} <test@support.email>`)
+    expect(out.replyTo).to.not.be.ok
   })
 })

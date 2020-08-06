@@ -1,27 +1,18 @@
 const mjml2html = require('mjml')
-const { Shop } = require('../../models')
 
-const getEmailTransporterAndConfig = require('./_getTransport')
+const { getNetworkTransport } = require('./_getTransport')
 const { getLogger } = require('../../utils/logger')
 
-const head = require('./templates/head')
+const head = require('./templates/_head')
 const verifyEmail = require('./templates/verifyEmail')
 const verifyEmailTxt = require('./templates/verifyEmailTxt')
 
 const log = getLogger('utils.emailer')
 
-async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
-  const shop = await Shop.findOne({ where: { id: shopId } })
-  const {
-    transporter,
-    fromEmail,
-    replyTo,
-    supportEmail
-  } = await getEmailTransporterAndConfig(shop)
+async function sendVerifyEmail({ network, seller, verifyUrl, skip }) {
+  const { transporter, from } = await getNetworkTransport(network)
   if (!transporter) {
-    log.info(
-      `Emailer not configured for shop id ${shopId}. Skipping sending verification email.`
-    )
+    log.info(`Emailer not configured. Skipping sending verification email.`)
     return
   }
 
@@ -31,26 +22,17 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
   }
 
   const { name, email } = seller
-
-  const vars = {
-    head,
-    name,
-    verifyUrl,
-    supportEmailPlain: supportEmail,
-    fromEmail
-  }
+  const vars = { head, name, verifyUrl, fromEmail: from }
 
   const htmlOutput = mjml2html(verifyEmail(vars), { minify: true })
-
   const txtOutput = verifyEmailTxt(vars)
 
   const message = {
-    from: fromEmail,
+    from,
     to: `${name} <${email}>`,
     subject: 'Confirm your email address',
     html: htmlOutput.html,
-    text: txtOutput,
-    replyTo
+    text: txtOutput
   }
 
   if (skip) return message
@@ -61,9 +43,7 @@ async function sendVerifyEmail(seller, verifyUrl, shopId, skip) {
         log.error('Error sending verification email', err)
         return resolve()
       } else {
-        log.info(
-          `Verification email sent, from ${message.from} to ${message.to}`
-        )
+        log.info(`Verification email sent, from ${from} to ${message.to}`)
         log.debug(msg.envelope)
       }
 

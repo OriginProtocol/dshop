@@ -60,7 +60,9 @@ const _defaultShopConfigJSON = {
   upholdSecret: '',
   bigQueryCredentials: '',
   bigQueryTable: '',
-  googleAnalytics: ''
+  googleAnalytics: '',
+  notificationEmail: '',
+  notificationEmailDisplayName: ''
 }
 
 const defaultShopConfig = JSON.stringify(_defaultShopConfigJSON, null, 2)
@@ -87,6 +89,8 @@ function initialState() {
     marketplaceVersion: '',
     googleAnalytics: '',
     paypalEnvironment: 'prod',
+    notificationEmail: '',
+    notificationEmailDisplayName: '',
     backendUrl,
     ...Defaults[networkId]
   }
@@ -113,6 +117,12 @@ function validate(state) {
   }
   if (!state.ipfsApi) {
     newState.ipfsApiError = 'IPFS API required'
+  }
+  if (!state.notificationEmail) {
+    newState.notificationEmailError = 'Email is required'
+  }
+  if (!state.notificationEmailDisplayName) {
+    newState.notificationEmailDisplayNameError = 'Display name is required'
   }
   if (!state.backendUrl) {
     newState.backendUrlError = 'Backend URL required'
@@ -280,6 +290,24 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           <label>Backend Public URL</label>
           <input {...input('backendUrl')} />
           {Feedback('backendUrl')}
+        </div>
+      </div>
+      <div className="form-row">
+        <div className="form-group col-md-6">
+          <label>Notification Emails</label>
+          <input
+            {...input('notificationEmail')}
+            placeholder="eg no-reply@domain.com"
+          />
+          {Feedback('notificationEmail')}
+        </div>
+        <div className="form-group col-md-6">
+          <label>Email Display Name</label>
+          <input
+            {...input('notificationEmailDisplayName')}
+            placeholder="eg Origin Dshop"
+          />
+          {Feedback('notificationEmailDisplayName')}
         </div>
       </div>
       <div className="form-group">

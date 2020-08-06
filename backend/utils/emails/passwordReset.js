@@ -1,21 +1,16 @@
 const mjml2html = require('mjml')
 
-const getEmailTransporterAndConfig = require('./_getTransport')
+const { getNetworkTransport } = require('./_getTransport')
 const { getLogger } = require('../../utils/logger')
 
-const head = require('./templates/head')
+const head = require('./templates/_head')
 const forgotPassEmail = require('./templates/forgotPassEmail')
 const forgotPassEmailTxt = require('./templates/forgotPassEmailTxt')
 
 const log = getLogger('utils.emailer')
 
-async function sendPasswordResetEmail(seller, verifyUrl, skip) {
-  const {
-    transporter,
-    fromEmail,
-    replyTo,
-    supportEmail
-  } = await getEmailTransporterAndConfig()
+async function sendPasswordResetEmail({ network, seller, verifyUrl, skip }) {
+  const { transporter, from } = await getNetworkTransport(network)
   if (!transporter) {
     log.info(`Emailer not configured. Skipping sending verification email.`)
     return
@@ -32,20 +27,18 @@ async function sendPasswordResetEmail(seller, verifyUrl, skip) {
     head,
     name,
     verifyUrl,
-    supportEmailPlain: supportEmail,
-    fromEmail
+    fromEmail: from
   }
 
   const htmlOutput = mjml2html(forgotPassEmail(vars), { minify: true })
   const txtOutput = forgotPassEmailTxt(vars)
 
   const message = {
-    from: fromEmail,
+    from,
     to: `${name} <${email}>`,
     subject: 'Reset your password',
     html: htmlOutput.html,
-    text: txtOutput,
-    replyTo
+    text: txtOutput
   }
 
   if (skip) return message

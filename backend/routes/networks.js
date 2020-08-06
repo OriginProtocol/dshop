@@ -22,7 +22,9 @@ function pickConfig(body) {
     'backendUrl',
     'fallbackShopConfig',
     'googleAnalytics',
-    'paypalEnvironment'
+    'paypalEnvironment',
+    'notificationEmail',
+    'notificationEmailDisplayName'
   ])
 }
 

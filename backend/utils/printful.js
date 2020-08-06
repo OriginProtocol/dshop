@@ -356,13 +356,17 @@ const processShippedEvent = async (event, shopId) => {
       return
     }
 
-    await sendNewOrderEmail(shop, dbOrder.data, {
-      trackingInfo: {
-        trackingNumber: shipment.tracking_number,
-        trackingUrl: shipment.tracking_url,
-        trackingService: shipment.service
-      },
-      skipVendorMail: true
+    await sendNewOrderEmail({
+      shop,
+      cart: dbOrder.data,
+      varsOverride: {
+        trackingInfo: {
+          trackingNumber: shipment.tracking_number,
+          trackingUrl: shipment.tracking_url,
+          trackingService: shipment.service
+        },
+        skipVendorMail: true
+      }
     })
   } catch (err) {
     log.error(`Shop ${shopId} - Failed to process shipped event`, err)

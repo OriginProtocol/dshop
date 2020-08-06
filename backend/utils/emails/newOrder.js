@@ -6,14 +6,15 @@ const formatPrice = require('@origin/utils/formatPrice')
 const { getLogger } = require('../../utils/logger')
 const cartData = require('../cartData')
 const { IS_TEST } = require('../const')
+const encConf = require('../../utils/encryptedConfig')
 
-const getEmailTransporterAndConfig = require('./_getTransport')
-const head = require('./templates/head')
-const vendor = require('./templates/vendor')
-const email = require('./templates/email')
-const emailTxt = require('./templates/emailTxt')
-const orderItem = require('./templates/orderItem')
-const orderItemTxt = require('./templates/orderItemTxt')
+const { getShopTransport } = require('./_getTransport')
+const head = require('./templates/_head')
+const vendor = require('./templates/newOrderVendor')
+const email = require('./templates/newOrder')
+const emailTxt = require('./templates/newOrderTxt')
+const orderItem = require('./templates/_orderItem')
+const orderItemTxt = require('./templates/_orderItemTxt')
 
 const log = getLogger('utils.emailer')
 
@@ -27,20 +28,10 @@ function optionsForItem(item) {
   return options
 }
 
-async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
-  const {
-    transporter,
-    fromEmail,
-    storeEmail,
-    replyTo,
-    supportEmail,
-    configJson: data,
-    shopConfig: config
-  } = await getEmailTransporterAndConfig(shop)
+async function sendNewOrderEmail({ shop, network, cart, varsOverride, skip }) {
+  const { transporter, from, replyTo } = await getShopTransport(shop, network)
   if (!transporter) {
-    log.info(
-      `Emailer not configured for shop id ${shop.id}. Skipping sending new order email.`
-    )
+    log.info(`No email transport configured. Skiped sending new order email.`)
     return
   }
 
@@ -49,8 +40,11 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     skip = true
   }
 
-  const dataURL = config.dataUrl
-  let publicURL = config.publicUrl
+  const shopConfig = encConf.getConfig(shop.config)
+  const dataURL = shopConfig.dataUrl
+  const publicURL = `${shopConfig.publicUrl}/#`
+  const currency = cart.currency
+
   const items = IS_TEST ? [] : await cartData(dataURL, cart.items)
   const attachments = [],
     orderItems = []
@@ -73,7 +67,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
         img: img ? `cid:${cid}` : null,
         title: item.product.title,
         quantity: item.quantity,
-        price: formatPrice(item.price, { currency: data.currency }),
+        price: formatPrice(item.price, { currency }),
         options: options.length
           ? `<div class="options">${options.join(', ')}</div>`
           : ''
@@ -86,23 +80,20 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     return orderItemTxt({
       title: item.product.title,
       quantity: item.quantity,
-      price: formatPrice(item.price, { currency: data.currency }),
+      price: formatPrice(item.price, { currency }),
       options: options.length ? `\n(${options.join(', ')})` : ''
     })
   })
-
-  if (!data.absolute) {
-    publicURL += '/#'
-  }
 
   const { userInfo } = cart
 
   const shippingAddress = [
     `${userInfo.firstName} ${userInfo.lastName}`,
-    `${userInfo.address1}`,
+    userInfo.address1,
+    userInfo.address2,
     `${userInfo.city} ${userInfo.province || ''} ${userInfo.zip}`,
     `${userInfo.country}`
-  ]
+  ].filter((i) => i)
   let billingAddress = shippingAddress
   if (userInfo.billingDifferent) {
     billingAddress = [
@@ -115,13 +106,15 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     ]
   }
 
+  const subject = shopConfig.emailSubject || `Your order from ${shop.name}`
+
   const vars = {
     head,
-    siteName: data.fullTitle || data.title,
-    supportEmail,
-    fromEmail,
-    supportEmailPlain: supportEmail,
-    subject: data.emailSubject,
+    siteName: shop.name,
+    supportEmail: `${shopConfig.supportEmail}`,
+    fromEmail: from,
+    supportEmailPlain: shopConfig.supportEmail,
+    subject,
     storeUrl: publicURL,
 
     orderNumber: cart.offerId,
@@ -132,13 +125,13 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
     orderUrlAdmin: `${publicURL}/admin/orders/${cart.offerId}`,
     orderItems,
     orderItemsTxt,
-    subTotal: formatPrice(cart.subTotal, { currency: data.currency }),
+    subTotal: formatPrice(cart.subTotal, { currency }),
     hasDiscount: cart.discount > 0 ? true : false,
-    discount: formatPrice(cart.discount, { currency: data.currency }),
+    discount: formatPrice(cart.discount, { currency }),
     hasDonation: cart.donation > 0 ? true : false,
-    donation: formatPrice(cart.donation, { currency: data.currency }),
-    shipping: formatPrice(cart.shipping.amount, { currency: data.currency }),
-    total: formatPrice(cart.total, { currency: data.currency }),
+    donation: formatPrice(cart.donation, { currency }),
+    shipping: formatPrice(cart.shipping.amount, { currency }),
+    total: formatPrice(cart.total, { currency }),
     shippingAddress,
     billingAddress,
     shippingMethod: cart.shipping.label,
@@ -151,7 +144,7 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   const txtOutput = emailTxt(vars)
 
   const message = {
-    from: fromEmail,
+    from,
     to: `${vars.firstName} ${vars.lastName} <${vars.email}>`,
     subject: vars.subject,
     html: htmlOutput.html,
@@ -161,8 +154,8 @@ async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
   }
 
   const messageVendor = {
-    from: fromEmail,
-    to: storeEmail,
+    from,
+    to: `${vars.siteName} <${shopConfig.supportEmail}>`,
     subject: `[${vars.siteName}] Order #${cart.offerId}`,
     html: htmlOutputVendor.html,
     text: txtOutput,

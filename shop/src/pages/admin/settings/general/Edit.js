@@ -32,7 +32,6 @@ const configFields = [
   'cartSummaryNote',
   'discountCodes',
   'emailSubject',
-  'emailBody',
   'css',
   'facebook',
   'twitter',
@@ -62,16 +61,12 @@ const GeneralSettings = () => {
   const [aboutText, setAboutText] = useState('')
 
   useEffect(() => {
-    let storeEmail = get(shopConfig, 'storeEmail', get(shopConfig, 'fromEmail'))
-    storeEmail = parsePlainEmail(storeEmail)
-
     const supportEmail = parsePlainEmail(get(config, 'supportEmail'))
 
     setState({
       hostname: get(shopConfig, 'hostname'),
       ...pick(config, configFields),
-      supportEmail,
-      storeEmail
+      supportEmail
     })
   }, [shopConfig, config])
 
@@ -166,30 +161,6 @@ const GeneralSettings = () => {
             <input {...input('fullTitle')} />
             {Feedback('fullTitle')}
           </div>
-          <div className="row">
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>Store contact email</label>
-                <input {...input('storeEmail')} />
-                {Feedback('storeEmail')}
-                <div className="desc">
-                  We&apos;ll use this address if we need to contact you about
-                  your store.
-                </div>
-              </div>
-            </div>
-            <div className="col-md-6">
-              <div className="form-group">
-                <label>Customer email</label>
-                <input {...input('supportEmail')} />
-                {Feedback('supportEmail')}
-                <div className="desc">
-                  Your customers will see this address when receiving emails
-                  about their order.
-                </div>
-              </div>
-            </div>
-          </div>
           <div className="form-group">
             <label>Store Domain</label>
             <div className="suffix-wrap">
@@ -222,7 +193,7 @@ const GeneralSettings = () => {
           </div>
           <div className="form-group">
             <label>
-              Store Logo
+              Logo
               <span>
                 (max. size 200x200 px. 100x100 px recommended. PNG or JPG)
               </span>
@@ -267,7 +238,7 @@ const GeneralSettings = () => {
           )}
           <div className="form-group">
             <label>
-              Store Favicon
+              Favicon
               <span>
                 (optimal image size 32x32 px in .ico format. Recommended favicon
                 generator: www.favicon.com)
@@ -356,19 +327,24 @@ const GeneralSettings = () => {
               Show discount codes on checkout
             </span>
           </div>
-          <div className="form-group">
-            <label>
-              Email Subject <span>(for receipt emails)</span>
-            </label>
-            <input {...input('emailSubject')} />
+
+          <div className="row">
+            <div className="form-group col-md-6">
+              <label>Support email</label>
+              <input {...input('supportEmail')} />
+              {Feedback('supportEmail')}
+              <div className="desc">
+                Your customers will see this address when receiving emails about
+                their order.
+              </div>
+            </div>
+            <div className="form-group col-md-6">
+              <label>
+                Email subject <span>(for receipt emails)</span>
+              </label>
+              <input {...input('emailSubject')} />
+            </div>
           </div>
-          {/* <div className="form-group">
-            <label>
-              Email Body
-              <span>(for receipt emails)</span>
-            </label>
-            <textarea style={{ minHeight: '15vh' }} {...input('emailBody')} />
-          </div> */}
         </div>
 
         <div className="col-lg-3 col-md-4">

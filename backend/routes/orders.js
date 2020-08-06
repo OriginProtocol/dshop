@@ -64,7 +64,10 @@ module.exports = function (router) {
     findOrder,
     async (req, res) => {
       try {
-        await sendNewOrderEmail(req.shop, JSON.parse(req.order.data))
+        await sendNewOrderEmail({
+          shop: req.shop,
+          cart: JSON.parse(req.order.data)
+        })
         res.json({ success: true })
       } catch (e) {
         res.json({ success: false })
