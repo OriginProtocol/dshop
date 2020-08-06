@@ -1,5 +1,6 @@
 require('dotenv').config()
 
+const fs = require('fs')
 const Web3 = require('web3')
 const openpgp = require('openpgp')
 const util = require('ethereumjs-util')
@@ -24,7 +25,7 @@ const log = getLogger('utils.handleLog')
 
 const { validateDiscountOnOrder } = require('./discounts')
 
-const { IS_TEST } = require('../utils/const')
+const { DSHOP_CACHE, IS_TEST } = require('../utils/const')
 
 const IPFS_TIMEOUT = 60000 // 60sec in msec
 
@@ -381,9 +382,24 @@ async function _processEventListingCreated({ event }) {
   // Get the fully-qualified listing ID.
   const listingId = new ListingID(event.listingId, shop.networkId).toString()
 
-  // Associate the listing Id with the shop.
+  // Associate the listing Id with the shop in the DB.
   await shop.update({ listingId })
   log.info(`Associated shop ${shop.id} with listing Id ${listingId}`)
+
+  // Load the shop's config.json from the deploy staging area.
+  const dataDir = shop.authToken
+  const shopDir = `${DSHOP_CACHE}/${dataDir}`
+  const shopConfigPath = `${shopDir}/data/config.json`
+  log.debug(`Shop ${shop.id}: Loading config at ${shopConfigPath}`)
+  const raw = fs.readFileSync(shopConfigPath)
+  const shopConfig = JSON.parse(raw.toString())
+
+  // Update the config.json listingId field and write it back to disk.
+  shopConfig.listingId = listingId
+  fs.writeFileSync(shopConfigPath, JSON.stringify(shopConfig, null, 2))
+  log.info(
+    `Shop ${shop.id}: set listingId to ${listingId} in config at ${shopConfigPath}`
+  )
 
   return shop
 }
