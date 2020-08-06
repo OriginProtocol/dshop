@@ -1,7 +1,7 @@
 const chai = require('chai')
 const expect = chai.expect
 
-const { getEmailTransporterAndConfig } = require('../utils/emailer')
+const getEmailTransporterAndConfig = require('../utils/emails/getTransport')
 
 const {
   getTestWallet,

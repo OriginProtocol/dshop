@@ -10,7 +10,8 @@ const { DSHOP_CACHE } = require('./const')
 
 const generatePrintfulOrder = require('@origin/utils/generatePrintfulOrder')
 
-const { sendPrintfulOrderFailedEmail, sendNewOrderEmail } = require('./emailer')
+const sendPrintfulOrderFailedEmail = require('./emails/printfulOrderFailed')
+const sendNewOrderEmail = require('./emails/newOrder')
 
 const { Order, Shop } = require('../models')
 

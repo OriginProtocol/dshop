@@ -6,7 +6,7 @@ const {
 } = require('../models')
 const { findOrder } = require('../utils/orders')
 const makeOffer = require('./_makeOffer')
-const { sendNewOrderEmail } = require('../utils/emailer')
+const sendNewOrderEmail = require('../utils/emails/newOrder')
 
 module.exports = function (router) {
   router.get('/orders', authSellerAndShop, async (req, res) => {

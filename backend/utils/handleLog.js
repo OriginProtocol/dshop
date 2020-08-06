@@ -10,7 +10,7 @@ const get = require('lodash/get')
 
 const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
-const { sendNewOrderEmail } = require('./emailer')
+const sendNewOrderEmail = require('./emails/newOrder')
 const { upsertEvent, getEventObj } = require('./events')
 const { getConfig } = require('./encryptedConfig')
 const discordWebhook = require('./discordWebhook')

@@ -1,0 +1,202 @@
+const fetch = require('node-fetch')
+const mjml2html = require('mjml')
+const sharp = require('sharp')
+const formatPrice = require('@origin/utils/formatPrice')
+
+const { getLogger } = require('../../utils/logger')
+const cartData = require('../cartData')
+const { IS_TEST } = require('../const')
+
+const getEmailTransporterAndConfig = require('./_getTransport')
+const head = require('./templates/head')
+const vendor = require('./templates/vendor')
+const email = require('./templates/email')
+const emailTxt = require('./templates/emailTxt')
+const orderItem = require('./templates/orderItem')
+const orderItemTxt = require('./templates/orderItemTxt')
+
+const log = getLogger('utils.emailer')
+
+function optionsForItem(item) {
+  const options = []
+  if (item.product.options && item.product.options.length && item.variant) {
+    item.product.options.forEach((opt, idx) => {
+      options.push(`${opt}: ${item.variant.options[idx]}`)
+    })
+  }
+  return options
+}
+
+async function sendNewOrderEmail(shop, cart, varsOverride, skip) {
+  const {
+    transporter,
+    fromEmail,
+    storeEmail,
+    replyTo,
+    supportEmail,
+    configJson: data,
+    shopConfig: config
+  } = await getEmailTransporterAndConfig(shop)
+  if (!transporter) {
+    log.info(
+      `Emailer not configured for shop id ${shop.id}. Skipping sending new order email.`
+    )
+    return
+  }
+
+  if (IS_TEST) {
+    log.info('Test environment. Email will be generated but not sent.')
+    skip = true
+  }
+
+  const dataURL = config.dataUrl
+  let publicURL = config.publicUrl
+  const items = IS_TEST ? [] : await cartData(dataURL, cart.items)
+  const attachments = [],
+    orderItems = []
+
+  for (const item of items) {
+    const img = item.variant.image || item.product.image
+    const options = optionsForItem(item)
+    const cid = img ? `${img.replace(/[^a-z]/g, '')}` : null
+
+    if (img) {
+      const imgStream = await fetch(`${dataURL}${item.product.id}/520/${img}`)
+      const imgBlob = await imgStream.arrayBuffer()
+      const content = await sharp(Buffer.from(imgBlob)).resize(100).toBuffer()
+
+      attachments.push({ filename: img, content, cid })
+    }
+
+    orderItems.push(
+      orderItem({
+        img: img ? `cid:${cid}` : null,
+        title: item.product.title,
+        quantity: item.quantity,
+        price: formatPrice(item.price, { currency: data.currency }),
+        options: options.length
+          ? `<div class="options">${options.join(', ')}</div>`
+          : ''
+      })
+    )
+  }
+
+  const orderItemsTxt = items.map((item) => {
+    const options = optionsForItem(item)
+    return orderItemTxt({
+      title: item.product.title,
+      quantity: item.quantity,
+      price: formatPrice(item.price, { currency: data.currency }),
+      options: options.length ? `\n(${options.join(', ')})` : ''
+    })
+  })
+
+  if (!data.absolute) {
+    publicURL += '/#'
+  }
+
+  const { userInfo } = cart
+
+  const shippingAddress = [
+    `${userInfo.firstName} ${userInfo.lastName}`,
+    `${userInfo.address1}`,
+    `${userInfo.city} ${userInfo.province || ''} ${userInfo.zip}`,
+    `${userInfo.country}`
+  ]
+  let billingAddress = shippingAddress
+  if (userInfo.billingDifferent) {
+    billingAddress = [
+      `${userInfo.billingFirstName} ${userInfo.billingLastName}`,
+      `${userInfo.billingAddress1}`,
+      `${userInfo.billingCity} ${userInfo.billingProvince || ''} ${
+        userInfo.billingZip
+      }`,
+      `${userInfo.billingCountry}`
+    ]
+  }
+
+  const vars = {
+    head,
+    siteName: data.fullTitle || data.title,
+    supportEmail,
+    fromEmail,
+    supportEmailPlain: supportEmail,
+    subject: data.emailSubject,
+    storeUrl: publicURL,
+
+    orderNumber: cart.offerId,
+    firstName: cart.userInfo.firstName,
+    lastName: cart.userInfo.lastName,
+    email: cart.userInfo.email,
+    orderUrl: `${publicURL}/order/${cart.tx}?auth=${cart.dataKey}`,
+    orderUrlAdmin: `${publicURL}/admin/orders/${cart.offerId}`,
+    orderItems,
+    orderItemsTxt,
+    subTotal: formatPrice(cart.subTotal, { currency: data.currency }),
+    hasDiscount: cart.discount > 0 ? true : false,
+    discount: formatPrice(cart.discount, { currency: data.currency }),
+    hasDonation: cart.donation > 0 ? true : false,
+    donation: formatPrice(cart.donation, { currency: data.currency }),
+    shipping: formatPrice(cart.shipping.amount, { currency: data.currency }),
+    total: formatPrice(cart.total, { currency: data.currency }),
+    shippingAddress,
+    billingAddress,
+    shippingMethod: cart.shipping.label,
+    paymentMethod: cart.paymentMethod.label,
+    ...varsOverride
+  }
+
+  const htmlOutputVendor = mjml2html(vendor(vars), { minify: true })
+  const htmlOutput = mjml2html(email(vars), { minify: true })
+  const txtOutput = emailTxt(vars)
+
+  const message = {
+    from: fromEmail,
+    to: `${vars.firstName} ${vars.lastName} <${vars.email}>`,
+    subject: vars.subject,
+    html: htmlOutput.html,
+    text: txtOutput,
+    attachments,
+    replyTo
+  }
+
+  const messageVendor = {
+    from: fromEmail,
+    to: storeEmail,
+    subject: `[${vars.siteName}] Order #${cart.offerId}`,
+    html: htmlOutputVendor.html,
+    text: txtOutput,
+    attachments,
+    replyTo
+  }
+
+  if (!skip) {
+    transporter.sendMail(message, (err, msg) => {
+      if (err) {
+        log.error('Error sending buyer confirmation email:', err)
+      } else {
+        log.info(
+          `Buyer confirmation email sent, from ${message.from} to ${message.to}`
+        )
+        log.debug(msg.envelope)
+      }
+    })
+
+    if (!vars.skipVendorMail) {
+      transporter.sendMail(messageVendor, (err, msg) => {
+        if (err) {
+          log.error('Error sending merchant confirmation email:', err)
+        } else {
+          log.info(
+            `Merchant confirmation email sent, from ${messageVendor.from} to ${messageVendor.to}`
+          )
+          log.debug(msg.envelope)
+        }
+      })
+    }
+  }
+
+  return message
+}
+
+module.exports = sendNewOrderEmail

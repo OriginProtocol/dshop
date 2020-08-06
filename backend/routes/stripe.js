@@ -14,7 +14,7 @@ const { getLogger } = require('../utils/logger')
 
 const makeOffer = require('./_makeOffer')
 
-const { stripeWebhookErrorEmail } = require('../utils/emailer')
+const stripeWebhookErrorEmail = require('../utils/emails/stripeWebhookError')
 
 const log = getLogger('routes.stripe')
 

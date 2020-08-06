@@ -2,7 +2,8 @@ const get = require('lodash/get')
 const { Seller, Shop, Network } = require('../models')
 const { createSalt, hashPassword, checkPassword } = require('../routes/_auth')
 
-const { sendVerifyEmail, sendPasswordResetEmail } = require('./emailer')
+const sendVerifyEmail = require('./emails/verifyEmail')
+const sendPasswordResetEmail = require('./emails/passwordReset')
 
 const { getConfig } = require('./encryptedConfig')
 
