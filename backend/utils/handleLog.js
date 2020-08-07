@@ -8,6 +8,7 @@ const util = require('ethereumjs-util')
 const Stripe = require('stripe')
 
 const get = require('lodash/get')
+const set = require('lodash/set')
 
 const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
@@ -395,7 +396,8 @@ async function _processEventListingCreated({ event }) {
   const shopConfig = JSON.parse(raw.toString())
 
   // Update the config.json listingId field and write it back to disk.
-  shopConfig.listingId = listingId
+  const netPath = `networks[${shop.networkId}]`
+  set(shopConfig, `${netPath}.listingId`, listingId)
   fs.writeFileSync(shopConfigPath, JSON.stringify(shopConfig, null, 2))
   log.info(
     `Shop ${shop.id}: set listingId to ${listingId} in config at ${shopConfigPath}`
