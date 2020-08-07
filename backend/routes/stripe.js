@@ -47,6 +47,21 @@ function hasDshopMetadata(reqJSON) {
 // Update stripe webhook in shop server config
 
 module.exports = function (router) {
+  /**
+   * Creates a payment intent on Stripe and sends
+   * back the client secret, so that the payment
+   * can be captured later
+   *
+   * @param {Number} amount  value of order in cents
+   * @param {String} currency currency code, falls back to 'usd'
+   * @param {String} data Offer's IPFS hash
+   *
+   * @returns {{
+   *  success,
+   *  client_secret,
+   *  message
+   * }}
+   */
   router.post('/pay', authShop, async (req, res) => {
     if (req.body.amount < 50) {
       return res.status(400).send({
@@ -69,6 +84,9 @@ module.exports = function (router) {
     )
 
     if (!web3Pk || !valid) {
+      log.error(
+        `[Shop ${req.shop.id}] Failed to make payment on Stripe, invalid/missing credentials`
+      )
       return res.status(400).send({
         success: false,
         message: 'CC payments unavailable'
@@ -200,6 +218,15 @@ module.exports = function (router) {
 
   router.post('/webhook', rawJson, handleWebhook, makeOffer)
 
+  /**
+   * Validates the Stripe credentials
+   *
+   * NOTE: Doesn't validate public key
+   *
+   * @param {String} stripeKey Publishable key
+   * @param {String} stripeBackend Secret key
+   * @param {String} stripeWebhookHost Host value to override networkConfig.backend
+   */
   router.post('/stripe/check-creds', authShop, async (req, res) => {
     let valid = false
     let shouldUpdateWebhooks = true
@@ -220,6 +247,14 @@ module.exports = function (router) {
         await stripe.customers.list({ limit: 1 })
 
         if (!backendUrl) {
+          // NOTE: `stripeWebhookHost` is only to be used in development environment,
+          // since localhost cannot be used for webhooks. It'd undefined and replaced
+          // with `networkConfig.backend` on prod.
+          //
+          // Could use Stripe CLI for webhooks instead of registering webhooks
+          // while running locally, but this way is closer to how things run on prod.
+          // Would be easier to identify/reproduce bugs on local, if any.
+
           const network = await Network.findOne({
             where: { networkId: req.shop.networkId }
           })
@@ -238,7 +273,7 @@ module.exports = function (router) {
           backendUrl
         ))
       } catch (err) {
-        log.error('Failed to verify stripe credentials')
+        log.error(`[Shop ${req.shop.id}] Failed to verify stripe credentials`)
         log.debug(err)
       }
     }

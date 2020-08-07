@@ -5,6 +5,13 @@ const { getLogger } = require('./logger')
 
 const log = getLogger('utils.stripe')
 
+/**
+ * Forms and returns the webhook object to be used to create
+ * or update a webhook on Stripe
+ *
+ * @param {Model.Shop} shop
+ * @param {String} webhookURL
+ */
 const getWebhookData = (shop, webhookURL) => {
   return {
     url: webhookURL,
@@ -16,6 +23,15 @@ const getWebhookData = (shop, webhookURL) => {
   }
 }
 
+/**
+ * Checks if remote `webhook` is configured correctly.
+ *
+ * @param {Stripe.WebhookEndpoint} webhook stripe's webhook endpoint object
+ * @param {Model.Shop} shop
+ * @param {String} webhookURL
+ *
+ * @returns {Boolean} false if `webhook` requires updation
+ */
 const validateWebhookData = (webhook, shop, webhookURL) => {
   const webhookData = getWebhookData(shop, webhookURL)
 
@@ -43,16 +59,22 @@ const validateWebhookData = (webhook, shop, webhookURL) => {
   return !requiresChange
 }
 
+/**
+ * Deregisters any registered webhook on `shop`
+ *
+ * @param {Model.Shop} shop
+ * @param {Model.Shop.config} config decrypted shop config
+ */
 async function deregisterWebhooks(shop, config) {
   const { stripeBackend, stripeWebhookSecret } = config
 
   if (!stripeBackend || !stripeWebhookSecret) {
-    log.debug(`[Shop ${shop.id}]Missing params, skipping deregistering`)
+    log.debug(`[Shop ${shop.id}] Missing params, skipping deregistering`)
     return
   }
 
   try {
-    log.debug('Trying to deregister any existing webhook...')
+    log.debug(`[Shop ${shop.id}] Trying to deregister any existing webhook...`)
     const stripe = Stripe(stripeBackend)
 
     const webhookEndpoints = await stripe.webhookEndpoints.list({
@@ -69,19 +91,31 @@ async function deregisterWebhooks(shop, config) {
       try {
         await stripe.webhookEndpoints.del(endpointId)
       } catch (err) {
-        log.error('Failed to deregister webhook', endpointId, err)
+        log.error(
+          `[Shop ${shop.id}] Failed to deregister webhook`,
+          endpointId,
+          err
+        )
       }
     }
 
     log.debug(`${endpointsToDelete.length} webhooks deregisterd`)
   } catch (err) {
-    log.error('Failed to deregister webhooks', err)
+    log.error(`[Shop ${shop.id}] Failed to deregister webhooks`, err)
     return { success: false }
   }
 
   return { success: true }
 }
 
+/**
+ * Registers new or updates existing webhook for a shop
+ *
+ * @param {Model.Shop} shop
+ * @param {Object} newConfig New stripe credentials
+ * @param {Object} oldConfig Uses `stripeWebhookSecret` from existing config to check and update webhook, if it already exists
+ * @param {String} backendUrl webhook host to use
+ */
 async function registerWebhooks(shop, newConfig, oldConfig, backendUrl) {
   const { stripeWebhookSecret } = oldConfig
   const { stripeBackend } = newConfig
@@ -113,10 +147,13 @@ async function registerWebhooks(shop, newConfig, oldConfig, backendUrl) {
     const webhookData = getWebhookData(shop, webhookURL)
 
     if (!existingWebhook) {
-      log.debug(shop.id, `Webhook doesn't exist, registering a new one`)
+      log.debug(
+        `[Shop ${shop.id}]`,
+        `Webhook doesn't exist, registering a new one`
+      )
       const endpoint = await stripe.webhookEndpoints.create(webhookData)
 
-      log.debug(shop.id, `New webhook id`, endpoint.id)
+      log.debug(`[Shop ${shop.id}]`, `New webhook id`, endpoint.id)
 
       return { success: true, secret: endpoint.secret }
     } else {
@@ -128,7 +165,7 @@ async function registerWebhooks(shop, newConfig, oldConfig, backendUrl) {
       const valid = validateWebhookData(existingWebhook, shop, webhookURL)
 
       if (!valid) {
-        log.debug(shop.id, 'Updating webhook', existingWebhook.id)
+        log.debug(`[Shop ${shop.id}]`, 'Updating webhook', existingWebhook.id)
         await stripe.webhookEndpoints.update(existingWebhook.id, webhookData)
       }
 
@@ -138,11 +175,19 @@ async function registerWebhooks(shop, newConfig, oldConfig, backendUrl) {
       }
     }
   } catch (err) {
-    log.error('Failed to register webhooks', err)
+    log.error(`[Shop ${shop.id}]`, 'Failed to register webhooks', err)
     return { success: false }
   }
 }
 
+/**
+ * Validates shop's webhook, if it exists
+ * @param {Model.Shop} shop
+ * @param {Model.Shop.config} config encrypted shop config
+ * @param {String} backendUrl webhook host to use
+ *
+ * @returns {Boolean} true, if webhook exists and is configured correctly
+ */
 async function webhookValidation(shop, config, backendUrl) {
   const { stripeBackend } = config
   const webhookUrl = `${backendUrl}/webhook`

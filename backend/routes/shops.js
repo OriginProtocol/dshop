@@ -54,6 +54,7 @@ const dayjs = require('dayjs')
 const { readProductsFile } = require('../utils/products')
 
 const stripeUtils = require('../utils/stripe')
+const { validateStripeKeys } = require('@origin/utils/stripe')
 
 async function tryDataDir(dataDir) {
   const hasDir = fs.existsSync(`${DSHOP_CACHE}/${dataDir}`)
@@ -819,6 +820,19 @@ module.exports = function (router) {
         additionalOpts.stripeBackend = ''
       } else if (req.body.stripe) {
         log.info(`Shop ${shopId} - Registering Stripe webhook`)
+
+        const validKeys = validateStripeKeys({
+          publishableKey: req.body.stripeKey,
+          secretKey: req.body.stripeBackend
+        })
+
+        if (!validKeys) {
+          return res.json({
+            success: false,
+            reason: 'Invalid Stripe credentials'
+          })
+        }
+
         const { secret } = await stripeUtils.registerWebhooks(
           req.shop,
           req.body,
@@ -826,8 +840,6 @@ module.exports = function (router) {
           req.body.stripeWebhookHost || netConfig.backendUrl
         )
         additionalOpts.stripeWebhookSecret = secret
-        // } else if (req.body.stripeWebhookSecret) {
-        //   additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
       }
 
       // Configure Printful webhooks

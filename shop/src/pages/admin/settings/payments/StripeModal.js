@@ -111,11 +111,6 @@ const StripeModal = ({ onClose, initialConfig }) => {
             />
             {Feedback('stripeWebhookHost')}
           </div>
-          {/* <div className="form-group">
-            <label>Stripe Webhook Key</label>
-            <PasswordField input={input} field="stripeWebhookSecret" />
-            {Feedback('stripeWebhookSecret')}
-          </div> */}
         </>
       )}
     </ConnectModal>

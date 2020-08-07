@@ -38,7 +38,10 @@ module.exports = function (router) {
       )
       valid = await validateCredentials(client)
     } catch (err) {
-      log.error('Failed to verify paypal credentials', err)
+      log.error(
+        `[Shop ${req.shop.id}] Failed to verify paypal credentials`,
+        err
+      )
       valid = false
     }
 
