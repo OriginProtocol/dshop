@@ -37,13 +37,13 @@ before(async function () {
   this.timeout(30000)
 
   // Create a temp directory for sqlite, shop cache, etc...
-  fs.mkdirSync(TEST_TMP_DIR)
   console.log(`Using test temp dir at ${TEST_TMP_DIR}`)
+  fs.mkdirSync(TEST_TMP_DIR)
+  fs.mkdirSync(TEST_DSHOP_CACHE)
 
-  // Define env vars for testing.
+  // Run migrations and start the API server.
   process.env.PORT = BACKEND_PORT
   process.env.DATABASE_URL = TEST_DATABASE_URL
-  process.env.DSHOP_CACHE = TEST_DSHOP_CACHE
   await sequelizeMigrate()
   require('../app')
 
