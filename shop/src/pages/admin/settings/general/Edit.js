@@ -2,7 +2,6 @@ import React, { useReducer, useEffect, useState } from 'react'
 import get from 'lodash/get'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
-import kebabCase from 'lodash/kebabCase'
 
 import CKEditor from 'ckeditor4-react'
 
@@ -15,6 +14,7 @@ import { useStateValue } from 'data/state'
 import Tabs from '../_Tabs'
 import CustomDomain from './_CustomDomain'
 import UploadFile from './_UploadFile'
+import EditHostname from './_EditHostname'
 import SocialLinks from './social-links/SocialLinks'
 
 function reducer(state, newState) {
@@ -53,6 +53,7 @@ const GeneralSettings = () => {
   )
   const Feedback = formFeedback(state)
   const [saving, setSaving] = useState(false)
+  const [hostnameModal, setHostnameModal] = useState(false)
   const [aboutText, setAboutText] = useState('')
 
   useEffect(() => {
@@ -94,6 +95,8 @@ const GeneralSettings = () => {
       </button>
     </div>
   )
+
+  const domain = `https://${state.hostname}.${get(admin, 'network.domain')}`
 
   return (
     <form
@@ -153,28 +156,58 @@ const GeneralSettings = () => {
             <input {...input('fullTitle')} />
             {Feedback('fullTitle')}
           </div>
-          <div className="form-group">
-            <label>Store Domain</label>
-            <div className="suffix-wrap">
-              <input
-                {...input('hostname')}
-                onChange={(e) =>
-                  setState({
-                    hostname: kebabCase(e.target.value),
-                    hostnameError: null
-                  })
-                }
-              />
-              <div className="suffix">
-                <span>{state.hostname}</span>
-                {`.${get(admin, 'network.domain')}`}
+          <div className="form-group mt-4 mb-2">
+            <label className="d-flex">
+              Domains
+              <div
+                className="ml-auto d-flex"
+                style={{ fontSize: 14, fontWeight: 'normal' }}
+              >
+                <CustomDomain hostname={state.hostname} netId={config.netId} />
               </div>
-            </div>
-            {Feedback('hostname')}
-            <div className="mt-1 d-flex">
-              <CustomDomain hostname={state.hostname} netId={config.netId} />
-            </div>
+            </label>
+            <table className="table mb-0">
+              <thead>
+                <tr>
+                  <th>Domain Name</th>
+                  <th>Status</th>
+                  <th>Provider</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <a
+                      onClick={(e) => e.preventDefault()}
+                      href={domain}
+                      target="_blank"
+                      rel="noreferrer"
+                      children={domain}
+                    />
+                  </td>
+                  <td>
+                    <span className="badge badge-warning">Pending</span>
+                  </td>
+                  <td className="text-muted">Origin</td>
+                  <td className="text-right">
+                    <a
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setHostnameModal(true)
+                      }}
+                    >
+                      <img src="images/edit-icon.svg" />
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+          {!hostnameModal ? null : (
+            <EditHostname onClose={() => setHostnameModal(false)} />
+          )}
           <div className="form-group">
             <label>
               Tagline
@@ -378,7 +411,6 @@ require('react-styl')(`
         margin-left: 0.25rem
     a
       color: #3b80ee
-      font-size: 14px
     .suffix-wrap
       position: relative
       .suffix
