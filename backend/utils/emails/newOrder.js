@@ -155,7 +155,9 @@ async function sendNewOrderEmail({ shop, network, cart, varsOverride, skip }) {
 
   const messageVendor = {
     from,
-    to: `${vars.siteName} <${shopConfig.supportEmail}>`,
+    to: shopConfig.supportEmail
+      ? `${vars.siteName} <${shopConfig.supportEmail}>`
+      : null,
     subject: `[${vars.siteName}] Order #${cart.offerId}`,
     html: htmlOutputVendor.html,
     text: txtOutput,
@@ -175,7 +177,7 @@ async function sendNewOrderEmail({ shop, network, cart, varsOverride, skip }) {
       }
     })
 
-    if (!vars.skipVendorMail) {
+    if (!vars.skipVendorMail && messageVendor.to) {
       transporter.sendMail(messageVendor, (err, msg) => {
         if (err) {
           log.error('Error sending merchant confirmation email:', err)

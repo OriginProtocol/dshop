@@ -77,6 +77,15 @@ const PaymentSettings = () => {
         enabled: stripeEnabled
       },
       {
+        id: 'paypal',
+        title: 'PayPal',
+        description: paypal
+          ? 'Your PayPal account has been connected'
+          : 'Use PayPal to easily accept Visa, MasterCard, American Express and almost any other kind of credit or debit card in your shop.',
+        icon: <Icons.PayPal />,
+        enabled: paypal
+      },
+      {
         id: 'uphold',
         title: 'Uphold',
         description: upholdEnabled
@@ -85,15 +94,6 @@ const PaymentSettings = () => {
         icon: <Icons.Uphold />,
         enabled: upholdEnabled,
         hide: admin.superuser ? false : true
-      },
-      {
-        id: 'paypal',
-        title: 'PayPal',
-        description: paypal
-          ? 'Your PayPal account has been connected'
-          : 'Use PayPal to easily accept Visa, MasterCard, American Express and almost any other kind of credit or debit card in your shop.',
-        icon: <Icons.PayPal />,
-        enabled: paypal
       }
     ]
       .filter((processor) => !processor.hide)
