@@ -38,6 +38,9 @@ COPY $DSHOP_BACKEND_SOURCE/scripts ./backend/scripts
 COPY $DSHOP_BACKEND_SOURCE/*.js ./backend/
 COPY $DSHOP_BACKEND_SOURCE/package.json ./backend/package.json
 
+# Shouldn't be necessary?  Something is requiring it
+COPY $DSHOP_BACKEND_SOURCE/test ./backend/test
+
 COPY $DSHOP_DAPP_SOURCE/public ./shop/public
 COPY $DSHOP_DAPP_SOURCE/src ./shop/src
 COPY $DSHOP_DAPP_SOURCE/scripts ./shop/scripts
