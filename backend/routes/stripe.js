@@ -9,7 +9,7 @@ const { validateStripeKeys } = require('@origin/utils/stripe')
 const { Shop, ExternalPayment, Network } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
-const { normalizeDescriptor } = require('../utils/stripe')
+const stripeUtils = require('../utils/stripe')
 const { getLogger } = require('../utils/logger')
 
 const makeOffer = require('./_makeOffer')
@@ -47,6 +47,21 @@ function hasDshopMetadata(reqJSON) {
 // Update stripe webhook in shop server config
 
 module.exports = function (router) {
+  /**
+   * Creates a payment intent on Stripe and sends
+   * back the client secret, so that the payment
+   * can be captured later
+   *
+   * @param {Number} amount  value of order in cents
+   * @param {String} currency currency code, falls back to 'usd'
+   * @param {String} data Offer's IPFS hash
+   *
+   * @returns {{
+   *  success,
+   *  client_secret,
+   *  message
+   * }}
+   */
   router.post('/pay', authShop, async (req, res) => {
     if (req.body.amount < 50) {
       return res.status(400).send({
@@ -62,7 +77,16 @@ module.exports = function (router) {
     const shopConfig = getConfig(req.shop.config)
     const web3Pk = shopConfig.web3Pk || networkConfig.web3Pk
 
-    if (!web3Pk || !shopConfig.stripeBackend) {
+    const valid = await stripeUtils.webhookValidation(
+      req.shop,
+      shopConfig,
+      shopConfig.stripeWebhookHost || networkConfig.backendUrl
+    )
+
+    if (!web3Pk || !valid) {
+      log.error(
+        `[Shop ${req.shop.id}] Failed to make payment on Stripe, invalid/missing credentials`
+      )
       return res.status(400).send({
         success: false,
         message: 'CC payments unavailable'
@@ -74,7 +98,7 @@ module.exports = function (router) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: req.body.amount,
       currency: req.body.currency || 'usd',
-      statement_descriptor: normalizeDescriptor(req.shop.name),
+      statement_descriptor: stripeUtils.normalizeDescriptor(req.shop.name),
       metadata: {
         shopId: req.shop.id,
         shopStr: req.shop.authToken,
@@ -194,9 +218,22 @@ module.exports = function (router) {
 
   router.post('/webhook', rawJson, handleWebhook, makeOffer)
 
+  /**
+   * Validates the Stripe credentials
+   *
+   * NOTE: Doesn't validate public key
+   *
+   * @param {String} stripeKey Publishable key
+   * @param {String} stripeBackend Secret key
+   * @param {String} stripeWebhookHost Host value to override networkConfig.backend
+   */
   router.post('/stripe/check-creds', authShop, async (req, res) => {
     let valid = false
-    const { stripeKey, stripeBackend } = req.body
+    let shouldUpdateWebhooks = true
+
+    const { stripeKey, stripeBackend, stripeWebhookHost } = req.body
+
+    let backendUrl = stripeWebhookHost
 
     if (
       validateStripeKeys({
@@ -209,13 +246,38 @@ module.exports = function (router) {
 
         await stripe.customers.list({ limit: 1 })
 
+        if (!backendUrl) {
+          // NOTE: `stripeWebhookHost` is only to be used in development environment,
+          // since localhost cannot be used for webhooks. It'd undefined and replaced
+          // with `networkConfig.backend` on prod.
+          //
+          // Could use Stripe CLI for webhooks instead of registering webhooks
+          // while running locally, but this way is closer to how things run on prod.
+          // Would be easier to identify/reproduce bugs on local, if any.
+
+          const network = await Network.findOne({
+            where: { networkId: req.shop.networkId }
+          })
+          const networkConfig = getConfig(network.config)
+
+          backendUrl = networkConfig.backendUrl
+        }
+
         valid = true
+
+        shouldUpdateWebhooks = !(await stripeUtils.webhookValidation(
+          req.shop.id,
+          {
+            stripeBackend
+          },
+          backendUrl
+        ))
       } catch (err) {
-        log.error('Failed to verify stripe credentials')
+        log.error(`[Shop ${req.shop.id}] Failed to verify stripe credentials`)
         log.debug(err)
       }
     }
 
-    return res.json({ success: true, valid })
+    return res.json({ success: true, valid, shouldUpdateWebhooks })
   })
 }

@@ -145,6 +145,7 @@ const PaymentSettings = () => {
   function onCloseModal() {
     setShowConnectModal(null)
     refetch()
+    refetchConfig()
   }
 
   function onListingCreated(createdListing) {
