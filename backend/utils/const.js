@@ -9,6 +9,8 @@ try {
   console.log('Is ENVKEY missing?')
 }
 
+const { TEST_DSHOP_CACHE } = require('../test/const')
+
 const NETWORK_NAME_TO_ID = {
   localhost: 999,
   rinkeby: 4,
@@ -60,7 +62,10 @@ const {
  */
 const DATA_URL = null
 const PRINTFUL_URL = 'https://api.printful.com'
-const DSHOP_CACHE = process.env.DSHOP_CACHE || `${__dirname}/../data`
+
+const DSHOP_CACHE = IS_TEST
+  ? TEST_DSHOP_CACHE
+  : process.env.DSHOP_CACHE || `${__dirname}/../data`
 
 module.exports = {
   CONTRACTS,

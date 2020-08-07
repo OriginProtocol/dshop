@@ -5,8 +5,8 @@ const BACKEND_PORT = 8357
 module.exports = {
   BACKEND_PORT,
   ROOT_BACKEND_URL: `http://localhost:${BACKEND_PORT}`,
-  IPFS_API: 'http://localhost:5002',
-  IPFS_GATEWAY: 'http://localhost:8080',
+  TEST_IPFS_API: 'http://localhost:5002',
+  TEST_IPFS_GATEWAY: 'http://localhost:8080',
   TEST_NETWORK_ID: 999,
   TEST_TMP_DIR,
   TEST_DATABASE_URL: `sqlite:${TEST_TMP_DIR}/dshop.db`,

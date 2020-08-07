@@ -24,8 +24,8 @@ const {
   USER_PASS_1,
   TEST_LISTING_ID_1,
   TEST_HASH_1,
-  IPFS_GATEWAY,
-  IPFS_API,
+  TEST_IPFS_GATEWAY,
+  TEST_IPFS_API,
   TEST_UNSTOPPABLE_DOMAIN_1
 } = require('./const')
 
@@ -111,8 +111,8 @@ describe('Shops', () => {
     async function mockDeployFn(args) {
       return {
         ipfsHash: 'hash' + Date.now(), // Unique hash.
-        ipfsPinner: IPFS_API,
-        ipfsGateway: IPFS_GATEWAY,
+        ipfsPinner: TEST_IPFS_API,
+        ipfsGateway: TEST_IPFS_GATEWAY,
         domain: testDomain,
         hostname: `${args.subdomain}.${testDomain}`
       }
@@ -140,8 +140,8 @@ describe('Shops', () => {
     expect(deployment.shopId).to.equal(shop.id)
     expect(deployment.status).to.equal(ShopDeploymentStatuses.Success)
     expect(deployment.domain).to.equal(domain)
-    expect(deployment.ipfsPinner).to.equal(IPFS_API)
-    expect(deployment.ipfsGateway).to.equal(IPFS_GATEWAY)
+    expect(deployment.ipfsPinner).to.equal(TEST_IPFS_API)
+    expect(deployment.ipfsGateway).to.equal(TEST_IPFS_GATEWAY)
     expect(deployment.ipfsHash).to.equal(hash)
 
     // Check a new deployment_name row was created.
@@ -190,8 +190,8 @@ describe('Shops', () => {
     async function mockDeployFn(args) {
       return {
         ipfsHash: TEST_HASH_1, // Unique hash.
-        ipfsPinner: IPFS_API,
-        ipfsGateway: IPFS_GATEWAY,
+        ipfsPinner: TEST_IPFS_API,
+        ipfsGateway: TEST_IPFS_GATEWAY,
         domain: testDomain,
         hostname: `${args.subdomain}.${testDomain}`
       }
@@ -224,8 +224,8 @@ describe('Shops', () => {
     expect(newDeployment.shopId).to.equal(shop.id)
     expect(newDeployment.status).to.equal(ShopDeploymentStatuses.Success)
     expect(newDeployment.domain).to.equal(domain)
-    expect(newDeployment.ipfsPinner).to.equal(IPFS_API)
-    expect(newDeployment.ipfsGateway).to.equal(IPFS_GATEWAY)
+    expect(newDeployment.ipfsPinner).to.equal(TEST_IPFS_API)
+    expect(newDeployment.ipfsGateway).to.equal(TEST_IPFS_GATEWAY)
     expect(newDeployment.ipfsHash).to.equal(hash)
 
     // Check a new deployment_name row was created.
