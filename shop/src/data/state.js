@@ -249,7 +249,11 @@ const reducer = (state, action) => {
   } else if (action.type === 'setStorefrontLocation') {
     newState = set(newState, 'storefrontLocation', action.location)
   } else if (action.type === 'setConfig') {
-    const activeShop = get(action, 'config.activeShop')
+    const activeShop = get(
+      action,
+      'config.activeShop',
+      get(action, 'config.backendAuthToken')
+    )
     if (activeShop) {
       localStorage.activeShop = activeShop
     } else {
@@ -258,6 +262,7 @@ const reducer = (state, action) => {
     newState = cloneDeep(getInitialState(activeShop))
     newState = set(newState, 'config', action.config)
     newState = set(newState, 'admin', cloneDeep(state.admin))
+    newState = set(newState, 'toasts', cloneDeep(state.toasts))
     const backendUrl = get(state, 'admin.backendUrl')
     if (backendUrl) {
       newState = set(newState, 'config.backend', backendUrl)
@@ -273,6 +278,12 @@ const reducer = (state, action) => {
     })
   } else if (action.type === 'setDashboardStats') {
     newState = set(newState, 'dashboardStats', action.stats)
+  } else if (action.type === 'setOfflinePaymentMethods') {
+    newState = set(
+      newState,
+      'config.offlinePaymentMethods',
+      action.offlinePaymentMethods
+    )
   }
 
   // IMPORTANT: Keep this function's total calculation in sync with the calculation
@@ -298,6 +309,7 @@ const reducer = (state, action) => {
 
   const donation = get(newState, 'cart.donation', 0)
 
+  newState.cart.currency = get(newState, 'config.currency', 'USD')
   newState.cart.discount = discount
   newState.cart.total = newState.cart.subTotal + shipping - discount + donation
 

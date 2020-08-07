@@ -30,8 +30,6 @@ const configFields = [
   'metaDescription',
   'cartSummaryNote',
   'discountCodes',
-  'emailSubject',
-  'emailBody',
   'css',
   'facebook',
   'twitter',
@@ -44,7 +42,7 @@ const configFields = [
 
 const ABOUT_FILENAME = 'about.html'
 
-const ShopAppearance = () => {
+const GeneralSettings = () => {
   const { config } = useConfig()
   const [{ admin }, dispatch] = useStateValue()
   const { shopConfig } = useShopConfig()
@@ -54,15 +52,13 @@ const ShopAppearance = () => {
     setState({ ...newState, hasChanges: true })
   )
   const Feedback = formFeedback(state)
-
   const [saving, setSaving] = useState(false)
-
   const [aboutText, setAboutText] = useState('')
 
   useEffect(() => {
     setState({
-      hostname: get(shopConfig, 'hostname'),
-      ...pick(config, configFields)
+      ...pick(config, configFields),
+      ...pick(shopConfig, ['hostname', 'emailSubject', 'supportEmail'])
     })
   }, [shopConfig, config])
 
@@ -189,7 +185,7 @@ const ShopAppearance = () => {
           </div>
           <div className="form-group">
             <label>
-              Store Logo
+              Logo
               <span>
                 (max. size 200x200 px. 100x100 px recommended. PNG or JPG)
               </span>
@@ -234,7 +230,7 @@ const ShopAppearance = () => {
           )}
           <div className="form-group">
             <label>
-              Store Favicon
+              Favicon
               <span>
                 (optimal image size 32x32 px in .ico format. Recommended favicon
                 generator: www.favicon.com)
@@ -323,19 +319,25 @@ const ShopAppearance = () => {
               Show discount codes on checkout
             </span>
           </div>
-          <div className="form-group">
-            <label>
-              Email Subject <span>(for receipt emails)</span>
-            </label>
-            <input {...input('emailSubject')} />
+
+          <div className="row">
+            <div className="form-group col-md-6">
+              <label>Support email</label>
+              <input {...input('supportEmail')} />
+              {Feedback('supportEmail')}
+              <div className="desc">
+                Your customers will see this address when receiving emails about
+                their order.
+              </div>
+            </div>
+            <div className="form-group col-md-6">
+              <label>
+                Email subject <span>(for receipt emails)</span>
+              </label>
+              <input {...input('emailSubject')} />
+              {Feedback('emailSubject')}
+            </div>
           </div>
-          {/* <div className="form-group">
-            <label>
-              Email Body
-              <span>(for receipt emails)</span>
-            </label>
-            <textarea style={{ minHeight: '15vh' }} {...input('emailBody')} />
-          </div> */}
         </div>
 
         <div className="col-lg-3 col-md-4">
@@ -347,7 +349,7 @@ const ShopAppearance = () => {
   )
 }
 
-export default ShopAppearance
+export default GeneralSettings
 
 require('react-styl')(`
   .shop-settings
@@ -387,4 +389,11 @@ require('react-styl')(`
         margin: 8px 0 0 15px
         > span
           visibility: hidden
+
+  .form-group .desc
+    font-size: 14px
+    font-weight: normal
+    color: #8293a4
+    margin-left: 0.25rem
+    margin-top: 0.25rem
 `)

@@ -4,6 +4,7 @@
  * @param {Number} maxLen max length of resultant string
  */
 const maskSecret = (secret, maxLen) => {
+  if (!secret) return
   const shouldTruncate = maxLen && secret.length > maxLen
 
   return `${secret

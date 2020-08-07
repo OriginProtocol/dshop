@@ -10,13 +10,10 @@ import PasswordField from 'components/admin/PasswordField'
 const reducer = (state, newState) => ({ ...state, ...newState })
 
 const initialState = {
-  fromEmail: '',
   sendgridUsername: '',
   sendgridPassword: '',
   sendgridApiKey: ''
 }
-
-const emailRegex = /^[a-z0-9-._+]+@[a-z0-9-]+(\.[a-z]+)*(\.[a-z]{2,})$/i
 
 const validate = (state, useBasicAuth) => {
   const newState = {}
@@ -32,12 +29,6 @@ const validate = (state, useBasicAuth) => {
     if (!state.sendgridApiKey) {
       newState.sendgridApiKeyError = 'API key is required'
     }
-  }
-
-  if (!state.fromEmail) {
-    newState.fromEmailError = 'Email address is required'
-  } else if (!emailRegex.test(state.fromEmail)) {
-    newState.fromEmailError = 'Should be a valid email address'
   }
 
   const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
@@ -108,12 +99,6 @@ const SendgridModal = ({ onClose, initialConfig, overrideOnConnect }) => {
           {Feedback('sendgridApiKey')}
         </div>
       )}
-
-      <div className="form-group">
-        <label>Send emails from</label>
-        <input {...input('fromEmail')} type="email" />
-        {Feedback('fromEmail')}
-      </div>
     </ConnectModal>
   )
 }

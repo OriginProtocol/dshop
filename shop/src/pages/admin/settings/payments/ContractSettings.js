@@ -155,7 +155,6 @@ require('react-styl')(`
     border-top: 1px solid #cdd7e0
     margin-top: 3rem
     padding-top: 2rem
-    max-width: 450px
 
     .form-check-label
       margin: 0

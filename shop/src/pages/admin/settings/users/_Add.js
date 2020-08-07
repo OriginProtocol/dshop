@@ -164,17 +164,4 @@ const AddUserModal = ({ afterSave }) => {
 export default AddUserModal
 
 require('react-styl')(`
-  .payment-method-modal
-    h5
-      margin-top: 1rem
-      text-align: center
-    .actions
-      border-top: 1px solid #cdd7e0
-      padding-top: 1.25rem
-      margin-top: 1.5rem
-      display: flex
-      justify-content: center
-
-      .btn
-        width: 135px
 `)

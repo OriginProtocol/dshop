@@ -4,6 +4,8 @@ import useBackendApi from 'utils/useBackendApi'
 
 import Modal from 'components/Modal'
 
+import { useStateValue } from 'data/state'
+
 const reducer = (state, newState) => ({ ...state, ...newState })
 
 const ConnectModal = ({
@@ -21,6 +23,8 @@ const ConnectModal = ({
     verified: false
   })
 
+  const [, dispatch] = useStateValue()
+
   const { post } = useBackendApi({ authToken: true })
 
   const onConnect = async () => {
@@ -36,16 +40,31 @@ const ConnectModal = ({
     setState({ saving: 'saving' })
 
     try {
-      await post('/shop/config', {
+      const { success, reason } = await post('/shop/config', {
         method: 'PUT',
-        body: JSON.stringify(newState)
+        body: JSON.stringify(newState),
+        suppressError: true
       })
-      setState({ saving: 'ok' })
-      setTimeout(() => {
-        setState({ saving: '', shouldClose: true })
-      }, 1500)
+      if (success) {
+        setState({ saving: 'ok' })
+        setTimeout(() => {
+          setState({ saving: '', shouldClose: true })
+        }, 1500)
+      } else {
+        setState({ saving: '' })
+        dispatch({
+          type: 'toast',
+          message: reason || 'Failed to save your credentials. Try again.',
+          style: 'error'
+        })
+      }
     } catch (err) {
       console.error(err)
+      dispatch({
+        type: 'toast',
+        message: 'Failed to save your credentials. Try again.',
+        style: 'error'
+      })
       setState({
         saving: ''
       })
@@ -98,10 +117,24 @@ export default ConnectModal
 
 require('react-styl')(`
   .payment-method-modal
+    overflow-y: scroll
+    max-height: 90vh
     h5
       margin-top: 1rem
+      margin-bottom: 1rem
       text-align: center
-    .actions
+
+    .form-group
+      label
+        margin-bottom: 0
+        font-weight: bold
+        & + :not(.desc)
+          margin-top: 0.5rem
+      .desc
+        color: #8293a4
+        font-size: 0.875rem
+        margin-bottom: 0.5rem
+    > .actions
       border-top: 1px solid #cdd7e0
       padding-top: 1.25rem
       margin-top: 1.5rem

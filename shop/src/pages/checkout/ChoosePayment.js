@@ -14,6 +14,8 @@ import Link from 'components/Link'
 import PayWithCrypto from './payment-methods/Crypto'
 import PayWithStripe from './payment-methods/Stripe'
 import PayWithUphold from './payment-methods/Uphold'
+import PayOffline from './payment-methods/OfflinePayment'
+import PayWithPayPal from './payment-methods/PayPal'
 import BillingAddress from './_BillingAddress'
 
 function validate(state) {
@@ -80,12 +82,26 @@ const ChoosePayment = () => {
   const input = formInput(formState, (newState) => setFormState(newState))
 
   const paymentMethods = get(config, 'paymentMethods', [])
+  const offlinePaymentMethods = get(config, 'offlinePaymentMethods', []).filter(
+    (method) => !method.disabled
+  )
 
   useEffect(() => {
     if (paymentMethods.length === 1) {
       dispatch({ type: 'updatePaymentMethod', method: paymentMethods[0] })
     }
   }, [paymentMethods.length])
+
+  const isOfflinePayment = !!get(cart, 'paymentMethod.instructions', false)
+
+  useEffect(() => {
+    if (paymentState.loading) return
+    setPaymentState({
+      buttonText: isOfflinePayment
+        ? 'Place Order'
+        : `Pay ${formatPrice(cart.total)}`
+    })
+  }, [isOfflinePayment, paymentState.loading])
 
   const Feedback = formFeedback(formState)
 
@@ -131,6 +147,17 @@ const ChoosePayment = () => {
         {!paymentMethods.find((p) => p.id === 'uphold') ? null : (
           <PayWithUphold {...paymentState} onChange={setPaymentState} />
         )}
+        {!paymentMethods.find((p) => p.id === 'paypal') ? null : (
+          <PayWithPayPal {...paymentState} onChange={setPaymentState} />
+        )}
+        {offlinePaymentMethods.map((method) => (
+          <PayOffline
+            {...paymentState}
+            onChange={setPaymentState}
+            key={method.id}
+            paymentMethod={method}
+          />
+        ))}
       </div>
 
       {hideBillingAddress ? null : (

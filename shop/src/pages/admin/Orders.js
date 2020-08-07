@@ -7,8 +7,11 @@ import Price from 'components/Price'
 import Tooltip from 'components/Tooltip'
 import Paginate from 'components/Paginate'
 import NoItems from 'components/NoItems'
+import PaymentStatusText from 'components/PaymentStatusText'
 
 import useOrders from 'utils/useOrders'
+import OfferStates from 'data/OfferStates'
+import PaymentActions from './order/_PaymentActions'
 
 const AdminOrders = () => {
   const location = useLocation()
@@ -147,8 +150,9 @@ const AdminOrdersTable = ({ orders }) => {
           <th>Time</th>
           <th>Customer</th>
           <th>Payment</th>
-          {/* <th>Status</th> */}
           <th>Total</th>
+          <th>Status</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -173,9 +177,18 @@ const AdminOrdersTable = ({ orders }) => {
             <td>{dayjs(order.createdAt).format('MMM D, h:mm A')}</td>
             <td>{customerName(order)}</td>
             <td>{get(order, 'data.paymentMethod.label')}</td>
-            {/* <td>{order.status}</td> */}
             <td>
               <Price amount={get(order, 'data.total')} />
+            </td>
+            <td>
+              <PaymentStatusText status={order.statusStr} />
+            </td>
+            <td>
+              {![OfferStates.Created, OfferStates.Accepted].includes(
+                order.statusStr
+              ) ? null : (
+                <PaymentActions order={order} />
+              )}
             </td>
           </tr>
         ))}

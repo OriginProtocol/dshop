@@ -12,7 +12,8 @@ const { memoizePromise } = require('@origin/utils/memoize')
 require('dotenv').config()
 
 const config = require('../config')
-const { DATA_URL, IPFS_GATEWAY } = require('./const')
+const { DATA_URL, IPFS_GATEWAY, IS_TEST } = require('./const')
+const { TEST_IPFS_GATEWAY } = require('../test/const')
 
 /**
  * Resolve an IPFS gateway from whatever's available.  Either a provided config
@@ -22,6 +23,9 @@ const { DATA_URL, IPFS_GATEWAY } = require('./const')
  * @returns {string} IPFS gateway URL
  */
 async function resolveIPFSGateway(dataURL, networkId) {
+  if (IS_TEST) {
+    return TEST_IPFS_GATEWAY
+  }
   if (typeof DATA_URL !== 'undefined' || typeof dataURL !== 'undefined') {
     const conf = await config.getSiteConfig(DATA_URL || dataURL, networkId)
     if (!conf) {

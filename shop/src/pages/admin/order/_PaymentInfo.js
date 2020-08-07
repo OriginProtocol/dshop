@@ -1,30 +1,10 @@
-import React, { useReducer } from 'react'
+import React from 'react'
 import { useRouteMatch } from 'react-router-dom'
 import get from 'lodash/get'
 
-import { useStateValue } from 'data/state'
-import useOfferData from 'utils/useOfferData'
-import useConfig from 'utils/useConfig'
-import useOrigin from 'utils/useOrigin'
+import OfferStates from 'data/OfferStates'
 
-import {
-  acceptOffer,
-  withdrawOffer,
-  finalizeOffer,
-  waitForOfferStatus
-} from 'utils/offer'
-
-import Web3Transaction from 'components/Web3Transaction'
-
-const reducer = (state, newState) => ({ ...state, ...newState })
-
-const OfferStates = {
-  Created: 'OfferCreated',
-  Accepted: 'OfferAccepted',
-  Finalized: 'OfferFinalized',
-  Withdrawn: 'OfferWithdrawn',
-  Disputed: 'OfferDisputed'
-}
+import PaymentActions from './_PaymentActions'
 
 const getStatusText = (orderState, paymentMethod, refundError) => {
   const isCryptoPayment = paymentMethod.id === 'crypto'
@@ -50,18 +30,12 @@ const PaymentInfo = ({ order }) => {
   const match = useRouteMatch('/admin/orders/:offerId')
   const { offerId } = match.params
 
-  const { config } = useConfig()
-  const { marketplace } = useOrigin()
-  const [, dispatch] = useStateValue()
-  const { sellerProxy, listing, offer } = useOfferData(offerId)
-  const [state, setState] = useReducer(reducer, {})
-
   const cart = get(order, 'data')
   const paymentMethod = get(cart, 'paymentMethod', {})
   const orderState = get(order, 'statusStr')
   const refundError = !!get(order, 'data.refundError')
 
-  if (!cart) return <div>Loading...</div>
+  if (!cart || !offerId) return <div>Loading...</div>
 
   if (orderState === OfferStates.Created) {
     return (
@@ -70,48 +44,7 @@ const PaymentInfo = ({ order }) => {
           {getStatusText(orderState, paymentMethod, refundError)}
         </div>
         <div className="status-actions">
-          <button
-            type="button"
-            className="btn btn-outline-primary"
-            onClick={() => setState({ acceptOffer: true })}
-            children="Accept Payment"
-          />
-          <button
-            type="button"
-            className="btn btn-outline-danger"
-            onClick={() => setState({ withdrawOffer: true })}
-            children="Reject & Refund"
-          />
-          <Web3Transaction
-            dependencies={[marketplace]}
-            account={get(listing, 'seller')}
-            shouldSubmit={state.acceptOffer}
-            execTx={() =>
-              acceptOffer({ marketplace, offerId, sellerProxy, config })
-            }
-            awaitTx={() =>
-              waitForOfferStatus({ marketplace, offerId, status: 2 })
-            }
-            onSuccess={() =>
-              dispatch({ type: 'reload', target: `order-${offerId}` })
-            }
-            onReset={() => setState({ acceptOffer: false })}
-          />
-          <Web3Transaction
-            dependencies={[marketplace]}
-            account={get(listing, 'seller')}
-            shouldSubmit={state.withdrawOffer}
-            execTx={() =>
-              withdrawOffer({ marketplace, offerId, sellerProxy, config })
-            }
-            awaitTx={() =>
-              waitForOfferStatus({ marketplace, offerId, status: 0 })
-            }
-            onSuccess={() =>
-              dispatch({ type: 'reload', target: `order-${offerId}` })
-            }
-            onReset={() => setState({ withdrawOffer: false })}
-          />
+          <PaymentActions order={order} />
         </div>
       </div>
     )
@@ -123,27 +56,7 @@ const PaymentInfo = ({ order }) => {
           offer to process the payment.
         </div>
         <div className="status-actions">
-          <button
-            type="button"
-            className="btn btn-outline-primary"
-            onClick={() => setState({ finalizeOffer: true })}
-            children="Finalize Purchase"
-          />
-          <Web3Transaction
-            dependencies={[marketplace]}
-            account={[get(offer, 'buyer'), get(listing, 'seller')]}
-            shouldSubmit={state.finalizeOffer}
-            execTx={() =>
-              finalizeOffer({ marketplace, offerId, sellerProxy, config })
-            }
-            awaitTx={() =>
-              waitForOfferStatus({ marketplace, offerId, status: 0 })
-            }
-            onSuccess={() =>
-              dispatch({ type: 'reload', target: `order-${offerId}` })
-            }
-            onReset={() => setState({ finalizeOffer: false })}
-          />
+          <PaymentActions order={order} />
         </div>
       </div>
     )
@@ -187,7 +100,4 @@ require('react-styl')(`
 
     .status-actions
       margin-top: 1rem
-
-      .btn
-        margin: 0 0.5rem
 `)

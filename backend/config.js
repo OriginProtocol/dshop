@@ -2,7 +2,7 @@ require('dotenv').config()
 
 const fetch = require('node-fetch')
 const memoize = require('lodash/memoize')
-const { PROVIDER, NETWORK_ID } = require('./utils/const')
+const { PROVIDER, NETWORK_ID, IS_TEST } = require('./utils/const')
 const { getLogger } = require('./utils/logger')
 
 const log = getLogger('config')
@@ -29,32 +29,51 @@ const Defaults = {
   }
 }
 
-const getSiteConfig = memoize(async function getSiteConfig(
-  dataURL,
-  netId = NETWORK_ID
-) {
-  let data
-  if (dataURL) {
-    const url = `${dataURL}config.json`
-    log.debug(`Loading config from ${url}`)
-    const dataRaw = await fetch(url)
-    data = await dataRaw.json()
-  } else {
-    log.warn('dataURL not provided')
+const getSiteConfig = memoize(
+  async function getSiteConfig(dataURL, netId = NETWORK_ID) {
+    if (IS_TEST) return {}
+
+    let data
+    if (dataURL) {
+      const url = `${dataURL}config.json`
+      log.debug(`Loading config from ${url}`)
+      const dataRaw = await fetch(url)
+      data = await dataRaw.json()
+    } else {
+      log.warn('dataURL not provided')
+    }
+    const defaultData = Defaults[netId] || {}
+    const networkData = data ? data.networks[netId] : null || {}
+    const siteConfig = {
+      provider: PROVIDER,
+      ...data,
+      ...defaultData,
+      ...networkData
+    }
+    return siteConfig
+  },
+  (...args) => args.join('-')
+)
+
+async function getShopConfigJson(dataURL, netId) {
+  const url = `${dataURL}config.json`
+  try {
+    const data = fetch(url).then((res) => res.json())
+    const defaultData = Defaults[netId] || {}
+    const networkData = data ? data.networks[netId] : null || {}
+    return {
+      ...data,
+      ...defaultData,
+      ...networkData
+    }
+  } catch (e) {
+    log.error(`Error fetching config.json from ${url}`)
   }
-  const defaultData = Defaults[netId] || {}
-  const networkData = data ? data.networks[netId] : null || {}
-  const siteConfig = {
-    provider: PROVIDER,
-    ...data,
-    ...defaultData,
-    ...networkData
-  }
-  return siteConfig
-})
+}
 
 module.exports = {
   defaults: Defaults,
   getSiteConfig,
-  provider: PROVIDER
+  provider: PROVIDER,
+  getShopConfigJson
 }

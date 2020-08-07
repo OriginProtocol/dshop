@@ -34,7 +34,8 @@ class FallbackQueue {
     const job = {
       data: data,
       progress: () => undefined,
-      log: log.info
+      log: log.info,
+      queue: this
     }
     await this.processor(job)
   }

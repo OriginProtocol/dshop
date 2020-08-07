@@ -1,7 +1,7 @@
 /**
  * @file Queue objects for adding processing dshop jobs.
  *
- * If no REDIS_URL defined, will fallback to prossing jobs as the jobs are
+ * If no REDIS_URL defined, will fallback to processing jobs as the jobs are
  * submitted, without using a queue.
  *
  * Example REDIS_URL=redis://0.0.0.0:6379
@@ -15,6 +15,12 @@ const backendUrl = REDIS_URL ? REDIS_URL : undefined
 const queueOpts = {}
 const log = getLogger('queues.queues')
 const CAPTURE_FAILED_QUEUES = ['autossl']
+
+if (REDIS_URL) {
+  log.info(`Queue init: Using Redis at ${REDIS_URL}`)
+} else {
+  log.info('Queue init: REDIS_URL not set, using in-memory queue.')
+}
 
 const all = [
   new Queue(

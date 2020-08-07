@@ -1,8 +1,8 @@
+const ethers = require('ethers')
 const omit = require('lodash/omit')
 const pick = require('lodash/pick')
 const sortBy = require('lodash/sortBy')
 
-const Stripe = require('stripe')
 const {
   Seller,
   Shop,
@@ -33,10 +33,11 @@ const formidable = require('formidable')
 const https = require('https')
 const http = require('http')
 const mv = require('mv')
+const path = require('path')
 const { isHexPrefixed, addHexPrefix } = require('ethereumjs-util')
 
 const { configureShopDNS, deployShop } = require('../utils/deployShop')
-const { DSHOP_CACHE, IS_PROD } = require('../utils/const')
+const { DSHOP_CACHE } = require('../utils/const')
 const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
 const {
@@ -46,10 +47,15 @@ const {
 
 const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
 
+const paypalUtils = require('../utils/paypal')
+
 const log = getLogger('routes.shops')
 
 const dayjs = require('dayjs')
 const { readProductsFile } = require('../utils/products')
+
+const stripeUtils = require('../utils/stripe')
+const { validateStripeKeys } = require('@origin/utils/stripe')
 
 async function tryDataDir(dataDir) {
   const hasDir = fs.existsSync(`${DSHOP_CACHE}/${dataDir}`)
@@ -363,6 +369,7 @@ module.exports = function (router) {
     const isLocal = zone === 'localhost'
     const publicUrl = isLocal ? backend : `https://${hostname}.${zone}`
     const dataUrl = `${publicUrl}/${dataDir}/`
+    const supportEmail = req.body.supportEmail || req.seller.email
 
     let defaultShopConfig = {}
     if (networkConfig.defaultShopConfig) {
@@ -380,7 +387,9 @@ module.exports = function (router) {
       hostname,
       publicUrl,
       printful: req.body.printfulApi,
-      deliveryApi: req.body.printfulApi ? true : false
+      deliveryApi: req.body.printfulApi ? true : false,
+      supportEmail,
+      emailSubject: `Your order from ${name}`
     }
     if (req.body.web3Pk && !config.web3Pk) {
       config.web3Pk = isHexPrefixed(req.body.web3Pk)
@@ -467,8 +476,7 @@ module.exports = function (router) {
         title: name,
         fullTitle: name,
         backendAuthToken: dataDir,
-        supportEmail: `${name} Store <${dataDir}@ogn.app>`,
-        emailSubject: `Your ${name} Order`,
+        supportEmail,
         pgpPublicKey: pgpKeys.pgpPublicKey.replace(/\\r/g, '')
       }
     }
@@ -649,81 +657,41 @@ module.exports = function (router) {
     }
   )
 
-  async function deregisterStripeWebhooks(config) {
-    const { stripeBackend, backendAuthToken } = config
+  async function movePaymentMethodImages(paymentMethods, dataDir) {
+    const out = []
+    const tmpDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/__tmp`)
 
-    if (!stripeBackend || !backendAuthToken) {
-      return
-    }
+    for (const m of paymentMethods) {
+      const imagePath = m.qrImage
+      if (imagePath && imagePath.includes('/__tmp/')) {
+        const fileName = imagePath.split('/__tmp/', 2)[1]
+        const tmpFilePath = `${tmpDir}/${fileName}`
 
-    try {
-      log.info('Trying to deregister any existing webhook...')
-      const stripe = Stripe(stripeBackend)
-
-      const webhookEndpoints = await stripe.webhookEndpoints.list({
-        limit: 100
-      })
-
-      const endpointsToDelete = webhookEndpoints.data
-        .filter(
-          (endpoint) =>
-            get(endpoint, 'metadata.dshopStore') === backendAuthToken
-        )
-        .map((endpoint) => endpoint.id)
-
-      for (const endpointId of endpointsToDelete) {
-        try {
-          await stripe.webhookEndpoints.del(endpointId)
-        } catch (err) {
-          log.error('Failed to deregister webhook', endpointId, err)
+        const targetDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/uploads`)
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true })
         }
+        const targetPath = `${targetDir}/${fileName}`
+
+        const movedFileName = await new Promise((resolve) => {
+          mv(tmpFilePath, targetPath, (err) => {
+            if (err) {
+              console.error(`Couldn't move file`, tmpFilePath, targetPath, err)
+            }
+            resolve(fileName)
+          })
+        })
+
+        out.push({
+          ...m,
+          qrImage: movedFileName
+        })
+      } else {
+        out.push(m)
       }
-
-      log.info(`${endpointsToDelete} webhooks deregisterd`)
-    } catch (err) {
-      log.error('Failed to deregister webhooks', err)
-      return { success: false }
     }
 
-    return { success: true }
-  }
-
-  async function registerStripeWebhooks(newConfig, oldConfig, backendUrl) {
-    const { backendAuthToken } = oldConfig
-    const { stripeBackend } = newConfig
-
-    // Deregister old webhooks
-    await deregisterStripeWebhooks(oldConfig)
-
-    // NOTE: Fails on localhost, try using a reverse proxy/tunnel like ngrok
-    // Or setup manually using Stripe CLI
-
-    if (!backendUrl) {
-      log.error('Invalid webhook host')
-      return { success: false }
-    }
-
-    log.info('Trying to register webhook on host', backendUrl)
-
-    try {
-      const stripe = Stripe(stripeBackend)
-
-      const endpoint = await stripe.webhookEndpoints.create({
-        url: `${backendUrl}/webhook`,
-        enabled_events: ['payment_intent.succeeded'],
-        description: 'Origin Dshop payment processor',
-        metadata: {
-          dshopStore: backendAuthToken
-        }
-      })
-
-      log.info(`Registered webhook for host ${backendUrl}`)
-
-      return { success: true, secret: endpoint.secret }
-    } catch (err) {
-      console.error('Failed to register webhooks', err)
-      return { success: false }
-    }
+    return out
   }
 
   router.put(
@@ -754,7 +722,10 @@ module.exports = function (router) {
         'medium',
         'youtube',
         'about',
-        'logErrors'
+        'logErrors',
+        'paypalClientId',
+        'offlinePaymentMethods',
+        'supportEmail'
       )
       const jsonNetConfig = pick(
         req.body,
@@ -769,6 +740,14 @@ module.exports = function (router) {
       if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
         listingId = req.body.listingId
         req.shop.listingId = listingId
+      }
+
+      // Offline payments
+      if (req.body.offlinePaymentMethods) {
+        jsonConfig.offlinePaymentMethods = await movePaymentMethodImages(
+          req.body.offlinePaymentMethods,
+          req.shop.authToken
+        )
       }
 
       if (Object.keys(jsonConfig).length || Object.keys(jsonNetConfig).length) {
@@ -788,6 +767,7 @@ module.exports = function (router) {
               ...jsonNetConfig
             })
           }
+
           const jsonStr = JSON.stringify(newConfig, null, 2)
           fs.writeFileSync(configFile, jsonStr)
         } catch (e) {
@@ -832,26 +812,34 @@ module.exports = function (router) {
       const additionalOpts = {}
 
       // Configure Stripe webhooks
-      if (IS_PROD) {
-        // Register webhooks only on prod
-        if (req.body.stripe === false) {
-          log.info(`Shop ${shopId} - Deregistering Stripe webhook`)
-          await deregisterStripeWebhooks(existingConfig)
-          additionalOpts.stripeWebhookSecret = ''
-          additionalOpts.stripeBackend = ''
-        } else if (req.body.stripe && !req.body.stripeWebhookSecret) {
-          log.info(`Shop ${shopId} - Registering Stripe webhook`)
-          const { secret } = await registerStripeWebhooks(
-            req.body,
-            existingConfig,
-            netConfig.backendUrl
-          )
-          additionalOpts.stripeWebhookSecret = secret
-        } else if (req.body.stripeWebhookSecret) {
-          additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
+      if (req.body.stripe === false) {
+        log.info(`Shop ${shopId} - Deregistering Stripe webhook`)
+        await stripeUtils.deregisterWebhooks(req.shop, existingConfig)
+        additionalOpts.stripeWebhookSecret = ''
+        additionalOpts.stripeWebhookHost = ''
+        additionalOpts.stripeBackend = ''
+      } else if (req.body.stripe) {
+        log.info(`Shop ${shopId} - Registering Stripe webhook`)
+
+        const validKeys = validateStripeKeys({
+          publishableKey: req.body.stripeKey,
+          secretKey: req.body.stripeBackend
+        })
+
+        if (!validKeys) {
+          return res.json({
+            success: false,
+            reason: 'Invalid Stripe credentials'
+          })
         }
-      } else {
-        additionalOpts.stripeWebhookSecret = req.body.stripeWebhookSecret
+
+        const { secret } = await stripeUtils.registerWebhooks(
+          req.shop,
+          req.body,
+          existingConfig,
+          req.body.stripeWebhookHost || netConfig.backendUrl
+        )
+        additionalOpts.stripeWebhookSecret = secret
       }
 
       // Configure Printful webhooks
@@ -867,10 +855,48 @@ module.exports = function (router) {
         )
 
         additionalOpts.printfulWebhookSecret = printfulWebhookSecret
-      } else if (existingConfig.printful && !req.body.printful) {
+      } else if (existingConfig.printful && req.body.printful === false) {
         log.info(`Shop ${shopId} - Deregistering Printful webhook`)
         await deregisterPrintfulWebhook(shopId, existingConfig)
         additionalOpts.printfulWebhookSecret = ''
+      }
+
+      // Duplicate `offlinePaymentMethods` to encrypted config
+      if (jsonConfig.offlinePaymentMethods) {
+        additionalOpts.offlinePaymentMethods = jsonConfig.offlinePaymentMethods
+      }
+
+      // PayPal
+      if (req.body.paypal) {
+        const client = paypalUtils.getClient(
+          netConfig.paypalEnvironment,
+          req.body.paypalClientId,
+          req.body.paypalClientSecret
+        )
+        const valid = await paypalUtils.validateCredentials(client)
+        if (!valid) {
+          return res.json({
+            success: false,
+            reason: 'Invalid PayPal credentials'
+          })
+        }
+
+        log.info(`Shop ${shopId} - Registering PayPal webhook`)
+        if (existingConfig.paypal && existingConfig.paypalWebhookId) {
+          await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
+        }
+        const result = await paypalUtils.registerWebhooks(
+          shopId,
+          {
+            ...existingConfig,
+            ...req.body
+          },
+          netConfig
+        )
+        additionalOpts.paypalWebhookId = result.webhookId
+      } else if (existingConfig.paypal && req.body.paypal === false) {
+        await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
+        additionalOpts.paypalWebhookId = null
       }
 
       // Save the config in the DB.
@@ -885,13 +911,20 @@ module.exports = function (router) {
         'dataUrl',
         'deliveryApi',
         'email',
+        'emailSubject',
         'hostname',
         'listener',
         'mailgunSmtpLogin',
         'mailgunSmtpPassword',
         'mailgunSmtpPort',
         'mailgunSmtpServer',
+        'offlinePaymentMethods',
         'password',
+        'paypal',
+        'paypalClientId',
+        'paypalClientSecret',
+        'paypalWebhookHost',
+        'paypalWebhookId',
         'pgpPrivateKey',
         'pgpPrivateKeyPass',
         'pgpPublicKey',
@@ -902,6 +935,8 @@ module.exports = function (router) {
         'sendgridUsername',
         'stripeBackend',
         'stripeWebhookSecret',
+        'stripeWebhookHost',
+        'supportEmail',
         'upholdApi',
         'upholdClient',
         'upholdSecret',
@@ -1244,6 +1279,36 @@ module.exports = function (router) {
       })
 
       return res.json({ success: true, ipfsHash, names: hostnames })
+    }
+  )
+
+  /**
+   * Registers a wallet address associated with a shop.
+   * TODO: Validate ownership of the wallet by the shop's admin calling this API.
+   */
+  router.post(
+    '/shop/wallet',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const shop = req.shop
+      const { walletAddressRaw } = req.body
+      if (!walletAddressRaw) {
+        return res.json({ success: false, message: 'walletAddress missing' })
+      }
+
+      // Check it is a valid eth address and checksum it.
+      let walletAddress
+      try {
+        walletAddress = ethers.utils.getAddress(walletAddressRaw)
+      } catch (e) {
+        return res.json({ success: false, message: 'Invalid Ethereum address' })
+      }
+
+      // Associate the address to the shop in the DB.
+      await shop.update({ walletAddress })
+
+      return res.json({ success: true })
     }
   )
 

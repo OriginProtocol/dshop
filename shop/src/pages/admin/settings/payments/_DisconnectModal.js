@@ -20,7 +20,8 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
               stripe: false,
               stripeKey: '',
               stripeBackend: '',
-              stripeWebhookSecret: ''
+              stripeWebhookSecret: '',
+              stripeWebhookHost: ''
             }
             break
           case 'uphold':
@@ -64,6 +65,13 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
               mailgunSmtpPort: '',
               mailgunSmtpLogin: '',
               mailgunSmtpPassword: ''
+            }
+            break
+          case 'paypal':
+            updatedConfig = {
+              paypal: false,
+              paypalClientId: '',
+              paypalClientSecret: ''
             }
             break
         }

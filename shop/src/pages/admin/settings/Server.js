@@ -26,6 +26,7 @@ const defaultValues = {
   dataUrl: '',
   publicUrl: '',
   printful: '',
+  listingId: '',
   stripeBackend: '',
   stripeWebhookSecret: '',
   pgpPublicKey: '',
@@ -98,6 +99,10 @@ const AdminSettings = ({ shop }) => {
   }, [shopConfig])
 
   useEffect(() => {
+    setState({ listingId: config.listingId })
+  }, [config.listingId])
+
+  useEffect(() => {
     async function doTest() {
       try {
         const result = await testKey({
@@ -131,8 +136,11 @@ const AdminSettings = ({ shop }) => {
             .catch(() => resolve(false))
         })
         if (!cfgOk) {
-          setState({ dataUrlError: 'Could not fetch config.json' })
-          return
+          dispatch({
+            type: 'toast',
+            message: 'Warning: Could not fetch config.json',
+            style: 'error'
+          })
         }
 
         if (valid) {
@@ -188,6 +196,11 @@ const AdminSettings = ({ shop }) => {
           <label>Password protect site</label>
           <PasswordField field="password" input={input} />
           {Feedback('password')}
+        </div>
+        <div className="form-group col-md-6">
+          <label>Listing ID</label>
+          <input {...input('listingId')} />
+          {Feedback('listingId')}
         </div>
       </div>
       <div className="row">

@@ -1,5 +1,6 @@
 require('dotenv').config()
 
+const fs = require('fs')
 const Web3 = require('web3')
 const openpgp = require('openpgp')
 const util = require('ethereumjs-util')
@@ -10,7 +11,7 @@ const get = require('lodash/get')
 
 const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
-const { sendNewOrderEmail } = require('./emailer')
+const sendNewOrderEmail = require('./emails/newOrder')
 const { upsertEvent, getEventObj } = require('./events')
 const { getConfig } = require('./encryptedConfig')
 const discordWebhook = require('./discordWebhook')
@@ -18,12 +19,13 @@ const { Network, Order, Shop, ExternalPayment } = require('../models')
 const { getLogger } = require('../utils/logger')
 const { autoFulfillOrder } = require('../utils/printful')
 const { Sentry } = require('../sentry')
+const { ListingID } = require('./id')
 
 const log = getLogger('utils.handleLog')
 
 const { validateDiscountOnOrder } = require('./discounts')
 
-const { IS_TEST } = require('../utils/const')
+const { DSHOP_CACHE, IS_TEST } = require('../utils/const')
 
 const IPFS_TIMEOUT = 60000 // 60sec in msec
 
@@ -34,7 +36,7 @@ const MarketplaceABI = Marketplace._jsonInterface
 /**
  * Handles processing events emitted by the marketplace contract.
  *
- * @param {Integer} networkId: Ethereum newtrok id
+ * @param {Integer} networkId: Ethereum network id
  * @param {string} contractVersion: Version of the marketplace contract. Ex: '001'
  * @param {Object} data: blockchain event data
  * @param {Array<Object>} topics: event topics
@@ -86,27 +88,20 @@ async function handleLog({
 
   // Lookup the Dshop associated with the event, if any.
   const shop = await Shop.findOne({ where: { listingId } })
+  const shopId = shop ? shop.id : null
 
   // Note: we persist all marketplace events in the DB, not only dshop related ones.
   // This is to facilitate troubleshooting.
   const upsertEventFn = isTest && mockUpsert ? mockUpsert : upsertEvent
   const event = await upsertEventFn({
     web3,
-    shopId: shop ? shop.id : null,
+    shopId,
     networkId,
     event: rawEvent
   })
 
-  // We only processes the event if it is associated with a Dshop.
-  if (!shop) {
-    log.info(
-      `Event ${eventObj.eventName} on listing ${listingId} is not for a registered shop. Skipping.`
-    )
-    return
-  }
-
   log.info(
-    `Processing event ${eventObj.eventName} on listing ${listingId} for shop ${shop.id}`
+    `Processing event ${eventObj.eventName} on listing ${listingId} for shop ${shopId}`
   )
   await processDShopEvent({ event, shop })
 }
@@ -335,7 +330,7 @@ async function _processEventForNewOrder({
   // cause the order to get recorded multiple times in the DB.
   if (!skipEmail) {
     try {
-      await sendNewOrderEmail(shop, data)
+      await sendNewOrderEmail({ shop, cart: data, network })
     } catch (e) {
       log.error('Email sending failure:', e)
       Sentry.captureException(e)
@@ -360,24 +355,93 @@ async function _processEventForNewOrder({
 }
 
 /**
+ * Logic for processing ListingCreated event.
+ *
+ * @param {models.Event} event
+ * @returns {Promise<null||models.Shop>}
+ * @private
+ */
+async function _processEventListingCreated({ event }) {
+  // Get the address of the wallet that submitted the event.
+  const walletAddress = event.party
+
+  // Lookup for any shop linked to that address and that does not have a listingId yet.
+  // There could be more than one if the merchant created multiple shops
+  // using the same wallet. We pick the most recently updated shop.
+  const shop = await Shop.findOne({
+    where: { walletAddress, listingId: null },
+    order: [['updatedAt', 'desc']]
+  })
+  if (!shop) {
+    // Ignore the event. It could be a ListingCreated event unrelated to Dshop
+    // or a merchant that submitted by mistake multiple createListing transactions.
+    log.info(`No shop found associated with wallet address ${walletAddress}`)
+    return null
+  }
+
+  // Get the fully-qualified listing ID.
+  const listingId = new ListingID(event.listingId, shop.networkId).toString()
+
+  // Associate the listing Id with the shop in the DB.
+  await shop.update({ listingId })
+  log.info(`Associated shop ${shop.id} with listing Id ${listingId}`)
+
+  // Load the shop's config.json from the deploy staging area.
+  const dataDir = shop.authToken
+  const shopDir = `${DSHOP_CACHE}/${dataDir}`
+  const shopConfigPath = `${shopDir}/data/config.json`
+  log.debug(`Shop ${shop.id}: Loading config at ${shopConfigPath}`)
+  const raw = fs.readFileSync(shopConfigPath)
+  const shopConfig = JSON.parse(raw.toString())
+
+  // Update the config.json listingId field and write it back to disk.
+  shopConfig.listingId = listingId
+  fs.writeFileSync(shopConfigPath, JSON.stringify(shopConfig, null, 2))
+  log.info(
+    `Shop ${shop.id}: set listingId to ${listingId} in config at ${shopConfigPath}`
+  )
+
+  return shop
+}
+
+/**
  * Processes a dshop event
  * @param {string} listingId: fully qualified listing id
  * @param {models.Event} event: Event DB object.
- * @param {models.Shop} shop: Shop DB object.
+ * @param {models.Shop} shop: Shop DB object or null.
  * @param {boolean} skipEmail: do not send any email. Useful for ex. when
  *   reprocessing events, to avoid sending duplicate emails to the users.
  * @param {boolean} skipDiscord: do not call the Discord webhook. Useful
  *   for ex. when reprocessing events.
- * @returns {Promise<models.Order|null} Newly created or updated DB order object.
+ * @returns {Promise<models.Shop|models.Order|null} Shop or Order DB object or null if the event did not
  *   Null in case the event did not need to get processed.
  */
 async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
   const eventName = event.eventName
 
+  if (eventName === 'ListingCreated') {
+    const shop = await _processEventListingCreated({ event })
+    return shop
+  }
+
   // Skip any event that is not offer related.
   if (eventName.indexOf('Offer') < 0) {
-    log.info(`Not offer related. Ignoring event ${eventName}`)
+    log.info(
+      `Not a ListingCreated neither an Offer event. Ignoring ${eventName}`
+    )
     return null
+  }
+
+  // If it's an Offer event, we expect a shop to have been loaded and we expect
+  // the shop to have a listingId.
+  if (!shop) {
+    log.info(`No shop associated with event ${eventName}. Skipping.`)
+    return
+  }
+  if (!shop.listingId) {
+    throw new Error(
+      `No listingId associated with shop ${shop.id}. Processing of event ${eventName} failed.`
+    )
   }
 
   // Construct a fully-qualified offerId.

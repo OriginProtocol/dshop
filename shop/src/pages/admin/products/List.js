@@ -110,7 +110,10 @@ const AdminProducts = () => {
                   if (e.target.matches('.action-icon, .action-icon *')) {
                     return
                   }
-                  history.push(`/admin/products/${product.id}`)
+                  history.push({
+                    pathname: `/admin/products/${product.id}`,
+                    state: { scrollToTop: true }
+                  })
                 }}
               >
                 <td>

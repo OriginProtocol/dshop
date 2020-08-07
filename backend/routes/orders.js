@@ -1,4 +1,4 @@
-const { authSellerAndShop } = require('./_auth')
+const { authSellerAndShop, authShop } = require('./_auth')
 const {
   Order,
   sequelize,
@@ -6,7 +6,7 @@ const {
 } = require('../models')
 const { findOrder } = require('../utils/orders')
 const makeOffer = require('./_makeOffer')
-const { sendNewOrderEmail } = require('../utils/emailer')
+const sendNewOrderEmail = require('../utils/emails/newOrder')
 
 module.exports = function (router) {
   router.get('/orders', authSellerAndShop, async (req, res) => {
@@ -64,7 +64,10 @@ module.exports = function (router) {
     findOrder,
     async (req, res) => {
       try {
-        await sendNewOrderEmail(req.shop, JSON.parse(req.order.data))
+        await sendNewOrderEmail({
+          shop: req.shop,
+          cart: JSON.parse(req.order.data)
+        })
         res.json({ success: true })
       } catch (e) {
         res.json({ success: false })
@@ -80,6 +83,22 @@ module.exports = function (router) {
       if (!encryptedData) {
         return res.json({ success: false })
       }
+      req.body.data = encryptedData
+      req.amount = 0
+      next()
+    },
+    makeOffer
+  )
+
+  router.post(
+    '/orders/offline-payment-order',
+    authShop,
+    (req, res, next) => {
+      const { encryptedData } = req.body
+      if (!encryptedData) {
+        return res.json({ success: false })
+      }
+
       req.body.data = encryptedData
       req.amount = 0
       next()

@@ -9,6 +9,8 @@ try {
   console.log('Is ENVKEY missing?')
 }
 
+const { TEST_DSHOP_CACHE } = require('../test/const')
+
 const NETWORK_NAME_TO_ID = {
   localhost: 999,
   rinkeby: 4,
@@ -39,6 +41,7 @@ const CONTRACTS = {
 const NODE_ENV = process.env.NODE_ENV
 const IS_PROD = NODE_ENV === 'production'
 const IS_TEST = NODE_ENV === 'test'
+const IS_DEV = NODE_ENV === 'development' || (!IS_PROD && !IS_TEST)
 
 const {
   SESSION_SECRET = randomstring.generate(),
@@ -48,8 +51,7 @@ const {
   PROVIDER,
   PROVIDER_WS,
   REDIS_URL,
-  IPFS_GATEWAY, // IPFS gateway override
-  SUPPORT_EMAIL_OVERRIDE
+  IPFS_GATEWAY // IPFS gateway override
 } = process.env
 
 /**
@@ -59,7 +61,10 @@ const {
  */
 const DATA_URL = null
 const PRINTFUL_URL = 'https://api.printful.com'
-const DSHOP_CACHE = process.env.DSHOP_CACHE || `${__dirname}/../data`
+
+const DSHOP_CACHE = IS_TEST
+  ? TEST_DSHOP_CACHE
+  : process.env.DSHOP_CACHE || `${__dirname}/../data`
 
 module.exports = {
   CONTRACTS,
@@ -68,6 +73,7 @@ module.exports = {
   NODE_ENV,
   IS_PROD,
   IS_TEST,
+  IS_DEV,
   SESSION_SECRET,
   WEB3_PK,
   PROVIDER_WS,
@@ -76,7 +82,6 @@ module.exports = {
   IPFS_GATEWAY,
   NETWORK,
   NETWORK_ID: NETWORK_NAME_TO_ID[NETWORK] || 999,
-  SUPPORT_EMAIL_OVERRIDE,
   PRINTFUL_URL,
   DSHOP_CACHE
 }
