@@ -43,9 +43,8 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
     setError(null)
 
     try {
-      // const returnUrl = `${window.location.origin}/#/order/${encryptedData.hash}?auth=${encryptedData.auth}`
       const randomKey = randomstring.generate()
-      const returnUrl = `${window.location.origin}/#/checkout/payment/${randomKey}`
+      const returnUrl = `${window.location.origin}${window.location.pathname}#/checkout/payment/${randomKey}`
       const { authorizeUrl, orderId } = await post('/paypal/pay', {
         body: JSON.stringify({
           amount: (cart.total / 100).toFixed(2),

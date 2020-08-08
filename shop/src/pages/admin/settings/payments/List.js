@@ -1,14 +1,13 @@
 import React, { useMemo, useState, useEffect } from 'react'
-import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
 import uniqBy from 'lodash/uniqBy'
+import get from 'lodash/get'
 
 import { AllCurrencies } from 'data/Currencies'
 import useShopConfig from 'utils/useShopConfig'
 import useSetState from 'utils/useSetState'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
-import useListingData from 'utils/useListingData'
 import DefaultTokens from 'data/defaultTokens'
 import { useStateValue } from 'data/state'
 
@@ -30,7 +29,6 @@ const PaymentSettings = () => {
   const [{ admin }, dispatch] = useStateValue()
   const { config, refetch: refetchConfig } = useConfig()
   const [state, setState] = useSetState()
-  const { listing } = useListingData(state.listingId)
 
   useEffect(() => {
     const { listingId, currency, offlinePaymentMethods } = config
@@ -77,6 +75,15 @@ const PaymentSettings = () => {
         enabled: stripeEnabled
       },
       {
+        id: 'paypal',
+        title: 'PayPal',
+        description: paypal
+          ? 'Your PayPal account has been connected'
+          : 'Use PayPal to easily accept Visa, MasterCard, American Express and almost any other kind of credit or debit card in your shop.',
+        icon: <Icons.PayPal />,
+        enabled: paypal
+      },
+      {
         id: 'uphold',
         title: 'Uphold',
         description: upholdEnabled
@@ -85,15 +92,6 @@ const PaymentSettings = () => {
         icon: <Icons.Uphold />,
         enabled: upholdEnabled,
         hide: admin.superuser ? false : true
-      },
-      {
-        id: 'paypal',
-        title: 'PayPal',
-        description: paypal
-          ? 'Your PayPal account has been connected'
-          : 'Use PayPal to easily accept Visa, MasterCard, American Express and almost any other kind of credit or debit card in your shop.',
-        icon: <Icons.PayPal />,
-        enabled: paypal
       }
     ]
       .filter((processor) => !processor.hide)
@@ -148,21 +146,7 @@ const PaymentSettings = () => {
     refetchConfig()
   }
 
-  function onListingCreated(createdListing) {
-    const listingId = [
-      get(admin, 'network.networkId'),
-      get(admin, 'network.marketplaceVersion'),
-      createdListing
-    ].join('-')
-    post('/shop/config', {
-      method: 'PUT',
-      body: JSON.stringify({ listingId }),
-      suppressError: true
-    }).then(() => {
-      refetch()
-      refetchConfig()
-    })
-  }
+  const sellerWallet = get(shopConfig, 'walletAddress')
 
   return (
     <form
@@ -239,9 +223,13 @@ const PaymentSettings = () => {
               <>
                 <div className="description">
                   <div>{`Shop ID: ${config.listingId}`}</div>
-                  {!listing ? null : (
-                    <div className="mt-1">{`Account: ${listing.seller}`}</div>
-                  )}
+                  <div className="mt-1">{`Account: ${sellerWallet}`}</div>
+                </div>
+              </>
+            ) : sellerWallet ? (
+              <>
+                <div className="description">
+                  {`Your listing is pending creation using account ${sellerWallet}`}
                 </div>
               </>
             ) : (
@@ -253,7 +241,10 @@ const PaymentSettings = () => {
                 <div className="actions">
                   <CreateListing
                     className="btn btn-outline-primary px-4"
-                    onCreated={onListingCreated}
+                    onCreated={() => {
+                      refetch()
+                      refetchConfig()
+                    }}
                     children="Connect"
                   />
                 </div>
