@@ -22,9 +22,11 @@ const CheckoutShipping = () => {
 
   const country = get(cart, 'userInfo.country')
   const countryCode = get(Countries, `${country}.code`)
-  const defaultShippingZone = shippingZones.find((zone) => !zone.countries)
+  const defaultShippingZone = shippingZones.find(
+    (zone) => !get(zone, 'countries.length', 0)
+  )
   const filteredShippingZones = shippingZones.filter(
-    (zone) => (zone.countries || []).indexOf(countryCode) >= 0
+    (zone) => get(zone, 'countries', []).indexOf(countryCode) >= 0
   )
   if (!filteredShippingZones.length && defaultShippingZone) {
     filteredShippingZones.push(defaultShippingZone)

@@ -226,23 +226,20 @@ const Shipping = () => {
           style: 'error'
         })
         return
-      } else {
-        setState({
-          saving: true,
-          ...newState
-        })
       }
 
-      payload.destinations = payload.destinations.map((dest) => ({
-        ...dest,
-        rates:
-          !dest.rates || !dest.rates.length
-            ? undefined
-            : dest.rates.map((r) => ({
-                ...r,
-                amount: get(r, 'amount', 0) * 100
-              }))
-      }))
+      setState({ saving: true, ...newState })
+
+      payload.destinations = payload.destinations.map((dest) => {
+        if (!dest.rates || !dest.rates.length) {
+          return dest
+        }
+        const rates = dest.rates.map((r) => ({
+          ...r,
+          amount: get(r, 'amount', 0) * 100
+        }))
+        return { ...dest, rates }
+      })
 
       await post(`/shipping-zones`, {
         method: 'PUT',
@@ -250,8 +247,8 @@ const Shipping = () => {
       })
 
       refetch()
+      setState({ hasChanges: false })
       dispatch({ type: 'reload', target: ['shippingZones'] })
-
       dispatch({ type: 'toast', message: 'Shipping settings have been saved' })
     } catch (err) {
       console.error(err)
@@ -261,68 +258,67 @@ const Shipping = () => {
         style: 'error'
       })
     } finally {
-      setState({
-        saving: false
-      })
+      setState({ saving: false })
     }
   }
 
+  const actions = (
+    <div className="actions">
+      <button type="button" className="btn btn-outline-primary">
+        Cancel
+      </button>
+      <button
+        type="submit"
+        className={`btn btn${state.hasChanges ? '' : '-outline'}-primary`}
+        children="Update"
+      />
+    </div>
+  )
+
   return (
-    <form onSubmit={submitForm}>
+    <form onSubmit={submitForm} autoComplete="false">
       <div className="shipping-settings">
         <h3 className="admin-title">
           Settings
-          <div className="actions">
-            <button type="button" className="btn btn-outline-primary">
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className={`btn btn${state.hasChanges ? '' : '-outline'}-primary`}
-            >
-              Update
-            </button>
-          </div>
+          {actions}
         </h3>
         <Tabs />
         {loading ? (
           'Loading...'
         ) : (
           <>
-            <div className="row my-4 common-opts">
-              <div className="col-md-4">
-                <div className="form-group">
-                  <label className="mb-0">Shipping from</label>
-                  <div className="desc">The country you’re shipping from</div>
-                  <select {...input('shippingFrom')}>
-                    {Object.keys(Countries).map((country) => (
-                      <option key={country} value={Countries[country].code}>
-                        {country}
-                      </option>
-                    ))}
-                  </select>
-                  {Feedback('shippingFrom')}
-                </div>
+            <div className="my-4 common-opts">
+              <div className="form-group">
+                <label className="mb-0">Shipping from</label>
+                <div className="desc">The country you’re shipping from</div>
+                <select {...input('shippingFrom')} style={{ maxWidth: 350 }}>
+                  {Object.keys(Countries).map((country) => (
+                    <option key={country} value={Countries[country].code}>
+                      {country}
+                    </option>
+                  ))}
+                </select>
+                {Feedback('shippingFrom')}
+              </div>
 
-                <div className="form-group">
-                  <label className="mb-0">Processing time</label>
-                  <div className="desc">
-                    Once purchased, how long does it take you to ship an item?
-                  </div>
-                  <select {...input('processingTime')}>
-                    {ProcessingTimes.filter((t) => t.value !== 'custom').map(
-                      (time) => (
-                        <option key={time.value} value={time.value}>
-                          {time.label}
-                        </option>
-                      )
-                    )}
-                  </select>
-                  {Feedback('processingTime')}
-                  <div className="desc dark mt-2">
-                    Buyers are more likely to purchase an item that is
-                    dispatched quickly
-                  </div>
+              <div className="form-group">
+                <label className="mb-0">Processing time</label>
+                <div className="desc">
+                  Once purchased, how long does it take you to ship an item?
+                </div>
+                <select {...input('processingTime')} style={{ maxWidth: 350 }}>
+                  {ProcessingTimes.filter((t) => t.value !== 'custom').map(
+                    (time) => (
+                      <option key={time.value} value={time.value}>
+                        {time.label}
+                      </option>
+                    )
+                  )}
+                </select>
+                {Feedback('processingTime')}
+                <div className="desc dark mt-2">
+                  Buyers are more likely to purchase an item that is dispatched
+                  quickly
                 </div>
               </div>
             </div>
@@ -349,12 +345,12 @@ const Shipping = () => {
                           ...destinations[index],
                           ...updatedVal
                         }
-                        setState({ destinations })
+                        setState({ destinations, hasChanges: true })
                       }}
                       onDelete={() => {
                         const destinations = [...state.destinations]
                         destinations.splice(index, 1)
-                        setState({ destinations })
+                        setState({ destinations, hasChanges: true })
                       }}
                       canDelete={index > 0}
                     />
@@ -369,7 +365,8 @@ const Shipping = () => {
                 className="btn btn-outline-primary"
                 onClick={() =>
                   setState({
-                    destinations: [...state.destinations, { ...newDestState }]
+                    destinations: [...state.destinations, { ...newDestState }],
+                    hasChanges: true
                   })
                 }
               >
@@ -379,6 +376,8 @@ const Shipping = () => {
           </>
         )}
       </div>
+
+      <div className="footer-actions">{actions}</div>
     </form>
   )
 }
@@ -387,7 +386,7 @@ export default Shipping
 
 require('react-styl')(`
   .shipping-settings
-    .form-group 
+    .form-group
       label ~ .desc
         margin: 0
         margin-bottom: 0.5rem

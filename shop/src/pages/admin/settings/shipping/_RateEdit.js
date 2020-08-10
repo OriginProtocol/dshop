@@ -28,6 +28,7 @@ const RateEdit = ({ rateInfo, onChange, hideLabel, onDelete, showDelete }) => {
               </option>
             ))}
           </select>
+          {Feedback('type')}
         </div>
       </div>
       {rateInfo.type === 'free' ? null : (
@@ -71,6 +72,6 @@ require('react-styl')(`
     display: flex
     align-items: center
     padding-left: 0
-    img 
+    img
       cursor: pointer
 `)
