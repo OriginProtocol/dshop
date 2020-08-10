@@ -5,7 +5,12 @@ import Popover from 'components/Popover'
 
 import Caret from 'components/icons/Caret'
 
-const CountriesMultiSelect = ({ selected, onChange, includeGlobalOption }) => {
+const CountriesMultiSelect = ({
+  selected,
+  onChange,
+  includeGlobalOption,
+  className
+}) => {
   const [shouldClose, setShouldClose] = useState(0)
 
   useEffect(() => {
@@ -34,7 +39,9 @@ const CountriesMultiSelect = ({ selected, onChange, includeGlobalOption }) => {
   return (
     <Popover
       el="div"
-      className="countries-multi-select form-control"
+      className={`countries-multi-select form-control${
+        className ? ` ${className}` : ''
+      }`}
       placement="top-start"
       contentClassName="countries-dropdown"
       shouldClose={shouldClose}
@@ -105,7 +112,10 @@ require('react-styl')(`
       text-overflow: ellipsis
       width: 100%
       white-space: nowrap
-  
+
+    &.invalid-feedback
+      border: 1px solid #dc3545
+
   .countries-dropdown
     position: absolute
     color: #000

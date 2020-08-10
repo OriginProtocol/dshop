@@ -1,15 +1,17 @@
 import React, { useReducer, useEffect } from 'react'
 
+import get from 'lodash/get'
 import pick from 'lodash/pick'
 
 import ProcessingTimes from '@origin/utils/ProcessingTimes'
 import { Countries } from 'data/Countries'
 
-import useConfig from 'utils/useConfig'
+import useShopConfig from 'utils/useShopConfig'
 import useShippingZones from 'utils/useShippingZones'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useBackendApi from 'utils/useBackendApi'
+import { useStateValue } from 'data/state'
 
 import Tabs from '../_Tabs'
 import ShippingDestination from './_ShippingDestination'
@@ -29,7 +31,7 @@ const newDestState = {
   amount: 0,
   rates: [
     {
-      processingTime: '',
+      type: '',
       amount: 0
     }
   ]
@@ -40,7 +42,7 @@ const newDestState = {
  * Moves it to top, if it already exists
  *
  * @param {Array<Object>} destinations shippingZones from shipping.json file
- * @param {String} sourceCountry `shippingFrom` field from config.json file
+ * @param {String} sourceCountry `shippingFrom` field from shop's config
  *
  * @returns {Array<Object>} shippingZones with `sourceCountry` entry at the top
  */
@@ -71,14 +73,95 @@ const addSourceCountry = (destinations, sourceCountry) => {
   return out
 }
 
+const validate = (state) => {
+  const newState = {
+    destinations: [...state.destinations]
+  }
+
+  let ratesValid = true
+
+  const dupCountriesMap = new Map()
+
+  newState.destinations = newState.destinations.map((dest) => {
+    const destErrors = {}
+    const key = dest.countries ? dest.countries.join('-') : ''
+
+    if (dupCountriesMap.has(key)) {
+      ratesValid = false
+      destErrors.countriesError = 'Duplicate entry'
+    } else {
+      dupCountriesMap.set(key, true)
+    }
+
+    const rMap = new Map()
+    const rates = dest.rates.map((rate) => {
+      const rateErrors = {}
+
+      if (rate.type !== 'free') {
+        if (!rate.amount) {
+          rateErrors.amountError = 'Price is required'
+        } else if (rate.amount < 0) {
+          rateErrors.amountError = 'Invalid amount'
+        }
+      }
+
+      if (!rate.type) {
+        rateErrors.typeError = 'Rate name is required'
+      } else if (rMap.has(rate.type)) {
+        rateErrors.typeError = 'Duplicate entry'
+      } else {
+        rMap.set(rate.type, true)
+      }
+
+      ratesValid =
+        ratesValid && Object.keys(rateErrors).every((f) => !f.endsWith('Error'))
+
+      return {
+        ...rate,
+        ...rateErrors
+      }
+    })
+
+    return {
+      ...dest,
+      ...destErrors,
+      rates
+    }
+  })
+
+  const valid =
+    ratesValid && Object.keys(newState).every((f) => !f.endsWith('Error'))
+
+  return {
+    valid,
+    newState
+  }
+}
+
+const pickPayload = (state) => {
+  return {
+    shippingFrom: state.shippingFrom,
+    processingTime: state.processingTime,
+    destinations: state.destinations.map((dest) => ({
+      ...pick(dest, Object.keys(newDestState)),
+      rates: dest.rates.map((rate) => ({
+        ...pick(rate, Object.keys(newDestState.rates[0]))
+      }))
+    }))
+  }
+}
+
 const Shipping = () => {
   const { shippingZones, loading } = useShippingZones()
-  const { config } = useConfig()
+  const { shopConfig, refetch } = useShopConfig()
   const [state, setState] = useReducer(reducer, initialState)
+  const [, dispatch] = useStateValue()
 
   const { post } = useBackendApi({ authToken: true })
 
-  const input = formInput(state, (newState) => setState(newState))
+  const input = formInput(state, (newState) =>
+    setState({ ...newState, hasChanges: true })
+  )
   const Feedback = formFeedback(state)
 
   useEffect(() => {
@@ -88,7 +171,7 @@ const Shipping = () => {
       loaded: true,
 
       shippingFrom: 'US',
-      ...pick(config, ['shippingFrom', 'processingTime'])
+      ...pick(shopConfig, ['shippingFrom', 'processingTime'])
     }
 
     newState.destinations = addSourceCountry(
@@ -96,8 +179,18 @@ const Shipping = () => {
       newState.shippingFrom
     )
 
+    newState.destinations = newState.destinations.map((dest) => ({
+      ...dest,
+      rates: !dest.rates
+        ? undefined
+        : dest.rates.map((r) => ({
+            ...r,
+            amount: get(r, 'amount', 0) / 100
+          }))
+    }))
+
     setState(newState)
-  }, [loading, shippingZones, config, state.loaded])
+  }, [loading, shippingZones, shopConfig, state.loaded])
 
   useEffect(() => {
     if (!state.loaded) return
@@ -106,7 +199,7 @@ const Shipping = () => {
       ({ countries }, index) => {
         if (index == 0 || !countries || countries.length > 1) return true
 
-        return countries[0] === state.shippingFrom
+        return countries[0] !== state.shippingFrom
       }
     )
 
@@ -117,8 +210,65 @@ const Shipping = () => {
     })
   }, [state.shippingFrom, state.loaded])
 
+  const submitForm = async (e) => {
+    e.preventDefault()
+
+    try {
+      const payload = pickPayload(state)
+
+      const { valid, newState } = validate(payload)
+
+      if (!valid) {
+        setState(newState)
+        dispatch({
+          type: 'toast',
+          message: 'There are some errors in your submission.',
+          style: 'error'
+        })
+        return
+      } else {
+        setState({
+          saving: true,
+          ...newState
+        })
+      }
+
+      payload.destinations = payload.destinations.map((dest) => ({
+        ...dest,
+        rates:
+          !dest.rates || !dest.rates.length
+            ? undefined
+            : dest.rates.map((r) => ({
+                ...r,
+                amount: get(r, 'amount', 0) * 100
+              }))
+      }))
+
+      await post(`/shipping-zones`, {
+        method: 'PUT',
+        body: JSON.stringify(payload)
+      })
+
+      refetch()
+      dispatch({ type: 'reload', target: ['shippingZones'] })
+
+      dispatch({ type: 'toast', message: 'Shipping settings have been saved' })
+    } catch (err) {
+      console.error(err)
+      dispatch({
+        type: 'toast',
+        message: 'Failed to save your changes. Try again later.',
+        style: 'error'
+      })
+    } finally {
+      setState({
+        saving: false
+      })
+    }
+  }
+
   return (
-    <form>
+    <form onSubmit={submitForm}>
       <div className="shipping-settings">
         <h3 className="admin-title">
           Settings

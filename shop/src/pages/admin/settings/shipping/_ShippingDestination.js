@@ -2,6 +2,8 @@ import React, { useEffect } from 'react'
 
 import get from 'lodash/get'
 
+import { formFeedback } from 'utils/formHelpers'
+
 import MultiSelect from './_CountriesMultiSelect'
 import RateEdit from './_RateEdit'
 
@@ -15,14 +17,16 @@ const ShippingDestination = ({
   const countries = get(destInfo, 'countries', [])
   const rates = get(destInfo, 'rates', [])
 
+  const Feedback = formFeedback(destInfo)
+
   useEffect(() => {
     const newState = {}
 
     if (!rates || !rates.length) {
       newState.rates = [
         {
-          amount: destInfo.amount || 0,
-          processingTime: destInfo.processingTime
+          amount: get(destInfo, 'amount', 0) / 100,
+          type: ''
         }
       ]
     }
@@ -41,11 +45,17 @@ const ShippingDestination = ({
             {countries.length > 0 ? countries.join(',') : 'Rest of the world'}
           </div>
         ) : (
-          <MultiSelect
-            selected={countries}
-            onChange={(countries) => onChange({ countries })}
-            includeGlobalOption={true}
-          />
+          <>
+            <MultiSelect
+              selected={countries}
+              onChange={(countries) =>
+                onChange({ countries, countriesError: false })
+              }
+              includeGlobalOption={true}
+              className={destInfo.countriesError ? 'invalid-feedback' : ''}
+            />
+            {Feedback('countries')}
+          </>
         )}
       </div>
 

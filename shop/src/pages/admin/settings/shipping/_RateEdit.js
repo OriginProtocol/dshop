@@ -3,25 +3,7 @@ import React from 'react'
 import useConfig from 'utils/useConfig'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import formatPrice from 'utils/formatPrice'
-
-const shippingTimes = [
-  {
-    value: 'free',
-    label: 'Free'
-  },
-  {
-    value: 'expedited',
-    label: 'Expedited (1 day)'
-  },
-  {
-    value: 'fast',
-    label: 'Fast (2-7 days)'
-  },
-  {
-    value: 'slow',
-    label: 'Slow (7+ days)'
-  }
-]
+import shippingTimes from 'utils/shippingTimes'
 
 const RateEdit = ({ rateInfo, onChange, hideLabel, onDelete, showDelete }) => {
   const { config } = useConfig()
@@ -36,17 +18,19 @@ const RateEdit = ({ rateInfo, onChange, hideLabel, onDelete, showDelete }) => {
       <div className="col-md-5">
         <div className="form-group">
           {hideLabel ? null : <label>Rate name</label>}
-          <select {...input('processingTime')}>
+          <select {...input('type')}>
             <option>Select one</option>
             {shippingTimes.map((t) => (
               <option key={t.value} value={t.value}>
-                {t.label}
+                {`${t.label}${
+                  !t.processingTime ? '' : ` (${t.processingTime})`
+                }`}
               </option>
             ))}
           </select>
         </div>
       </div>
-      {rateInfo.processingTime === 'free' ? null : (
+      {rateInfo.type === 'free' ? null : (
         <div className="col-md-5">
           <div className="form-group">
             {hideLabel ? null : <label>Price</label>}

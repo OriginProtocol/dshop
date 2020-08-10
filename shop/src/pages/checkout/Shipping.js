@@ -4,7 +4,7 @@ import get from 'lodash/get'
 import { useStateValue } from 'data/state'
 import { Countries } from '@origin/utils/Countries'
 import formatPrice from 'utils/formatPrice'
-import useShippingZones from 'utils/useShippingZones'
+import useFlattenedShippingZones from 'utils/useFlattenedShippingZones'
 import useConfig from 'utils/useConfig'
 import Link from 'components/Link'
 import Contact from './_Contact'
@@ -18,7 +18,7 @@ function isActive(zone, cart) {
 const CheckoutShipping = () => {
   const { config } = useConfig()
   const [{ cart }, dispatch] = useStateValue()
-  const { shippingZones, loading } = useShippingZones()
+  const { shippingZones, loading } = useFlattenedShippingZones()
 
   const country = get(cart, 'userInfo.country')
   const countryCode = get(Countries, `${country}.code`)
