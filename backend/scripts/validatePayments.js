@@ -9,8 +9,17 @@
 // 3. Run the script locally.
 //    For example to validate payment data for shop Id 2:
 //       node validatePayments.js --type=payment --shopId=2
-//    To valide Stripe config for all the shops:
+//
+//    Validate Stripe config for all the shops:
 //       node validatePayments.js --type=config
+//
+//    Check Stripe webhook (does not fix it):
+//       node validatePayments.js --type=webhook --allShops
+//
+//    Check and fix Stripe webhook for all shops
+//       node validatePayments.js --type=webhook --allShops --doIt=true
+//
+
 const get = require('lodash/get')
 const stripeRaw = require('stripe')
 require('dotenv').config()
@@ -267,7 +276,7 @@ async function validateWebhooks() {
         }
 
         log.error(
-          `Missing metadata or invalid URL. Webhook id:${id} url:${url}`
+          `Shop ${shop.name} (${shop.id}): Missing metadata or invalid URL. Webhook id:${id} url:${url}`
         )
 
         // Delete the invalid Dshop webhook.
