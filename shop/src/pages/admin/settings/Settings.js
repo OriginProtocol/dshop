@@ -8,7 +8,7 @@ import General from './general/Edit'
 import Payments from './payments/List'
 import Apps from './apps/List'
 import Deployments from './deployments/List'
-import Shipping from './shipping/List'
+import Shipping from './shipping/Shipping'
 import Advanced from './Advanced'
 
 const AdminSettings = () => (

@@ -7,7 +7,7 @@ import useConfig from 'utils/useConfig'
 function useShippingZones() {
   const { config } = useConfig()
   const [{ shippingZones, cart, reload }, dispatch] = useStateValue()
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
   useEffect(() => {
@@ -39,8 +39,8 @@ function useShippingZones() {
           zones = await raw.json()
         }
 
-        setLoading(false)
         dispatch({ type: 'setShippingZones', zones })
+        setLoading(false)
       } catch (e) {
         setLoading(false)
         setError(true)
