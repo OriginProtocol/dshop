@@ -14,22 +14,25 @@
 const get = require('lodash/get')
 const stripeRaw = require('stripe')
 require('dotenv').config()
-
-const { Shop, Order } = require('../models')
-const encConf = require('../utils/encryptedConfig')
-const { getLogger } = require('../utils/logger')
 const program = require('commander')
 
+const { Shop, Order, Network } = require('../models')
+const encConf = require('../utils/encryptedConfig')
+
+const { getWebhookData } = require('../utils/stripe')
+
+const { getLogger } = require('../utils/logger')
 const log = getLogger('script')
 
 program
   .requiredOption(
     '-t, --type <type>',
-    'Type of verification to perform: payment or config'
+    'Type of operation to perform: payment, config or webhook'
   )
   .option('-a, --allShops', 'Run for all shops')
   .option('-i, --shopId <id>', 'Shop Id')
   .option('-n, --shopName <name>', 'Shop Name')
+  .option('-d, --doIt <boolean>', 'Persist data to the DB.')
 
 if (!process.argv.slice(2).length) {
   program.outputHelp()
@@ -209,11 +212,99 @@ async function validateConfigs() {
   }
 }
 
+/**
+ * Checks the validity of Stripe webhook.
+ * Fixes it if the --doIt=true option is passed.
+ */
+async function validateWebhooks() {
+  const network = await Network.findOne({ where: { active: true } })
+  const netConfig = encConf.getConfig(network.config)
+  const webhookUrl = `${netConfig.backendUrl}/webhook`
+
+  let shops
+  if (program.allShops) {
+    shops = await Shop.findAll({ order: [['id', 'asc']] })
+  } else {
+    shops = [await _getShop()]
+  }
+
+  for (const shop of shops) {
+    log.info(`Processing shop ${shop.id} ${shop.name}`)
+    try {
+      const stripeKey = await encConf.get(shop.id, 'stripeBackend')
+      if (!stripeKey) {
+        log.info('Stripe not configured.')
+        continue
+      }
+      if (!stripeKey.includes('sk_live') && !stripeKey.includes('sk_test')) {
+        log.error(`Invalid key: ${stripeKey}`)
+        // TODO: clean up the invalid key from the shop's config.
+        continue
+      }
+
+      const stripe = stripeRaw(stripeKey)
+      const webhookEndpoints = await stripe.webhookEndpoints.list({
+        limit: 100
+      })
+
+      let foundValidWebhook = false
+      for (const webhook of webhookEndpoints.data) {
+        const id = webhook.id
+
+        const url = webhook.url
+        if (!url.includes('originprotocol.com') && !url.includes('ogn.app')) {
+          // Not a Dshop webhook. Leave it alone.
+          log.info(`OK. Not Dshop. Webhook id:${id} url:${url}`)
+          continue
+        }
+
+        const isDshop = get(webhook, 'metadata.dshopStore')
+        if (url === webhookUrl && isDshop) {
+          // Properly configured dshop webhook. Nothing to do.
+          log.info(`OK. DShop. Webhook id:${id} url:${url}`)
+          foundValidWebhook = true
+          continue
+        }
+
+        log.error(
+          `Missing metadata or invalid URL. Webhook id:${id} url:${url}`
+        )
+
+        // Delete the invalid Dshop webhook.
+        if (program.doIt) {
+          await stripe.webhookEndpoints.del(id)
+          log.info(`Deleted webhook id ${id}`)
+        } else {
+          log.info(`Would delete webhook id: ${id}`)
+        }
+      }
+
+      // Register a new valid Dshop webhook.
+      if (!foundValidWebhook) {
+        const webhookData = getWebhookData(shop, webhookUrl)
+        if (program.doIt) {
+          log.info(`Registering new webhook for shop ${shop.id}...`)
+          const endpoint = await stripe.webhookEndpoints.create(webhookData)
+          log.info(
+            `Shop ${shop.id}: Registered new webhook with id ${endpoint.id}`
+          )
+        } else {
+          log.info(`Would register new webhook with data:`, webhookData)
+        }
+      }
+    } catch (e) {
+      log.error(e)
+    }
+  }
+}
+
 async function main() {
   if (program.type === 'payment') {
     await validatePayments()
   } else if (program.type === 'config') {
     await validateConfigs()
+  } else if (program.type === 'webhook') {
+    await validateWebhooks()
   } else {
     throw new Error(`Unsupported type ${program.type}`)
   }

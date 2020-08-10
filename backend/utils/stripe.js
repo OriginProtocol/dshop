@@ -230,6 +230,7 @@ async function webhookValidation(shop, config, backendUrl) {
 }
 
 module.exports = {
+  getWebhookData,
   normalizeDescriptor,
   deregisterWebhooks,
   registerWebhooks,
