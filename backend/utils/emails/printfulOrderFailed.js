@@ -13,7 +13,7 @@ const log = getLogger('utils.emailer')
 
 async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
   const shop = await Shop.findOne({ where: { id: shopId } })
-  const network = await Network.fineOne({ where: { active: true } })
+  const network = await Network.findOne({ where: { active: true } })
   const { transporter, from, replyTo } = await getShopTransport(shop, network)
   if (!transporter) {
     log.info(`No email transport configured. Skiped sending new order email.`)
