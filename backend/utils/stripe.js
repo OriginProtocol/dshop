@@ -56,6 +56,8 @@ const validateWebhookData = (webhook, shop, webhookURL) => {
     return webhook[key] !== webhookData[key]
   })
 
+  log.debug(webhook, webhookData, requiresChange)
+
   return !requiresChange
 }
 

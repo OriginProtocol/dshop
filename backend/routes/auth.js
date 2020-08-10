@@ -317,7 +317,12 @@ module.exports = function (router) {
         success: true,
         config: {
           ...config,
-          ...pick(req.shop.dataValues, ['hostname', 'hasChanges'])
+          ...pick(req.shop.dataValues, [
+            'hostname',
+            'hasChanges',
+            'listingId',
+            'walletAddress'
+          ])
         }
       })
     }

@@ -4,12 +4,14 @@ import React, { useState } from 'react'
 // import useWallet from 'utils/useWallet'
 import useOrigin from 'utils/useOrigin'
 import { createListing, waitForCreateListing } from 'utils/listing'
+import useBackendApi from 'utils/useBackendApi'
 
 import Web3Transaction from 'components/Web3Transaction'
 
 const CreateListing = ({ className, children, onCreated }) => {
   const { marketplace } = useOrigin()
   const [submit, setSubmit] = useState()
+  const { post } = useBackendApi({ authToken: true })
 
   return (
     <>
@@ -22,10 +24,19 @@ const CreateListing = ({ className, children, onCreated }) => {
       <Web3Transaction
         shouldSubmit={submit}
         dependencies={[marketplace]}
-        execTx={({ config, signer }) =>
-          createListing({ marketplace, config, signer })
-        }
         awaitTx={waitForCreateListing}
+        execTx={({ config, signer }) => {
+          return new Promise((resolve) => {
+            signer.getAddress().then((walletAddressRaw) => {
+              post('/shop/wallet', {
+                body: JSON.stringify({ walletAddressRaw }),
+                suppressError: true
+              }).then(() => {
+                resolve(createListing({ marketplace, config, signer }))
+              })
+            })
+          })
+        }}
         onSuccess={onCreated}
         onReset={() => setSubmit(false)}
       />
