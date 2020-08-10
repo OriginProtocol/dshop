@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useEffect } from 'react'
+import React, { useReducer, useEffect } from 'react'
 
 import pick from 'lodash/pick'
 
@@ -102,7 +102,7 @@ const Shipping = () => {
   useEffect(() => {
     if (!state.loaded) return
 
-    let destinations = [...state.destinations].filter(
+    const destinations = [...state.destinations].filter(
       ({ countries }, index) => {
         if (index == 0 || !countries || countries.length > 1) return true
 
