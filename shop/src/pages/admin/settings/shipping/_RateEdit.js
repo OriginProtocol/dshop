@@ -53,7 +53,7 @@ const RateEdit = ({ rateInfo, onChange, hideLabel, onDelete, showDelete }) => {
       {!showDelete ? null : (
         <div
           className={`col-md-1 rate-edit-delete-icon${
-            hideLabel ? '' : ' mt-4'
+            hideLabel ? '' : ' mt-30px'
           }`}
         >
           <button className="btn px-0" type="button" onClick={onDelete}>
@@ -70,8 +70,11 @@ export default RateEdit
 require('react-styl')(`
   .rate-edit-delete-icon
     display: flex
-    align-items: center
+    align-items: flex-start
     padding-left: 0
     img
       cursor: pointer
+
+  .mt-30px
+    margin-top: 30px !important
 `)

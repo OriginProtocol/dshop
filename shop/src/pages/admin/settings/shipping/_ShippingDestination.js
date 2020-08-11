@@ -47,7 +47,7 @@ const ShippingDestination = ({
         ) : (
           <>
             <MultiSelect
-              selected={countries}
+              selected={countries || []}
               onChange={(countries) =>
                 onChange({ countries, countriesError: false })
               }

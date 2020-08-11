@@ -7,7 +7,7 @@ import shippingTimes from './shippingTimes'
 /**
  * Flattens the structure of shippings.json file, so that each rate
  * of each zone has its own entry
- * 
+ *
  * @param {Array<Object>} shippingZones contents of shippings.json
  * @returns {Array<{
  *  id,
