@@ -3,6 +3,7 @@ import React from 'react'
 import Link from 'components/Link'
 
 import useConfig from 'utils/useConfig'
+import CurrencySelect from 'components/CurrencySelect'
 
 const Footer = () => {
   const { config } = useConfig()
@@ -21,18 +22,23 @@ const Footer = () => {
         <div className="copyright">
           &copy;{` Origin Protocol ${date.getFullYear()}`}
         </div>
-        <div className="links">
-          {config.terms ? (
-            <Link to="/terms">Terms &amp; Conditions</Link>
-          ) : null}
-          <Link to="/about">FAQ</Link>
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href="https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0"
-          >
-            About Dshop
-          </a>
+        <div>
+          <div className="links">
+            {config.terms ? (
+              <Link to="/terms">Terms &amp; Conditions</Link>
+            ) : null}
+            <Link to="/about">FAQ</Link>
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              href="https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0"
+            >
+              About Dshop
+            </a>
+          </div>
+          <div className="mt-3">
+            <CurrencySelect />
+          </div>
         </div>
       </div>
     </div>

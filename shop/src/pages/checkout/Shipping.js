@@ -10,6 +10,7 @@ import Link from 'components/Link'
 import Contact from './_Contact'
 import ShipTo from './_ShipTo'
 import BetaWarning from './_BetaWarning'
+import useCurrencyOpts from 'utils/useCurrencyOpts'
 
 function isActive(zone, cart) {
   return get(cart, 'shipping.id') === zone.id ? 'active' : 'inactive'
@@ -19,6 +20,7 @@ const CheckoutShipping = () => {
   const { config } = useConfig()
   const [{ cart }, dispatch] = useStateValue()
   const { shippingZones, loading } = useFlattenedShippingZones()
+  const currencyOpts = useCurrencyOpts()
 
   const country = get(cart, 'userInfo.country')
   const countryCode = get(Countries, `${country}.code`)
@@ -103,9 +105,7 @@ const CheckoutShipping = () => {
                 <div className="description">{zone.detail}</div>
               </div>
               <span className="ml-auto">
-                {zone.amount
-                  ? formatPrice(zone.amount, { currency: config.currency })
-                  : 'Free'}
+                {zone.amount ? formatPrice(zone.amount, currencyOpts) : 'Free'}
               </span>
             </label>
           ))

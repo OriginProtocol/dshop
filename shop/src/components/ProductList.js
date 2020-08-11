@@ -5,6 +5,7 @@ import get from 'lodash/get'
 import Link from 'components/Link'
 import formatPrice from 'utils/formatPrice'
 import useConfig from 'utils/useConfig'
+import useCurrencyOpts from 'utils/useCurrencyOpts'
 
 function altClick(e) {
   return e.button === 0 && !e.shiftKey && !e.metaKey && !e.ctrlKey && !e.altKey
@@ -16,6 +17,8 @@ const ProductList = ({ products }) => {
   const { config } = useConfig()
   const collectionParam = get(match, 'params.collection')
   const urlPrefix = collectionParam ? `/collections/${collectionParam}` : ''
+
+  const currencyOpts = useCurrencyOpts()
 
   return (
     <div className="products">
@@ -48,7 +51,7 @@ const ProductList = ({ products }) => {
                 {product.title}
               </Link>
               <div className="price">
-                {formatPrice(product.price, { currency: config.currency })}
+                {formatPrice(product.price, currencyOpts)}
                 {config.freeShipping ? (
                   <span className="shipping">FREE Shipping</span>
                 ) : null}

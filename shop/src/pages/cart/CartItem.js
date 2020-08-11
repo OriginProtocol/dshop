@@ -8,11 +8,14 @@ import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 
 import formatPrice from 'utils/formatPrice'
+import useCurrencyOpts from 'utils/useCurrencyOpts'
 
 const CartItem = ({ item }) => {
   const { config } = useConfig()
   const [product, setProduct] = useState()
   const [, dispatch] = useStateValue()
+  const currencyOpts = useCurrencyOpts()
+
   useEffect(() => {
     fetchProduct(config.dataSrc, item.product).then(setProduct)
   }, [item.product])
@@ -63,9 +66,7 @@ const CartItem = ({ item }) => {
           </a>
         </div>
       </div>
-      <div className="price">
-        {formatPrice(variant.price, { currency: config.currency })}
-      </div>
+      <div className="price">{formatPrice(variant.price, currencyOpts)}</div>
       <div className="quantity">
         {quantities.length === 1 ? (
           quantities[0]
@@ -85,9 +86,7 @@ const CartItem = ({ item }) => {
         )}
       </div>
       <div className="total">
-        {formatPrice(item.quantity * variant.price, {
-          currency: config.currency
-        })}
+        {formatPrice(item.quantity * variant.price, currencyOpts)}
       </div>
     </>
   )

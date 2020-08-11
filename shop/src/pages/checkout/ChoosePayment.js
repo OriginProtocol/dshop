@@ -17,6 +17,7 @@ import PayWithUphold from './payment-methods/Uphold'
 import PayOffline from './payment-methods/OfflinePayment'
 import PayWithPayPal from './payment-methods/PayPal'
 import BillingAddress from './_BillingAddress'
+import useCurrencyOpts from 'utils/useCurrencyOpts'
 
 function validate(state) {
   if (!state.billingDifferent) {
@@ -61,8 +62,9 @@ const ChoosePayment = () => {
   const history = useHistory()
   const { config } = useConfig()
   const [{ cart, referrer }, dispatch] = useStateValue()
+  const currencyOpts = useCurrencyOpts()
   const [paymentState, setPaymentState] = useReducer(reducer, {
-    buttonText: `Pay ${formatPrice(cart.total, { currency: config.currency })}`,
+    buttonText: `Pay ${formatPrice(cart.total, currencyOpts)}`,
     submit: 0
   })
 
@@ -99,7 +101,7 @@ const ChoosePayment = () => {
     setPaymentState({
       buttonText: isOfflinePayment
         ? 'Place Order'
-        : `Pay ${formatPrice(cart.total)}`
+        : `Pay ${formatPrice(cart.total, currencyOpts)}`
     })
   }, [isOfflinePayment, paymentState.loading])
 
