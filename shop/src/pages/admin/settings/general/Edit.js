@@ -1,8 +1,7 @@
 import React, { useReducer, useEffect, useState } from 'react'
-import get from 'lodash/get'
+
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
-import kebabCase from 'lodash/kebabCase'
 
 import CKEditor from 'ckeditor4-react'
 
@@ -13,7 +12,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
 
 import Tabs from '../_Tabs'
-import CustomDomain from './_CustomDomain'
+import Domains from './_Domains'
 import UploadFile from './_UploadFile'
 import SocialLinks from './social-links/SocialLinks'
 
@@ -44,7 +43,7 @@ const ABOUT_FILENAME = 'about.html'
 
 const GeneralSettings = () => {
   const { config } = useConfig()
-  const [{ admin }, dispatch] = useStateValue()
+  const [, dispatch] = useStateValue()
   const { shopConfig } = useShopConfig()
   const { postRaw, post } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, { domain: '' })
@@ -153,28 +152,9 @@ const GeneralSettings = () => {
             <input {...input('fullTitle')} />
             {Feedback('fullTitle')}
           </div>
-          <div className="form-group">
-            <label>Store Domain</label>
-            <div className="suffix-wrap">
-              <input
-                {...input('hostname')}
-                onChange={(e) =>
-                  setState({
-                    hostname: kebabCase(e.target.value),
-                    hostnameError: null
-                  })
-                }
-              />
-              <div className="suffix">
-                <span>{state.hostname}</span>
-                {`.${get(admin, 'network.domain')}`}
-              </div>
-            </div>
-            {Feedback('hostname')}
-            <div className="mt-1 d-flex">
-              <CustomDomain hostname={state.hostname} netId={config.netId} />
-            </div>
-          </div>
+
+          <Domains {...{ config, state }} />
+
           <div className="form-group">
             <label>
               Tagline
@@ -183,6 +163,7 @@ const GeneralSettings = () => {
             <input {...input('byline')} />
             {Feedback('byline')}
           </div>
+
           <div className="form-group">
             <label>
               Logo
@@ -378,7 +359,6 @@ require('react-styl')(`
         margin-left: 0.25rem
     a
       color: #3b80ee
-      font-size: 14px
     .suffix-wrap
       position: relative
       .suffix

@@ -12,10 +12,9 @@ const DeployShop = () => {
   const [{ reload }] = useStateValue()
   const [deployments, setDeployments] = useState([])
   const { get } = useBackendApi({ authToken: true })
+
   useEffect(() => {
-    get('/shop/deployments').then((res) => {
-      setDeployments(res.deployments)
-    })
+    get('/shop/deployments').then((res) => setDeployments(res.deployments))
   }, [reload.deployments])
 
   return (
