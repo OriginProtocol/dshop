@@ -56,6 +56,14 @@ const validateWebhookData = (webhook, shop, webhookURL) => {
     return webhook[key] !== webhookData[key]
   })
 
+  log.debug(
+    webhook,
+    webhookData,
+    webhook.metadata,
+    shop.get({ plain: true }),
+    requiresChange
+  )
+
   return !requiresChange
 }
 
@@ -222,6 +230,7 @@ async function webhookValidation(shop, config, backendUrl) {
 }
 
 module.exports = {
+  getWebhookData,
   normalizeDescriptor,
   deregisterWebhooks,
   registerWebhooks,

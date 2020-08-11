@@ -77,4 +77,65 @@ function findShopByHostname(req, res, next) {
   })
 }
 
-module.exports = { createShop, findShopByHostname }
+/**
+ * Get a shop's public URL. To be used before a shop is created.
+ * @param {string} hostname: Shop's hostname.
+ * @param {string} domain: Network domain or localhost on dev environment.
+ * @param {string} backendUrl: Url to the back-end. Only used in dev/test environment.
+ * @returns {string}
+ */
+function getPublicUrl(hostname, domain, backendUrl) {
+  const isLocal = domain === 'localhost'
+  return isLocal ? backendUrl : `https://${hostname}.${domain}`
+}
+
+/**
+ * Get a shop's data URL. To be used before a shop is created.
+ * @param {string} hostname: Shop's hostname.
+ * @param {string} dataDir: Name of the directory where the shop's data is stored.
+ * @param {string} domain: Network domain or localhost on dev environment.
+ * @param {string} backendUrl: Url to the back-end. Only used in dev/test environment.
+ * @returns {string}
+ */
+function getDataUrl(hostname, dataDir, domain, backendUrl) {
+  const publicUrl = getPublicUrl(hostname, domain, backendUrl)
+  return `${publicUrl}/${dataDir}/`
+}
+
+/**
+ * Get a shop's data URL.
+ * @param {models.Shop} shop
+ * @param {object} networkConfig: Network configuration.
+ * @returns {string}
+ */
+function getShopPublicUrl(shop, networkConfig) {
+  return getPublicUrl(
+    shop.hostname,
+    networkConfig.domain,
+    networkConfig.backendUrl
+  )
+}
+
+/**
+ * Get a shop's data URL.
+ * @param {models.Shop} shop
+ * @param {object} networkConfig: Network configuration.
+ * @returns {string}
+ */
+function getShopDataUrl(shop, networkConfig) {
+  return getDataUrl(
+    shop.hostname,
+    shop.authToken,
+    networkConfig.domain,
+    networkConfig.backendUrl
+  )
+}
+
+module.exports = {
+  createShop,
+  findShopByHostname,
+  getShopDataUrl,
+  getShopPublicUrl,
+  getDataUrl,
+  getPublicUrl
+}
