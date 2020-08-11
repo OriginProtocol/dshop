@@ -13,6 +13,7 @@ import BetaWarning from './_BetaWarning'
 const CheckoutPayment = () => {
   const { config } = useConfig()
   const [{ cart }] = useStateValue()
+
   return (
     <div className="checkout-shipping">
       <div className="d-none d-md-block">
