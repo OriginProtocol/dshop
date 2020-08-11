@@ -1,16 +1,24 @@
-import React, { useState } from 'react'
-import get from 'lodash/get'
+import React, { useState, useEffect } from 'react'
+import _get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
+import useBackendApi from 'utils/useBackendApi'
 
-import CustomDomain from './_CustomDomain'
+import CustomDomain from './_AddDomain'
+import DeleteDomain from './_DeleteDomain'
 import EditHostname from './_EditHostname'
 
 const Domains = ({ config, state }) => {
-  const [{ admin }] = useStateValue()
+  const [{ admin, reload }] = useStateValue()
   const [hostnameModal, setHostnameModal] = useState(false)
+  const [domains, setDomains] = useState([])
+  const { get } = useBackendApi({ authToken: true })
 
-  const domain = `https://${state.hostname}.${get(admin, 'network.domain')}`
+  useEffect(() => {
+    get('/shop/domains').then(({ domains }) => setDomains(domains))
+  }, [reload.domains])
+
+  const domain = `https://${state.hostname}.${_get(admin, 'network.domain')}`
 
   return (
     <div className="form-group mt-4 mb-2">
@@ -59,6 +67,28 @@ const Domains = ({ config, state }) => {
               </a>
             </td>
           </tr>
+          {domains.map((domain, idx) => (
+            <tr key={idx}>
+              <td>
+                <a
+                  onClick={(e) => e.preventDefault()}
+                  href={domain}
+                  target="_blank"
+                  rel="noreferrer"
+                  children={domain.domain}
+                />
+              </td>
+              <td>
+                <span className="badge badge-warning">{domain.status}</span>
+              </td>
+              <td className="text-muted" />
+              <td className="text-right">
+                <DeleteDomain domain={domain}>
+                  <img src="images/delete-icon.svg" />
+                </DeleteDomain>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
       {!hostnameModal ? null : (
