@@ -1,6 +1,15 @@
-const { EtlJob, EtlShop, Shop, Discount, Order } = require('../models')
-const { EtlJobStatuses } = require('../enums')
+const {
+  Discount,
+  EtlJob,
+  EtlShop,
+  Network,
+  Order,
+  Shop,
+  ShopDeployment
+} = require('../models')
+const { EtlJobStatuses, ShopDeploymentStatuses } = require('../enums')
 const { getConfig } = require('../utils/encryptedConfig')
+const { getShopDataUrl } = require('../utils/shop')
 
 const { getLogger } = require('../utils/logger')
 const log = getLogger('etl.job')
@@ -10,14 +19,21 @@ class EtlJobProcessor {
     this.data = data
   }
 
+  async _fetchJson(url) {
+    const raw = fetch(url)
+    return JSON.parse(raw)
+  }
+
   async _countNumProducts(shop) {
-    // TODO: fetch products.json and count how many.
-    return 0
+    const productsUrl = `${shop.dataUrl}/products.json`
+    const products = this._fetchJson(productsUrl)
+    return products.length
   }
 
   async _countNumCollections(shop) {
-    // TODO: fetch collections.json and count how many.
-    return 0
+    const collectionsUrl = `${shop.dataUrl}/collections.json`
+    const collections = this._fetchJson(collectionsUrl)
+    return collections.length
   }
 
   async _countNumDiscounts(shop) {
@@ -27,8 +43,9 @@ class EtlJobProcessor {
   }
 
   async _countNumShippings(shop) {
-    // TODO: fetch shipping.json and count how many.
-    return 0
+    const shippingUrl = `${shop.dataUrl}/shipping.json`
+    const shippings = this._fetchJson(shippingUrl)
+    return shippings.length
   }
 
   async _countNumOrders(shop) {
@@ -77,14 +94,22 @@ class EtlJobProcessor {
     return Boolean(shop.config.mailgunSmtpPassword)
   }
 
+  async _published(shop) {
+    const published = ShopDeployment.findOne({
+      where: { shopId: shop.id, status: ShopDeploymentStatuses.Success }
+    })
+    return Boolean(published)
+  }
+
   async _customDomain(shop) {
-    // TODO
+    // TODO(franck): figure out how to extract that information.
+    log.debug(`${shop.id}: custom domain extraction not implemented yet.`)
     return false
   }
 
   /**
-   * Extract data for a shop.
-   * @param {modesl.Shop} shop
+   * Extracts data for a shop.
+   * @param {models.Shop} shop
    * @returns {Promise<void>}
    */
   async processShop(shop) {
@@ -104,7 +129,16 @@ class EtlJobProcessor {
     data.sendgrid = await this._sendgrid(shop)
     data.aws = await this._aws(shop)
     data.mailgun = await this._mailgun(shop)
+    data.published = await this._published(shop)
     data.customDomain = await this._customDomain(shop)
+  }
+
+  _decorateShop(shop, netConfig) {
+    // Replace the shop's encrypted config with its decrypted version.
+    shop.config = getConfig(shop.config)
+
+    // Get the shop's data URL.
+    shop.dataUrl = getShopDataUrl(shop, netConfig)
   }
 
   /**
@@ -115,12 +149,14 @@ class EtlJobProcessor {
     log.info('Running ETL job...')
     const job = await EtlJob.create({ status: EtlJobStatuses.Running })
 
+    const network = await Network.findOne({ where: { active: true } })
+    const netConfig = getConfig(network.config)
+
     const shops = await Shop.findAll({ order: [['id', 'asc']] })
     for (const shop of shops) {
       log.info(`Processing shop ${shop.id}`)
 
-      // Replace the shop's encrypted config with its decrypted version.
-      shop.config = getConfig(shop.config)
+      await this._decorateShop(shop, netConfig)
 
       // Extract data from the shop and insert it as a new EtlShop row.
       const data = this.processShop(shop)

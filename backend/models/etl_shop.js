@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       sendgrid: DataTypes.BOOLEAN, // True if Sendgrid email activated.
       aws: DataTypes.BOOLEAN, // True if AWS email activated.
       mailgun: DataTypes.BOOLEAN, // True if Mailgun email activated.
+      published: DataTypes.BOOLEAN, // True if the shop go published successfully at least once.
       customDomain: DataTypes.BOOLEAN // True if a custom domain is setup.
     },
     {
