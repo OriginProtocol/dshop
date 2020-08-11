@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { Countries } from '@origin/utils/Countries'
+import { Countries, CountriesByCode } from '@origin/utils/Countries'
 
 import Popover from 'components/Popover'
 
 import Caret from 'components/icons/Caret'
 
-const CountriesMultiSelect = ({ selected, onChange }) => {
+const CountriesMultiSelect = ({
+  selected,
+  onChange,
+  includeGlobalOption,
+  className
+}) => {
   const [shouldClose, setShouldClose] = useState(0)
 
   useEffect(() => {
@@ -34,20 +39,44 @@ const CountriesMultiSelect = ({ selected, onChange }) => {
   return (
     <Popover
       el="div"
-      className="countries-multi-select form-control"
+      className={`countries-multi-select form-control${
+        className ? ` ${className}` : ''
+      }`}
       placement="top-start"
       contentClassName="countries-dropdown"
       shouldClose={shouldClose}
       button={
         <>
-          {selected.length > 0
-            ? `${selected.length} selected`
-            : 'Select one or more'}
+          <div className="selection-label">
+            {selected.length > 0
+              ? selected.map((c) => CountriesByCode[c].name).join(', ')
+              : includeGlobalOption
+              ? 'Rest of the world'
+              : 'Select one or more'}
+          </div>
           <Caret />
         </>
       }
     >
       <>
+        {!includeGlobalOption ? null : (
+          <div className="form-check">
+            <label className="form-check-label">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                checked={selected.length === 0}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    // Deselect all
+                    onChange([])
+                  }
+                }}
+              />
+              Rest of the world
+            </label>
+          </div>
+        )}
         {Object.keys(Countries).map((country) => (
           <div className="form-check" key={country}>
             <label className="form-check-label">
@@ -78,7 +107,15 @@ require('react-styl')(`
     justify-content: space-between
     align-items: center
 
-  
+    .selection-label
+      overflow: hidden
+      text-overflow: ellipsis
+      width: 100%
+      white-space: nowrap
+
+    &.invalid-feedback
+      border: 1px solid #dc3545
+
   .countries-dropdown
     position: absolute
     color: #000
