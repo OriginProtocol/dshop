@@ -16,17 +16,17 @@ const CurrencySelect = () => {
 
   return (
     <div className="currency-select">
-    <select
-      className="form-control currency-select"
-      value={preferredCurrency}
-      onChange={onChange}
-    >
-      {AllCurrencies.map((currency) => (
-        <option key={currency[0]} value={currency[0]}>
-          {currency[0]}
-        </option>
-      ))}
-    </select>
+      <select
+        className="form-control currency-select"
+        value={preferredCurrency}
+        onChange={onChange}
+      >
+        {AllCurrencies.map((currency) => (
+          <option key={currency[0]} value={currency[0]}>
+            {currency[0]}
+          </option>
+        ))}
+      </select>
     </div>
   )
 }
