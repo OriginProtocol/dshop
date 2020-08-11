@@ -10,7 +10,7 @@ const useCurrencyOpts = () => {
   const [{ preferredCurrency }] = useStateValue()
   const storeCurrency = get(config, 'currency', 'USD')
 
-  const { exchangeRates } = usePrice(storeCurrency)
+  const { exchangeRates } = usePrice(storeCurrency, preferredCurrency)
 
   const preferredCurrencyRate = get(exchangeRates, preferredCurrency)
   const storeCurrencyRate = get(exchangeRates, storeCurrency)
