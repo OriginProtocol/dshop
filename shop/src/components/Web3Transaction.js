@@ -66,7 +66,7 @@ const Web3Transaction = ({
         setState({
           modal: true,
           title: `Incorrect Network`,
-          description: `Please switch your Web3 wallet to ${config.netName} to continue.`,
+          description: `Please switch your Web3 wallet to ${config.netName} to continue. If your wallet is already set to ${config.netName}, please refresh the page and try again.`,
           spinner: true
         })
         return

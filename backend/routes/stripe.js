@@ -266,7 +266,7 @@ module.exports = function (router) {
         valid = true
 
         shouldUpdateWebhooks = !(await stripeUtils.webhookValidation(
-          req.shop.id,
+          req.shop,
           {
             stripeBackend
           },

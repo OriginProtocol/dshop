@@ -74,7 +74,7 @@ describe('Listing', () => {
 
     // Check the listingId is correct in the shop's config.json
     const config = getTestShopJsonConfig(shop)
-    expect(config.listingId).to.equal(shop.listingId)
+    expect(config.networks[999].listingId).to.equal(shop.listingId)
   })
 
   it('It should not update the shop listingId', async () => {
@@ -156,6 +156,6 @@ describe('Listing', () => {
 
     // And the new shop's config should point to the proper listing id.
     const config = getTestShopJsonConfig(newShop)
-    expect(config.listingId).to.equal(newShop.listingId)
+    expect(config.networks[999].listingId).to.equal(newShop.listingId)
   })
 })

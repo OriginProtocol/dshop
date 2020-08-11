@@ -6,7 +6,9 @@ const SequelizeStore = require('connect-session-sequelize')(session.Store)
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const serveStatic = require('serve-static')
+const set = require('lodash/set')
 
+const { getConfig } = require('./utils/encryptedConfig')
 const { sequelize, Network } = require('./models')
 const { getLogger } = require('./utils/logger')
 const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
@@ -113,7 +115,7 @@ router.get('/', async (req, res) => {
   res.send(html)
 })
 
-router.get('*', (req, res, next) => {
+router.get('*', async (req, res, next) => {
   const split = req.path.split('/')
   if (split.length <= 2) {
     return next()
@@ -121,6 +123,26 @@ router.get('*', (req, res, next) => {
   const dataDir = split[1]
   const dir = `${DSHOP_CACHE}/${dataDir}/data`
   req.url = split.slice(2).join('/')
+
+  // When serving config.json from backend, override active network settings.
+  // This prevents problems when, eg, the backend specified in config.json does
+  // not match the backend being served from.
+  try {
+    if (req.url === 'config.json') {
+      const network = await Network.findOne({ where: { active: true } })
+      const netConfig = getConfig(network.config)
+      const configRaw = fs.readFileSync(`${dir}/${req.url}`).toString()
+      const config = JSON.parse(configRaw)
+      const netId = network.networkId
+      set(config, `networks[${netId}].ipfsGateway`, network.ipfs)
+      set(config, `networks[${netId}].ipfsApi`, network.ipfsApi)
+      set(config, `networks[${netId}].backend`, netConfig.backendUrl)
+      return res.json(config)
+    }
+  } catch (err) {
+    log.error(err)
+  }
+
   serveStatic(dir)(req, res, next)
 })
 

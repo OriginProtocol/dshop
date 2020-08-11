@@ -21,7 +21,13 @@ const {
 } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
 const { getConfig, setConfig } = require('../utils/encryptedConfig')
-const { createShop } = require('../utils/shop')
+const {
+  createShop,
+  getShopDataUrl,
+  getShopPublicUrl,
+  getPublicUrl,
+  getDataUrl
+} = require('../utils/shop')
 const genPGP = require('../utils/pgp')
 const get = require('lodash/get')
 const set = require('lodash/set')
@@ -364,11 +370,19 @@ module.exports = function (router) {
       name = json.fullTitle || json.title
     }
 
-    const zone = networkConfig.domain
-    const backend = networkConfig.backendUrl
-    const isLocal = zone === 'localhost'
-    const publicUrl = isLocal ? backend : `https://${hostname}.${zone}`
-    const dataUrl = `${publicUrl}/${dataDir}/`
+    // Construct the shop's public and data URLs.
+    const publicUrl = getPublicUrl(
+      hostname,
+      networkConfig.domain,
+      networkConfig.backendUrl
+    )
+    const dataUrl = getDataUrl(
+      hostname,
+      dataDir,
+      networkConfig.domain,
+      networkConfig.backendUrl
+    )
+
     const supportEmail = req.body.supportEmail || req.seller.email
 
     let defaultShopConfig = {}
@@ -482,7 +496,7 @@ module.exports = function (router) {
     }
 
     const netPath = `networks[${network.networkId}]`
-    shopConfig = set(shopConfig, `${netPath}.backend`, backend)
+    shopConfig = set(shopConfig, `${netPath}.backend`, networkConfig.backendUrl)
     if (req.body.listingId) {
       shopConfig = set(shopConfig, `${netPath}.listingId`, req.body.listingId)
     }
@@ -789,6 +803,8 @@ module.exports = function (router) {
         }
       }
 
+      const additionalOpts = {}
+
       // Check the hostname picked by the merchant is available.
       const existingConfig = getConfig(req.shop.config)
       if (req.body.hostname) {
@@ -804,12 +820,15 @@ module.exports = function (router) {
           })
         }
         req.shop.hostname = hostname
+
+        // Update the public and dataUrl in the shop's config to
+        // reflect a possible change to the hostname.
+        additionalOpts.publicUrl = getShopPublicUrl(req.shop, netConfig)
+        additionalOpts.dataUrl = getShopDataUrl(req.shop, netConfig)
       }
       if (req.body.fullTitle) {
         req.shop.name = req.body.fullTitle
       }
-
-      const additionalOpts = {}
 
       // Configure Stripe webhooks
       if (req.body.stripe === false) {
@@ -929,10 +948,12 @@ module.exports = function (router) {
         'pgpPrivateKeyPass',
         'pgpPublicKey',
         'printful',
+        'processingTime',
         'publicUrl',
         'sendgridApiKey',
         'sendgridPassword',
         'sendgridUsername',
+        'shippingFrom',
         'stripeBackend',
         'stripeWebhookSecret',
         'stripeWebhookHost',
