@@ -9,7 +9,6 @@ import { useStateValue } from 'data/state'
 import randomstring from 'randomstring'
 import { useRouteMatch } from 'react-router-dom'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
-// import { useLocation } from 'react-router-dom'
 
 const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
   const { config } = useConfig()
@@ -28,8 +27,6 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
 
   const match = useRouteMatch('/checkout/payment/:intentId?')
   const { intentId } = match.params
-
-  // const location = useLocation()
 
   const createOrderAndRedirect = async () => {
     onChange({
