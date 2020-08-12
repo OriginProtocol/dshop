@@ -175,7 +175,7 @@ class EtlJobProcessor {
     shop.dataUrl = getShopDataUrl(shop, netConfig)
 
     // Get the shop's deploy dir.
-    shop.outputDir = `${DSHOP_CACHE}/${shop.auth_token}`
+    shop.outputDir = `${DSHOP_CACHE}/${shop.authToken}`
   }
 
   /**
@@ -197,7 +197,7 @@ class EtlJobProcessor {
         await this._decorateShop(shop, netConfig)
 
         // Extract data from the shop and insert it as a new EtlShop row.
-        const data = this.processShop(shop)
+        const data = await this.processShop(shop)
         await EtlShop.create({ jobId: job.id, ...data })
       } catch (e) {
         // Log the error but continue processing other shops.
