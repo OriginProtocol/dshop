@@ -8,13 +8,16 @@ import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
 import randomstring from 'randomstring'
 import { useRouteMatch } from 'react-router-dom'
-// import { useLocation } from 'react-router-dom'
+import useCurrencyOpts from 'utils/useCurrencyOpts'
 
 const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
   const { config } = useConfig()
   const [{ cart }, dispatch] = useStateValue()
 
   const { post } = useBackendApi({ authToken: true })
+
+  const currencyOpts = useCurrencyOpts()
+  const defaultButtonText = `Pay ${formatPrice(cart.total, currencyOpts)}`
 
   const [submitError, setError] = useState(null)
 
@@ -24,8 +27,6 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
 
   const match = useRouteMatch('/checkout/payment/:intentId?')
   const { intentId } = match.params
-
-  // const location = useLocation()
 
   const createOrderAndRedirect = async () => {
     onChange({
@@ -37,7 +38,7 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
       loading: false,
       disabled: false,
       submit: 0,
-      buttonText: `Pay ${formatPrice(cart.total)}`
+      buttonText: defaultButtonText
     }
 
     setError(null)
@@ -86,7 +87,7 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
       loading: false,
       disabled: false,
       submit: 0,
-      buttonText: `Pay ${formatPrice(cart.total)}`
+      buttonText: defaultButtonText
     }
 
     setError(null)
@@ -123,7 +124,7 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
   useEffect(() => {
     if (isSelected && !loading && disabled && !submit) {
       onChange({
-        buttonText: `Pay ${formatPrice(cart.total)}`,
+        buttonText: defaultButtonText,
         disabled: false
       })
     }

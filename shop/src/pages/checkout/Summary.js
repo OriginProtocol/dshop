@@ -9,18 +9,36 @@ import useConfig from 'utils/useConfig'
 import CheckoutItem from './CheckoutItem'
 import Discount from './Discount'
 import Donation from './Donation'
+import useCurrencyOpts from 'utils/useCurrencyOpts'
 
-function summaryNote(note, cart, currency) {
+function summaryNote(note, cart, currencyOpts) {
   const donation = cart.donation || 0
   return note.replace(
     /\{subTotal\}/g,
-    formatPrice(cart.subTotal + donation, { currency })
+    formatPrice(cart.subTotal + donation, currencyOpts)
+  )
+}
+
+const ExchangeRateNote = ({ currencyOpts }) => {
+  if (currencyOpts.storeCurrency === currencyOpts.currency) {
+    return null
+  }
+
+  // TODO: Get a better copy from Anna.
+  return (
+    <div className="note">
+      Prices are shown in {currencyOpts.currency} for reference at the exchange
+      rate of 1 {currencyOpts.storeCurrency} ={' '}
+      {currencyOpts.exchangeRate.toFixed(2)} {currencyOpts.currency}.
+      You&apos;ll be charged in {currencyOpts.storeCurrency}.
+    </div>
   )
 }
 
 const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
   const { config } = useConfig()
   const [summary, showSummary] = useState(false)
+  const currencyOpts = useCurrencyOpts()
 
   if (!cart || !cart.items) return null
   const donateTo = get(config, 'donations.name')
@@ -41,7 +59,7 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
           <Caret />
         </div>
         <div>
-          <b>{formatPrice(cart.total, { currency: config.currency })}</b>
+          <b>{formatPrice(cart.total, currencyOpts)}</b>
         </div>
       </a>
       <div className={`order-summary ${summary ? ' show' : ''}`}>
@@ -56,16 +74,14 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
           <div>
             <div>Subtotal</div>
             <div>
-              <b>{formatPrice(cart.subTotal, { currency: config.currency })}</b>
+              <b>{formatPrice(cart.subTotal, currencyOpts)}</b>
             </div>
           </div>
           {!cart.donation ? null : (
             <div>
               <div>{`Donation${donateTo ? ` to ${donateTo}` : ''}`}</div>
               <div>
-                <b>
-                  {formatPrice(cart.donation, { currency: config.currency })}
-                </b>
+                <b>{formatPrice(cart.donation, currencyOpts)}</b>
               </div>
             </div>
           )}
@@ -75,7 +91,7 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
               <div>
                 <b>
                   {formatPrice(get(cart, 'shipping.amount'), {
-                    currency: config.currency,
+                    ...currencyOpts,
                     free: true
                   })}
                 </b>
@@ -92,9 +108,7 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
                 ''
               ).toUpperCase()}`}</div>
               <div>
-                <b>
-                  {formatPrice(cart.discount, { currency: config.currency })}
-                </b>
+                <b>{formatPrice(cart.discount, currencyOpts)}</b>
               </div>
             </div>
           )}
@@ -103,18 +117,26 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
           <div>
             <div>Total</div>
             <div>
-              <b>{formatPrice(cart.total, { currency: config.currency })}</b>
+              <b>
+                {formatPrice(cart.total, currencyOpts)}
+                {currencyOpts.currency === currencyOpts.storeCurrency
+                  ? null
+                  : ` (${formatPrice(cart.total, {
+                      currency: currencyOpts.storeCurrency
+                    })})`}
+              </b>
             </div>
           </div>
         </div>
         {!config.cartSummaryNote ? null : (
           <div
             dangerouslySetInnerHTML={{
-              __html: summaryNote(config.cartSummaryNote, cart, config.currency)
+              __html: summaryNote(config.cartSummaryNote, cart, currencyOpts)
             }}
             className="note"
           />
         )}
+        <ExchangeRateNote currencyOpts={currencyOpts} />
       </div>
     </>
   )
