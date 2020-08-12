@@ -26,7 +26,7 @@ const defaultState = {
   // User's preferred currency
   preferredCurrency: 'USD',
 
-  locale: 'en-US',
+  locale: 'en_US',
 
   cart: {
     items: [],

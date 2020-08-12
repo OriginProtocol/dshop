@@ -26,7 +26,9 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const Providers = () => {
-  useEffect(() => setLocale(), [])
+  useEffect(() => {
+    setLocale()
+  }, [])
 
   return (
     <StateProvider>
