@@ -7,8 +7,8 @@ import useConfig from './useConfig'
 
 /**
  * Hook to get the user's preferred currency and it's exchange rate
- * to be passed as a param to `utils/formatPrice` 
- * 
+ * to be passed as a param to `utils/formatPrice`
+ *
  * @returns {{
  *  storeCurrency,
  *  currency,

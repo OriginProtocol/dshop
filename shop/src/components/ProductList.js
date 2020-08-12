@@ -51,6 +51,7 @@ const ProductList = ({ products }) => {
                 {product.title}
               </Link>
               <div className="price">
+                {!product.hasVariants ? `From ` : ''}
                 {formatPrice(product.price, currencyOpts)}
                 {config.freeShipping ? (
                   <span className="shipping">FREE Shipping</span>
