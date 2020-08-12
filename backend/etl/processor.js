@@ -206,6 +206,7 @@ class EtlJobProcessor {
     }
     // Mark the job as successfully completed.
     await job.update({ status: EtlJobStatuses.Success })
+    log.info('ETL job run finished.')
   }
 }
 

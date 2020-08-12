@@ -1,4 +1,4 @@
-const { EtlProcessor } = require('../etl/processor')
+const { EtlJobProcessor } = require('../etl/processor')
 const { getLogger } = require('../utils/logger')
 const { Sentry } = require('../sentry')
 
@@ -9,9 +9,7 @@ const logger = getLogger('queues.etlProcessor')
 const attachToQueue = () => {
   const queue = queues['etlQueue']
   queue.process(processor)
-  // Schedule job to run daily at 20:00UTC
-  queue.add({ task: 'main' }, { repeat: { cron: '00 20 * * *' } })
-  logger.info('Scheduled ETL job to run daily.')
+  queue.resume() // Start if paused
 }
 
 const processor = async (job) => {
@@ -24,7 +22,7 @@ const processor = async (job) => {
   try {
     queueLog(0, 'Starting ETL job...')
 
-    const etl = new EtlProcessor()
+    const etl = new EtlJobProcessor()
     await etl.run(job.data)
 
     queueLog(100, 'Finished')
@@ -36,4 +34,21 @@ const processor = async (job) => {
   }
 }
 
-module.exports = { processor, attachToQueue }
+/**
+ * Adds a recurring task to the queue for running the ETL job.
+ * Note: this only needs to be called once when setting up the ETL pipeline.
+ *
+ * @returns {Promise<string>} The repeatable job id.
+ */
+async function scheduleEtlJob() {
+  const queue = queues['etlQueue']
+  // Run daily at 17:00 UTC => ~10:00am PST
+  const job = await queue.add(
+    { task: 'etl' },
+    { repeat: { cron: '00 17 * * *' } }
+  )
+  logger.info(`Scheduled ETL job ${job.id} to run daily.`)
+  return job.id
+}
+
+module.exports = { processor, attachToQueue, scheduleEtlJob }

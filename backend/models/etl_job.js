@@ -5,7 +5,6 @@ module.exports = (sequelize, DataTypes) => {
     'EtlJob',
     {
       status: DataTypes.ENUM(EtlJobStatuses),
-      error: DataTypes.STRING // Optional. Only populated when status is 'Failure'.
     },
     {
       underscored: true,

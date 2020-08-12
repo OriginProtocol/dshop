@@ -72,6 +72,13 @@ const all = [
     Object.assign(queueOpts, {
       prefix: '{autossl}'
     })
+  ),
+  new Queue(
+    'etl',
+    backendUrl,
+    Object.assign(queueOpts, {
+      prefix: '{etl}'
+    })
   )
 ]
 
