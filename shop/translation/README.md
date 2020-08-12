@@ -5,19 +5,23 @@ npm module by Facebook.
 
 Strings to be translated should be wrapped in an `<fbt>` tag, for example:
 
-    <button>Submit</button>
+```html
+<button>Submit</button>
+```
 
 Becomes:
 
-    <button>
-      <fbt desc="submit">Submit</fbt>
-    </button>
+```html
+<button>
+  <fbt desc="submit">Submit</fbt>
+</button>
+```
 
 The `desc` property is a description of the text to be translated. In order to
-be consistent throughout the codebase, we use the following conventions for `desc`:
+be consistent throughout the codebase, we use the following conventions for
+`desc`:
 
-- Use camelCase
-- Prefix pages with `pagePath.PageName` eg `admin.products.Edit`
-- Prefix components with `component.ComponentName`
-- Short words or very common phrases can described as is, eg `Continue` or
-  `Admin`
+- Short words or common phrases can described as is, eg `Continue` or `Admin`
+- For longer or very specific strings, use camel case and a prefix:
+  - For pages, prefix with `pagePath.PageName` eg `admin.products.Edit`
+  - For components, prefix with `component.ComponentName`
