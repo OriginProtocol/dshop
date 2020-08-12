@@ -1,5 +1,11 @@
 module.exports = function formatPrice(number, opts = {}) {
-  const { dec = 2, dsep = '.', tsep = ',', currency = 'USD' } = opts
+  const {
+    dec = 2,
+    dsep = '.',
+    tsep = ',',
+    currency = 'USD',
+    exchangeRate = 1
+  } = opts
 
   let symbol
   if (currency === 'USD') {
@@ -20,7 +26,7 @@ module.exports = function formatPrice(number, opts = {}) {
     return 'Free'
   }
 
-  number = (number / 100).toFixed(~~dec)
+  number = ((exchangeRate * number) / 100).toFixed(~~dec)
   const parts = number.split('.'),
     fnums = parts[0],
     decimals = parts[1] && parts[1] > 0 ? dsep + parts[1] : ''

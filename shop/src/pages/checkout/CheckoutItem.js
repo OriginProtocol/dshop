@@ -6,10 +6,13 @@ import VariantOptions from 'components/VariantOptions'
 import formatPrice from 'utils/formatPrice'
 import useConfig from 'utils/useConfig'
 import fetchProduct from 'data/fetchProduct'
+import useCurrencyOpts from 'utils/useCurrencyOpts'
 
 const CartItem = ({ item }) => {
   const { config } = useConfig()
   const [product, setProduct] = useState()
+  const currencyOpts = useCurrencyOpts()
+
   useEffect(() => {
     fetchProduct(config.dataSrc, item.product).then(setProduct)
   }, [item.product])
@@ -32,9 +35,7 @@ const CartItem = ({ item }) => {
         <VariantOptions variant={variant} product={product} />
       </div>
       <div className="price">
-        {formatPrice(item.quantity * variant.price, {
-          currency: config.currency
-        })}
+        {formatPrice(item.quantity * variant.price, currencyOpts)}
       </div>
     </div>
   )

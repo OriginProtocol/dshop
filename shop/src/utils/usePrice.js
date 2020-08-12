@@ -13,16 +13,18 @@ const memoFetch = memoize(async function (url, body = {}) {
   }).then((raw) => raw.json())
 })
 
-function usePrice(targetCurrency = 'USD') {
+function usePrice(targetCurrency = 'USD', preferredCurrency = 'USD') {
   const [exchangeRates, setRates] = useState({})
   const { config } = useConfig()
 
   const { tokenDataProviders } = useTokenDataProviders()
 
   async function fetchExchangeRates() {
-    let json = await memoFetch(
-      `${config.backend}/exchange-rates?target=${targetCurrency}`
-    )
+    let url = `${config.backend}/exchange-rates?target=${targetCurrency}`
+    if (preferredCurrency !== targetCurrency) {
+      url += `&preferred=${preferredCurrency}`
+    }
+    let json = await memoFetch(url)
     json.USD = 1
     const acceptedTokens = config.acceptedTokens || []
 
@@ -40,26 +42,21 @@ function usePrice(targetCurrency = 'USD') {
 
         if (filteredTokens.length === 0) return rates
 
-        return {
-          ...rates,
-          ...(await provider.getTokenPrices(filteredTokens))
-        }
+        const tokenPrices = await provider.getTokenPrices(filteredTokens)
+        return { ...rates, ...tokenPrices }
       }, {})
 
-      json = {
-        ...json,
-        ...rates
-      }
+      json = { ...json, ...rates }
     }
 
     setRates(json)
   }
 
   useEffect(() => {
-    if (!exchangeRates.ETH) {
+    if (!exchangeRates[preferredCurrency]) {
       fetchExchangeRates()
     }
-  }, [])
+  }, [preferredCurrency])
 
   function toTokenPrice(fiat, token) {
     const tokenPriceUsd = exchangeRates[token]
