@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       underscored: true,
-      tableName: 'etl_shops'
+      tableName: 'etl_jobs'
     }
   )
 
