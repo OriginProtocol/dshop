@@ -4541,7 +4541,7 @@ babel-plugin-emotion@^10.0.27:
     find-root "^1.1.0"
     source-map "^0.5.7"
 
-babel-plugin-fbt-runtime@0.9.12:
+babel-plugin-fbt-runtime@^0.9.12:
   version "0.9.12"
   resolved "https://registry.yarnpkg.com/babel-plugin-fbt-runtime/-/babel-plugin-fbt-runtime-0.9.12.tgz#7420c676fc7612324c3c3c88f3e35d3162927cbd"
   integrity sha512-YbSWgNzNBoRF6golLWvpSg2HA0SwKCUSoI0Syl0y846cYfq5ZzFKuCQt9zRFkmaWFQ1ncuI4wHRznchFreQi9g==
@@ -4549,10 +4549,10 @@ babel-plugin-fbt-runtime@0.9.12:
     "@babel/core" "^7.0.0"
     fbjs "^1.0.0"
 
-babel-plugin-fbt@0.15.0:
-  version "0.15.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-fbt/-/babel-plugin-fbt-0.15.0.tgz#50916fc4a012dbad596a33e346a50c2776fe2aa6"
-  integrity sha512-cC3mKs0W82EN2678V291ll7LeM4mArjYay6pjJxwR5yzs7fmDO7I9MzLTrbH2PcT/biSMvvHuHzmY40uO5Z1dw==
+babel-plugin-fbt@^0.15.1-beta:
+  version "0.15.1-beta"
+  resolved "https://registry.yarnpkg.com/babel-plugin-fbt/-/babel-plugin-fbt-0.15.1-beta.tgz#77609f71831b7a076cce7f1afe36f99937be9b6f"
+  integrity sha512-iz+qV4tuxVbw5s1oRHgwG2+V84JBzgwiE0/g/EvreaZlaUARqlJ7XMmPaEM/JoqvYuoTcUe1ec+yC4sITlfMqg==
   dependencies:
     "@babel/core" "^7.0.0"
     "@babel/generator" "^7.0.0"
@@ -9693,6 +9693,11 @@ fbjs@^1.0.0:
     promise "^7.1.1"
     setimmediate "^1.0.5"
     ua-parser-js "^0.7.18"
+
+fbt-runtime@^0.9.4:
+  version "0.9.4"
+  resolved "https://registry.yarnpkg.com/fbt-runtime/-/fbt-runtime-0.9.4.tgz#93a11d8879582dbad666efab5452452b9aa256f1"
+  integrity sha512-KgD6AxaXc4ti0f+Lebsjm5Gv/9mcpRW+JO47dQ5J8osIb0Mz7ScszBZgPawB16A1EcS/qa6HVKqBhuz7xNeCow==
 
 fd-slicer@~1.1.0:
   version "1.1.0"
