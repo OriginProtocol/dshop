@@ -14,7 +14,9 @@ const Queue = REDIS_URL ? require('bull') : require('./fallbackQueue')
 const backendUrl = REDIS_URL ? REDIS_URL : undefined
 const queueOpts = {}
 const log = getLogger('queues.queues')
-const CAPTURE_FAILED_QUEUES = ['autossl']
+
+// Capture in Sentry the failure of any job from these queues.
+const CAPTURE_FAILED_QUEUES = ['autossl', 'etl']
 
 if (REDIS_URL) {
   log.info(`Queue init: Using Redis at ${REDIS_URL}`)
@@ -86,7 +88,7 @@ all.forEach((q) => {
   if (CAPTURE_FAILED_QUEUES.includes(q.name)) {
     q.on('failed', function (job, err) {
       Sentry.captureException(err)
-      log.error(`Job failed with error: ${err.toString()}`)
+      log.error(`Job ${job.id} failed with error: ${err.toString()}`)
     })
   }
 })

@@ -14,7 +14,7 @@ module.exports = {
         num_products: Sequelize.INTEGER,
         num_collections: Sequelize.INTEGER,
         num_discounts: Sequelize.INTEGER,
-        num_shipping: Sequelize.INTEGER,
+        num_shippings: Sequelize.INTEGER,
         num_orders: Sequelize.INTEGER,
         crypto: Sequelize.BOOLEAN,
         stripe: Sequelize.BOOLEAN,

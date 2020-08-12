@@ -147,7 +147,7 @@ class EtlJobProcessor {
     data.numProducts = await this._countNumProducts(shop)
     data.numCollections = await this._countNumCollections(shop)
     data.numDiscounts = await this._countNumDiscounts(shop)
-    data.numDiscounts = await this._countNumShippings(shop)
+    data.numShippings = await this._countNumShippings(shop)
     data.numOrders = await this._countNumOrders(shop)
     data.crypto = this._crypto(shop)
     data.stripe = this._stripe(shop)
