@@ -30,6 +30,7 @@ COPY lerna.json ./lerna.json
 COPY yarn.lock ./yarn.lock
 
 COPY $DSHOP_BACKEND_SOURCE/db ./backend/db
+COPY $DSHOP_BACKEND_SOURCE/etl ./backend/etl
 COPY $DSHOP_BACKEND_SOURCE/models ./backend/models
 COPY $DSHOP_BACKEND_SOURCE/queues ./backend/queues
 COPY $DSHOP_BACKEND_SOURCE/routes ./backend/routes
@@ -44,6 +45,7 @@ COPY $DSHOP_BACKEND_SOURCE/test ./backend/test
 COPY $DSHOP_DAPP_SOURCE/public ./shop/public
 COPY $DSHOP_DAPP_SOURCE/src ./shop/src
 COPY $DSHOP_DAPP_SOURCE/scripts ./shop/scripts
+COPY $DSHOP_DAPP_SOURCE/translation ./shop/translation
 COPY $DSHOP_DAPP_SOURCE/package.json ./shop/package.json
 COPY $DSHOP_DAPP_SOURCE/*.js ./shop/
 
