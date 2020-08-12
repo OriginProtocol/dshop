@@ -11,6 +11,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
@@ -19,9 +21,9 @@ jobs:
         run: yarn
       - name: Extract translations
         run: cd shop && npm run translate
-      - name: Add commits
-        run: git commit -am "Translations"
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
-          title: 'Update translations'
+          commit-message: Update fbt translations
+          title: Update fbt translations
+          branch: fbt-translations
