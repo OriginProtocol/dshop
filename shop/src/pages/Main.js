@@ -86,7 +86,7 @@ const Main = () => {
   if (!config) {
     return (
       <div className="mt-5 text-center">
-        <fbt desc="SiteConfigNotFound">Site configuration not found</fbt>
+        <fbt desc="pages.Main.ConfigNotFound">Site configuration not found</fbt>
       </div>
     )
   }
