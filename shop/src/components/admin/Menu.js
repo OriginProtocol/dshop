@@ -8,13 +8,15 @@ export default Menu
 
 require('react-styl')(`
   .admin-menu
+    display: flex
+    flex-direction: column
     background-color: #f8f8f8
     padding: 0.875rem 0
     height: 100%
     border-right: 1px solid #e9f0f3
     margin-bottom: 0
     li
-      margin: 0.5rem 0
+      margin-top: 0.5rem
       a
         display: flex
         align-items: center

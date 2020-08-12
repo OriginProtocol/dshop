@@ -1,6 +1,6 @@
 require('dotenv').config()
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import ReactDOM from 'react-dom'
 
 import { HashRouter, BrowserRouter } from 'react-router-dom'
@@ -9,6 +9,8 @@ import Styl from 'react-styl'
 import SentryErrorBoundary from 'components/SentryErrorBoundary'
 
 import { StateProvider } from 'data/state'
+import setLocale from 'utils/setLocale'
+
 import App from './pages/App'
 import './css/app.scss'
 import './css/app.css'
@@ -24,6 +26,10 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const Providers = () => {
+  useEffect(() => {
+    setLocale()
+  }, [])
+
   return (
     <StateProvider>
       <SentryErrorBoundary>

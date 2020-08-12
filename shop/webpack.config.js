@@ -61,7 +61,18 @@ const webpackConfig = {
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: 'babel-loader'
+        loader: 'babel-loader',
+        query: {
+          plugins: [
+            [
+              'babel-plugin-fbt',
+              {
+                fbtEnumManifest: require('./translation/fbt/.enum_manifest.json')
+              }
+            ],
+            'babel-plugin-fbt-runtime'
+          ]
+        }
       },
       {
         test: /\.mjs$/,

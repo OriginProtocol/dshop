@@ -4,6 +4,7 @@ import Link from 'components/Link'
 
 import useConfig from 'utils/useConfig'
 import CurrencySelect from 'components/CurrencySelect'
+import LocaleSelect from 'components/LocaleSelect'
 
 const Footer = () => {
   const { config } = useConfig()
@@ -24,6 +25,7 @@ const Footer = () => {
         </div>
         <div>
           <div className="links">
+            <LocaleSelect />
             <CurrencySelect />
             {config.terms ? (
               <Link to="/terms">Terms &amp; Conditions</Link>
@@ -79,6 +81,7 @@ require('react-styl')(`
       .links
         margin-top: 1rem
         flex-direction: column
+        align-items: center
         :not(:last-child)
           margin-right: 0
       .container
