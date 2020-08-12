@@ -1,6 +1,7 @@
 import React from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import get from 'lodash/get'
+import { fbt } from 'fbt-runtime'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
@@ -62,14 +63,14 @@ const Nav = ({ newShop, setNewShop, only }) => {
                 history.push(adminLocation || '/admin')
               }}
             >
-              Admin
+              <fbt desc="Admin">Admin</fbt>
             </button>
             <SwitchToStorefront
               className={`btn btn-${isAdmin ? 'outline-' : ''}primary px-4${
                 activeShop.viewable ? '' : ' disabled'
               }`}
             >
-              Storefront
+              <fbt desc="Storefront">Storefront</fbt>
             </SwitchToStorefront>
           </div>
         )}
