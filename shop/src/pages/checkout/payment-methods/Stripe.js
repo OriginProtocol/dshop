@@ -8,6 +8,7 @@ import useIsMobile from 'utils/useIsMobile'
 import { useStateValue } from 'data/state'
 
 import { CardElement, injectStripe } from 'react-stripe-elements'
+import useCurrencyOpts from 'utils/useCurrencyOpts'
 
 const PayWithStripe = injectStripe(
   ({ stripe, submit, encryptedData, onChange, loading }) => {
@@ -16,6 +17,9 @@ const PayWithStripe = injectStripe(
     const [{ cart }, dispatch] = useStateValue()
     const [paymentReq, setPaymentReq] = useState()
     const [formData, setFormData] = useState({})
+
+    const currencyOpts = useCurrencyOpts()
+    const defaultButtonText = `Pay ${formatPrice(cart.total, currencyOpts)}`
 
     const paymentMethods = get(config, 'paymentMethods', [])
     const stripeSelected = get(cart, 'paymentMethod.id') === 'stripe'
@@ -55,9 +59,7 @@ const PayWithStripe = injectStripe(
     useEffect(() => {
       if (stripeSelected) {
         onChange({
-          buttonText: `Pay ${formatPrice(cart.total, {
-            currency: config.currency
-          })}`,
+          buttonText: defaultButtonText,
           disabled: paymentReq ? false : true
         })
       }
@@ -78,9 +80,7 @@ const PayWithStripe = injectStripe(
       const resetState = {
         loading: false,
         disabled: false,
-        buttonText: `Pay ${formatPrice(cart.total, {
-          currency: config.currency
-        })}`,
+        buttonText: defaultButtonText,
         submit: 0
       }
 

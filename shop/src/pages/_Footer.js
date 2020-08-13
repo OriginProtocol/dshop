@@ -3,6 +3,8 @@ import React from 'react'
 import Link from 'components/Link'
 
 import useConfig from 'utils/useConfig'
+import CurrencySelect from 'components/CurrencySelect'
+import LocaleSelect from 'components/LocaleSelect'
 
 const Footer = () => {
   const { config } = useConfig()
@@ -21,18 +23,22 @@ const Footer = () => {
         <div className="copyright">
           &copy;{` Origin Protocol ${date.getFullYear()}`}
         </div>
-        <div className="links">
-          {config.terms ? (
-            <Link to="/terms">Terms &amp; Conditions</Link>
-          ) : null}
-          <Link to="/about">FAQ</Link>
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href="https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0"
-          >
-            About Dshop
-          </a>
+        <div>
+          <div className="links">
+            <LocaleSelect />
+            <CurrencySelect />
+            {config.terms ? (
+              <Link to="/terms">Terms &amp; Conditions</Link>
+            ) : null}
+            <Link to="/about">FAQ</Link>
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              href="https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0"
+            >
+              About Dshop
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -64,12 +70,20 @@ require('react-styl')(`
         display: none
     .links
       display: flex
+      white-space: nowrap
+      align-items: baseline
       :not(:last-child)
         margin-right: 2rem
 
   @media (max-width: 767.98px)
     .footer
       padding: 1.5rem 0
+      .links
+        margin-top: 1rem
+        flex-direction: column
+        align-items: center
+        :not(:last-child)
+          margin-right: 0
       .container
         :not(:last-child)
           margin-bottom: 0.5rem

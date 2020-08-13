@@ -17,6 +17,7 @@ import useProducts from 'utils/useProducts'
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 import fetchProduct from 'data/fetchProduct'
+import useCurrencyOpts from 'utils/useCurrencyOpts'
 
 function getOptions(product, offset) {
   const options = new Set(
@@ -50,6 +51,7 @@ const Product = ({ history, location, match }) => {
   const isMobile = useIsMobile()
   const { config } = useConfig()
   const { products } = useProducts()
+  const currencyOpts = useCurrencyOpts()
   const opts = queryString.parse(location.search)
 
   useEffect(() => {
@@ -245,7 +247,7 @@ const Product = ({ history, location, match }) => {
           )}
           {onSale}
           <div className="price mb-4">
-            {formatPrice(get(variant, 'price'), { currency: config.currency })}
+            {formatPrice(get(variant, 'price', 0), currencyOpts)}
             {config.freeShipping ? (
               <span className="shipping">FREE shipping</span>
             ) : null}

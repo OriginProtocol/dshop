@@ -10,6 +10,7 @@ import isEqual from 'lodash/isEqual'
 import { Countries } from '@origin/utils/Countries'
 
 import fbTrack from './fbTrack'
+import setLocale from 'utils/setLocale'
 
 const defaultState = {
   products: [],
@@ -21,6 +22,11 @@ const defaultState = {
   toasts: [],
   reload: {},
   dashboardStats: {},
+
+  // User's preferred currency
+  preferredCurrency: 'USD',
+
+  locale: 'en_US',
 
   cart: {
     items: [],
@@ -37,6 +43,10 @@ const defaultState = {
 function getInitialState(activeShop) {
   const key = activeShop && `${activeShop}CartData`
   const initialState = cloneDeep(defaultState)
+  initialState.preferredCurrency =
+    localStorage.preferredCurrency || initialState.preferredCurrency
+
+  initialState.locale = localStorage.locale || initialState.locale
   try {
     if (key) {
       return {
@@ -284,6 +294,12 @@ const reducer = (state, action) => {
       'config.offlinePaymentMethods',
       action.offlinePaymentMethods
     )
+  } else if (action.type === 'setPreferredCurrency') {
+    newState = set(newState, 'preferredCurrency', action.currency)
+    localStorage.preferredCurrency = action.currency
+  } else if (action.type === 'setLocale') {
+    newState = set(newState, 'locale', action.locale)
+    setLocale(action.locale)
   }
 
   // IMPORTANT: Keep this function's total calculation in sync with the calculation
@@ -315,7 +331,7 @@ const reducer = (state, action) => {
 
   const activeShop = get(newState, 'config.activeShop')
   if (activeShop) {
-    const storeFields = pick(newState, 'cart', 'affiliate', 'referrer')
+    const storeFields = pick(newState, ['cart', 'affiliate', 'referrer'])
     localStorage[`${activeShop}CartData`] = JSON.stringify(storeFields)
   }
 
