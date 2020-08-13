@@ -1,6 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
+import { fbt } from 'fbt-runtime'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
@@ -17,37 +18,70 @@ function validate(state) {
   const newState = {}
 
   if (!state.email) {
-    newState.emailError = 'Enter an email address'
+    newState.emailError = fbt(
+      'Enter an email address',
+      'checkout.address.emailError'
+    )
   } else if (state.email.length < 3) {
-    newState.emailError = 'Email is too short'
+    newState.emailError = fbt(
+      'Email is too short',
+      'checkout.address.emailLenError'
+    )
   }
   if (!state.firstName) {
-    newState.firstNameError = 'Enter a first name'
+    newState.firstNameError = fbt(
+      'Enter a first name',
+      'checkout.address.firstNameError'
+    )
   }
   if (!state.lastName) {
-    newState.lastNameError = 'Enter a last name'
+    newState.lastNameError = fbt(
+      'Enter a last name',
+      'checkout.address.lastNameError'
+    )
   }
   if (!state.address1) {
-    newState.address1Error = 'Enter an address'
+    newState.address1Error = fbt(
+      'Enter an address',
+      'checkout.address.address1Error'
+    )
   } else if (state.address1.length > 80) {
-    newState.address1Error = 'Address too long'
+    newState.address1Error = fbt(
+      'Address too long',
+      'checkout.address.address1LenError'
+    )
   }
   if (state.address2 && state.address2.length > 25) {
-    newState.address2Error = 'Address too long'
+    newState.address2Error = fbt(
+      'Address too long',
+      'checkout.address.address2Error'
+    )
   }
   if (!state.city) {
-    newState.cityError = 'Enter a city'
+    newState.cityError = fbt('Enter a city', 'checkout.address.cityError')
   } else if (state.city.length > 32) {
-    newState.cityError = 'City name too long'
+    newState.cityError = fbt(
+      'City name too long',
+      'checkout.address.cityLenError'
+    )
   }
   const provinces = get(Countries, `${state.country}.provinces`, {})
   if (!state.province && Object.keys(provinces).length) {
-    newState.provinceError = 'Enter a state / province'
+    newState.provinceError = fbt(
+      'Enter a state / province',
+      'checkout.address.provinceError'
+    )
   }
   if (!state.zip) {
-    newState.zipError = 'Enter a ZIP / postal code'
+    newState.zipError = fbt(
+      'Enter a ZIP / postal code',
+      'checkout.address.zipError'
+    )
   } else if (state.zip.length > 10) {
-    newState.zipError = 'ZIP / postal code too long'
+    newState.zipError = fbt(
+      'ZIP / postal code too long',
+      'checkout.address.zipLenError'
+    )
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
@@ -71,12 +105,20 @@ const CheckoutInfo = () => {
       <div className="d-none d-md-block">
         <h3>{config.fullTitle}</h3>
         <div className="breadcrumbs">
-          <Link to="/cart">Cart</Link>
+          <Link to="/cart">
+            <fbt desc="Cart">Cart</fbt>
+          </Link>
           <span>
-            <b>Information</b>
+            <b>
+              <fbt desc="Information">Information</fbt>
+            </b>
           </span>
-          <span>Shipping</span>
-          <span>Payment</span>
+          <span>
+            <fbt desc="Shipping">Shipping</fbt>
+          </span>
+          <span>
+            <fbt desc="Payment">Payment</fbt>
+          </span>
         </div>
       </div>
       <form
@@ -96,12 +138,18 @@ const CheckoutInfo = () => {
         }}
       >
         <div className="mb-3">
-          <b>Contact information</b>
+          <b>
+            <fbt desc="ContactInformation">Contact information</fbt>
+          </b>
         </div>
         <div className="form-row">
           <div className="form-group col-md-6 mb-0">
             <div className="form-group">
-              <input type="email" placeholder="Email" {...input('email')} />
+              <input
+                type="email"
+                placeholder={fbt('Email', 'Email')}
+                {...input('email')}
+              />
               {Feedback('email')}
             </div>
           </div>
@@ -115,15 +163,19 @@ const CheckoutInfo = () => {
           </div>
         </div>
         <div className="mb-3">
-          <b>Shipping Address</b>
+          <b>
+            <fbt desc="ShippingAddress">Shipping Address</fbt>
+          </b>
         </div>
 
         <ShippingForm {...{ state, setState, input, Feedback }} />
 
         <div className="actions">
-          <Link to="/cart">&laquo; Return to cart</Link>
+          <Link to="/cart">
+            &laquo; <fbt desc="checkout.goback">Return to cart</fbt>
+          </Link>
           <button type="submit" className="btn btn-primary btn-lg">
-            Continue to shipping
+            <fbt desc="checkout.continueShopping">Continue to shipping</fbt>
           </button>
         </div>
         <BetaWarning />

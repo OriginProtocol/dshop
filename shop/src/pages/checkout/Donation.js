@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import get from 'lodash/get'
-
+import { fbt, FbtParam } from 'fbt-runtime'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import useIsMobile from 'utils/useIsMobile'
@@ -56,26 +56,34 @@ const Donation = ({ cart }) => {
           if (otherValue.match(/^[0-9]+$/)) {
             const amount = Number(otherValue)
             if (amount > 50000) {
-              setError('Amount is too large')
+              setError(
+                fbt('Amount is too large', 'checkout.donation.maxAmountError')
+              )
             } else {
               setError('')
               dispatch({ type: 'setDonation', amount: amount * 100 })
             }
           } else {
-            setError('Please enter a number')
+            setError(
+              fbt('Please enter a number', 'checkout.donation.invalidAmount')
+            )
           }
         }
       }}
     >
       <div>
         <div>
-          {'Extra Donation to '}
-          <a
-            href={get(config, 'donations.url')}
-            target="_blank"
-            rel="noopener noreferrer"
-            children={get(config, 'donations.name')}
-          />
+          <fbt desc="checkout.donation.extraDonate">
+            Extra Donation to{' '}
+            <FbtParam name="donationName">
+              <a
+                href={get(config, 'donations.url')}
+                target="_blank"
+                rel="noopener noreferrer"
+                children={get(config, 'donations.name')}
+              />
+            </FbtParam>
+          </fbt>
         </div>
         {isMobile ? null : (
           <div className="btn-group">
@@ -87,7 +95,7 @@ const Donation = ({ cart }) => {
               className={`btn btn-${other ? '' : 'outline-'}secondary`}
               onClick={() => setOther(true)}
             >
-              Other
+              <fbt desc="Other">Other</fbt>
             </button>
           </div>
         )}
@@ -101,7 +109,10 @@ const Donation = ({ cart }) => {
               <input
                 type="text"
                 className={`form-control${error ? ' is-invalid' : ''}`}
-                placeholder="Other Amount"
+                placeholder={fbt(
+                  'Other Amount',
+                  'checkout.donations.otherAmount'
+                )}
                 value={otherValue}
                 onChange={(e) => {
                   const value = e.target.value
@@ -116,7 +127,7 @@ const Donation = ({ cart }) => {
             </div>
 
             <button className="btn btn-primary ml-2" type="submit">
-              Apply
+              <fbt desc="Apply">Apply</fbt>
             </button>
           </div>
         )}

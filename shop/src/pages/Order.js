@@ -18,7 +18,11 @@ import Summary from './checkout/Summary'
 const OrderDetails = ({ cart }) => {
   const { config } = useConfig()
   if (!cart) {
-    return <div>Loading...</div>
+    return (
+      <div>
+        <fbt desc="Loading...">Loading...</fbt>
+      </div>
+    )
   }
 
   const phone = get(cart, 'userInfo.phone')
@@ -36,29 +40,48 @@ const OrderDetails = ({ cart }) => {
         </div>
         <div className="details">
           {!cart.offerId ? null : (
-            <div className="order-number">{`Order #${cart.offerId}`}</div>
+            <div className="order-number">
+              <fbt desc="order.orderNumber">
+                Order #<FbtParam name="order.offerId">{cart.offerId}</FbtParam>
+              </fbt>
+            </div>
           )}
           <div className="name">
-            {`Thank you ${get(cart, 'userInfo.firstName')}`}!
+            <fbt desc="order.thankUser">
+              Thank you{' '}
+              <FbtParam name="order.userName">
+                {get(cart, 'userInfo.firstName')}
+              </FbtParam>!
+            </fbt>
           </div>
         </div>
       </div>
       <div className="order-confirmed">
-        <div className="title">Your order is confirmed</div>
+        <div className="title">
+          <fbt desc="order.confirmedText">Your order is confirmed</fbt>
+        </div>
         <div className="description">
-          You’ll receive an email when your order is ready.
+          <fbt desc="order.emailOnUpdate">
+            You’ll receive an email when your order is ready.
+          </fbt>
         </div>
       </div>
       <div className="customer-info">
-        <h4>Customer information</h4>
+        <h4>
+          <fbt desc="order.customerInfo">Customer information</fbt>
+        </h4>
         <div className="row">
           <div className="col-md-6">
-            <h5>Contact information</h5>
+            <h5>
+              <fbt desc="order.contactInfo">Contact information</fbt>
+            </h5>
             <div className="value">{get(cart, 'userInfo.email')}</div>
             {!phone ? null : <div className="value">{phone}</div>}
           </div>
           <div className="col-md-6">
-            <h5>Payment method</h5>
+            <h5>
+              <fbt desc="PaymentMethod">Payment method</fbt>
+            </h5>
             <div className="value">{get(cart, 'paymentMethod.label')}</div>
             {!isOfflinePayment ? null : (
               <>
@@ -71,7 +94,9 @@ const OrderDetails = ({ cart }) => {
         </div>
         <div className="row">
           <div className="col-md-6">
-            <h5>Shipping address</h5>
+            <h5>
+              <fbt desc="ShippingAddress">Shipping address</fbt>
+            </h5>
             <div className="value">
               {formatAddress(cart.userInfo).map((line, idx) => (
                 <div key={idx}>{line}</div>
@@ -79,7 +104,9 @@ const OrderDetails = ({ cart }) => {
             </div>
           </div>
           <div className="col-md-6">
-            <h5>Billing address</h5>
+            <h5>
+              <fbt desc="BillingAddress">Billing address</fbt>
+            </h5>
             <div className="value">
               {formatAddress(
                 cart.userInfo,
@@ -92,7 +119,9 @@ const OrderDetails = ({ cart }) => {
         </div>
         <div className="row">
           <div className="col-md-6">
-            <h5>Shipping method</h5>
+            <h5>
+              <fbt desc="ShippingMethod">Shipping method</fbt>
+            </h5>
             {get(cart, 'shipping.label')}
           </div>
         </div>
@@ -100,11 +129,13 @@ const OrderDetails = ({ cart }) => {
 
       <div className="actions">
         <div>
-          Need help?{' '}
-          <a href={`mailto:${config.supportEmailPlain}`}>Contact us</a>
+          <fbt desc="order.needHelp">Need help?</fbt>{' '}
+          <a href={`mailto:${config.supportEmailPlain}`}>
+            <fbt desc="ContactUs">Contact us</fbt>
+          </a>
         </div>
         <Link className="btn btn-primary btn-lg" to="/">
-          Continue shopping
+          <fbt desc="ContinueShipping">Continue shopping</fbt>
         </Link>
       </div>
     </div>
@@ -150,12 +181,18 @@ const Order = () => {
   }, [])
 
   if (loading || status === 'loading') {
-    return <div className="loading-fullpage">Loading</div>
+    return (
+      <div className="loading-fullpage">
+        <fbt desc="Loading">Loading</fbt>
+      </div>
+    )
   } else if (error) {
     return (
       <div className="checkout">
         <h3 className="d-md-none my-4 ml-4">{config.title}</h3>
-        <div className="user-details">Error loading order</div>
+        <div className="user-details">
+          <fbt desc="order.loadError">Error loading order</fbt>
+        </div>
         <div className="order-summary-wrap"></div>
       </div>
     )

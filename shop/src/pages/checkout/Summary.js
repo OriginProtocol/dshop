@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import get from 'lodash/get'
-
+import { fbt, FbtParam } from 'fbt-runtime'
 import CartIcon from 'components/icons/Cart'
 import Caret from 'components/icons/Caret'
 import formatPrice from 'utils/formatPrice'
@@ -27,10 +27,19 @@ const ExchangeRateNote = ({ currencyOpts }) => {
   // TODO: Get a better copy from Anna.
   return (
     <div className="note">
-      Prices are shown in {currencyOpts.currency} for reference at the exchange
-      rate of 1 {currencyOpts.storeCurrency} ={' '}
-      {currencyOpts.exchangeRate.toFixed(2)} {currencyOpts.currency}.
-      You&apos;ll be charged in {currencyOpts.storeCurrency}.
+      <fbt desc="checkout.exchangeRateNote">
+        Prices are shown in{' '}
+        <FbtParam name="currency">{currencyOpts.currency}</FbtParam> for
+        reference at the exchange rate of 1{' '}
+        <FbtParam name="actualCurrency">{currencyOpts.storeCurrency}</FbtParam>{' '}
+        ={' '}
+        <FbtParam name="exchangeRate">
+          {currencyOpts.exchangeRate.toFixed(2)}
+        </FbtParam>{' '}
+        <FbtParam name="currency2">{currencyOpts.currency}</FbtParam>.
+        You&apos;ll be charged in{' '}
+        <FbtParam name="actualCurrency2">{currencyOpts.storeCurrency}</FbtParam>.
+      </fbt>
     </div>
   )
 }
@@ -55,7 +64,11 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
       >
         <div className="txt">
           <CartIcon />
-          {`${summary ? 'Hide' : 'Show'} order summary`}
+          {summary ? (
+            <fbt desc="checkout.hideOrderSummary">Hide order summary</fbt>
+          ) : (
+            <fbt desc="checkout.showOrderSummary">Show order summary</fbt>
+          )}
           <Caret />
         </div>
         <div>
@@ -72,21 +85,33 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
         {donationForm ? <Donation cart={cart} /> : null}
         <div className="sub-total">
           <div>
-            <div>Subtotal</div>
+            <div>
+              <fbt desc="Subtotal">Subtotal</fbt>
+            </div>
             <div>
               <b>{formatPrice(cart.subTotal, currencyOpts)}</b>
             </div>
           </div>
           {!cart.donation ? null : (
             <div>
-              <div>{`Donation${donateTo ? ` to ${donateTo}` : ''}`}</div>
+              <div>
+                {donateTo ? (
+                  <fbt desc="checkout.donateTo">
+                    Donate to <FbtParam name="donateTo">{donateTo}</FbtParam>
+                  </fbt>
+                ) : (
+                  <fbt desc="checkout.donation">Donation</fbt>
+                )}
+              </div>
               <div>
                 <b>{formatPrice(cart.donation, currencyOpts)}</b>
               </div>
             </div>
           )}
           <div>
-            <div>Shipping</div>
+            <div>
+              <fbt desc="Shipping">Shipping</fbt>
+            </div>
             {cart.shipping ? (
               <div>
                 <b>
@@ -97,16 +122,19 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
                 </b>
               </div>
             ) : (
-              <div>Calculated at next step</div>
+              <div>
+                <fbt desc="checkout.shippingAtNextStep">
+                  Calculated at next step
+                </fbt>
+              </div>
             )}
           </div>
           {!cart.discount ? null : (
             <div>
-              <div>{`Discount: ${get(
-                cart,
-                'discountObj.code',
-                ''
-              ).toUpperCase()}`}</div>
+              <div>
+                <fbt desc="Discount">Discount</fbt>{' '}
+                {get(cart, 'discountObj.code', '').toUpperCase()}
+              </div>
               <div>
                 <b>{formatPrice(cart.discount, currencyOpts)}</b>
               </div>
@@ -115,7 +143,9 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
         </div>
         <div className="total">
           <div>
-            <div>Total</div>
+            <div>
+              <fbt desc="Total">Total</fbt>
+            </div>
             <div>
               <b>
                 {formatPrice(cart.total, currencyOpts)}

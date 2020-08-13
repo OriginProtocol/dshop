@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import get from 'lodash/get'
-
+import { fbt } from 'fbt-runtime'
 import { useStateValue } from 'data/state'
 import useBackendApi from 'utils/useBackendApi'
 
@@ -71,7 +71,12 @@ const OfflinePayment = ({
       }
     } catch (err) {
       console.error(err)
-      setError('Payment server error. Please try again later.')
+      setError(
+        fbt(
+          'Payment server error. Please try again later.',
+          'checkout.payment.serverError'
+        )
+      )
       onChange({
         loading: false,
         submit: 0,

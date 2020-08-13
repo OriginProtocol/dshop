@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { fbt, FbtParam } from 'fbt-runtime'
 
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
@@ -18,8 +19,12 @@ const Password = () => {
         </h1>
       </header>
       <div className="bdr" />
-      <h3>Opening Soon</h3>
-      <div className="description">Please check back soon!</div>
+      <h3>
+        <fbt desc="OpeningSoon">Opening Soon</fbt>
+      </h3>
+      <div className="description">
+        <fbt desc="password.checkBack">Please check back soon!</fbt>
+      </div>
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -39,7 +44,7 @@ const Password = () => {
             if (response.status === 200) {
               const data = await response.json()
               if (!data.success) {
-                setError('Invalid password')
+                setError(fbt('Invalid password', 'password.invalidPassword'))
               }
               dispatch({ type: 'setPasswordAuthed', authed: data.success })
             }
@@ -52,7 +57,7 @@ const Password = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className={`form-control mb-2 mr-sm-2${error ? ' is-invalid' : ''}`}
-            placeholder="Enter password"
+            placeholder={fbt('Enter password', 'password.enterPassword')}
           />
           {!error ? null : (
             <div className="invalid-feedback" style={{ display: 'block' }}>
@@ -61,10 +66,14 @@ const Password = () => {
           )}
         </div>
         <button type="submit" className="btn btn-primary">
-          Submit
+          <fbt desc="Submit">Submit</fbt>
         </button>
       </form>
-      <div className="footer">{`Copyright © ${now.getFullYear()}.`}</div>
+      <div className="footer">
+        <fbt desc="password.copyrightText">
+          Copyright © <FbtParam name="year">{now.getFullYear()}</FbtParam>.
+        </fbt>
+      </div>
     </div>
   )
 }

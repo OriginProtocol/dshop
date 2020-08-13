@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-
+import { fbt, FbtParam } from 'fbt-runtime'
 import Link from 'components/Link'
 import useConfig from 'utils/useConfig'
 
@@ -33,11 +33,17 @@ const About = () => {
     <>
       <div className="collection">
         <div className="breadcrumbs">
-          <Link to="/">Home</Link>
-          <span>About</span>
+          <Link to="/">
+            <fbt desc="Home">Home</fbt>
+          </Link>
+          <span>
+            <fbt desc="About">About</fbt>
+          </span>
         </div>
         <div className="d-flex flex-row justify-content-between align-items-center">
-          <h3>About</h3>
+          <h3>
+            <fbt desc="About">About</fbt>
+          </h3>
         </div>
       </div>
       <div className="about-page">
@@ -45,14 +51,31 @@ const About = () => {
           <div dangerouslySetInnerHTML={{ __html: about }} />
         ) : (
           <>
-            <div className="question">What is this site?</div>
-            <div className="answer">
-              This is a decentralized e-commerce site leveraging Ethereum, IPFS
-              and PGP. All content is hosted on IPFS. Payments can be made with
-              ETH, ERC-20 tokens or Credit Card.
+            <div className="question">
+              <fbt desc="about.whatIsThisSite">What is this site?</fbt>
             </div>
-            <div className="question">Who built this?</div>
             <div className="answer">
+              <fbt desc="about.aboutSite">
+                This is a decentralized e-commerce site leveraging Ethereum,
+                IPFS and PGP. All content is hosted on IPFS. Payments can be
+                made with ETH, ERC-20 tokens or Credit Card.
+              </fbt>
+            </div>
+            <div className="question">
+              <fbt desc="about.whoBuiltThis">Who built this?</fbt>
+            </div>
+            <div className="answer">
+              <fbt desc="about.builtBy">
+                This site was built by{' '}
+                <FbtParam name="about.originLink">
+                  <a href="https://www.originprotocol.com">Origin Protocol</a>
+                </FbtParam>, whose mission it is to bring about decentralized,
+                peer to peer marketplaces. It is 100% open source and available
+                on{' '}
+                <FbtParam name="about.githubLink">
+                  <a href="https://github.com/OriginProtocol/dshop">GitHub</a>
+                </FbtParam>.
+              </fbt>
               This site was built by{' '}
               <a href="https://www.originprotocol.com">Origin Protocol</a>,
               whose mission it is to bring about decentralized, peer to peer
@@ -60,22 +83,32 @@ const About = () => {
               <a href="https://github.com/OriginProtocol/dshop">GitHub</a>.
             </div>
             <div className="question">
-              How do I deploy my own decentralized e-commerce store?
+              <fbt desc="about.howToDeploy">
+                How do I deploy my own decentralized e-commerce store?
+              </fbt>
             </div>
             <div className="answer">
-              {'Visit '}
-              <a href="https://dshop.originprotocol.com">
-                https://dshop.originprotocol.com
-              </a>
-              {' to setup your own store.'}
+              <fbt desc="about.dshopLink">
+                Visit{' '}
+                <FbtParam name="email">
+                  <a href="https://dshop.originprotocol.com">
+                    https://dshop.originprotocol.com
+                  </a>
+                </FbtParam>{' '}
+                to setup your own store.
+              </fbt>
             </div>
             <div className="question">What is your support email address?</div>
             <div className="answer">
-              {`Please email `}
-              <a href={`mailto:${config.supportEmailPlain}`}>
-                {config.supportEmailPlain}
-              </a>
-              {' for support.'}
+              <fbt desc="about.emailSupport">
+                Please email{' '}
+                <FbtParam name="emailLink">
+                  <a href={`mailto:${config.supportEmailPlain}`}>
+                    {config.supportEmailPlain}
+                  </a>
+                </FbtParam>{' '}
+                for support.
+              </fbt>
             </div>
           </>
         )}

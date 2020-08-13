@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import queryString from 'query-string'
-
+import { fbt } from 'fbt-runtime'
 import SearchIcon from 'components/icons/Search'
 
 const Search = ({ onSearch }) => {
@@ -35,7 +35,7 @@ const Search = ({ onSearch }) => {
         className="form-control mr-sm-2"
         type="search"
         defaultValue={opts.q || ''}
-        placeholder="Search"
+        placeholder={fbt('Search', 'Search')}
       />
     </div>
   )
