@@ -101,7 +101,7 @@ class EtlJobProcessor {
   _manualPayment(shop) {
     const payments = shop.config.offlinePaymentMethods
     if (payments && Array.isArray(payments)) {
-      const count = payments.filter((p) => p.disabled).length
+      const count = payments.filter((p) => p.disabled === true).length
       return count > 0
     }
     return false
