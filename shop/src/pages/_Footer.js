@@ -1,5 +1,5 @@
 import React from 'react'
-
+import { fbt } from 'fbt-runtime'
 import Link from 'components/Link'
 
 import useConfig from 'utils/useConfig'
@@ -18,25 +18,34 @@ const Footer = () => {
           className="powered-by"
           href="https://www.originprotocol.com/en/dshop"
         >
-          Powered by <span>Origin Dshop</span>
+          <fbt desc="footer.poweredBy">
+            Powered by <span>Origin Dshop</span>
+          </fbt>
         </a>
         <div className="copyright">
-          &copy;{` Origin Protocol ${date.getFullYear()}`}
+          <fbt desc="footer.copyrightText">
+            &copy; Origin Protocol{' '}
+            <FbtParam name="year">{date.getFullYear()}</FbtParam>.
+          </fbt>
         </div>
         <div>
           <div className="links">
             <LocaleSelect />
             <CurrencySelect />
             {config.terms ? (
-              <Link to="/terms">Terms &amp; Conditions</Link>
+              <Link to="/terms">
+                <fbt desc="TermsAndConditions">Terms &amp; Conditions</fbt>
+              </Link>
             ) : null}
-            <Link to="/about">FAQ</Link>
+            <Link to="/about">
+              <fbt desc="FAQ">FAQ</fbt>
+            </Link>
             <a
               target="_blank"
               rel="noopener noreferrer"
               href="https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0"
             >
-              About Dshop
+              <fbt desc="footer.aboutLink">About Dshop</fbt>
             </a>
           </div>
         </div>

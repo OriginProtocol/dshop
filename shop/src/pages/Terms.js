@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { fbt } from 'fbt-runtime'
 
 import Link from 'components/Link'
 import useConfig from 'utils/useConfig'
@@ -27,11 +28,17 @@ const About = () => {
     <>
       <div className="collection">
         <div className="breadcrumbs">
-          <Link to="/">Home</Link>
-          <span>Terms</span>
+          <Link to="/">
+            <fbt desc="Home">Home</fbt>
+          </Link>
+          <span>
+            <fbt desc="Terms">Terms</fbt>
+          </span>
         </div>
         <div className="d-flex flex-row justify-content-between align-items-center">
-          <h3>Terms</h3>
+          <h3>
+            <fbt desc="Terms">Terms</fbt>
+          </h3>
         </div>
       </div>
       <div className="terms-and-conditions">

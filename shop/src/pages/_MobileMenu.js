@@ -1,6 +1,6 @@
 import React, { useRef, useState, useLayoutEffect, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-
+import { fbt } from 'fbt-runtime'
 import { useStateValue } from 'data/state'
 import Link from 'components/Link'
 import CartIcon from 'components/icons/Cart'
@@ -40,7 +40,8 @@ const MobileMenu = ({ open, onClose }) => {
         <li>
           <Link onClick={onClose} to="/cart">
             <CartIcon />
-            {`Cart${cart.items.length ? ` (${cart.items.length})` : ''}`}
+            <fbt desc="Cart">Cart</fbt>
+            {`${cart.items.length ? ` (${cart.items.length})` : ''}`}
           </Link>
         </li>
         {collections.map((cat) => (

@@ -1,4 +1,5 @@
 import React from 'react'
+import { fbt } from 'fbt-runtime'
 
 const ProcessorsList = ({ processors }) => {
   return (
@@ -11,7 +12,9 @@ const ProcessorsList = ({ processors }) => {
             <div className="description">
               {processor.description}
               {!processor.enabled ? null : (
-                <div className="connected-text">Connected</div>
+                <div className="connected-text">
+                  <fbt desc="connected">Connected</fbt>
+                </div>
               )}
             </div>
             <div className="actions">{processor.actions}</div>

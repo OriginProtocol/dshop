@@ -1,5 +1,6 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
+import { fbt } from 'fbt-runtime'
 
 import Link from 'components/Link'
 
@@ -22,14 +23,16 @@ const AffiliateBanner = () => {
     >
       <div className="logo" />
       <div className="earn">
-        Earn Origin Tokens (OGN) by referring customers
+        <fbt desc="component.custom.AffiliateBanner">
+          Earn Origin Tokens (OGN) by referring customers
+        </fbt>
       </div>
       <Link
         to="/affiliates"
         className="btn btn-dark"
         onClick={(e) => e.preventDefault()}
       >
-        Learn more
+        <fbt desc="learnMore">Learn more</fbt>
       </Link>
     </div>
   )

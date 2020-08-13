@@ -4,6 +4,7 @@ import pick from 'lodash/pick'
 import isEqual from 'lodash/isEqual'
 import get from 'lodash/get'
 import dayjs from 'dayjs'
+import { fbt } from 'fbt-runtime'
 
 import Loading from 'components/Loading'
 import Link from 'components/Link'
@@ -153,7 +154,11 @@ const Product = ({ history, location, match }) => {
   }
 
   if (!productData) {
-    return <div className="product-detail">Product not found</div>
+    return (
+      <div className="product-detail">
+        <fbt desc="product.notFound">Product not found</fbt>
+      </div>
+    )
   }
 
   const collectionParam = get(match, 'params.collection')
@@ -244,7 +249,9 @@ const Product = ({ history, location, match }) => {
     <div className="product-detail">
       {!collection ? null : (
         <div className="breadcrumbs">
-          <Link to="/">Home</Link>
+          <Link to="/">
+            <fbt desc="Home">Home</fbt>
+          </Link>
           <Link to={`/collections/${collection.id}`}>{collection.title}</Link>
           <span>{productData.title}</span>
         </div>
@@ -272,7 +279,9 @@ const Product = ({ history, location, match }) => {
           <div className="price mb-4">
             {formatPrice(get(variant, 'price', 0), currencyOpts)}
             {config.freeShipping ? (
-              <span className="shipping">FREE shipping</span>
+              <span className="shipping">
+                <fbt desc="product.freeShipping">FREE shipping</fbt>
+              </span>
             ) : null}
           </div>
           {!productOptions ||
@@ -302,11 +311,11 @@ const Product = ({ history, location, match }) => {
             {addedToCart ? (
               <>
                 <Link to="/cart" className={`btn btn-primary${lg}`}>
-                  View Cart
+                  <fbt desc="ViewCart">View Cart</fbt>
                 </Link>
                 {config.singleProduct ? null : (
                   <Link to="/" className={`btn btn-outline-primary${lg}`}>
-                    Continue Shopping
+                    <fbt desc="ContinueShopping">Continue Shopping</fbt>
                   </Link>
                 )}
               </>
@@ -321,15 +330,17 @@ const Product = ({ history, location, match }) => {
                 }}
                 className={`btn btn-outline-primary${lg}`}
               >
-                {onSale
-                  ? 'Pre-Order'
-                  : config.isAffiliate
-                  ? 'View Product'
-                  : 'Add to Cart'}
+                {onSale ? (
+                  <fbt desc="PreOrder">Pre-Order</fbt>
+                ) : config.isAffiliate ? (
+                  <fbt desc="ViewProduct">View Product</fbt>
+                ) : (
+                  <fbt desc="AddToCart">Add to Cart</fbt>
+                )}
               </button>
             ) : (
               <button className={`btn btn-outline-primary disabled${lg}`}>
-                Unavailable
+                <fbt desc="Unavailable">Unavailable</fbt>
               </button>
             )}
           </div>

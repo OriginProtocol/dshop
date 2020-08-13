@@ -1,7 +1,7 @@
 import React from 'react'
 import { useRouteMatch } from 'react-router-dom'
 import get from 'lodash/get'
-
+import { fbt } from 'fbt-runtime'
 import useConfig from 'utils/useConfig'
 import useCollections from 'utils/useCollections'
 import Link from 'components/Link'
@@ -32,11 +32,15 @@ const Categories = () => {
           </Item>
         ))}
         <li className={`db ${aboutMatch ? 'active' : ''}`}>
-          <Link to="/about">About</Link>
+          <Link to="/about">
+            <fbt desc="About">About</fbt>
+          </Link>
         </li>
         {!config.affiliates ? null : (
           <li className={`${affiliateMatch ? 'active' : ''}`}>
-            <Link to="/affiliates">Affiliates</Link>
+            <Link to="/affiliates">
+              <fbt desc="Affiliates">Affiliates</fbt>
+            </Link>
           </li>
         )}
       </ul>

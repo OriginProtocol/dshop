@@ -1,4 +1,5 @@
 import ethers from 'ethers'
+import { fbt } from 'fbt-runtime'
 
 import { NetworksByIdStr, NetworksById } from 'data/Networks'
 import DefaultTokens from './defaultTokens'
@@ -14,9 +15,9 @@ try {
 }
 
 const DefaultPaymentMethods = [
-  { id: 'crypto', label: 'Crypto Currency' },
-  { id: 'stripe', label: 'Credit Card' },
-  { id: 'paypal', label: 'PayPal' }
+  { id: 'crypto', label: fbt('Crypto Currency', 'paymentMethods.crypto') },
+  { id: 'stripe', label: fbt('Credit Card', 'paymentMethods.stripe') },
+  { id: 'paypal', label: fbt('PayPal', 'paymentMethods.paypal') }
 ]
 
 let config

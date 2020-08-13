@@ -1,5 +1,5 @@
 import React from 'react'
-
+import { fbt } from 'fbt-runtime'
 import ShippingForm from 'components/ShippingForm'
 
 const BillingAddress = ({ formState, setFormState, input, Feedback }) => {
@@ -7,8 +7,8 @@ const BillingAddress = ({ formState, setFormState, input, Feedback }) => {
   return (
     <>
       <div className="mt-4 mb-3">
-        <b>Billing Address</b>
-        <div>Select the address that matches your card or payment method.</div>
+        <b><fbt desc="checkout.payment.billingAddress">Billing Address</fbt></b>
+        <div><fbt desc="checkout.payment.selectBillingAddress">Select the address that matches your card or payment method.</fbt></div>
       </div>
       <div className="checkout-payment-method">
         <label className={`radio ${active ? 'active' : 'inactive'}`}>
@@ -19,7 +19,7 @@ const BillingAddress = ({ formState, setFormState, input, Feedback }) => {
             onChange={() => setFormState({ billingDifferent: false })}
           />
           <div>
-            <div>Same as shipping address</div>
+            <div><fbt desc="checkout.payment.sameBillingAddress">Same as shipping address</fbt></div>
           </div>
         </label>
         <label className={`radio ${active ? 'active mb-1' : 'inactive'}`}>
@@ -30,7 +30,7 @@ const BillingAddress = ({ formState, setFormState, input, Feedback }) => {
             onChange={() => setFormState({ billingDifferent: true })}
           />
           <div>
-            <div>Use a different billing address</div>
+            <div><fbt desc="checkout.payment.differentBillingAddress">Use a different billing address</fbt></div>
           </div>
         </label>
         {!formState.billingDifferent ? null : (
