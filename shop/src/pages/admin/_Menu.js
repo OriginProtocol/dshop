@@ -5,6 +5,7 @@ import { useStateValue } from 'data/state'
 import Link from 'components/Link'
 import Menu from 'components/admin/Menu'
 import * as Icons from 'components/icons/Admin'
+import LocaleSelect from 'components/LocaleSelect'
 
 const AdminMenu = () => {
   const { pathname } = useLocation()
@@ -57,6 +58,11 @@ const AdminMenu = () => {
           </Link>
         </li>
       )}
+      <li className="mt-auto">
+        <div className="px-3">
+          <LocaleSelect />
+        </div>
+      </li>
     </Menu>
   )
 }

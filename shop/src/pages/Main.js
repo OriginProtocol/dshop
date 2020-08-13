@@ -20,6 +20,8 @@ import Footer from './_Footer'
 import Affiliates from './affiliates/Affiliates'
 import Cart from './cart/Cart'
 
+import { fbt } from 'fbt-runtime'
+
 const Content = () => {
   const { config } = useConfig()
 
@@ -82,7 +84,11 @@ const Main = () => {
   const isMobile = useIsMobile()
   const [menu, setMenu] = useState(false)
   if (!config) {
-    return <div className="mt-5 text-center">Site configuration not found</div>
+    return (
+      <div className="mt-5 text-center">
+        <fbt desc="pages.Main.ConfigNotFound">Site configuration not found</fbt>
+      </div>
+    )
   }
   if (isMobile) {
     return (

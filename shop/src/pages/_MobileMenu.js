@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom'
 import { useStateValue } from 'data/state'
 import Link from 'components/Link'
 import CartIcon from 'components/icons/Cart'
+import SocialLinks from 'components/SocialLinks'
 import Search from './_Search'
 
 const Item = ({ id, children, active, onClick }) => (
@@ -47,6 +48,9 @@ const MobileMenu = ({ open, onClose }) => {
             {cat.title}
           </Item>
         ))}
+        <li>
+          <SocialLinks />
+        </li>
       </ul>
     </div>
   )
@@ -77,6 +81,10 @@ require('react-styl')(`
         text-align: center
         &:last-of-type
           border-bottom: 0
+        .social
+          padding-bottom: 0
+          display: flex
+          justify-content: center
       .search
         margin: 0 5px 0 calc(50% - 50px)
 
