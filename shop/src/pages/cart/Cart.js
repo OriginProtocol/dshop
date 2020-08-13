@@ -1,5 +1,5 @@
 import React from 'react'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 import Link from 'components/Link'
 import formatPrice from 'utils/formatPrice'
 import useIsMobile from 'utils/useIsMobile'

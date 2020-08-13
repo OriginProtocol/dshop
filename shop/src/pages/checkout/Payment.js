@@ -1,6 +1,6 @@
 import React from 'react'
 import get from 'lodash/get'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'

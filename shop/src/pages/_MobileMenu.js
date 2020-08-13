@@ -1,6 +1,6 @@
 import React, { useRef, useState, useLayoutEffect, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 import Link from 'components/Link'
 import CartIcon from 'components/icons/Cart'

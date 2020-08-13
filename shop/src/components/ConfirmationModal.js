@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 
 import useSetState from 'utils/useSetState'
 import Modal from 'components/Modal'

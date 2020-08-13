@@ -4,7 +4,7 @@ import pick from 'lodash/pick'
 import isEqual from 'lodash/isEqual'
 import get from 'lodash/get'
 import dayjs from 'dayjs'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 
 import Loading from 'components/Loading'
 import Link from 'components/Link'

@@ -1,5 +1,5 @@
 import ethers from 'ethers'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 
 import { NetworksByIdStr } from 'data/Networks'
 

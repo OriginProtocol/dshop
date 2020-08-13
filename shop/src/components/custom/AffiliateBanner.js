@@ -1,6 +1,6 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 
 import Link from 'components/Link'
 

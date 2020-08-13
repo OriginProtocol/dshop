@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import get from 'lodash/get'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 import useBackendApi from 'utils/useBackendApi'
 

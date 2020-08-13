@@ -9726,10 +9726,12 @@ fbjs@^1.0.0:
     setimmediate "^1.0.5"
     ua-parser-js "^0.7.18"
 
-fbt-runtime@^0.9.4:
-  version "0.9.4"
-  resolved "https://registry.yarnpkg.com/fbt-runtime/-/fbt-runtime-0.9.4.tgz#93a11d8879582dbad666efab5452452b9aa256f1"
-  integrity sha512-KgD6AxaXc4ti0f+Lebsjm5Gv/9mcpRW+JO47dQ5J8osIb0Mz7ScszBZgPawB16A1EcS/qa6HVKqBhuz7xNeCow==
+fbt@^0.15.0:
+  version "0.15.0"
+  resolved "https://registry.yarnpkg.com/fbt/-/fbt-0.15.0.tgz#e7aff024bdfde871b98f90c0fe7697ce7667009d"
+  integrity sha512-d/Zlg0VspTJQjHc6epHn5DnZKN4EjrqwpCbX7UiTzpqQ4VO/h0LdQDxbyVSDTvQUcQ0MWMMe4aUAtlEFxW9s9g==
+  dependencies:
+    invariant "^2.2.4"
 
 fd-slicer@~1.1.0:
   version "1.1.0"

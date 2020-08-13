@@ -1,7 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'

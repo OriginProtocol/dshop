@@ -3,7 +3,7 @@ import { Switch, Route, withRouter, useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 import queryString from 'query-string'
 
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 
 import Main from './Main'
 import Checkout from './checkout/Loader'

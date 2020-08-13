@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import get from 'lodash/get'
-import { fbt, FbtParam } from 'fbt-runtime'
+import fbt, { FbtParam } from 'fbt'
 import CartIcon from 'components/icons/Cart'
 import Caret from 'components/icons/Caret'
 import formatPrice from 'utils/formatPrice'

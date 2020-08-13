@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import get from 'lodash/get'
-import { fbt, FbtParam } from 'fbt-runtime'
+import fbt, { FbtParam } from 'fbt'
 import formatPrice from 'utils/formatPrice'
 import { formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'

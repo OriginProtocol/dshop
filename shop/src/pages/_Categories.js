@@ -1,7 +1,7 @@
 import React from 'react'
 import { useRouteMatch } from 'react-router-dom'
 import get from 'lodash/get'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 import useConfig from 'utils/useConfig'
 import useCollections from 'utils/useCollections'
 import Link from 'components/Link'

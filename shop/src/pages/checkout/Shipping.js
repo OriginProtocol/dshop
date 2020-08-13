@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import get from 'lodash/get'
-import { fbt, FbtParam } from 'fbt-runtime'
+import fbt, { FbtParam } from 'fbt'
 import { useStateValue } from 'data/state'
 import { Countries } from '@origin/utils/Countries'
 import formatPrice from 'utils/formatPrice'

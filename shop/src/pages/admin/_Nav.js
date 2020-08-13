@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'

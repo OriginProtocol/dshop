@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useReducer } from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
-import { fbt, FbtParam } from 'fbt-runtime'
+import fbt, { FbtParam } from 'fbt'
 import addData from 'data/addData'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import formatPrice from 'utils/formatPrice'
