@@ -14,27 +14,27 @@ const ShopSearch = () => {
     return null
   }
   return (
-      <form
-        className="shop-search"
-        onSubmit={(e) => {
-          e.preventDefault()
-          dispatch({ type: 'shopsPaginate', page: 1, search })
+    <form
+      className="shop-search"
+      onSubmit={(e) => {
+        e.preventDefault()
+        dispatch({ type: 'shopsPaginate', page: 1, search })
+      }}
+    >
+      <input
+        type="search"
+        className="form-control"
+        ref={searchRef}
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value)
+          if (!e.target.value) {
+            dispatch({ type: 'shopsPaginate', page: 1, search: '' })
+          }
         }}
-      >
-        <input
-          type="search"
-          className="form-control"
-          ref={searchRef}
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value)
-            if (!e.target.value) {
-              dispatch({ type: 'shopsPaginate', page: 1, search: '' })
-            }
-          }}
-          placeholder="Search..."
-        />
-      </form>
+        placeholder="Search..."
+      />
+    </form>
   )
 }
 
