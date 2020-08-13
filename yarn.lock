@@ -4541,7 +4541,7 @@ babel-plugin-emotion@^10.0.27:
     find-root "^1.1.0"
     source-map "^0.5.7"
 
-babel-plugin-fbt-runtime@^0.9.12:
+babel-plugin-fbt-runtime@0.9.12:
   version "0.9.12"
   resolved "https://registry.yarnpkg.com/babel-plugin-fbt-runtime/-/babel-plugin-fbt-runtime-0.9.12.tgz#7420c676fc7612324c3c3c88f3e35d3162927cbd"
   integrity sha512-YbSWgNzNBoRF6golLWvpSg2HA0SwKCUSoI0Syl0y846cYfq5ZzFKuCQt9zRFkmaWFQ1ncuI4wHRznchFreQi9g==
@@ -4549,7 +4549,7 @@ babel-plugin-fbt-runtime@^0.9.12:
     "@babel/core" "^7.0.0"
     fbjs "^1.0.0"
 
-babel-plugin-fbt@^0.15.1-beta:
+babel-plugin-fbt@0.15.1-beta:
   version "0.15.1-beta"
   resolved "https://registry.yarnpkg.com/babel-plugin-fbt/-/babel-plugin-fbt-0.15.1-beta.tgz#77609f71831b7a076cce7f1afe36f99937be9b6f"
   integrity sha512-iz+qV4tuxVbw5s1oRHgwG2+V84JBzgwiE0/g/EvreaZlaUARqlJ7XMmPaEM/JoqvYuoTcUe1ec+yC4sITlfMqg==
