@@ -4,6 +4,7 @@ const mv = require('mv')
 const sharp = require('sharp')
 const get = require('lodash/get')
 const pick = require('lodash/pick')
+const kebabCase = require('lodash/kebabCase')
 const { execFile } = require('child_process')
 
 const { getLogger } = require('../utils/logger')
@@ -13,6 +14,7 @@ const { DSHOP_CACHE } = require('./const')
 const { addToCollections } = require('./collections')
 const log = getLogger('utils.products')
 
+// Fields that go into product's data.json file
 const validProductFields = [
   'id',
   'title',
@@ -30,18 +32,26 @@ const validProductFields = [
   'shipInternational'
 ]
 
-const minimalistProductFields = ['id', 'title', 'description', 'price', 'image']
+// Fields that go into `products.json` file
+const minimalistProductFields = [
+  'id',
+  'title',
+  'description',
+  'price',
+  'image',
+  'hasVariants'
+]
 
-function generateUrlFriendlyId(title) {
-  return title
-    .replace(/[^a-z0-9 -]/gi, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .toLowerCase()
-}
-
+/**
+ * Generates a unique product id based on the title
+ *
+ * @param {String} title product's title
+ * @param {Model.shop} shop
+ *
+ * @returns {String}
+ */
 function getUniqueID(title, shop) {
-  const rawId = generateUrlFriendlyId(title)
+  const rawId = kebabCase(title)
 
   const products = readProductsFile(shop)
 
@@ -67,6 +77,13 @@ function getUniqueID(title, shop) {
   }
 }
 
+/**
+ * Reads shop's products.json file and returns its content
+ *
+ * @param {Model.Shop} shop
+ *
+ * @returns {Object}
+ */
 function readProductsFile(shop) {
   const outDir = path.resolve(`${DSHOP_CACHE}/${shop.authToken}/data`)
   const productsPath = `${outDir}/products.json`
@@ -75,13 +92,24 @@ function readProductsFile(shop) {
   return JSON.parse(fileData)
 }
 
+/**
+ * Writes the data to shop's products.json
+ *
+ * @param {Model.Shop} shop
+ * @param {Object} data Updated data to write back
+ */
 function writeProductsFile(shop, data) {
   const outDir = path.resolve(`${DSHOP_CACHE}/${shop.authToken}/data`)
   const productsPath = `${outDir}/products.json`
   fs.writeFileSync(productsPath, JSON.stringify(data, undefined, 2))
 }
 
-// Appends to products.json and returns an id
+/**
+ * Inserts or updates a product in the shop's `products.json` file
+ *
+ * @param {Model.Shop} shop
+ * @param {Object} productData Product data to upsert
+ */
 function appendToProductsFile(shop, productData) {
   const allProducts = readProductsFile(shop)
 
@@ -95,11 +123,33 @@ function appendToProductsFile(shop, productData) {
     }
   }
 
-  allProducts[existingIndex] = pick(productData, minimalistProductFields)
+  const hasVariants = Boolean(
+    productData.variants && productData.variants.length
+  )
+
+  const price = !hasVariants
+    ? productData.price
+    : productData.variants.reduce((min, v) => {
+        return v.price < min ? v.price : min
+      }, Number.MAX_SAFE_INTEGER)
+
+  allProducts[existingIndex] = {
+    ...pick(productData, minimalistProductFields),
+    hasVariants,
+    price
+  }
 
   writeProductsFile(shop, allProducts)
 }
 
+/**
+ * Writes the data to product's data.json file
+ * Overwrites the file, if it already exists.
+ *
+ * @param {Model.Shop} shop
+ * @param {String} productId
+ * @param {Object} data product's data
+ */
 function writeProductData(shop, productId, data) {
   const outDir = path.resolve(
     `${DSHOP_CACHE}/${shop.authToken}/data/${productId}`
@@ -112,6 +162,12 @@ function writeProductData(shop, productId, data) {
   fs.writeFileSync(dataFilePath, JSON.stringify(data, undefined, 2))
 }
 
+/**
+ * Delete's the product's data directory
+ *
+ * @param {Model.Shop} shop
+ * @param {String} productId
+ */
 async function removeProductData(shop, productId) {
   const outDir = path.resolve(
     `${DSHOP_CACHE}/${shop.authToken}/data/${productId}`
@@ -128,6 +184,19 @@ async function removeProductData(shop, productId) {
   }
 }
 
+/**
+ * Finds and moves product's images from temporary directory
+ * to its data directory
+ *
+ * @param {Model.Shop} shop
+ * @param {String} productId
+ * @param {Object} productData
+ *
+ * @returns {{
+ *  images, // An array of all updated file paths of the images
+ *  variants // Updated `productData.variants` object that replaces moved images' paths
+ * }}
+ */
 async function moveProductImages(shop, productId, productData) {
   const dataDir = shop.authToken
   const tmpDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/__tmp`)
@@ -189,6 +258,21 @@ async function moveProductImages(shop, productId, productData) {
   return { images: out, variants }
 }
 
+/**
+ * Adds to product to products.json and moves/creates all its
+ * related files to its own data directory
+ *
+ * Updates existing files, if data directory already exists
+ *
+ * @param {Model.Shop} shop
+ * @param {Object} productData
+ *
+ * @returns {{
+ *  status,
+ *  error,
+ *  product
+ * }}
+ */
 async function upsertProduct(shop, productData) {
   if (productData.id) {
     const dataDir = path.resolve(
@@ -248,6 +332,19 @@ async function upsertProduct(shop, productData) {
   }
 }
 
+/**
+ * Removes the product from products.json and deletes
+ * its data directory
+ *
+ * @param {Model.Shop} shop
+ * @param {String} productId
+ *
+ * @returns {{
+ *  status,
+ *  error,
+ *  product
+ * }}
+ */
 async function deleteProduct(shop, productId) {
   const allProducts = readProductsFile(shop)
 

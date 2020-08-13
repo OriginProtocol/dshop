@@ -249,18 +249,24 @@ const EditProduct = () => {
 
     setSubmitting(true)
 
+    const variants = (newState.variants || []).map((variant) => ({
+      ...variant,
+      price: variant.price * 100
+    }))
+
     try {
       const { product } = await post(`/products`, {
         method: 'POST',
         body: JSON.stringify({
           ...newState,
-          price: newState.price * 100,
+          price: hasOptions
+            ? newState.price * 100
+            : variants.reduce((min, v) => {
+                return v.price < min ? v.price : min
+              }, Number.MAX_SAFE_INTEGER),
           images: media.map((file) => file.path),
           collections: newState.collections,
-          variants: (newState.variants || []).map((variant) => ({
-            ...variant,
-            price: variant.price * 100
-          }))
+          variants
         })
       })
 
@@ -401,7 +407,10 @@ const EditProduct = () => {
                           })}
                         </span>
                       </div>
-                      <input {...input('price')} disabled={externallyManaged} />
+                      <input
+                        {...input('price')}
+                        disabled={externallyManaged || hasOptions}
+                      />
                     </div>
                     {Feedback('price')}
                   </div>
@@ -410,7 +419,11 @@ const EditProduct = () => {
                     <label>
                       SKU <span>(Stock Keeping Unit)</span>
                     </label>
-                    <input type="text" {...input('sku')} />
+                    <input
+                      type="text"
+                      {...input('sku')}
+                      disabled={hasOptions}
+                    />
                     {Feedback('sku')}
                   </div>
                   {/* <div className="form-group">

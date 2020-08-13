@@ -22,6 +22,7 @@ const EditVariants = ({
             <th key={`variant-opt-${opt || idx}`}>{opt}</th>
           ))}
           <th>Price</th>
+          <th>SKU</th>
           <th>Image</th>
         </tr>
       </thead>
@@ -67,6 +68,20 @@ const EditVariants = ({
                       }}
                     />
                   </div>
+                </div>
+              </td>
+              <td>
+                <div className="form-group m-0">
+                  <input
+                    value={variant.sku}
+                    className="form-control"
+                    disabled={!variant.available || disabled}
+                    onChange={(e) => {
+                      const updatedVariants = [...variants]
+                      updatedVariants[index].sku = e.target.value
+                      onChange(updatedVariants)
+                    }}
+                  />
                 </div>
               </td>
               <td>

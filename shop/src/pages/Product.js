@@ -37,6 +37,28 @@ function getImageForVariant(productData, variant) {
   }
 }
 
+/**
+ * Finds and returns the variant that has the cheapest price
+ *
+ * @param {Array<Object>} variants
+ * @returns {Object}
+ */
+function findLeastPricedVariant(variants) {
+  if (variants.length <= 1) return variants[0]
+
+  let minPrice = Number.MAX_SAFE_INTEGER
+  let foundVariant
+
+  for (const variant of variants) {
+    if (variant.price < minPrice) {
+      minPrice = variant.price
+      foundVariant = variant
+    }
+  }
+
+  return foundVariant ? foundVariant : variants[0]
+}
+
 const Product = ({ history, location, match }) => {
   const [state, setState] = useReducer(reducer, {
     loading: true,
@@ -63,7 +85,7 @@ const Product = ({ history, location, match }) => {
       const variants = get(data, 'variants', [])
       if (!variants.length) {
         variants.push({
-          ...pick(data, ['title', 'price', 'image']),
+          ...pick(data, ['title', 'price', 'image', 'sku']),
           id: 0,
           name: data.title,
           options: [],
@@ -75,7 +97,8 @@ const Product = ({ history, location, match }) => {
       }
 
       const variant =
-        variants.find((v) => String(v.id) === opts.variant) || variants[0]
+        variants.find((v) => String(v.id) === opts.variant) ||
+        findLeastPricedVariant(variants)
       const newState = {
         productData: data,
         activeImage: 0,
