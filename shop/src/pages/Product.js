@@ -38,7 +38,7 @@ function getImageForVariant(productData, variant) {
 }
 
 /**
- * Finds and returns the variant that has the least price
+ * Finds and returns the variant that has the cheapest price
  *
  * @param {Array<Object>} variants
  * @returns {Object}

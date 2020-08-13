@@ -123,8 +123,9 @@ function appendToProductsFile(shop, productData) {
     }
   }
 
-  const hasVariants =
-    productData.variants && productData.variants.length ? true : false
+  const hasVariants = Boolean(
+    productData.variants && productData.variants.length
+  )
 
   const price = !hasVariants
     ? productData.price
