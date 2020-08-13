@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
       numProducts: DataTypes.INTEGER, // Total number of products.
       numCollections: DataTypes.INTEGER, // Total number of collections.
       numDiscounts: DataTypes.INTEGER, // Total number of discounts.
-      numShipping: DataTypes.INTEGER, // Total number of shipping options.
+      numShippings: DataTypes.INTEGER, // Total number of shipping options.
       numOrders: DataTypes.INTEGER, // Total number of orders processed.
       crypto: DataTypes.BOOLEAN, // True if a wallet is connected.
       stripe: DataTypes.BOOLEAN, // True if Stripe is activated.
