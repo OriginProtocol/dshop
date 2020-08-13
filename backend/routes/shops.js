@@ -1,5 +1,4 @@
 const ethers = require('ethers')
-const omit = require('lodash/omit')
 const pick = require('lodash/pick')
 const sortBy = require('lodash/sortBy')
 
@@ -99,25 +98,74 @@ module.exports = function (router) {
     }
   )
 
-  router.get('/shop', async (req, res) => {
-    const { sellerId } = req.session
+  router.get('/shops', authUser, async (req, res) => {
+    const user = req.seller
+    const order = [['createdAt', 'desc']]
+    const attributes = [
+      'id',
+      'name',
+      'authToken',
+      'hostname',
+      'listingId',
+      'createdAt',
+      'hasChanges',
+      'networkId'
+    ]
+    const include = { model: Seller, where: { id: user.id } }
+    const limit = 10
+    const { page: pageVal, search } = req.query
+    const page = parseInt(pageVal) || 1
+    const offset = page ? (page - 1) * limit : undefined
+    let where = {}
 
-    if (!sellerId) {
-      return res.status(400).json({ success: false })
+    if (req.query.search) {
+      where = Sequelize.where(
+        Sequelize.fn('lower', Sequelize.col('name')),
+        Sequelize.Op.like,
+        `%${search.toLowerCase()}%`
+      )
     }
 
-    const rows = await Shop.findAll({ where: { sellerId } })
-
-    const shops = []
-    for (const row of rows) {
-      const shopConfig = getConfig(row.dataValues.config)
-      shops.push({
-        ...omit(row.dataValues, ['config', 'sellerId']),
-        dataUrl: shopConfig.dataUrl
+    let shops = [],
+      count
+    if (user.superuser) {
+      const allShops = await Shop.findAll({ order, limit, where, offset })
+      count = await Shop.count({ where })
+      shops = allShops.map((s) => ({
+        ...pick(s.dataValues, attributes),
+        role: 'admin'
+      }))
+    } else {
+      const allShops = await Shop.findAll({
+        attributes,
+        include,
+        order,
+        limit,
+        where,
+        offset
       })
+      count = await Shop.count({ include, where })
+      shops = allShops.map((s) => ({
+        ...pick(s.dataValues, attributes),
+        role: get(s, 'Sellers[0].SellerShop.dataValues.role')
+      }))
     }
 
-    res.json({ success: true, shops })
+    shops = shops.map((s) => {
+      const configPath = `${DSHOP_CACHE}/${s.authToken}/data/config.json`
+      const viewable = fs.existsSync(configPath)
+      return { ...s, viewable }
+    })
+
+    res.json({
+      success: true,
+      shops,
+      pagination: {
+        numPages: Math.ceil(count / limit),
+        totalCount: count,
+        perPage: limit
+      }
+    })
   })
 
   router.post(

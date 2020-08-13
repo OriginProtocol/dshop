@@ -59,6 +59,10 @@ const Chart = ({ orders = [], numDays = 10 }) => {
     })
   }, [orders])
 
+  if (!orders.length) {
+    return null
+  }
+
   return (
     <>
       <h5>{`Orders last ${numDays} days`}</h5>
