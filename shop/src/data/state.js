@@ -24,7 +24,7 @@ const defaultState = {
   dashboardStats: {},
 
   // User's preferred currency
-  preferredCurrency: 'USD',
+  preferredCurrency: '',
 
   locale: 'en_US',
 
@@ -308,6 +308,9 @@ const reducer = (state, action) => {
   newState.cart.subTotal = newState.cart.items.reduce((total, item) => {
     return total + item.quantity * item.price
   }, 0)
+
+  newState.preferredCurrency =
+    newState.preferredCurrency || get(newState, 'config.currency', 'USD')
 
   const shipping = get(newState, 'cart.shipping.amount', 0)
 
