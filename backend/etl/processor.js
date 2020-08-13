@@ -87,7 +87,7 @@ class EtlJobProcessor {
 
   _stripe(shop) {
     const key = shop.config.stripeBackend
-    return key && key.startsWith('sk_live')
+    return Boolean(key && key.startsWith('sk_live'))
   }
 
   _paypal(shop) {
@@ -175,7 +175,7 @@ class EtlJobProcessor {
     shop.dataUrl = getShopDataUrl(shop, netConfig)
 
     // Get the shop's deploy dir.
-    shop.outputDir = `${DSHOP_CACHE}/${shop.authToken}`
+    shop.outputDir = `${DSHOP_CACHE}/${shop.authToken}/data`
   }
 
   /**
