@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLocation, useRouteMatch } from 'react-router-dom'
 import get from 'lodash/get'
-import { fbt } from 'fbt-runtime'
+import { fbt, FbtParam } from 'fbt-runtime'
 
 import Link from 'components/Link'
 import Paginate from 'components/Paginate'

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import get from 'lodash/get'
-import { fbt } from 'fbt-runtime'
+import { fbt, FbtParam } from 'fbt-runtime'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import useIsMobile from 'utils/useIsMobile'
@@ -56,27 +56,34 @@ const Donation = ({ cart }) => {
           if (otherValue.match(/^[0-9]+$/)) {
             const amount = Number(otherValue)
             if (amount > 50000) {
-              setError(fbt('Amount is too large', 'checkout.donation.maxAmountError'))
+              setError(
+                fbt('Amount is too large', 'checkout.donation.maxAmountError')
+              )
             } else {
               setError('')
               dispatch({ type: 'setDonation', amount: amount * 100 })
             }
           } else {
-            setError(fbt('Please enter a number', 'checkout.donation.invalidAmount'))
+            setError(
+              fbt('Please enter a number', 'checkout.donation.invalidAmount')
+            )
           }
         }
       }}
     >
       <div>
         <div>
-          <fbt desc="checkout.donation.extraDonate">Extra Donation to <FbtParam name="donationName">
-            <a
-              href={get(config, 'donations.url')}
-              target="_blank"
-              rel="noopener noreferrer"
-              children={get(config, 'donations.name')}
-            />
-          </FbtParam></fbt>
+          <fbt desc="checkout.donation.extraDonate">
+            Extra Donation to{' '}
+            <FbtParam name="donationName">
+              <a
+                href={get(config, 'donations.url')}
+                target="_blank"
+                rel="noopener noreferrer"
+                children={get(config, 'donations.name')}
+              />
+            </FbtParam>
+          </fbt>
         </div>
         {isMobile ? null : (
           <div className="btn-group">
@@ -102,7 +109,10 @@ const Donation = ({ cart }) => {
               <input
                 type="text"
                 className={`form-control${error ? ' is-invalid' : ''}`}
-                placeholder={fbt('Other Amount', 'checkout.donations.otherAmount')}
+                placeholder={fbt(
+                  'Other Amount',
+                  'checkout.donations.otherAmount'
+                )}
                 value={otherValue}
                 onChange={(e) => {
                   const value = e.target.value

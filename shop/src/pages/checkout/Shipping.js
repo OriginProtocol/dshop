@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import get from 'lodash/get'
-import { fbt } from 'fbt-runtime'
+import { fbt, FbtParam } from 'fbt-runtime'
 import { useStateValue } from 'data/state'
 import { Countries } from '@origin/utils/Countries'
 import formatPrice from 'utils/formatPrice'
@@ -60,12 +60,20 @@ const CheckoutShipping = () => {
       <div className="d-none d-md-block">
         <h3>{config.fullTitle}</h3>
         <div className="breadcrumbs">
-          <Link to="/cart"><fbt desc="Cart">Cart</fbt></Link>
-          <Link to="/checkout"><fbt desc="Information">Information</fbt></Link>
+          <Link to="/cart">
+            <fbt desc="Cart">Cart</fbt>
+          </Link>
+          <Link to="/checkout">
+            <fbt desc="Information">Information</fbt>
+          </Link>
           <span>
-            <b><fbt desc="Shipping">Shipping</fbt></b>
+            <b>
+              <fbt desc="Shipping">Shipping</fbt>
+            </b>
           </span>
-          <span><fbt desc="Payment">Payment</fbt></span>
+          <span>
+            <fbt desc="Payment">Payment</fbt>
+          </span>
         </div>
       </div>
       <div className="checkout-review-info">
@@ -73,12 +81,17 @@ const CheckoutShipping = () => {
         <ShipTo />
       </div>
       <div className="mt-4 mb-3">
-        <b><fbt desc="ShippingMethod">Shipping Method</fbt></b>
+        <b>
+          <fbt desc="ShippingMethod">Shipping Method</fbt>
+        </b>
       </div>
       <div className="checkout-payment-method">
         {unshippableItems.length ? (
           <div className="p-3">
-            <fbt desc="checkout.shipping.unshippableItems">Sorry, these items cannot be shipped to <FbtParam name="country">{country}</FbtParam>:</fbt>
+            <fbt desc="checkout.shipping.unshippableItems">
+              Sorry, these items cannot be shipped to{' '}
+              <FbtParam name="country">{country}</FbtParam>:
+            </fbt>
             <ul className="mt-2">
               {unshippableItems.map((item, idx) => (
                 <li key={idx}>{item.title}</li>
@@ -86,10 +99,16 @@ const CheckoutShipping = () => {
             </ul>
           </div>
         ) : loading ? (
-          <div className="p-3"><fbt desc="checkout.shipping.loadingCosts">Loading shipping costs...</fbt></div>
+          <div className="p-3">
+            <fbt desc="checkout.shipping.loadingCosts">
+              Loading shipping costs...
+            </fbt>
+          </div>
         ) : !filteredShippingZones.length ? (
           <div className="p-3">
-            <fbt desc="checkout.shipping.loadError">Sorry, there was an error calculating shipping costs.</fbt>
+            <fbt desc="checkout.shipping.loadError">
+              Sorry, there was an error calculating shipping costs.
+            </fbt>
           </div>
         ) : (
           filteredShippingZones.map((zone) => (
@@ -105,14 +124,21 @@ const CheckoutShipping = () => {
                 <div className="description">{zone.detail}</div>
               </div>
               <span className="ml-auto">
-                {zone.amount ? formatPrice(zone.amount, currencyOpts) : <fbt desc="Free">Free</fbt>}
+                {zone.amount ? (
+                  formatPrice(zone.amount, currencyOpts)
+                ) : (
+                  <fbt desc="Free">Free</fbt>
+                )}
               </span>
             </label>
           ))
         )}
       </div>
       <div className="actions">
-        <Link to="/checkout">&laquo; <fbt desc="checkout.shipping.goback">Return to information</fbt></Link>
+        <Link to="/checkout">
+          &laquo;{' '}
+          <fbt desc="checkout.shipping.goback">Return to information</fbt>
+        </Link>
         {disabled ? (
           <button className="btn btn-primary btn-lg disabled">
             <fbt desc="checkout.shipping.goToPayment">Continue to payment</fbt>

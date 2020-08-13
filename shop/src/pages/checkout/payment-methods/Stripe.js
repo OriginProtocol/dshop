@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import get from 'lodash/get'
-import { fbt } from 'fbt-runtime'
+import { fbt, FbtParam } from 'fbt-runtime'
 import formatPrice from 'utils/formatPrice'
 import { formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
@@ -19,7 +19,14 @@ const PayWithStripe = injectStripe(
     const [formData, setFormData] = useState({})
 
     const currencyOpts = useCurrencyOpts()
-    const defaultButtonText = <fbt desc="checkout.payment.amount">Pay <FbtParam name="amount">{formatPrice(cart.total, currencyOpts)}</FbtParam></fbt> 
+    const defaultButtonText = (
+      <fbt desc="checkout.payment.amount">
+        Pay{' '}
+        <FbtParam name="amount">
+          {formatPrice(cart.total, currencyOpts)}
+        </FbtParam>
+      </fbt>
+    )
 
     const paymentMethods = get(config, 'paymentMethods', [])
     const stripeSelected = get(cart, 'paymentMethod.id') === 'stripe'
@@ -72,7 +79,10 @@ const PayWithStripe = injectStripe(
 
       if (!config.backend) {
         setFormData({
-          cardError: fbt('Stripe configuration error. Please try again later.', 'checkout.payment.stripe.configError')
+          cardError: fbt(
+            'Stripe configuration error. Please try again later.',
+            'checkout.payment.stripe.configError'
+          )
         })
         return
       }
@@ -153,7 +163,10 @@ const PayWithStripe = injectStripe(
               console.log(err)
               setFormData({
                 ...formData,
-                cardError: fbt('Payment server error. Please try again later.', 'checkout.payment.serverError')
+                cardError: fbt(
+                  'Payment server error. Please try again later.',
+                  'checkout.payment.serverError'
+                )
               })
               onChange(resetState)
             })

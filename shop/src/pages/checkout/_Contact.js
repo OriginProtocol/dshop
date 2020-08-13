@@ -11,7 +11,9 @@ const CheckoutContact = () => {
 
   return (
     <div className="info-row">
-      <div className="label"><fbt desc="Contact">Contact</fbt></div>
+      <div className="label">
+        <fbt desc="Contact">Contact</fbt>
+      </div>
       <div className="value">{userInfo.email}</div>
       <Link className="change" to="/checkout">
         <fbt desc="Change">Change</fbt>

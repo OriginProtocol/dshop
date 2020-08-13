@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useReducer } from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
-import { fbt } from 'fbt-runtime'
+import { fbt, FbtParam } from 'fbt-runtime'
 import addData from 'data/addData'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import formatPrice from 'utils/formatPrice'
@@ -32,23 +32,41 @@ function validate(state) {
   const newState = {}
 
   if (!state.billingFirstName) {
-    newState.billingFirstNameError = fbt('Enter a first name', 'checkout.payment.billingFirstNameError')
+    newState.billingFirstNameError = fbt(
+      'Enter a first name',
+      'checkout.payment.billingFirstNameError'
+    )
   }
   if (!state.billingLastName) {
-    newState.billingLastNameError = fbt('Enter a last name', 'checkout.payment.billingLastNameError')
+    newState.billingLastNameError = fbt(
+      'Enter a last name',
+      'checkout.payment.billingLastNameError'
+    )
   }
   if (!state.billingAddress1) {
-    newState.billingAddress1Error = fbt('Enter an address', 'checkout.payment.billingAddress1Error')
+    newState.billingAddress1Error = fbt(
+      'Enter an address',
+      'checkout.payment.billingAddress1Error'
+    )
   }
   if (!state.billingCity) {
-    newState.billingCityError = fbt('Enter a city', 'checkout.payment.billingCityError')
+    newState.billingCityError = fbt(
+      'Enter a city',
+      'checkout.payment.billingCityError'
+    )
   }
   if (!state.billingZip) {
-    newState.billingZipError = fbt('Enter a ZIP / postal code', 'checkout.payment.billingZipError')
+    newState.billingZipError = fbt(
+      'Enter a ZIP / postal code',
+      'checkout.payment.billingZipError'
+    )
   }
   const provinces = get(Countries, `${state.billingCountry}.provinces`, {})
   if (!state.billingProvince && Object.keys(provinces).length) {
-    newState.billingProvinceError = fbt('Enter a state / province', 'checkout.payment.billingProvinceError')
+    newState.billingProvinceError = fbt(
+      'Enter a state / province',
+      'checkout.payment.billingProvinceError'
+    )
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
@@ -64,7 +82,12 @@ const ChoosePayment = () => {
   const [{ cart, referrer }, dispatch] = useStateValue()
   const currencyOpts = useCurrencyOpts()
 
-  const defaultButtonText = <fbt desc="checkout.payment.amount">Pay <FbtParam name="amount">{formatPrice(cart.total, currencyOpts)}</FbtParam></fbt> 
+  const defaultButtonText = (
+    <fbt desc="checkout.payment.amount">
+      Pay{' '}
+      <FbtParam name="amount">{formatPrice(cart.total, currencyOpts)}</FbtParam>
+    </fbt>
+  )
   const [paymentState, setPaymentState] = useReducer(reducer, {
     buttonText: defaultButtonText,
     submit: 0
@@ -101,9 +124,11 @@ const ChoosePayment = () => {
   useEffect(() => {
     if (paymentState.loading) return
     setPaymentState({
-      buttonText: isOfflinePayment
-        ? <fbt desc="checkout.payment.placeOrder">Place Order</fbt>
-        : defaultButtonText
+      buttonText: isOfflinePayment ? (
+        <fbt desc="checkout.payment.placeOrder">Place Order</fbt>
+      ) : (
+        defaultButtonText
+      )
     })
   }, [isOfflinePayment, paymentState.loading])
 
@@ -169,7 +194,9 @@ const ChoosePayment = () => {
       )}
 
       <div className="actions">
-        <Link to="/checkout/shipping">&laquo; <fbt desc="checkout.payment.goback">Return to shipping</fbt></Link>
+        <Link to="/checkout/shipping">
+          &laquo; <fbt desc="checkout.payment.goback">Return to shipping</fbt>
+        </Link>
         <button
           type="submit"
           className={`btn btn-primary btn-lg${disabled ? ' disabled' : ''}`}

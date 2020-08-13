@@ -3,7 +3,13 @@ import { fbt } from 'fbt-runtime'
 const Checkout = React.lazy(() => import('./Checkout'))
 
 const Loader = () => (
-  <Suspense fallback={<div className="loading-fullpage"><fbt desc="Loading">Loading</fbt></div>}>
+  <Suspense
+    fallback={
+      <div className="loading-fullpage">
+        <fbt desc="Loading">Loading</fbt>
+      </div>
+    }
+  >
     <Checkout />
   </Suspense>
 )

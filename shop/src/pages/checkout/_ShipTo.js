@@ -16,7 +16,9 @@ const CheckoutContact = () => {
 
   return (
     <div className="info-row">
-      <div className="label"><fbt desc="checkout.shipping.shipTo">Ship to</fbt></div>
+      <div className="label">
+        <fbt desc="checkout.shipping.shipTo">Ship to</fbt>
+      </div>
       <div className="value">
         {`${address1}, ${city}, ${province}${zip}, ${country}`}
       </div>

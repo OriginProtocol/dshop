@@ -232,7 +232,7 @@
   "tS1cMRohUZyXrVqWtdfEdg==": "Free",
   "yDuVfSNrX9cqD0XvSLJZEw==": "Return to information",
   "P/Dyyx60t0zWVvOdAH81ag==": "Continue to payment",
-  "C4OHf/+8mRYZ5m399ga0gA==": "Prices are shown in {VAR_CURRENCY_B64_Y3VycmVuY3k} for reference at the exchange rate of 1 {VAR_ACTUALCURRENCY_B64_YWN0dWFsQ3VycmVuY3k} = {VAR_EXCHANGERATE_B64_ZXhjaGFuZ2VSYXRl}{VAR_CURRENCY2_B64_Y3VycmVuY3ky}. You'll be charged in {VAR_ACTUALCURRENCY2_B64_YWN0dWFsQ3VycmVuY3ky}.",
+  "n64585ZhAYvhJ/feaYPwDA==": "Prices are shown in {VAR_CURRENCY_B64_Y3VycmVuY3k} for reference at the exchange rate of 1 {VAR_ACTUALCURRENCY_B64_YWN0dWFsQ3VycmVuY3k} = {VAR_EXCHANGERATE_B64_ZXhjaGFuZ2VSYXRl} {VAR_CURRENCY2_B64_Y3VycmVuY3ky}. You'll be charged in {VAR_ACTUALCURRENCY2_B64_YWN0dWFsQ3VycmVuY3ky}.",
   "bWzGHcSJx1rqcLqGgI/VfA==": "Hide order summary",
   "+grzc55rrwZg3iFQMVUorw==": "Show order summary",
   "ShkmJv36R7LxlaBZqR4kqw==": "Subtotal",

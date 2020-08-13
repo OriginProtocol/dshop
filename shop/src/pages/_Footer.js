@@ -1,5 +1,5 @@
 import React from 'react'
-import { fbt } from 'fbt-runtime'
+import { fbt, FbtParam } from 'fbt-runtime'
 import Link from 'components/Link'
 
 import useConfig from 'utils/useConfig'

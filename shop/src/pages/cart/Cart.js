@@ -19,18 +19,28 @@ const CartItems = () => {
   return (
     <>
       <div className="items">
-        <div className="th pic"><fbt desc="Product">Product</fbt></div>
+        <div className="th pic">
+          <fbt desc="Product">Product</fbt>
+        </div>
         <div className="th title" />
-        <div className="th price"><fbt desc="Price">Price</fbt></div>
-        <div className="th quantity"><fbt desc="Quantity">Quantity</fbt></div>
-        <div className="th total"><fbt desc="Total">Total</fbt></div>
+        <div className="th price">
+          <fbt desc="Price">Price</fbt>
+        </div>
+        <div className="th quantity">
+          <fbt desc="Quantity">Quantity</fbt>
+        </div>
+        <div className="th total">
+          <fbt desc="Total">Total</fbt>
+        </div>
         {cart.items.map((item) => (
           <CartItem key={`${item.product}-${item.variant}`} item={item} />
         ))}
       </div>
       <div className="row mt-4">
         <div className="col-md-6 order-1 order-md-0">
-          <fbt desc="cart.specialInstructions">Special instructions for seller</fbt>
+          <fbt desc="cart.specialInstructions">
+            Special instructions for seller
+          </fbt>
           <textarea
             rows="5"
             className="form-control"
@@ -46,7 +56,9 @@ const CartItems = () => {
           </div>
           <div>
             <i>
-              <fbt desc="cart.shippingAtActuals">Shipping &amp; taxes calculated at checkout</fbt>
+              <fbt desc="cart.shippingAtActuals">
+                Shipping &amp; taxes calculated at checkout
+              </fbt>
             </i>
           </div>
           <div className="actions">

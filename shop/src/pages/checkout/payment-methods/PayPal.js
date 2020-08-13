@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { fbt } from 'fbt-runtime'
+import { fbt, FbtParam } from 'fbt-runtime'
 import get from 'lodash/get'
 
 import formatPrice from 'utils/formatPrice'
@@ -17,7 +17,12 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
   const { post } = useBackendApi({ authToken: true })
 
   const currencyOpts = useCurrencyOpts()
-  const defaultButtonText = <fbt desc="checkout.payment.amount">Pay <FbtParam name="amount">{formatPrice(cart.total, currencyOpts)}</FbtParam></fbt> 
+  const defaultButtonText = (
+    <fbt desc="checkout.payment.amount">
+      Pay{' '}
+      <FbtParam name="amount">{formatPrice(cart.total, currencyOpts)}</FbtParam>
+    </fbt>
+  )
 
   const [submitError, setError] = useState(null)
 
@@ -69,7 +74,12 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
       return
     } catch (err) {
       console.error(err)
-      setError(fbt('Something went wrong. Please try again later.', 'checkout.payment.paypal.genericError'))
+      setError(
+        fbt(
+          'Something went wrong. Please try again later.',
+          'checkout.payment.paypal.genericError'
+        )
+      )
     } finally {
       onChange(resetState)
     }
@@ -80,7 +90,10 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
     onChange({
       loading: true,
       disabled: true,
-      buttonText: fbt('Confirming payment...', 'checkout.payment.paypal.confirming')
+      buttonText: fbt(
+        'Confirming payment...',
+        'checkout.payment.paypal.confirming'
+      )
     })
 
     const resetState = {
@@ -105,7 +118,12 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
       onChange({ tx: encryptedData.hash, encryptedData })
     } catch (err) {
       console.error(err)
-      setError(fbt('Something went wrong. Please try again later.', 'checkout.payment.paypal.genericError'))
+      setError(
+        fbt(
+          'Something went wrong. Please try again later.',
+          'checkout.payment.paypal.genericError'
+        )
+      )
     } finally {
       onChange(resetState)
     }
@@ -156,7 +174,9 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
       {!submitError ? (
         !isSelected ? null : (
           <div style={{ margin: '-0.5rem 1rem 1rem 2.25rem' }}>
-            <fbt desc="checkout.payment.paypal.redirectionInfo">You will be redirected to PayPal to complete payment</fbt>
+            <fbt desc="checkout.payment.paypal.redirectionInfo">
+              You will be redirected to PayPal to complete payment
+            </fbt>
           </div>
         )
       ) : (

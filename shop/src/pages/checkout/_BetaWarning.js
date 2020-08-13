@@ -12,8 +12,9 @@ const BetaWarning = () => {
   return (
     <div className="alert alert-warning beta-warning">
       <fbt desc="checkout.payment.billingWarning">
-        <b>Note:</b> This site is in Beta and not yet accepting real credit cards
-        or cryptocurrency. Please use Rinkeby for crypto transactions or click{' '}
+        <b>Note:</b> This site is in Beta and not yet accepting real credit
+        cards or cryptocurrency. Please use Rinkeby for crypto transactions or
+        click{' '}
         <a
           href="#test"
           onClick={(e) => {
@@ -27,7 +28,8 @@ const BetaWarning = () => {
       </fbt>
       {!cc ? null : (
         <div className="mt-2">
-          <fbt desc="checkout.payment.testCard">Test Credit card</fbt>: 4111-1111-1111-1111, Exp 11-21, CVC 111
+          <fbt desc="checkout.payment.testCard">Test Credit card</fbt>:
+          4111-1111-1111-1111, Exp 11-21, CVC 111
         </div>
       )}
     </div>

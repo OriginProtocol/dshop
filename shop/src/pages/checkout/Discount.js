@@ -61,7 +61,9 @@ const OrderDiscount = ({ cart }) => {
       </div>
       {!error ? null : (
         <div className="invalid-feedback" style={{ display: 'block' }}>
-          <fbt desc="checkout.discounts.invalidCode">Enter a valid discount code</fbt>
+          <fbt desc="checkout.discounts.invalidCode">
+            Enter a valid discount code
+          </fbt>
         </div>
       )}
       {!existingCode ? null : (

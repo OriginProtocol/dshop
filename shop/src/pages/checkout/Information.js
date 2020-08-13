@@ -18,37 +18,70 @@ function validate(state) {
   const newState = {}
 
   if (!state.email) {
-    newState.emailError = fbt('Enter an email address', 'checkout.address.emailError')
+    newState.emailError = fbt(
+      'Enter an email address',
+      'checkout.address.emailError'
+    )
   } else if (state.email.length < 3) {
-    newState.emailError = fbt('Email is too short', 'checkout.address.emailLenError')
+    newState.emailError = fbt(
+      'Email is too short',
+      'checkout.address.emailLenError'
+    )
   }
   if (!state.firstName) {
-    newState.firstNameError = fbt('Enter a first name', 'checkout.address.firstNameError')
+    newState.firstNameError = fbt(
+      'Enter a first name',
+      'checkout.address.firstNameError'
+    )
   }
   if (!state.lastName) {
-    newState.lastNameError = fbt('Enter a last name', 'checkout.address.lastNameError')
+    newState.lastNameError = fbt(
+      'Enter a last name',
+      'checkout.address.lastNameError'
+    )
   }
   if (!state.address1) {
-    newState.address1Error = fbt('Enter an address', 'checkout.address.address1Error')
+    newState.address1Error = fbt(
+      'Enter an address',
+      'checkout.address.address1Error'
+    )
   } else if (state.address1.length > 80) {
-    newState.address1Error = fbt('Address too long', 'checkout.address.address1LenError')
+    newState.address1Error = fbt(
+      'Address too long',
+      'checkout.address.address1LenError'
+    )
   }
   if (state.address2 && state.address2.length > 25) {
-    newState.address2Error = fbt('Address too long', 'checkout.address.address2Error')
+    newState.address2Error = fbt(
+      'Address too long',
+      'checkout.address.address2Error'
+    )
   }
   if (!state.city) {
     newState.cityError = fbt('Enter a city', 'checkout.address.cityError')
   } else if (state.city.length > 32) {
-    newState.cityError = fbt('City name too long', 'checkout.address.cityLenError')
+    newState.cityError = fbt(
+      'City name too long',
+      'checkout.address.cityLenError'
+    )
   }
   const provinces = get(Countries, `${state.country}.provinces`, {})
   if (!state.province && Object.keys(provinces).length) {
-    newState.provinceError = fbt('Enter a state / province', 'checkout.address.provinceError')
+    newState.provinceError = fbt(
+      'Enter a state / province',
+      'checkout.address.provinceError'
+    )
   }
   if (!state.zip) {
-    newState.zipError = fbt('Enter a ZIP / postal code', 'checkout.address.zipError')
+    newState.zipError = fbt(
+      'Enter a ZIP / postal code',
+      'checkout.address.zipError'
+    )
   } else if (state.zip.length > 10) {
-    newState.zipError = fbt('ZIP / postal code too long', 'checkout.address.zipLenError')
+    newState.zipError = fbt(
+      'ZIP / postal code too long',
+      'checkout.address.zipLenError'
+    )
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
@@ -72,12 +105,20 @@ const CheckoutInfo = () => {
       <div className="d-none d-md-block">
         <h3>{config.fullTitle}</h3>
         <div className="breadcrumbs">
-          <Link to="/cart"><fbt desc="Cart">Cart</fbt></Link>
+          <Link to="/cart">
+            <fbt desc="Cart">Cart</fbt>
+          </Link>
           <span>
-            <b><fbt desc="Information">Information</fbt></b>
+            <b>
+              <fbt desc="Information">Information</fbt>
+            </b>
           </span>
-          <span><fbt desc="Shipping">Shipping</fbt></span>
-          <span><fbt desc="Payment">Payment</fbt></span>
+          <span>
+            <fbt desc="Shipping">Shipping</fbt>
+          </span>
+          <span>
+            <fbt desc="Payment">Payment</fbt>
+          </span>
         </div>
       </div>
       <form
@@ -97,12 +138,18 @@ const CheckoutInfo = () => {
         }}
       >
         <div className="mb-3">
-          <b><fbt desc="ContactInformation">Contact information</fbt></b>
+          <b>
+            <fbt desc="ContactInformation">Contact information</fbt>
+          </b>
         </div>
         <div className="form-row">
           <div className="form-group col-md-6 mb-0">
             <div className="form-group">
-              <input type="email" placeholder={fbt('Email', 'Email')} {...input('email')} />
+              <input
+                type="email"
+                placeholder={fbt('Email', 'Email')}
+                {...input('email')}
+              />
               {Feedback('email')}
             </div>
           </div>
@@ -116,13 +163,17 @@ const CheckoutInfo = () => {
           </div>
         </div>
         <div className="mb-3">
-          <b><fbt desc="ShippingAddress">Shipping Address</fbt></b>
+          <b>
+            <fbt desc="ShippingAddress">Shipping Address</fbt>
+          </b>
         </div>
 
         <ShippingForm {...{ state, setState, input, Feedback }} />
 
         <div className="actions">
-          <Link to="/cart">&laquo; <fbt desc="checkout.goback">Return to cart</fbt></Link>
+          <Link to="/cart">
+            &laquo; <fbt desc="checkout.goback">Return to cart</fbt>
+          </Link>
           <button type="submit" className="btn btn-primary btn-lg">
             <fbt desc="checkout.continueShopping">Continue to shipping</fbt>
           </button>

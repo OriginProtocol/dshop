@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { fbt } from 'fbt-runtime'
+import { fbt, FbtParam } from 'fbt-runtime'
 
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'

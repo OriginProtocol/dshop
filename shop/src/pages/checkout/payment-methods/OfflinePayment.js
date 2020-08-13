@@ -71,7 +71,12 @@ const OfflinePayment = ({
       }
     } catch (err) {
       console.error(err)
-      setError(fbt('Payment server error. Please try again later.', 'checkout.payment.serverError'))
+      setError(
+        fbt(
+          'Payment server error. Please try again later.',
+          'checkout.payment.serverError'
+        )
+      )
       onChange({
         loading: false,
         submit: 0,
