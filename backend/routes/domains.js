@@ -3,13 +3,52 @@ const get = require('lodash/get')
 
 const { getLogger } = require('../utils/logger')
 const { dnsResolve, isValidDNSName, hasNS } = require('../utils/dns')
-const { Network, ShopDeployment } = require('../models')
+const { Network, ShopDeployment, ShopDomain } = require('../models')
+const { ShopDomainStatuses } = require('../enums')
 
 const { authSellerAndShop, authRole } = require('./_auth')
 
 const log = getLogger('routes.domains')
 
 module.exports = function (router) {
+  router.get(
+    '/shop/domains',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const domains = await ShopDomain.findAll({
+        where: { shopId: req.shop.id }
+      })
+      res.json({ success: true, domains })
+    }
+  )
+
+  router.post(
+    '/shop/domains',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const domain = await ShopDomain.create({
+        shopId: req.shop.id,
+        domain: req.body.domain,
+        status: ShopDomainStatuses.Pending
+      })
+      res.json({ success: true, domain })
+    }
+  )
+
+  router.delete(
+    '/shop/domains/:domainId',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const domain = await ShopDomain.destroy({
+        where: { id: req.params.domainId, shopId: req.shop.id }
+      })
+      res.json({ success: true, domain })
+    }
+  )
+
   router.post(
     '/domains/verify-dns',
     authSellerAndShop,
