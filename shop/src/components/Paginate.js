@@ -5,27 +5,35 @@ import queryString from 'query-string'
 
 import usePaginate from 'utils/usePaginate'
 
-const Paginate = ({ total, perPage }) => {
+const Paginate = ({ total, perPage, onChange, page }) => {
   const history = useHistory()
   const location = useLocation()
   const opts = queryString.parse(location.search)
-  const { page, perPage: perPageDefault } = usePaginate()
+  const { page: pageParam, perPage: perPageDefault } = usePaginate()
   const perPageVal = perPage || perPageDefault
   const pages = Math.ceil(total / perPageVal)
 
+  if (!page) {
+    page = pageParam
+  }
+
   if (!total || !pages || pages <= 1) return null
 
-  const hasPrevious = page > pages
+  const hasPrevious = page > 1
   const hasNext = page < pages
 
   function handlePage(newPage) {
-    history.push({
-      pathname: location.pathname,
-      search: queryString.stringify({
-        ...opts,
-        page: newPage === 1 ? undefined : newPage
+    if (onChange) {
+      onChange(newPage)
+    } else {
+      history.push({
+        pathname: location.pathname,
+        search: queryString.stringify({
+          ...opts,
+          page: newPage === 1 ? undefined : newPage
+        })
       })
-    })
+    }
     window.scrollTo(0, 0)
   }
 

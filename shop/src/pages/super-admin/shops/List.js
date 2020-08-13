@@ -5,8 +5,10 @@ import dayjs from 'dayjs'
 
 import { useStateValue } from 'data/state'
 import { NetworksById } from 'data/Networks'
+import useShops from 'utils/useShops'
 
 import Paginate from 'components/Paginate'
+import ShopSearch from 'components/admin/ShopSearch'
 
 function networkName(shop) {
   const network = get(NetworksById, shop.networkId, {})
@@ -14,14 +16,18 @@ function networkName(shop) {
 }
 
 const AdminShops = () => {
-  const [{ admin }] = useStateValue()
+  const [, dispatch] = useStateValue()
   const history = useHistory()
-
-  const shops = get(admin, 'shops', [])
+  const { shops, shopsPagination } = useShops()
 
   return (
     <>
-      <h3 className="admin-title">Shops</h3>
+      <h3 className="admin-title">
+        Shops
+        <div className="ml-3">
+          <ShopSearch />
+        </div>
+      </h3>
       <table className="table admin-discounts table-hover">
         <thead>
           <tr>
@@ -48,7 +54,12 @@ const AdminShops = () => {
         </tbody>
       </table>
 
-      <Paginate total={shops.length} />
+      <Paginate
+        total={shopsPagination.totalCount}
+        perPage={shopsPagination.perPage}
+        page={shopsPagination.page}
+        onChange={(page) => dispatch({ type: 'shopsPaginate', page })}
+      />
     </>
   )
 }

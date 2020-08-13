@@ -54,9 +54,11 @@ const AdminDashboard = () => {
         </div>
         {/* <h5 className="ml-4">{`${formatPrice(totalRevenue * 0.05)} profit`}</h5> */}
       </div>
-      <div className="mt-4">
-        <Chart orders={orders} />
-      </div>
+      {!totalOrders ? null : (
+        <div className="mt-4">
+          <Chart orders={orders} />
+        </div>
+      )}
       {get(topProducts, 'length', 0) === 0 ? null : (
         <table className="table admin-products mt-4">
           <thead>

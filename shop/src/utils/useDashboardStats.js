@@ -4,7 +4,7 @@ import { useStateValue } from 'data/state'
 import useBackendApi from 'utils/useBackendApi'
 
 const useDashboardStats = (range, sort) => {
-  const [{ dashboardStats, reload }, dispatch] = useStateValue()
+  const [{ dashboardStats, config }, dispatch] = useStateValue()
   const { get } = useBackendApi({ authToken: true })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
@@ -25,13 +25,9 @@ const useDashboardStats = (range, sort) => {
 
   useEffect(() => {
     fetchStats(range, sort)
-  }, [range, sort, reload.dashboardStats])
+  }, [range, sort, config.activeShop])
 
-  const reloadStats = () => {
-    dispatch({ type: 'reload', target: 'dashboardStats' })
-  }
-
-  return { dashboardStats, loading, error, reload: reloadStats }
+  return { dashboardStats, loading, error }
 }
 
 export default useDashboardStats

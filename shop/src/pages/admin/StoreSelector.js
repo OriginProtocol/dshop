@@ -1,21 +1,23 @@
-import React, { useState } from 'react'
+import React from 'react'
 import get from 'lodash/get'
 
+import { useStateValue } from 'data/state'
+import useShops from 'utils/useShops'
 import Link from 'components/Link'
+import ShopSearch from 'components/admin/ShopSearch'
+import Paginate from 'components/Paginate'
 import Nav from './_Nav'
 
-const StoreSelector = ({ setActiveShop, admin, newShop, setNewShop }) => {
-  const allShops = get(admin, 'shops', [])
-  const [search, setSearch] = useState('')
+const StoreSelector = ({ setActiveShop, newShop, setNewShop }) => {
+  const [{ admin }, dispatch] = useStateValue()
+  const { shops, shopsPagination } = useShops()
   const superuser = get(admin, 'superuser', false)
-  const shops = allShops.filter(
-    (s) => s.name.toLowerCase().indexOf(search.toLowerCase()) >= 0
-  )
+
   return (
     <div className="admin">
       <Nav newShop={newShop} setNewShop={setNewShop} />
 
-      {!allShops.length ? (
+      {!admin.shopsCount ? (
         <div className="shop-chooser-empty">
           <div>
             <h1>Welcome to Dshop</h1>
@@ -33,17 +35,7 @@ const StoreSelector = ({ setActiveShop, admin, newShop, setNewShop }) => {
       ) : (
         <div className="shop-chooser">
           <h3>Select a store</h3>
-          {allShops.length < 15 ? null : (
-            <div className="shop-search">
-              <input
-                type="search"
-                className="form-control"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search..."
-              />
-            </div>
-          )}
+          <ShopSearch />
           {shops.length > 0 ? null : (
             <div className="mt-4 text-center muted">No results</div>
           )}
@@ -68,6 +60,12 @@ const StoreSelector = ({ setActiveShop, admin, newShop, setNewShop }) => {
               </Link>
             )}
           </div>
+          <Paginate
+            total={shopsPagination.totalCount}
+            perPage={shopsPagination.perPage}
+            page={shopsPagination.page}
+            onChange={(page) => dispatch({ type: 'shopsPaginate', page })}
+          />
         </div>
       )}
     </div>

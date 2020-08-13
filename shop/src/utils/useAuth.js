@@ -7,7 +7,11 @@ import useConfig from 'utils/useConfig'
 
 import { isLoggedIn } from 'utils/auth'
 
-const getAuth = memoize((as, get) => get('/auth', { suppressError: true }))
+const getAuth = memoize((as, get, activeShop) =>
+  get(`/auth${activeShop ? `?active=${activeShop}` : ''}`, {
+    suppressError: true
+  })
+)
 
 function useAuth(opts = {}) {
   const [loading, setLoading] = useState(true)
@@ -18,8 +22,7 @@ function useAuth(opts = {}) {
 
   const backendUrl = _get(admin, 'backendUrl', window.location.origin)
 
-  const shops = _get(admin, 'shops', [])
-  const hasActiveShop = shops.find((s) => s.authToken === config.activeShop)
+  const hasActiveShop = _get(admin, 'shopAuthed')
   const notLoggedIn = !isLoggedIn(admin)
 
   useEffect(() => {
@@ -38,18 +41,15 @@ function useAuth(opts = {}) {
     if (!opts.only || opts.only()) {
       setLoading(true)
       localStorage.isAdmin = true
-      getAuth(`${reload.auth}-${backendUrl}`, get)
+      const key = `${reload.auth}-${backendUrl}-${config.activeShop}`
+      getAuth(key, get, config.activeShop)
         .then((auth) => {
           if (!isSubscribed) return
           setLoading(false)
-          const hasActiveShop = _get(auth, 'shops', []).find(
-            (s) => s.authToken === config.activeShop
-          )
-          // Reset active shop if it doesn't appear in list of authorized shops
-          if (!hasActiveShop) {
+          // Reset active shop if it is anauthorized
+          if (!_get(auth, 'shopAuthed')) {
             setActiveShop(null)
           }
-
           dispatch({ type: 'setAuth', auth })
         })
         .catch((err) => {

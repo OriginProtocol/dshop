@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
+import useShops from 'utils/useShops'
 import useRedirect from 'utils/useRedirect'
 
 import Caret from 'components/icons/Caret'
 import Popover from 'components/Popover'
+import ShopSearch from 'components/admin/ShopSearch'
 
 // Sets width when SVG images don't have width set explicitly
 const AutoWidthImg = ({ src }) => {
@@ -27,25 +28,20 @@ const AutoWidthImg = ({ src }) => {
 
 const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
   const [shouldClose, setShouldClose] = useState(0)
-  const [search, setSearch] = useState('')
   const { config, setActiveShop } = useConfig()
-  const [{ admin }] = useStateValue()
+  const [{ admin }, dispatch] = useStateValue()
   const redirectTo = useRedirect()
   const location = useLocation()
-  const allShops = get(admin, 'shops', [])
+  const { shops, shopsPagination } = useShops()
 
   const isSuperAdmin = location.pathname.indexOf('/super-admin') === 0
   const isAdmin = location.pathname.indexOf('/admin') === 0 || isSuperAdmin
 
-  if (!allShops.length || (!config.activeShop && !superAdmin)) {
+  if (!config.activeShop && !superAdmin) {
     return null
   }
 
   const logo = config.logo ? `${config.dataSrc}${config.logo}` : ''
-
-  const shops = allShops.filter(
-    (s) => s.name.toLowerCase().indexOf(search.toLowerCase()) >= 0
-  )
 
   return (
     <Popover
@@ -68,17 +64,7 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
       }
     >
       <>
-        {allShops.length < 15 ? null : (
-          <div className="shop-search">
-            <input
-              type="search"
-              className="form-control form-control-sm"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search..."
-            />
-          </div>
-        )}
+        <ShopSearch />
         {shops.length > 0 ? null : (
           <div className="pb-3 text-center muted">No results</div>
         )}
@@ -103,31 +89,74 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
             {shop.name}
           </div>
         ))}
-        {!admin.superuser ? null : (
-          <div
-            className="shop-el bt"
-            onClick={() => {
-              setActiveShop()
-              setShouldClose(shouldClose + 1)
-              redirectTo('/super-admin/shops')
-            }}
-          >
-            <img src="images/green-checkmark.svg" />
-            Super Admin
+
+        <div className="actions">
+          {shopsPagination.totalCount <= shopsPagination.perPage ? null : (
+            <div style={{ margin: '-0.5rem 0 1rem 0' }}>
+              <a
+                href="#prev"
+                className={shopsPagination.page === 1 ? 'text-muted' : ''}
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (shopsPagination.page === 1) return
+                  dispatch({
+                    type: 'shopsPaginate',
+                    page: shopsPagination.page - 1
+                  })
+                }}
+              >
+                Prev
+              </a>
+              <div>{`Page ${shopsPagination.page} of ${shopsPagination.numPages}`}</div>
+              <a
+                href="#prev"
+                className={
+                  shopsPagination.page === shopsPagination.numPages
+                    ? 'text-muted'
+                    : ''
+                }
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (shopsPagination.page === shopsPagination.numPages) return
+                  dispatch({
+                    type: 'shopsPaginate',
+                    page: shopsPagination.page + 1
+                  })
+                }}
+              >
+                Next
+              </a>
+            </div>
+          )}
+          <div>
+            {!onNewShop ? null : (
+              <a
+                className="new-shop-link"
+                onClick={(e) => {
+                  e.preventDefault()
+                  setShouldClose(shouldClose + 1)
+                  onNewShop()
+                }}
+              >
+                <div className="add-shop-icon">+</div>
+                Add a shop
+              </a>
+            )}
+            {!admin.superuser ? null : (
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault()
+                  setActiveShop()
+                  setShouldClose(shouldClose + 1)
+                  redirectTo('/super-admin/shops')
+                }}
+              >
+                Super Admin
+              </a>
+            )}
           </div>
-        )}
-        {!onNewShop ? null : (
-          <div
-            className="new-shop-link"
-            onClick={() => {
-              setShouldClose(shouldClose + 1)
-              onNewShop()
-            }}
-          >
-            <div className="add-shop-icon">+</div>
-            Add a shop
-          </div>
-        )}
+        </div>
       </>
     </Popover>
   )
@@ -161,34 +190,41 @@ require('react-styl')(`
       border-bottom: 1px solid #dfe2e6
       margin-bottom: 1rem
 
-    .new-shop-link
-      cursor: pointer
-      display: flex
+    .actions
+      border-top: solid 1px #dfe2e6
+      padding-top: 1.25rem
+      margin-top: 0.25rem
       align-items: center
       font-size: 14px
-      color: #3b80ee
-      &:not(:first-child)
-        border-top: 1px solid #cdd7e0
-        padding-top: 1rem
-        margin-top: 1rem
-      .add-shop-icon
-        border: solid 1px #3b80ee
-        border-radius: 50%
-        height: 18px
-        width: 18px
+      > div
+        display: flex
+        justify-content: space-between
+      a
+        color: #3b80ee
+
+      .new-shop-link
+        cursor: pointer
         display: flex
         align-items: center
-        justify-content: center
-        margin-right: 5px
+        &:not(:first-child)
+          border-top: 1px solid #cdd7e0
+          padding-top: 1rem
+          margin-top: 1rem
+        .add-shop-icon
+          border: solid 1px #3b80ee
+          border-radius: 50%
+          height: 18px
+          width: 18px
+          display: flex
+          align-items: center
+          justify-content: center
+          margin-right: 5px
 
     .shop-el
       display: flex
       align-items: center
       font-size: 1rem
       cursor: pointer
-      &.bt
-        border-top: solid 1px #cdd7e0
-        padding-top: 0.75rem
       &:not(:last-child)
         margin-bottom: 1rem
       img

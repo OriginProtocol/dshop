@@ -1,6 +1,5 @@
 import React from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
-import get from 'lodash/get'
 import fbt from 'fbt'
 
 import { useStateValue } from 'data/state'
@@ -28,10 +27,7 @@ const Nav = ({ newShop, setNewShop, only }) => {
   const isSuperAdmin = location.pathname.indexOf('/super-admin') === 0
   const isAdmin = location.pathname.indexOf('/admin') === 0 || isSuperAdmin
 
-  const shops = get(admin, 'shops', [])
-  const activeShop = shops.find((s) => s.authToken === config.activeShop)
-
-  if (!activeShop && !isAdmin) {
+  if (!config.activeShop && !isAdmin) {
     return <Redirect to="/admin" />
   }
 
@@ -52,7 +48,7 @@ const Nav = ({ newShop, setNewShop, only }) => {
             onNewShop={setNewShop ? () => setNewShop(true) : null}
           />
         </h1>
-        {!activeShop ? null : (
+        {!config.activeShop ? null : (
           <div className="btn-group btn-group-sm mx-auto admin-switcher">
             <button
               type="button"
@@ -66,9 +62,7 @@ const Nav = ({ newShop, setNewShop, only }) => {
               <fbt desc="Admin">Admin</fbt>
             </button>
             <SwitchToStorefront
-              className={`btn btn-${isAdmin ? 'outline-' : ''}primary px-4${
-                activeShop.viewable ? '' : ' disabled'
-              }`}
+              className={`btn btn-${isAdmin ? 'outline-' : ''}primary px-4`}
             >
               <fbt desc="Storefront">Storefront</fbt>
             </SwitchToStorefront>

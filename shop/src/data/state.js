@@ -17,6 +17,8 @@ const defaultState = {
   shippingZones: [],
   orders: [],
   ordersPagination: {},
+  shops: [],
+  shopsPagination: {},
   discounts: [],
   toasts: [],
   reload: {},
@@ -160,6 +162,14 @@ const reducer = (state, action) => {
   } else if (action.type === 'setOrders') {
     newState = set(newState, `orders`, action.orders)
     newState = set(newState, `ordersPagination`, action.pagination)
+  } else if (action.type === 'setShops') {
+    newState = set(newState, `shops`, action.shops)
+    newState = set(newState, `shopsPagination`, action.pagination)
+  } else if (action.type === 'shopsPaginate') {
+    newState = set(newState, `shopsPagination`, {
+      ...state.shopsPagination,
+      ...pick(action, ['page', 'search'])
+    })
   } else if (action.type === 'setDiscounts') {
     newState = set(newState, `discounts`, action.discounts)
   } else if (action.type === 'updateUserInfo') {
@@ -200,13 +210,6 @@ const reducer = (state, action) => {
   } else if (action.type === 'orderComplete') {
     newState = set(newState, 'cart', cloneDeep(defaultState.cart))
   } else if (action.type === 'setAuth') {
-    const activeShop = get(state, 'config.activeShop')
-    if (activeShop) {
-      const shop = get(action.auth, 'shops', []).find(
-        (s) => s.authToken === activeShop
-      )
-      action.auth.role = get(shop, 'role')
-    }
     const backendUrl = get(action.auth, 'backendUrl')
     if (backendUrl) {
       newState = set(newState, 'config.backend', backendUrl)
@@ -270,13 +273,18 @@ const reducer = (state, action) => {
     }
     newState = cloneDeep(getInitialState(activeShop))
     newState = set(newState, 'config', action.config)
-    newState = set(newState, 'admin', cloneDeep(state.admin))
-    newState = set(newState, 'toasts', cloneDeep(state.toasts))
+    const keep = pick(state, [
+      'admin',
+      'toasts',
+      'shops',
+      'shopsPagination',
+      'reload'
+    ])
+    newState = { ...newState, ...keep }
     const backendUrl = get(state, 'admin.backendUrl')
     if (backendUrl) {
       newState = set(newState, 'config.backend', backendUrl)
     }
-    newState = set(newState, 'reload', state.reload)
   } else if (action.type === 'setConfigSimple') {
     newState = set(newState, 'config', action.config)
   } else if (action.type === 'toast') {
