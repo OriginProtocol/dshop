@@ -3,7 +3,7 @@ import { useLocation, useRouteMatch } from 'react-router-dom'
 import queryString from 'query-string'
 import get from 'lodash/get'
 import Styl from 'react-styl'
-import { fbt, FbtParam } from 'fbt-runtime'
+import fbt, { FbtParam } from 'fbt'
 
 import Link from 'components/Link'
 import CheckCircle from 'components/icons/CheckCircle'

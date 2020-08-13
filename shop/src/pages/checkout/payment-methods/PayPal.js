@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { fbt, FbtParam } from 'fbt-runtime'
+import fbt, { FbtParam } from 'fbt'
 import get from 'lodash/get'
 
 import formatPrice from 'utils/formatPrice'

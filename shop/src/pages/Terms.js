@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 
 import Link from 'components/Link'
 import useConfig from 'utils/useConfig'

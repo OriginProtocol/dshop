@@ -1,5 +1,5 @@
 import React from 'react'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 import ShippingForm from 'components/ShippingForm'
 
 const BillingAddress = ({ formState, setFormState, input, Feedback }) => {

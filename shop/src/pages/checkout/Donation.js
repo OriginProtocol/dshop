@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import get from 'lodash/get'
-import { fbt, FbtParam } from 'fbt-runtime'
+import fbt, { FbtParam } from 'fbt'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import useIsMobile from 'utils/useIsMobile'

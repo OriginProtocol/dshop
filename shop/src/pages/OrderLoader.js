@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 
 const Order = React.lazy(() => import('./Order'))
 

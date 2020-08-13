@@ -20,7 +20,7 @@ import Footer from './_Footer'
 import Affiliates from './affiliates/Affiliates'
 import Cart from './cart/Cart'
 
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 
 const Content = () => {
   const { config } = useConfig()

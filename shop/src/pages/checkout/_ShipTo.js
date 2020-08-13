@@ -1,5 +1,5 @@
 import React from 'react'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'

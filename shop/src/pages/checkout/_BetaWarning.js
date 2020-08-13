@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 import useConfig from 'utils/useConfig'
 
 const BetaWarning = () => {

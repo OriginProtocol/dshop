@@ -1,4 +1,4 @@
-import { fbt } from 'fbt-runtime'
+import fbt from 'fbt'
 
 export const Currencies = [
   ['fiat-USD', 'USD', '$'],

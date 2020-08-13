@@ -1,17 +1,16 @@
 import React from 'react'
 
 import { useStateValue } from 'data/state'
+import setLocale from 'utils/setLocale'
 import Languages from 'data/Languages'
 
 const LocaleSelect = () => {
   const [{ locale }, dispatch] = useStateValue()
 
-  const onChange = (e) => {
+  const onChange = async (e) => {
     const locale = e.target.value
-    dispatch({
-      type: 'setLocale',
-      locale
-    })
+    await setLocale(locale)
+    dispatch({ type: 'setLocale', locale })
   }
 
   return (
