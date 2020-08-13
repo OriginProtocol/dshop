@@ -100,7 +100,7 @@ module.exports = function (router) {
 
   router.get('/shops', authUser, async (req, res) => {
     const user = req.seller
-    const order = [['createdAt', 'desc']]
+    const order = [['id', 'desc']]
     const attributes = [
       'id',
       'name',
