@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react'
+import fbt from 'fbt'
 
 import useShopConfig from 'utils/useShopConfig'
 import useEmailAppsList from 'utils/useEmailAppsList'
 import { useStateValue } from 'data/state'
 import maskSecret from 'utils/maskSecret'
 
-import Tabs from '../_Tabs'
+import Link from 'components/Link'
 import PrintfulModal from './PrintfulModal'
 import PrintfulSync from './PrintfulSync'
 import SendgridModal from './SendgridModal'
@@ -97,8 +98,13 @@ const AppSettings = () => {
 
   return (
     <>
-      <h3 className="admin-title">Settings</h3>
-      <Tabs />
+      <h3 className="admin-title with-border">
+        <Link to="/admin/settings" className="muted">
+          <fbt desc="Settings">Settings</fbt>
+        </Link>
+        <span className="chevron" />
+        Apps
+      </h3>
       <ProcessorsList processors={appsList} />
       {!connectModal ? null : (
         <ModalToRender

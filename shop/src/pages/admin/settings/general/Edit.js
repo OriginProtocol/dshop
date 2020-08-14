@@ -1,4 +1,5 @@
 import React, { useReducer, useEffect, useState } from 'react'
+import fbt from 'fbt'
 import get from 'lodash/get'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
@@ -12,7 +13,7 @@ import useBackendApi from 'utils/useBackendApi'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
 
-import Tabs from '../_Tabs'
+import Link from 'components/Link'
 import CustomDomain from './_CustomDomain'
 import UploadFile from './_UploadFile'
 import SocialLinks from './social-links/SocialLinks'
@@ -141,12 +142,15 @@ const GeneralSettings = () => {
         }
       }}
     >
-      <h3 className="admin-title">
-        Settings
+      <h3 className="admin-title with-border">
+        <Link to="/admin/settings" className="muted">
+          <fbt desc="Settings">Settings</fbt>
+        </Link>
+        <span className="chevron" />
+        General
         {actions}
       </h3>
-      <Tabs />
-      <div className="row mt-4">
+      <div className="row">
         <div className="shop-settings col-md-8 col-lg-9">
           <div className="form-group">
             <label>Store Name</label>

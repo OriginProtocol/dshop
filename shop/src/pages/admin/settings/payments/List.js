@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
+import fbt from 'fbt'
 import pickBy from 'lodash/pickBy'
 import uniqBy from 'lodash/uniqBy'
 import get from 'lodash/get'
@@ -12,7 +13,7 @@ import DefaultTokens from 'data/defaultTokens'
 import { useStateValue } from 'data/state'
 
 import * as Icons from 'components/icons/Admin'
-import Tabs from '../_Tabs'
+import Link from 'components/Link'
 import Web3Modal from './Web3Modal'
 import StripeModal from './StripeModal'
 import UpholdModal from './UpholdModal'
@@ -184,11 +185,14 @@ const PaymentSettings = () => {
         }
       }}
     >
-      <h3 className="admin-title">
-        Settings
+      <h3 className="admin-title with-border">
+        <Link to="/admin/settings" className="muted">
+          <fbt desc="Settings">Settings</fbt>
+        </Link>
+        <span className="chevron" />
+        Payments
         <div className="actions">{actions}</div>
       </h3>
-      <Tabs />
       <div className="shop-settings processors-list">
         <div className="select-currency">
           <h4>Store currency</h4>

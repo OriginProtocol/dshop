@@ -13,7 +13,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
 
-import Tabs from '../_Tabs'
+import Link from 'components/Link'
 import ShippingDestination from './_ShippingDestination'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
@@ -305,11 +305,14 @@ const Shipping = () => {
   return (
     <form onSubmit={submitForm} autoComplete="false">
       <div className="shipping-settings">
-        <h3 className="admin-title">
-          <fbt desc="Settings">Settings</fbt>
+        <h3 className="admin-title with-border">
+          <Link to="/admin/settings" className="muted">
+            <fbt desc="Settings">Settings</fbt>
+          </Link>
+          <span className="chevron" />
+          Shipping
           {actions}
         </h3>
-        <Tabs />
         {loading ? (
           <>
             <fbt desc="Loading">Loading</fbt>...
