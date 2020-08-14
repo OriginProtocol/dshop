@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-
+import fbt, { FbtParam } from 'fbt'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import useShops from 'utils/useShops'
@@ -66,7 +66,9 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
       <>
         <ShopSearch />
         {shops.length > 0 ? null : (
-          <div className="pb-3 text-center muted">No results</div>
+          <div className="pb-3 text-center muted">
+            <fbt desc="admin.AccountSelector.zeroSearchResults">No results</fbt>
+          </div>
         )}
         {shops.map((shop) => (
           <div
@@ -105,9 +107,17 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
                   })
                 }}
               >
-                Prev
+                <fbt desc="Prev">Prev</fbt>
               </a>
-              <div>{`Page ${shopsPagination.page} of ${shopsPagination.numPages}`}</div>
+              <div>
+                <fbt desc="admin.AccountSelector.searchPagination">
+                  Page <FbtParam name="page">{shopsPagination.page}</FbtParam>{' '}
+                  of{' '}
+                  <FbtParam name="numPages">
+                    {shopsPagination.numPages}
+                  </FbtParam>
+                </fbt>
+              </div>
               <a
                 href="#prev"
                 className={
@@ -124,7 +134,7 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
                   })
                 }}
               >
-                Next
+                <fbt desc="Next">Next</fbt>
               </a>
             </div>
           )}
@@ -139,7 +149,7 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
                 }}
               >
                 <div className="add-shop-icon">+</div>
-                Add a shop
+                <fbt desc="admin.AccountSelector.addShop">Add a Shop</fbt>
               </a>
             )}
             {!admin.superuser ? null : (

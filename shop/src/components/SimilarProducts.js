@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import zip from 'lodash/zip'
 import sortBy from 'lodash/sortBy'
 import uniq from 'lodash/uniq'
+import fbt from 'fbt'
 
 import useProducts from 'utils/useProducts'
 import ProductList from 'components/ProductList'
@@ -48,7 +49,9 @@ const SimilarProducts = ({ product, count = 3 }) => {
 
   return (
     <div className="similar-products">
-      <h4 className="mb-3">You might also like</h4>
+      <h4 className="mb-3">
+        <fbt desc="component.SimilarProducts.title">You might also like</fbt>
+      </h4>
       <ProductList products={filteredProducts} />
     </div>
   )

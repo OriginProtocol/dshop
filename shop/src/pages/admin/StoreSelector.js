@@ -1,6 +1,6 @@
 import React from 'react'
 import get from 'lodash/get'
-
+import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 import useShops from 'utils/useShops'
 import Link from 'components/Link'
@@ -20,24 +20,36 @@ const StoreSelector = ({ setActiveShop, newShop, setNewShop }) => {
       {!admin.shopsCount ? (
         <div className="shop-chooser-empty">
           <div>
-            <h1>Welcome to Dshop</h1>
+            <h1>
+              <fbt desc="admin.StoreSelector.welcomeToDshop">
+                Welcome to Dshop
+              </fbt>
+            </h1>
             <p>
-              Dshop allows you to have more than one shop per account. Start by
-              creating your first one.
+              <fbt desc="admin.StoreSelector.welcomeDesc">
+                Dshop allows you to have more than one shop per account. Start
+                by creating your first one.
+              </fbt>
             </p>
             <button
               className="btn btn-primary"
               onClick={() => setNewShop(true)}
-              children="Create a shop"
+              children={
+                <fbt desc="admin.StoreSelector.createShop">Create a shop</fbt>
+              }
             />
           </div>
         </div>
       ) : (
         <div className="shop-chooser">
-          <h3>Select a store</h3>
+          <h3>
+            <fbt desc="admin.StoreSelector.selectStore">Select a store</fbt>
+          </h3>
           <ShopSearch />
           {shops.length > 0 ? null : (
-            <div className="mt-4 text-center muted">No results</div>
+            <div className="mt-4 text-center muted">
+              <fbt desc="admin.StoreSelector.noResults">No results</fbt>
+            </div>
           )}
           <div className={`shops${shops.length > 1 ? ' multi' : ''}`}>
             {shops.map((shop) => (
@@ -52,11 +64,13 @@ const StoreSelector = ({ setActiveShop, newShop, setNewShop }) => {
             <button
               className="btn btn-outline-primary btn-sm px-5"
               onClick={() => setNewShop(true)}
-              children="Add Store"
+              children={
+                <fbt desc="admin.StoreSelector.addStore">Add Store</fbt>
+              }
             />
             {!superuser ? null : (
               <Link to="/super-admin" className="btn btn-link">
-                Super admin
+                <fbt desc="SuperAdmin">Super admin</fbt>
               </Link>
             )}
           </div>

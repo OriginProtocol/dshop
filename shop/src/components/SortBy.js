@@ -1,4 +1,5 @@
 import React from 'react'
+import fbt from 'fbt'
 import { useHistory, useLocation } from 'react-router-dom'
 import queryString from 'query-string'
 
@@ -19,11 +20,25 @@ const SortBy = () => {
           })
         }}
       >
-        <option value="manual">Sort by: Featured</option>
-        <option value="title-ascending">Sort by: Title, A-Z</option>
-        <option value="title-descending">Sort by: Title, Z-A</option>
-        <option value="price-ascending">Sort by: Price, low to high</option>
-        <option value="price-descending">Sort by: Price, high to low</option>
+        <option value="manual">
+          <fbt desc="component.SortBy.featured">Sort by: Featured</fbt>
+        </option>
+        <option value="title-ascending">
+          <fbt desc="component.SortBy.titleAsc">Sort by: Title, A-Z</fbt>
+        </option>
+        <option value="title-descending">
+          <fbt desc="component.SortBy.titleDesc">Sort by: Title, Z-A</fbt>
+        </option>
+        <option value="price-ascending">
+          <fbt desc="component.SortBy.priceAsc">
+            Sort by: Price, low to high
+          </fbt>
+        </option>
+        <option value="price-descending">
+          <fbt desc="component.SortBy.priceDesc">
+            Sort by: Price, high to low
+          </fbt>
+        </option>
         {/* <option value="created-descending">Date, new to old</option>
                 <option value="created-ascending">Date, old to new</option> */}
       </select>

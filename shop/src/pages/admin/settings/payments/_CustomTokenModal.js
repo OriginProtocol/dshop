@@ -1,5 +1,5 @@
 import React, { useReducer } from 'react'
-
+import fbt from 'fbt'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
 
@@ -17,23 +17,41 @@ const validate = (state) => {
   const newState = {}
 
   if (!state.name) {
-    newState.nameError = 'Token symbol is required'
+    newState.nameError = fbt(
+      'Token symbol is required',
+      'admin.settings.payments.CustomTokenModal.nameError'
+    )
   } else if (state.name.length > 4) {
-    newState.nameError = 'Token symbol too long'
+    newState.nameError = fbt(
+      'Token symbol too long',
+      'admin.settings.payments.CustomTokenModal.nameLenError'
+    )
   }
 
   if (!state.displayName) {
-    newState.displayNameError = 'Display name is required'
+    newState.displayNameError = fbt(
+      'Display name is required',
+      'admin.settings.payments.CustomTokenModal.displayNameError'
+    )
   }
 
   if (!state.apiProvider) {
-    newState.apiProviderError = 'Price information is required'
+    newState.apiProviderError = fbt(
+      'Price information is required',
+      'admin.settings.payments.CustomTokenModal.apiProviderError'
+    )
   }
 
   if (!state.address) {
-    newState.addressError = 'Token address is required'
+    newState.addressError = fbt(
+      'Token address is required',
+      'admin.settings.payments.CustomTokenModal.addressError'
+    )
   } else if (!ethers.utils.isAddress(state.address)) {
-    newState.addressError = 'Invalid contract address'
+    newState.addressError = fbt(
+      'Invalid contract address',
+      'admin.settings.payments.CustomTokenModal.invalidAddressError'
+    )
   }
 
   const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
@@ -93,7 +111,10 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
 
     if (!tokenValid) {
       setState({
-        testError: `Failed to fetch exchange rate of the token.`,
+        testError: fbt(
+          'Failed to fetch exchange rate of the token.',
+          'admin.settings.payments.CustomTokenModal.exchageRateError'
+        ),
         saving: false
       })
       return
@@ -120,7 +141,10 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
         type="button"
         onClick={() => setState({ showModal: true })}
       >
-        + Add custom token
+        +{' '}
+        <fbt desc="admin.settings.payments.CustomTokenModal.addCustomToken">
+          Add custom token
+        </fbt>
       </button>
       {!state.showModal ? null : (
         <Modal
@@ -143,10 +167,18 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
               testAndAdd()
             }}
           >
-            <h5>Add a custom ERC20 token</h5>
+            <h5>
+              <fbt desc="admin.settings.payments.CustomTokenModal.addERC20Token">
+                Add a custom ERC20 token
+              </fbt>
+            </h5>
 
             <div className="form-group">
-              <label>Token Symbol</label>
+              <label>
+                <fbt desc="admin.settings.payments.CustomTokenModal.tokenSymbol">
+                  Token Symbol
+                </fbt>
+              </label>
               <input {...input('name')} placeholder="eg OGN" />
               {Feedback('name')}
             </div>
@@ -165,9 +197,15 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
             </div>
 
             <div className="form-group">
-              <label>Fetch price from</label>
+              <label>
+                <fbt desc="admin.settings.payments.CustomTokenModal.fetchPriceFrom">
+                  Fetch price from
+                </fbt>
+              </label>
               <select {...input('apiProvider')}>
-                <option>Select one</option>
+                <option>
+                  <fbt desc="SelectOne">Select one</fbt>
+                </option>
                 {tokenDataProviders.map((provider) => (
                   <option key={provider.id} value={provider.id}>
                     {provider.name}
@@ -186,14 +224,20 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
                 type="button"
                 onClick={() => setState({ shouldClose: true })}
               >
-                Cancel
+                <fbt desc="Cancel">Cancel</fbt>
               </button>
               <button
                 className="btn btn-primary"
                 type="submit"
                 disabled={state.saving}
               >
-                {state.saving ? 'Adding...' : 'Add'}
+                {state.saving ? (
+                  <>
+                    <fbt desc="Adding">Adding</fbt>...
+                  </>
+                ) : (
+                  <fbt desc="Add">Add</fbt>
+                )}
               </button>
             </div>
           </form>

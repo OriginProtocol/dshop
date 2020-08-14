@@ -1,6 +1,7 @@
 import React from 'react'
 import get from 'lodash/get'
 import kebabCase from 'lodash/kebabCase'
+import fbt from 'fbt'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConfirmationModal from 'components/ConfirmationModal'
@@ -16,9 +17,15 @@ function validate(state) {
 
   if (state.shopType !== 'local-dir') {
     if (!state.name) {
-      newState.nameError = 'Enter a name for your shop'
+      newState.nameError = fbt(
+        'Enter a name for your shop',
+        'admin.NewShop.nameError'
+      )
     } else if (state.name.length < 3) {
-      newState.nameError = 'Shop name is too short'
+      newState.nameError = fbt(
+        'Shop name is too short',
+        'admin.NewShop.nameLenError'
+      )
     }
   }
 
@@ -43,11 +50,11 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
 
   return (
     <ConfirmationModal
-      confirmText="Create a shop"
+      confirmText={fbt('Create a shop', 'admin.NewShop.createShop')}
       confirmedText={false}
-      proceedText="Create"
-      cancelText="Cancel"
-      loadingText="Creating Shop..."
+      proceedText={fbt('Create', 'Create')}
+      cancelText={fbt('Cancel', 'Cancel')}
+      loadingText={`${fbt('Creating Shop', 'admin.NewShop.createShop')}...`}
       modalOnly={true}
       shouldShow={shouldShow}
       onClose={() => {
@@ -90,12 +97,19 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
         {state.shopType === 'local-dir' ? null : (
           <div className="form-group">
             <label>
-              Shop name<span className="ml-2">(you can change this later)</span>
+              <fbt desc="admin.NewShop.shopName">Shop name</fbt>
+              <span className="ml-2">
+                (
+                <fbt desc="admin.NewShop.changableLater">
+                  you can change this later
+                </fbt>
+                )
+              </span>
             </label>
             <input
               ref={shopName}
               {...input('name')}
-              placeholder="eg My Store"
+              placeholder={fbt('eg My Store', 'admin.NewShop.namePlaceholder')}
             />
             {Feedback('name')}
           </div>

@@ -1,5 +1,5 @@
 import React from 'react'
-
+import fbt, { FbtParam } from 'fbt'
 import ConfirmationModal from 'components/ConfirmationModal'
 
 const DeleteModal = ({
@@ -11,9 +11,18 @@ const DeleteModal = ({
   return (
     <ConfirmationModal
       className={`${className || 'btn btn-outline-danger'}`}
-      buttonText={<>{children || 'Delete'}</>}
-      confirmText={`Are you sure you want to delete ${paymentMethod.label}?`}
-      confirmedText={`${paymentMethod.label} deleted`}
+      buttonText={<>{children || <fbt desc="Delete">Delete</fbt>}</>}
+      confirmText={
+        <fbt desc="admin.settings.payments.OfflinePayments.confirmDelete">
+          Are you sure you want to delete{' '}
+          <FbtParam name="methodName">{paymentMethod.label}</FbtParam>?
+        </fbt>
+      }
+      confirmedText={
+        <fbt desc="admin.settings.payments.OfflinePayments.deleteSuccess">
+          <FbtParam name="methodName">{paymentMethod.label}</FbtParam> deleted
+        </fbt>
+      }
       onConfirm={onConfirm}
     />
   )

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-
+import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 import useAuth from 'utils/useAuth'
 
@@ -37,7 +37,9 @@ const UserDropdown = () => {
         }}
       >
         <Icons.Logout />
-        <span className="ml-2">Logout</span>
+        <span className="ml-2">
+          <fbt desc="Logout">Logout</fbt>
+        </span>
       </a>
     </Popover>
   )

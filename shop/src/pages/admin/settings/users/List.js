@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import _get from 'lodash/get'
-
+import fbt from 'fbt'
 import useSetState from 'utils/useSetState'
 import useBackendApi from 'utils/useBackendApi'
 
@@ -34,14 +34,20 @@ const AdminUsers = () => {
 
       dispatch({
         type: 'toast',
-        message: 'Email has been resent, check your inbox'
+        message: fbt(
+          'Email has been resent, check your inbox',
+          'admin.settings.users.resendSuccess'
+        )
       })
     } catch (err) {
       console.error(err)
       dispatch({
         type: 'toast',
         style: 'error',
-        message: 'Failed to send email, check your email configuration settings'
+        message: fbt(
+          'Failed to send email, check your email configuration settings',
+          'admin.settings.users.resendError'
+        )
       })
     }
   }
@@ -54,22 +60,32 @@ const AdminUsers = () => {
   return (
     <>
       <h3 className="admin-title">
-        Settings
+        <fbt desc="Settings">Settings</fbt>
         <div className="actions">
           <AddUserModal afterSave={() => loadUsers()} />
         </div>
       </h3>
       <Tabs />
       {state.loading ? (
-        'Loading...'
+        <>
+          <fbt desc="Loading">Loading</fbt>...
+        </>
       ) : (
         <table className="table mt-4">
           <thead>
             <tr>
-              <th>User</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Email Verified</th>
+              <th>
+                <fbt desc="User">User</fbt>
+              </th>
+              <th>
+                <fbt desc="Email">Email</fbt>
+              </th>
+              <th>
+                <fbt desc="Role">Role</fbt>
+              </th>
+              <th>
+                <fbt desc="EmailVerified">Email Verified</fbt>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -91,7 +107,9 @@ const AdminUsers = () => {
                             resendCode()
                           }}
                         >
-                          Resend code
+                          <fbt desc="admin.settings.users.resendCode">
+                            Resend code
+                          </fbt>
                         </a>
                       ) : (
                         '❌'

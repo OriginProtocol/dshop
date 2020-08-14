@@ -1,5 +1,5 @@
 import React from 'react'
-
+import fbt, { FbtParam } from 'fbt'
 import useBackendApi from 'utils/useBackendApi'
 import ConfirmationModal from 'components/ConfirmationModal'
 
@@ -9,9 +9,19 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
   return (
     <ConfirmationModal
       className={`${className || 'btn btn-outline-danger'}`}
-      buttonText="Disconnect"
-      confirmText={`Are you sure you want to disconnect ${processor.title}?`}
-      confirmedText={`${processor.title} disconnected`}
+      buttonText={fbt('Disconnect', 'Disconnect')}
+      confirmText={
+        <fbt desc="admin.settings.payments.confirmDisconnect">
+          Are you sure you want to disconnect{' '}
+          <FbtParam name="processorName">{processor.title}</FbtParam>?
+        </fbt>
+      }
+      confirmedText={
+        <fbt desc="admin.settings.payments.disconnectSuccess">
+          <FbtParam name="processorName">{paymentMethod.label}</FbtParam>{' '}
+          disconnected
+        </fbt>
+      }
       onConfirm={() => {
         let updatedConfig = {}
         switch (processor.id) {
