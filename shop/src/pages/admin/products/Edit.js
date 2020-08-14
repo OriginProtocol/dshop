@@ -263,7 +263,7 @@ const EditProduct = () => {
             ? newState.price * 100
             : variants.reduce((min, v) => {
                 return v.price < min ? v.price : min
-              }, Number.MAX_SAFE_INTEGER),
+              }, get(variants, '0.price', newState.price * 100)),
           images: media.map((file) => file.path),
           collections: newState.collections,
           variants

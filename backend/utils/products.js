@@ -131,7 +131,7 @@ function appendToProductsFile(shop, productData) {
     ? productData.price
     : productData.variants.reduce((min, v) => {
         return v.price < min ? v.price : min
-      }, Number.MAX_SAFE_INTEGER)
+      }, get(productData, 'variants[0].price', productData.price))
 
   allProducts[existingIndex] = {
     ...pick(productData, minimalistProductFields),
@@ -305,7 +305,7 @@ async function upsertProduct(shop, productData) {
   if (!product.variants || !product.variants.length) {
     product.variants = [
       {
-        ...pick(product, ['title', 'price', 'image']),
+        ...pick(product, ['title', 'price', 'image', 'sku']),
         id: 0,
         name: product.title,
         options: [],

@@ -105,7 +105,9 @@ const Products = () => {
       {error ? (
         <fbt desc="products.loadError">Error loading products</fbt>
       ) : loading ? (
-        <fbt desc="Loading...">Loading...</fbt>
+        <>
+          <fbt desc="Loading">Loading</fbt>...
+        </>
       ) : (
         <ProductList products={pagedProducts} />
       )}

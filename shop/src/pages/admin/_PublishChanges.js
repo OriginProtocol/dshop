@@ -1,5 +1,5 @@
 import React from 'react'
-
+import fbt from 'fbt'
 import get from 'lodash/get'
 import useShopConfig from 'utils/useShopConfig'
 import DeployButton from './settings/deployments/_DeployButton'
@@ -15,16 +15,20 @@ const PublishChanges = () => {
 
   return (
     <div className="changes">
-      You have changes that have not been published. Click “Publish Changes” to
-      make publicly visible.
+      <fbt desc="admin.PublishChanges.unpublishedChanges">
+        You have changes that have not been published. Click “Publish Changes”
+        to make publicly visible.
+      </fbt>
       <div className="actions">
         <SwitchToStorefront
           className="btn btn-sm btn-outline-primary"
-          children="Preview"
+          children={<fbt desc="Preview">Preview</fbt>}
         />
         <DeployButton
           className="btn-primary btn-sm"
-          buttonText="Publish Changes"
+          buttonText={
+            <fbt desc="admin.PublishChanges.publish">Publish Changes</fbt>
+          }
         />
       </div>
     </div>

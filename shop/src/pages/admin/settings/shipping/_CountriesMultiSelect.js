@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Countries, CountriesByCode } from '@origin/utils/Countries'
-
+import fbt from 'fbt'
 import Popover from 'components/Popover'
 
 import Caret from 'components/icons/Caret'
@@ -48,11 +48,17 @@ const CountriesMultiSelect = ({
       button={
         <>
           <div className="selection-label">
-            {selected.length > 0
-              ? selected.map((c) => CountriesByCode[c].name).join(', ')
-              : includeGlobalOption
-              ? 'Rest of the world'
-              : 'Select one or more'}
+            {selected.length > 0 ? (
+              selected.map((c) => CountriesByCode[c].name).join(', ')
+            ) : includeGlobalOption ? (
+              <fbt desc="admin.settings.shipping.restOfTheWorld">
+                Rest of the world
+              </fbt>
+            ) : (
+              <fbt desc="admin.settings.shipping.selectCountries">
+                Select one or more
+              </fbt>
+            )}
           </div>
           <Caret />
         </>
@@ -73,7 +79,9 @@ const CountriesMultiSelect = ({
                   }
                 }}
               />
-              Rest of the world
+              <fbt desc="admin.settings.shipping.restOfTheWorld">
+                Rest of the world
+              </fbt>
             </label>
           </div>
         )}

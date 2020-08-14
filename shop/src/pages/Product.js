@@ -44,10 +44,10 @@ function getImageForVariant(productData, variant) {
  * @param {Array<Object>} variants
  * @returns {Object}
  */
-function findLeastPricedVariant(variants) {
+function findCheapestVariant(variants, productPrice) {
   if (variants.length <= 1) return variants[0]
 
-  let minPrice = Number.MAX_SAFE_INTEGER
+  let minPrice = get(variants, '0.price', productPrice)
   let foundVariant
 
   for (const variant of variants) {
@@ -99,7 +99,7 @@ const Product = ({ history, location, match }) => {
 
       const variant =
         variants.find((v) => String(v.id) === opts.variant) ||
-        findLeastPricedVariant(variants)
+        findCheapestVariant(variants, data.price)
       const newState = {
         productData: data,
         activeImage: 0,

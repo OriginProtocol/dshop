@@ -1,5 +1,5 @@
 import React, { useReducer } from 'react'
-
+import fbt from 'fbt'
 import useConfig from 'utils/useConfig'
 
 import Modal from './Modal'
@@ -36,7 +36,8 @@ const PaymentInstructions = ({ buttonText, paymentMethod }) => {
         }}
         type="button"
       >
-        {buttonText || 'How to pay?'}
+        {buttonText ||
+          fbt('How to pay?', 'component.OfflinePaymentInstructions.howToPay')}
       </button>
       {!state.showModal ? null : (
         <Modal
@@ -49,7 +50,9 @@ const PaymentInstructions = ({ buttonText, paymentMethod }) => {
           }}
         >
           <div className="modal-body payment-method-modal payment-instructions">
-            <h5>Payment Instructions</h5>
+            <h5>
+              <fbt desc="PaymentInstructions">Payment Instructions</fbt>
+            </h5>
             <div className="inst-content">
               <div className="instructions">{paymentMethod.instructions}</div>
               {!image ? null : <img src={imageURL} />}
@@ -64,7 +67,7 @@ const PaymentInstructions = ({ buttonText, paymentMethod }) => {
                   })
                 }
               >
-                Close
+                <fbt desc="Close">Close</fbt>
               </button>
             </div>
           </div>

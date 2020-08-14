@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-
+import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 
 const SettingsTabs = () => {
@@ -10,37 +10,37 @@ const SettingsTabs = () => {
     <ul className="nav nav-tabs">
       <li className="nav-item">
         <NavLink className="nav-link" to="/admin/settings" exact>
-          General
+          <fbt desc="General">General</fbt>
         </NavLink>
       </li>
       <li className="nav-item">
         <NavLink className="nav-link" to="/admin/settings/payments">
-          Payments
+          <fbt desc="Payments">Payments</fbt>
         </NavLink>
       </li>
       <li className="nav-item">
         <NavLink className="nav-link" to="/admin/settings/apps">
-          Apps
+          <fbt desc="Apps">Apps</fbt>
         </NavLink>
       </li>
       <li className="nav-item">
         <NavLink className="nav-link" to="/admin/settings/shipping">
-          Shipping
+          <fbt desc="Shipping">Shipping</fbt>
         </NavLink>
       </li>
       <li className="nav-item">
         <NavLink className="nav-link" to="/admin/settings/users">
-          Users
+          <fbt desc="Users">Users</fbt>
         </NavLink>
       </li>
       <li className="nav-item">
         <NavLink className="nav-link" to="/admin/settings/deployments">
-          Publish
+          <fbt desc="Publish">Publish</fbt>
         </NavLink>
       </li>
       <li className="nav-item">
         <NavLink className="nav-link" to="/admin/settings/advanced">
-          Advanced
+          <fbt desc="Advanced">Advanced</fbt>
         </NavLink>
       </li>
       {!admin.superuser ? null : (

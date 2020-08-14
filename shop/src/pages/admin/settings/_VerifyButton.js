@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import fbt from 'fbt'
 
 import { useStateValue } from 'data/state'
 
@@ -15,13 +16,19 @@ const VerifyButton = ({ onVerify, children }) => {
       if (valid) {
         dispatch({
           type: 'toast',
-          message: 'Your credentials work great.',
+          message: fbt(
+            `Your credentials work great.`,
+            'admin.settings.VerifyButton.success'
+          ),
           style: 'success'
         })
       } else {
         dispatch({
           type: 'toast',
-          message: `Your credentials don't seem to work. Check and try again`,
+          message: fbt(
+            `Your credentials don't seem to work. Check and try again`,
+            'admin.settings.VerifyButton.invalidError'
+          ),
           style: 'error'
         })
       }
@@ -29,7 +36,10 @@ const VerifyButton = ({ onVerify, children }) => {
       console.error(err)
       dispatch({
         type: 'toast',
-        message: `Something went wrong when trying to verify your credentials`,
+        message: fbt(
+          `Something went wrong when trying to verify your credentials`,
+          'admin.settings.VerifyButton.genericError'
+        ),
         style: 'error'
       })
     } finally {
@@ -43,7 +53,13 @@ const VerifyButton = ({ onVerify, children }) => {
       onClick={onVerifyClick}
       disabled={verifying}
     >
-      {verifying ? 'Verifying...' : children || 'Verify'}
+      {verifying ? (
+        <>
+          <fbt desc="Verifying">Verifying</fbt>...
+        </>
+      ) : (
+        children || <fbt desc="Verify">Verify</fbt>
+      )}
     </button>
   )
 }

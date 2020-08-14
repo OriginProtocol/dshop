@@ -1,4 +1,5 @@
 import React, { useReducer, useEffect } from 'react'
+import fbt from 'fbt'
 import useSentry from 'utils/useSentry'
 
 import Modal from './Modal'
@@ -45,16 +46,28 @@ const ReportErrorModal = ({ onClose, errorEvent }) => {
       <div className="modal-body report-error-modal">
         {state.reportSent ? (
           <>
-            <h5>Thank you.</h5>
-            <div>Your report has been submitted.</div>
+            <h5>
+              <fbt desc="component.ReportErrorModal.thankYou">Thank you.</fbt>
+            </h5>
+            <div>
+              <fbt desc="component.ReportErrorModal.reportSubmitted">
+                Your report has been submitted.
+              </fbt>
+            </div>
           </>
         ) : (
           <>
-            <h5>It looks like we&apos;re having issues.</h5>
+            <h5>
+              <fbt desc="component.ReportErrorModal.crashIssue">
+                It looks like we&apos;re having issues.
+              </fbt>
+            </h5>
 
             <div>
-              Would you like to send a report of the error so that we can fix
-              it?
+              <fbt desc="component.ReportErrorModal.sendReport">
+                Would you like to send a report of the error so that we can fix
+                it?
+              </fbt>
             </div>
 
             <div className="actions">
@@ -65,7 +78,7 @@ const ReportErrorModal = ({ onClose, errorEvent }) => {
                   setState({ shouldClose: true })
                 }}
               >
-                Skip
+                <fbt desc="Skip">Skip</fbt>
               </button>
               <button
                 className="btn btn-primary"
@@ -73,7 +86,7 @@ const ReportErrorModal = ({ onClose, errorEvent }) => {
                 onClick={onConfirm}
                 disabled={state.saving}
               >
-                Yes
+                <fbt desc="Yes">Yes</fbt>
               </button>
             </div>
           </>
