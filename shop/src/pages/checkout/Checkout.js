@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Switch, Route, useHistory } from 'react-router-dom'
 import { StripeProvider } from 'react-stripe-elements'
 import Styl from 'react-styl'
-
+import fbt from 'fbt'
 import { Elements } from 'react-stripe-elements'
 
 import useConfig from 'utils/useConfig'
@@ -44,7 +44,11 @@ const Checkout = () => {
   }, [config.activeShop])
 
   if (!config) {
-    return <div>Loading...</div>
+    return (
+      <div>
+        <fbt desc="Loading">Loading</fbt>...
+      </div>
+    )
   }
 
   return (

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLocation } from 'react-router-dom'
-
+import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 import Link from 'components/Link'
 import Menu from 'components/admin/Menu'
@@ -17,44 +17,44 @@ const AdminMenu = () => {
       <li className={`dashboard ${active('/admin/onboarding')}`}>
         <Link to="/admin/onboarding">
           <Icons.Home />
-          Home
+          <fbt desc="Home">Home</fbt>
         </Link>
       </li>
       <li className={`dashboard ${active('/admin/dashboard')}`}>
         <Link to="/admin/dashboard">
           <Icons.Dashboard />
-          Dashboard
+          <fbt desc="Dashboard">Dashboard</fbt>
         </Link>
       </li>
       <li className={`orders ${active('/admin/orders')}`}>
         <Link to="/admin/orders">
           <Icons.Orders />
-          Orders
+          <fbt desc="Orders">Orders</fbt>
         </Link>
       </li>
       <li className={`products ${active('/admin/products')}`}>
         <Link to="/admin/products">
           <Icons.Products />
-          Products
+          <fbt desc="Products">Products</fbt>
         </Link>
       </li>
       <li className={`collections ${active('/admin/collections')}`}>
         <Link to="/admin/collections">
           <Icons.Collections />
-          Collections
+          <fbt desc="Collections">Collections</fbt>
         </Link>
       </li>
       <li className={`discounts ${active('/admin/discounts')}`}>
         <Link to="/admin/discounts">
           <Icons.Discounts />
-          Discounts
+          <fbt desc="Discounts">Discounts</fbt>
         </Link>
       </li>
       {admin.role !== 'admin' ? null : (
         <li className={`settings ${active('/admin/settings')}`}>
           <Link to="/admin/settings">
             <Icons.Settings />
-            Settings
+            <fbt desc="Settings">Settings</fbt>
           </Link>
         </li>
       )}

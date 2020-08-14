@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Redirect, Switch, Route } from 'react-router-dom'
 import 'components/admin/Styles'
 import get from 'lodash/get'
-
+import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 import useAuth from 'utils/useAuth'
 import useConfig from 'utils/useConfig'
@@ -37,7 +37,11 @@ const Admin = () => {
   if (error) {
     return <div className="fixed-loader">Admin Connection Error</div>
   } else if (loading && !get(admin, 'shopsCount')) {
-    return <div className="fixed-loader">Loading...</div>
+    return (
+      <div className="fixed-loader">
+        <fbt desc="Loading">Loading</fbt>...
+      </div>
+    )
   }
 
   if (!admin || !isLoggedIn(admin)) {

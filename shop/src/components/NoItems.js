@@ -1,5 +1,5 @@
 import React from 'react'
-
+import fbt from 'fbt'
 import Link from 'components/Link'
 
 const NoItems = ({ children, heading, description, linkTo, buttonText }) => (
@@ -12,7 +12,9 @@ const NoItems = ({ children, heading, description, linkTo, buttonText }) => (
           {children || buttonText ? (
             <>
               <br />
-              Click the button below to get started.
+              <fbt desc="component.NoItems.getStarted">
+                Click the button below to get started.
+              </fbt>
             </>
           ) : null}
         </div>

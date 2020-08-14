@@ -1,26 +1,26 @@
 import React from 'react'
-
+import fbt from 'fbt'
 import OfferStates from 'data/OfferStates'
 
 const PaymentStatusText = ({ status }) => {
   const classList = ['order-payment-status']
-  let labelText = 'Pending'
+  let labelText = fbt('Pending', 'Pending')
 
   switch (status) {
     case OfferStates.Created:
       classList.push('pending')
-      labelText = 'Pending'
+      labelText = fbt('Pending', 'Pending')
       break
 
     case OfferStates.Accepted:
     case OfferStates.Finalized:
       classList.push('paid')
-      labelText = 'Paid'
+      labelText = fbt('Paid', 'Paid')
       break
 
     case OfferStates.Withdrawn:
       classList.push('rejected')
-      labelText = 'Canceled'
+      labelText = fbt('Canceled', 'Canceled')
       break
   }
 

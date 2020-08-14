@@ -17,7 +17,7 @@ const AdminConfirmationModal = ({
   children,
   proceedText = fbt('Yes', 'yes'),
   cancelText = fbt('No', 'no'),
-  loadingText = fbt('Loading...', 'loading'),
+  loadingText = `${fbt('Loading', 'Loading')}...`,
   validate = () => true,
   customEl,
   modalOnly,

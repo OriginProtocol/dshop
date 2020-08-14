@@ -1,5 +1,5 @@
 import React, { useReducer } from 'react'
-
+import fbt from 'fbt'
 import pick from 'lodash/pick'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
@@ -11,16 +11,22 @@ function validate(state) {
   const newState = {}
 
   if (!state.name) {
-    newState.nameError = 'Enter a name'
+    newState.nameError = fbt('Enter a name', 'admin.settings.users.nameError')
   }
   if (!state.email) {
-    newState.emailError = 'Enter an email'
+    newState.emailError = fbt(
+      'Enter an email',
+      'admin.settings.users.emailError'
+    )
   }
   if (!state.password) {
-    newState.passwordError = 'Enter a password'
+    newState.passwordError = fbt(
+      'Enter a password',
+      'admin.settings.users.passwordError'
+    )
   }
   if (!state.role) {
-    newState.roleError = 'Select a role'
+    newState.roleError = fbt('Select a role', 'admin.settings.users.roleError')
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
@@ -79,28 +85,36 @@ const AddUserModal = ({ afterSave }) => {
       }}
     >
       <div className="modal-body payment-method-modal">
-        <h5>Add User</h5>
+        <h5>
+          <fbt desc="admin.settings.users.addUser">Add User</fbt>
+        </h5>
         <div className="form-group">
-          <input placeholder="Name" {...input('name')} />
+          <input placeholder={fbt('Name', 'Name')} {...input('name')} />
           {Feedback('name')}
         </div>
         <div className="form-group">
-          <input placeholder="Email" {...input('email')} />
+          <input placeholder={fbt('Email', 'Email')} {...input('email')} />
           {Feedback('email')}
         </div>
         <div className="form-group">
           <input
             type="password"
-            placeholder="Password"
+            placeholder={fbt('Password', 'Password')}
             {...input('password')}
           />
           {Feedback('password')}
         </div>
         <div className="form-group">
           <select {...input('role')}>
-            <option value="">Role...</option>
-            <option>Admin</option>
-            <option>Basic</option>
+            <option value="">
+              <fbt desc="Role">Role</fbt>...
+            </option>
+            <option>
+              <fbt desc="Admin">Admin</fbt>
+            </option>
+            <option>
+              <fbt desc="Basic">Basic</fbt>
+            </option>
           </select>
           {Feedback('role')}
         </div>
@@ -110,14 +124,22 @@ const AddUserModal = ({ afterSave }) => {
             className="btn btn-outline-primary mr-2"
             type="button"
             onClick={() => setState({ shouldClose: true })}
-            children="Cancel"
+            children={<fbt desc="Cancel">Cancel</fbt>}
           />
           <button
             className="btn btn-primary"
             type="button"
             onClick={createUser}
             disabled={state.saving}
-            children={state.saving ? 'Saving...' : 'Save'}
+            children={
+              state.saving ? (
+                <>
+                  <fbt desc="Saving">Saving</fbt>...
+                </>
+              ) : (
+                <fbt desc="Save">Save</fbt>
+              )
+            }
           />
         </div>
       </div>
@@ -130,24 +152,28 @@ const AddUserModal = ({ afterSave }) => {
         className="btn btn-primary"
         type="button"
         onClick={() => setState({ showModal: true })}
-        children="Add User"
+        children={<fbt desc="admin.settings.users.addUser">Add User</fbt>}
       />
       {!state.showModal ? null : (
         <Modal shouldClose={state.shouldClose} onClose={() => setState(false)}>
           {state.sellerExists ? (
             <>
               <div className="modal-body payment-method-modal">
-                <h5>User Added</h5>
+                <h5>
+                  <fbt desc="admin.settings.users.userAdded">User Added</fbt>
+                </h5>
                 <div className="description my-3">
-                  The email address you specified was already registered, so the
-                  user was given permission to access this shop.
+                  <fbt desc="admin.settings.users.existingSellerInfo">
+                    The email address you specified was already registered, so
+                    the user was given permission to access this shop.
+                  </fbt>
                 </div>
                 <div className="actions">
                   <button
                     className="btn btn-outline-primary mr-2"
                     type="button"
                     onClick={() => setState({ shouldClose: true })}
-                    children="OK"
+                    children={<fbt desc="OK">OK</fbt>}
                   />
                 </div>
               </div>

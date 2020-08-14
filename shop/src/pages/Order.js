@@ -20,7 +20,7 @@ const OrderDetails = ({ cart }) => {
   if (!cart) {
     return (
       <div>
-        <fbt desc="Loading...">Loading...</fbt>
+        <fbt desc="Loading">Loading</fbt>...
       </div>
     )
   }

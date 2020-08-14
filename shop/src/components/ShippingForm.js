@@ -1,5 +1,5 @@
 import React from 'react'
-
+import fbt from 'fbt'
 import { Countries, CountriesDefaultInfo } from '@origin/utils/Countries'
 
 import CountrySelect from 'components/CountrySelect'
@@ -15,17 +15,23 @@ const ShippingForm = ({ prefix = '', state, setState, input, Feedback }) => {
     <>
       <div className="form-row">
         <div className="form-group col-md-6">
-          <input placeholder="First Name" {...input(field('firstName'))} />
+          <input
+            placeholder={fbt('First Name', 'component.ShippingForm.firstName')}
+            {...input(field('firstName'))}
+          />
           {Feedback(field('firstName'))}
         </div>
         <div className="form-group col-md-6">
-          <input placeholder="Last Name" {...input(field('lastName'))} />
+          <input
+            placeholder={fbt('Last Name', 'component.ShippingForm.lastName')}
+            {...input(field('lastName'))}
+          />
           {Feedback(field('lastName'))}
         </div>
       </div>
       <div className="form-group">
         <input
-          placeholder="Address"
+          placeholder={fbt('Address', 'component.ShippingForm.address1')}
           {...input(field('address1'))}
           maxLength="80"
         />
@@ -33,14 +39,21 @@ const ShippingForm = ({ prefix = '', state, setState, input, Feedback }) => {
       </div>
       <div className="form-group">
         <input
-          placeholder="Address line 2 (optional)"
+          placeholder={fbt(
+            'Address line 2 (optional)',
+            'component.ShippingForm.address2'
+          )}
           maxLength="25"
           {...input(field('address2'))}
         />
         {Feedback(field('address2'))}
       </div>
       <div className="form-group">
-        <input placeholder="City" {...input(field('city'))} maxLength="32" />
+        <input
+          placeholder={fbt('City', 'City')}
+          {...input(field('city'))}
+          maxLength="32"
+        />
         {Feedback(field('city'))}
       </div>
 

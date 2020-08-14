@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import get from 'lodash/get'
-
+import fbt from 'fbt'
 import useShops from 'utils/useShops'
 import useAutoFocus from 'utils/useAutoFocus'
 import { useStateValue } from 'data/state'
@@ -32,7 +32,7 @@ const ShopSearch = () => {
             dispatch({ type: 'shopsPaginate', page: 1, search: '' })
           }
         }}
-        placeholder="Search..."
+        placeholder={`${fbt('Search', 'Search')}...`}
       />
     </form>
   )

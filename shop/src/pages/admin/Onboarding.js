@@ -1,5 +1,5 @@
 import React from 'react'
-
+import fbt from 'fbt'
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
@@ -34,30 +34,35 @@ const Onboarding = () => {
       id: 'setup_web3',
       completed: web3Enabled,
       icon: <Icons.Wallet />,
-      name: 'Connect your crypto wallet',
-      note:
+      name: fbt('Connect your crypto wallet', 'admin.Onboarding.connectWallet'),
+      note: fbt(
         'You must connect an Ethereum wallet with at least 0.005 ETH in order to publish changes and receive crypto payments.',
+        'admin.Onboarding.connectWalletDesc'
+      ),
       link: '/admin/settings/payments'
     },
     {
       id: 'verify_email',
       completed: get(admin, 'emailVerified', false),
       icon: <Icons.Email />,
-      name: 'Verify your email',
+      name: fbt('Verify your email', 'admin.Onboarding.verifyEmail'),
       link: '/admin/settings/users'
     },
     {
       id: 'new_product',
       completed: get(products, 'length', 0) > 0,
       icon: <Icons.Box />,
-      name: 'Add your first product',
+      name: fbt('Add your first product', 'admin.Onboarding.newProduct'),
       link: '/admin/products/new'
     },
     {
       id: 'setup_shipping',
       completed: get(products, 'length', 0) > 0,
       icon: <Icons.Shipping />,
-      name: 'Set up your shipping options',
+      name: fbt(
+        'Set up your shipping options',
+        'admin.Onboarding.setupShipping'
+      ),
       link: '/admin/settings/shipping'
     }
   ]
@@ -67,35 +72,38 @@ const Onboarding = () => {
       id: 'custom_domain',
       completed: !!get(shopConfig, 'domain'),
       icon: <Icons.Globe />,
-      name: 'Add a custom domain name',
+      name: fbt('Add a custom domain name', 'admin.Onboarding.customDomain'),
       link: '/admin/settings'
     },
     {
       id: 'store_logo',
       completed: !!(config && config.logo) && !!(config && config.favicon),
       icon: <Icons.Photo />,
-      name: 'Add a store logo and favicon',
+      name: fbt('Add a store logo and favicon', 'admin.Onboarding.storeLogo'),
       link: '/admin/settings'
     },
     {
       id: 'store_info',
       completed: !!get(shopConfig, 'about'),
       icon: <Icons.Text />,
-      name: 'Tell us a bit about your store',
+      name: fbt('Tell us a bit about your store', 'admin.Onboarding.storeInfo'),
       link: '/admin/settings'
     },
     {
       id: 'sm_links',
       completed: hasSocialLinks,
       icon: <Icons.Link />,
-      name: 'Add social media links',
+      name: fbt('Add social media links', 'admin.Onboarding.smLinks'),
       link: '/admin/settings'
     },
     {
       id: 'payment_options',
       completed: get(config, 'paymentMethods.length', 0) > 1,
       icon: <Icons.Card />,
-      name: 'Add alternative payment options',
+      name: fbt(
+        'Add alternative payment options',
+        'admin.Onboarding.paymentOptions'
+      ),
       link: '/admin/settings/payments'
     }
   ]
@@ -103,15 +111,26 @@ const Onboarding = () => {
   return (
     <div className="onboarding">
       <div className="new-shop-hero">
-        <h1>Congratulations on your new shop!</h1>
+        <h1>
+          <fbt desc="admin.Onboarding.title">
+            Congratulations on your new shop!
+          </fbt>
+        </h1>
         <div className="desc">
-          Discover how Dshop can help you get started building
-          <br /> your business on the decentralized web.
+          <fbt desc="admin.Onboarding.desc">
+            Discover how Dshop can help you get started building{' '}
+            <FbtParam name="lineBreak">{<br />}</FbtParam> your business on the
+            decentralized web.
+          </fbt>
         </div>
       </div>
 
       <div className="new-shop-tasks">
-        <div className="subtitle">Finish setting up your store</div>
+        <div className="subtitle">
+          <fbt desc="admin.Onboarding.finishSetup">
+            Finish setting up your store
+          </fbt>
+        </div>
         <div className="tasks-lists">
           {taskset1.map((task) => {
             return (
@@ -144,7 +163,11 @@ const Onboarding = () => {
       </div>
 
       <div className="new-shop-tasks mt-5">
-        <div className="subtitle">Get your store up and running</div>
+        <div className="subtitle">
+          <fbt desc="admin.Onboarding.upAndRunning">
+            Get your store up and running
+          </fbt>
+        </div>
         <div className="tasks-lists">
           {taskset2.map((task) => {
             return (

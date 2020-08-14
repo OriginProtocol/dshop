@@ -1,5 +1,5 @@
 import React, { useReducer } from 'react'
-
+import fbt from 'fbt'
 import useBackendApi from 'utils/useBackendApi'
 
 import Modal from 'components/Modal'
@@ -54,7 +54,12 @@ const ConnectModal = ({
         setState({ saving: '' })
         dispatch({
           type: 'toast',
-          message: reason || 'Failed to save your credentials. Try again.',
+          message:
+            reason ||
+            fbt(
+              'Failed to save your credentials. Try again.',
+              'admin.settings.payments.genericeError'
+            ),
           style: 'error'
         })
       }
@@ -62,7 +67,10 @@ const ConnectModal = ({
       console.error(err)
       dispatch({
         type: 'toast',
-        message: 'Failed to save your credentials. Try again.',
+        message: fbt(
+          'Failed to save your credentials. Try again.',
+          'admin.settings.payments.genericeError'
+        ),
         style: 'error'
       })
       setState({
@@ -92,7 +100,7 @@ const ConnectModal = ({
               onCancel()
             }}
           >
-            Cancel
+            <fbt desc="Cancel">Cancel</fbt>
           </button>
           {actions}
           <button
@@ -101,11 +109,17 @@ const ConnectModal = ({
             onClick={onConnect}
             disabled={state.saving}
           >
-            {state.saving === 'saving'
-              ? 'Connecting...'
-              : state.saving === 'ok'
-              ? 'Connected ✅'
-              : 'Connect'}
+            {state.saving === 'saving' ? (
+              <>
+                <fbt desc="Connecting">Connecting</fbt>...
+              </>
+            ) : state.saving === 'ok' ? (
+              <>
+                <fbt desc="Connected">Connected</fbt> ✅
+              </>
+            ) : (
+              <fbt desc="Connect">Connect</fbt>
+            )}
           </button>
         </div>
       </div>
