@@ -1,5 +1,5 @@
 import React from 'react'
-import fbt from 'fbt'
+import fbt, { FbtParam } from 'fbt'
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'

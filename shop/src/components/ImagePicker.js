@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useReducer, useMemo } from 'react'
 import get from 'lodash/get'
-import fbt from 'fbt'
+import fbt, { FbtParam } from 'fbt'
 import useBackendApi from 'utils/useBackendApi'
 import useConfig from 'utils/useConfig'
 import loadImage from 'utils/loadImage'
