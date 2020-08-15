@@ -98,6 +98,17 @@ module.exports = function (router) {
     }
   )
 
+  router.get('/shop', authSuperUser, async (req, res) => {
+    res.send({
+      success: true,
+      shop: await Shop.findOne({
+        where: {
+          authToken: req.query.shopToken
+        }
+      })
+    })
+  })
+
   router.get('/shops', authUser, async (req, res) => {
     const user = req.seller
     const order = [['id', 'desc']]
