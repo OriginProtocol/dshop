@@ -2,6 +2,7 @@ import React, { useReducer } from 'react'
 
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
+import fbt from 'fbt'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConnectModal from '../payments/_ConnectModal'
@@ -20,19 +21,31 @@ const validate = (state) => {
   const newState = {}
 
   if (!state.mailgunSmtpServer) {
-    newState.mailgunSmtpServerError = 'Hostname is required'
+    newState.mailgunSmtpServerError = fbt(
+      'Hostname is required',
+      'admin.settings.apps.mailgun.smtpServerError'
+    )
   }
 
   if (!state.mailgunSmtpPort) {
-    newState.mailgunSmtpPortError = 'Port is required'
+    newState.mailgunSmtpPortError = fbt(
+      'Port is required',
+      'admin.settings.apps.mailgun.smtpPortError'
+    )
   }
 
   if (!state.mailgunSmtpLogin) {
-    newState.mailgunSmtpLoginError = 'Username is required'
+    newState.mailgunSmtpLoginError = fbt(
+      'Username is required',
+      'admin.settings.apps.mailgun.smtpLoginError'
+    )
   }
 
   if (!state.mailgunSmtpPassword) {
-    newState.mailgunSmtpPasswordError = 'Password is required'
+    newState.mailgunSmtpPasswordError = fbt(
+      'Password is required',
+      'admin.settings.apps.mailgun.smtpPasswordError'
+    )
   }
 
   const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
@@ -58,7 +71,10 @@ const MailgunModal = ({ onClose, initialConfig, overrideOnConnect }) => {
 
   return (
     <ConnectModal
-      title="Connect to Mailgun"
+      title={fbt(
+        'Connect to Mailgun',
+        'admin.settings.apps.mailgun.connectMailgun'
+      )}
       validate={() => {
         const validateResponse = validate(state)
         setState(validateResponse.newState)
@@ -69,22 +85,30 @@ const MailgunModal = ({ onClose, initialConfig, overrideOnConnect }) => {
       overrideOnConnect={overrideOnConnect}
     >
       <div className="form-group">
-        <label>Server Host</label>
+        <label>
+          <fbt desc="admin.settings.apps.mailgun.serverHost">Server Host</fbt>
+        </label>
         <input {...input('mailgunSmtpServer')} />
         {Feedback('mailgunSmtpServer')}
       </div>
       <div className="form-group">
-        <label>Port</label>
+        <label>
+          <fbt desc="Port">Port</fbt>
+        </label>
         <input {...input('mailgunSmtpPort')} type="number" min="1" />
         {Feedback('mailgunSmtpPort')}
       </div>
       <div className="form-group">
-        <label>Username</label>
+        <label>
+          <fbt desc="Username">Username</fbt>
+        </label>
         <input {...input('mailgunSmtpLogin')} />
         {Feedback('mailgunSmtpLogin')}
       </div>
       <div className="form-group">
-        <label>Password</label>
+        <label>
+          <fbt desc="Password">Password</fbt>
+        </label>
         <PasswordField input={input} field="mailgunSmtpPassword" />
         {Feedback('mailgunSmtpPassword')}
       </div>

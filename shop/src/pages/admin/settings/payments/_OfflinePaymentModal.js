@@ -4,6 +4,7 @@ import get from 'lodash/get'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
 import kebabCase from 'lodash/kebabCase'
+import fbt from 'fbt'
 
 import { useStateValue } from 'data/state'
 
@@ -25,19 +26,31 @@ const validate = (state, qrImages) => {
   const newState = {}
 
   if (!state.label) {
-    newState.labelError = 'Name is required'
+    newState.labelError = fbt(
+      'Name is required',
+      'admin.settings.payments.offlinePayments.labelError'
+    )
   }
 
   if (!state.details) {
-    newState.detailsError = 'Additional details are required'
+    newState.detailsError = fbt(
+      'Additional details are required',
+      'admin.settings.payments.offlinePayments.detailsError'
+    )
   }
 
   if (!state.instructions) {
-    newState.instructionsError = 'Payment instructions are required'
+    newState.instructionsError = fbt(
+      'Payment instructions are required',
+      'admin.settings.payments.offlinePayments.instructionsError'
+    )
   }
 
   if (state.hasQRCode && !qrImages.length) {
-    newState.qrImageError = 'Upload a QR Image'
+    newState.qrImageError = fbt(
+      'Upload a QR Image',
+      'admin.settings.payments.offlinePayments.qrImageError'
+    )
   }
 
   const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
@@ -130,7 +143,10 @@ const OfflinePaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
         type="button"
         onClick={() => setState({ showModal: true })}
       >
-        + Add payment method
+        +{' '}
+        <fbt desc="admin.settings.payments.offlinePayments.addPaymentMethod">
+          Add payment method
+        </fbt>
       </button>
       {!state.showModal ? null : (
         <Modal
@@ -144,28 +160,48 @@ const OfflinePaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
           }}
         >
           <div className="modal-body payment-method-modal manual">
-            <h5>Set up manual payment method</h5>
+            <h5>
+              <fbt desc="admin.settings.payments.offlinePayments.setupOfflinePayment">
+                Set up manual payment method
+              </fbt>
+            </h5>
 
             <div className="form-group">
-              <label>Payment method name</label>
+              <label>
+                <fbt desc="admin.settings.payments.offlinePayments.methodName">
+                  Payment method name
+                </fbt>
+              </label>
               <input {...input('label')} />
               {Feedback('label')}
             </div>
 
             <div className="form-group">
-              <label>Additional details</label>
+              <label>
+                <fbt desc="admin.settings.payments.offlinePayments.additionalDetails">
+                  Additional details
+                </fbt>
+              </label>
               <div className="desc">
-                Displayed to customers when they are choosing a payment method
+                <fbt desc="admin.settings.payments.offlinePayments.additionalDetailsDesc">
+                  Displayed to customers when they are choosing a payment method
+                </fbt>
               </div>
               <textarea {...input('details')} />
               {Feedback('details')}
             </div>
 
             <div className="form-group">
-              <label>Payment instructions</label>
+              <label>
+                <fbt desc="admin.settings.payments.offlinePayments.paymentInstructions">
+                  Payment instructions
+                </fbt>
+              </label>
               <div className="desc">
-                Displayed to customers after they place an order with this
-                payment method
+                <fbt desc="admin.settings.payments.offlinePayments.paymentInstructionsDesc">
+                  Displayed to customers after they place an order with this
+                  payment method
+                </fbt>
               </div>
               <textarea {...input('instructions')} />
               {Feedback('instructions')}
@@ -184,7 +220,9 @@ const OfflinePaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
                     })
                   }
                 />
-                Include a payment QR code
+                <fbt desc="admin.settings.payments.offlinePayments.includeQRCode">
+                  Include a payment QR code
+                </fbt>
               </label>
             </div>
 
@@ -208,7 +246,11 @@ const OfflinePaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
                   children={
                     <>
                       <img src="/images/upload.svg" />
-                      <div className="btn btn-outline-primary">Add Image</div>
+                      <div className="btn btn-outline-primary">
+                        <fbt desc="admin.settings.payments.offlinePayments.addImage">
+                          Add Image
+                        </fbt>
+                      </div>
                     </>
                   }
                 />
@@ -226,7 +268,7 @@ const OfflinePaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
                   })
                 }
               >
-                Cancel
+                <fbt desc="Cancel">Cancel</fbt>
               </button>
               <button
                 className="btn btn-primary"
@@ -234,7 +276,13 @@ const OfflinePaymentModal = ({ paymentMethod, onClose, onUpdate }) => {
                 onClick={saveMethod}
                 disabled={state.saving}
               >
-                {state.saving ? 'Saving...' : 'Save'}
+                {state.saving ? (
+                  <>
+                    <fbt desc="Saving">Saving</fbt>
+                  </>
+                ) : (
+                  <fbt desc="Save">Save</fbt>
+                )}
               </button>
             </div>
           </div>

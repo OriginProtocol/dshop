@@ -6,6 +6,8 @@ import groupBy from 'lodash/groupBy'
 import get from 'lodash/get'
 import dayjs from 'dayjs'
 import advancedFormat from 'dayjs/plugin/advancedFormat'
+import fbt, { FbtParam } from 'fbt'
+
 dayjs.extend(advancedFormat)
 
 const Chart = ({ orders = [], numDays = 10 }) => {
@@ -22,7 +24,7 @@ const Chart = ({ orders = [], numDays = 10 }) => {
 
     const labels = [
       ...days.map((d) => d.format('ddd Do')).slice(0, numDays - 1),
-      'Today'
+      fbt('Today', 'Today')
     ]
 
     const byDay = groupBy(orders, (o) =>
@@ -49,7 +51,12 @@ const Chart = ({ orders = [], numDays = 10 }) => {
           setTooltip(null)
         })
         node.addEventListener('mouseenter', () => {
-          setTooltip(`Orders: ${data.value.y}`)
+          setTooltip(
+            fbt(
+              `Orders: ${fbt.param('count', data.value.y)}`,
+              'admin.dashboard.ordersTooltip'
+            )
+          )
           instance = createPopper(node, popover.current, {
             placement: 'top',
             modifiers: [{ name: 'arrow', options: { element: arrow.current } }]
@@ -65,7 +72,11 @@ const Chart = ({ orders = [], numDays = 10 }) => {
 
   return (
     <>
-      <h5>{`Orders last ${numDays} days`}</h5>
+      <h5>
+        <fbt desc="admin.dashboard.ordersInLastXDays">
+          Orders last <FbtParam name="numDays">{numDays}</FbtParam> days
+        </fbt>
+      </h5>
       <div className="chart" ref={chartEl} />
       {!tooltip ? null : (
         <div ref={popover} className="tooltip bs-tooltip-top">

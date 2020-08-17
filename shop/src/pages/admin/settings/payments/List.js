@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
-import fbt from 'fbt'
+import fbt, { FbtParam } from 'fbt'
 import pickBy from 'lodash/pickBy'
 import uniqBy from 'lodash/uniqBy'
 import get from 'lodash/get'
@@ -69,27 +69,47 @@ const PaymentSettings = () => {
       {
         id: 'stripe',
         title: 'Stripe',
-        description: stripeEnabled
-          ? 'Your Stripe account has been connected'
-          : 'Use Stripe to easily accept Visa, MasterCard, American Express and almost any other kind of credit or debit card in your shop.',
+        description: stripeEnabled ? (
+          <fbt desc="admin.settings.payments.stripeEnabledDesc">
+            Your Stripe account has been connected
+          </fbt>
+        ) : (
+          <fbt desc="admin.settings.payments.stripeDisabledDesc">
+            Use Stripe to easily accept Visa, MasterCard, American Express and
+            almost any other kind of credit or debit card in your shop.
+          </fbt>
+        ),
         icon: <Icons.Stripe />,
         enabled: stripeEnabled
       },
       {
         id: 'paypal',
         title: 'PayPal',
-        description: paypal
-          ? 'Your PayPal account has been connected'
-          : 'Use PayPal to easily accept Visa, MasterCard, American Express and almost any other kind of credit or debit card in your shop.',
+        description: paypal ? (
+          <fbt desc="admin.settings.payments.paypalEnabledDesc">
+            Your PayPal account has been connected
+          </fbt>
+        ) : (
+          <fbt desc="admin.settings.payments.paypalDisabledDesc">
+            Use PayPal to easily accept Visa, MasterCard, American Express and
+            almost any other kind of credit or debit card in your shop.
+          </fbt>
+        ),
         icon: <Icons.PayPal />,
         enabled: paypal
       },
       {
         id: 'uphold',
         title: 'Uphold',
-        description: upholdEnabled
-          ? `Environment: ${upholdApi}`
-          : 'Use Uphold to easily accept crypto payments in your shop.',
+        description: upholdEnabled ? (
+          <fbt desc="admin.settings.payments.upholdEnabledDesc">
+            Environment: <FbtParam name="environment">{upholdApi}</FbtParam>
+          </fbt>
+        ) : (
+          <fbt desc="admin.settings.payments.upholdDisabledDesc">
+            Use Uphold to easily accept crypto payments in your shop.
+          </fbt>
+        ),
         icon: <Icons.Uphold />,
         enabled: upholdEnabled,
         hide: admin.superuser ? false : true
@@ -107,7 +127,7 @@ const PaymentSettings = () => {
                   className="btn btn-outline-primary mr-2"
                   type="button"
                   onClick={() => setShowConnectModal(processor.id)}
-                  children="Configure"
+                  children={<fbt desc="Configure">Configure</fbt>}
                 />
                 <DisconnectModal
                   processor={processor}
@@ -119,7 +139,7 @@ const PaymentSettings = () => {
                 className="btn btn-outline-primary px-4"
                 type="button"
                 onClick={() => setShowConnectModal(processor.id)}
-                children="Connect"
+                children={<fbt desc="Connect">Connect</fbt>}
               />
             )}
           </>
@@ -130,13 +150,21 @@ const PaymentSettings = () => {
   const actions = (
     <>
       <button type="button" className="btn btn-outline-primary">
-        Cancel
+        <fbt desc="Cancel">Cancel</fbt>
       </button>
       <button
         type="submit"
         className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
         disabled={saving}
-        children={saving ? 'Updating...' : 'Update'}
+        children={
+          saving ? (
+            <>
+              <fbt desc="Updating">Updating</fbt>...
+            </>
+          ) : (
+            <fbt desc="Update">Update</fbt>
+          )
+        }
       />
     </>
   )
@@ -190,17 +218,23 @@ const PaymentSettings = () => {
           <fbt desc="Settings">Settings</fbt>
         </Link>
         <span className="chevron" />
-        Payments
+        <fbt desc="Payments">Payments</fbt>
         <div className="actions">{actions}</div>
       </h3>
       <div className="shop-settings processors-list">
         <div className="select-currency">
-          <h4>Store currency</h4>
+          <h4>
+            <fbt desc="admin.settings.payments.storeCurrency">
+              Store currency
+            </fbt>
+          </h4>
           <div>
             <div className="description">
-              You should review any potential legal and tax considerations
-              involved with selling in a currency that is different from the one
-              associated with the country your store is located in.
+              <fbt desc="admin.settings.payments.storeCurrencyDesc">
+                You should review any potential legal and tax considerations
+                involved with selling in a currency that is different from the
+                one associated with the country your store is located in.
+              </fbt>
             </div>
             <select
               className="form-control"
@@ -216,26 +250,48 @@ const PaymentSettings = () => {
           </div>
         </div>
 
-        <h4>Integrations</h4>
+        <h4>
+          <fbt desc="Integrations">Integrations</fbt>
+        </h4>
         <div className="processor web3">
           <div className="icon">
             <Icons.Web3 />
           </div>
           <div>
-            <div className="title">Crypto Wallet</div>
+            <div className="title">
+              <fbt desc="CryptoWallet">Crypto Wallet</fbt>
+            </div>
             {config.listingId ? (
               <>
                 <div className="description">
-                  <div>{`Shop ID: ${config.listingId}`}</div>
-                  <div className="mt-1">{`Account: ${sellerWallet}`}</div>
+                  <div>
+                    <fbt desc="admin.settings.payments.shopId">
+                      Shop ID:{' '}
+                      <FbtParam name="listingId">{config.listingId}</FbtParam>
+                    </fbt>
+                  </div>
+                  <div className="mt-1">
+                    <fbt desc="admin.settings.payments.account">
+                      Account:{' '}
+                      <FbtParam name="sellerWallet">{sellerWallet}</FbtParam>
+                    </fbt>
+                  </div>
                 </div>
               </>
             ) : (
               <>
                 <div className="description">
-                  {sellerWallet
-                    ? `Your listing is pending creation using account ${sellerWallet}`
-                    : `You have not connected a wallet. This is where crypto payments will be sent.`}
+                  {sellerWallet ? (
+                    <fbt desc="admin.settings.payments.pendingListingCreation">
+                      Your listing is pending creation using account{' '}
+                      <FbtParam name="sellerWallet">{sellerWallet}</FbtParam>
+                    </fbt>
+                  ) : (
+                    <fbt desc="admin.settings.payments.walletNotConnected">
+                      You have not connected a wallet. This is where crypto
+                      payments will be sent.
+                    </fbt>
+                  )}
                 </div>
                 <div className="actions">
                   <CreateListing
@@ -244,7 +300,13 @@ const PaymentSettings = () => {
                       refetch()
                       refetchConfig()
                     }}
-                    children={sellerWallet ? 'Re-Connect' : 'Connect'}
+                    children={
+                      sellerWallet ? (
+                        <fbt desc="Re-Connect">Re-Connect</fbt>
+                      ) : (
+                        <fbt desc="Connect">Connect</fbt>
+                      )
+                    }
                   />
                 </div>
               </>

@@ -1,5 +1,6 @@
 import React from 'react'
 import uniqBy from 'lodash/uniqBy'
+import fbt from 'fbt'
 
 import { formInput } from 'utils/formHelpers'
 import DefaultTokens from 'data/defaultTokens'
@@ -23,9 +24,15 @@ const ContractSettings = ({ state, setState }) => {
 
   return (
     <div className="contract-settings">
-      <h4>Other Payment Settings</h4>
+      <h4>
+        <fbt desc="admin.settings.payments.otherPaymentSettings">
+          Other Payment Settings
+        </fbt>
+      </h4>
 
-      <label>Accepted Tokens</label>
+      <label>
+        <fbt desc="admin.settings.payments.acceptedTokens">Accepted Tokens</fbt>
+      </label>
       <div className="form-group">
         {allTokens.map((token) => (
           <div key={token.id} className="form-check d-flex">
@@ -139,9 +146,15 @@ const AdminDeleteCustomToken = ({ className = '', onConfirm }) => {
           <img className="ml-3" src="images/delete-icon.svg" />
         </a>
       }
-      buttonText="Delete"
-      confirmText="Are you sure you want to delete this token?"
-      confirmedText="Token deleted"
+      buttonText={<fbt desc="Delete">Delete</fbt>}
+      confirmText={
+        <fbt desc="admin.settings.payments.tokenDeleteDesc">
+          Are you sure you want to delete this token?
+        </fbt>
+      }
+      confirmedText={
+        <fbt desc="admin.settings.payments.tokenDeleted">Token deleted</fbt>
+      }
       onConfirm={async () => onConfirm()}
       onSuccess={() => {}}
     />

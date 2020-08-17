@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react'
 
+import fbt from 'fbt'
+
 import useCollections from 'utils/useCollections'
 import CreateCollection from '../collections/_New'
 
@@ -58,13 +60,18 @@ const LinkCollections = ({ selectedValues, onChange }) => {
   return (
     <div className="link-collections">
       <div className={`form-group${collections.length >= 20 ? '' : ' mb-0'}`}>
-        <label>Collections</label>
+        <label>
+          <fbt desc="Collections">Collections</fbt>
+        </label>
         {collections.length < 20 ? null : (
           <input
             value={searchVal}
             onChange={(e) => setSearchVal(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
-            placeholder="Search collections"
+            placeholder={fbt(
+              'Search collections',
+              'admin.products.searchCollections'
+            )}
             className="form-control"
             type="text"
           />
@@ -72,7 +79,9 @@ const LinkCollections = ({ selectedValues, onChange }) => {
         {searchResults.length === 0 ? null : (
           <div className="search-results">
             {loading ? (
-              'Loading...'
+              <>
+                <fbt desc="Loading">Loading</fbt>...
+              </>
             ) : (
               <CollectionItemCheckboxes
                 uniquePrefix="coll-search-result"
@@ -86,7 +95,9 @@ const LinkCollections = ({ selectedValues, onChange }) => {
       </div>
       <div className="selected-values">
         {loading && !collections.length ? (
-          'Loading...'
+          <>
+            <fbt desc="Loading">Loading</fbt>...
+          </>
         ) : (
           <CollectionItemCheckboxes
             uniquePrefix="coll-selected-val-"
@@ -99,11 +110,13 @@ const LinkCollections = ({ selectedValues, onChange }) => {
 
       <CreateCollection className="new-coll-link" onSuccess={() => {}}>
         <div className="add-coll-icon">+</div>
-        Add a collection
+        <fbt desc="admin.products.addCollection">Add a collection</fbt>
       </CreateCollection>
 
       <div className="desc">
-        Add this product to a collection so it’s easier to find in your store.
+        <fbt desc="admin.products.addCollectionDesc">
+          Add this product to a collection so it’s easier to find in your store.
+        </fbt>
       </div>
     </div>
   )

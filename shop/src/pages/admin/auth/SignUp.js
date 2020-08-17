@@ -1,5 +1,7 @@
 import React from 'react'
 
+import fbt from 'fbt'
+
 import SetupLayout from 'pages/super-admin/setup/_SetupLayout'
 import SignUp from 'pages/super-admin/setup/SignUp'
 import Link from 'components/Link'
@@ -11,8 +13,14 @@ const Signup = () => {
         <SignUp url="/register" />
       </div>
       <div className="actions">
-        Already have an account?
-        <Link className="ml-2" to="/admin/login" children="Login" />
+        <fbt desc="admin.auth.register.alreadyHaveAccount">
+          Already have an account?
+        </fbt>
+        <Link
+          className="ml-2"
+          to="/admin/login"
+          children={<fbt desc="Login">Login</fbt>}
+        />
       </div>
     </SetupLayout>
   )

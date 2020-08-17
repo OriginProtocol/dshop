@@ -1,4 +1,5 @@
 import React from 'react'
+import fbt from 'fbt'
 
 import Paginate from 'components/Paginate'
 import useRest from 'utils/useRest'
@@ -8,20 +9,34 @@ const AdminEvents = () => {
 
   return (
     <>
-      <h3>Events</h3>
+      <h3>
+        <fbt desc="Events">Events</fbt>
+      </h3>
       {error ? (
-        'Error'
+        <fbt desc="Error">Error</fbt>
       ) : loading ? (
-        'Loading...'
+        <>
+          <fbt desc="Loading">Loading</fbt>...
+        </>
       ) : (
         <table className="table admin-orders table-hover">
           <thead>
             <tr>
-              <th>Listing</th>
-              <th>Offer</th>
-              <th>Name</th>
-              <th>Timestamp</th>
-              <th>IPFS</th>
+              <th>
+                <fbt desc="Listing">Listing</fbt>
+              </th>
+              <th>
+                <fbt desc="Offer">Offer</fbt>
+              </th>
+              <th>
+                <fbt desc="Name">Name</fbt>
+              </th>
+              <th>
+                <fbt desc="Timestamp">Timestamp</fbt>
+              </th>
+              <th>
+                <fbt desc="IPFS">IPFS</fbt>
+              </th>
             </tr>
           </thead>
           <tbody>

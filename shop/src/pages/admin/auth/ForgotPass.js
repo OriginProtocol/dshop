@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 
+import fbt from 'fbt'
+
 import useBackendApi from 'utils/useBackendApi'
 import SetupLayout from 'pages/super-admin/setup/_SetupLayout'
 import ErrorText from 'pages/super-admin/setup/_ErrorText'
@@ -24,18 +26,22 @@ const ForgotPass = () => {
             })
             .catch((err) => {
               console.error('Error signing in', err)
-              setState({ ...state, error: 'Unauthorized' })
+              setState({ ...state, error: fbt('Unauthorized', 'Unauthorized') })
             })
         }}
       >
         {state.sentLink ? (
           <div className="actions">
-            Please check your email for a link to reset your password.
+            <fbt desc="admin.auth.forgotpass.checkEmail">
+              Please check your email for a link to reset your password.
+            </fbt>
           </div>
         ) : (
           <>
             <div className="form-group">
-              <label>E-mail</label>
+              <label>
+                <fbt desc="Email">Email</fbt>
+              </label>
               <input
                 type="email"
                 className="form-control"
@@ -46,13 +52,23 @@ const ForgotPass = () => {
             </div>
             <ErrorText>{state.error}</ErrorText>
             <div className="form-group mb-0">
-              <button type="submit">Reset password</button>
+              <button type="submit">
+                <fbt desc="admin.auth.forgotpass.resetPassword">
+                  Reset password
+                </fbt>
+              </button>
             </div>
           </>
         )}
       </form>
       <div className="actions">
-        <Link className="ml-2" to="/admin/login" children="Back to Login" />
+        <Link
+          className="ml-2"
+          to="/admin/login"
+          children={
+            <fbt desc="admin.auth.forgotpass.backToLogin">Back to Login</fbt>
+          }
+        />
       </div>
     </SetupLayout>
   )

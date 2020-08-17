@@ -7,6 +7,7 @@ import {
   validatePublishableKey,
   validateSecretKey
 } from '@origin/utils/stripe'
+import fbt from 'fbt'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConnectModal from './_ConnectModal'
@@ -30,11 +31,17 @@ const validate = (state) => {
   const newState = {}
 
   if (!state.stripeBackend || !validateSecretKey(state.stripeBackend)) {
-    newState.stripeBackendError = 'Secret key is required'
+    newState.stripeBackendError = fbt(
+      'Secret key is required',
+      'admin.settings.payments.stripe.stripeBackendError'
+    )
   }
 
   if (!state.stripeKey || !validatePublishableKey(state.stripeKey)) {
-    newState.stripeKeyError = 'Client key is required'
+    newState.stripeKeyError = fbt(
+      'Client key is required',
+      'admin.settings.payments.stripe.stripeKeyError'
+    )
   }
 
   // Validate them as a pair
@@ -46,8 +53,14 @@ const validate = (state) => {
       secretKey: state.stripeBackend
     })
   ) {
-    newState.stripeKeyError = "Stripe keys don't match"
-    newState.stripeBackendError = "Stripe keys don't match"
+    newState.stripeKeyError = fbt(
+      `Stripe keys don't match`,
+      'admin.settings.payments.stripe.stripeKeyMismatchError'
+    )
+    newState.stripeBackendError = fbt(
+      `Stripe keys don't match`,
+      'admin.settings.payments.stripe.stripeKeyMismatchError'
+    )
   }
 
   const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
@@ -81,7 +94,10 @@ const StripeModal = ({ onClose, initialConfig }) => {
 
   return (
     <ConnectModal
-      title="Connect to Stripe"
+      title={fbt(
+        'Connect to Stripe',
+        'admin.settings.payments.stripe.connectStripe'
+      )}
       validate={() => {
         const validateResponse = validate(state)
         setState(validateResponse.newState)
@@ -92,12 +108,20 @@ const StripeModal = ({ onClose, initialConfig }) => {
       actions={<VerifyButton onVerify={verifyCredentials} />}
     >
       <div className="form-group">
-        <label>Stripe Public Key</label>
+        <label>
+          <fbt desc="admin.settings.payments.stripe.publicKey">
+            Stripe Public Key
+          </fbt>
+        </label>
         <input {...input('stripeKey')} />
         {Feedback('stripeKey')}
       </div>
       <div className="form-group">
-        <label>Stripe Secret Key</label>
+        <label>
+          <fbt desc="admin.settings.payments.stripe.secretKey">
+            Stripe Secret Key
+          </fbt>
+        </label>
         <PasswordField input={input} field="stripeBackend" />
         {Feedback('stripeBackend')}
       </div>

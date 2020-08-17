@@ -2,6 +2,7 @@ import React from 'react'
 import { NavLink, useRouteMatch, Switch, Route } from 'react-router-dom'
 
 import get from 'lodash/get'
+import fbt from 'fbt'
 
 import useOrder from 'utils/useOrder'
 import { useStateValue } from 'data/state'
@@ -27,7 +28,7 @@ const AdminOrder = () => {
     <>
       <h3 className="admin-title">
         <Link to="/admin/orders" className="muted">
-          Orders
+          <fbt desc="Orders">Orders</fbt>
         </Link>
         <span className="chevron" />
         {`Order #${orderId}`}
@@ -37,14 +38,14 @@ const AdminOrder = () => {
               tab ? `/${tab}` : ''
             }`}
           >
-            &lt; Older
+            &lt; <fbt desc="Older">Older</fbt>
           </Link>
           <Link
             to={`/admin/orders/${listingId}-${offerId + 1}${
               tab ? `/${tab}` : ''
             }`}
           >
-            Newer &gt;
+            <fbt desc="Newer">Newer</fbt> &gt;
           </Link>
         </div>
       </h3>
@@ -54,7 +55,7 @@ const AdminOrder = () => {
       <ul className="nav nav-tabs mt-3 mb-4">
         <li className="nav-item">
           <NavLink className="nav-link" to={urlPrefix} exact>
-            Details
+            <fbt desc="Details">Details</fbt>
           </NavLink>
         </li>
         {admin.role !== 'admin' ? null : (
@@ -67,13 +68,15 @@ const AdminOrder = () => {
         {admin.role !== 'admin' ? null : (
           <li className="nav-item">
             <NavLink className="nav-link" to={`${urlPrefix}/contract`}>
-              Contract
+              <fbt desc="Contract">Contract</fbt>
             </NavLink>
           </li>
         )}
       </ul>
       {loading ? (
-        'Loading...'
+        <>
+          <fbt desc="Loading">Loading</fbt>...
+        </>
       ) : (
         <Switch>
           <Route path={`${urlPrefix}/printful`}>

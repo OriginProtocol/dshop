@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 
+import fbt from 'fbt'
+
 import { useStateValue } from 'data/state'
 import useBackendApi from 'utils/useBackendApi'
 import SetupLayout from 'pages/super-admin/setup/_SetupLayout'
@@ -23,7 +25,9 @@ const Login = ({ publicSignups }) => {
           className="actions"
           style={{ marginTop: '1rem', marginBottom: '-2rem ' }}
         >
-          Your password has been updated. Please login to continue.
+          <fbt desc="admin.auth.login.passwordUpdated">
+            Your password has been updated. Please login to continue.
+          </fbt>
         </div>
       )}
       <form
@@ -43,12 +47,14 @@ const Login = ({ publicSignups }) => {
             })
             .catch((err) => {
               console.error('Error signing in', err)
-              setState({ ...state, error: 'Unauthorized' })
+              setState({ ...state, error: fbt('Unauthorized', 'Unauthorized') })
             })
         }}
       >
         <div className="form-group">
-          <label>E-mail</label>
+          <label>
+            <fbt desc="Email">Email</fbt>
+          </label>
           <input
             type="email"
             className="form-control"
@@ -58,7 +64,9 @@ const Login = ({ publicSignups }) => {
           />
         </div>
         <div className="form-group">
-          <label>Password</label>
+          <label>
+            <fbt desc="Password">Password</fbt>
+          </label>
           <input
             value={state.password}
             onChange={(e) => setState({ ...state, password: e.target.value })}
@@ -68,19 +76,27 @@ const Login = ({ publicSignups }) => {
         </div>
         <ErrorText>{state.error}</ErrorText>
         <div className="form-group mb-0">
-          <button type="submit">Login</button>
+          <button type="submit">
+            <fbt desc="Login">Login</fbt>
+          </button>
         </div>
       </form>
       {!publicSignups ? null : (
         <div className="actions">
-          Don&apos;t yet have an account?
-          <Link className="ml-2" to="/admin/signup" children="Sign Up" />
+          <fbt desc="admin.auth.login.noAccountYet">
+            Don&apos;t yet have an account?
+          </fbt>
+          <Link
+            className="ml-2"
+            to="/admin/signup"
+            children={<fbt desc="SignUp">Sign Up</fbt>}
+          />
           <br />
-          Forgot password?
+          <fbt desc="admin.auth.login.forgotPassword">Forgot password?</fbt>
           <Link
             className="ml-2"
             to="/admin/forgot-password"
-            children="Click here"
+            children={<fbt desc="ClickHere">Click here</fbt>}
           />
         </div>
       )}
