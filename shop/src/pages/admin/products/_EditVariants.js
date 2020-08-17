@@ -1,5 +1,7 @@
 import React from 'react'
 
+import fbt from 'fbt'
+
 import formatPrice from 'utils/formatPrice'
 import SelectVariantImage from './_SelectVariantImage'
 
@@ -17,13 +19,21 @@ const EditVariants = ({
     <table className="table admin-products edit-variants">
       <thead>
         <tr>
-          <th>Available</th>
+          <th>
+            <fbt desc="Available">Available</fbt>
+          </th>
           {options.map((opt, idx) => (
             <th key={`variant-opt-${opt || idx}`}>{opt}</th>
           ))}
-          <th>Price</th>
-          <th>SKU</th>
-          <th>Image</th>
+          <th>
+            <fbt desc="Price">Price</fbt>
+          </th>
+          <th>
+            <fbt desc="SKU">SKU</fbt>
+          </th>
+          <th>
+            <fbt desc="Image">Image</fbt>
+          </th>
         </tr>
       </thead>
       <tbody>
