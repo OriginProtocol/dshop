@@ -13,7 +13,7 @@ import Link from 'components/Link'
 
 import PayWithCrypto from './payment-methods/Crypto'
 import PayWithStripe from './payment-methods/Stripe'
-import PayWithUphold from './payment-methods/Uphold'
+import PayWithUphold from './payment-methods/uphold/Uphold'
 import PayOffline from './payment-methods/OfflinePayment'
 import PayWithPayPal from './payment-methods/PayPal'
 import BillingAddress from './_BillingAddress'

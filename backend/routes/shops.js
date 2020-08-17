@@ -798,7 +798,8 @@ module.exports = function (router) {
         'logErrors',
         'paypalClientId',
         'offlinePaymentMethods',
-        'supportEmail'
+        'supportEmail',
+        'upholdClient'
       )
       const jsonNetConfig = pick(
         req.body,

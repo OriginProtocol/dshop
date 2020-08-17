@@ -17,7 +17,8 @@ try {
 const DefaultPaymentMethods = [
   { id: 'crypto', label: fbt('Crypto Currency', 'paymentMethods.crypto') },
   { id: 'stripe', label: fbt('Credit Card', 'paymentMethods.stripe') },
-  { id: 'paypal', label: fbt('PayPal', 'paymentMethods.paypal') }
+  { id: 'paypal', label: fbt('PayPal', 'paymentMethods.paypal') },
+  { id: 'uphold', label: fbt('Uphold', 'paymentMethods.uphold') }
 ]
 
 let config
@@ -46,6 +47,8 @@ export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
       if (m.id === 'stripe' && !config.stripeKey) {
         return false
       } else if (m.id === 'paypal' && !config.paypalClientId) {
+        return false
+      } else if (m.id === 'uphold' && !config.upholdClient) {
         return false
       }
       return true

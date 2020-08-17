@@ -17,12 +17,26 @@ const UpholdEndpoints = {
     auth: 'https://www.uphold.com'
   },
   sandbox: {
-    api: 'https://sandbox-api.uphold.com',
+    api: 'https://api-sandbox.uphold.com',
     auth: 'https://sandbox.uphold.com'
   }
 }
 
 module.exports = function (router) {
+  router.get('/uphold', async (req, res) => {
+    req.session.upholdAccessToken = null
+    req.session.upholdAuth = null
+    req.session.save(function () {
+      res.send(
+        `<html>
+        <meta http-equiv="refresh" content="1; url=/">
+        <script>window.opener.postMessage('uphold:error', '*')</script>
+        <body>Redirecting...</body>
+      </html>`
+      )
+    })
+  })
+
   router.get('/uphold/authed', authShop, async (req, res) => {
     const { upholdApi } = getConfig(req.shop.config)
     if (!UpholdEndpoints[upholdApi]) {
@@ -36,7 +50,11 @@ module.exports = function (router) {
         }
       })
       const json = await response.json()
-      return res.json({ authed: json.id ? true : false, name: json.fullName })
+      return res.json({
+        success: true,
+        authed: json.id ? true : false,
+        name: json.fullName
+      })
     }
 
     const shopConfig = getConfig(req.shop.config)
@@ -52,6 +70,7 @@ module.exports = function (router) {
     ]
     const baseUri = `${UpholdEndpoints[upholdApi].auth}/authorize/${clientId}`
     res.json({
+      success: true,
       authed: false,
       redirect: `${baseUri}?scope=${scopes.join(' ')}&state=${state}`
     })
@@ -62,27 +81,35 @@ module.exports = function (router) {
     const { code, state } = req.query
     if (!upholdAuth) {
       log.error('No upholdAuth in session')
-      res.send(`<script>window.opener.postMessage('error', '*')</script>Err`)
+      res.send(
+        `<script>window.opener.postMessage('uphold:error', '*')</script>Err`
+      )
       return
     }
 
     if (state !== String(upholdAuth.state)) {
       log.error('Incorrect upholdAuth state', state, upholdAuth.state)
-      res.send(`<script>window.opener.postMessage('error', '*')</script>Err`)
+      res.send(
+        `<script>window.opener.postMessage('uphold:error', '*')</script>Err`
+      )
       return
     }
 
     const shop = await Shop.findOne({ where: { id: upholdAuth.shop } })
     if (!shop) {
       log.error('No shop')
-      res.send(`<script>window.opener.postMessage('error', '*')</script>Err`)
+      res.send(
+        `<script>window.opener.postMessage('uphold:error', '*')</script>Err`
+      )
       return
     }
     const shopConfig = getConfig(shop.config)
     const apiEndpoint = get(UpholdEndpoints, `[${shopConfig.upholdApi}].api`)
     if (!apiEndpoint) {
       log.error('Uphold not configured')
-      res.send(`<script>window.opener.postMessage('error', '*')</script>Err`)
+      res.send(
+        `<script>window.opener.postMessage('uphold:error', '*')</script>Err`
+      )
     }
 
     const response = await fetch(`${apiEndpoint}/oauth2/token`, {
@@ -103,7 +130,7 @@ module.exports = function (router) {
       req.session.upholdAccessToken = body.access_token
     }
 
-    res.send(`<script>window.opener.postMessage('ok', '*')</script>OK`)
+    res.send(`<script>window.opener.postMessage('uphold:ok', '*')</script>OK`)
   })
 
   router.get('/uphold/cards', authShop, async (req, res) => {
@@ -139,7 +166,7 @@ module.exports = function (router) {
     })
     const filteredCards = cards.filter((c) => c.balance !== '0.00')
     const sortedCards = sortBy(filteredCards, [(o) => -o.normalizedBalance])
-    res.json(sortedCards)
+    res.json({ success: true, cards: sortedCards })
   })
 
   // body: { amount, listingId, data }
@@ -169,24 +196,32 @@ module.exports = function (router) {
       }
 
       const url = `${UpholdEndpoints[upholdApi].api}/v0/me/cards/${req.body.card}`
+      const body = {
+        denomination: {
+          amount: Number(req.body.amount) / 100,
+          currency: 'USD'
+        },
+        destination: shopConfig.upholdClient
+      }
+
       const response = await fetch(`${url}/transactions?commit=true`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${authToken}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          denomination: { amount: req.body.amount, currency: 'USD' },
-          destination: shopConfig.upholdClient
-        })
+        body: JSON.stringify(body)
       })
 
       const json = await response.json()
-      // log.debug(JSON.stringify(json, null, 2))
 
       if (json.errors) {
+        log.debug(JSON.stringify(json, null, 2))
         return res.json({ error: 'Error' })
       }
+
+      req.amount = req.body.amount
+      req.paymentCode = json.id
 
       next()
     },

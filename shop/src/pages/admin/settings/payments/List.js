@@ -230,17 +230,12 @@ const PaymentSettings = () => {
                   <div className="mt-1">{`Account: ${sellerWallet}`}</div>
                 </div>
               </>
-            ) : sellerWallet ? (
-              <>
-                <div className="description">
-                  {`Your listing is pending creation using account ${sellerWallet}`}
-                </div>
-              </>
             ) : (
               <>
                 <div className="description">
-                  You have not connected a wallet. This is where crypto payments
-                  will be sent.
+                  {sellerWallet
+                    ? `Your listing is pending creation using account ${sellerWallet}`
+                    : `You have not connected a wallet. This is where crypto payments will be sent.`}
                 </div>
                 <div className="actions">
                   <CreateListing
@@ -249,7 +244,7 @@ const PaymentSettings = () => {
                       refetch()
                       refetchConfig()
                     }}
-                    children="Connect"
+                    children={sellerWallet ? 'Re-Connect' : 'Connect'}
                   />
                 </div>
               </>
@@ -265,7 +260,12 @@ const PaymentSettings = () => {
             initialConfig={{ ...config, ...shopConfig }}
           />
         )}
-        {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
+        {connectModal === 'uphold' && (
+          <UpholdModal
+            initialConfig={{ ...config, ...shopConfig }}
+            onClose={onCloseModal}
+          />
+        )}
         {connectModal === 'paypal' && (
           <PayPalModal
             onClose={onCloseModal}
