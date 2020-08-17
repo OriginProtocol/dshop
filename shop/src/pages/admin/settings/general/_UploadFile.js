@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react'
+import fbt from 'fbt'
 
 const UploadIcon = () => (
   <svg width="38" height="47" viewBox="0 0 38 47">
@@ -78,7 +79,19 @@ const UploadFile = ({ replace, accept, onUpload = () => {} }) => {
         } btn-rounded px-4`}
         onClick={() => logoRef.current.click()}
       >
-        {isDrop ? 'Drop File Here' : `${replace ? 'Replace' : 'Add'} Image`}
+        {isDrop ? (
+          <fbt desc="admin.settings.general.dropFileHere">Drop File Here</fbt>
+        ) : (
+          `${
+            replace ? (
+              <fbt desc="admin.settings.general.replaceImage">
+                Replace Image
+              </fbt>
+            ) : (
+              <fbt desc="admin.settings.general.replaceImage">Add Image</fbt>
+            )
+          }`
+        )}
       </button>
     </div>
   )

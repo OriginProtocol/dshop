@@ -1,5 +1,6 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
+import fbt from 'fbt'
 
 import useBackendApi from 'utils/useBackendApi'
 import useConfig from 'utils/useConfig'
@@ -16,11 +17,14 @@ const AdminDeployShop = ({ className = 'btn-outline-primary', buttonText }) => {
     return (
       <ConfirmationModal
         className={`btn ${className}`}
-        buttonText={buttonText || 'Publish'}
-        confirmText="Please setup your crypto wallet first"
+        buttonText={buttonText || fbt('Publish', 'Publish')}
+        confirmText={fbt(
+          'Please setup your crypto wallet first',
+          'admin.settings.deployments.connectWallet'
+        )}
         confirmedText={false}
-        cancelText="Cancel"
-        proceedText="OK"
+        cancelText={fbt('Cancel', 'Cancel')}
+        proceedText={fbt('OK', 'OK')}
         onConfirm={() =>
           new Promise((resolve) => {
             history.push('/admin/settings/payments')
@@ -34,10 +38,16 @@ const AdminDeployShop = ({ className = 'btn-outline-primary', buttonText }) => {
   return (
     <ConfirmationModal
       className={`btn ${className}`}
-      buttonText={buttonText || 'Publish'}
-      confirmText="Are you sure you want to publish changes?"
-      confirmedText="Your changes have been successfully published."
-      loadingText="Publishing..."
+      buttonText={buttonText || fbt('Publish', 'Publish')}
+      confirmText={fbt(
+        'Are you sure you want to publish changes?',
+        'admin.settings.deployments.publishConfirm'
+      )}
+      confirmedText={fbt(
+        'Your changes have been successfully published.',
+        'admin.settings.deployments.publishedText'
+      )}
+      loadingText={`${fbt('Publishing', 'Publishing')}...`}
       spinner={true}
       onConfirm={() => post(`/shop/deploy`)}
       onSuccess={() => {

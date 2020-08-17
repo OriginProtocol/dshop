@@ -1,6 +1,7 @@
 import React, { useReducer, useEffect } from 'react'
 
 import pickBy from 'lodash/pickBy'
+import fbt from 'fbt'
 
 import Modal from 'components/Modal'
 import PlusIcon from 'components/icons/Plus'
@@ -13,16 +14,25 @@ const validate = (state) => {
   const newState = {}
 
   if (!state.network) {
-    newState.networkError = 'Select a network'
+    newState.networkError = fbt(
+      'Select a network',
+      'admin.settings.general.social.networkError'
+    )
   }
 
   if (!state.link) {
-    newState.linkError = 'Link is required'
+    newState.linkError = fbt(
+      'Link is required',
+      'admin.settings.general.social.linkError'
+    )
   } else {
     try {
       new URL(state.link)
     } catch (err) {
-      newState.linkError = 'Not a valid URL'
+      newState.linkError = fbt(
+        'Not a valid URL',
+        'admin.settings.general.social.linkInvalidError'
+      )
     }
   }
 
@@ -88,7 +98,8 @@ const EditSocialLinkModal = ({ editMode, defaultValues, onChange }) => {
           className="btn btn-outline-primary d-flex align-items-center w-100"
           onClick={() => setState({ showModal: true })}
         >
-          <PlusIcon className="mr-2" /> Add Link
+          <PlusIcon className="mr-2" />{' '}
+          <fbt desc="admin.settings.general.social.addLink">Add Link</fbt>
         </button>
       )}
       {!state.showModal ? null : (
@@ -102,11 +113,19 @@ const EditSocialLinkModal = ({ editMode, defaultValues, onChange }) => {
           }}
         >
           <div className="modal-body add-social-link-modal">
-            <h5>Add a Social Media Link</h5>
+            <h5>
+              <fbt desc="admin.settings.general.social.addSocialLink">
+                Add a Social Media Link
+              </fbt>
+            </h5>
             <div className="form-group">
-              <label>Network</label>
+              <label>
+                <fbt desc="Network">Network</fbt>
+              </label>
               <select {...input('network')} disabled={editMode}>
-                <option>Select one</option>
+                <option>
+                  <fbt desc="SelectOne">Select one</fbt>
+                </option>
                 {networks.map((network) => (
                   <option key={network.value} value={network.value}>
                     {network.name}
@@ -116,7 +135,9 @@ const EditSocialLinkModal = ({ editMode, defaultValues, onChange }) => {
               {Feedback('network')}
             </div>
             <div className="form-group">
-              <label>Link URL</label>
+              <label>
+                <fbt desc="admin.settings.general.social.linkURL">Link URL</fbt>
+              </label>
               <input
                 {...input('link')}
                 onKeyDown={(e) => {
@@ -141,14 +162,14 @@ const EditSocialLinkModal = ({ editMode, defaultValues, onChange }) => {
                   })
                 }
               >
-                Cancel
+                <fbt desc="Cancel">Cancel</fbt>
               </button>
               <button
                 className="btn btn-primary"
                 type="button"
                 onClick={addLink}
               >
-                Add
+                <fbt desc="Add">Add</fbt>
               </button>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import fbt from 'fbt'
+import fbt, { FbtParam } from 'fbt'
 
 import useShopConfig from 'utils/useShopConfig'
 import useEmailAppsList from 'utils/useEmailAppsList'
@@ -34,9 +34,14 @@ const AppSettings = () => {
       {
         id: 'printful',
         title: 'Printful',
-        description: printfulEnabled
-          ? `Printful API key: ${maskSecret(printful)}`
-          : 'Import your products from Printful.',
+        description: printfulEnabled ? (
+          <fbt desc="__printfulEnabledDesc">
+            Printful API key:{' '}
+            <FbtParam name="maskedSecret">{maskSecret(printful)}</FbtParam>
+          </fbt>
+        ) : (
+          fbt('Import your products from Printful.', '__printfulDisabledDesc')
+        ),
         icon: <img src="images/printful.svg" width="70%" />,
         enabled: printfulEnabled,
         actions: <PrintfulSync className="mr-2" />,
@@ -58,7 +63,7 @@ const AppSettings = () => {
                   type="button"
                   onClick={() => setShowConnectModal(processor.id)}
                 >
-                  Configure
+                  <fbt desc="Configure">Configure</fbt>
                 </button>
                 <DisconnectModal
                   processor={processor}
@@ -71,7 +76,7 @@ const AppSettings = () => {
                 type="button"
                 onClick={() => setShowConnectModal(processor.id)}
               >
-                Connect
+                <fbt desc="Connect">Connect</fbt>
               </button>
             )}
           </>
@@ -103,7 +108,7 @@ const AppSettings = () => {
           <fbt desc="Settings">Settings</fbt>
         </Link>
         <span className="chevron" />
-        Apps
+        <fbt desc="Apps">Apps</fbt>
       </h3>
       <ProcessorsList processors={appsList} />
       {!connectModal ? null : (

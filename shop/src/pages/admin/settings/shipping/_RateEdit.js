@@ -23,7 +23,9 @@ const RateEdit = ({ rateInfo, onChange, hideLabel, onDelete, showDelete }) => {
             </label>
           )}
           <select {...input('type')}>
-            <option>Select one</option>
+            <option>
+              <fbt desc="SelectOne">Select one</fbt>
+            </option>
             {shippingTimes.map((t) => (
               <option key={t.value} value={t.value}>
                 {`${t.label}${
