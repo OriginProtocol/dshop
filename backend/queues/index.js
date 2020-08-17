@@ -9,6 +9,7 @@ function runProcessors() {
   require('./eventsProcessor').attachToQueue()
   require('./autosslProcessor').attachToQueue()
   require('./etlProcessor').attachToQueue()
+  require('./txProcessor').attachToQueue()
 }
 
 module.exports = {
