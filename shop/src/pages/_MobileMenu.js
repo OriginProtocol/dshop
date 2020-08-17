@@ -50,8 +50,12 @@ const MobileMenu = ({ open, onClose }) => {
           </Item>
         ))}
         <li>
-          <SocialLinks />
+          <Link to="/about">
+            <fbt desc="About">About</fbt>
+          </Link>
         </li>
+
+        <SocialLinks el="li" />
       </ul>
     </div>
   )
