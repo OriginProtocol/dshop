@@ -4,6 +4,8 @@ import { useRouteMatch, useHistory, Prompt } from 'react-router'
 import get from 'lodash/get'
 import pickBy from 'lodash/pickBy'
 
+import fbt, { FbtParam } from 'fbt'
+
 import { useStateValue } from 'data/state'
 import formatPrice from 'utils/formatPrice'
 import useProduct from 'utils/useProduct'
@@ -38,28 +40,37 @@ function validate(state, { hasOptions }) {
   let validCustomProcTime = true
 
   if (!state.title || !state.title.trim().length) {
-    newState.titleError = 'Title is required'
+    newState.titleError = fbt('Title is required', 'admin.products.titleError')
   }
 
   if (!state.description || !state.description.trim().length) {
-    newState.descriptionError = 'Description is required'
+    newState.descriptionError = fbt(
+      'Description is required',
+      'admin.products.descriptionError'
+    )
   }
 
   if (!state.price || state.price < 0) {
-    newState.priceError = 'Price is required'
+    newState.priceError = fbt('Price is required', 'admin.products.priceError')
   } else if (!String(state.price).match(/^[0-9]+(\.[0-9]{1,2})?$/)) {
-    newState.priceError = 'Invalid price'
+    newState.priceError = fbt('Invalid price', 'admin.products.priceValError')
   }
 
   if (hasOptions) {
     newState.variants = state.variants.map((variant) => {
       const out = removeErrorKeys(variant)
       if (!variant.title || !variant.title.trim().length) {
-        out.titleError = 'Variant name is required'
+        out.titleError = fbt(
+          'Variant name is required',
+          'admin.products.varNameError'
+        )
       }
 
       if (!variant.options || !variant.options.length) {
-        out.optionsError = 'At least one value is required'
+        out.optionsError = fbt(
+          'At least one value is required',
+          'admin.products.optionsError'
+        )
       }
 
       return out
@@ -83,11 +94,17 @@ function validate(state, { hasOptions }) {
     }
 
     if (!state.processingTimeOpts || !state.processingTimeOpts.fromVal) {
-      newState.processingTimeOpts.fromValError = 'Select a value'
+      newState.processingTimeOpts.fromValError = fbt(
+        'Select a value',
+        'admin.products.fromValError'
+      )
     }
 
     if (!state.processingTimeOpts || !state.processingTimeOpts.toVal) {
-      newState.processingTimeOpts.toValError = 'Select a value'
+      newState.processingTimeOpts.toValError = fbt(
+        'Select a value',
+        'admin.products.toValError'
+      )
     }
 
     validCustomProcTime = Object.keys(newState.processingTimeOpts).every(
@@ -143,7 +160,9 @@ const EditProduct = () => {
   // })
   // const customProcTimeFeedback = formFeedback(procTimeState)
 
-  const title = `${isNewProduct ? 'Add' : 'Edit'} product`
+  const title = isNewProduct
+    ? fbt('Add product', 'admin.products.addProduct')
+    : fbt('Edit product', 'admin.products.editProduct')
 
   const { product } = useProduct(productId)
   const { collections } = useCollections()
@@ -238,10 +257,18 @@ const EditProduct = () => {
     setFormState({ ...newState, hasChanges: false })
 
     if (!valid) {
-      setSubmitError('Please fill in all required fields')
+      setSubmitError(
+        fbt(
+          'Please fill in all required fields',
+          'admin.products.missingFieldsError'
+        )
+      )
       dispatch({
         type: 'toast',
-        message: 'Please fill in all required fields',
+        message: fbt(
+          'Please fill in all required fields',
+          'admin.products.missingFieldsError'
+        ),
         style: 'error'
       })
       return
@@ -273,7 +300,10 @@ const EditProduct = () => {
       // Clear memoize cache for existing product
       fetchProduct.cache.delete(`${config.dataSrc}-${product.id}`)
 
-      dispatch({ type: 'toast', message: 'Product saved' })
+      dispatch({
+        type: 'toast',
+        message: fbt('Product saved', 'admin.products.productSaved')
+      })
       dispatch({
         type: 'reload',
         target: ['products', 'collections', 'shopConfig']
@@ -286,7 +316,9 @@ const EditProduct = () => {
       return
     } catch (error) {
       console.error('Could not update the product', error)
-      setSubmitError('Could not update the product')
+      setSubmitError(
+        fbt('Could not update the product', 'admin.products.updateFailed')
+      )
     } finally {
       setSubmitting(false)
     }
@@ -305,7 +337,7 @@ const EditProduct = () => {
         />
       ) : (
         <DeleteButton type="button" product={product}>
-          Delete
+          <fbt desc="Delete">Delete</fbt>
         </DeleteButton>
       )}
       <button
@@ -324,7 +356,10 @@ const EditProduct = () => {
     <div className="admin-edit-product">
       <Prompt
         when={formState.hasChanges ? true : false}
-        message="Are you sure? You have unsaved changes."
+        message={fbt(
+          'Are you sure? You have unsaved changes.',
+          'admin.products.unsavedChanges'
+        )}
       />
       <form
         autoComplete="off"
@@ -335,7 +370,7 @@ const EditProduct = () => {
       >
         <h3 className="admin-title with-border">
           <Link to="/admin/products" className="muted">
-            Products
+            <fbt desc="Products">Products</fbt>
           </Link>
           <span className="chevron" />
           {title}
@@ -347,18 +382,23 @@ const EditProduct = () => {
             <div className="form-section">
               {!externallyManaged ? null : (
                 <div className="alert alert-info">
-                  Please manage this product
-                  <a
-                    className="ml-1"
-                    style={{ textDecoration: 'underline' }}
-                    href={`https://www.printful.com/dashboard/sync/update?id=${formState.externalId}`}
-                    children="via Printful"
-                  />
+                  <fbt desc="admin.products.manageViaPrintful">
+                    Please manage this product
+                    <a
+                      className="ml-1"
+                      style={{ textDecoration: 'underline' }}
+                      href={`https://www.printful.com/dashboard/sync/update?id=${formState.externalId}`}
+                    >
+                      via Printful
+                    </a>
+                  </fbt>
                   .
                 </div>
               )}
               <div className="form-group">
-                <label>Title</label>
+                <label>
+                  <fbt desc="Title">Title</fbt>
+                </label>
                 <input
                   type="text"
                   {...input('title')}
@@ -369,7 +409,9 @@ const EditProduct = () => {
               </div>
 
               <div className="form-group">
-                <label>Description</label>
+                <label>
+                  <fbt desc="Description">Description</fbt>
+                </label>
                 <textarea
                   {...input('description')}
                   disabled={externallyManaged}
@@ -379,9 +421,15 @@ const EditProduct = () => {
 
               <div className="media-uploader">
                 <label>
-                  Photos{' '}
+                  <fbt desc="Photos">Photos</fbt>{' '}
                   {externallyManaged ? null : (
-                    <span>(add as many as you like)</span>
+                    <span>
+                      (
+                      <fbt desc="admin.products.addManyPhotos">
+                        add as many as you like
+                      </fbt>
+                      )
+                    </span>
                   )}
                 </label>
                 <ImagePicker
@@ -397,7 +445,9 @@ const EditProduct = () => {
               <div className="row">
                 <div className="col-md-6">
                   <div className="form-group">
-                    <label>Price</label>
+                    <label>
+                      <fbt desc="Price">Price</fbt>
+                    </label>
                     <div className="input-group">
                       <div className="input-group-prepend">
                         <span className="input-group-text">
@@ -417,7 +467,10 @@ const EditProduct = () => {
 
                   <div className="form-group">
                     <label>
-                      SKU <span>(Stock Keeping Unit)</span>
+                      <fbt desc="SKU">SKU</fbt>{' '}
+                      <span>
+                        (<fbt desc="StockKeepingUnit">Stock Keeping Unit</fbt>)
+                      </span>
                     </label>
                     <input
                       type="text"
@@ -437,7 +490,9 @@ const EditProduct = () => {
 
             <div className="row">
               <div className="col-md-12">
-                <label>Variants</label>
+                <label>
+                  <fbt desc="Variants">Variants</fbt>
+                </label>
                 <div className="form-check">
                   <label className="form-check-label">
                     <input
@@ -447,7 +502,9 @@ const EditProduct = () => {
                       disabled={externallyManaged}
                       onChange={(e) => setHasOptions(e.target.checked)}
                     />
-                    This product has multiple options, like different sizes
+                    <fbt desc="admin.products.hasVariants">
+                      This product has multiple options, like different sizes
+                    </fbt>
                   </label>
                 </div>
               </div>
@@ -459,12 +516,17 @@ const EditProduct = () => {
                   return (
                     <EditOption
                       key={index}
-                      label={`Option ${index + 1}`}
+                      label={
+                        <fbt desc="admin.products.optionTitle">
+                          Option{' '}
+                          <FbtParam name="optionNumber">{index + 1}</FbtParam>
+                        </fbt>
+                      }
                       placeholder={
                         index === 0
-                          ? 'eg Size'
+                          ? fbt('eg Size', 'admin.products.optionExampleSize')
                           : index === 1
-                          ? 'eg Color'
+                          ? fbt('eg Color', 'admin.products.optionExampleColor')
                           : null
                       }
                       formState={{
@@ -520,7 +582,7 @@ const EditProduct = () => {
                         })
                       }}
                     >
-                      Add option
+                      <fbt desc="admin.products.addOption">Add option</fbt>
                     </button>
                   )}
                 </div>

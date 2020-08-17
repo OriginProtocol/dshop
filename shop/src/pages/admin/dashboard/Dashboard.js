@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import get from 'lodash/get'
+import fbt from 'fbt'
 
 import useDashboardStats from 'utils/useDashboardStats'
 
@@ -23,31 +24,45 @@ const AdminDashboard = () => {
   return (
     <>
       <h3 className="admin-title">
-        Dashboard
+        <fbt desc="Dashboard">Dashboard</fbt>
         <div className="ml-auto" style={{ fontSize: 14 }}>
-          Range:
+          <fbt desc="Range">Range</fbt>:
           <select
             className="ml-2"
             value={range}
             onChange={(e) => setRange(e.target.value)}
           >
-            <option value="all-time">All time</option>
-            <option value="30-days">Last 30 days</option>
-            <option value="7-days">Last 7 days</option>
-            <option value="yesterday">Yesterday</option>
-            <option value="today">Today</option>
+            <option value="all-time">
+              <fbt desc="admin.dashboard.allTime">All time</fbt>
+            </option>
+            <option value="30-days">
+              <fbt desc="admin.dashboard.last30Days">Last 30 days</fbt>
+            </option>
+            <option value="7-days">
+              <fbt desc="admin.dashboard.last7Days">Last 7 days</fbt>
+            </option>
+            <option value="yesterday">
+              <fbt desc="Yesterday">Yesterday</fbt>
+            </option>
+            <option value="today">
+              <fbt desc="Today">Today</fbt>
+            </option>
           </select>
         </div>
       </h3>
       <div className="admin-dashboard-stats">
         <div className="stat-item">
           <img src="images/box.svg" className="stat-image" />
-          <div className="stat-name">Total orders</div>
+          <div className="stat-name">
+            <fbt desc="admin.dashboard.totalOrders">Total orders</fbt>
+          </div>
           <div className="stat-value">{totalOrders}</div>
         </div>
         <div className="stat-item">
           <img src="images/coins.svg" className="stat-image" />
-          <div className="stat-name">Total revenue</div>
+          <div className="stat-name">
+            <fbt desc="admin.dashboard.totalRevenue">Total revenue</fbt>
+          </div>
           <div className="stat-value">
             <Price amount={totalRevenue} />
           </div>
@@ -63,7 +78,9 @@ const AdminDashboard = () => {
         <table className="table admin-products mt-4">
           <thead>
             <tr>
-              <th colSpan="2">Top Products</th>
+              <th colSpan="2">
+                <fbt desc="admin.dashboard.topProducts">Top Products</fbt>
+              </th>
               <th className="text-center">
                 <a
                   href="#"
@@ -72,7 +89,8 @@ const AdminDashboard = () => {
                     setSort('orders')
                   }}
                 >
-                  Sales{sort === 'orders' ? <> &#8595;</> : null}
+                  <fbt desc="Sales">Sales</fbt>
+                  {sort === 'orders' ? <> &#8595;</> : null}
                 </a>
               </th>
               <th className="text-center">
@@ -83,7 +101,8 @@ const AdminDashboard = () => {
                     setSort('revenue')
                   }}
                 >
-                  Revenue{sort === 'revenue' ? <> &#8595;</> : null}
+                  <fbt desc="Revenue">Revenue</fbt>
+                  {sort === 'revenue' ? <> &#8595;</> : null}
                 </a>
               </th>
             </tr>

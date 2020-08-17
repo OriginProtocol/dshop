@@ -2,6 +2,8 @@ import React, { useReducer, useEffect } from 'react'
 import omit from 'lodash/omit'
 import sortBy from 'lodash/sortBy'
 
+import fbt from 'fbt'
+
 import useProducts from 'utils/useProducts'
 import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
@@ -61,7 +63,9 @@ const AddProducts = ({ children, collection }) => {
           shouldClose={state.shouldClose}
         >
           <div className="modal-body">
-            <h4>Edit products</h4>
+            <h4>
+              <fbt desc="admin.collections.editProducts">Edit products</fbt>
+            </h4>
             <div className="collection-products">
               {products.length ? null : 'No products found.'}
               {state.sortedProducts.map((product) => (
@@ -81,7 +85,7 @@ const AddProducts = ({ children, collection }) => {
                 <button
                   className="btn btn-outline-secondary"
                   onClick={() => setState({ shouldClose: true })}
-                  children="Cancel"
+                  children={<fbt desc="Cancel">Cancel</fbt>}
                 />
                 <button
                   className={`btn btn-primary${
@@ -101,7 +105,13 @@ const AddProducts = ({ children, collection }) => {
                           type: 'reload',
                           target: 'collections'
                         })
-                        dispatch({ type: 'toast', message: 'Saved OK' })
+                        dispatch({
+                          type: 'toast',
+                          message: fbt(
+                            'Saved OK',
+                            'admin.collections.saveSuccess'
+                          )
+                        })
                         setState({ shouldClose: true })
                       })
                       .catch((err) => {
@@ -110,7 +120,7 @@ const AddProducts = ({ children, collection }) => {
                       })
                   }}
                 >
-                  Save
+                  <fbt desc="Save">Save</fbt>
                 </button>
               </div>
             </div>

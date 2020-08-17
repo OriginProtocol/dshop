@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import CreatableSelect from 'react-select/creatable'
+import fbt from 'fbt'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 
@@ -26,7 +27,10 @@ const TokenComponent = ({ options, onChange, disabled }) => {
             event.preventDefault()
         }
       }}
-      placeholder="Separate options with a comma"
+      placeholder={fbt(
+        'Separate options with a comma',
+        'admin.products.optionValuesPlaceholder'
+      )}
       value={options.map((label) => ({ label, value: label }))}
     />
   )
@@ -71,7 +75,7 @@ const EditOptions = ({
               type="button"
               className="remove-link btn btn-link ml-auto"
               onClick={onRemove}
-              children="Remove"
+              children={fbt('Remove', 'Remove')}
             />
           )}
         </div>

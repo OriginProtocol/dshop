@@ -26,7 +26,7 @@ const DeployShop = () => {
           <fbt desc="Settings">Settings</fbt>
         </Link>
         <span className="chevron" />
-        Publish
+        <fbt desc="Publish">Publish</fbt>
         {!deployments.length ? null : (
           <div className="actions">
             <DeployButton className="btn-primary" />
@@ -44,9 +44,15 @@ const DeployShop = () => {
         <table className="table">
           <thead>
             <tr>
-              <th>Deployments</th>
-              <th>IPFS</th>
-              <th>Domain</th>
+              <th>
+                <fbt desc="Deployments">Deployments</fbt>
+              </th>
+              <th>
+                <fbt desc="IPFS">IPFS</fbt>
+              </th>
+              <th>
+                <fbt desc="Domain">Domain</fbt>
+              </th>
             </tr>
           </thead>
           <tbody>

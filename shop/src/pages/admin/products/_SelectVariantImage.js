@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 
+import fbt from 'fbt'
+
 import Modal from 'components/Modal'
 
 const SelectVariantImage = ({ selection, media, onChange, disabled }) => {
@@ -26,7 +28,7 @@ const SelectVariantImage = ({ selection, media, onChange, disabled }) => {
               e.preventDefault()
             }}
           >
-            Change
+            <fbt desc="Change">Change</fbt>
           </a>
         )}
       </div>
@@ -39,7 +41,11 @@ const SelectVariantImage = ({ selection, media, onChange, disabled }) => {
           }}
           className="select-variant-image"
         >
-          <h5>Select an image for the variant</h5>
+          <h5>
+            <fbt desc="admin.products.selectVariantImage">
+              Select an image for the variant
+            </fbt>
+          </h5>
           <div className="hero-image">
             <img src={selection.src} />
           </div>
@@ -62,7 +68,7 @@ const SelectVariantImage = ({ selection, media, onChange, disabled }) => {
                 setShouldClose(true)
               }}
             >
-              Close
+              <fbt desc="Close">Close</fbt>
             </a>
           </div>
         </Modal>

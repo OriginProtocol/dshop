@@ -1,5 +1,6 @@
 import React from 'react'
 import get from 'lodash/get'
+import fbt from 'fbt'
 
 import Summary from '../../checkout/Summary'
 
@@ -12,18 +13,24 @@ const AdminOrderDetails = ({ order }) => {
   return (
     <div className="order-details row">
       <div className="col-md-6">
-        <div className="section-title no-border">Order Summary</div>
+        <div className="section-title no-border">
+          <fbt desc="OrderSummary">Order Summary</fbt>
+        </div>
         <div className="mb-3">
           <Summary cart={cart} />
         </div>
       </div>
       <div className="col-md-6">
-        <div className="section-title">Payment</div>
+        <div className="section-title">
+          <fbt desc="Payment">Payment</fbt>
+        </div>
         <div className="mb-3">
           <PaymentInfo order={order} />
         </div>
 
-        <div className="section-title">Details</div>
+        <div className="section-title">
+          <fbt desc="Details">Details</fbt>
+        </div>
         <div className="mb-3">
           <CustomerInfo order={order} />
         </div>

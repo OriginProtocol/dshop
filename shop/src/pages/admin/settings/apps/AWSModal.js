@@ -2,6 +2,7 @@ import React, { useReducer } from 'react'
 
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
+import fbt from 'fbt'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConnectModal from '../payments/_ConnectModal'
@@ -53,7 +54,7 @@ const AWSModal = ({ onClose, initialConfig, overrideOnConnect }) => {
 
   return (
     <ConnectModal
-      title="Connect to AWS SES"
+      title={fbt('Connect to AWS SES', 'admin.seetings.apps.awsses.connectSES')}
       validate={() => {
         const validateResponse = validate(state)
         setState(validateResponse.newState)
@@ -64,17 +65,25 @@ const AWSModal = ({ onClose, initialConfig, overrideOnConnect }) => {
       overrideOnConnect={overrideOnConnect}
     >
       <div className="form-group">
-        <label>Region</label>
+        <label>
+          <fbt desc="Region">Region</fbt>
+        </label>
         <input {...input('awsRegion')} />
         {Feedback('awsRegion')}
       </div>
       <div className="form-group">
-        <label>Access Key</label>
+        <label>
+          <fbt desc="admin.seetings.apps.awsses.accessKey">Access Key</fbt>
+        </label>
         <PasswordField input={input} field="awsAccessKey" />
         {Feedback('awsAccessKey')}
       </div>
       <div className="form-group">
-        <label>Access Secret</label>
+        <label>
+          <fbt desc="admin.seetings.apps.awsses.accessSecret">
+            Access Secret
+          </fbt>
+        </label>
         <PasswordField input={input} field="awsAccessSecret" />
         {Feedback('awsAccessSecret')}
       </div>
