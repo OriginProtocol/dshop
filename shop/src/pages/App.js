@@ -3,6 +3,8 @@ import { Switch, Route, withRouter, useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 import queryString from 'query-string'
 
+import fbt from 'fbt'
+
 import Main from './Main'
 import Checkout from './checkout/Loader'
 import Order from './OrderLoader'
@@ -102,7 +104,7 @@ const App = ({ location }) => {
       }
     }
     if (document.title === 'TITLE') {
-      document.title = 'Origin Dshop'
+      document.title = fbt('Origin Dshop', 'OriginDshop')
     }
   }, [config])
 

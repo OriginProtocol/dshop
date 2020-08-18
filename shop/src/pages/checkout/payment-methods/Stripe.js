@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import get from 'lodash/get'
-
+import fbt, { FbtParam } from 'fbt'
 import formatPrice from 'utils/formatPrice'
 import { formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
@@ -19,7 +19,14 @@ const PayWithStripe = injectStripe(
     const [formData, setFormData] = useState({})
 
     const currencyOpts = useCurrencyOpts()
-    const defaultButtonText = `Pay ${formatPrice(cart.total, currencyOpts)}`
+    const defaultButtonText = (
+      <fbt desc="checkout.payment.amount">
+        Pay{' '}
+        <FbtParam name="amount">
+          {formatPrice(cart.total, currencyOpts)}
+        </FbtParam>
+      </fbt>
+    )
 
     const paymentMethods = get(config, 'paymentMethods', [])
     const stripeSelected = get(cart, 'paymentMethod.id') === 'stripe'
@@ -72,7 +79,10 @@ const PayWithStripe = injectStripe(
 
       if (!config.backend) {
         setFormData({
-          cardError: 'Stripe configuration error. Please try again later.'
+          cardError: fbt(
+            'Stripe configuration error. Please try again later.',
+            'checkout.payment.stripe.configError'
+          )
         })
         return
       }
@@ -153,7 +163,10 @@ const PayWithStripe = injectStripe(
               console.log(err)
               setFormData({
                 ...formData,
-                cardError: 'Payment server error. Please try again later.'
+                cardError: fbt(
+                  'Payment server error. Please try again later.',
+                  'checkout.payment.serverError'
+                )
               })
               onChange(resetState)
             })
@@ -190,7 +203,7 @@ const PayWithStripe = injectStripe(
               <div className="master" />
               <div className="amex" />
               <div className="discover" />
-              and more...
+              <fbt desc="AndMore">and more...</fbt>
             </div>
           )}
         </label>

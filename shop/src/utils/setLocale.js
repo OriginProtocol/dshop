@@ -1,5 +1,12 @@
-import { IntlViewerContext, init } from 'fbt-runtime'
+import { FbtTranslations, IntlVariations, init } from 'fbt'
 import Languages from 'data/Languages'
+
+const viewerContext = {
+  GENDER: IntlVariations.GENDER_UNKNOWN,
+  locale: 'en_US'
+}
+
+init({ hooks: { getViewerContext: () => viewerContext } })
 
 export default async function setLocale(newLocale) {
   let userLocale = newLocale || localStorage.locale
@@ -24,11 +31,12 @@ export default async function setLocale(newLocale) {
       const res = await fetch(`translations/${locale}.json`)
       if (res.ok) {
         const json = await res.json()
-        init({ translations: { [locale]: json } })
+        FbtTranslations.registerTranslations({ [locale]: json })
       }
     }
   }
 
-  IntlViewerContext.locale = locale
+  viewerContext.locale = locale
+
   return locale
 }

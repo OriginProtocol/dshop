@@ -1,6 +1,7 @@
 import React from 'react'
 import { useLocation, useRouteMatch } from 'react-router-dom'
 import get from 'lodash/get'
+import fbt, { FbtParam } from 'fbt'
 
 import Link from 'components/Link'
 import Paginate from 'components/Paginate'
@@ -28,7 +29,10 @@ const Products = () => {
   const collectionParam = get(match, 'params.collection')
   let collection = collections.find((c) => c.id === collectionParam)
   if (!collection && collectionParam === 'all') {
-    collection = { id: 'all', title: 'All Products' }
+    collection = {
+      id: 'all',
+      title: fbt('All Products', 'products.allProducts')
+    }
   }
 
   let filteredProducts = products
@@ -53,21 +57,36 @@ const Products = () => {
       {isSearch ? (
         <div className="collection">
           <div className="breadcrumbs">
-            <Link to="/">Home</Link>
-            <span>{`Search for "${opts.q}"`}</span>
+            <Link to="/">
+              <fbt desc="Home">Home</fbt>
+            </Link>
+            <span>
+              <fbt desc="products.searchBreadcrumbTitle">
+                Search for{` `}
+                <FbtParam name="searchQuery">{opts.q}</FbtParam>
+              </fbt>
+            </span>
           </div>
           <div className="d-flex flex-row justify-content-between align-items-center">
             <h3>
-              {collection
-                ? collection.title
-                : `Your search for "${opts.q}" revealed the following:`}
+              {collection ? (
+                collection.title
+              ) : (
+                <fbt desc="products.searchTitle">
+                  Your search for{' '}
+                  <FbtParam name="searchQuery">{opts.q}</FbtParam> revealed the
+                  following:
+                </fbt>
+              )}
             </h3>
           </div>
         </div>
       ) : collection ? (
         <div className="collection">
           <div className="breadcrumbs">
-            <Link to="/">Home</Link>
+            <Link to="/">
+              <fbt desc="Home">Home</fbt>
+            </Link>
             <span>{collection.title}</span>
           </div>
           <div className="d-flex flex-row justify-content-between align-items-center">
@@ -84,9 +103,11 @@ const Products = () => {
       )}
 
       {error ? (
-        'Error loading products'
+        <fbt desc="products.loadError">Error loading products</fbt>
       ) : loading ? (
-        'Loading...'
+        <>
+          <fbt desc="Loading">Loading</fbt>...
+        </>
       ) : (
         <ProductList products={pagedProducts} />
       )}

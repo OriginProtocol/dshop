@@ -1,6 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import dayjs from 'dayjs'
+import fbt, { FbtParam } from 'fbt'
 
 import Paginate from 'components/Paginate'
 import Link from 'components/Link'
@@ -12,12 +13,24 @@ import DeleteDiscount from './_Delete'
 import useRest from 'utils/useRest'
 
 function description(discount) {
-  let str = `$${discount.value} off entire order`
+  // TODO: use config.currency
+  let str = fbt(
+    `$${fbt.param('discount', discount.value)} off entire order`,
+    'admin.discounts.discountVal'
+  )
   if (discount.discountType === 'percentage') {
-    str = `${discount.value}% off entire order`
+    str = fbt(
+      `${fbt.param('discount', discount.value)}% off entire order`,
+      'admin.discounts.discountPercentage'
+    )
   }
   if (discount.onePerCustomer) {
-    return <>{str} &bull; One per customer</>
+    return (
+      <>
+        {str} &bull;{' '}
+        <fbt desc="admin.discounts.onePerCustomer">One per customer</fbt>
+      </>
+    )
   }
   return str
 }
@@ -28,7 +41,11 @@ function active(discount) {
     const end = dayjs(discount.endTime).format('MMM D')
     return `${start} - ${end}`
   }
-  return `From ${start}`
+  return (
+    <fbt desc="admin.discounts.discountStartTime">
+      From <FbtParam name="startTime">{start}</FbtParam>
+    </fbt>
+  )
 }
 
 const AdminDiscounts = () => {
@@ -38,11 +55,11 @@ const AdminDiscounts = () => {
   return (
     <>
       <h3 className="admin-title">
-        Discounts
+        <fbt desc="Discounts">Discounts</fbt>
         {!discounts.length ? null : (
           <div className="actions">
             <Link to="/admin/discounts/new" className="btn btn-primary">
-              Create discount
+              <fbt desc="admin.discounts.createDiscount">Create discount</fbt>
             </Link>
           </div>
         )}
@@ -55,9 +72,15 @@ const AdminDiscounts = () => {
             <table className="table admin-discounts table-hover">
               <thead>
                 <tr>
-                  <th>Code</th>
-                  <th>Status</th>
-                  <th>Used</th>
+                  <th>
+                    <fbt desc="Code">Code</fbt>
+                  </th>
+                  <th>
+                    <fbt desc="Status">Status</fbt>
+                  </th>
+                  <th>
+                    <fbt desc="Used">Used</fbt>
+                  </th>
                   <th></th>
                   <th></th>
                 </tr>
@@ -85,9 +108,14 @@ const AdminDiscounts = () => {
                         {discount.status === 'inactive' ? 'Inactive' : 'Active'}
                       </span>
                     </td>
-                    <td>{`${discount.uses || '0'}${
-                      discount.maxUses ? `/${discount.maxUses}` : ''
-                    } used`}</td>
+                    <td>
+                      <fbt desc="admin.discounts.discountUsage">
+                        <FbtParam name="usageCount">{`${discount.uses || '0'}${
+                          discount.maxUses ? `/${discount.maxUses}` : ''
+                        }`}</FbtParam>{' '}
+                        used
+                      </fbt>
+                    </td>
                     <td>{active(discount)}</td>
                     <td>
                       <div className="actions">
@@ -108,10 +136,16 @@ const AdminDiscounts = () => {
             </table>
           ) : (
             <NoItems
-              heading="Add a discount code"
-              description="Offer discounts on your products."
+              heading={fbt('Add a discount code', 'admin.discounts.addCode')}
+              description={fbt(
+                'Offer discounts on your products.',
+                'admin.discounts.addCodeDesc'
+              )}
               linkTo="/admin/discounts/new"
-              buttonText="Create discount"
+              buttonText={fbt(
+                'Create discount',
+                'admin.discounts.createDiscount'
+              )}
             />
           )}
         </>

@@ -1,13 +1,12 @@
 import React, { useReducer, useEffect } from 'react'
-
+import fbt from 'fbt'
 import pick from 'lodash/pick'
 
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import { formInput } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
-
-import Tabs from './_Tabs'
+import Link from 'components/Link'
 
 function reducer(state, newState) {
   return { ...state, ...newState }
@@ -46,7 +45,13 @@ const AdvancedSettings = () => {
         method: 'PUT',
         body: JSON.stringify(state)
       })
-      dispatch({ type: 'toast', message: 'Your changes have been saved' })
+      dispatch({
+        type: 'toast',
+        message: fbt(
+          'Your changes have been saved',
+          'admin.settings.advanced.changesSaved'
+        )
+      })
       dispatch({
         type: 'setConfigSimple',
         config: {
@@ -58,7 +63,10 @@ const AdvancedSettings = () => {
       console.error(err)
       dispatch({
         type: 'toast',
-        message: 'Failed to save your changes',
+        message: fbt(
+          'Failed to save your changes',
+          'admin.settings.advanced.saveError'
+        ),
         style: 'error'
       })
     }
@@ -70,42 +78,61 @@ const AdvancedSettings = () => {
   }
   return (
     <form autoComplete="off" onSubmit={submitForm}>
-      <h3 className="admin-title">
-        Settings
+      <h3 className="admin-title with-border">
+        <Link to="/admin/settings" className="muted">
+          <fbt desc="Settings">Settings</fbt>
+        </Link>
+        <span className="chevron" />
+        Advanced
         <div className="actions">
           <button type="button" className="btn btn-outline-primary">
-            Cancel
+            <fbt desc="Cancel">Cancel</fbt>
           </button>
           <button
             type="submit"
             className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
             disabled={state.saving}
           >
-            Update
+            <fbt desc="Update">Update</fbt>
           </button>
         </div>
       </h3>
-      <Tabs />
       <div className="mt-4">
         <div className="shop-settings">
           <div className="form-group">
             <label>
-              Meta Description
-              <span>(for SEO only. Will appear in HTML)</span>
+              <fbt desc="admin.settings.advanced.metaDesc">
+                Meta Description
+              </fbt>
+              <span>
+                (
+                <fbt desc="admin.settings.advanced.metaDescHint">
+                  for SEO only. Will appear in HTML
+                </fbt>
+                )
+              </span>
             </label>
             <input {...input('metaDescription')} />
           </div>
 
           <div className="form-group">
-            <label>Custom CSS</label>
+            <label>
+              <fbt desc="admin.settings.advanced.customCSS">Custom CSS</fbt>
+            </label>
             <textarea style={{ minHeight: '15vh' }} {...input('css')} />
           </div>
 
-          <label>Error Reporting</label>
+          <label>
+            <fbt desc="admin.settings.advanced.errorReporting">
+              Error Reporting
+            </fbt>
+          </label>
           <div className="desc">
-            Help us improve Origin Dshop’s stability and performance by sharing
-            crash reports. If you do not want us to collect this data, you can
-            opt out below.
+            <fbt desc="admin.settings.advanced.errorReportingDesc">
+              Help us improve Origin Dshop’s stability and performance by
+              sharing crash reports. If you do not want us to collect this data,
+              you can opt out below.
+            </fbt>
           </div>
           <div className="form-check">
             <label className="form-check-label">
@@ -117,7 +144,9 @@ const AdvancedSettings = () => {
                   setState({ logErrors: e.target.checked, hasChanges: true })
                 }
               />
-              Send error reports to Origin
+              <fbt desc="admin.settings.advanced.sendErrors">
+                Send error reports to Origin
+              </fbt>
             </label>
           </div>
         </div>

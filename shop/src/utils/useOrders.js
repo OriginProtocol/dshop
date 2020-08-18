@@ -28,7 +28,7 @@ function useOrders(pageId, search) {
     if (config.backendAuthToken) {
       fetchOrders()
     }
-  }, [shouldReload, pageId, search])
+  }, [shouldReload, pageId, search, config.activeShop])
 
   return {
     orders,

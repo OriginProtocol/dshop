@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Redirect, Switch, Route } from 'react-router-dom'
 import 'components/admin/Styles'
 import get from 'lodash/get'
-
+import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 import useAuth from 'utils/useAuth'
 import useConfig from 'utils/useConfig'
@@ -15,13 +15,13 @@ import Products from './products/List'
 import EditProduct from './products/Edit'
 import Collections from './collections/List'
 import Collection from './collections/Show'
-import Dashboard from './Dashboard'
+import Dashboard from './dashboard/Dashboard'
 import Orders from './Orders'
 import Discounts from './discounts/List'
 import EditDiscount from './discounts/Edit'
 import Order from './order/Order'
 import Settings from './settings/Settings'
-import Events from './Events'
+import Events from './order/Events'
 import Menu from './_Menu'
 import Onboarding from './Onboarding'
 import PublishChanges from './_PublishChanges'
@@ -33,12 +33,15 @@ const Admin = () => {
   const [newShop, setNewShop] = useState()
   const { config, setActiveShop } = useConfig()
   const [{ admin }] = useStateValue()
-  const shops = get(admin, 'shops', [])
 
   if (error) {
     return <div className="fixed-loader">Admin Connection Error</div>
-  } else if (loading && !shops.length) {
-    return <div className="fixed-loader">Loading...</div>
+  } else if (loading && !get(admin, 'shopsCount')) {
+    return (
+      <div className="fixed-loader">
+        <fbt desc="Loading">Loading</fbt>...
+      </div>
+    )
   }
 
   if (!admin || !isLoggedIn(admin)) {
@@ -51,7 +54,7 @@ const Admin = () => {
     return <div className="fixed-loader">Redirecting...</div>
   }
 
-  if (!config.activeShop || !shops.length) {
+  if (!config.activeShop || !get(admin, 'shopsCount')) {
     return <StoreSelector {...{ setActiveShop, admin, newShop, setNewShop }} />
   }
 

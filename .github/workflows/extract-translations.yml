@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'shop/src/**.js'
+      - 'shop/translation/crowdin/*.json'
     branches:
       - master
 

@@ -2,6 +2,7 @@ import React, { Fragment, useState } from 'react'
 import { useRouteMatch } from 'react-router-dom'
 import get from 'lodash/get'
 import capitalize from 'lodash/capitalize'
+import fbt, { FbtParam } from 'fbt'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 dayjs.extend(relativeTime)
@@ -50,11 +51,13 @@ const PrintfulDetails = ({
             setReload(reload + 1)
           }}
         >
-          Confirm Order
+          <fbt desc="ConfirmOrder">Confirm Order</fbt>
         </button>
       )}
       <div className="printful-details">
-        <div>Status</div>
+        <div>
+          <fbt desc="Status">Status</fbt>
+        </div>
         <div>
           <span
             className={`font-weight-bold ${
@@ -71,24 +74,32 @@ const PrintfulDetails = ({
             target="_blank"
             rel="noopener noreferrer"
           >
-            View on Printful
+            <fbt desc="admin.order.printful.viewOnPrintful">
+              View on Printful
+            </fbt>
           </a>
         </div>
-        <div>Created</div>
+        <div>
+          <fbt desc="Created">Created</fbt>
+        </div>
         <div>
           {dayjs(printfulOrder.created * 1000).format('MMM Do, h:mm A')}
           {` (${dayjs(printfulOrder.created * 1000).fromNow()})`}
         </div>
         {printfulOrder.created === printfulOrder.updated ? null : (
           <>
-            <div>Updated</div>
+            <div>
+              <fbt desc="Updated">Updated</fbt>
+            </div>
             <div>
               {dayjs(printfulOrder.updated * 1000).format('MMM Do, h:mm A')}
               {` (${dayjs(printfulOrder.updated * 1000).fromNow()})`}
             </div>
           </>
         )}
-        <div>Shipping</div>
+        <div>
+          <fbt desc="Shipping">Shipping</fbt>
+        </div>
         <div>{printfulOrder.shipping_service_name}</div>
       </div>
       {printfulOrder.shipments.map((shipment, idx) => {
@@ -102,35 +113,58 @@ const PrintfulDetails = ({
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                View Packing Slip
+                <fbt desc="admin.order.printful.viewPackingSlip">
+                  View Packing Slip
+                </fbt>
               </a>
             </div>
             <div className="printful-shipping ml-3">
-              <div>Status</div>
+              <div>
+                <fbt desc="Status">Status</fbt>
+              </div>
               <div>
                 {`${capitalize(shipment.status)} from ${shipment.location}`}
               </div>
-              <div>Shipped</div>
+              <div>
+                <fbt desc="Shipped">Shipped</fbt>
+              </div>
               <div>
                 {dayjs(shipment.shipped_at * 1000).format('MMM Do, h:mm A')}
                 {` (${dayjs(shipment.shipped_at * 1000).fromNow()})`}
               </div>
-              <div>Service</div>
+              <div>
+                <fbt desc="Service">Service</fbt>
+              </div>
               <div>{shipment.service}</div>
-              <div>Tracking #</div>
+              <div>
+                <fbt desc="Tracking">Tracking</fbt> #
+              </div>
               <div>
                 <a href={shipment.tracking_url}>{shipment.tracking_number}</a>
               </div>
-              <div>Items</div>
+              <div>
+                <fbt desc="Items">Items</fbt>
+              </div>
               <div>
                 {shipment.items.map((item, key) => {
                   return (
                     <div key={key}>
-                      {`Item ${item.item_id}${
-                        item.quantity > 1 ? ` x ${item.quantity}` : ''
-                      }`}{' '}
-                      &bull; {`Picked ${item.picked}`} &bull;{' '}
-                      {`Printed ${item.printed}`}
+                      <fbt desc="admin.order.printful.itemInfo">
+                        Item <FbtParam name="itemId">{item.item_id}</FbtParam>
+                        <FbtParam name="itemQuantity">
+                          {item.quantity > 1 ? ` x ${item.quantity}` : ''}
+                        </FbtParam>
+                      </fbt>{' '}
+                      &bull;{' '}
+                      <fbt desc="admin.order.printful.itemPicked">
+                        Picked{' '}
+                        <FbtParam name="itemPicked">{item.picked}</FbtParam>
+                      </fbt>{' '}
+                      &bull;{' '}
+                      <fbt desc="admin.order.printful.itemPrinted">
+                        Printed{' '}
+                        <FbtParam name="itemPrinted">{item.printed}</FbtParam>
+                      </fbt>
                     </div>
                   )
                 })}
@@ -159,7 +193,11 @@ const PrintfulDetails = ({
             setShowJson(!showJson)
           }}
         >
-          {`${showJson ? 'Hide' : 'Show'} JSON`}
+          {showJson ? (
+            <fbt desc="admin.order.printful.hideJSON">Hide JSON</fbt>
+          ) : (
+            <fbt desc="admin.order.printful.showJSON">Show JSON</fbt>
+          )}
         </a>
         {!showJson ? null : (
           <pre className="mt-3">{JSON.stringify(printfulOrder, null, 2)}</pre>
@@ -184,10 +222,20 @@ const Printful = () => {
   )
 
   if (loading || printfulLoading) {
-    return <div>Loading...</div>
+    return (
+      <div>
+        <>
+          <fbt desc="Loading">Loading</fbt>...
+        </>
+      </div>
+    )
   }
   if (!order) {
-    return <div>Order not found</div>
+    return (
+      <div>
+        <fbt desc="admin.order.printful.orderNotFound">Order not found</fbt>
+      </div>
+    )
   }
 
   if (printfulOrder) {
@@ -232,7 +280,7 @@ const Printful = () => {
             setReload(reload + 1)
           }}
         >
-          Create Order
+          <fbt desc="admin.order.printful.createOrder">Create Order</fbt>
         </button>
         <label className="p-0 m-0 d-flex align-items-center">
           <input
@@ -241,7 +289,7 @@ const Printful = () => {
             value={draft}
             onChange={() => setDraft(!draft)}
           />
-          Draft only
+          <fbt desc="admin.order.printful.draftOnly">Draft only</fbt>
         </label>
       </div>
       <pre className="mt-3">{JSON.stringify(printfulData, null, 2)}</pre>

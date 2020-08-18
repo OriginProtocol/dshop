@@ -1,5 +1,5 @@
 import React, { useReducer, useEffect } from 'react'
-
+import fbt from 'fbt'
 import get from 'lodash/get'
 import pick from 'lodash/pick'
 
@@ -13,7 +13,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
 
-import Tabs from '../_Tabs'
+import Link from 'components/Link'
 import ShippingDestination from './_ShippingDestination'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
@@ -88,7 +88,10 @@ const validate = (state) => {
 
     if (dupCountriesMap.has(key)) {
       ratesValid = false
-      destErrors.countriesError = 'Duplicate entry'
+      destErrors.countriesError = fbt(
+        'Duplicate entry',
+        'admin.settings.shipping.countriesDupError'
+      )
     } else {
       dupCountriesMap.set(key, true)
     }
@@ -99,16 +102,28 @@ const validate = (state) => {
 
       if (rate.type !== 'free') {
         if (!rate.amount) {
-          rateErrors.amountError = 'Price is required'
+          rateErrors.amountError = fbt(
+            'Price is required',
+            'admin.settings.shipping.amountError'
+          )
         } else if (rate.amount < 0) {
-          rateErrors.amountError = 'Invalid amount'
+          rateErrors.amountError = fbt(
+            'Invalid amount',
+            'admin.settings.shipping.amountValError'
+          )
         }
       }
 
       if (!rate.type) {
-        rateErrors.typeError = 'Rate name is required'
+        rateErrors.typeError = fbt(
+          'Rate name is required',
+          'admin.settings.shipping.typeError'
+        )
       } else if (rMap.has(rate.type)) {
-        rateErrors.typeError = 'Duplicate entry'
+        rateErrors.typeError = fbt(
+          'Duplicate entry',
+          'admin.settings.shipping.typeDupError'
+        )
       } else {
         rMap.set(rate.type, true)
       }
@@ -222,7 +237,10 @@ const Shipping = () => {
         setState(newState)
         dispatch({
           type: 'toast',
-          message: 'There are some errors in your submission.',
+          message: fbt(
+            'There are some errors in your submission.',
+            'admin.settings.shipping.validationError'
+          ),
           style: 'error'
         })
         return
@@ -249,12 +267,21 @@ const Shipping = () => {
       refetch()
       setState({ hasChanges: false })
       dispatch({ type: 'reload', target: ['shippingZones'] })
-      dispatch({ type: 'toast', message: 'Shipping settings have been saved' })
+      dispatch({
+        type: 'toast',
+        message: fbt(
+          'Shipping settings have been saved',
+          'admin.settings.shipping.updateSuccess'
+        )
+      })
     } catch (err) {
       console.error(err)
       dispatch({
         type: 'toast',
-        message: 'Failed to save your changes. Try again later.',
+        message: fbt(
+          'Failed to save your changes. Try again later.',
+          'admin.settings.shipping.updateError'
+        ),
         style: 'error'
       })
     } finally {
@@ -265,12 +292,12 @@ const Shipping = () => {
   const actions = (
     <div className="actions">
       <button type="button" className="btn btn-outline-primary">
-        Cancel
+        <fbt desc="Cancel">Cancel</fbt>
       </button>
       <button
         type="submit"
         className={`btn btn${state.hasChanges ? '' : '-outline'}-primary`}
-        children="Update"
+        children={<fbt desc="Update">Update</fbt>}
       />
     </div>
   )
@@ -278,13 +305,18 @@ const Shipping = () => {
   return (
     <form onSubmit={submitForm} autoComplete="false">
       <div className="shipping-settings">
-        <h3 className="admin-title">
-          Settings
+        <h3 className="admin-title with-border">
+          <Link to="/admin/settings" className="muted">
+            <fbt desc="Settings">Settings</fbt>
+          </Link>
+          <span className="chevron" />
+          Shipping
           {actions}
         </h3>
-        <Tabs />
         {loading ? (
-          'Loading...'
+          <>
+            <fbt desc="Loading">Loading</fbt>...
+          </>
         ) : (
           <>
             <div className="my-4 common-opts">
@@ -302,9 +334,15 @@ const Shipping = () => {
               </div>
 
               <div className="form-group">
-                <label className="mb-0">Processing time</label>
+                <label className="mb-0">
+                  <fbt desc="admin.settings.shipping.processingTime">
+                    Processing time
+                  </fbt>
+                </label>
                 <div className="desc">
-                  Once purchased, how long does it take you to ship an item?
+                  <fbt desc="admin.settings.shipping.processingTimeDesc">
+                    Once purchased, how long does it take you to ship an item?
+                  </fbt>
                 </div>
                 <select {...input('processingTime')} style={{ maxWidth: 350 }}>
                   {ProcessingTimes.filter((t) => t.value !== 'custom').map(
@@ -317,18 +355,26 @@ const Shipping = () => {
                 </select>
                 {Feedback('processingTime')}
                 <div className="desc dark mt-2">
-                  Buyers are more likely to purchase an item that is dispatched
-                  quickly
+                  <fbt desc="admin.settings.shipping.processingTimeNote">
+                    Buyers are more likely to purchase an item that is
+                    dispatched quickly
+                  </fbt>
                 </div>
               </div>
             </div>
 
             <div className="common-opts">
               <div className="form-group">
-                <label>Shipping to</label>
+                <label>
+                  <fbt desc="admin.settings.shipping.shippingTo">
+                    Shipping to
+                  </fbt>
+                </label>
                 <div className="desc">
-                  Only shoppers in countries you deliver to will see your
-                  listings
+                  <fbt desc="admin.settings.shipping.shippingToDesc">
+                    Only shoppers in countries you deliver to will see your
+                    listings
+                  </fbt>
                 </div>
               </div>
 
@@ -370,7 +416,10 @@ const Shipping = () => {
                   })
                 }
               >
-                + Add another location
+                +{' '}
+                <fbt desc="admin.settings.shipping.addAnotherLocation">
+                  Add another location
+                </fbt>
               </button>
             </div>
           </>

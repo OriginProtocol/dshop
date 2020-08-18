@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import fbt from 'fbt'
 
 const Loading = () => {
   const [hidden, setHidden] = useState(true)
@@ -10,7 +11,11 @@ const Loading = () => {
       clearTimeout(to)
     }
   })
-  return hidden ? null : <>Loading...</>
+  return hidden ? null : (
+    <>
+      <fbt desc="Loading">Loading</fbt>...
+    </>
+  )
 }
 
 export default Loading

@@ -2,7 +2,7 @@ import React, { useReducer, useEffect } from 'react'
 import omit from 'lodash/omit'
 import pick from 'lodash/pick'
 import uniq from 'lodash/uniq'
-
+import fbt, { FbtParam, FbtPlural } from 'fbt'
 import useConfig from 'utils/useConfig'
 import useWallet from 'utils/useWallet'
 
@@ -45,7 +45,10 @@ const Web3Transaction = ({
       if (isDisabled) {
         setState({
           modal: true,
-          title: 'Please enable your Web3 wallet',
+          title: fbt(
+            'Please enable your Web3 wallet',
+            'component.Web3Transaction.enableWallet'
+          ),
           spinner: true
         })
 
@@ -53,7 +56,10 @@ const Web3Transaction = ({
         if (!isSubscribed) return
         if (!result) {
           setState({
-            title: 'You denied access to your Web3 wallet',
+            title: fbt(
+              'You denied access to your Web3 wallet',
+              'component.Web3Transaction.accessDenied'
+            ),
             spinner: false
           })
         } else {
@@ -65,8 +71,19 @@ const Web3Transaction = ({
       if (!wallet.networkOk) {
         setState({
           modal: true,
-          title: `Incorrect Network`,
-          description: `Please switch your Web3 wallet to ${config.netName} to continue. If your wallet is already set to ${config.netName}, please refresh the page and try again.`,
+          title: fbt(
+            `Incorrect Network`,
+            'component.Web3Transaction.incorrectNetwork'
+          ),
+          description: (
+            <fbt desc="component.Web3Transaction.switchNetwork">
+              Please switch your Web3 wallet to{' '}
+              <FbtParam name="networkName">{config.netName}</FbtParam> to
+              continue. If your wallet is already set to{' '}
+              <FbtParam name="networkName2">{config.netName}</FbtParam>, please
+              refresh the page and try again.
+            </fbt>
+          ),
           spinner: true
         })
         return
@@ -80,10 +97,23 @@ const Web3Transaction = ({
         if (!accounts.some((a) => a === state.signerAddress)) {
           setState({
             modal: true,
-            title: 'Incorrect account',
-            description: `Please set account to ${
-              accounts.length > 1 ? 'one of ' : ''
-            }${accounts.join(', ')}`,
+            title: fbt(
+              'Incorrect account',
+              'component.Web3Transaction.incorrectAccount'
+            ),
+            description: (
+              <fbt desc="compoent.Web3Transaction.switchAccount">
+                Please set account to
+                <FbtPlural
+                  count={accounts.length}
+                  name="validAccounts"
+                  many="one of"
+                >{` `}</FbtPlural>
+                {` `}
+                <FbtParam name="accounts">{accounts.join(', ')}</FbtParam>
+              </fbt>
+            ),
+
             spinner: false
           })
           return
@@ -93,7 +123,7 @@ const Web3Transaction = ({
       if (dependencies && dependencies.length && !state.dependenciesOk) {
         setState({
           modal: true,
-          title: 'Loading...',
+          title: `${fbt('Loading', 'Loading')}...`,
           spinner: false
         })
         return
@@ -101,7 +131,10 @@ const Web3Transaction = ({
 
       setState({
         modal: true,
-        title: `Please approve the transaction...`,
+        title: `${fbt(
+          'Please approve the transaction',
+          'component.Web3Transaction.approveTx'
+        )}...`,
         description: '',
         spinner: true
       })
@@ -110,9 +143,14 @@ const Web3Transaction = ({
         const tx = await execTx({ config, signer })
         setState({
           modal: true,
-          title: `Submitted to blockchain...`,
-          description:
+          title: `${fbt(
+            'Submitted to blockchain',
+            'component.Web3Transaction.submitted'
+          )}...`,
+          description: fbt(
             'You can continue to monitor this transaction in your wallet',
+            'component.Web3Transaction.monitorTx'
+          ),
           spinner: true
         })
 
@@ -124,7 +162,7 @@ const Web3Transaction = ({
         if (!isSubscribed) return
         setState({
           modal: true,
-          title: `Error`,
+          title: fbt('Error', 'Error'),
           description: err.message,
           spinner: false
         })

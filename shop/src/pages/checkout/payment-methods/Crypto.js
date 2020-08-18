@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import get from 'lodash/get'
 import ethers from 'ethers'
-
+import fbt, { FbtParam } from 'fbt'
 import useConfig from 'utils/useConfig'
 import usePrice from 'utils/usePrice'
 import useMakeOffer from 'utils/useMakeOffer'
@@ -87,7 +87,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
           dispatch({ type: 'updatePaymentMethod', method: cryptoPaymentMethod })
         }}
       />
-      Cryptocurrency
+      <fbt desc="Cryptocurrency">Cryptocurrency</fbt>
     </label>
   )
 
@@ -98,7 +98,9 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
       <>
         {label}
         <div style={{ marginLeft: '2.25rem' }} className="mb-3">
-          Loading Wallet Status...
+          <fbt desc="checkout.payment.crypto.loadingWallet">
+            Loading Wallet Status...
+          </fbt>
         </div>
       </>
     )
@@ -111,7 +113,9 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
         {label}
         <div style={{ marginLeft: '2.25rem' }} className="mb-3">
           <button className="btn btn-primary" onClick={() => wallet.enable()}>
-            Enable Crypto Wallet
+            <fbt desc="checkout.payment.crypto.enable">
+              Enable Crypto Wallet
+            </fbt>
           </button>
         </div>
       </>
@@ -121,7 +125,9 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
       <>
         {label}
         <div style={{ marginLeft: '2.25rem' }} className="mb-3">
-          Sorry, no crypto wallet detected.
+          <fbt desc="checkout.payment.crypto.noWallet">
+            Sorry, no crypto wallet detected.
+          </fbt>
         </div>
       </>
     )
@@ -130,7 +136,10 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
       <>
         {label}
         <div style={{ marginLeft: '2.25rem' }} className="mb-3">
-          {`Please switch your wallet to ${config.netName} to continue`}
+          <fbt desc="checkout.payment.crypto.invalidNetwork">
+            Please switch your wallet to{' '}
+            <FbtParam name="networkName">{config.netName}</FbtParam> to continue
+          </fbt>
         </div>
       </>
     )
@@ -144,9 +153,15 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
           <table>
             <thead>
               <tr>
-                <th>Cryptocurrency</th>
-                <th>Amount</th>
-                <th>Exchange Rate</th>
+                <th>
+                  <fbt desc="Cryptocurrency">Cryptocurrency</fbt>
+                </th>
+                <th>
+                  <fbt desc="Amount">Amount</fbt>
+                </th>
+                <th>
+                  <fbt desc="ExchangeRate">Exchange Rate</fbt>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -184,10 +199,18 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
           {!activeToken.id || token.loading ? null : token.error ? (
             <div className="alert alert-danger">{token.error}</div>
           ) : !token.hasBalance ? (
-            <div className="alert alert-danger">Insufficient balance</div>
+            <div className="alert alert-danger">
+              <fbt desc="checkout.payment.crypto.insufficientBalance">
+                Insufficient balance
+              </fbt>
+            </div>
           ) : !token.hasAllowance ? (
             <div className="alert alert-info d-flex align-items-center justify-content-center">
-              {`Please approve this ${activeToken.name} transaction to continue`}
+              <fbt desc="checkout.payment.crypto.approveTx">
+                Please approve this{' '}
+                <FbtParam name="tokenName">{activeToken.name}</FbtParam>{' '}
+                transaction to continue
+              </fbt>
               <button
                 className={`btn btn-outline-primary btn-rounded btn-sm ml-3${
                   approveUnlockTx || unlockTx ? ' disabled' : ''
@@ -226,10 +249,10 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
                 }}
               >
                 {unlockTx
-                  ? 'Waiting'
+                  ? fbt('Waiting', 'Waiting')
                   : approveUnlockTx
-                  ? 'Awaiting approval...'
-                  : 'Approve'}
+                  ? fbt('Awaiting approval...', 'AwaitingApproval')
+                  : fbt('Approve', 'Approve')}
               </button>
             </div>
           ) : null}

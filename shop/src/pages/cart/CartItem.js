@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-
+import fbt from 'fbt'
 import Link from 'components/Link'
 import VariantPic from 'components/VariantPic'
 
@@ -62,7 +62,7 @@ const CartItem = ({ item }) => {
               dispatch({ type: 'removeFromCart', item })
             }}
           >
-            Remove
+            <fbt desc="Remove">Remove</fbt>
           </a>
         </div>
       </div>

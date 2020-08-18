@@ -1,5 +1,5 @@
 import React from 'react'
-
+import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 
@@ -35,7 +35,8 @@ const Nav = () => {
               <li className="nav-item">
                 <Link to="/cart" className="nav-link">
                   <CartIcon />
-                  {`Cart${cart.items.length ? ` (${cart.items.length})` : ''}`}
+                  <fbt desc="Cart">Cart</fbt>
+                  {`${cart.items.length ? ` (${cart.items.length})` : ''}`}
                 </Link>
               </li>
               <li className="nav-item">
@@ -43,7 +44,7 @@ const Nav = () => {
                   className="nav-link"
                   to={cart.items.length ? '/checkout' : '/cart'}
                 >
-                  Check Out
+                  <fbt desc="CheckOut">Check Out</fbt>
                 </Link>
               </li>
             </ul>

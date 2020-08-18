@@ -1,51 +1,55 @@
-import React, { useState } from 'react'
+import React from 'react'
 import get from 'lodash/get'
-
+import fbt from 'fbt'
+import { useStateValue } from 'data/state'
+import useShops from 'utils/useShops'
 import Link from 'components/Link'
+import ShopSearch from 'components/admin/ShopSearch'
+import Paginate from 'components/Paginate'
 import Nav from './_Nav'
 
-const StoreSelector = ({ setActiveShop, admin, newShop, setNewShop }) => {
-  const allShops = get(admin, 'shops', [])
-  const [search, setSearch] = useState('')
+const StoreSelector = ({ setActiveShop, newShop, setNewShop }) => {
+  const [{ admin }, dispatch] = useStateValue()
+  const { shops, shopsPagination } = useShops()
   const superuser = get(admin, 'superuser', false)
-  const shops = allShops.filter(
-    (s) => s.name.toLowerCase().indexOf(search.toLowerCase()) >= 0
-  )
+
   return (
     <div className="admin">
       <Nav newShop={newShop} setNewShop={setNewShop} />
 
-      {!allShops.length ? (
+      {!admin.shopsCount ? (
         <div className="shop-chooser-empty">
           <div>
-            <h1>Welcome to Dshop</h1>
+            <h1>
+              <fbt desc="admin.StoreSelector.welcomeToDshop">
+                Welcome to Dshop
+              </fbt>
+            </h1>
             <p>
-              Dshop allows you to have more than one shop per account. Start by
-              creating your first one.
+              <fbt desc="admin.StoreSelector.welcomeDesc">
+                Dshop allows you to have more than one shop per account. Start
+                by creating your first one.
+              </fbt>
             </p>
             <button
               className="btn btn-primary"
               onClick={() => setNewShop(true)}
-              children="Create a shop"
+              children={
+                <fbt desc="admin.StoreSelector.createShop">Create a shop</fbt>
+              }
             />
           </div>
         </div>
       ) : (
         <div className="shop-chooser">
-          <h3>Select a store</h3>
-          {allShops.length < 15 ? null : (
-            <div className="shop-search">
-              <input
-                type="search"
-                className="form-control"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search..."
-              />
-            </div>
-          )}
+          <h3>
+            <fbt desc="admin.StoreSelector.selectStore">Select a store</fbt>
+          </h3>
+          <ShopSearch />
           {shops.length > 0 ? null : (
-            <div className="mt-4 text-center muted">No results</div>
+            <div className="mt-4 text-center muted">
+              <fbt desc="admin.StoreSelector.noResults">No results</fbt>
+            </div>
           )}
           <div className={`shops${shops.length > 1 ? ' multi' : ''}`}>
             {shops.map((shop) => (
@@ -60,14 +64,22 @@ const StoreSelector = ({ setActiveShop, admin, newShop, setNewShop }) => {
             <button
               className="btn btn-outline-primary btn-sm px-5"
               onClick={() => setNewShop(true)}
-              children="Add Store"
+              children={
+                <fbt desc="admin.StoreSelector.addStore">Add Store</fbt>
+              }
             />
             {!superuser ? null : (
               <Link to="/super-admin" className="btn btn-link">
-                Super admin
+                <fbt desc="SuperAdmin">Super admin</fbt>
               </Link>
             )}
           </div>
+          <Paginate
+            total={shopsPagination.totalCount}
+            perPage={shopsPagination.perPage}
+            page={shopsPagination.page}
+            onChange={(page) => dispatch({ type: 'shopsPaginate', page })}
+          />
         </div>
       )}
     </div>

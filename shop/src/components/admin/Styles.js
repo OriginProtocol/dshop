@@ -73,6 +73,7 @@ require('react-styl')(`
       line-height: normal
       min-height: 2.5rem
       margin-bottom: 1rem
+      line-height: 2.5rem
       &.with-border
         padding-bottom: 1rem
         border-bottom: 1px solid #dfe2e6

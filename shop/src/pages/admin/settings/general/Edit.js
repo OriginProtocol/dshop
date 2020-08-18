@@ -1,4 +1,5 @@
 import React, { useReducer, useEffect, useState } from 'react'
+import fbt from 'fbt'
 import get from 'lodash/get'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
@@ -12,7 +13,7 @@ import useBackendApi from 'utils/useBackendApi'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
 
-import Tabs from '../_Tabs'
+import Link from 'components/Link'
 import CustomDomain from './_CustomDomain'
 import UploadFile from './_UploadFile'
 import SocialLinks from './social-links/SocialLinks'
@@ -83,14 +84,14 @@ const GeneralSettings = () => {
   const actions = (
     <div className="actions">
       <button type="button" className="btn btn-outline-primary">
-        Cancel
+        <fbt desc="Cancel">Cancel</fbt>
       </button>
       <button
         type="submit"
         className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
         disabled={saving}
       >
-        Update
+        <fbt desc="Update">Update</fbt>
       </button>
     </div>
   )
@@ -134,27 +135,41 @@ const GeneralSettings = () => {
             }
           })
           dispatch({ type: 'reload', target: 'shopConfig' })
-          dispatch({ type: 'toast', message: 'Settings saved' })
+          dispatch({
+            type: 'toast',
+            message: (
+              <fbt desc="admin.settings.general.savedMessage">
+                Settings saved
+              </fbt>
+            )
+          })
         } catch (err) {
           console.error(err)
           setSaving(false)
         }
       }}
     >
-      <h3 className="admin-title">
-        Settings
+      <h3 className="admin-title with-border">
+        <Link to="/admin/settings" className="muted">
+          <fbt desc="Settings">Settings</fbt>
+        </Link>
+        <span className="chevron" />
+        <fbt desc="General">General</fbt>
         {actions}
       </h3>
-      <Tabs />
-      <div className="row mt-4">
+      <div className="row">
         <div className="shop-settings col-md-8 col-lg-9">
           <div className="form-group">
-            <label>Store Name</label>
+            <label>
+              <fbt desc="admin.settings.general.storeName">Store Name</fbt>
+            </label>
             <input {...input('fullTitle')} />
             {Feedback('fullTitle')}
           </div>
           <div className="form-group">
-            <label>Store Domain</label>
+            <label>
+              <fbt desc="admin.settings.general.storeDomain">Store Domain</fbt>
+            </label>
             <div className="suffix-wrap">
               <input
                 {...input('hostname')}
@@ -177,17 +192,27 @@ const GeneralSettings = () => {
           </div>
           <div className="form-group">
             <label>
-              Tagline
-              <span>(will appear next to your logo on the masthead)</span>
+              <fbt desc="admin.settings.general.tagline">Tagline</fbt>
+              <span>
+                (
+                <fbt desc="admin.settings.general.taglineDesc">
+                  will appear next to your logo on the masthead
+                </fbt>
+                )
+              </span>
             </label>
             <input {...input('byline')} />
             {Feedback('byline')}
           </div>
           <div className="form-group">
             <label>
-              Logo
+              <fbt desc="Logo">Logo</fbt>
               <span>
-                (max. size 200x200 px. 100x100 px recommended. PNG or JPG)
+                (
+                <fbt desc="admin.settings.general.logoDesc">
+                  max. size 200x200 px. 100x100 px recommended. PNG or JPG
+                </fbt>
+                )
               </span>
             </label>
             {state.logo ? (
@@ -221,8 +246,14 @@ const GeneralSettings = () => {
           {!state.logo ? null : (
             <div className="form-group">
               <label>
-                Logo text
-                <span>(will appear to right of your logo)</span>
+                <fbt desc="admin.settings.general.logoText">Logo text</fbt>
+                <span>
+                  (
+                  <fbt desc="admin.settings.general.logoTextDesc">
+                    will appear to right of your logo
+                  </fbt>
+                  )
+                </span>
               </label>
               <input {...input('title')} />
               {Feedback('title')}
@@ -230,10 +261,14 @@ const GeneralSettings = () => {
           )}
           <div className="form-group">
             <label>
-              Favicon
+              <fbt desc="admin.settings.general.favicon">Favicon</fbt>
               <span>
-                (optimal image size 32x32 px in .ico format. Recommended favicon
-                generator: www.favicon.com)
+                (
+                <fbt desc="admin.settings.general.faviconDesc">
+                  optimal image size 32x32 px in .ico format. Recommended
+                  favicon generator: www.favicon.com
+                </fbt>
+                )
               </span>
             </label>
             {state.favicon ? (
@@ -262,9 +297,15 @@ const GeneralSettings = () => {
           </div>
           <div className="form-group">
             <label>
-              About your store
+              <fbt desc="admin.settings.general.aboutStore">
+                About your store
+              </fbt>
               <span>
-                (visible on your About page to buyers browsing your store)
+                (
+                <fbt desc="admin.settings.general.aboutStoreDesc">
+                  visible on your About page to buyers browsing your store
+                </fbt>
+                )
               </span>
             </label>
             {/* <textarea style={{ minHeight: '20vh' }} {...input('about')} /> */}
@@ -299,16 +340,26 @@ const GeneralSettings = () => {
           </div>
           <div className="form-group">
             <label>
-              Cart Summary Note
+              <fbt desc="admin.settings.general.cartSummaryNote">
+                Cart Summary Note
+              </fbt>
               <span>
-                (appears under summary in checkout process. Use it for any
-                information related to order fulfillment)
+                (
+                <fbt desc="admin.settings.general.cartSummaryNoteDesc">
+                  appears under summary in checkout process. Use it for any
+                  information related to order fulfillment
+                </fbt>
+                )
               </span>
             </label>
             <input {...input('cartSummaryNote')} />
           </div>
           <div>
-            <label>Discount Codes</label>
+            <label>
+              <fbt desc="admin.settings.general.discountCodes">
+                Discount Codes
+              </fbt>
+            </label>
             <span className="form-check mb-3">
               <input
                 className="form-check-input"
@@ -316,23 +367,40 @@ const GeneralSettings = () => {
                 checked={state.discountCodes ? true : false}
                 onChange={(e) => setState({ discountCodes: e.target.checked })}
               />
-              Show discount codes on checkout
+              <fbt desc="admin.settings.general.showDiscountCodesOnCheckout">
+                Show discount codes on checkout
+              </fbt>
             </span>
           </div>
 
           <div className="row">
             <div className="form-group col-md-6">
-              <label>Support email</label>
+              <label>
+                <fbt desc="admin.settings.general.supportEmail">
+                  Support email
+                </fbt>
+              </label>
               <input {...input('supportEmail')} />
               {Feedback('supportEmail')}
               <div className="desc">
-                Your customers will see this address when receiving emails about
-                their order.
+                <fbt desc="admin.settings.general.supportEmailDesc">
+                  Your customers will see this address when receiving emails
+                  about their order.
+                </fbt>
               </div>
             </div>
             <div className="form-group col-md-6">
               <label>
-                Email subject <span>(for receipt emails)</span>
+                <fbt desc="admin.settings.general.emailSubject">
+                  Email subject
+                </fbt>{' '}
+                <span>
+                  (
+                  <fbt desc="admin.settings.general.forReceiptEmails">
+                    for receipt emails
+                  </fbt>
+                  )
+                </span>
               </label>
               <input {...input('emailSubject')} />
               {Feedback('emailSubject')}

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useReducer, useMemo } from 'react'
 import get from 'lodash/get'
+import fbt, { FbtParam } from 'fbt'
 import useBackendApi from 'utils/useBackendApi'
 import useConfig from 'utils/useConfig'
 import loadImage from 'utils/loadImage'
@@ -80,14 +81,20 @@ const PreviewImages = (props) => {
         <div className="info">
           <div className="img-title">{image.name || image.path}</div>
           <div className="img-subtitle">
-            {idx === 0 ? 'Cover image' : `Image ${idx}`}
+            {idx === 0 ? (
+              <fbt desc="component.ImagePicker.coverImage">Cover image</fbt>
+            ) : (
+              <fbt desc="component.ImagePicker">
+                Image <FbtParam name="index">{idx}</FbtParam>
+              </fbt>
+            )}
           </div>
         </div>
         <div className="actions">
           {disabled ? null : (
             <a
               href="#"
-              title="Remove"
+              title={fbt('Remove', 'Remove')}
               onClick={(e) => {
                 e.preventDefault()
                 onChange(images.filter((i, offset) => idx !== offset))
@@ -251,11 +258,19 @@ const ImagePicker = (props) => {
             {children || (
               <>
                 <div>
-                  Drag files here to upload
+                  <fbt desc="component.ImagePicker.dragToUpload">
+                    Drag files here to upload
+                  </fbt>
                   <br />
-                  or select a photo from your computer
+                  <fbt desc="component.ImagePicker.selectFromPc">
+                    or select a photo from your computer
+                  </fbt>
                 </div>
-                <div className="btn btn-outline-primary">Select photo</div>
+                <div className="btn btn-outline-primary">
+                  <fbt desc="component.ImagePicker.selectPhoto">
+                    Select photo
+                  </fbt>
+                </div>
               </>
             )}
           </div>
@@ -271,7 +286,9 @@ const ImagePicker = (props) => {
       </label>
       {!state.externalDrop ? null : (
         <div className="external-drop-hover">
-          <h4>Drop here to upload</h4>
+          <h4>
+            <fbt desc="component.ImagePicker.dropHere">Drop here to upload</fbt>
+          </h4>
         </div>
       )}
     </div>

@@ -1,4 +1,5 @@
 import React from 'react'
+import fbt from 'fbt'
 
 import Tooltip from 'components/Tooltip'
 
@@ -11,7 +12,11 @@ const SocialLinks = ({ socialLinks, setSocialLinks }) => {
   return (
     <>
       <div className="social-links">
-        <div className="title">Social Media Links</div>
+        <div className="title">
+          <fbt desc="admin.settings.general.social.socialMediaLinks">
+            Social Media Links
+          </fbt>
+        </div>
         <div className="links">
           {networks.map((network) => {
             if (!socialLinks[network.value]) return null

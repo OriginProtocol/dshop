@@ -1,5 +1,5 @@
 import React from 'react'
-
+import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
@@ -11,10 +11,12 @@ const CheckoutContact = () => {
 
   return (
     <div className="info-row">
-      <div className="label">Contact</div>
+      <div className="label">
+        <fbt desc="Contact">Contact</fbt>
+      </div>
       <div className="value">{userInfo.email}</div>
       <Link className="change" to="/checkout">
-        Change
+        <fbt desc="Change">Change</fbt>
       </Link>
     </div>
   )

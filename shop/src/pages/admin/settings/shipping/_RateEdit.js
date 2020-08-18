@@ -1,5 +1,5 @@
 import React from 'react'
-
+import fbt from 'fbt'
 import useConfig from 'utils/useConfig'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import formatPrice from 'utils/formatPrice'
@@ -17,9 +17,15 @@ const RateEdit = ({ rateInfo, onChange, hideLabel, onDelete, showDelete }) => {
     <div className="rate-row row">
       <div className="col-md-5">
         <div className="form-group">
-          {hideLabel ? null : <label>Rate name</label>}
+          {hideLabel ? null : (
+            <label>
+              <fbt desc="admin.settings.shipping.rateName">Rate name</fbt>
+            </label>
+          )}
           <select {...input('type')}>
-            <option>Select one</option>
+            <option>
+              <fbt desc="SelectOne">Select one</fbt>
+            </option>
             {shippingTimes.map((t) => (
               <option key={t.value} value={t.value}>
                 {`${t.label}${
@@ -34,7 +40,11 @@ const RateEdit = ({ rateInfo, onChange, hideLabel, onDelete, showDelete }) => {
       {rateInfo.type === 'free' ? null : (
         <div className="col-md-5">
           <div className="form-group">
-            {hideLabel ? null : <label>Price</label>}
+            {hideLabel ? null : (
+              <label>
+                <fbt desc="Price">Price</fbt>
+              </label>
+            )}
             <div className="input-group">
               <div className="input-group-prepend">
                 <span className="input-group-text">

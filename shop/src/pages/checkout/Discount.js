@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import get from 'lodash/get'
-
+import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 
@@ -43,7 +43,7 @@ const OrderDiscount = ({ cart }) => {
         <input
           type="text"
           className="form-control"
-          placeholder="Discount code"
+          placeholder={fbt('Discount code', 'checkout.discounts.code')}
           value={code}
           onChange={(e) => {
             setCode(e.target.value)
@@ -56,12 +56,14 @@ const OrderDiscount = ({ cart }) => {
           type="submit"
           className={`btn btn-${code ? 'primary' : 'secondary'} ml-2`}
         >
-          Apply
+          <fbt desc="Apply">Apply</fbt>
         </button>
       </div>
       {!error ? null : (
         <div className="invalid-feedback" style={{ display: 'block' }}>
-          Enter a valid discount code
+          <fbt desc="checkout.discounts.invalidCode">
+            Enter a valid discount code
+          </fbt>
         </div>
       )}
       {!existingCode ? null : (

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useHistory, useRouteMatch } from 'react-router-dom'
 import get from 'lodash/get'
-
+import fbt from 'fbt'
 import Link from 'components/Link'
 import formatPrice from 'utils/formatPrice'
 import useConfig from 'utils/useConfig'
@@ -51,9 +51,14 @@ const ProductList = ({ products }) => {
                 {product.title}
               </Link>
               <div className="price">
+                {product.variantPricing
+                  ? `${fbt('From', 'component.ProductList.fromPrice')} `
+                  : ''}
                 {formatPrice(product.price, currencyOpts)}
                 {config.freeShipping ? (
-                  <span className="shipping">FREE Shipping</span>
+                  <span className="shipping">
+                    <fbt desc="product.freeShipping">FREE Shipping</fbt>
+                  </span>
                 ) : null}
               </div>
             </div>

@@ -20,15 +20,39 @@ require('react-styl')(`
       a
         display: flex
         align-items: center
-        padding: 0.75rem 0.5rem 0.75rem 1.25rem
-        color: #666
+        padding-left: 1.25rem
+        min-height: 2.25rem
+        color: #8293a4
         line-height: 0
-        svg
+        > svg
           margin-right: 0.5rem
           fill: #8293a4
           display: inline-block
           min-width: 20px
-      &.active a
+        .caret
+          display: flex
+          align-self: normal
+          align-items: center
+          margin-left: auto
+          padding-left: 1rem
+          padding-right: 1rem
+          cursor: pointer
+          > svg
+            fill: #8293a4
+      .sub-menu li
+        position: relative
+        a
+          padding-left: 4rem
+          min-height: 1.75rem
+        &.active a:before
+          content: ""
+          position: absolute
+          height: 17px
+          width: 4px
+          background-color: #1a82ff
+          transform: translateX(-15px)
+
+      &.active > a
         color: #000
         svg
           fill: #3B80EE

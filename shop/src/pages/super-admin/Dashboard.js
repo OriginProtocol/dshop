@@ -5,7 +5,6 @@ import { useStateValue } from 'data/state'
 
 const SuperAdminDashboard = () => {
   const [{ admin }] = useStateValue()
-  const shops = get(admin, 'shops', [])
   const network = get(admin, 'network', {})
 
   return (
@@ -22,7 +21,7 @@ const SuperAdminDashboard = () => {
         <div className="stat-item">
           <img src="images/coins.svg" className="stat-image" />
           <div className="stat-name">Total shops</div>
-          <div className="stat-value">{shops.length}</div>
+          <div className="stat-value">{get(admin, 'shopsCount', 0)}</div>
         </div>
       </div>
     </>

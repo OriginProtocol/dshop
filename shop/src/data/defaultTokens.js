@@ -1,4 +1,5 @@
 import ethers from 'ethers'
+import fbt from 'fbt'
 
 import { NetworksByIdStr } from 'data/Networks'
 
@@ -21,18 +22,18 @@ export default [
     id: 'token-OGN',
     name: 'OGN',
     address: contracts.OGN,
-    displayName: 'Origin Token'
+    displayName: fbt('Origin Token', 'tokens.OGN')
   },
   {
     id: 'token-DAI',
     name: 'DAI',
     address: contracts.DAI,
-    displayName: 'Maker DAI'
+    displayName: fbt('Maker DAI', 'tokens.DAI')
   },
   {
     id: 'token-ETH',
     name: 'ETH',
     address: ethers.constants.AddressZero,
-    displayName: 'Ethereum'
+    displayName: fbt('Ethereum', 'tokens.ETH')
   }
 ]

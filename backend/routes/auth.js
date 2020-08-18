@@ -109,38 +109,24 @@ module.exports = function (router) {
 
     const shopDataDir = DSHOP_CACHE
 
-    const order = [['createdAt', 'desc']]
-    const attributes = [
-      'id',
-      'name',
-      'authToken',
-      'hostname',
-      'listingId',
-      'createdAt',
-      'hasChanges',
-      'networkId'
-    ]
     const include = { model: Seller, where: { id: user.id } }
 
-    let shops = []
-    if (user.superuser) {
-      const allShops = await Shop.findAll({ order })
-      shops = allShops.map((s) => ({
-        ...pick(s.dataValues, attributes),
-        role: 'admin'
-      }))
-    } else {
-      const allShops = await Shop.findAll({ attributes, include, order })
-      shops = allShops.map((s) => ({
-        ...pick(s.dataValues, attributes),
-        role: get(s, 'Sellers[0].SellerShop.dataValues.role')
-      }))
+    const shopsCount = await Shop.count(
+      user.superuser ? undefined : { include }
+    )
+
+    let shopAuthed = false,
+      role
+    if (req.query.active) {
+      const shopExists = await Shop.findOne({
+        include: user.superuser ? undefined : include,
+        where: { authToken: req.query.active }
+      })
+      if (shopExists) {
+        shopAuthed = true
+        role = get(shopExists, 'Sellers[0].SellerShop.dataValues.role')
+      }
     }
-    shops = shops.map((s) => {
-      const configPath = `${shopDataDir}/${s.authToken}/data/config.json`
-      const viewable = fs.existsSync(configPath)
-      return { ...s, viewable }
-    })
 
     let localShops
     if (user.superuser && fs.existsSync(shopDataDir)) {
@@ -149,10 +135,9 @@ module.exports = function (router) {
         .filter((shop) =>
           fs.existsSync(`${shopDataDir}/${shop}/data/config.json`)
         )
-        .filter((dir) => !shops.some((s) => s.authToken === dir))
     }
 
-    if (user.superuser && !shops.length) {
+    if (user.superuser && !shopsCount) {
       return res.json({
         success: false,
         reason: 'no-shops',
@@ -167,17 +152,18 @@ module.exports = function (router) {
 
     const response = {
       success: true,
+      shopAuthed,
+      shopsCount,
       email,
       name,
       networks,
       network,
       backendUrl,
-      shops,
       localShops,
-      emailVerified
+      emailVerified,
+      role: user.superuser ? 'admin' : role
     }
     if (user.superuser) {
-      response.role = 'admin'
       response.superuser = true
     }
 

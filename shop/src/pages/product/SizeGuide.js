@@ -1,5 +1,5 @@
 import React from 'react'
-
+import fbt from 'fbt'
 const SizeGuide = ({ product, wide }) => {
   if (!product || !product.sizeGuide) {
     return null
@@ -27,7 +27,9 @@ const SizeGuide = ({ product, wide }) => {
       <table className="table table-sm">
         <thead>
           <tr>
-            <th>Size Guide</th>
+            <th>
+              <fbt desc="product.sizeGuide">Size Guide</fbt>
+            </th>
             {data.measurements.map((m, idx) => (
               <th key={idx}>{m.name}</th>
             ))}

@@ -1,5 +1,5 @@
 import React from 'react'
-
+import fbt from 'fbt'
 import Link from 'components/Link'
 import formatPrice from 'utils/formatPrice'
 import useIsMobile from 'utils/useIsMobile'
@@ -19,18 +19,28 @@ const CartItems = () => {
   return (
     <>
       <div className="items">
-        <div className="th pic">Product</div>
+        <div className="th pic">
+          <fbt desc="Product">Product</fbt>
+        </div>
         <div className="th title" />
-        <div className="th price">Price</div>
-        <div className="th quantity">Quantity</div>
-        <div className="th total">Total</div>
+        <div className="th price">
+          <fbt desc="Price">Price</fbt>
+        </div>
+        <div className="th quantity">
+          <fbt desc="Quantity">Quantity</fbt>
+        </div>
+        <div className="th total">
+          <fbt desc="Total">Total</fbt>
+        </div>
         {cart.items.map((item) => (
           <CartItem key={`${item.product}-${item.variant}`} item={item} />
         ))}
       </div>
       <div className="row mt-4">
         <div className="col-md-6 order-1 order-md-0">
-          Special instructions for seller
+          <fbt desc="cart.specialInstructions">
+            Special instructions for seller
+          </fbt>
           <textarea
             rows="5"
             className="form-control"
@@ -45,14 +55,18 @@ const CartItems = () => {
             <b>{`Subtotal ${formatPrice(cart.subTotal, currencyOpts)}`}</b>
           </div>
           <div>
-            <i>Shipping & taxes calculated at checkout</i>
+            <i>
+              <fbt desc="cart.shippingAtActuals">
+                Shipping &amp; taxes calculated at checkout
+              </fbt>
+            </i>
           </div>
           <div className="actions">
             <Link to="/" className={`btn btn-outline-primary${lg}`}>
-              Continue Shopping
+              <fbt desc="ContinueShopping">Continue Shopping</fbt>
             </Link>
             <Link to="/checkout" className={`btn btn-primary${lg}`}>
-              Check Out
+              <fbt desc="CheckOut">Check Out</fbt>
             </Link>
           </div>
         </div>

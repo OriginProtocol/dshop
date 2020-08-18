@@ -1,6 +1,8 @@
 import React, { useReducer, useEffect } from 'react'
 import { useHistory } from 'react-router-dom'
 
+import fbt from 'fbt'
+
 import Paginate from 'components/Paginate'
 import SortableTable from 'components/SortableTable'
 import NoItems from 'components/NoItems'
@@ -33,7 +35,7 @@ const AdminCollections = () => {
   return (
     <>
       <h3 className="admin-title">
-        Collections
+        <fbt desc="Collections">Collections</fbt>
         {!collections.length ? null : (
           <div className="actions">
             <CreateCollection />
@@ -69,8 +71,14 @@ const AdminCollections = () => {
         </SortableTable>
       ) : (
         <NoItems
-          heading="Add a collection"
-          description="Use collections to group your products into categories."
+          heading={
+            <fbt desc="admin.collections.addCollection">Add a collection</fbt>
+          }
+          description={
+            <fbt desc="admin.collections.addCollectionDesc">
+              Use collections to group your products into categories.
+            </fbt>
+          }
         >
           <CreateCollection />
         </NoItems>

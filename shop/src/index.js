@@ -5,11 +5,11 @@ import ReactDOM from 'react-dom'
 
 import { HashRouter, BrowserRouter } from 'react-router-dom'
 import Styl from 'react-styl'
+import setLocale from 'utils/setLocale'
 
 import SentryErrorBoundary from 'components/SentryErrorBoundary'
 
 import { StateProvider } from 'data/state'
-import setLocale from 'utils/setLocale'
 
 import App from './pages/App'
 import './css/app.scss'

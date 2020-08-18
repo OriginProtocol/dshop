@@ -1,21 +1,23 @@
 import React, { useEffect } from 'react'
 
+import fbt from 'fbt'
+
 import useSetState from 'utils/useSetState'
 import Modal from 'components/Modal'
 import { Spinner } from 'components/icons/Admin'
 
 const AdminConfirmationModal = ({
   className = 'btn btn-outline-primary',
-  confirmedText = 'Success',
-  confirmText = 'Are you sure?',
+  confirmedText = fbt('Success', 'success'),
+  confirmText = fbt('Are you sure?', 'areYouSure'),
   onConfirm,
   onSuccess,
   onError,
   buttonText,
   children,
-  proceedText = 'Yes',
-  cancelText = 'No',
-  loadingText = 'Loading...',
+  proceedText = fbt('Yes', 'yes'),
+  cancelText = fbt('No', 'no'),
+  loadingText = `${fbt('Loading', 'Loading')}...`,
   validate = () => true,
   customEl,
   modalOnly,
@@ -104,7 +106,9 @@ const AdminConfirmationModal = ({
           >
             {state.error ? (
               <>
-                <div className="text-lg">Error</div>
+                <div className="text-lg">
+                  <fbt desc="error">Error</fbt>
+                </div>
                 <div className="alert alert-danger mt-3">{state.error}</div>
                 <div className="actions">
                   <button
@@ -121,7 +125,7 @@ const AdminConfirmationModal = ({
                   <button
                     className="btn btn-primary px-5"
                     onClick={() => setState({ shouldClose: true })}
-                    children="OK"
+                    children={<fbt desc="ok">OK</fbt>}
                   />
                 </div>
               </>

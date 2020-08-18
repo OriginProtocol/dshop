@@ -1,6 +1,7 @@
 import React, { useReducer } from 'react'
 
 import ethers from 'ethers'
+import fbt from 'fbt'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConnectModal from './_ConnectModal'
@@ -17,13 +18,19 @@ const validate = (state) => {
   const newState = {}
 
   if (!state.web3Pk) {
-    newState.web3PkError = 'Private key is required'
+    newState.web3PkError = fbt(
+      'Private key is required',
+      'admin.settings.payments.web3.pkError'
+    )
   } else {
     try {
       new ethers.Wallet('0x' + state.web3Pk)
     } catch (err) {
       console.error(err)
-      newState.web3PkError = 'Invalid private key'
+      newState.web3PkError = fbt(
+        'Invalid private key',
+        'admin.settings.payments.web3.pkInvalidError'
+      )
     }
   }
 
@@ -46,7 +53,10 @@ const Web3Modal = ({ onClose }) => {
 
   return (
     <ConnectModal
-      title="Connect Crypto Wallet"
+      title={fbt(
+        'Connect Crypto Wallet',
+        'admin.settings.payments.web3.connectWallet'
+      )}
       validate={() => {
         const validateResponse = validate(state)
         setState(validateResponse.newState)
@@ -56,7 +66,9 @@ const Web3Modal = ({ onClose }) => {
       onClose={onClose}
     >
       <div className="form-group">
-        <label>Private Key</label>
+        <label>
+          <fbt desc="admin.settings.payments.web3.privateKey">Private Key</fbt>
+        </label>
         <PasswordField input={input} field="web3Pk" prepend="0x" />
         {Feedback('web3Pk')}
       </div>

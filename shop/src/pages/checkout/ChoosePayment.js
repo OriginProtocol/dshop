@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useReducer } from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
-
+import fbt, { FbtParam } from 'fbt'
 import addData from 'data/addData'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import formatPrice from 'utils/formatPrice'
@@ -13,7 +13,7 @@ import Link from 'components/Link'
 
 import PayWithCrypto from './payment-methods/Crypto'
 import PayWithStripe from './payment-methods/Stripe'
-import PayWithUphold from './payment-methods/Uphold'
+import PayWithUphold from './payment-methods/uphold/Uphold'
 import PayOffline from './payment-methods/OfflinePayment'
 import PayWithPayPal from './payment-methods/PayPal'
 import BillingAddress from './_BillingAddress'
@@ -32,23 +32,41 @@ function validate(state) {
   const newState = {}
 
   if (!state.billingFirstName) {
-    newState.billingFirstNameError = 'Enter a first name'
+    newState.billingFirstNameError = fbt(
+      'Enter a first name',
+      'checkout.payment.billingFirstNameError'
+    )
   }
   if (!state.billingLastName) {
-    newState.billingLastNameError = 'Enter a last name'
+    newState.billingLastNameError = fbt(
+      'Enter a last name',
+      'checkout.payment.billingLastNameError'
+    )
   }
   if (!state.billingAddress1) {
-    newState.billingAddress1Error = 'Enter an address'
+    newState.billingAddress1Error = fbt(
+      'Enter an address',
+      'checkout.payment.billingAddress1Error'
+    )
   }
   if (!state.billingCity) {
-    newState.billingCityError = 'Enter a city'
+    newState.billingCityError = fbt(
+      'Enter a city',
+      'checkout.payment.billingCityError'
+    )
   }
   if (!state.billingZip) {
-    newState.billingZipError = 'Enter a ZIP / postal code'
+    newState.billingZipError = fbt(
+      'Enter a ZIP / postal code',
+      'checkout.payment.billingZipError'
+    )
   }
   const provinces = get(Countries, `${state.billingCountry}.provinces`, {})
   if (!state.billingProvince && Object.keys(provinces).length) {
-    newState.billingProvinceError = 'Enter a state / province'
+    newState.billingProvinceError = fbt(
+      'Enter a state / province',
+      'checkout.payment.billingProvinceError'
+    )
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
@@ -63,8 +81,15 @@ const ChoosePayment = () => {
   const { config } = useConfig()
   const [{ cart, referrer }, dispatch] = useStateValue()
   const currencyOpts = useCurrencyOpts()
+
+  const defaultButtonText = (
+    <fbt desc="checkout.payment.amount">
+      Pay{' '}
+      <FbtParam name="amount">{formatPrice(cart.total, currencyOpts)}</FbtParam>
+    </fbt>
+  )
   const [paymentState, setPaymentState] = useReducer(reducer, {
-    buttonText: `Pay ${formatPrice(cart.total, currencyOpts)}`,
+    buttonText: defaultButtonText,
     submit: 0
   })
 
@@ -99,9 +124,11 @@ const ChoosePayment = () => {
   useEffect(() => {
     if (paymentState.loading) return
     setPaymentState({
-      buttonText: isOfflinePayment
-        ? 'Place Order'
-        : `Pay ${formatPrice(cart.total, currencyOpts)}`
+      buttonText: isOfflinePayment ? (
+        <fbt desc="checkout.payment.placeOrder">Place Order</fbt>
+      ) : (
+        defaultButtonText
+      )
     })
   }, [isOfflinePayment, paymentState.loading])
 
@@ -126,7 +153,7 @@ const ChoosePayment = () => {
     setPaymentState({
       disabled: true,
       loading: true,
-      buttonText: 'Processing...'
+      buttonText: fbt('Processing...', 'Processing...')
     })
     addData({ ...cart, referrer }, config).then((encryptedData) => {
       setPaymentState({
@@ -167,7 +194,9 @@ const ChoosePayment = () => {
       )}
 
       <div className="actions">
-        <Link to="/checkout/shipping">&laquo; Return to shipping</Link>
+        <Link to="/checkout/shipping">
+          &laquo; <fbt desc="checkout.payment.goback">Return to shipping</fbt>
+        </Link>
         <button
           type="submit"
           className={`btn btn-primary btn-lg${disabled ? ' disabled' : ''}`}

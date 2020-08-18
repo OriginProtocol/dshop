@@ -3,6 +3,7 @@ import { useRouteMatch, useLocation } from 'react-router-dom'
 
 import get from 'lodash/get'
 import isEqual from 'lodash/isEqual'
+import fbt from 'fbt'
 
 import { useStateValue } from 'data/state'
 
@@ -59,7 +60,11 @@ const ShowCollection = () => {
       })
       .catch((err) => {
         console.error(err)
-        dispatch({ type: 'toast', style: 'error', message: 'Error saving' })
+        dispatch({
+          type: 'toast',
+          style: 'error',
+          message: fbt('Error saving', 'admin.collections.saveError')
+        })
       })
   }
 
@@ -67,14 +72,18 @@ const ShowCollection = () => {
     if (collections.length && !get(location, 'state.isNew')) {
       return <Redirect to="/admin/collections" />
     }
-    return 'Loading...'
+    return (
+      <>
+        <fbt desc="Loading">Loading</fbt>...
+      </>
+    )
   }
 
   return (
     <>
       <h3 className="admin-title with-border">
         <Link to="/admin/collections" className="muted">
-          Collections
+          <fbt desc="Collections">Collections</fbt>
         </Link>
         <span className="chevron" />
         {collection.title}
@@ -83,7 +92,7 @@ const ShowCollection = () => {
           <EditCollection
             collection={collection}
             className="btn btn-outline-primary"
-            children="Edit"
+            children={<fbt desc="Edit">Edit</fbt>}
           />
         </div>
       </h3>
@@ -92,7 +101,7 @@ const ShowCollection = () => {
           <SortableTable
             items={state.products}
             onChange={onSave}
-            labels={['Product', <>&nbsp;</>]}
+            labels={[fbt('Product', 'Product'), <>&nbsp;</>]}
           >
             {(product, DragTarget) => {
               return (
@@ -121,13 +130,18 @@ const ShowCollection = () => {
             }}
           </SortableTable>
           <div className="mt-4">
-            <AddProducts collection={collection}>Edit products</AddProducts>
+            <AddProducts collection={collection}>
+              <fbt desc="admin.collections.editProducts">Edit products</fbt>
+            </AddProducts>
           </div>
         </>
       ) : (
         <NoItems
-          heading="Add products"
-          description="Add a product to collection."
+          heading={fbt('Add products', 'admin.collections.addProducts')}
+          description={fbt(
+            'Add a product to collection.',
+            'admin.collections.addProductsDesc'
+          )}
         >
           <AddProducts collection={collection} />
         </NoItems>

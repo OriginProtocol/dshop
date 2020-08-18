@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-
+import fbt from 'fbt'
 import get from 'lodash/get'
 
 import { formFeedback } from 'utils/formHelpers'
@@ -39,10 +39,18 @@ const ShippingDestination = ({
   return (
     <div className="shipping-destination row">
       <div className="col-md-4">
-        <div className="label">Destination</div>
+        <div className="label">
+          <fbt desc="admin.settings.shipping.Destination">Destination</fbt>
+        </div>
         {disableCountrySelectbox ? (
           <div className="label">
-            {countries.length > 0 ? countries.join(',') : 'Rest of the world'}
+            {countries.length > 0 ? (
+              countries.join(',')
+            ) : (
+              <fbt desc="admin.settings.shipping.restOfTheWorld">
+                Rest of the world
+              </fbt>
+            )}
           </div>
         ) : (
           <>
@@ -91,7 +99,7 @@ const ShippingDestination = ({
                 onChange({ rates: [...destInfo.rates, { amount: 0 }] })
               }
             >
-              + Add rate
+              + <fbt desc="admin.settings.shipping.addRate">Add rate</fbt>
             </button>
           </div>
         )}

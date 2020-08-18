@@ -1,5 +1,7 @@
 import React from 'react'
 
+import fbt from 'fbt'
+
 import get from 'lodash/get'
 import dayjs from 'dayjs'
 
@@ -9,7 +11,13 @@ const CustomerInfo = ({ order }) => {
   const cart = get(order, 'data')
   const userInfo = get(order, 'data.userInfo')
   if (!userInfo) {
-    return <div>Loading...</div>
+    return (
+      <div>
+        <>
+          <fbt desc="Loading">Loading</fbt>...
+        </>
+      </div>
+    )
   }
 
   const phone = get(cart, 'userInfo.phone')
@@ -17,26 +25,36 @@ const CustomerInfo = ({ order }) => {
   return (
     <div className="customer-info">
       <div>
-        <div>Date</div>
+        <div>
+          <fbt desc="Date">Date</fbt>
+        </div>
         <div>{dayjs(order.createdAt).format('MMM D, h:mm A')}</div>
       </div>
       <div>
-        <div>Contact Info</div>
+        <div>
+          <fbt desc="admin.orders.contactInfo">Contact Info</fbt>
+        </div>
         <div>
           <div>{get(userInfo, 'email')}</div>
           <div>{!phone ? null : `☎ ${phone}`}</div>
         </div>
       </div>
       <div>
-        <div>Payment Method</div>
+        <div>
+          <fbt desc="PaymentMethod">Payment Method</fbt>
+        </div>
         <div>{get(cart, 'paymentMethod.label')}</div>
       </div>
       <div>
-        <div>Shipping Method</div>
+        <div>
+          <fbt desc="ShippingMethod">Shipping Method</fbt>
+        </div>
         <div>{get(cart, 'shipping.label')}</div>
       </div>
       <div>
-        <div>Shipping Address</div>
+        <div>
+          <fbt desc="ShippingAddress">Shipping Address</fbt>
+        </div>
         <div>
           {formatAddress(userInfo).map((line, idx) => (
             <div key={idx}>{line}</div>
@@ -44,13 +62,18 @@ const CustomerInfo = ({ order }) => {
         </div>
       </div>
       <div>
-        <div>Billing Address</div>
+        <div>
+          <fbt desc="BillingAddress">Billing Address</fbt>
+        </div>
         <div>
           {userInfo.billingDifferent
             ? formatAddress(userInfo, 'billing').map((line, idx) => (
                 <div key={idx}>{line}</div>
               ))
-            : 'Same as shipping address'}
+            : fbt(
+                'Same as shipping address',
+                'checkout.payment.sameBillingAddress'
+              )}
         </div>
       </div>
     </div>

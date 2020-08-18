@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import get from 'lodash/get'
+import fbt from 'fbt'
 
 import PlusIcon from 'components/icons/Plus'
 import Modal from 'components/Modal'
@@ -35,7 +36,12 @@ const CustomDomain = ({ netId, hostname = '' }) => {
       setVerifyStatus({ success, valid, error })
     } catch (err) {
       console.error(err)
-      setVerifyStatus({ error: 'Something went wrong. Try again later.' })
+      setVerifyStatus({
+        error: fbt(
+          'Something went wrong. Try again later.',
+          'admin.settigns.general.domains.genericError'
+        )
+      })
     }
   }
 
@@ -57,7 +63,12 @@ const CustomDomain = ({ netId, hostname = '' }) => {
         })
         .catch((err) => {
           console.error(err)
-          setVerifyStatus({ error: 'Something went wrong. Try again later.' })
+          setVerifyStatus({
+            error: fbt(
+              'Something went wrong. Try again later.',
+              'admin.settigns.general.domains.genericError'
+            )
+          })
         })
     } else {
       setDomainExists(false)
@@ -82,7 +93,9 @@ const CustomDomain = ({ netId, hostname = '' }) => {
         className="add"
       >
         <PlusIcon />
-        Add a custom domain
+        <fbt desc="admin.settigns.general.domains.addCustomDomain">
+          Add a custom domain
+        </fbt>
       </a>
       {!show ? null : (
         <Modal
@@ -93,10 +106,18 @@ const CustomDomain = ({ netId, hostname = '' }) => {
           shouldClose={shouldClose}
         >
           <div className="modal-body p-5 set-dns-records">
-            <div className="text-lg text-center">Add a Custom Domain</div>
+            <div className="text-lg text-center">
+              <fbt desc="admin.settigns.general.domains.addCustomDomain">
+                Add a custom domain
+              </fbt>
+            </div>
             <div className="mt-3">
               <div className="form-group">
-                <label>Enter your domain:</label>
+                <label>
+                  <fbt desc="admin.settigns.general.domains.enterDomain">
+                    Enter your domain:
+                  </fbt>
+                </label>
                 <input
                   value={domain}
                   ref={domainRef}
@@ -109,7 +130,11 @@ const CustomDomain = ({ netId, hostname = '' }) => {
                 <div className="records">
                   {!domainExists ? null : (
                     <>
-                      <div>Please set the following DNS records:</div>
+                      <div>
+                        <fbt desc="admin.settigns.general.domains.setDNSRecords">
+                          Please set the following DNS records:
+                        </fbt>
+                      </div>
                       <div className="record">{record}</div>
                       <div className="record">{txtRecord}</div>
                     </>
@@ -119,7 +144,9 @@ const CustomDomain = ({ netId, hostname = '' }) => {
             </div>
             {!verifyStatus.valid ? null : (
               <div className="alert alert-success my-3">
-                Your DNS records look good.
+                <fbt desc="admin.settigns.general.domains.validDNS">
+                  Your DNS records look good.
+                </fbt>
               </div>
             )}
             {!verifyStatus.error ? null : (
@@ -131,13 +158,13 @@ const CustomDomain = ({ netId, hostname = '' }) => {
               <button
                 className="btn btn-primary px-5 mr-2"
                 onClick={() => verifyDomain()}
-                children="Verify"
+                children={fbt('Verify', 'Verify')}
               />
 
               <button
                 className="btn btn-outline-primary px-5"
                 onClick={() => setShouldClose(true)}
-                children="Dismiss"
+                children={fbt('Dismiss', 'Dismiss')}
               />
             </div>
           </div>

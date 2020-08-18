@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { useHistory, useLocation } from 'react-router-dom'
 import dayjs from 'dayjs'
 import get from 'lodash/get'
-
+import fbt, { FbtParam } from 'fbt'
 import Price from 'components/Price'
 import Tooltip from 'components/Tooltip'
 import Paginate from 'components/Paginate'
@@ -67,14 +67,16 @@ const AdminOrders = () => {
 
   const headerSection = (
     <div className="d-flex align-items-center justify-content-between mb-4">
-      <h3 className="m-0">Orders</h3>
+      <h3 className="m-0">
+        <fbt desc="Orders">Orders</fbt>
+      </h3>
       {!orders.length && !searchVal ? null : (
         <>
           <input
             ref={searchRef}
             type="search"
             className="form-control mx-4"
-            placeholder="Search"
+            placeholder={fbt('Search', 'Search')}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
@@ -101,13 +103,25 @@ const AdminOrders = () => {
         {headerSection}
         {searchVal ? (
           <NoItems
-            heading="No matching orders!"
-            description={`Your search for ${searchVal} returned nothing.`}
+            heading={fbt(
+              'No matching orders!',
+              'admin.Orders.noMatchingOrders'
+            )}
+            description={
+              <fbt desc="admin.Orders.zeroSearchResults">
+                Your search for{' '}
+                <FbtParam name="searchVal">{searchVal}</FbtParam> returned
+                nothing.
+              </fbt>
+            }
           />
         ) : (
           <NoItems
-            heading="No orders yet!"
-            description="Generate some sales and orders will appear here."
+            heading={fbt('No orders yet!', 'admin.Orders.noOrders')}
+            description={fbt(
+              'Generate some sales and orders will appear here.',
+              'admin.Orders.genSales'
+            )}
           />
         )}
       </>
@@ -118,7 +132,9 @@ const AdminOrders = () => {
     <>
       {headerSection}
       {loading ? (
-        'Loading...'
+        <>
+          <fbt desc="Loading">Loading</fbt>...
+        </>
       ) : csv ? (
         <AdminOrdersCSV orders={orders} />
       ) : (
@@ -146,12 +162,24 @@ const AdminOrdersTable = ({ orders }) => {
     <table className="table admin-orders table-hover">
       <thead>
         <tr>
-          <th>Order</th>
-          <th>Time</th>
-          <th>Customer</th>
-          <th>Payment</th>
-          <th>Total</th>
-          <th>Status</th>
+          <th>
+            <fbt desc="Order">Order</fbt>
+          </th>
+          <th>
+            <fbt desc="Time">Time</fbt>
+          </th>
+          <th>
+            <fbt desc="Customer">Customer</fbt>
+          </th>
+          <th>
+            <fbt desc="Payment">Payment</fbt>
+          </th>
+          <th>
+            <fbt desc="Total">Total</fbt>
+          </th>
+          <th>
+            <fbt desc="Status">Status</fbt>
+          </th>
           <th></th>
         </tr>
       </thead>

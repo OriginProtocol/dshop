@@ -4,6 +4,7 @@ import pick from 'lodash/pick'
 import isEqual from 'lodash/isEqual'
 import get from 'lodash/get'
 import dayjs from 'dayjs'
+import fbt from 'fbt'
 
 import Loading from 'components/Loading'
 import Link from 'components/Link'
@@ -37,6 +38,28 @@ function getImageForVariant(productData, variant) {
   }
 }
 
+/**
+ * Finds and returns the variant that has the cheapest price
+ *
+ * @param {Array<Object>} variants
+ * @returns {Object}
+ */
+function findCheapestVariant(variants, productPrice) {
+  if (variants.length <= 1) return variants[0]
+
+  let minPrice = get(variants, '0.price', productPrice)
+  let foundVariant
+
+  for (const variant of variants) {
+    if (variant.price < minPrice) {
+      minPrice = variant.price
+      foundVariant = variant
+    }
+  }
+
+  return foundVariant ? foundVariant : variants[0]
+}
+
 const Product = ({ history, location, match }) => {
   const [state, setState] = useReducer(reducer, {
     loading: true,
@@ -63,7 +86,7 @@ const Product = ({ history, location, match }) => {
       const variants = get(data, 'variants', [])
       if (!variants.length) {
         variants.push({
-          ...pick(data, ['title', 'price', 'image']),
+          ...pick(data, ['title', 'price', 'image', 'sku']),
           id: 0,
           name: data.title,
           options: [],
@@ -75,7 +98,8 @@ const Product = ({ history, location, match }) => {
       }
 
       const variant =
-        variants.find((v) => String(v.id) === opts.variant) || variants[0]
+        variants.find((v) => String(v.id) === opts.variant) ||
+        findCheapestVariant(variants, data.price)
       const newState = {
         productData: data,
         activeImage: 0,
@@ -130,7 +154,11 @@ const Product = ({ history, location, match }) => {
   }
 
   if (!productData) {
-    return <div className="product-detail">Product not found</div>
+    return (
+      <div className="product-detail">
+        <fbt desc="product.notFound">Product not found</fbt>
+      </div>
+    )
   }
 
   const collectionParam = get(match, 'params.collection')
@@ -221,7 +249,9 @@ const Product = ({ history, location, match }) => {
     <div className="product-detail">
       {!collection ? null : (
         <div className="breadcrumbs">
-          <Link to="/">Home</Link>
+          <Link to="/">
+            <fbt desc="Home">Home</fbt>
+          </Link>
           <Link to={`/collections/${collection.id}`}>{collection.title}</Link>
           <span>{productData.title}</span>
         </div>
@@ -249,7 +279,9 @@ const Product = ({ history, location, match }) => {
           <div className="price mb-4">
             {formatPrice(get(variant, 'price', 0), currencyOpts)}
             {config.freeShipping ? (
-              <span className="shipping">FREE shipping</span>
+              <span className="shipping">
+                <fbt desc="product.freeShipping">FREE shipping</fbt>
+              </span>
             ) : null}
           </div>
           {!productOptions ||
@@ -279,11 +311,11 @@ const Product = ({ history, location, match }) => {
             {addedToCart ? (
               <>
                 <Link to="/cart" className={`btn btn-primary${lg}`}>
-                  View Cart
+                  <fbt desc="ViewCart">View Cart</fbt>
                 </Link>
                 {config.singleProduct ? null : (
                   <Link to="/" className={`btn btn-outline-primary${lg}`}>
-                    Continue Shopping
+                    <fbt desc="ContinueShopping">Continue Shopping</fbt>
                   </Link>
                 )}
               </>
@@ -298,15 +330,17 @@ const Product = ({ history, location, match }) => {
                 }}
                 className={`btn btn-outline-primary${lg}`}
               >
-                {onSale
-                  ? 'Pre-Order'
-                  : config.isAffiliate
-                  ? 'View Product'
-                  : 'Add to Cart'}
+                {onSale ? (
+                  <fbt desc="PreOrder">Pre-Order</fbt>
+                ) : config.isAffiliate ? (
+                  <fbt desc="ViewProduct">View Product</fbt>
+                ) : (
+                  <fbt desc="AddToCart">Add to Cart</fbt>
+                )}
               </button>
             ) : (
               <button className={`btn btn-outline-primary disabled${lg}`}>
-                Unavailable
+                <fbt desc="Unavailable">Unavailable</fbt>
               </button>
             )}
           </div>
