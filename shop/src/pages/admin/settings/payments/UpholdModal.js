@@ -41,8 +41,11 @@ const validate = (state) => {
   }
 }
 
-const UpholdModal = ({ onClose }) => {
-  const [state, setState] = useReducer(reducer, initialState)
+const UpholdModal = ({ onClose, initialConfig }) => {
+  const [state, setState] = useReducer(reducer, {
+    ...initialState,
+    ...initialConfig
+  })
 
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)

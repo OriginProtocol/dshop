@@ -28,7 +28,7 @@ async function makeOffer(req, res) {
     }
   )
 
-  res.sendStatus(200)
+  res.json({ success: true })
 }
 
 module.exports = makeOffer

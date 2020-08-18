@@ -278,22 +278,20 @@ const PaymentSettings = () => {
                   </div>
                 </div>
               </>
-            ) : sellerWallet ? (
-              <>
-                <div className="description">
-                  <fbt desc="admin.settings.payments.pendingListingCreation">
-                    Your listing is pending creation using account{' '}
-                    <FbtParam name="sellerWallet">{sellerWallet}</FbtParam>
-                  </fbt>
-                </div>
-              </>
             ) : (
               <>
                 <div className="description">
-                  <fbt desc="admin.settings.payments.walletNotConnected">
-                    You have not connected a wallet. This is where crypto
-                    payments will be sent.
-                  </fbt>
+                  {sellerWallet ? (
+                    <fbt desc="admin.settings.payments.pendingListingCreation">
+                      Your listing is pending creation using account{' '}
+                      <FbtParam name="sellerWallet">{sellerWallet}</FbtParam>
+                    </fbt>
+                  ) : (
+                    <fbt desc="admin.settings.payments.walletNotConnected">
+                      You have not connected a wallet. This is where crypto
+                      payments will be sent.
+                    </fbt>
+                  )}
                 </div>
                 <div className="actions">
                   <CreateListing
@@ -302,7 +300,13 @@ const PaymentSettings = () => {
                       refetch()
                       refetchConfig()
                     }}
-                    children={<fbt desc="Connect">Connect</fbt>}
+                    children={
+                      sellerWallet ? (
+                        <fbt desc="Re-Connect">Re-Connect</fbt>
+                      ) : (
+                        <fbt desc="Connect">Connect</fbt>
+                      )
+                    }
                   />
                 </div>
               </>
@@ -318,7 +322,12 @@ const PaymentSettings = () => {
             initialConfig={{ ...config, ...shopConfig }}
           />
         )}
-        {connectModal === 'uphold' && <UpholdModal onClose={onCloseModal} />}
+        {connectModal === 'uphold' && (
+          <UpholdModal
+            initialConfig={{ ...config, ...shopConfig }}
+            onClose={onCloseModal}
+          />
+        )}
         {connectModal === 'paypal' && (
           <PayPalModal
             onClose={onCloseModal}
