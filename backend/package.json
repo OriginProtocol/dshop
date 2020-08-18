@@ -22,10 +22,10 @@
   "dependencies": {
     "@google-cloud/bigquery": "^5.0.0",
     "@google-cloud/dns": "^2.0.1",
+    "@origin/ipfs": "^0.1.0",
     "@origin/utils": "^0.1.0",
     "@paypal/checkout-server-sdk": "^1.0.2",
     "@sentry/node": "^5.19.2",
-    "@origin/ipfs": "^0.1.0",
     "aws-sdk": "^2.680.0",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
@@ -67,6 +67,7 @@
     "sharp": "0.25.4",
     "sqlite3": "^5.0.0",
     "stripe": "^8.69.0",
+    "write-file-atomic": "^3.0.3",
     "ws": "^7.3.1"
   },
   "devDependencies": {

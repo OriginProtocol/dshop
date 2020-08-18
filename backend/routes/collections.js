@@ -1,5 +1,6 @@
 const fetch = require('node-fetch')
 const fs = require('fs')
+const writeFileSync = require('write-file-atomic').sync
 const path = require('path')
 const pick = require('lodash/pick')
 
@@ -19,12 +20,14 @@ module.exports = function (router) {
       try {
         const outDir = path.resolve(`${DSHOP_CACHE}/${req.shop.authToken}/data`)
         const collectionsPath = `${outDir}/collections.json`
-        const out = JSON.stringify(collections, undefined, 2)
-        fs.writeFile(collectionsPath, out, () => {
-          req.shop
-            .update({ hasChanges: true })
-            .then(() => res.send({ success: true }))
-        })
+        writeFileSync(
+          collectionsPath,
+          JSON.stringify(collections, undefined, 2)
+        )
+
+        await req.shop.update({ hasChanges: true })
+
+        res.send({ success: true })
       } catch (e) {
         res.json({ success: false })
       }
@@ -54,12 +57,16 @@ module.exports = function (router) {
           }
         )
 
-        const out = JSON.stringify(collections, undefined, 2)
-        fs.writeFile(collectionsPath, out, () => {
-          req.shop
-            .update({ hasChanges: true })
-            .then(() => res.send({ success: true }))
+        writeFileSync(
+          collectionsPath,
+          JSON.stringify(collections, undefined, 2)
+        )
+
+        await req.shop.update({
+          hasChanges: true
         })
+
+        res.send({ success: true })
       } catch (e) {
         res.json({ success: false })
       }
