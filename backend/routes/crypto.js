@@ -24,7 +24,7 @@ const PAYMENT_SESSION_EXPIRY = 10 * 60 * 1000 // 10 min
 
 module.exports = function (router) {
   /**
-   * Endpoint to request a payment code to the back-end.
+   * Endpoint to request a payment code.
    *
    * The body of the request is expected to include:
    *   {string} fromAddress: Address sending the transaction.
@@ -32,7 +32,7 @@ module.exports = function (router) {
    *   {string} amount: transaction amount
    *   {string} currency: transaction currency (ex: ETH, OGN, etc...).
    */
-  router.get('/crypto/payment-code', authShop, async (req, res) => {
+  router.post('/crypto/payment-code', authShop, async (req, res) => {
     const shop = req.shop
     const { fromAddress, toAddress, amount, currency } = req.body
     if (!fromAddress) {

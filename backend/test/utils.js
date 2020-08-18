@@ -228,7 +228,7 @@ async function createTestShop({
     networkId: network.networkId,
     listingId,
     sellerId: 1,
-    authToken: 'testToken',
+    authToken: 'shopAuthToken',
     config: setConfig({
       dataUrl: undefined,
       publicUrl: undefined,
