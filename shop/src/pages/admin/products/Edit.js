@@ -287,10 +287,10 @@ const EditProduct = () => {
         body: JSON.stringify({
           ...newState,
           price: hasOptions
-            ? newState.price * 100
-            : variants.reduce((min, v) => {
+            ? variants.reduce((min, v) => {
                 return v.price < min ? v.price : min
-              }, get(variants, '0.price', newState.price * 100)),
+              }, get(variants, '0.price', newState.price * 100))
+            : newState.price * 100,
           images: media.map((file) => file.path),
           collections: newState.collections,
           variants
@@ -324,7 +324,7 @@ const EditProduct = () => {
     }
   }
 
-  const actions = (
+  const actions = externallyManaged ? null : (
     <div className="actions">
       {isNewProduct ? (
         <button
@@ -359,7 +359,7 @@ const EditProduct = () => {
         message={fbt(
           'Are you sure? You have unsaved changes.',
           'admin.products.unsavedChanges'
-        )}
+        ).toString()}
       />
       <form
         autoComplete="off"
@@ -442,7 +442,7 @@ const EditProduct = () => {
                 />
               </div>
 
-              <div className="row">
+              <div className={`row${hasOptions ? ' d-none' : ''}`}>
                 <div className="col-md-6">
                   <div className="form-group">
                     <label>
@@ -500,7 +500,10 @@ const EditProduct = () => {
                       className="form-check-input"
                       checked={hasOptions}
                       disabled={externallyManaged}
-                      onChange={(e) => setHasOptions(e.target.checked)}
+                      onChange={(e) => {
+                        setHasOptions(e.target.checked)
+                        setFormState({ hasChanges: true })
+                      }}
                     />
                     <fbt desc="admin.products.hasVariants">
                       This product has multiple options, like different sizes
@@ -554,7 +557,7 @@ const EditProduct = () => {
                             ...updatedState
                           })
                         }
-
+                        updatedState.hasChanges = true
                         setFormState(updatedState)
                       }}
                       onRemove={() => {
@@ -562,7 +565,11 @@ const EditProduct = () => {
                         const availableOptions = [...formState.availableOptions]
                         options.splice(index, 1)
                         availableOptions.splice(index, 1)
-                        setFormState({ options, availableOptions })
+                        setFormState({
+                          options,
+                          availableOptions,
+                          hasChanges: true
+                        })
                       }}
                       disabled={externallyManaged}
                     />
@@ -592,11 +599,8 @@ const EditProduct = () => {
                   variants={formState.variants}
                   media={media}
                   disabled={externallyManaged}
-                  onChange={(updatedVariants) => {
-                    setFormState({
-                      variants: updatedVariants,
-                      hasChanges: true
-                    })
+                  onChange={(variants) => {
+                    setFormState({ variants, hasChanges: true })
                   }}
                 />
               </>

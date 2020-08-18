@@ -4,6 +4,7 @@ const mv = require('mv')
 const sharp = require('sharp')
 const get = require('lodash/get')
 const pick = require('lodash/pick')
+const groupBy = require('lodash/groupBy')
 const kebabCase = require('lodash/kebabCase')
 const { execFile } = require('child_process')
 
@@ -123,20 +124,11 @@ function appendToProductsFile(shop, productData) {
     }
   }
 
-  const hasVariants = Boolean(
-    productData.variants && productData.variants.length
-  )
+  allProducts[existingIndex] = pick(productData, minimalistProductFields)
 
-  const price = !hasVariants
-    ? productData.price
-    : productData.variants.reduce((min, v) => {
-        return v.price < min ? v.price : min
-      }, get(productData, 'variants[0].price', productData.price))
-
-  allProducts[existingIndex] = {
-    ...pick(productData, minimalistProductFields),
-    hasVariants,
-    price
+  const variantPrices = groupBy(get(productData, 'variants', []), 'price')
+  if (Object.keys(variantPrices).length > 1) {
+    allProducts[existingIndex].variantPricing = true
   }
 
   writeProductsFile(shop, allProducts)

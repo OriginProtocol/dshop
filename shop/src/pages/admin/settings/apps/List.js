@@ -3,7 +3,6 @@ import fbt, { FbtParam } from 'fbt'
 
 import useShopConfig from 'utils/useShopConfig'
 import useEmailAppsList from 'utils/useEmailAppsList'
-import { useStateValue } from 'data/state'
 import maskSecret from 'utils/maskSecret'
 
 import Link from 'components/Link'
@@ -18,10 +17,7 @@ import ProcessorsList from 'components/settings/ProcessorsList'
 
 const AppSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
-  const [{ admin }] = useStateValue()
-
   const [connectModal, setShowConnectModal] = useState(false)
-
   const { emailAppsList } = useEmailAppsList({ shopConfig })
 
   const appsList = useMemo(() => {
@@ -44,8 +40,7 @@ const AppSettings = () => {
         ),
         icon: <img src="images/printful.svg" width="70%" />,
         enabled: printfulEnabled,
-        actions: <PrintfulSync className="mr-2" />,
-        hide: admin.superuser ? false : true
+        actions: <PrintfulSync className="mr-2" />
       },
       ...emailAppsList
     ]

@@ -5,14 +5,14 @@ import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
 import ConfirmationModal from 'components/ConfirmationModal'
 
-const AdminPrintfulSync = ({ className = '' }) => {
+const AdminPrintfulSync = ({ buttonText, buttonClass, className = '' }) => {
   const { post } = useBackendApi({ authToken: true })
   const [, dispatch] = useStateValue()
 
   return (
     <ConfirmationModal
-      className={`btn btn-outline-primary ${className}`}
-      buttonText={fbt('Sync', 'Sync')}
+      className={`${buttonClass || 'btn btn-outline-primary'} ${className}`}
+      buttonText={buttonText || fbt('Sync', 'Sync')}
       confirmText={fbt(
         'Are you sure you want to sync with Printful?',
         'admin.settings.apps.printful.confirmSync'
