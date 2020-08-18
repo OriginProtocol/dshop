@@ -13,34 +13,19 @@ const IPFS_TIMEOUT = 60000 // 60 sec
  * Returns the offer object and the decrypted data.
  *
  * @param {models.Shop} shop
- * @param {string} ipfsHash: IPFS hash of an offer for the shop.
- * @returns {Promise<{offer: Object, data: Object}>}
+ * @param {string} ipfsHash: IPFS hash of the encrypted offer data
+ * @returns {Promise<{data: Object}>}
  */
-async function getShopOfferData(shop, ipfsHash) {
+async function decryptShopOfferData(shop, ipfsHash) {
   // Load the shop configuration to read things like PGP key and IPFS gateway to use.
   const shopConfig = getConfig(shop.config)
   const { dataUrl, pgpPrivateKey, pgpPrivateKeyPass } = shopConfig
   const ipfsGateway = await getIPFSGateway(dataUrl, shop.networkId)
   log.info(`Using IPFS gateway ${ipfsGateway} for fetching offer data`)
 
-  // Load the offer data.
-  log.info(`Fetching offer data with hash ${ipfsHash}`)
-  const offerData = await getText(ipfsGateway, ipfsHash, IPFS_TIMEOUT)
-  const offer = JSON.parse(offerData)
-
-  // Get the hash of the encrypted data.
-  const encryptedHash = offer.encryptedData
-  if (!encryptedHash) {
-    throw new Error('No encrypted data found')
-  }
-
   // Load the encrypted data from IPFS and decrypt it.
-  log.info(`Fetching encrypted offer data with hash ${encryptedHash}`)
-  const encryptedDataJson = await getText(
-    ipfsGateway,
-    encryptedHash,
-    IPFS_TIMEOUT
-  )
+  log.info(`Fetching encrypted offer data with hash ${ipfsHash}`)
+  const encryptedDataJson = await getText(ipfsGateway, ipfsHash, IPFS_TIMEOUT)
   const encryptedData = JSON.parse(encryptedDataJson)
 
   const privateKey = await openpgp.key.readArmored(pgpPrivateKey)
@@ -53,9 +38,9 @@ async function getShopOfferData(shop, ipfsHash) {
   const plaintext = await openpgp.decrypt(options)
   const data = JSON.parse(plaintext.data)
 
-  return { offer, data }
+  return data
 }
 
 module.exports = {
-  getShopOfferData
+  decryptShopOfferData
 }

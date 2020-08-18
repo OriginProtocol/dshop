@@ -29,8 +29,8 @@ function attachToQueue() {
  *   {string} txHash: hash of the tx to watch.
  *   {string} fromAddress: Address sending the transaction.
  *   {string} toAddress: Address receiving the transaction.
- *   {string} ipfsHash: IPFS hash of the data.
- * @returns {Promise<TransactionReceipt>}
+ *   {string} encryptedDataIpfsHash: IPFS hash of the encrypted data.
+ * @returns {Promise<TransactionReceipt||null>}
  * @throws
  */
 async function processor(job) {
@@ -40,7 +40,7 @@ async function processor(job) {
   }
   const jobId = `${job.queue.name}-${job.id}` // Prefix with queue name since job ids are not unique across queues.
 
-  const { shopId, txHash, fromAddress, ipfsHash } = job.data
+  const { shopId, txHash, fromAddress, encryptedDataIpfsHash } = job.data
   log.info(`txProcessor for job with data: ${job.data}`)
 
   // TODO: check the validity of the IPFS data?
@@ -72,6 +72,15 @@ async function processor(job) {
     )
   }
 
+  // Check the transaction is not already marked as Confirmed.
+  // It would indicate the job is being retried despite the logic having
+  // successfully run. Possibly a corner case due to Bull's at-least-once guarantee.
+  if (transaction.status === TransactionStatuses.Confirmed) {
+    log.error(`Transaction ${transaction.id} already confirmed.`)
+    queueLog(100, `Transaction already confirmed`)
+    return null
+  }
+
   // Load the tx from the blockchain based on its hash.
   queueLog(25, 'Loading tx from the blockchain')
   const tx = await provider.getTransaction(txHash)
@@ -84,13 +93,13 @@ async function processor(job) {
 
   // Wait for the tx to get mined.
   queueLog(50, `Waiting for tx ${txHash} to get confirmed`)
-  log.info('Waiting for tx ${txHash} confirmation...')
+  log.info(`Waiting for tx ${txHash} confirmation...`)
   const receipt = await tx.wait(NUM_BLOCKS_CONFIRMATION)
   if (receipt.status) {
     // Payment was successful.
     // Enqueue a job to record an offer on the marketplace contract.
     const makeOfferQueue = queues['makeOffer']
-    const jobData = { shopId, ipfsHash }
+    const jobData = { shopId, encryptedDataIpfsHash }
     const jobOpts = {
       // Up to 6 attempts with exponential backoff with a 60sec initial delay.
       attempts: 6,
@@ -108,6 +117,7 @@ async function processor(job) {
       jobId
     })
   } else {
+    // Blockchain transaction failed. Do not process the order.
     log.info(
       `Shop ${shopId}: tx with hash ${txHash} was reverted. Skipping offer creation.`
     )
