@@ -239,7 +239,9 @@ const PaymentSettings = () => {
             <select
               className="form-control"
               value={state.currency}
-              onChange={(e) => setState({ hasChanges: true, currency: e.target.value })}
+              onChange={(e) =>
+                setState({ hasChanges: true, currency: e.target.value })
+              }
             >
               {AllCurrencies.map((currency) => (
                 <option key={currency[0]} value={currency[0]}>
