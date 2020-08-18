@@ -1,0 +1,74 @@
+---
+substitutions:
+    _BUILD_DIR: /tmp/build
+    _PINATA_API_KEY: ''
+    _PINATA_SECRET_API_KEY: ''
+
+artifacts:
+  objects:
+    location: gs://dshop-ui-staging
+    paths: 
+      - ${_BUILD_DIR}
+
+steps:
+  - id: Build Dshop dapp
+    name: node:10.22.0
+    env:
+      - PINATA_API_KEY=${_PINATA_API_KEY}
+      - PINATA_SECRET_API_KEY=${_PINATA_SECRET_API_KEY}
+    entrypoint: sh
+    args:
+      - '-c'
+      - |
+        cd shop
+        yarn run build
+
+        # Copy build files to build dir
+        mkdir -p ${_BUILD_DIR}
+        cp public/*app*.js ${_BUILD_DIR}/
+        cp public/*app*.css ${_BUILD_DIR}/
+        cp -R public/fonts ${_BUILD_DIR}/
+        cp -R public/images ${_BUILD_DIR}/
+        cp -R public/dist ${_BUILD_DIR}/
+        cp -R public/translations ${_BUILD_DIR}/
+
+        # Update builds.json
+        cd ..
+        echo "Assembling build..."
+        node devops/updateBuilds.js --add ${_BUILD_DIR} ${_BUCKET_NAME} | grep Hash | awk '{ print $2 }' > .ipfshash
+        echo "Done."
+
+  - id: Verify IPFS hash
+    name: node:10.22.0
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Sanity check to make sure we have what we need for the next step
+        if [[ "$(stat -c'%s' .ipfshash)" == "0" ]]; then
+          echo "No IPFS hash.  Bailing"
+          exit 1
+        fi
+
+  - id: Update DNS IPNS record
+    name: gcr.io/cloud-builders/gcloud
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        apt-get -y update && apt-get install -y dnsutils
+
+        echo "Updated DNS to: dnslink=/ipfs/$(cat .ipfshash)"
+
+        gcloud dns record-sets transaction start --zone="ogn-app"
+
+        gcloud dns record-sets transaction remove \
+          "$(dig +short TXT _dnslink.ui.ogn.app @8.8.4.4)" \
+          --name="_dnslink.ui.ogn.app." \
+          --ttl="30" --type="TXT" --zone="ogn-app"
+
+        gcloud dns record-sets transaction add \
+          "dnslink=/ipfs/$(cat .ipfshash)" \
+          --name="_dnslink.ui.ogn.app." --ttl="30" --type="TXT" --zone="ogn-app"
+
+        gcloud dns record-sets transaction execute --zone="ogn-app"
