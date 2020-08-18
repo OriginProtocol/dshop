@@ -19,14 +19,12 @@ module.exports = function (router) {
       try {
         const outDir = path.resolve(`${DSHOP_CACHE}/${req.shop.authToken}/data`)
         const collectionsPath = `${outDir}/collections.json`
-        fs.writeFileSync(
-          collectionsPath,
-          JSON.stringify(collections, undefined, 2)
-        )
-
-        await req.shop.update({ hasChanges: true })
-
-        res.send({ success: true })
+        const out = JSON.stringify(collections, undefined, 2)
+        fs.writeFile(collectionsPath, out, () => {
+          req.shop
+            .update({ hasChanges: true })
+            .then(() => res.send({ success: true }))
+        })
       } catch (e) {
         res.json({ success: false })
       }
@@ -56,16 +54,12 @@ module.exports = function (router) {
           }
         )
 
-        fs.writeFileSync(
-          collectionsPath,
-          JSON.stringify(collections, undefined, 2)
-        )
-
-        await req.shop.update({
-          hasChanges: true
+        const out = JSON.stringify(collections, undefined, 2)
+        fs.writeFile(collectionsPath, out, () => {
+          req.shop
+            .update({ hasChanges: true })
+            .then(() => res.send({ success: true }))
         })
-
-        res.send({ success: true })
       } catch (e) {
         res.json({ success: false })
       }
