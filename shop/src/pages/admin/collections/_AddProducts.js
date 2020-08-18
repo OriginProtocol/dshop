@@ -53,13 +53,7 @@ const AddProducts = ({ children, collection }) => {
       />
       {state.modal && (
         <Modal
-          onClose={() =>
-            setState({
-              reset: true,
-              products: state.products,
-              sortedProducts: state.sortedProducts
-            })
-          }
+          onClose={() => setState({ modal: false, shouldClose: false })}
           shouldClose={state.shouldClose}
         >
           <div className="modal-body">

@@ -324,7 +324,7 @@ const EditProduct = () => {
     }
   }
 
-  const actions = externallyManaged ? null : (
+  const actions = (
     <div className="actions">
       {isNewProduct ? (
         <button
