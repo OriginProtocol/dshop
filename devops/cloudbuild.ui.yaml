@@ -60,20 +60,20 @@ steps:
       - '-c'
       - |
         apt-get -y update && apt-get install -y dnsutils
-        dig +short TXT _dnslink.${_DOMAIN} @8.8.4.4 > .original
+        dig +short TXT _dnslink.${_DOMAIN} @8.8.4.4 | sed 's/\"//g' > .original
 
         echo "Updated DNS to: dnslink=/ipfs/$(cat .ipfshash)"
 
         gcloud dns record-sets transaction start --zone="ogn-app"
 
-        echo "Removing _dnslink.${_DOMAIN}   TXT   $(cat .original)..."
+        echo "Removing _dnslink.${_DOMAIN}.   TXT   $(cat .original)..."
 
         gcloud dns record-sets transaction remove \
           "$(cat .original)" \
           --name="_dnslink.${_DOMAIN}." \
           --ttl="30" --type="TXT" --zone="ogn-app"
 
-        echo "Adding _dnslink.${_DOMAIN}   TXT   dnslink=/ipfs/$(cat .ipfshash)..."
+        echo "Adding _dnslink.${_DOMAIN}.   TXT   dnslink=/ipfs/$(cat .ipfshash)..."
 
         gcloud dns record-sets transaction add \
           "dnslink=/ipfs/$(cat .ipfshash)" \
