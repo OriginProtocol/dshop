@@ -38,7 +38,7 @@ steps:
         # Update builds.json
         cd ..
         echo "Assembling build..."
-        node devops/updateBuilds.js -ua ${_BUILD_DIR} ${_BUCKET_NAME} | grep Hash | awk '{ print $2 }' > .ipfshash
+        node devops/updateBuilds.js -ua --hash-file .ipfshash ${_BUILD_DIR} ${_BUCKET_NAME}
         echo "Done."
 
   - id: Verify IPFS hash

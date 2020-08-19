@@ -75,7 +75,7 @@ function getNewHash(files, exclude=[]) {
   for (const f of files) {
     const match = f.match(FILE_HASH_PATTERN)
 
-    if (match) {
+    if (match && !exclude.includes(match[1])) {
       return match[1]
     }
   }
@@ -239,8 +239,6 @@ async function updateBuildsJSON(bucketName, buildsJSON, newHash, opts) {
     timestamp: Math.floor(+new Date() / 1000)
   })
 
-  console.log('buildsJSON:', buildsJSON)
-
   const bucket = getBucket(bucketName)
   const tmp = opts.tmp || await getTemp()
   const buildsJSONFile = path.join(tmp, BUILDS_FILENAME)
@@ -329,6 +327,9 @@ async function updateBuilds(buildDir, bucketName, opts) {
     const hash = await addToIPFS(buildDir)
     if (hash) {
       process.stdout.write(`Hash: ${hash}\n`)
+      if (opts.hashFile) {
+        await fs.writeFile(opts.hashFile, hash, { flag: 'w' })
+      }
     } else {
       process.stdout.write(`ERR\n`)
       process.stderr.write(`Failed to add files to IPFS!`)
@@ -341,6 +342,7 @@ async function main(argv) {
   program
     .option('-u, --upload', 'do not upload to bucket')
     .option('-a, --add', 'add build dir to IPFS')
+    .option('-i, --hash-file <hashFile>', 'save hash to a file')
     .arguments('<buildDir> <bucketName>')
     .action(async (buildDir, bucketName, opts) => {
       await updateBuilds(buildDir, bucketName, opts)
