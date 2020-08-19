@@ -4,10 +4,11 @@ substitutions:
   _PINATA_API_KEY: ''
   _PINATA_SECRET_API_KEY: ''
 
-artifacts:
-  objects:
-    location: gs://${_BUCKET_NAME}
-    paths: ["${_BUILD_DIR}/*"]
+# _BUILD_DIR doesn't seem to exist at time of collection?
+# artifacts:
+#   objects:
+#     location: gs://${_BUCKET_NAME}
+#     paths: ["${_BUILD_DIR}/*"]
 
 steps:
   - id: Build Dshop dapp
@@ -37,7 +38,7 @@ steps:
         # Update builds.json
         cd ..
         echo "Assembling build..."
-        node devops/updateBuilds.js --add ${_BUILD_DIR} ${_BUCKET_NAME} | grep Hash | awk '{ print $2 }' > .ipfshash
+        node devops/updateBuilds.js -ua ${_BUILD_DIR} ${_BUCKET_NAME} | grep Hash | awk '{ print $2 }' > .ipfshash
         echo "Done."
 
   - id: Verify IPFS hash
