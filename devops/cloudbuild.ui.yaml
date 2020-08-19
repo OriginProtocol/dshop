@@ -7,8 +7,7 @@ substitutions:
 artifacts:
   objects:
     location: gs://${_BUCKET_NAME}
-    paths: 
-      - ${_BUILD_DIR}
+    paths: ["${_BUILD_DIR}/*"]
 
 steps:
   - id: Build Dshop dapp
