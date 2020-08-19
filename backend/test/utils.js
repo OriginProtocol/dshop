@@ -355,7 +355,7 @@ async function createTestOffer(network, shop, key) {
     encryptedData: ipfsHash,
     paymentCode: 'code123'
   }
-  const offerIpfsHash = await post(network.ipfsApi, offer, true)
+  const offerIpfsHash = await postIpfs(network.ipfsApi, offer, true)
 
   return { ipfsHash: offerIpfsHash, data }
 }
