@@ -20,6 +20,7 @@ const pinataSDK = require('@pinata/sdk')
 
 
 let TMPD
+const MAX_RECURSION_DEPTH = 5
 const BUILDS_MAX = 5 // Total builds to keep in BUILDS_FILENAME
 const BUILDS_FILENAME = 'builds.json'
 const FILE_HASH_PATTERN = /app\.([A-Za-z0-9]+)\.(css|js)/
@@ -174,11 +175,17 @@ function loadBuildsJSON(bucketName) {
  *
  * @param bucketName {string} - Bucket to upload to
  * @param files {Array} - Files to copy to bucket
+ * @param depth {Number} - Recusion depth
  * @returns {Array} of promises
  */
-async function uploadNewFiles(bucketName, files, buildDir) {
+async function uploadNewFiles(bucketName, files, buildDir, depth = 1) {
   const promises = []
   const bucket = getBucket(bucketName)
+
+  if (depth > MAX_RECURSION_DEPTH) {
+    throw new Error('Max recusion depth reached!')
+  }
+
   for (const file of files) {
     const fstat = await fs.stat(file)
     if (fstat.isDirectory()) {
@@ -186,7 +193,8 @@ async function uploadNewFiles(bucketName, files, buildDir) {
       const parentProms = await uploadNewFiles(
         bucketName,
         parentFiles,
-        buildDir
+        buildDir,
+        depth + 1
       )
 
       promises.splice(promises.length, 0, ...parentProms)
