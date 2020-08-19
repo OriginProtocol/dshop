@@ -49,7 +49,7 @@ async function processor(job) {
   } = job.data
   log.info(`txProcessor for job with data: ${JSON.stringify(job.data)}`)
 
-  // TODO: check the validity of the IPFS data?
+  // TODO: Add checks on the validity of the IPFS data.
 
   // Load the associated shop.
   const shop = await Shop.findOne({ where: { id: shopId } })
@@ -98,6 +98,11 @@ async function processor(job) {
   // TODO: check to and from address.
 
   // Wait for the tx to get mined.
+  // TODO(franck): This blocks until the tx is mined, which may take a while
+  //   and will result in a queue worker not processing any other job.
+  //   If this starts causing issues, as opposed to blocking, attempt
+  //   to read the tx receipt and if not available yet, fail. Then have the
+  //   queue retry the job with some backoff.
   queueLog(50, `Waiting for tx ${txHash} to get confirmed`)
   log.info(`Waiting for tx ${txHash} confirmation...`)
   const receipt = await tx.wait(NUM_BLOCKS_CONFIRMATION)
