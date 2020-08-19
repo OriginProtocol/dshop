@@ -24,7 +24,7 @@ steps:
         yarn run build
 
         # Get existing build dir
-        node devops/syncBucket.js ${_BUCKET_NAME} ${_BUILD_DIR}
+        node ../devops/syncBucket.js ${_BUCKET_NAME} ${_BUILD_DIR}
 
         # Copy new build files to build dir
         cp public/*app*.js ${_BUILD_DIR}/
