@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+
+<head>
+  <title>TITLE</title>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no, user-scalable=no">
+  <meta http-equiv="Content-Language" content="en">
+  <meta name="description" content="META_DESC">
+
+  <% if (htmlWebpackPlugin.options.sentryDSN) { %>
+  <script src="https://browser.sentry-cdn.com/5.19.2/bundle.min.js"
+    integrity="sha384-JpEWxJ7oLRn+baXBgcCKEv73uYWsgouzEResgJneOXvTjDZ+1crAXcNAKZoiL96Z"
+    crossorigin="<%= webpackConfig.output.crossOriginLoading %>"></script>
+  <script>
+    <% /* To listen on react */ %>
+    window._sentryLoaded = true
+
+    Sentry.init({
+      dsn: '<%= htmlWebpackPlugin.options.sentryDSN %>',
+      environment: '<%= htmlWebpackPlugin.options.sentryEnvironment %>',
+    })
+  </script>
+  <% } %>
+
+  <script>
+    localStorage.ognNetwork = "NETWORK"
+    window.ognNetwork = "NETWORK"
+  </script>
+
+  <link rel="data-dir" href="DATA_DIR" />
+  <link rel="icon" href="FAVICON" />
+</head>
+
+<body>
+  <div id="app">
+    <div class="loading-screen"></div>
+  </div>
+</body>
+<script crossorigin src="dist/openpgp.min.js"></script>
+<script>
+  if (typeof window.openpgp !== 'undefined') {
+    openpgp.config.show_comment = false
+    openpgp.config.show_version = false
+    openpgp.initWorker({ path: 'dist/openpgp.worker.min.js' })
+  }
+  (function () {
+    const uiSrc = 'UI_SRC'
+    window.webpackPublicPath = uiSrc
+    const rnd = +new Date()
+    fetch(`${uiSrc}builds.json?${rnd}`)
+      .then((res) => res.json())
+      .then((builds) => {
+        const { hash } = builds[builds.length - 1]
+        const styles = [`vendors~app.${hash}.css`, `app.${hash}.css`]
+        for (const style of styles) {
+          const el = document.createElement('link')
+          el.rel = 'stylesheet'
+          el.href = `${uiSrc}${style}`
+          document.head.appendChild(el)
+        }
+        const scripts = [`dist/vendors~app.${hash}.bundle.js`, `app.${hash}.js`]
+        for (const script of scripts) {
+          const el = document.createElement('script')
+          el.async = 'async'
+          el.src = `${uiSrc}${script}`
+          document.body.appendChild(el)
+        }
+      })
+  })()
+</script>
+
+</html>

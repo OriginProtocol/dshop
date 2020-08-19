@@ -173,16 +173,21 @@ async function _deployShop({
       ? 'rinkeby'
       : 'localhost'
 
-  const html = fs.readFileSync(`${OutputDir}/public/index.html`).toString()
-  fs.writeFileSync(
-    `${OutputDir}/public/index.html`,
-    html
+  function replaceVars(html) {
+    return html
       .replace('TITLE', publicShopConfig.fullTitle)
       .replace('META_DESC', publicShopConfig.metaDescription || '')
       .replace('DATA_DIR', dataDir)
       .replace(/NETWORK/g, networkName)
       .replace('FAVICON', publicShopConfig.favicon || 'favicon.ico')
-  )
+      .replace('UI_SRC', networkConfig.uiCdn || '')
+  }
+
+  const html = fs.readFileSync(`${OutputDir}/public/index.html`).toString()
+  fs.writeFileSync(`${OutputDir}/public/index.html`, replaceVars(html))
+
+  const cdnHtml = fs.readFileSync(`${OutputDir}/public/cdn.html`).toString()
+  fs.writeFileSync(`${OutputDir}/public/cdn.html`, replaceVars(cdnHtml))
 
   // Note: for legacy reasons, the URLs for the IPFS Gateway and API are stored in
   // the network.ipfs/ipfsApi fields while other configs are stored under network.config.

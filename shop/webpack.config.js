@@ -184,6 +184,13 @@ const webpackConfig = {
       sentryDSN: process.env.SENTRY_DSN,
       sentryEnvironment: process.env.ENVIRONMENT
     }),
+    new HtmlWebpackPlugin({
+      template: 'public/template-cdn.html',
+      filename: 'cdn.html',
+      inject: false,
+      sentryDSN: process.env.SENTRY_DSN,
+      sentryEnvironment: process.env.ENVIRONMENT
+    }),
     new webpack.EnvironmentPlugin({
       WEBPACK_BUILD: true,
       NODE_ENV: process.env.NODE_ENV || 'development',
