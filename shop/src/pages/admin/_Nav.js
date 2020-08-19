@@ -11,6 +11,7 @@ import Redirect from 'components/Redirect'
 import AccountSelector from './_AccountSelector'
 import User from './_User'
 import NewShop from './_NewShop'
+import LiveChat from './_LiveChat'
 
 const Nav = ({ newShop, setNewShop, only }) => {
   const [{ admin, adminLocation }, dispatch] = useStateValue()
@@ -68,7 +69,8 @@ const Nav = ({ newShop, setNewShop, only }) => {
             </SwitchToStorefront>
           </div>
         )}
-        <User />
+        <LiveChat className="ml-auto" />
+        <User className="ml-4" />
       </div>
       <NewShop shouldShow={newShop} onClose={() => setNewShop(false)} />
     </nav>
