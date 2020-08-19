@@ -90,6 +90,7 @@ require('./routes/health')(router)
 require('./routes/offline-payment')(router)
 require('./routes/paypal')(router)
 require('./routes/exchange-rates')(router)
+require('./routes/crypto')(router)
 
 router.get('/', async (req, res) => {
   let html

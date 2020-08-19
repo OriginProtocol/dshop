@@ -32,12 +32,14 @@ class FallbackQueue {
       throw new Error('No processor defined for this fake job queue')
     }
     const job = {
+      id: Date.now(),
       data: data,
       progress: () => undefined,
       log: log.info,
       queue: this
     }
     await this.processor(job)
+    return job
   }
 
   /**
