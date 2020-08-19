@@ -1,12 +1,12 @@
 ---
 substitutions:
-    _BUILD_DIR: /tmp/build
-    _PINATA_API_KEY: ''
-    _PINATA_SECRET_API_KEY: ''
+  _BUILD_DIR: /tmp/build
+  _PINATA_API_KEY: ''
+  _PINATA_SECRET_API_KEY: ''
 
 artifacts:
   objects:
-    location: gs://dshop-ui-staging
+    location: gs://${_BUCKET_NAME}
     paths: 
       - ${_BUILD_DIR}
 
@@ -23,8 +23,10 @@ steps:
         cd shop
         yarn run build
 
-        # Copy build files to build dir
-        mkdir -p ${_BUILD_DIR}
+        # Get existing build dir
+        node devops/syncBucket.js ${_BUCKET_NAME} ${_BUILD_DIR}
+
+        # Copy new build files to build dir
         cp public/*app*.js ${_BUILD_DIR}/
         cp public/*app*.css ${_BUILD_DIR}/
         cp -R public/fonts ${_BUILD_DIR}/

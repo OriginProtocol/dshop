@@ -66,9 +66,10 @@ async function ls(buildDir) {
  * Find the build hash from the given build files
  *
  * @param files {Array} - build files
+ * @param exclude {Array} - hashes to ignore
  * @returns {string} - build hash
  */
-function getNewHash(files) {
+function getNewHash(files, exclude=[]) {
   // Find the first hash in the first matching file
   for (const f of files) {
     const match = f.match(FILE_HASH_PATTERN)
@@ -173,22 +174,34 @@ function loadBuildsJSON(bucketName) {
  *
  * @param bucketName {string} - Bucket to upload to
  * @param files {Array} - Files to copy to bucket
+ * @returns {Array} of promises
  */
 async function uploadNewFiles(bucketName, files, buildDir) {
   const promises = []
   const bucket = getBucket(bucketName)
   for (const file of files) {
     const fstat = await fs.stat(file)
-    if (fstat.isDirectory()) continue
+    if (fstat.isDirectory()) {
+      const parentFiles = await ls(file)
+      const parentProms = await uploadNewFiles(
+        bucketName,
+        parentFiles,
+        buildDir
+      )
 
-    process.stdout.write(`Uploading ${file}...\n`)
+      promises.splice(promises.length, 0, ...parentProms)
+    } else {
+      process.stdout.write(`Uploading ${file}...\n`)
 
-    const key = file.replace(buildDir, '')
-    promises.push(bucket.upload(file, {
-      gzip: true,
-      destination: key
-    }))
+      const key = file.replace(buildDir, '')
+      promises.push(bucket.upload(file, {
+        gzip: true,
+        destination: key
+      }))
+    }
   }
+
+  return promises
 }
 
 /**
@@ -221,7 +234,7 @@ async function updateBuildsJSON(bucketName, buildsJSON, newHash, opts) {
   console.log('buildsJSON:', buildsJSON)
 
   const bucket = getBucket(bucketName)
-  const tmp = await getTemp()
+  const tmp = opts.tmp || await getTemp()
   const buildsJSONFile = path.join(tmp, BUILDS_FILENAME)
 
   await fs.writeFile(buildsJSONFile, JSON.stringify(buildsJSON))
@@ -268,10 +281,11 @@ async function addToIPFS(pth) {
  * @param opts.add {boolean} - if build files should be added to IPFS
  */
 async function updateBuilds(buildDir, bucketName, opts) {
+  opts.tmp = opts.tmp ? opts.tmp : await getTemp()
   const newFiles = await ls(buildDir)
-  const newHash = getNewHash(newFiles)
   const files = await loadOldBuilds(bucketName)
   const buildsJSON = await loadBuildsJSON(bucketName)
+  const newHash = getNewHash(newFiles, buildsJSON.map(x => x.hash))
 
   // Don't update if the hash exists already
   if (buildExists(buildsJSON, newHash)) {
@@ -284,7 +298,9 @@ async function updateBuilds(buildDir, bucketName, opts) {
 
   // Update the bucket
   if (opts.upload) {
-    await uploadNewFiles(bucketName, newFiles, buildDir)
+    // This returns a promise for every file uploading
+    const proms = await uploadNewFiles(bucketName, newFiles, buildDir)
+    await Promise.all(proms)
   }
 
   const buildsFile = await updateBuildsJSON(
