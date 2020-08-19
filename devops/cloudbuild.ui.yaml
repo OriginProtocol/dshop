@@ -20,6 +20,7 @@ steps:
     args:
       - '-c'
       - |
+        yarn
         cd shop
         yarn run build
 
@@ -65,12 +66,12 @@ steps:
         gcloud dns record-sets transaction start --zone="ogn-app"
 
         gcloud dns record-sets transaction remove \
-          "$(dig +short TXT _dnslink.ui.ogn.app @8.8.4.4)" \
-          --name="_dnslink.ui.ogn.app." \
+          "$(dig +short TXT _dnslink.${_DOMAIN} @8.8.4.4)" \
+          --name="_dnslink.${_DOMAIN}." \
           --ttl="30" --type="TXT" --zone="ogn-app"
 
         gcloud dns record-sets transaction add \
           "dnslink=/ipfs/$(cat .ipfshash)" \
-          --name="_dnslink.ui.ogn.app." --ttl="30" --type="TXT" --zone="ogn-app"
+          --name="_dnslink.${_DOMAIN}." --ttl="30" --type="TXT" --zone="ogn-app"
 
         gcloud dns record-sets transaction execute --zone="ogn-app"
