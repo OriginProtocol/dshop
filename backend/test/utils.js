@@ -228,7 +228,7 @@ async function createTestShop({
     networkId: network.networkId,
     listingId,
     sellerId: 1,
-    authToken: 'shopAuthToken',
+    authToken: 'shopAuthToken' + Date.now(), // Make the token unique.
     config: setConfig({
       dataUrl: undefined,
       publicUrl: undefined,
@@ -263,6 +263,101 @@ async function updateShopConfig(shop, shopConfig) {
   })
 
   return shop
+}
+
+/**
+ * Creates encrypted data for an offer
+ * @param {models.Network} network
+ * @param {models.Shop} shop
+ * @param {object} key: seller's PGP key
+ * @returns {Promise<{data: *, ipfsHash: *}>}
+ */
+async function createTestEncryptedOfferData(network, shop, key) {
+  const data = {
+    items: [
+      {
+        product: 'iron mask',
+        quantity: 1,
+        variant: 0,
+        price: 2500,
+        externalProductId: 165524792,
+        externalVariantId: 1811816649
+      }
+    ],
+    instructions: '',
+    subTotal: 2500,
+    discount: 0,
+    donation: 0,
+    total: 2500,
+    currency: 'USD',
+    shipping: {
+      id: 'STANDARD',
+      label: 'Flat Rate',
+      amount: 399
+    },
+    paymentMethod: {
+      id: 'stripe',
+      label: 'Credit Card'
+    },
+    discountObj: {},
+    userInfo: {
+      firstName: 'The',
+      lastName: 'Mandalorian',
+      email: 'buyer@originprotocol.com',
+      address1: '123 Main St',
+      city: 'Palo Alto',
+      province: 'California',
+      country: 'United States',
+      zip: '94301',
+      billingCountry: 'United States'
+    },
+    dataKey: 'abbfs5a34o4j28arw21ynavek62y2km'
+  }
+  const { hash } = await addData(data, {
+    pgpPublicKey: key.publicKeyArmored,
+    ipfsApi: network.ipfsApi
+  })
+
+  return { ipfsHash: hash, data }
+}
+
+/**
+ * Creates a test offer.
+ *
+ * @param {models.Network} network
+ * @param {models.Shop} shop
+ * @param {object} key: seller's PGP key
+ * @returns {Promise<{data: *, ipfsHash: *}>}
+ */
+async function createTestOffer(network, shop, key) {
+  // Create an order data and store it encrypted on IPFS
+  const { ipfsHash, data } = await createTestEncryptedOfferData(
+    network,
+    shop,
+    key
+  )
+
+  // Create an offer on IPFS.
+  const offer = {
+    schemaId: 'https://schema.originprotocol.com/offer_2.0.0.json',
+    listingId: shop.listingId,
+    listingType: 'unit',
+    unitsPurchased: 1,
+    totalPrice: {
+      amount: '25.00',
+      currency: 'fiat-USD'
+    },
+    commission: {
+      amount: '0.1',
+      currency: 'OGN'
+    },
+    finalizes: 1209600,
+    encryptedData: ipfsHash,
+    paymentCode: 'code123'
+  }
+  const offerIpfsHash = await post(network.ipfsApi, offer, true)
+
+  return { ipfsHash: offerIpfsHash, data }
 }
 
 /**
@@ -305,6 +400,8 @@ module.exports = {
   generatePgpKey,
   addData,
   createTestShop,
+  createTestOffer,
+  createTestEncryptedOfferData,
   getTestWallet,
   getOrCreateTestNetwork,
   MockBullJob,

@@ -40,8 +40,14 @@ async function processor(job) {
   }
   const jobId = `${job.queue.name}-${job.id}` // Prefix with queue name since job ids are not unique across queues.
 
-  const { shopId, txHash, fromAddress, encryptedDataIpfsHash } = job.data
-  log.info(`txProcessor for job with data: ${job.data}`)
+  const {
+    shopId,
+    txHash,
+    fromAddress,
+    encryptedDataIpfsHash,
+    paymentCode
+  } = job.data
+  log.info(`txProcessor for job with data: ${JSON.stringify(job.data)}`)
 
   // TODO: check the validity of the IPFS data?
 
@@ -62,7 +68,7 @@ async function processor(job) {
 
   // Load the transaction from the DB.
   const transaction = await Transaction.findOne({
-    networkId: network.id,
+    networkId: network.networkId,
     shopId,
     hash: txHash
   })
@@ -98,8 +104,8 @@ async function processor(job) {
   if (receipt.status) {
     // Payment was successful.
     // Enqueue a job to record an offer on the marketplace contract.
-    const makeOfferQueue = queues['makeOffer']
-    const jobData = { shopId, encryptedDataIpfsHash }
+    const makeOfferQueue = queues['makeOfferQueue']
+    const jobData = { shopId, encryptedDataIpfsHash, paymentCode }
     const jobOpts = {
       // Up to 6 attempts with exponential backoff with a 60sec initial delay.
       attempts: 6,

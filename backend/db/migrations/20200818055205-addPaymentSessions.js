@@ -10,8 +10,8 @@ module.exports = {
           primaryKey: true
         },
         shop_id: Sequelize.INTEGER,
-        fromAddress: Sequelize.STRING,
-        toAddress: Sequelize.STRING,
+        from_address: Sequelize.STRING,
+        to_address: Sequelize.STRING,
         amount: Sequelize.INTEGER,
         currency: Sequelize.STRING,
         code: Sequelize.STRING,

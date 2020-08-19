@@ -14,7 +14,7 @@ const IPFS_TIMEOUT = 60000 // 60 sec
  *
  * @param {models.Shop} shop
  * @param {string} ipfsHash: IPFS hash of the encrypted offer data
- * @returns {Promise<{data: Object}>}
+ * @returns {Promise<{Object}>}
  */
 async function decryptShopOfferData(shop, ipfsHash) {
   // Load the shop configuration to read things like PGP key and IPFS gateway to use.

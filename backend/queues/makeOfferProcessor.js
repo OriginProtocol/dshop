@@ -184,9 +184,10 @@ async function processor(job) {
     // in the future when the transaction volume scales up. A potential solution
     // will be to run the confirmation logic as a separate queue with multiple workers.
     queueLog(50, `Waiting for tx ${tx.hash} to get confirmed`)
-    log.info('Waiting for tx confirmation...')
+    log.info('Waiting for offer tx confirmation...')
     confirmation = await _waitForMakeOfferTxConfirmation(marketplace, tx)
     const { receipt, offerId } = confirmation
+    log.debug('offer tx confirmed')
 
     // Update the transaction in the DB.
     // Note: Failed transactions (e.g. caused by an EVM revert) are not retried since

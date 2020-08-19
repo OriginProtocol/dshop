@@ -104,31 +104,34 @@ module.exports = function (router) {
     }
 
     const network = await Network.findOne({
-      where: { networkId: req.shop.networkId, active: true }
+      where: { networkId: shop.networkId, active: true }
     })
+    if (!network) {
+      log.error(`No active network with id ${shop.networkId}`)
+      return res.json({ success: false, message: 'Invalid network' })
+    }
 
     // Make sure this transaction is not already being processed.
-    const transaction = await Transaction.findOne({
-      networkId: network.id,
-      hash: txHash
+    const existingTransaction = await Transaction.findOne({
+      where: { networkId: shop.networkId, hash: txHash }
     })
-    if (transaction) {
+    if (existingTransaction) {
       // This route must have been called more than once by the UI.
       // Nothing to do since the first call enqueued the job.
       log.warning(
-        `Existing transaction ${transaction.id} found for hash ${txHash}. Skipping..`
+        `Existing transaction ${existingTransaction.id} found for hash ${txHash}. Skipping.`
       )
       return res.json({ success: true })
     }
 
     // Load from IPFS and decrypt the offer data.
-    const { data } = await decryptShopOfferData(shop, encryptedDataIpfsHash)
+    const data = await decryptShopOfferData(shop, encryptedDataIpfsHash)
 
     // Check the validity of data against the payment session.
     // Log any error details but return a generic error message as to not
     // disclose to a potential attacker any useful information.
     const paymentSession = await PaymentSession.findOne({
-      where: { paymentCode }
+      where: { code: paymentCode }
     })
     if (!paymentSession) {
       log.debug(`paymentCode ${paymentCode} not found`)
@@ -153,7 +156,7 @@ module.exports = function (router) {
     }
 
     // Insert a new row in Transaction table for tracking purposes.
-    await Transaction.create({
+    const transaction = await Transaction.create({
       shopId: shop.id,
       networkId: network.networkId,
       fromAddress,
@@ -172,13 +175,17 @@ module.exports = function (router) {
       fromAddress,
       toAddress,
       txHash,
-      encryptedDataIpfsHash
+      encryptedDataIpfsHash,
+      paymentCode
     }
     const jobOpts = { attempts: 3 }
     const job = await txQueue.add(jobData, jobOpts)
     log.info(
       `Shop ${shop.id} - Enqueued job ${job.id} for tracking tx ${txHash}`
     )
+
+    // Persist the jobId in the transaction for tracking purposes.
+    await transaction.update({ jobId: job.id })
 
     return res.json({ success: true })
   })
