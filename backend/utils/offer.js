@@ -10,7 +10,7 @@ const IPFS_TIMEOUT = 60000 // 60 sec
 
 /**
  * Loads an offer from IPFS and its associated encrypted data.
- * Returns the offer object and the decrypted data.
+ * Returns the offer decrypted data.
  *
  * @param {models.Shop} shop
  * @param {string} ipfsHash: IPFS hash of the encrypted offer data
