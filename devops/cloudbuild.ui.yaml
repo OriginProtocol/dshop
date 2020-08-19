@@ -65,11 +65,13 @@ steps:
 
         gcloud dns record-sets transaction start --zone="ogn-app"
 
+        echo "Removing _dnslink.${_DOMAIN}   TXT   $(dig +short TXT _dnslink.${_DOMAIN} @8.8.4.4)..."
         gcloud dns record-sets transaction remove \
           "$(dig +short TXT _dnslink.${_DOMAIN} @8.8.4.4)" \
           --name="_dnslink.${_DOMAIN}." \
           --ttl="30" --type="TXT" --zone="ogn-app"
 
+        echo "Adding _dnslink.${_DOMAIN}   TXT   dnslink=/ipfs/$(cat .ipfshash)..."
         gcloud dns record-sets transaction add \
           "dnslink=/ipfs/$(cat .ipfshash)" \
           --name="_dnslink.${_DOMAIN}." --ttl="30" --type="TXT" --zone="ogn-app"
