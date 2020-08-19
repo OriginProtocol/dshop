@@ -43,7 +43,7 @@
     "truffle-hdwallet-provider": "0.0.6",
     "truffle-privatekey-provider": "0.1.0",
     "solc": "0.6.8",
-    "solidity-coverage": "0.7.9",
+    "solidity-coverage": "0.7.10",
     "solium": "1.2.5",
     "web3-provider-engine": "15.0.12"
   },
