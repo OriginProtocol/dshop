@@ -3,6 +3,7 @@ node_modules
 public/*
 !public/images*
 !public/template.html
+!public/template-cdn.html
 !public/favicon.ico
 /data/*
 !/data/example*

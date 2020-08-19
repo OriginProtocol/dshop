@@ -365,10 +365,15 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
         </div>
       </div>
       <div className="form-row">
-        <div className="form-group col-md-12">
+        <div className="form-group col-md-6">
           <label>Discord Webhook</label>
           <PasswordField field="discordWebhook" input={input} />
           {Feedback('discordWebhook')}
+        </div>
+        <div className="form-group col-md-6">
+          <label>UI CDN</label>
+          <input {...input('uiCdn')} />
+          {Feedback('uiCdn')}
         </div>
       </div>
       <div className="form-row">
