@@ -288,10 +288,19 @@ async function addToIPFS(pth) {
  */
 async function updateBuilds(buildDir, bucketName, opts) {
   opts.tmp = opts.tmp ? opts.tmp : await getTemp()
-  const newFiles = await ls(buildDir)
+  const buildFiles = await ls(buildDir)
   const files = await loadOldBuilds(bucketName)
   const buildsJSON = await loadBuildsJSON(bucketName)
-  const newHash = getNewHash(newFiles, buildsJSON.map(x => x.hash))
+  const newHash = getNewHash(buildFiles, buildsJSON.map(x => x.hash))
+  const newFiles = buildFiles.filter(f => {
+    const match = f.match(FILE_HASH_PATTERN)
+
+    // Not a hashed file
+    if (!match) return true
+
+    // Newly hashed file
+    return f.includes(newHash)
+  })
 
   // Don't update if the hash exists already
   if (buildExists(buildsJSON, newHash)) {
