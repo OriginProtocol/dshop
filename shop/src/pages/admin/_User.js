@@ -7,7 +7,7 @@ import Caret from 'components/icons/Caret'
 import Popover from 'components/Popover'
 import * as Icons from 'components/icons/Admin'
 
-const UserDropdown = () => {
+const UserDropdown = ({ className = '' }) => {
   const [shouldClose, setShouldClose] = useState(0)
   const [{ admin }] = useStateValue()
   const { logout } = useAuth()
@@ -16,7 +16,7 @@ const UserDropdown = () => {
     <Popover
       el="div"
       placement="bottom-start"
-      className="user ml-auto"
+      className={`user ${className}`}
       contentClassName="user-dropdown"
       shouldClose={shouldClose}
       button={

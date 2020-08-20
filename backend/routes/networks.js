@@ -24,7 +24,8 @@ function pickConfig(body) {
     'googleAnalytics',
     'paypalEnvironment',
     'notificationEmail',
-    'notificationEmailDisplayName'
+    'notificationEmailDisplayName',
+    'uiCdn'
   ])
 }
 

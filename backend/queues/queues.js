@@ -16,7 +16,7 @@ const queueOpts = {}
 const log = getLogger('queues.queues')
 
 // Capture in Sentry the failure of any job from these queues.
-const CAPTURE_FAILED_QUEUES = ['autossl', 'etl']
+const CAPTURE_FAILED_QUEUES = ['autossl', 'etl', 'tx']
 
 if (REDIS_URL) {
   log.info(`Queue init: Using Redis at ${REDIS_URL}`)
@@ -80,6 +80,13 @@ const all = [
     backendUrl,
     Object.assign(queueOpts, {
       prefix: '{etl}'
+    })
+  ),
+  new Queue(
+    'tx',
+    backendUrl,
+    Object.assign(queueOpts, {
+      prefix: '{tx}'
     })
   )
 ]

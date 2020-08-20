@@ -2,7 +2,6 @@ require('dotenv').config()
 
 const fs = require('fs')
 const Web3 = require('web3')
-const openpgp = require('openpgp')
 const util = require('ethereumjs-util')
 
 const Stripe = require('stripe')
@@ -19,6 +18,7 @@ const discordWebhook = require('./discordWebhook')
 const { Network, Order, Shop, ExternalPayment } = require('../models')
 const { getLogger } = require('../utils/logger')
 const { autoFulfillOrder } = require('../utils/printful')
+const { decryptShopOfferData } = require('../utils/offer')
 const { Sentry } = require('../sentry')
 const { ListingID } = require('./id')
 
@@ -250,9 +250,9 @@ async function _processEventForNewOrder({
   const network = await Network.findOne({ where: { active: true } })
   const networkConfig = getConfig(network.config)
 
-  // Load the shop configuration to read things like PGP key and IPFS gateway to use.
+  // Load the shop configuration to read things like IPFS gateway to use.
   const shopConfig = getConfig(shop.config)
-  const { dataUrl, pgpPrivateKey, pgpPrivateKeyPass } = shopConfig
+  const { dataUrl } = shopConfig
   const ipfsGateway = await getIPFSGateway(dataUrl, event.networkId)
   log.info(`Using IPFS gateway ${ipfsGateway} for fetching offer data`)
 
@@ -263,33 +263,19 @@ async function _processEventForNewOrder({
   const offer = JSON.parse(offerData)
   log.debug('Offer:', offer)
 
-  const encryptedHash = offer.encryptedData
-  if (!encryptedHash) {
-    throw new Error('No encrypted data found')
-  }
-
   // Extract the optional paymentCode data from the offer.
   // It is populated for example in case of a Credit Card payment.
   const paymentCode = offer.paymentCode
 
   // Load the encrypted data from IPFS and decrypt it.
+  const encryptedHash = offer.encryptedData
+  if (!encryptedHash) {
+    throw new Error('No encrypted data found')
+  }
   log.info(`Fetching encrypted offer data with hash ${encryptedHash}`)
-  const encryptedDataJson = await getText(
-    ipfsGateway,
-    encryptedHash,
-    IPFS_TIMEOUT
-  )
-  const encryptedData = JSON.parse(encryptedDataJson)
+  const data = await decryptShopOfferData(shop, encryptedHash)
 
-  const privateKey = await openpgp.key.readArmored(pgpPrivateKey)
-  const privateKeyObj = privateKey.keys[0]
-  await privateKeyObj.decrypt(pgpPrivateKeyPass)
-
-  const message = await openpgp.message.readArmored(encryptedData.data)
-  const options = { message, privateKeys: [privateKeyObj] }
-
-  const plaintext = await openpgp.decrypt(options)
-  const data = JSON.parse(plaintext.data)
+  // Decorate the data with a few extra fields before storing it in the DB.
   data.offerId = offerId
   data.tx = event.transactionHash
 

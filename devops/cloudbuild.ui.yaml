@@ -1,0 +1,82 @@
+---
+substitutions:
+  _BUILD_DIR: /tmp/build
+  _PINATA_API_KEY: ''
+  _PINATA_SECRET_API_KEY: ''
+
+# _BUILD_DIR doesn't seem to exist at time of collection?
+# artifacts:
+#   objects:
+#     location: gs://${_BUCKET_NAME}
+#     paths: ["${_BUILD_DIR}/*"]
+
+steps:
+  - id: Build Dshop dapp
+    name: node:10.22.0
+    env:
+      - PINATA_API_KEY=${_PINATA_API_KEY}
+      - PINATA_SECRET_API_KEY=${_PINATA_SECRET_API_KEY}
+    entrypoint: sh
+    args:
+      - '-c'
+      - |
+        yarn
+        cd shop
+        yarn run build
+
+        # Get existing build dir
+        node ../devops/syncBucket.js ${_BUCKET_NAME} ${_BUILD_DIR}
+
+        # Copy new build files to build dir
+        cp public/*app*.js ${_BUILD_DIR}/
+        cp public/*app*.css ${_BUILD_DIR}/
+        cp -R public/fonts ${_BUILD_DIR}/
+        cp -R public/images ${_BUILD_DIR}/
+        cp -R public/dist ${_BUILD_DIR}/
+        cp -R public/translations ${_BUILD_DIR}/
+
+        # Update builds.json
+        cd ..
+        echo "Assembling build..."
+        node devops/updateBuilds.js -ua --hash-file .ipfshash ${_BUILD_DIR} ${_BUCKET_NAME}
+        echo "Done."
+
+  - id: Verify IPFS hash
+    name: node:10.22.0
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Sanity check to make sure we have what we need for the next step
+        if [[ "$(stat -c'%s' .ipfshash)" == "0" ]]; then
+          echo "No IPFS hash.  Bailing"
+          exit 1
+        fi
+
+  - id: Update DNS IPNS record
+    name: gcr.io/cloud-builders/gcloud
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+        apt-get -y update && apt-get install -y dnsutils
+        dig +short TXT _dnslink.${_DOMAIN} @8.8.4.4 | sed 's/\"//g' > .original
+
+        echo "Updated DNS to: dnslink=/ipfs/$(cat .ipfshash)"
+
+        gcloud dns record-sets transaction start --zone="ogn-app"
+
+        echo "Removing _dnslink.${_DOMAIN}.   TXT   $(cat .original)..."
+
+        gcloud dns record-sets transaction remove \
+          "$(cat .original)" \
+          --name="_dnslink.${_DOMAIN}." \
+          --ttl="30" --type="TXT" --zone="ogn-app"
+
+        echo "Adding _dnslink.${_DOMAIN}.   TXT   dnslink=/ipfs/$(cat .ipfshash)..."
+
+        gcloud dns record-sets transaction add \
+          "dnslink=/ipfs/$(cat .ipfshash)" \
+          --name="_dnslink.${_DOMAIN}." --ttl="30" --type="TXT" --zone="ogn-app"
+
+        gcloud dns record-sets transaction execute --zone="ogn-app"
