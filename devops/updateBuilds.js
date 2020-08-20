@@ -358,9 +358,15 @@ async function main(argv) {
     .option('-i, --hash-file <hashFile>', 'save hash to a file')
     .arguments('<buildDir> <bucketName>')
     .action(async (buildDir, bucketName, opts) => {
-      await updateBuilds(buildDir, bucketName, opts)
+      try {
+        await updateBuilds(buildDir, bucketName, opts)
+      } catch(err) {
+        process.stderr.write(err.toString())
+        process.exit(1)
+      }
     })
     .parse(argv)
+
 }
 
 if (require.main === module) {
