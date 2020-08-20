@@ -32,7 +32,7 @@ const Defaults = {
  *
  * @param {string} dataURL: The shop's data URL
  * @param {number} netId: Ethereum network Id (1=Mainnet, 4=Rinkeby, 999=Test, etc..).
- * @returns {Promise<{[p: string]: *}>}
+ * @returns {Promise<{object}>}
  */
 async function getShopConfigJson(dataURL, netId) {
   const url = `${dataURL}config.json`
