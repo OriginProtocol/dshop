@@ -32,6 +32,10 @@ function ext(filename) {
   return filename.split('.').slice(-1)
 }
 
+function stripLeadingHash(s) {
+  return s.startsWith('/') ? s.slice(1) : s
+}
+
 async function getTemp() {
   if (TMPD) return TMPD
   TMPD = await fs.mkdtemp('updateBuilds')
@@ -201,7 +205,7 @@ async function uploadNewFiles(bucketName, files, buildDir, depth = 1) {
     } else {
       process.stdout.write(`Uploading ${file}...\n`)
 
-      const key = file.replace(buildDir, '')
+      const key = stripLeadingHash(file.replace(buildDir, ''))
       promises.push(bucket.upload(file, {
         gzip: true,
         destination: key
