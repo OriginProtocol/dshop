@@ -10,6 +10,8 @@ import useWallet from 'utils/useWallet'
 import useOrigin from 'utils/useOrigin'
 import { useStateValue } from 'data/state'
 
+import WalletNotReady from './_WalletNotReady'
+
 // Check allowance every 5 seconds
 const waitForAllowance = ({ wallet, marketplace, amount, token }) => {
   return new Promise((resolve, reject) => {
@@ -93,56 +95,10 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
 
   if (!cryptoSelected) {
     return label
-  } else if (wallet.status === 'loading') {
-    return (
-      <>
-        {label}
-        <div style={{ marginLeft: '2.25rem' }} className="mb-3">
-          <fbt desc="checkout.payment.crypto.loadingWallet">
-            Loading Wallet Status...
-          </fbt>
-        </div>
-      </>
-    )
-  } else if (
-    wallet.status === 'disabled' ||
-    wallet.signerStatus === 'disabled'
-  ) {
-    return (
-      <>
-        {label}
-        <div style={{ marginLeft: '2.25rem' }} className="mb-3">
-          <button className="btn btn-primary" onClick={() => wallet.enable()}>
-            <fbt desc="checkout.payment.crypto.enable">
-              Enable Crypto Wallet
-            </fbt>
-          </button>
-        </div>
-      </>
-    )
-  } else if (wallet.status === 'no-web3') {
-    return (
-      <>
-        {label}
-        <div style={{ marginLeft: '2.25rem' }} className="mb-3">
-          <fbt desc="checkout.payment.crypto.noWallet">
-            Sorry, no crypto wallet detected.
-          </fbt>
-        </div>
-      </>
-    )
-  } else if (!wallet.networkOk) {
-    return (
-      <>
-        {label}
-        <div style={{ marginLeft: '2.25rem' }} className="mb-3">
-          <fbt desc="checkout.payment.crypto.invalidNetwork">
-            Please switch your wallet to{' '}
-            <FbtParam name="networkName">{config.netName}</FbtParam> to continue
-          </fbt>
-        </div>
-      </>
-    )
+  }
+
+  if (!wallet.ready) {
+    return <WalletNotReady {...{ wallet, label, config }} />
   }
 
   return (
