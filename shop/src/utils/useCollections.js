@@ -36,7 +36,9 @@ function useCollections() {
     dispatch({ type: 'reload', target: 'collections' })
   }
 
-  return { collections, loading, reload: reloadCollections }
+  const visibleCollections = collections.filter((c) => c.id !== 'home')
+
+  return { collections, visibleCollections, loading, reload: reloadCollections }
 }
 
 export default useCollections
