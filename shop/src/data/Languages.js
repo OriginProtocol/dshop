@@ -17,7 +17,7 @@ export default [
   // ['tr_TR', 'Türkçe'],
   // ['uk_UA', 'Українська'],
   // ['vi_VN', 'Tiếng Việt'],
-  // ['zh_CN', '简体中文'],
+  ['zh_CN', '简体中文'],
   // ['zh_TW', '繁體中文'],
   ['en_US', 'English']
 ]
