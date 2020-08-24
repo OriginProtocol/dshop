@@ -45,6 +45,10 @@ const Uphold = ({ submit, encryptedData, onChange, loading }) => {
   )
 
   useEffect(() => {
+    if (paymentMethod !== 'uphold') {
+      return
+    }
+
     onChange({ loading: true })
     apiGet('/uphold/authed').then((json) => {
       onChange({ loading: false })
@@ -53,6 +57,10 @@ const Uphold = ({ submit, encryptedData, onChange, loading }) => {
   }, [config, reloadAuth])
 
   useEffect(() => {
+    if (paymentMethod !== 'uphold') {
+      return
+    }
+
     if (!get(upholdAuth, 'authed')) {
       setUpholdCards([])
       setActiveCard(null)
@@ -76,6 +84,10 @@ const Uphold = ({ submit, encryptedData, onChange, loading }) => {
   }, [upholdAuth])
 
   useEffect(() => {
+    if (paymentMethod !== 'uphold') {
+      return
+    }
+
     if (get(activeCard, 'id')) {
       const hasBalance = checkBalance(activeCard, cart)
       onChange({ disabled: !hasBalance })
