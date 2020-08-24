@@ -57,7 +57,6 @@ export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
     config.supportEmailPlain = parsePlainEmail(config.supportEmail)
 
     const networkConfig = activeNetworkConfig(config, netId)
-
     const result = {
       ...config,
       ...networkConfig,
@@ -68,7 +67,7 @@ export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
     // If UI is being served from backend, override 'backend' from config.json
     // returned by shops to prevent auth issues
     if (overrideBackend) {
-      result.backend = ''
+      result.backend = window.location.origin
     }
 
     return result
