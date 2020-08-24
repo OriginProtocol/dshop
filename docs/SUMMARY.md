@@ -2,9 +2,9 @@
 
 - [What is Origin Protocol?](README.md)
 
-## E-Commerce DApp <a id="dshop"></a>
+## Dshop <a id="dshop"></a>
 
-- [Overview](dshop/origin-store.md)
+- [Overview](dshop/dshop.md)
 - [Front End](dshop/front-end.md)
 - [Backend](dshop/backend.md)
 - [Order Fulfillment](dshop/order-fulfillment.md)

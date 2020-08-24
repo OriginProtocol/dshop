@@ -1,10 +1,10 @@
 # Overview
 
-The Origin Store is an open source e-commerce site built to use the Origin
-Protocol. The front end and product database are hosted on IPFS and can be
-served via ENS. When customers place an order, their contact and shipping
-information is encrypted via PGP and stored on IPFS. The IPFS hash and payment
-\(Eth or ERC20\) is sent to the Marketplace smart contract.
+Dshop is an open source e-commerce site built to use the Origin Protocol. The
+front end and product database are hosted on IPFS and can be served via ENS.
+When customers place an order, their contact and shipping information is
+encrypted via PGP and stored on IPFS. The IPFS hash and payment \(Eth or ERC20\)
+is sent to the Marketplace smart contract.
 
 A separate process watches the blockchain for events emitted by the smart
 contract and takes care of any off-chain actions such as sending out
