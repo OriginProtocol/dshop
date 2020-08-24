@@ -7,7 +7,7 @@ const sendNewOrderEmail = require('../utils/emails/newOrder')
 const discordWebhook = require('../utils/discordWebhook')
 const { autoFulfillOrder } = require('../utils/printful')
 const { decryptShopOfferData } = require('../utils/offer')
-const { validateDiscountOnOrder } = require('./utils/discounts')
+const { validateDiscountOnOrder } = require('../utils/discounts')
 const { getLogger } = require('../utils/logger')
 
 const log = getLogger('logic.order')
@@ -59,7 +59,7 @@ async function processNewOrder({
   skipDiscord
 }) {
   // Generate a unique order id.
-  const orderId = createNewOrderId()
+  const orderId = createNewOrderId(shop)
 
   // Load the encrypted data from IPFS and decrypt it.
   const encryptedHash = offer.encryptedData
@@ -73,7 +73,7 @@ async function processNewOrder({
   if (event) {
     data.offerId = offerId
     data.tx = event.transactionHash
-    data.eventName = event.name
+    data.eventName = event.eventName
   }
 
   // Extract the optional paymentCode data from the offer.
@@ -86,7 +86,7 @@ async function processNewOrder({
     shopId: shop.id,
     orderId,
     data,
-    statusStr: 'OrderCreated', // TODO: replace status and statusStr with an enum.
+    statusStr: 'OfferCreated', // TODO: replace status and statusStr with an enum.
     ipfsHash: offerIpfsHash,
     encryptedIpfsHash: encryptedHash,
     paymentCode,
@@ -95,7 +95,7 @@ async function processNewOrder({
   }
   if (event) {
     // Offer was created on-chain. Record blockchain specific data from the event.
-    orderObj.statusStr = event.name
+    orderObj.statusStr = event.eventName
     orderObj.createdAt = new Date(event.timestamp * 1000)
     orderObj.createdBlock = event.blockNumber
     orderObj.updatedBlock = event.blockNumber

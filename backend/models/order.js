@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       shopId: DataTypes.INTEGER,
       // Ethereum network id. 1=Mainnet, 4=Rinkeby, 999=local
       networkId: DataTypes.INTEGER,
-      // Unique order id. Format: <network>-<contract_version>-<listing_id>-<offer_id>. Ex: '1-001-233-19'
+      // Unique order id. Format: <network_id>-<shop_id>-<randomId>.
       orderId: {
         type: DataTypes.STRING,
         unique: true,
@@ -19,9 +19,11 @@ module.exports = (sequelize, DataTypes) => {
       ipfsHash: DataTypes.STRING,
       // IPFS hash of the encrypted offer data.
       encryptedIpfsHash: DataTypes.STRING,
-      // Block number at which the offer was created.
+      // Blockchain fully-qualified offerId. Only populated for on-chain offers.
+      offerId: DataTypes.STRING, // TODO: add migration
+      // Block number at which the offer was created. Only populated for on-chain offers.
       createdBlock: DataTypes.INTEGER,
-      // Block number of the most recent offer update.
+      // Block number of the most recent offer update. Only populated for on-chain offers.
       updatedBlock: DataTypes.INTEGER,
       // Not used at the moment.
       status: DataTypes.INTEGER,

@@ -124,7 +124,7 @@ describe('Orders', () => {
     await processDShopEvent({ event, shop })
 
     // Check the order was inserted with the proper values.
-    const order = await Order.findOne({ where: { orderId: fullOfferId } })
+    const order = await Order.findOne({ order: [['created_at', 'desc']] })
     expect(order).to.be.an('object')
     expect(order.networkId).to.equal(999)
     expect(order.shopId).to.equal(shop.id)
@@ -135,7 +135,7 @@ describe('Orders', () => {
     expect(order.paymentCode).to.equal('code123')
     expect(order.data).to.eql({
       ...data,
-      ...{ offerId: fullOfferId, tx: event.transactionHash }
+      ...{ offerId: fullOfferId, tx: event.transactionHash, eventName: 'OfferCreated' }
     })
   })
 
