@@ -1,21 +1,6 @@
-# ![Origin Protocol](origin-header.png)
+# What is Origin Protocol?
 
-A decentralized e-commerce store served entirely from IPFS.
+Airbnb, Uber, Craigslist, E-bay, Shopify, Etsy... all of these sites help facilitate transactions between buyers and sellers. A seller lists some goods or services for sale. A buyer makes a purchase from that seller. The marketplace facilitating the transaction usually takes a fee, either from the seller, the buyer, or both. Sometimes the fees are exorbitant, but buyers and sellers are willing to pay in order to obtain access to the network, tools that make buying and selling easy, customer service, insurance, etc.
 
-## Repo structure
+Signing up to these services comes at a price, however, and not just the transaction fees. 
 
-- shop: front-end code
-- backend: server code
-- packages: utility packages
-- scripts: development helper scripts
-
-## Documentation
-
-- Front-end [README](./shop/README.md)
-- Server [README](./backend/README.md)
-
-## Deploy to Heroku
-
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/OriginProtocol/dshop/tree/release)
-
-**Note** The `release` branch will be deployed to Heroku
