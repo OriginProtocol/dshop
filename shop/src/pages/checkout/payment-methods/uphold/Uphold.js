@@ -21,12 +21,11 @@ function formatBalance(balance) {
   return String(balance).replace(/^([0-9]+\.[0-9]{4}).*/, '$1')
 }
 
-const Uphold = ({ submit, encryptedData, onChange }) => {
+const Uphold = ({ submit, encryptedData, onChange, loading }) => {
   const { config } = useConfig()
   const [{ cart }, dispatch] = useStateValue()
   const isMobile = useIsMobile()
   const [activeCard, setActiveCard] = useState()
-  const [loading, setLoading] = useState()
   const [upholdAuth, setUpholdAuth] = useState({ authed: false })
   const [reloadAuth, setReloadAuth] = useState(0)
   const [upholdCards, setUpholdCards] = useState([])
@@ -45,28 +44,32 @@ const Uphold = ({ submit, encryptedData, onChange }) => {
     </fbt>
   )
 
-  if (!method) {
-    return null
-  }
-
   useEffect(() => {
-    setLoading(true)
+    if (paymentMethod !== 'uphold') {
+      return
+    }
+
+    onChange({ loading: true })
     apiGet('/uphold/authed').then((json) => {
-      setLoading(false)
+      onChange({ loading: false })
       setUpholdAuth(json)
     })
   }, [config, reloadAuth])
 
   useEffect(() => {
+    if (paymentMethod !== 'uphold') {
+      return
+    }
+
     if (!get(upholdAuth, 'authed')) {
       setUpholdCards([])
       setActiveCard(null)
       return
     }
-    setLoading(true)
+    onChange({ loading: true })
     apiGet('/uphold/cards')
       .then(({ success, cards }) => {
-        setLoading(false)
+        onChange({ loading: false })
         if (success && typeof cards === 'object' && cards[0]) {
           setUpholdCards(cards)
           setActiveCard(cards[0])
@@ -76,11 +79,15 @@ const Uphold = ({ submit, encryptedData, onChange }) => {
         }
       })
       .catch(() => {
-        setLoading(false)
+        onChange({ loading: false })
       })
   }, [upholdAuth])
 
   useEffect(() => {
+    if (paymentMethod !== 'uphold') {
+      return
+    }
+
     if (get(activeCard, 'id')) {
       const hasBalance = checkBalance(activeCard, cart)
       onChange({ disabled: !hasBalance })
@@ -90,7 +97,7 @@ const Uphold = ({ submit, encryptedData, onChange }) => {
   }, [get(activeCard, 'id'), cart.total])
 
   useEffect(() => {
-    if (!submit) {
+    if (!submit || paymentMethod !== 'uphold') {
       return
     }
 
@@ -132,6 +139,10 @@ const Uphold = ({ submit, encryptedData, onChange }) => {
   const hasBalance = checkBalance(selectedCard, cart)
   const inactive = paymentMethod === 'uphold' ? '' : ' inactive'
 
+  if (!method) {
+    return null
+  }
+
   return (
     <>
       <label className={`radio align-items-center${inactive}`}>
@@ -139,6 +150,7 @@ const Uphold = ({ submit, encryptedData, onChange }) => {
           type="radio"
           name="paymentMethod"
           checked={paymentMethod === 'uphold'}
+          disabled={loading}
           onChange={() => {
             onChange({ submit: 0, disabled: false })
             dispatch({ type: 'updatePaymentMethod', method })
