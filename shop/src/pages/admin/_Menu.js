@@ -73,8 +73,8 @@ const AdminMenu = () => {
           </Link>
           {!active('/admin/settings') ? null : (
             <ul className="sub-menu list-unstyled">
-              <li className={active('/admin/settings', true)}>
-                <Link to="/admin/settings">
+              <li className={active('/admin/settings/general', true)}>
+                <Link to="/admin/settings/general">
                   <fbt desc="General">General</fbt>
                 </Link>
               </li>

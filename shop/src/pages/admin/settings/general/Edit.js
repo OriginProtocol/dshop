@@ -29,8 +29,6 @@ const configFields = [
   'favicon',
   'byline',
   'metaDescription',
-  'cartSummaryNote',
-  'discountCodes',
   'css',
   'facebook',
   'twitter',
@@ -337,40 +335,6 @@ const GeneralSettings = () => {
               }}
               onChange={(e) => setAboutText(e.editor.getData())}
             />
-          </div>
-          <div className="form-group">
-            <label>
-              <fbt desc="admin.settings.general.cartSummaryNote">
-                Cart Summary Note
-              </fbt>
-              <span>
-                (
-                <fbt desc="admin.settings.general.cartSummaryNoteDesc">
-                  appears under summary in checkout process. Use it for any
-                  information related to order fulfillment
-                </fbt>
-                )
-              </span>
-            </label>
-            <input {...input('cartSummaryNote')} />
-          </div>
-          <div>
-            <label>
-              <fbt desc="admin.settings.general.discountCodes">
-                Discount Codes
-              </fbt>
-            </label>
-            <span className="form-check mb-3">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={state.discountCodes ? true : false}
-                onChange={(e) => setState({ discountCodes: e.target.checked })}
-              />
-              <fbt desc="admin.settings.general.showDiscountCodesOnCheckout">
-                Show discount codes on checkout
-              </fbt>
-            </span>
           </div>
 
           <div className="row">
