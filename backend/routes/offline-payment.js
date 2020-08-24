@@ -8,6 +8,10 @@ const { getConfig } = require('../utils/encryptedConfig')
 const makeOffer = require('./_makeOffer')
 
 module.exports = function (router) {
+  /**
+   * Called by the frontend when no payment is due, e.g. when a 100% off
+   * discount code has been applied.
+   */
   router.post(
     '/pay/no-charge',
     authShop,
@@ -22,14 +26,17 @@ module.exports = function (router) {
       const web3Pk = shopConfig.web3Pk || networkConfig.web3Pk
 
       if (!web3Pk) {
-        return res.status(400).send({
+        return res.status(400).json({
           success: false,
           message: 'Error with payment server'
         })
       }
 
       if (!encryptedData) {
-        return res.json({ success: false, message: 'Missing order data' })
+        return res.status(400).json({
+          success: false,
+          message: 'Missing order data'
+        })
       }
 
       req.body.data = encryptedData
