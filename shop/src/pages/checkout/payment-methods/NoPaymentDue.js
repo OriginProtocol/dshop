@@ -6,13 +6,9 @@ import useBackendApi from 'utils/useBackendApi'
 const NoPaymentDue = ({ onChange, encryptedData, submit }) => {
   const [submitError, setSubmitError] = useState()
   const { post } = useBackendApi({ authToken: true })
-  const defaultButtonText = <fbt desc="Submit">Submit</fbt>
+  const defaultButtonText = <fbt desc="Submit order">Submit order</fbt>
 
   useEffect(() => {
-    if (!submit) {
-      return
-    }
-
     const resetState = {
       loading: false,
       disabled: false,
@@ -20,11 +16,16 @@ const NoPaymentDue = ({ onChange, encryptedData, submit }) => {
       submit: 0
     }
 
+    if (!submit) {
+      onChange(resetState)
+      return
+    }
+
     onChange({ loading: true })
 
-    post('/pay', {
+    post('/pay/no-charge', {
       body: JSON.stringify({
-        data: encryptedData.hash,
+        encryptedData: encryptedData.hash,
         amount: 0
       })
     })
