@@ -57,6 +57,3 @@ const NoPaymentDue = ({ onChange, encryptedData, submit }) => {
 }
 
 export default NoPaymentDue
-
-require('react-styl')(`
-`)

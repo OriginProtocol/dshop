@@ -83,13 +83,11 @@ const ChoosePayment = () => {
   const [{ cart, referrer }, dispatch] = useStateValue()
   const currencyOpts = useCurrencyOpts()
 
-  const defaultButtonText = cart.total ? (
+  const defaultButtonText = (
     <fbt desc="checkout.payment.amount">
       Pay{' '}
       <FbtParam name="amount">{formatPrice(cart.total, currencyOpts)}</FbtParam>
     </fbt>
-  ) : (
-    <fbt desc="Submit">Submit</fbt>
   )
   const [paymentState, setPaymentState] = useReducer(reducer, {
     buttonText: defaultButtonText,

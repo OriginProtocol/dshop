@@ -62,9 +62,6 @@ const PayWithStripe = injectStripe(
           console.log('Received customer information: ', data)
           complete('success')
         })
-        paymentRequest.on('cancel', (err) => {
-          console.log('Cancel payment request', err)
-        })
 
         setPaymentReq(paymentRequest)
       } catch (e) {

@@ -210,8 +210,6 @@ async function webhookValidation(shop, config, backendUrl) {
       limit: 100
     })
 
-    console.log({ webhookEndpoints  })
-
     const existingWebhook = webhookEndpoints.data.find(
       (endpoint) => get(endpoint, 'metadata.dshopStore') === shop.authToken
     )
