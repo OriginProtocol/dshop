@@ -27,9 +27,9 @@ module.exports = (sequelize, DataTypes) => {
       status: DataTypes.INTEGER,
       // 'OfferCreated', 'OfferFinalized', 'OfferWithdrawn' or 'error'
       statusStr: DataTypes.STRING,
-      // Not populated at the moment.
+      // Currency symbol. For ex.: USD
       currency: DataTypes.STRING,
-      // Not populated at the moment.
+      // Total amount as a fixed-point integer. For ex.: $12.34 => 1234
       value: DataTypes.STRING,
       // Not populated at the moment.
       commission: DataTypes.STRING,

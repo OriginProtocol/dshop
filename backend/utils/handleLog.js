@@ -2,7 +2,6 @@ require('dotenv').config()
 
 const fs = require('fs')
 const Web3 = require('web3')
-const util = require('ethereumjs-util')
 
 const Stripe = require('stripe')
 
@@ -11,20 +10,14 @@ const set = require('lodash/set')
 
 const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
-const sendNewOrderEmail = require('./emails/newOrder')
 const { upsertEvent, getEventObj } = require('./events')
 const { getConfig } = require('./encryptedConfig')
-const discordWebhook = require('./discordWebhook')
 const { Network, Order, Shop, ExternalPayment } = require('../models')
 const { getLogger } = require('../utils/logger')
-const { autoFulfillOrder } = require('../utils/printful')
-const { decryptShopOfferData } = require('../utils/offer')
-const { Sentry } = require('../sentry')
 const { ListingID } = require('./id')
+const { processNewOrder } = require('../logic/order')
 
 const log = getLogger('utils.handleLog')
-
-const { validateDiscountOnOrder } = require('./discounts')
 
 const { DSHOP_CACHE, IS_TEST } = require('../utils/const')
 
@@ -224,7 +217,7 @@ async function _processEventForExistingOrder({ event, shop, order }) {
  *
  * @param {models.Event} event: Event DB object.
  * @param {string} offerId: fully qualified offer id.
- * @param {models.Shop} shop: SHop DB object.
+ * @param {models.Shop} shop: Shop DB object.
  * @param {boolean} skipEmail: whether to skip sending a notification email to the merchant and buyer.
  * @param {boolean} skipDiscord: whether to skip sending a discord notification.
  * @returns {Promise<models.Order>} Newly created order.
@@ -248,96 +241,37 @@ async function _processEventForNewOrder({
   log.info(`IPFS Hash: ${event.ipfsHash}`)
 
   const network = await Network.findOne({ where: { active: true } })
+  if (network.networkId !== event.networkId) {
+    throw new Error(`Could not find active network ${event.networkId}`)
+  }
   const networkConfig = getConfig(network.config)
 
   // Load the shop configuration to read things like IPFS gateway to use.
   const shopConfig = getConfig(shop.config)
   const { dataUrl } = shopConfig
-  const ipfsGateway = await getIPFSGateway(dataUrl, event.networkId)
+  const ipfsGateway = await getIPFSGateway(dataUrl, network.networkId)
   log.info(`Using IPFS gateway ${ipfsGateway} for fetching offer data`)
 
   // Load the offer data. The main thing we are looking for is the IPFS hash
   // of the encrypted data.
   log.info(`Fetching offer data with hash ${event.ipfsHash}`)
-  const offerData = await getText(ipfsGateway, event.ipfsHash, IPFS_TIMEOUT)
+  const offerIpfsHash = event.ipfsHash
+  const offerData = await getText(ipfsGateway, offerIpfsHash, IPFS_TIMEOUT)
   const offer = JSON.parse(offerData)
   log.debug('Offer:', offer)
 
-  // Extract the optional paymentCode data from the offer.
-  // It is populated for example in case of a Credit Card payment.
-  const paymentCode = offer.paymentCode
-
-  // Load the encrypted data from IPFS and decrypt it.
-  const encryptedHash = offer.encryptedData
-  if (!encryptedHash) {
-    throw new Error('No encrypted data found')
-  }
-  log.info(`Fetching encrypted offer data with hash ${encryptedHash}`)
-  const data = await decryptShopOfferData(shop, encryptedHash)
-
-  // Decorate the data with a few extra fields before storing it in the DB.
-  data.offerId = offerId
-  data.tx = event.transactionHash
-
-  // Insert a new row in the orders DB table.
-  const orderObj = {
-    networkId: event.networkId,
-    shopId: shop.id,
-    orderId: offerId,
-    data,
-    statusStr: eventName,
-    updatedBlock: event.blockNumber,
-    createdAt: new Date(event.timestamp * 1000),
-    createdBlock: event.blockNumber,
-    ipfsHash: event.ipfsHash,
-    encryptedIpfsHash: encryptedHash,
-    paymentCode
-  }
-  if (data.referrer) {
-    orderObj.referrer = util.toChecksumAddress(data.referrer)
-    orderObj.commissionPending = Math.floor(data.subTotal / 200)
-  }
-  const { valid, error } = await validateDiscountOnOrder(orderObj, {
-    markIfValid: true
+  const order = await processNewOrder({
+    network,
+    networkConfig,
+    shop,
+    shopConfig,
+    offer,
+    offerIpfsHash,
+    offerId,
+    event,
+    skipEmail,
+    skipDiscord
   })
-  if (!valid) {
-    orderObj.data.error = error
-  }
-  const order = await Order.create(orderObj)
-  log.info(`Saved order ${order.orderId} to DB.`)
-
-  // TODO: move order fulfillment to a queue.
-  if (shopConfig.printful && shopConfig.printfulAutoFulfill) {
-    await autoFulfillOrder(order, shopConfig, shop)
-  }
-
-  // Send notifications via email and discord.
-  // This section is not critical so we log errors but do not throw any
-  // exception in order to avoid triggering a queue retry which would
-  // cause the order to get recorded multiple times in the DB.
-  if (!skipEmail) {
-    try {
-      await sendNewOrderEmail({ shop, cart: data, network })
-    } catch (e) {
-      log.error('Email sending failure:', e)
-      Sentry.captureException(e)
-    }
-  }
-  if (!skipDiscord) {
-    try {
-      await discordWebhook({
-        url: networkConfig.discordWebhook,
-        orderId: offerId,
-        shopName: shop.name,
-        total: `$${(data.total / 100).toFixed(2)}`,
-        items: data.items.map((i) => i.title).filter((t) => t)
-      })
-    } catch (e) {
-      log.error('Discord webhook failure:', e)
-      Sentry.captureException(e)
-    }
-  }
-
   return order
 }
 

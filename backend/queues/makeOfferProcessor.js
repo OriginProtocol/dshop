@@ -18,6 +18,7 @@ const { getLogger } = require('../utils/logger')
 const { IS_TEST, IS_DEV } = require('../utils/const')
 const { Sentry } = require('../sentry')
 const { TransactionTypes, TransactionStatuses } = require('../enums')
+const { processNewOrder } = require('../logic/order')
 
 const log = getLogger('offerProcessor')
 const BN = ethers.BigNumber // Ethers' BigNumber implementation.
@@ -42,6 +43,209 @@ function attachToQueue() {
   queue.resume() // Start if paused
 }
 
+function queueLog(job, progress, str) {
+  job.log(str)
+  job.progress(progress)
+}
+
+/**
+ * Records an offer on the blockchain by sending a transaction to the marketplace contract.
+ * Does not record the order in the database: once the transaction is mined, the listener
+ * will receive an 'OfferCreated' event and create the order in the database.
+ *
+ * @param {object} job
+ * @param {string} fqJobId: fully qualified job id.
+ * @param {models.Network} network
+ * @param {object} networkConfig
+ * @param {models.Shop} shop
+ * @param {object} shopConfig
+ * @param {ListingID} lid
+ * @param {object} offer: JSON of the unencrypted offer data.
+ * @param {string} offerIpfsHash: IPFS hash of the unencrypted offer data.
+ * @param {string} paymentCode
+ * @returns {Promise<ethers.TransactionReceipt>}
+ * @private
+ */
+async function _makeOnchainOffer({
+  job,
+  fqJobId,
+  network,
+  networkConfig,
+  shop,
+  shopConfig,
+  lid,
+  offer,
+  offerIpfsHash,
+  paymentCode
+}) {
+  const shopId = shop.id
+
+  // Use the Shop PK if there is one, otherwise fall back to Network PK.
+  if (!shopConfig.web3Pk) {
+    if (!networkConfig.web3Pk) {
+      throw new Error(`PK missing in both shop ${shopId} and network configs`)
+    }
+    log.info(`No PK configured for shop ${shopId}. Falling back to network PK`)
+  }
+  const pk = shopConfig.web3Pk || networkConfig.web3Pk
+  const provider = new ethers.providers.JsonRpcProvider(network.provider)
+  const wallet = new ethers.Wallet(pk, provider)
+  const walletAddress = wallet.address
+  const marketplace = new ethers.Contract(
+    network.marketplaceContract,
+    marketplaceAbi,
+    wallet
+  )
+  queueLog(job, 22, `Using walletAddress ${walletAddress}`)
+
+  let tx, transaction
+
+  // In order to avoid re-using the same nonce, we want to prevent more than 1 transaction
+  // being sent by a given wallet at a time.
+  // Check if there is any existing pending transaction for the same wallet address.
+  // Different scenarios could cause that:
+  //  - Since multiple processors run concurrently, another job for the same wallet
+  //    could be getting processed.
+  //  - The processing a job could get interrupted while waiting for the tx to get mined.
+  //    For example due to a server maintenance or a crash.
+  // TODO: In order to avoid any possible race condition, hold a lock on a DB row
+  //       associated with the wallet address while doing the pending transaction check
+  //       and sending the tx.
+  transaction = await Transaction.findOne({
+    where: {
+      networkId: network.networkId,
+      fromAddress: walletAddress,
+      status: TransactionStatuses.Pending
+    }
+  })
+  if (transaction) {
+    log.info(
+      `Found pending transaction ${transaction.id} job ${transaction.jobId} hash ${transaction.hash} for wallet ${walletAddress}`
+    )
+
+    // If it is not the transaction from our job. Do not try to recover it.
+    // Let it get recovered by the job that created it when it gets retried.
+    // Fail our job for now, it will get retried.
+    if (transaction.jobId !== fqJobId) {
+      throw new Error(
+        `Pending transaction is not from job ${fqJobId} but ${transaction.jobId}. Bailing.`
+      )
+    }
+
+    // Try to recover by loading the tx from its hash.
+    tx = await provider.getTransaction(transaction.hash)
+    if (!tx) {
+      // The transaction was not mined and is not in the transaction pool.
+      // Something went really wrong...
+      throw new Error(
+        `Transaction ${transaction.id} with hash ${transaction.hash} not found`
+      )
+    }
+    log.info('Recovered tx', tx)
+  } else {
+    // Send a blockchain transaction to make an offer on the marketplace contract.
+    queueLog(job, 25, 'Sending to marketplace')
+    tx = await _createOffer(
+      provider,
+      marketplace,
+      wallet,
+      lid,
+      offer,
+      offerIpfsHash
+    )
+    log.info('Transaction sent:', tx)
+
+    // Record the transaction in the DB.
+    transaction = await Transaction.create({
+      shopId,
+      networkId: network.networkId,
+      fromAddress: walletAddress,
+      toAddress: network.marketplaceContract,
+      type: TransactionTypes.OfferCreated,
+      status: TransactionStatuses.Pending,
+      hash: tx.hash,
+      listingId: lid.toString(),
+      offerIpfsHash,
+      jobId: fqJobId,
+      customId: paymentCode // Allows to join the transactions and external_payments table.
+    })
+  }
+
+  // Wait for the tx to get mined.
+  // Note: this is blocking with no timeout. Depending on the network conditions,
+  // it could take a long time for a tx to get mined. This will become a bottleneck
+  // in the future when the transaction volume scales up. A potential solution
+  // will be to run the confirmation logic as a separate queue with multiple workers.
+  queueLog(job, 50, `Waiting for tx ${tx.hash} to get confirmed`)
+  log.info('Waiting for offer tx confirmation...')
+  const confirmation = await _waitForMakeOfferTxConfirmation(marketplace, tx)
+  const { receipt, offerId } = confirmation
+  log.debug('offer tx confirmed')
+
+  // Update the transaction in the DB.
+  // Note: Failed transactions (e.g. caused by an EVM revert) are not retried since
+  // it's unlikely they would succeed given the arguments of the transaction would not change
+  // as part of the retry. Those failures will need to get manually retried by the operator.
+  const oid = new OfferID(lid.listingId, offerId, network.networkId)
+  await transaction.update({
+    status: receipt.status
+      ? TransactionStatuses.Confirmed
+      : TransactionStatuses.Failed,
+    blockNumber: receipt.blockNumber,
+    offerId: oid.toString() // Store the fully qualified offerId.
+  })
+
+  return confirmation
+}
+
+/**
+ * Creates an offer in the database. Does not write to the blockchain.
+ *
+ * @param {object} job
+ * @param {string} fqJobId: fully qualified job id.
+ * @param {models.Network} network
+ * @param {object} networkConfig
+ * @param {models.Shop} shop
+ * @param {object} shopConfig
+ * @param {ListingID} lid
+ * @param {object} offer: JSON of the unencrypted offer data.
+ * @param {string} offerIpfsHash: IPFS hash of the unencrypted offer data.
+ * @param {string} paymentCode
+ * @returns {Promise<models.Order>}
+ * @private
+ */
+async function _makeOffchainOffer({
+  job,
+  fqJobId,
+  network,
+  networkConfig,
+  shop,
+  shopConfig,
+  lid,
+  offer,
+  offerIpfsHash,
+  paymentCode
+}) {
+  queueLog(job, 30, `Creating order`)
+  log.info(
+    `Creating off-chain offer jobId: ${fqJobId} listingId: ${lid.toString} paymentCode: ${paymentCode}`
+  )
+
+  const confirmation = processNewOrder({
+    network,
+    networkConfig,
+    shop,
+    shopConfig,
+    offer,
+    offerIpfsHash,
+    offerId: null, // on-chain offers do not have a blockchain offer Id.
+    event: null, // on-chain offers do not have a blockchain event.
+    skipEmail: false,
+    skipDiscord: false
+  })
+  return confirmation
+}
+
 /**
  * Records a purchase on the blockchain by making
  * an offer on the marketplace contract.
@@ -57,11 +261,7 @@ function attachToQueue() {
  * @throws
  */
 async function processor(job) {
-  const queueLog = (progress, str) => {
-    job.log(str)
-    job.progress(progress)
-  }
-  const jobId = `${get(job, 'queue.name', '')}-${job.id}` // Prefix with queue name since job ids are not unique across queues.
+  const fqJobId = `${get(job, 'queue.name', '')}-${job.id}` // Prefix with queue name since job ids are not unique across queues.
   const { shopId, paymentCode, encryptedDataIpfsHash } = job.data
   log.info(`Creating offer for shop ${shopId}`)
   let confirmation
@@ -72,137 +272,38 @@ async function processor(job) {
       throw new Error(`Failed loading shop with id ${shopId}`)
     }
 
-    queueLog(5, 'Load encrypted shop config')
+    queueLog(job, 5, 'Load encrypted shop config')
     const network = await _getNetwork(shop.networkId)
     const networkConfig = encConf.getConfig(network.config)
     const shopConfig = encConf.getConfig(shop.config)
 
-    queueLog(10, 'Creating offer')
+    queueLog(job, 10, 'Creating offer')
     log.debug('Creating offer on IPFS')
     const lid = ListingID.fromFQLID(shop.listingId)
     const offer = _createOfferJson(lid, encryptedDataIpfsHash, paymentCode)
-    const ipfsHash = await _postOfferIPFS(network, offer)
+    const offerIpfsHash = await _postOfferIPFS(network, offer)
 
-    queueLog(20, 'Submitting Offer')
+    queueLog(job, 20, 'Submitting Offer')
 
-    // Use the Shop PK if there is one, otherwise fall back to Network PK.
-    if (!shopConfig.web3Pk) {
-      if (!networkConfig.web3Pk) {
-        throw new Error(`PK missing in both shop ${shopId} and network configs`)
-      }
-      log.info(
-        `No PK configured for shop ${shopId}. Falling back to network PK`
-      )
+    const data = {
+      job,
+      fqJobId,
+      network,
+      networkConfig,
+      shop,
+      shopConfig,
+      lid,
+      offer,
+      offerIpfsHash,
+      paymentCode
     }
-    const pk = shopConfig.web3Pk || networkConfig.web3Pk
-    const provider = new ethers.providers.JsonRpcProvider(network.provider)
-    const wallet = new ethers.Wallet(pk, provider)
-    const walletAddress = wallet.address
-    const marketplace = new ethers.Contract(
-      network.marketplaceContract,
-      marketplaceAbi,
-      wallet
-    )
-    queueLog(22, `Using walletAddress ${walletAddress}`)
-
-    let tx, transaction
-
-    // In order to avoid re-using the same nonce, we want to prevent more than 1 transaction
-    // being sent by a given wallet at a time.
-    // Check if there is any existing pending transaction for the same wallet address.
-    // Different scenarios could cause that:
-    //  - Since multiple processors run concurrently, another job for the same wallet
-    //    could be getting processed.
-    //  - The processing a job could get interrupted while waiting for the tx to get mined.
-    //    For example due to a server maintenance or a crash.
-    // TODO: In order to avoid any possible race condition, hold a lock on a DB row
-    //       associated with the wallet address while doing the pending transaction check
-    //       and sending the tx.
-    transaction = await Transaction.findOne({
-      where: {
-        networkId: network.networkId,
-        fromAddress: walletAddress,
-        status: TransactionStatuses.Pending
-      }
-    })
-    if (transaction) {
-      log.info(
-        `Found pending transaction ${transaction.id} job ${transaction.jobId} hash ${transaction.hash} for wallet ${walletAddress}`
-      )
-
-      // If it is not the transaction from our job. Do not try to recover it.
-      // Let it get recovered by the job that created it when it gets retried.
-      // Fail our job for now, it will get retried.
-      if (transaction.jobId !== jobId) {
-        throw new Error(
-          `Pending transaction is not from job ${jobId} but ${transaction.jobId}. Bailing.`
-        )
-      }
-
-      // Try to recover by loading the tx from its hash.
-      tx = await provider.getTransaction(transaction.hash)
-      if (!tx) {
-        // The transaction was not mined and is not in the transaction pool.
-        // Something went really wrong...
-        throw new Error(
-          `Transaction ${transaction.id} with hash ${transaction.hash} not found`
-        )
-      }
-      log.info('Recovered tx', tx)
+    if (shopConfig.offchainOffersEnabled) {
+      confirmation = await _makeOffchainOffer(data)
     } else {
-      // Send a blockchain transaction to make an offer on the marketplace contract.
-      queueLog(25, 'Sending to marketplace')
-      tx = await _createOffer(
-        provider,
-        marketplace,
-        wallet,
-        lid,
-        offer,
-        ipfsHash
-      )
-      log.info('Transaction sent:', tx)
-
-      // Record the transaction in the DB.
-      transaction = await Transaction.create({
-        shopId,
-        networkId: network.networkId,
-        fromAddress: walletAddress,
-        toAddress: network.marketplaceContract,
-        type: TransactionTypes.OfferCreated,
-        status: TransactionStatuses.Pending,
-        hash: tx.hash,
-        listingId: lid.toString(),
-        ipfsHash,
-        jobId,
-        customId: paymentCode // Allows to join the transactions and external_payments table.
-      })
+      confirmation = await _makeOnchainOffer(data)
     }
 
-    // Wait for the tx to get mined.
-    // Note: this is blocking with no timeout. Depending on the network conditions,
-    // it could take a long time for a tx to get mined. This will become a bottleneck
-    // in the future when the transaction volume scales up. A potential solution
-    // will be to run the confirmation logic as a separate queue with multiple workers.
-    queueLog(50, `Waiting for tx ${tx.hash} to get confirmed`)
-    log.info('Waiting for offer tx confirmation...')
-    confirmation = await _waitForMakeOfferTxConfirmation(marketplace, tx)
-    const { receipt, offerId } = confirmation
-    log.debug('offer tx confirmed')
-
-    // Update the transaction in the DB.
-    // Note: Failed transactions (e.g. caused by an EVM revert) are not retried since
-    // it's unlikely they would succeed given the arguments of the transaction would not change
-    // as part of the retry. Those failures will need to get manually retried by the operator.
-    const oid = new OfferID(lid.listingId, offerId, network.networkId)
-    await transaction.update({
-      status: receipt.status
-        ? TransactionStatuses.Confirmed
-        : TransactionStatuses.Failed,
-      blockNumber: receipt.blockNumber,
-      offerId: oid.toString() // Store the fully qualified offerId.
-    })
-
-    queueLog(100, 'Finished')
+    queueLog(job, 100, 'Finished')
   } catch (e) {
     // Log the exception and rethrow so that the job gets retried.
     Sentry.captureException(e)

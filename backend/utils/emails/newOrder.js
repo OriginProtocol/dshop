@@ -116,7 +116,6 @@ async function sendNewOrderEmail({ shop, network, cart, varsOverride, skip }) {
     supportEmailPlain: shopConfig.supportEmail,
     subject,
     storeUrl: publicURL,
-
     orderNumber: cart.offerId,
     firstName: cart.userInfo.firstName,
     lastName: cart.userInfo.lastName,
