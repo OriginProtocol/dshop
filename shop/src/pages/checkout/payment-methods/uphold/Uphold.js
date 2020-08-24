@@ -45,10 +45,6 @@ const Uphold = ({ submit, encryptedData, onChange }) => {
     </fbt>
   )
 
-  if (!method) {
-    return null
-  }
-
   useEffect(() => {
     setLoading(true)
     apiGet('/uphold/authed').then((json) => {
@@ -90,7 +86,8 @@ const Uphold = ({ submit, encryptedData, onChange }) => {
   }, [get(activeCard, 'id'), cart.total])
 
   useEffect(() => {
-    if (!submit) {
+    console.log({ submit, method })
+    if (!submit || paymentMethod !== 'uphold') {
       return
     }
 
@@ -131,6 +128,10 @@ const Uphold = ({ submit, encryptedData, onChange }) => {
   const selectedCard = upholdCards.find((c) => c.id === get(activeCard, 'id'))
   const hasBalance = checkBalance(selectedCard, cart)
   const inactive = paymentMethod === 'uphold' ? '' : ' inactive'
+
+  if (!method) {
+    return null
+  }
 
   return (
     <>

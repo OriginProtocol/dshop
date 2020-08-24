@@ -883,8 +883,12 @@ module.exports = function (router) {
 
         // Update the public and dataUrl in the shop's config to
         // reflect a possible change to the hostname.
-        additionalOpts.publicUrl = getShopPublicUrl(req.shop, netConfig)
-        additionalOpts.dataUrl = getShopDataUrl(req.shop, netConfig)
+        if (!req.body.publicUrl) {
+          additionalOpts.publicUrl = getShopPublicUrl(req.shop, netConfig)
+        }
+        if (!req.body.dataUrl) {
+          additionalOpts.dataUrl = getShopDataUrl(req.shop, netConfig)
+        }
       }
       if (req.body.fullTitle) {
         req.shop.name = req.body.fullTitle

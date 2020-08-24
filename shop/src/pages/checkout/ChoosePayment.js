@@ -11,7 +11,8 @@ import { Countries } from '@origin/utils/Countries'
 
 import Link from 'components/Link'
 
-import PayWithCrypto from './payment-methods/Crypto'
+import './payment-methods/crypto/Crypto'
+import PayWithCrypto from './payment-methods/crypto/CryptoDirect'
 import PayWithStripe from './payment-methods/Stripe'
 import PayWithUphold from './payment-methods/uphold/Uphold'
 import PayOffline from './payment-methods/OfflinePayment'
