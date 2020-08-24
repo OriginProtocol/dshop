@@ -5,6 +5,7 @@ import fbt from 'fbt'
 import { formInput } from 'utils/formHelpers'
 import DefaultTokens from 'data/defaultTokens'
 import ConfirmationModal from 'components/ConfirmationModal'
+import Toggle from 'components/Toggle'
 import CustomTokenModal from './_CustomTokenModal'
 
 const ContractSettings = ({ state, setState }) => {
@@ -29,6 +30,24 @@ const ContractSettings = ({ state, setState }) => {
           Other Payment Settings
         </fbt>
       </h4>
+
+      <label>
+        <fbt desc="admin.settings.payments.useEscrowContract">
+          Use Escrow Contract?
+        </fbt>
+      </label>
+      <div className="form-group d-flex align-items-center">
+        <Toggle
+          className="sm"
+          value={state.useEscrow ? true : false}
+          onChange={(useEscrow) => setState({ hasChanges: true, useEscrow })}
+        />
+        <div className="ml-2">
+          {state.useEscrow
+            ? fbt('Escrow enabled', 'admin.settings.payments.escrowEnabled')
+            : fbt('Escrow disabled', 'admin.settings.payments.escrowDisabled')}
+        </div>
+      </div>
 
       <label>
         <fbt desc="admin.settings.payments.acceptedTokens">Accepted Tokens</fbt>

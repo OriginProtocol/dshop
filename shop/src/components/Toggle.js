@@ -36,4 +36,10 @@ require('react-styl')(`
         right: 0
         border: solid 2px #1a82ff
         left: unset
+    &.sm
+      width: 40px
+      height: 20px
+      &:before
+        width: 20px
+        height: 20px
 `)

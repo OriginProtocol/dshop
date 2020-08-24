@@ -43,6 +43,7 @@ const PaymentSettings = () => {
       acceptedTokens,
       customTokens,
       listingId,
+      useEscrow: config.useEscrow ? true : false,
       currency: currency || 'USD',
       offlinePaymentMethods
     })
