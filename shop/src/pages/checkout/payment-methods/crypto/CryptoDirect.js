@@ -3,8 +3,6 @@ import get from 'lodash/get'
 import ethers from 'ethers'
 import fbt from 'fbt'
 
-import ipfs from '@origin/ipfs'
-
 import useConfig from 'utils/useConfig'
 import usePrice from 'utils/usePrice'
 import useToken from 'utils/useToken'
@@ -40,17 +38,6 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
       const amount = toTokenPrice(cart.total, activeToken.name)
       const amountWei = ethers.utils.parseUnits(amount, 'ether')
       const fromAddress = await wallet.signer.getAddress()
-
-      const offerIpfs = await ipfs.post(config.ipfsApi, {
-        schemaId: 'https://schema.originprotocol.com/offer_2.0.0.json',
-        listingId: config.listingId,
-        listingType: 'unit',
-        unitsPurchased: 1,
-        totalPrice: { amount: 0, currency: 'encrypted' },
-        commission: { currency: 'OGN', amount: '0' },
-        finalizes: 0,
-        encryptedData: encryptedData.hash
-      })
 
       const codeResponse = await post('/crypto/payment-code', {
         body: JSON.stringify({
