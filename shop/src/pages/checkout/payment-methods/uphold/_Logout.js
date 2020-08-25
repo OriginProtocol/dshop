@@ -11,7 +11,9 @@ const UpholdLogout = ({ upholdAuth, config, reloadAuth, setReloadAuth }) => {
           fetch(`${config.backend}/uphold/logout`, {
             credentials: 'include',
             headers: {
-              authorization: `bearer ${config.backendAuthToken}`
+              authorization: `bearer ${encodeURIComponent(
+                config.backendAuthToken
+              )}`
             },
             method: 'POST'
           }).then(() => {
