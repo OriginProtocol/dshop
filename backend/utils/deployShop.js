@@ -12,6 +12,7 @@ const { getConfig } = require('./encryptedConfig')
 const prime = require('./primeIpfs')
 const setCloudflareRecords = require('./dns/cloudflare')
 const setCloudDNSRecords = require('./dns/clouddns')
+const setRoute53Records = require('./dns/route53')
 
 const { IS_TEST } = require('../utils/const')
 
@@ -95,7 +96,21 @@ async function configureShopDNS({
     }
   }
 
-  if (!['cloudflare', 'gcp'].includes(dnsProvider)) {
+  if (dnsProvider === 'aws') {
+    if (!networkConfig.awsAccessKeyId || !networkConfig.awsSecretAccessKey) {
+      log.warn('AWS DNS Proider selected but no credentials configured!')
+    } else {
+      await setRoute53Records({
+        ipfsGateway: gatewayHost,
+        zone,
+        subdomain,
+        hash,
+        credentials: networkConfig.awsCredentials
+      })
+    }
+  }
+
+  if (!['cloudflare', 'gcp', 'aws'].includes(dnsProvider)) {
     log.error('Unknown DNS provider selected.  Will not configure DNS')
   }
 }
