@@ -8,6 +8,7 @@ import useAuth from 'utils/useAuth'
 
 import SwitchToStorefront from 'components/SwitchToStorefront'
 import Redirect from 'components/Redirect'
+import PreviewBanner from 'components/PreviewBanner'
 import AccountSelector from './_AccountSelector'
 import User from './_User'
 import NewShop from './_NewShop'
@@ -30,6 +31,11 @@ const Nav = ({ newShop, setNewShop, only }) => {
 
   if (!config.activeShop && !isAdmin) {
     return <Redirect to="/admin" />
+  }
+
+  if (window.name === 'shop_preview') {
+    // Hide admin nav on preview
+    return <PreviewBanner />
   }
 
   return (

@@ -73,8 +73,8 @@ const AdminMenu = () => {
           </Link>
           {!active('/admin/settings') ? null : (
             <ul className="sub-menu list-unstyled">
-              <li className={active('/admin/settings', true)}>
-                <Link to="/admin/settings">
+              <li className={active('/admin/settings/general', true)}>
+                <Link to="/admin/settings/general">
                   <fbt desc="General">General</fbt>
                 </Link>
               </li>
@@ -91,6 +91,11 @@ const AdminMenu = () => {
               <li className={active('/admin/settings/shipping')}>
                 <Link to="/admin/settings/shipping">
                   <fbt desc="Shipping">Shipping</fbt>
+                </Link>
+              </li>
+              <li className={active('/admin/settings/checkout')}>
+                <Link to="/admin/settings/checkout">
+                  <fbt desc="Users">Checkout</fbt>
                 </Link>
               </li>
               <li className={active('/admin/settings/users')}>
