@@ -1146,7 +1146,8 @@ module.exports = function (router) {
 
       return res.json({ success: true, hash, domain, gateway: network.ipfs })
     } catch (e) {
-      log.error(`Shop ${shop.id} deploy failed: ${e}`)
+      log.error(`Shop ${shop.id} deploy failed`)
+      log.error(e)
       return res.json({ success: false, reason: e.message })
     }
   })
@@ -1224,7 +1225,8 @@ module.exports = function (router) {
 
         return res.json({ success: true, hash, domain, gateway: network.ipfs })
       } catch (e) {
-        log.error(`Shop ${req.shop.id} initial deploy failed: ${e}`)
+        log.error(`Shop ${req.shop.id} initial deploy failed`)
+        log.error(e)
         return res.json({ success: false, reason: e.message })
       }
     }
