@@ -34,7 +34,9 @@ const PrintfulDetails = ({
             }
             setConfirm(true)
             const headers = new Headers({
-              authorization: `bearer ${config.backendAuthToken}`,
+              authorization: `bearer ${encodeURIComponent(
+                config.backendAuthToken
+              )}`,
               'content-type': 'application/json'
             })
             const myRequest = new Request(
@@ -267,7 +269,9 @@ const Printful = () => {
               `${config.backend}/orders/${orderId}/printful/create`,
               {
                 headers: {
-                  authorization: `bearer ${config.backendAuthToken}`,
+                  authorization: `bearer ${encodeURIComponent(
+                    config.backendAuthToken
+                  )}`,
                   'content-type': 'application/json'
                 },
                 credentials: 'include',

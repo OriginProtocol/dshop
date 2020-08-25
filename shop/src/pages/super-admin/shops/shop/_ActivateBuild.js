@@ -31,7 +31,7 @@ const ActivateBuild = ({ className = '', shop, ipfsHash }) => {
       fetch(`${config.backend}/shops/${shop.authToken}/get-names`, {
         headers: {
           'content-type': 'application/json',
-          authorization: `Bearer ${shop.authToken}`
+          authorization: `Bearer ${encodeURIComponent(shop.authToken)}`
         },
         credentials: 'include',
         method: 'GET'
@@ -55,7 +55,7 @@ const ActivateBuild = ({ className = '', shop, ipfsHash }) => {
       fetch(`${config.backend}/shops/${shop.authToken}/set-names`, {
         headers: {
           'content-type': 'application/json',
-          authorization: `Bearer ${shop.authToken}`
+          authorization: `Bearer ${encodeURIComponent(shop.authToken)}`
         },
         credentials: 'include',
         method: 'POST',
