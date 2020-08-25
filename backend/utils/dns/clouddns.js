@@ -4,6 +4,7 @@
 const get = require('lodash/get')
 const { DNS } = require('@google-cloud/dns')
 
+const { append } = require('../../utils/string')
 const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('utils.dns.clouddns')
@@ -24,18 +25,6 @@ function getClient(credentials) {
   CACHED_CLIENT = new DNS({ projectId: credentials.project_id, credentials })
 
   return CACHED_CLIENT
-}
-
-/**
- * Append e to s
- *
- * @param {string} s string we're appending to
- * @param {string} e string we're appending
- * @returns {string} s+e
- */
-function append(s, e) {
-  if (s.endsWith(e)) return s
-  return `${s}${e}`
 }
 
 /**
