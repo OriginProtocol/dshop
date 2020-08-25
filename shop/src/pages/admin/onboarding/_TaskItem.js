@@ -38,11 +38,10 @@ export default TaskItem
 
 require('react-styl')(`
   .task-item
-    margin-bottom: 1.5rem
-    margin-right: 1.25rem
     border-radius: 10px
     border: solid 1px #cdd7e0
     position: relative
+    display: flex
     > div:first-child
       padding: 1.5rem 1.25rem
       display: flex

@@ -8,9 +8,9 @@ import useProducts from 'utils/useProducts'
 import { useStateValue } from 'data/state'
 
 import * as Icons from 'components/icons/Admin'
-import TaskItem from 'components/onboarding/TaskItem'
-import ArticleItem from 'components/onboarding/ArticleItem'
-import Banner from 'components/onboarding/Banner'
+import TaskItem from './_TaskItem'
+import ArticleItem from './_ArticleItem'
+import Banner from './_Banner'
 
 import Web3Modal from 'pages/admin/settings/payments/Web3Modal'
 
@@ -57,8 +57,10 @@ const Onboarding = () => {
       icon: <Icons.Email />,
       name: fbt('Verify your email', 'admin.Onboarding.verifyEmail'),
       // TODO: Replace placeholder text
-      desc:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam efficitur condimentum euismod. Morbi at varius diam.',
+      desc: fbt(
+        'Please verify your email address to ensure you are able to receive notifications of new orders on your store.',
+        'admin.Onboarding.newProductDesc'
+      ),
       link: '/admin/settings/users'
     },
     {
@@ -66,8 +68,10 @@ const Onboarding = () => {
       completed: get(products, 'length', 0) > 0,
       icon: <Icons.Box />,
       name: fbt('Add your first product', 'admin.Onboarding.newProduct'),
-      desc:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam efficitur condimentum euismod. Morbi at varius diam.',
+      desc: fbt(
+        'Start building out your store by adding descriptions and images of products for sale.',
+        'admin.Onboarding.newProductDesc'
+      ),
       link: '/admin/products/new'
     },
     {
@@ -78,8 +82,10 @@ const Onboarding = () => {
         'Set up your shipping options',
         'admin.Onboarding.setupShipping'
       ),
-      desc:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam efficitur condimentum euismod. Morbi at varius diam.',
+      desc: fbt(
+        'Specify the regions your products ship to, pricing and estimated delivery times.',
+        'admin.Onboarding.setupShippingDesc'
+      ),
       link: '/admin/settings/shipping'
     },
     {
@@ -90,20 +96,21 @@ const Onboarding = () => {
         !!(config && config.favicon),
       icon: <Icons.Globe />,
       name: fbt('Customize your store', 'admin.Onboarding.customizeStore'),
-      desc:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam efficitur condimentum euismod. Morbi at varius diam.',
+      desc: fbt(
+        'Change the name, logo and appearance of your store.',
+        'admin.Onboarding.customizeStoreDesc'
+      ),
       link: '/admin/settings'
     },
     {
       id: 'payment_options',
       completed: get(config, 'paymentMethods.length', 0) > 1,
       icon: <Icons.Card />,
-      name: fbt(
-        'Set up other payment options',
-        'admin.Onboarding.paymentOptions'
+      name: fbt('Set up payment options', 'admin.Onboarding.paymentOptions'),
+      desc: fbt(
+        "Choose how you'd like to be paid, from crypto currency to credit cards",
+        'admin.Onboarding.paymentOptionsDesc'
       ),
-      desc:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam efficitur condimentum euismod. Morbi at varius diam.',
       link: '/admin/settings/payments'
     }
   ]
@@ -174,6 +181,7 @@ require('react-styl')(`
       .tasks-lists
         width: 100%
         display: grid
-        grid-template-columns: 50% 50%
-
+        column-gap: 1.5rem
+        row-gap: 1.25rem
+        grid-template-columns: 1fr 1fr
 `)

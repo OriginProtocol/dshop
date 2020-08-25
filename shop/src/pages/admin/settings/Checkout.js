@@ -126,7 +126,8 @@ const CheckoutSettings = () => {
             <div className="col-md-4">
               <figure>
                 <img
-                  src="/images/screenshot-note.png"
+                  src="images/screenshot-note.png"
+                  srcSet="images/screenshot-note.png,images/screenshot-note@2x.png 1.5x,images/screenshot-note@3x.png 2x"
                   className="sample-screenshot"
                 />
                 <figcaption>
@@ -168,7 +169,8 @@ const CheckoutSettings = () => {
             <div className="col-md-4">
               <figure>
                 <img
-                  src="/images/screenshot-discount.png"
+                  src="images/screenshot-discount.png"
+                  srcSet="images/screenshot-discount.png,images/screenshot-discount@2x.png 1.5x,images/screenshot-discount@3x.png 2x"
                   className="sample-screenshot"
                 />
                 <figcaption>
@@ -192,10 +194,14 @@ require('react-styl')(`
     border: solid 1px #cdd7e0
     background-color: #ffffff
     padding: 10px
-
-  figcaption
-    color: #8293a4
-    text-align: center
-    margin: 0.25rem 0 0.5rem 0
-    font-size: 0.9rem
+  .shop-settings
+    figure
+      max-width: 270px
+      img
+        width: 100%
+    figcaption
+      color: #8293a4
+      text-align: center
+      margin: 0.25rem 0 0.5rem 0
+      font-size: 0.9rem
 `)

@@ -4,7 +4,7 @@ import fbt from 'fbt'
 const PreviewBanner = () => {
   return (
     <div className="shop-preview-banner">
-      <div className="container">
+      <div className="container px-4">
         <div>
           <fbt desc="component.PreviewBanner.desc">
             You’re previewing this shop, close this window when you’re done.

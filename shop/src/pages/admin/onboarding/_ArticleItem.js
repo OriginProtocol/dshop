@@ -1,6 +1,6 @@
 import React from 'react'
 import fbt from 'fbt'
-import { Article as ArticleIcon } from '../icons/Admin'
+import { Article as ArticleIcon } from 'components/icons/Admin'
 
 const ArticleItem = ({ article }) => {
   if (!article) return null
@@ -35,6 +35,6 @@ export default ArticleItem
 
 require('react-styl')(`
   .task-item.article
-    > div:first-child 
+    > div:first-child
       cursor: default
 `)
