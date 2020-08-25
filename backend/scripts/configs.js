@@ -22,7 +22,7 @@ const shopConfig = {
   stripeKey: '',
 
   networks: {
-    '1': {
+    1: {
       marketplaceContract: '0x698ff47b84837d3971118a369c570172ee7e54c2',
       marketplaceEpoch: 8582597,
       listingId: '1-001-X',
@@ -32,7 +32,7 @@ const shopConfig = {
       ipfsGateway: 'https://ipfs-prod.ogn.app',
       ipfsApi: 'https://ipfs.ogn.app'
     },
-    '4': {
+    4: {
       marketplaceContract: '0x3d608cce08819351ada81fc1550841ebc10686fd',
       marketplaceEpoch: 5119455,
       listingId: '4-001-XXX',
@@ -40,7 +40,7 @@ const shopConfig = {
       ipfsGateway: 'https://ipfs.staging.originprotocol.com',
       ipfsApi: 'https://ipfs.staging.originprotocol.com'
     },
-    '999': {
+    999: {
       marketplaceEpoch: 0,
       listingId: '999-001-2',
       backend: 'http://0.0.0.0:3000',
