@@ -4,8 +4,8 @@
 const get = require('lodash/get')
 const { DNS } = require('@google-cloud/dns')
 
-const { append } = require('../../utils/string')
-const { getLogger } = require('../../utils/logger')
+const { append } = require('../string')
+const { getLogger } = require('../logger')
 
 const log = getLogger('utils.dns.clouddns')
 

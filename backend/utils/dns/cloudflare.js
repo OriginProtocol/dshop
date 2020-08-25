@@ -1,7 +1,7 @@
 const cloudflare = require('cloudflare')
 const find = require('lodash/find')
 
-const { getLogger } = require('../../utils/logger')
+const { getLogger } = require('../logger')
 
 const log = getLogger('utils.dns.cloudflare')
 

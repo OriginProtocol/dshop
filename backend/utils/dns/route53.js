@@ -3,8 +3,8 @@
  */
 const Route53 = require('aws-sdk/clients/route53')
 
-const { append } = require('../../utils/string')
-const { getLogger } = require('../../utils/logger')
+const { append } = require('../string')
+const { getLogger } = require('../logger')
 
 const log = getLogger('utils.dns.route53')
 
