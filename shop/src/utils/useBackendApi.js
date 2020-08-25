@@ -7,7 +7,9 @@ function useBackendApi(opts = {}) {
   function postRaw(url, opts = {}) {
     const headers = { ...opts.headers }
     if (authToken) {
-      headers.authorization = `bearer ${config.backendAuthToken}`
+      headers.authorization = `bearer ${encodeURIComponent(
+        config.backendAuthToken
+      )}`
     }
     if (!opts.method) {
       opts.method = 'POST'
@@ -44,7 +46,9 @@ function useBackendApi(opts = {}) {
   function get(url, opts = {}) {
     const headers = { 'content-type': 'application/json' }
     if (authToken) {
-      headers.authorization = `bearer ${config.backendAuthToken}`
+      headers.authorization = `bearer ${encodeURIComponent(
+        config.backendAuthToken
+      )}`
     }
     return new Promise((resolve, reject) => {
       fetch(`${config.backend}${url}`, { headers, credentials: 'include' })

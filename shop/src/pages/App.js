@@ -71,7 +71,7 @@ const App = ({ location }) => {
     fetch(`${config.backend}/password`, {
       headers: {
         'content-type': 'application/json',
-        authorization: `bearer ${config.backendAuthToken}`
+        authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
       },
       credentials: 'include'
     }).then(async (response) => {
