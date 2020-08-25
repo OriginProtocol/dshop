@@ -12,12 +12,14 @@ const log = getLogger('utils.dns.cloudflare')
  * @returns {DNS}
  */
 function _getClient(credentials) {
-  if (!credentials) throw new Error('Must supply Cloudflare credentails')
   if (typeof credentials === 'string') credentials = JSON.parse(credentials)
 
   return cloudflare(credentials)
 }
-const getClient = memoize(_getClient, (a) => stringify(a[0]))
+const getClient = memoize(_getClient, (a) => {
+  if (!a) throw new Error('Must supply Cloudflare credentails')
+  stringify(a[0])
+})
 
 async function findZone(cf, conditions) {
   const data = { page: 1, per_page: 100 }

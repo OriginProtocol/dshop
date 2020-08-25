@@ -19,12 +19,14 @@ const AWS_API_VERSION = '2013-04-01'
  * @returns {DNS}
  */
 function _getClient(credentials) {
-  if (!credentials) throw new Error('Must supply GCP credentails')
   if (typeof credentials === 'string') credentials = JSON.parse(credentials)
 
   return new Route53({ apiVersion: AWS_API_VERSION })
 }
-const getClient = memoize(_getClient, (a) => stringify(a[0]))
+const getClient = memoize(_getClient, (a) => {
+  if (!a) throw new Error('Must supply AWS credentails')
+  stringify(a[0])
+})
 
 /**
  * Create a change request object for use with changeResourceRecordSets

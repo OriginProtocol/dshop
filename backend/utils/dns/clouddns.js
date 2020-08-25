@@ -24,7 +24,10 @@ function _getClient(credentials) {
 
   return new DNS({ projectId: credentials.project_id, credentials })
 }
-const getClient = memoize(_getClient, (a) => stringify(a[0]))
+const getClient = memoize(_getClient, (a) => {
+  if (!a) throw new Error('Must supply GCP credentails')
+  stringify(a[0])
+})
 
 /**
  * Get a specific Zone
