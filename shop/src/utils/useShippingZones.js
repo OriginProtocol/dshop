@@ -20,7 +20,9 @@ function useShippingZones() {
             method: 'POST',
             credentials: 'include',
             headers: {
-              authorization: `bearer ${config.backendAuthToken}`,
+              authorization: `bearer ${encodeURIComponent(
+                config.backendAuthToken
+              )}`,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({

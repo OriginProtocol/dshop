@@ -116,7 +116,9 @@ const Join = ({
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  Authorization: `bearer ${config.backendAuthToken}`
+                  Authorization: `bearer ${encodeURIComponent(
+                    config.backendAuthToken
+                  )}`
                 },
                 body: JSON.stringify({
                   msg,

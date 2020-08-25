@@ -33,7 +33,9 @@ async function authSellerAndShop(req, res, next) {
     return res.status(401).json({ success: false, message: 'Not logged in' })
   }
 
-  const authToken = String(req.headers.authorization).split(' ')[1]
+  const authToken = decodeURIComponent(
+    String(req.headers.authorization).split(' ')[1]
+  )
   if (!authToken) {
     return res.status(401).json({ success: false, message: 'No auth token' })
   }
@@ -94,7 +96,9 @@ async function authUser(req, res, next) {
 }
 
 async function authShop(req, res, next) {
-  const authToken = String(req.headers.authorization).split(' ')[1]
+  const authToken = decodeURIComponent(
+    String(req.headers.authorization).split(' ')[1]
+  )
   if (!authToken) {
     return res.status(401).json({ success: false, message: 'No auth token' })
   }

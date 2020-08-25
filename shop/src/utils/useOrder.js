@@ -7,7 +7,7 @@ const getOrder = memoize(
   async function fetchOrder(admin, orderId, backend, authToken) {
     return await fetch(`${backend}/orders/${orderId}`, {
       credentials: 'include',
-      headers: { authorization: `bearer ${authToken}` }
+      headers: { authorization: `bearer ${encodeURIComponent(authToken)}` }
     }).then((res) => res.json())
   },
   (...args) => args[1]

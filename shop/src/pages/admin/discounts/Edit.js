@@ -139,7 +139,9 @@ const AdminEditDiscount = () => {
 
           const raw = await fetch(url, {
             headers: {
-              authorization: `bearer ${config.backendAuthToken}`,
+              authorization: `bearer ${encodeURIComponent(
+                config.backendAuthToken
+              )}`,
               'content-type': 'application/json'
             },
             credentials: 'include',
