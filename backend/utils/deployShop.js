@@ -106,8 +106,8 @@ async function configureShopDNS({
         subdomain,
         hash,
         credentials: {
-          awsAccessKeyId: networkConfig.awsAccessKeyId,
-          awsSecretAccessKey: networkConfig.awsSecretAccessKey
+          accessKeyId: networkConfig.awsAccessKeyId,
+          secretAccessKey: networkConfig.awsSecretAccessKey
         }
       })
     }

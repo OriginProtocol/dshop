@@ -21,11 +21,11 @@ const AWS_API_VERSION = '2013-04-01'
 function _getClient(credentials) {
   if (typeof credentials === 'string') credentials = JSON.parse(credentials)
 
-  return new Route53({ apiVersion: AWS_API_VERSION })
+  return new Route53({ apiVersion: AWS_API_VERSION, ...credentials })
 }
 const getClient = memoize(_getClient, (a) => {
   if (!a) throw new Error('Must supply AWS credentails')
-  stringify(a[0])
+  return stringify(a[0])
 })
 
 /**
@@ -185,7 +185,14 @@ async function getRecord(client, zoneObj, DNSName, type) {
     return null
   }
 
-  return ResourceRecordSets[0]
+  // The Start* functions above are ordering only
+  for (const rec of ResourceRecordSets) {
+    if (rec.Name === DNSName && rec.Type === type) {
+      return rec
+    }
+  }
+
+  return null
 }
 
 /**

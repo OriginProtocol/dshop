@@ -26,7 +26,7 @@ function _getClient(credentials) {
 }
 const getClient = memoize(_getClient, (a) => {
   if (!a) throw new Error('Must supply GCP credentails')
-  stringify(a[0])
+  return stringify(a[0])
 })
 
 /**
