@@ -597,7 +597,7 @@
   "CYfZyZv6C41jmJZDnKkkLA==": "Client key is required",
   "N6csB8CeKFMXybSUb1ZyDQ==": "Stripe keys don't match",
   "mDs7QGRiJ23gzH0K+1Lp4A==": "Connect to Stripe",
-  "2j9Ir8nkZ5S4UzenTW/peA==": "Stripe Public Key",
+  "2j9Ir8nkZ5S4UzenTW/peA==": "公钥",
   "NXw7cgOICqtu2u9XoRd0OQ==": "Stripe Secret Key",
   "zIsAjJAEGvZUIozDpSoTRA==": "需要私钥",
   "K7tj/h8zuWd2I8akzHNb1A==": "私钥无效",
