@@ -1,6 +1,8 @@
 /**
  * DNS utilities for AWS Route 53
  */
+const memoize = require('lodash/memoize')
+const stringify = require('json-stable-stringify')
 const Route53 = require('aws-sdk/clients/route53')
 
 const { append } = require('../string')
@@ -8,7 +10,6 @@ const { getLogger } = require('../logger')
 
 const log = getLogger('utils.dns.route53')
 
-let CACHED_CLIENT
 const DEFAULT_TTL = 60 // 1 minute
 const AWS_API_VERSION = '2013-04-01'
 
@@ -17,15 +18,13 @@ const AWS_API_VERSION = '2013-04-01'
  *
  * @returns {DNS}
  */
-function getClient(credentials) {
-  if (CACHED_CLIENT) return CACHED_CLIENT
+function _getClient(credentials) {
   if (!credentials) throw new Error('Must supply GCP credentails')
   if (typeof credentials === 'string') credentials = JSON.parse(credentials)
 
-  CACHED_CLIENT = new Route53({ apiVersion: AWS_API_VERSION })
-
-  return CACHED_CLIENT
+  return new Route53({ apiVersion: AWS_API_VERSION })
 }
+const getClient = memoize(_getClient, (a) => stringify(a[0]))
 
 /**
  * Create a change request object for use with changeResourceRecordSets
@@ -142,10 +141,9 @@ function deleteTXT(name, values) {
  * @param {string} name of DNS record
  * @returns {zone}
  */
-async function getZone(DNSName) {
+async function getZone(client, DNSName) {
   DNSName = append(DNSName, '.')
 
-  const client = getClient()
   const resp = await client
     .listHostedZonesByName({
       DNSName,
@@ -172,8 +170,7 @@ async function getZone(DNSName) {
  * @param {string} name of DNS record
  * @returns {zone}
  */
-async function getRecord(zoneObj, DNSName, type) {
-  const client = getClient()
+async function getRecord(client, zoneObj, DNSName, type) {
   const { ResourceRecordSets } = await client
     .listResourceRecordSets({
       HostedZoneId: zoneObj.Id,
@@ -208,7 +205,7 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
   const client = getClient(credentials)
 
   // Lookup and verify zone
-  const zoneObj = await getZone(zone)
+  const zoneObj = await getZone(client, zone)
   if (!zoneObj) {
     log.error(`Zone ${zone} not found.`)
     return
@@ -218,8 +215,8 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
   const record = append(`${subdomain}.${zone}`, '.')
   const txtRecord = append(`_dnslink.${record}`, '.')
   const txtRecordValue = `"dnslink=/ipfs/${hash}"`
-  const existingCNAME = await getRecord(zoneObj, record, 'CNAME')
-  const existingTXT = await getRecord(zoneObj, txtRecord, 'TXT')
+  const existingCNAME = await getRecord(client, zoneObj, record, 'CNAME')
+  const existingTXT = await getRecord(client, zoneObj, txtRecord, 'TXT')
   const changes = []
 
   // Delete records if they exist
