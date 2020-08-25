@@ -2,13 +2,15 @@
  * DNS utilities for GCP CLoud DNS
  */
 const get = require('lodash/get')
+const memoize = require('lodash/memoize')
+const stringify = require('json-stable-stringify')
 const { DNS } = require('@google-cloud/dns')
 
-const { getLogger } = require('../../utils/logger')
+const { append } = require('../string')
+const { getLogger } = require('../logger')
 
 const log = getLogger('utils.dns.clouddns')
 
-let CACHED_CLIENT
 const DEFAULT_TTL = 60 // 1 minute
 
 /**
@@ -16,27 +18,13 @@ const DEFAULT_TTL = 60 // 1 minute
  *
  * @returns {DNS}
  */
-function getClient(credentials) {
-  if (CACHED_CLIENT) return CACHED_CLIENT
+function _getClient(credentials) {
   if (!credentials) throw new Error('Must supply GCP credentails')
   if (typeof credentials === 'string') credentials = JSON.parse(credentials)
 
-  CACHED_CLIENT = new DNS({ projectId: credentials.project_id, credentials })
-
-  return CACHED_CLIENT
+  return new DNS({ projectId: credentials.project_id, credentials })
 }
-
-/**
- * Append e to s
- *
- * @param {string} s string we're appending to
- * @param {string} e string we're appending
- * @returns {string} s+e
- */
-function append(s, e) {
-  if (s.endsWith(e)) return s
-  return `${s}${e}`
-}
+const getClient = memoize(_getClient, (a) => stringify(a[0]))
 
 /**
  * Get a specific Zone
@@ -46,9 +34,8 @@ function append(s, e) {
  * @param {string} name of DNS record
  * @returns {Zone}
  */
-async function getZone(DNSName) {
-  const dns = getClient()
-  const [zones] = await dns.getZones({ maxResults: 50 })
+async function getZone(client, DNSName) {
+  const [zones] = await client.getZones({ maxResults: 50 })
 
   for (let i = 0; i < zones.length; i++) {
     const dnsName = zones[i].metadata.dnsName
@@ -162,9 +149,9 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
   ipfsGateway = append(ipfsGateway, '.')
 
   // Configure the client with given credentials
-  getClient(credentials)
+  const client = getClient(credentials)
 
-  const zoneObj = await getZone(zone)
+  const zoneObj = await getZone(client, zone)
 
   if (!zoneObj || !(await zoneObj.exists())) {
     log.error(`Zone ${zone} not found.`)

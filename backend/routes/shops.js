@@ -1193,6 +1193,8 @@ module.exports = function (router) {
         dnsProvider = 'gcp'
       } else if (networkConfig.cloudflareApiKey) {
         dnsProvider = 'cloudflare'
+      } else if (networkConfig.awsAccessKeyId) {
+        dnsProvider = 'aws'
       }
 
       try {
