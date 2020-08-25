@@ -27,7 +27,7 @@ const List = () => {
         link="/admin/settings/general"
       />
       <SettingsListItem
-        icon={<Icons.Settings />}
+        icon={<Icons.Appearance />}
         title={<fbt desc="Appearance">Appearance</fbt>}
         desc={'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'}
         link="/admin/settings/general"
@@ -39,7 +39,7 @@ const List = () => {
         link="/admin/settings/payments"
       />
       <SettingsListItem
-        icon={<Icons.Settings />}
+        icon={<Icons.Apps />}
         title={<fbt desc="Apps">Apps</fbt>}
         desc={'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'}
         link="/admin/settings/apps"
@@ -51,25 +51,25 @@ const List = () => {
         link="/admin/settings/shipping"
       />
       <SettingsListItem
-        icon={<Icons.Settings />}
+        icon={<Icons.Checkout />}
         title={<fbt desc="Checkout">Checkout</fbt>}
         desc={'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'}
         link="/admin/settings/checkout"
       />
       <SettingsListItem
-        icon={<Icons.User />}
+        icon={<Icons.Users />}
         title={<fbt desc="Users">Users</fbt>}
         desc={'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'}
         link="/admin/settings/users"
       />
       <SettingsListItem
-        icon={<Icons.Settings />}
+        icon={<Icons.Publish />}
         title={<fbt desc="Publish">Publish</fbt>}
         desc={'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'}
         link="/admin/settings/publish"
       />
       <SettingsListItem
-        icon={<Icons.Settings />}
+        icon={<Icons.Advanced />}
         title={<fbt desc="Advanced">Advanced</fbt>}
         desc={'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'}
         link="/admin/settings/advanced"

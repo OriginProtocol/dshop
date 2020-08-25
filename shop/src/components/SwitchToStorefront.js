@@ -1,11 +1,10 @@
 import React from 'react'
-import { useLocation, useHistory } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 import { useStateValue } from 'data/state'
 
 const SwitchToStorefront = ({ className, children }) => {
   const location = useLocation()
-  const history = useHistory()
   const [{ storefrontLocation }, dispatch] = useStateValue()
 
   const isSuperAdmin = location.pathname.indexOf('/super-admin') === 0
@@ -18,7 +17,7 @@ const SwitchToStorefront = ({ className, children }) => {
       onClick={() => {
         if (!isAdmin) return
         dispatch({ type: 'setAdminLocation', location })
-        history.push(storefrontLocation || '/')
+        window.open(window.origin + (storefrontLocation || '/'), 'shop_preview')
       }}
     >
       {children}

@@ -109,6 +109,7 @@ const Onboarding = () => {
   ]
 
   const articles = [
+    // Sample entry
     // {
     //   title: 'Article name here',
     //   summary: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam efficitur condimentum euismod. Morbi at varius diam...',
