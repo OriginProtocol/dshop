@@ -1,4 +1,4 @@
-# Dshop AWS EC2 image builder
+# Dshop AWS EC2 AMI builder
 
 <img width="346" alt="dshops" src="https://user-images.githubusercontent.com/837/80967164-ea868b00-8de3-11ea-85e8-cc863afbdc09.png">
 
