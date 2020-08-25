@@ -13,6 +13,8 @@ class Enum extends Array {
   }
 }
 
+const OrderStatuses = new Enum('Paid', 'Canceled')
+
 const TransactionStatuses = new Enum('Pending', 'Confirmed', 'Failed')
 
 const TransactionTypes = new Enum('OfferCreated', 'Payment')
@@ -22,6 +24,7 @@ const ShopDeploymentStatuses = new Enum('Pending', 'Success', 'Failure')
 const EtlJobStatuses = new Enum('Running', 'Success', 'Failure')
 
 module.exports = {
+  OrderStatuses,
   TransactionStatuses,
   TransactionTypes,
   ShopDeploymentStatuses,

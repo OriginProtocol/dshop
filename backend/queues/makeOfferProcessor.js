@@ -165,7 +165,7 @@ async function _makeOnchainOffer({
       status: TransactionStatuses.Pending,
       hash: tx.hash,
       listingId: lid.toString(),
-      offerIpfsHash,
+      ipfsHash: offerIpfsHash,
       jobId: fqJobId,
       customId: paymentCode // Allows to join the transactions and external_payments table.
     })
@@ -228,10 +228,10 @@ async function _makeOffchainOffer({
 }) {
   queueLog(job, 30, `Creating order`)
   log.info(
-    `Creating off-chain offer jobId: ${fqJobId} listingId: ${lid.toString} paymentCode: ${paymentCode}`
+    `Creating off-chain offer jobId: ${fqJobId} listingId: ${lid.toString()} paymentCode: ${paymentCode}`
   )
 
-  const confirmation = processNewOrder({
+  const order = await processNewOrder({
     network,
     networkConfig,
     shop,
@@ -243,12 +243,13 @@ async function _makeOffchainOffer({
     skipEmail: false,
     skipDiscord: false
   })
-  return confirmation
+  return order
 }
 
 /**
- * Records a purchase on the blockchain by making
- * an offer on the marketplace contract.
+ * Records an offer in the system. Depending on the shop's configuration, the offer is either
+ * recorded on the blockchain (aka "on-chain") or only in the database (aka "off-chain").
+ *
  * Note: several processors may get started, resulting in
  * multiple jobs getting processed concurrently.
  *
@@ -257,14 +258,14 @@ async function _makeOffchainOffer({
  *   {string} shopId: Unique DB id for the shop.
  *   {string} paymentCode: Unique payment code.
  *   {string} encryptedDataIpfsHash: IPFS hash of the PGP encrypted offer data.
- * @returns {Promise<{receipt: ethers.TransactionReceipt, listingId: number, offerId: number, ipfsHash: string }>}
+ * @returns {Promise<models.Order || {receipt: ethers.TransactionReceipt, listingId: number, offerId: number, ipfsHash: string }>}
  * @throws
  */
 async function processor(job) {
   const fqJobId = `${get(job, 'queue.name', '')}-${job.id}` // Prefix with queue name since job ids are not unique across queues.
   const { shopId, paymentCode, encryptedDataIpfsHash } = job.data
   log.info(`Creating offer for shop ${shopId}`)
-  let confirmation
+  let result
 
   try {
     const shop = await Shop.findOne({ where: { id: shopId } })
@@ -285,6 +286,8 @@ async function processor(job) {
 
     queueLog(job, 20, 'Submitting Offer')
 
+    // Create the offer in the system either on or off chain, depending on the
+    // shop's configuration.
     const data = {
       job,
       fqJobId,
@@ -298,9 +301,9 @@ async function processor(job) {
       paymentCode
     }
     if (shopConfig.offchainOffersEnabled) {
-      confirmation = await _makeOffchainOffer(data)
+      result = await _makeOffchainOffer(data)
     } else {
-      confirmation = await _makeOnchainOffer(data)
+      result = await _makeOnchainOffer(data)
     }
 
     queueLog(job, 100, 'Finished')
@@ -311,7 +314,7 @@ async function processor(job) {
     throw e
   }
 
-  return confirmation
+  return result
 }
 
 /**

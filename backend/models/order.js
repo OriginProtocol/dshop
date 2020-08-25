@@ -1,5 +1,7 @@
 const get = require('lodash/get')
 
+const { OrderStatuses } = require('../enums')
+
 module.exports = (sequelize, DataTypes) => {
   const isPostgres = sequelize.options.dialect === 'postgres'
 
@@ -15,20 +17,20 @@ module.exports = (sequelize, DataTypes) => {
         unique: true,
         primaryKey: true
       },
+      // Current status of the order.
+      status: DataTypes.ENUM(OrderStatuses),
       // IPFS hash for the offer data.
       ipfsHash: DataTypes.STRING,
       // IPFS hash of the encrypted offer data.
       encryptedIpfsHash: DataTypes.STRING,
       // Blockchain fully-qualified offerId. Only populated for on-chain offers.
-      offerId: DataTypes.STRING, // TODO: add migration
+      offerId: DataTypes.STRING,
+      // Marketplace offer status: OfferCreated/Accepted/Finalized/Withdrawn/Disputed. Only populated for on-chain offers.
+      offerStatus: DataTypes.STRING,
       // Block number at which the offer was created. Only populated for on-chain offers.
       createdBlock: DataTypes.INTEGER,
       // Block number of the most recent offer update. Only populated for on-chain offers.
       updatedBlock: DataTypes.INTEGER,
-      // Not used at the moment.
-      status: DataTypes.INTEGER,
-      // 'OfferCreated', 'OfferFinalized', 'OfferWithdrawn' or 'error'
-      statusStr: DataTypes.STRING,
       // Currency symbol. For ex.: USD
       currency: DataTypes.STRING,
       // Total amount as a fixed-point integer. For ex.: $12.34 => 1234
@@ -54,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
       commissionPending: DataTypes.INTEGER,
       // Amount of OGN commission paid to the referrer.
       commissionPaid: DataTypes.INTEGER,
-      // Date at which the offer was recorded on-chain.
+      // Date at which the offer was recorded, either on or off-chain.
       createdAt: DataTypes.DATE,
       // Optional. Links an external payment (ex: credit card) to an order. See external_payments.payment_code
       paymentCode: DataTypes.STRING

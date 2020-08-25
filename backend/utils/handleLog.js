@@ -8,6 +8,7 @@ const Stripe = require('stripe')
 const get = require('lodash/get')
 const set = require('lodash/set')
 
+const { OrderStatuses } = require('../enums')
 const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
 const { upsertEvent, getEventObj } = require('./events')
@@ -190,11 +191,13 @@ async function _processEventForExistingOrder({ event, shop, order }) {
   const eventName = event.eventName
 
   const updatedFields = {
-    statusStr: eventName,
+    offerStatus: eventName,
     updatedBlock: event.blockNumber
   }
 
   if (eventName === 'OfferWithdrawn') {
+    updatedFields.status = OrderStatuses.Canceled
+
     // If it's a Stripe payment, initiate a refund.
     const paymentMethod = get(order, 'data.paymentMethod.id')
     if (paymentMethod === 'stripe') {
@@ -374,7 +377,7 @@ async function processDShopEvent({ event, shop, skipEmail, skipDiscord }) {
     where: {
       networkId: event.networkId,
       shopId: shop.id,
-      orderId: offerId
+      offerId
     }
   })
 

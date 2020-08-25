@@ -357,7 +357,7 @@ async function createTestOffer(network, shop, key) {
   }
   const offerIpfsHash = await postIpfs(network.ipfsApi, offer, true)
 
-  return { ipfsHash: offerIpfsHash, data }
+  return { offer, ipfsHash: offerIpfsHash, data }
 }
 
 /**

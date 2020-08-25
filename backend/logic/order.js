@@ -1,6 +1,7 @@
 const randomstring = require('randomstring')
 const util = require('ethereumjs-util')
 
+const { OrderStatuses } = require('../enums')
 const { Sentry } = require('../sentry')
 const { Order } = require('../models')
 const sendNewOrderEmail = require('../utils/emails/newOrder')
@@ -44,7 +45,7 @@ function createNewOrderId(shop) {
  * @param {object || null} event: blockchain OfferCreated event or null in case of an off-chain offer.
  * @param {boolean} skipEmail: If true, do not send email to the buyer/seller.
  * @param {boolean} skipDiscord: If true, do not send Discord notification to the system administrator.
- * @returns {Promise<void>}
+ * @returns {Promise<models.Order>}
  */
 async function processNewOrder({
   network,
@@ -69,11 +70,9 @@ async function processNewOrder({
   log.info(`Fetching encrypted offer data with hash ${encryptedHash}`)
   const data = await decryptShopOfferData(shop, encryptedHash)
 
-  // Decorate the data with a few blockchain specific fields before storing it in the DB.
+  // Decorate the data with additional blockchain specific info before storing it in the DB.
   if (event) {
-    data.offerId = offerId
     data.tx = event.transactionHash
-    data.eventName = event.eventName
   }
 
   // Extract the optional paymentCode data from the offer.
@@ -86,22 +85,23 @@ async function processNewOrder({
     shopId: shop.id,
     orderId,
     data,
-    statusStr: 'OfferCreated', // TODO: replace status and statusStr with an enum.
+    status: OrderStatuses.Paid,
     ipfsHash: offerIpfsHash,
     encryptedIpfsHash: encryptedHash,
     paymentCode,
-    value: data.amount,
+    value: data.total,
     currency: data.currency
   }
   if (event) {
     // Offer was created on-chain. Record blockchain specific data from the event.
-    orderObj.statusStr = event.eventName
+    orderObj.offerId = offerId
+    orderObj.offerStatus = event.eventName
     orderObj.createdAt = new Date(event.timestamp * 1000)
     orderObj.createdBlock = event.blockNumber
     orderObj.updatedBlock = event.blockNumber
   } else {
     // Offer was created off-chain.
-    orderObj.CreatedAt = new Date()
+    orderObj.createdAt = new Date()
   }
   if (data.referrer) {
     orderObj.referrer = util.toChecksumAddress(data.referrer)
@@ -109,8 +109,8 @@ async function processNewOrder({
   }
 
   // Validate any discount applied to the order.
-  // TODO: consider updating the status of the order to "Invalid" in case
-  //       the discount failed validation.
+  // TODO: in case the discount fails validation, consider rejecting the order
+  //       and setting its status to "Invalid".
   const { valid, error } = await validateDiscountOnOrder(orderObj, {
     markIfValid: true
   })
@@ -151,6 +151,8 @@ async function processNewOrder({
       Sentry.captureException(e)
     }
   }
+
+  return order
 }
 
 module.exports = {
