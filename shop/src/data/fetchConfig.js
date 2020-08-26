@@ -50,7 +50,10 @@ export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
         return false
       } else if (m.id === 'uphold' && !config.upholdClient) {
         return false
+      } else if (m.id === 'crypto' && config.disableCryptoPayments) {
+        return false
       }
+
       return true
     })
 

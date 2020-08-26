@@ -32,7 +32,12 @@ const PaymentSettings = () => {
   const [state, setState] = useSetState()
 
   useEffect(() => {
-    const { listingId, currency, offlinePaymentMethods } = config
+    const {
+      listingId,
+      currency,
+      offlinePaymentMethods,
+      disableCryptoPayments
+    } = config
     const acceptedTokens = config.acceptedTokens || []
     const configCustomTokens = config.customTokens || []
     const customTokens = uniqBy(
@@ -44,7 +49,8 @@ const PaymentSettings = () => {
       customTokens,
       listingId,
       currency: currency || 'USD',
-      offlinePaymentMethods
+      offlinePaymentMethods,
+      disableCryptoPayments
     })
   }, [config.activeShop])
 
