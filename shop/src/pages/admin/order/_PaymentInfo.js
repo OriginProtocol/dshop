@@ -2,6 +2,7 @@ import React from 'react'
 import { useRouteMatch } from 'react-router-dom'
 import get from 'lodash/get'
 import fbt from 'fbt'
+import dayjs from 'dayjs'
 
 import OfferStates from 'data/OfferStates'
 
@@ -68,8 +69,10 @@ const PaymentInfo = ({ order }) => {
   const paymentMethod = get(cart, 'paymentMethod', {})
   const orderState = get(order, 'statusStr')
   const refundError = !!get(order, 'data.refundError')
+  const transactions = get(order, 'transactions', [])
+  const offchainPayment = transactions.find((t) => t.type === 'Payment')
 
-  if (!cart || !offerId)
+  if (!cart || !offerId) {
     return (
       <div>
         <>
@@ -77,6 +80,38 @@ const PaymentInfo = ({ order }) => {
         </>
       </div>
     )
+  }
+
+  if (offchainPayment) {
+    return (
+      <div className="admin-customer-info">
+        <div>
+          <div>
+            <fbt desc="Date">Date</fbt>
+          </div>
+          <div>{dayjs(offchainPayment.createdAt).format('MMM D, h:mm A')}</div>
+        </div>
+        <div>
+          <div>
+            <fbt desc="From">From</fbt>
+          </div>
+          <div>{offchainPayment.fromAddress}</div>
+        </div>
+        <div>
+          <div>
+            <fbt desc="To">To</fbt>
+          </div>
+          <div>{offchainPayment.toAddress}</div>
+        </div>
+        <div>
+          <div>
+            <fbt desc="Hash">Hash</fbt>
+          </div>
+          <div>{offchainPayment.hash}</div>
+        </div>
+      </div>
+    )
+  }
 
   if (orderState === OfferStates.Created) {
     return (

@@ -89,10 +89,12 @@ require('react-styl')(`
     > div
       display: contents
       > div
-        padding: 1rem 0
+        padding: 1rem 1rem 1rem 0
         &:first-child
           font-weight: bold
-          padding: 1rem
+          padding-left: 1rem
+        &:nth-child(2)
+          word-break: break-all
       &:nth-child(even) > div
         background-color: #fafbfc
 `)
