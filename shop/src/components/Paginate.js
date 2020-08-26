@@ -88,28 +88,30 @@ const Paginate = ({ total, perPage, onChange, page }) => {
   }
 
   return (
-    <ul className="pagination justify-content-center">
-      <Item
-        disabled={!hasPrevious}
-        onClick={page > 1 ? () => handlePage(page - 1) : null}
-        children={<>&laquo;</>}
-      />
-      {prefix}
-      {range(start, end).map((i) => (
+    <div className="d-flex justify-content-center">
+      <ul className="pagination">
         <Item
-          key={i}
-          active={page === i}
-          onClick={page !== i ? () => handlePage(i) : null}
-          children={i}
+          disabled={!hasPrevious}
+          onClick={page > 1 ? () => handlePage(page - 1) : null}
+          children={<>&laquo;</>}
         />
-      ))}
-      {postfix}
-      <Item
-        disabled={!hasNext}
-        onClick={hasNext ? () => handlePage(page + 1) : null}
-        children={<>&raquo;</>}
-      />
-    </ul>
+        {prefix}
+        {range(start, end).map((i) => (
+          <Item
+            key={i}
+            active={page === i}
+            onClick={page !== i ? () => handlePage(i) : null}
+            children={i}
+          />
+        ))}
+        {postfix}
+        <Item
+          disabled={!hasNext}
+          onClick={hasNext ? () => handlePage(page + 1) : null}
+          children={<>&raquo;</>}
+        />
+      </ul>
+    </div>
   )
 }
 
@@ -117,7 +119,7 @@ export default Paginate
 
 require('react-styl')(`
   .pagination
-    display: grid
+    display: inline-grid
     grid-auto-flow: column
     grid-auto-columns: 1fr
     text-align: center

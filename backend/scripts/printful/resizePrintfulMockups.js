@@ -6,11 +6,12 @@ const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('utils.printfu.resizePrintfulMockups')
 
-async function resizePrintfulMockups({ OutputDir }) {
+async function resizePrintfulMockups({ OutputDir, force }) {
   const filesRaw = fs.readFileSync(`${OutputDir}/printful-images.json`)
   const files = JSON.parse(filesRaw)
   const fileIds = uniq(files.filter((f) => !f.skip).map((f) => f.id))
-  log.info(`Resizing mockups for ${fileIds.length} products...`)
+  const forceMsg = force ? ' (force)' : ''
+  log.info(`Resizing mockups for ${fileIds.length} products${forceMsg}...`)
 
   for (const fileId of fileIds) {
     const inputDir = `${OutputDir}/data/${fileId}/orig`
@@ -20,7 +21,7 @@ async function resizePrintfulMockups({ OutputDir }) {
     const images = fs.readdirSync(inputDir)
     for (const image of images) {
       const filename = `${outputFileDir}/${image}`
-      if (!fs.existsSync(filename)) {
+      if (!fs.existsSync(filename) || force) {
         const resizedFile = await sharp(`${inputDir}/${image}`)
           .resize(520)
           .toBuffer()

@@ -21,7 +21,14 @@ const processor = async (job) => {
 
   const startTime = Date.now()
 
-  const { OutputDir, apiKey, shopId, smartFetch, forceRefetchIds } = job.data
+  const {
+    OutputDir,
+    apiKey,
+    shopId,
+    smartFetch,
+    forceRefetchIds,
+    refreshImages
+  } = job.data
 
   let taskStartTime = Date.now()
   const updatedIds = await downloadProductData({
@@ -45,14 +52,14 @@ const processor = async (job) => {
   )
   taskStartTime = Date.now()
 
-  await downloadPrintfulMockups({ OutputDir })
+  await downloadPrintfulMockups({ OutputDir, force: refreshImages })
   log(
     75,
     `Downloaded mockups, Time Taken: ${(Date.now() - taskStartTime) / 1000}s`
   )
   taskStartTime = Date.now()
 
-  await resizePrintfulMockups({ OutputDir })
+  await resizePrintfulMockups({ OutputDir, force: refreshImages })
   log(90, `Resize mockups, Time Taken: ${(Date.now() - taskStartTime) / 1000}s`)
 
   if (shopId) {
