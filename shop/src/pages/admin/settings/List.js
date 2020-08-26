@@ -40,7 +40,7 @@ const List = () => {
               Manage your shop’s online appearance
             </fbt>
           }
-          link="/admin/settings/general"
+          link="/admin/settings/appearance"
         />
         <SettingsListItem
           icon={<Icons.Card />}
