@@ -91,6 +91,8 @@ function initialState() {
     paypalEnvironment: 'prod',
     notificationEmail: '',
     notificationEmailDisplayName: '',
+    awsAccessKeyId: '',
+    awsSecretAccessKey: '',
     backendUrl,
     ...Defaults[networkId]
   }
@@ -362,6 +364,18 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           <label>GCP Service Account Credentials</label>
           <textarea {...input('gcpCredentials')}></textarea>
           {Feedback('gcpCredentials')}
+        </div>
+      </div>
+      <div className="form-row">
+        <div className="form-group col-md-6">
+          <label>AWS Access Key ID</label>
+          <input {...input('awsAccessKeyId')} />
+          {Feedback('awsAccessKeyId')}
+        </div>
+        <div className="form-group col-md-6">
+          <label>AWS Secret Access Key</label>
+          <PasswordField field="awsSecretAccessKey" input={input} />
+          {Feedback('awsSecretAccessKey')}
         </div>
       </div>
       <div className="form-row">

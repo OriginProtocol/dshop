@@ -4691,24 +4691,15 @@ const CountriesDefaultInfo = {
   },
   format: {
     edit: {
-      '0':
-        '{firstName}{lastName}_{company}_{address1}_{address2}_{city}_{country}{zip}_{phone}',
-      '1':
-        '{firstName}{lastName}_{company}_{address1}_{address2}_{city}_{country}_{phone}',
-      '2':
-        '{firstName}{lastName}_{company}_{address1}_{address2}_{city}_{country}{province}{zip}_{phone}',
-      '3':
-        '{firstName}{lastName}_{company}_{address1}_{address2}_{city}_{province}_{country}{zip}_{phone}',
-      '4':
-        '{firstName}{lastName}_{company}_{address1}_{address2}_{zip}{city}{country}_{phone}',
-      '5':
-        '{firstName}{lastName}_{company}_{address1}_{address2}_{zip}{city}_{country}_{phone}',
-      '6':
-        '{firstName}{lastName}_{company}_{address1}_{address2}_{city}_{country}{province}_{phone}',
-      '7':
-        '{lastName}{firstName}_{company}_{country}{zip}_{province}_{city}_{address1}_{address2}_{phone}',
-      '8':
-        '{company}_{lastName}{firstName}_{zip}_{country}_{province}{city}_{address1}_{address2}_{phone}'
+      0: '{firstName}{lastName}_{company}_{address1}_{address2}_{city}_{country}{zip}_{phone}',
+      1: '{firstName}{lastName}_{company}_{address1}_{address2}_{city}_{country}_{phone}',
+      2: '{firstName}{lastName}_{company}_{address1}_{address2}_{city}_{country}{province}{zip}_{phone}',
+      3: '{firstName}{lastName}_{company}_{address1}_{address2}_{city}_{province}_{country}{zip}_{phone}',
+      4: '{firstName}{lastName}_{company}_{address1}_{address2}_{zip}{city}{country}_{phone}',
+      5: '{firstName}{lastName}_{company}_{address1}_{address2}_{zip}{city}_{country}_{phone}',
+      6: '{firstName}{lastName}_{company}_{address1}_{address2}_{city}_{country}{province}_{phone}',
+      7: '{lastName}{firstName}_{company}_{country}{zip}_{province}_{city}_{address1}_{address2}_{phone}',
+      8: '{company}_{lastName}{firstName}_{zip}_{country}_{province}{city}_{address1}_{address2}_{phone}'
     }
   }
 }

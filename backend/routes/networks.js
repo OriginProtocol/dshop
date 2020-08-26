@@ -25,7 +25,9 @@ function pickConfig(body) {
     'paypalEnvironment',
     'notificationEmail',
     'notificationEmailDisplayName',
-    'uiCdn'
+    'uiCdn',
+    'awsAccessKeyId',
+    'awsSecretAccessKey'
   ])
 }
 

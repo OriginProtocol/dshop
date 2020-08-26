@@ -102,10 +102,6 @@ export default OfflinePayment
 
 require('react-styl')(`
   .manual-payment
-    .desc
-      color: #8293a4
-      font-size: 0.875rem
-      max-width: 500px
     .manual-payment-checkboxes
       display: flex
 

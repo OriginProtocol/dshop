@@ -799,13 +799,15 @@ module.exports = function (router) {
         'paypalClientId',
         'offlinePaymentMethods',
         'supportEmail',
-        'upholdClient'
+        'upholdClient',
+        'shippingApi'
       )
       const jsonNetConfig = pick(
         req.body,
         'acceptedTokens',
         'customTokens',
-        'listingId'
+        'listingId',
+        'disableCryptoPayments'
       )
       const shopId = req.shop.id
       log.info(`Shop ${shopId} - Saving config`)
@@ -1146,7 +1148,8 @@ module.exports = function (router) {
 
       return res.json({ success: true, hash, domain, gateway: network.ipfs })
     } catch (e) {
-      log.error(`Shop ${shop.id} deploy failed: ${e}`)
+      log.error(`Shop ${shop.id} deploy failed`)
+      log.error(e)
       return res.json({ success: false, reason: e.message })
     }
   })
@@ -1193,6 +1196,8 @@ module.exports = function (router) {
         dnsProvider = 'gcp'
       } else if (networkConfig.cloudflareApiKey) {
         dnsProvider = 'cloudflare'
+      } else if (networkConfig.awsAccessKeyId) {
+        dnsProvider = 'aws'
       }
 
       try {
@@ -1222,7 +1227,8 @@ module.exports = function (router) {
 
         return res.json({ success: true, hash, domain, gateway: network.ipfs })
       } catch (e) {
-        log.error(`Shop ${req.shop.id} initial deploy failed: ${e}`)
+        log.error(`Shop ${req.shop.id} initial deploy failed`)
+        log.error(e)
         return res.json({ success: false, reason: e.message })
       }
     }

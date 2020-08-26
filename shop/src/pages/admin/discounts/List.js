@@ -90,7 +90,8 @@ const AdminDiscounts = () => {
                   <tr
                     key={discount.id}
                     onClick={(e) => {
-                      if (e.target.matches('.action-icon, .action-icon *')) {
+                      if (e.target.matches('.actions *')) {
+                        e.stopPropagation()
                         return
                       }
                       history.push(`/admin/discounts/${discount.id}`)

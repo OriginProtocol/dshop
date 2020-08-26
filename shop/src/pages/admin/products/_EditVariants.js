@@ -74,9 +74,15 @@ const EditVariants = ({
                       onChange={(e) => {
                         const updatedVariants = [...variants]
                         updatedVariants[index].price = e.target.value
+                        updatedVariants[index].priceError = undefined
                         onChange(updatedVariants)
                       }}
                     />
+                    {!variant.priceError ? null : (
+                      <div className="invalid-feedback d-block">
+                        {variant.priceError}
+                      </div>
+                    )}
                   </div>
                 </div>
               </td>
