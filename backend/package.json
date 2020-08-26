@@ -42,7 +42,7 @@
     "dotenv": "^8.2.0",
     "envkey": "^1.2.8",
     "ethereumjs-util": "^7.0.2",
-    "ethers": "5.0.8",
+    "ethers": "5.0.9",
     "express": "^4.17.1",
     "express-promise-router": "4.0.1",
     "express-session": "^1.17.1",
@@ -65,7 +65,7 @@
     "sequelize": "^5.21.10",
     "sequelize-cli": "^5.5.1",
     "serve-static": "^1.14.1",
-    "sharp": "0.25.4",
+    "sharp": "0.26.0",
     "sqlite3": "^5.0.0",
     "stripe": "^8.69.0",
     "write-file-atomic": "^3.0.3",
@@ -75,8 +75,8 @@
     "chai": "4.2.0",
     "chai-string": "1.5.0",
     "eslint": "7.7.0",
-    "mocha": "8.1.1",
-    "prettier": "2.1.0"
+    "mocha": "8.1.2",
+    "prettier": "2.1.1"
   },
   "eslintIgnore": [
     "dist",
