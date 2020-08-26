@@ -24,4 +24,4 @@ Congratulations! You have successfully set up the Dshop deployer which allows yo
 
 For details about creating and launching a Dshop, follow the steps described in this video: 
 
-[![Get started with Dshop - launch your store in minutes](http://img.youtube.com/vi/UtajmQQ1Q-A/0.jpg)](http://www.youtube.com/watch?v=UtajmQQ1Q-A) "Get started with Dshop - launch your store in minutes"]
+[![Get started with Dshop - launch your store in minutes](http://img.youtube.com/vi/UtajmQQ1Q-A/0.jpg)](http://www.youtube.com/watch?v=UtajmQQ1Q-A)
