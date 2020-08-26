@@ -1,6 +1,5 @@
 import React, { useReducer, useEffect, useState } from 'react'
 import fbt from 'fbt'
-import get from 'lodash/get'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
 
@@ -38,7 +37,7 @@ const ABOUT_FILENAME = 'about.html'
 
 const AppearanceSettings = () => {
   const { config } = useConfig()
-  const [{ admin }, dispatch] = useStateValue()
+  const [, dispatch] = useStateValue()
   const { postRaw, post } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, { domain: '' })
   const input = formInput(state, (newState) =>

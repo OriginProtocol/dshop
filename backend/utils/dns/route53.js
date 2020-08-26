@@ -10,7 +10,6 @@ const { getLogger } = require('../logger')
 
 const log = getLogger('utils.dns.route53')
 
-const DEFAULT_TTL = 60 // 1 minute
 const AWS_API_VERSION = '2013-04-01'
 
 /**
