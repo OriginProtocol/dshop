@@ -1,6 +1,7 @@
 const { authSellerAndShop, authShop } = require('./_auth')
 const {
   Order,
+  Transaction,
   sequelize,
   Sequelize: { Op }
 } = require('../models')
@@ -54,9 +55,22 @@ module.exports = function (router) {
     })
   })
 
-  router.get('/orders/:orderId', authSellerAndShop, findOrder, (req, res) => {
-    res.json(req.order)
-  })
+  router.get(
+    '/orders/:orderId',
+    authSellerAndShop,
+    findOrder,
+    async (req, res) => {
+      let transactions = []
+      if (req.order.paymentCode) {
+        transactions = await Transaction.findAll({
+          where: {
+            customId: req.order.paymentCode
+          }
+        })
+      }
+      res.json({ ...req.order.dataValues, transactions })
+    }
+  )
 
   router.post(
     '/orders/:orderId/email',
