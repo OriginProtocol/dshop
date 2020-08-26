@@ -2,6 +2,7 @@ import React, { useReducer, useEffect, useState } from 'react'
 import fbt from 'fbt'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
+import get from 'lodash/get'
 
 import CKEditor from 'ckeditor4-react'
 
