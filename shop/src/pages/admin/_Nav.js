@@ -15,7 +15,7 @@ import NewShop from './_NewShop'
 import LiveChat from './_LiveChat'
 
 const Nav = ({ newShop, setNewShop, only }) => {
-  const [{ admin, adminLocation }, dispatch] = useStateValue()
+  const [{ admin }] = useStateValue()
   const location = useLocation()
   const history = useHistory()
 
