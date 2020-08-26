@@ -58,7 +58,9 @@ const AdminConsole = () => {
 
               fetch(`${config.backend}/orders/create`, {
                 headers: {
-                  authorization: `bearer ${config.backendAuthToken}`,
+                  authorization: `bearer ${encodeURIComponent(
+                    config.backendAuthToken
+                  )}`,
                   'content-type': 'application/json'
                 },
                 credentials: 'include',
@@ -97,7 +99,9 @@ const AdminConsole = () => {
 
             fetch(`${config.backend}/orders/${orderId}/email`, {
               headers: {
-                authorization: `bearer ${config.backendAuthToken}`,
+                authorization: `bearer ${encodeURIComponent(
+                  config.backendAuthToken
+                )}`,
                 'content-type': 'application/json'
               },
               credentials: 'include',
@@ -207,7 +211,9 @@ const AdminConsole = () => {
             setPrintfulError('')
             fetch(`${config.backend}/shop/sync-printful`, {
               headers: {
-                authorization: `bearer ${config.backendAuthToken}`,
+                authorization: `bearer ${encodeURIComponent(
+                  config.backendAuthToken
+                )}`,
                 'content-type': 'application/json'
               },
               credentials: 'include',

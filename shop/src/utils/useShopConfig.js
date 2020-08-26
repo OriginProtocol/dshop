@@ -8,7 +8,7 @@ const getShopConfig = memoize(
   async function fetchShopConfig(backend, authToken) {
     const result = await fetch(`${backend}/config`, {
       credentials: 'include',
-      headers: { authorization: `bearer ${authToken}` }
+      headers: { authorization: `bearer ${encodeURIComponent(authToken)}` }
     }).then((raw) => raw.json())
 
     return result.config

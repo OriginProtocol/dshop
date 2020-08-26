@@ -1,18 +1,9 @@
 import React, { useState } from 'react'
 
-// import useConfig from 'utils/useConfig'
-// import useWallet from 'utils/useWallet'
-import useOrigin from 'utils/useOrigin'
-import { createListing, waitForCreateListing } from 'utils/listing'
-import useBackendApi from 'utils/useBackendApi'
-
-import Web3Transaction from 'components/Web3Transaction'
+import CreateListingTx from './_CreateListingTx'
 
 const CreateListing = ({ className, children, onCreated }) => {
-  const { marketplace } = useOrigin()
   const [submit, setSubmit] = useState()
-  const { post } = useBackendApi({ authToken: true })
-
   return (
     <>
       <button
@@ -21,23 +12,9 @@ const CreateListing = ({ className, children, onCreated }) => {
         onClick={() => setSubmit(true)}
         children={children}
       />
-      <Web3Transaction
-        shouldSubmit={submit}
-        dependencies={[marketplace]}
-        awaitTx={waitForCreateListing}
-        execTx={({ config, signer }) => {
-          return new Promise((resolve) => {
-            signer.getAddress().then((walletAddressRaw) => {
-              post('/shop/wallet', {
-                body: JSON.stringify({ walletAddressRaw }),
-                suppressError: true
-              }).then(() => {
-                resolve(createListing({ marketplace, config, signer }))
-              })
-            })
-          })
-        }}
-        onSuccess={onCreated}
+      <CreateListingTx
+        submit={submit}
+        onCreated={onCreated}
         onReset={() => setSubmit(false)}
       />
     </>

@@ -8,7 +8,7 @@ export default [
   // ['id_ID', 'Indonesian'],
   // ['it_IT', 'Italiano'],
   // ['ja_JP', '日本語'],
-  // ['ko_KR', '한국어'],
+  ['ko_KR', '한국어'],
   // ['nl_NL', 'Nederlands'],
   // ['pt_PT', 'Português'],
   // ['ro_RO', 'limba română'],

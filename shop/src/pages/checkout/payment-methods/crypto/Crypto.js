@@ -52,7 +52,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
   const paymentMethods = get(config, 'paymentMethods', [])
   const cryptoSelected = get(cart, 'paymentMethod.id') === 'crypto'
   const cryptoPaymentMethod = paymentMethods.find((o) => o.id === 'crypto')
-  if (!cryptoPaymentMethod) {
+  if (get(config, 'disableCryptoPayments', false) || !cryptoPaymentMethod) {
     return null
   }
 

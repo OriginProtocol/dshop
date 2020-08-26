@@ -148,7 +148,7 @@ const AdminSettings = ({ shop }) => {
           const token = shop ? shop.authToken : config.backendAuthToken
           const raw = await fetch(`${config.backend}/shop/config`, {
             headers: {
-              authorization: `bearer ${token}`,
+              authorization: `bearer ${encodeURIComponent(token)}`,
               'content-type': 'application/json'
             },
             credentials: 'include',

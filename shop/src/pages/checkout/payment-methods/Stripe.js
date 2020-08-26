@@ -107,7 +107,7 @@ const PayWithStripe = injectStripe(
       fetch(`${config.backend}/pay`, {
         headers: {
           'content-type': 'application/json',
-          authorization: `bearer ${config.backendAuthToken}`
+          authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
         },
         credentials: 'include',
         method: 'POST',

@@ -1,10 +1,47 @@
 const fs = require('fs')
 const sortBy = require('lodash/sortBy')
 const get = require('lodash/get')
+const kebabCase = require('lodash/kebabCase')
 
 const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('utils.printful.writeProductData')
+
+/**
+ * Appends a productId to a collection.
+ * And creates collection if it doesn't exist
+ *
+ * @param {String|Array<String>} productIds
+ * @param {String} collectionName
+ * @param {Array<Object>} allCollections Contents of collections.json
+ */
+const addIdToCollection = (productIds, collectionName, allCollections) => {
+  const out = [...allCollections]
+
+  const cId = kebabCase(collectionName)
+  let existingIndex = out.findIndex((c) => c.id === cId)
+  let existingCollection = out[existingIndex]
+
+  if (existingIndex < 0) {
+    existingIndex = out.length
+    existingCollection = {
+      id: cId,
+      title: collectionName,
+      products: []
+    }
+  }
+
+  existingCollection.products = Array.from(
+    new Set([
+      ...existingCollection.products,
+      ...(Array.isArray(productIds) ? productIds : [productIds])
+    ])
+  )
+
+  out[existingIndex] = existingCollection
+
+  return out
+}
 
 /**
  *
@@ -36,6 +73,8 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
   const downloadImages = []
   const allImages = {}
   const printfulIds = {}
+
+  const productCollectionMap = new Map()
 
   for (const row of products) {
     const shouldSkipUpdate = !updatedIds ? false : !updatedIds.includes(row.id)
@@ -200,6 +239,8 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
       image: out.image
     })
 
+    productCollectionMap.set(out.id, product.product.type_name)
+
     if (!shouldSkipUpdate) {
       fs.mkdirSync(`${OutputDir}/data/${handle}`, { recursive: true })
       fs.writeFileSync(
@@ -237,6 +278,7 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
     JSON.stringify(printfulIds, null, 2)
   )
 
+  log.debug('Updating collections.json...')
   let collections = []
   const collectionsPath = `${OutputDir}/data/collections.json`
   try {
@@ -248,22 +290,22 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
       productsInCollection = [...productsInCollection, ...c.products]
       return { ...c, products }
     })
-    if (productsInCollection.length) {
-      const newProductIds = productIds.filter(
-        (p) => productsInCollection.indexOf(p) < 0
-      )
-      const other = collections.find((c) => c.id === 'other')
-      if (other) {
-        other.products = [...other.products, ...newProductIds]
-      } else if (newProductIds.length) {
-        collections.push({
-          id: 'other',
-          title: 'Other',
-          products: newProductIds
-        })
+
+    const newProductIds = productIds.filter(
+      (p) => productsInCollection.indexOf(p) < 0
+    )
+
+    for (const pId of newProductIds) {
+      let collectionName = productCollectionMap.get(pId)
+      if (!collectionName) {
+        // Add to 'Other' collection, if there is no type set
+        collectionName = 'Other'
       }
+
+      collections = addIdToCollection(pId, collectionName, collections)
     }
   } catch (e) {
+    log.error('Failed to write collection while syncing printful products', e)
     collections = [
       {
         id: 'all',
