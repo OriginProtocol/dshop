@@ -82,7 +82,7 @@ const AdminProducts = () => {
       <Link
         to="/admin/products/new"
         className="btn btn-primary"
-        children="Add Product"
+        children={<fbt desc="admin.products.addProduct">Add Product</fbt>}
       />
     </div>
   )
@@ -92,7 +92,7 @@ const AdminProducts = () => {
       className={`admin-products-page${hasNoProducts ? ' no-products' : ''}`}
     >
       <h3 className="admin-title">
-        Products
+        <fbt desc="Products">Products</fbt>
         {hasNoProducts ? null : (
           <>
             <span className="ml-2">({sortedProducts.length})</span>
@@ -108,13 +108,15 @@ const AdminProducts = () => {
           <thead>
             <tr>
               <th onClick={sortByColumnCallback('title')}>
-                Name {getSortIcon('title')}
+                <fbt desc="Name">Name</fbt> {getSortIcon('title')}
               </th>
               <th onClick={sortByColumnCallback('title')}></th>
               <th onClick={sortByColumnCallback('price')}>
-                Price {getSortIcon('price')}
+                <fbt desc="Price">Price</fbt> {getSortIcon('price')}
               </th>
-              <th>Collections</th>
+              <th>
+                <fbt desc="Collections">Collections</fbt>
+              </th>
               <th></th>
             </tr>
           </thead>
@@ -123,7 +125,8 @@ const AdminProducts = () => {
               <tr
                 key={product.id}
                 onClick={(e) => {
-                  if (e.target.matches('.action-icon, .action-icon *')) {
+                  if (e.target.matches('.actions *')) {
+                    e.stopPropagation()
                     return
                   }
                   history.push({

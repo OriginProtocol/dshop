@@ -799,13 +799,15 @@ module.exports = function (router) {
         'paypalClientId',
         'offlinePaymentMethods',
         'supportEmail',
-        'upholdClient'
+        'upholdClient',
+        'shippingApi'
       )
       const jsonNetConfig = pick(
         req.body,
         'acceptedTokens',
         'customTokens',
-        'listingId'
+        'listingId',
+        'disableCryptoPayments'
       )
       const shopId = req.shop.id
       log.info(`Shop ${shopId} - Saving config`)

@@ -27,7 +27,7 @@ const List = () => {
           title={<fbt desc="General">General</fbt>}
           desc={
             <fbt desc="admin.Settings.generalDesc">
-              Choose a domain name and support email address
+              Update important details for your shop
             </fbt>
           }
           link="/admin/settings/general"
@@ -37,17 +37,17 @@ const List = () => {
           title={<fbt desc="Appearance">Appearance</fbt>}
           desc={
             <fbt desc="admin.Settings.appearanceDesc">
-              Change the name and logo of your store
+              Manage your shop’s online appearance
             </fbt>
           }
-          link="/admin/settings/general"
+          link="/admin/settings/appearance"
         />
         <SettingsListItem
           icon={<Icons.Card />}
           title={<fbt desc="Payments">Payments</fbt>}
           desc={
             <fbt desc="admin.Settings.paymentsDesc">
-              Select payment options, from crypto currency to credit cards
+              Enable and manage payment methods
             </fbt>
           }
           link="/admin/settings/payments"
@@ -57,7 +57,7 @@ const List = () => {
           title={<fbt desc="Apps">Apps</fbt>}
           desc={
             <fbt desc="admin.Settings.appsDesc">
-              Integrate third party applications into your store
+              Use apps to make your store more powerful
             </fbt>
           }
           link="/admin/settings/apps"
@@ -67,7 +67,7 @@ const List = () => {
           title={<fbt desc="Shipping">Shipping</fbt>}
           desc={
             <fbt desc="admin.Settings.shippingDesc">
-              Specify where your products ship and how much it costs
+              Manage how you ship orders to customers
             </fbt>
           }
           link="/admin/settings/shipping"
@@ -77,7 +77,7 @@ const List = () => {
           title={<fbt desc="Checkout">Checkout</fbt>}
           desc={
             <fbt desc="admin.Settings.shippingDesc">
-              Customize your checkout with notices or reminders
+              Customise your online checkout process
             </fbt>
           }
           link="/admin/settings/checkout"
@@ -87,7 +87,7 @@ const List = () => {
           title={<fbt desc="Users">Users</fbt>}
           desc={
             <fbt desc="admin.Settings.usersDesc">
-              Grant team members access to your store
+              Add additional staff for your shop
             </fbt>
           }
           link="/admin/settings/users"
@@ -97,7 +97,7 @@ const List = () => {
           title={<fbt desc="Publish">Publish</fbt>}
           desc={
             <fbt desc="admin.Settings.publishDesc">
-              Publish changes to your store live to the web
+              Publish your shop to make it visible to public
             </fbt>
           }
           link="/admin/settings/publish"
@@ -107,7 +107,7 @@ const List = () => {
           title={<fbt desc="Advanced">Advanced</fbt>}
           desc={
             <fbt desc="admin.Settings.advancedDesc">
-              Advanced settings such as SEO and CSS.
+              View advanced settings such as custom CSS and error reporting
             </fbt>
           }
           link="/admin/settings/advanced"
