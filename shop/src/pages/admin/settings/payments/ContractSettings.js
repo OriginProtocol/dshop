@@ -42,24 +42,6 @@ const ContractSettings = ({ state, setState }) => {
         </fbt>
       </div>
 
-      <label>
-        <fbt desc="admin.settings.payments.useEscrowContract">
-          Use Escrow Contract?
-        </fbt>
-      </label>
-      <div className="form-group d-flex align-items-center">
-        <Toggle
-          className="sm"
-          value={state.useEscrow ? true : false}
-          onChange={(useEscrow) => setState({ hasChanges: true, useEscrow })}
-        />
-        <div className="ml-2">
-          {state.useEscrow
-            ? fbt('Escrow enabled', 'admin.settings.payments.escrowEnabled')
-            : fbt('Escrow disabled', 'admin.settings.payments.escrowDisabled')}
-        </div>
-      </div>
-
       <div className="form-group mt-2">
         <div className="form-check">
           <label className="form-check-label">
@@ -130,16 +112,42 @@ const ContractSettings = ({ state, setState }) => {
               </div>
             ))}
           </div>
+          <div>
+            <CustomTokenModal
+              onNewTokenAdded={(token) =>
+                setState({
+                  customTokens: [...customTokens, token],
+                  acceptedTokens: [...acceptedTokens, token],
+                  hasChanges: true
+                })
+              }
+            />
+          </div>
 
-          <CustomTokenModal
-            onNewTokenAdded={(token) =>
-              setState({
-                customTokens: [...customTokens, token],
-                acceptedTokens: [...acceptedTokens, token],
-                hasChanges: true
-              })
-            }
-          />
+          <label className="mt-4">
+            <fbt desc="Escrow">Escrow</fbt>
+          </label>
+          <div className="desc">
+            <fbt desc="admin.settings.payments.useEscrowDesc">
+              Crypto payments will be held in escrow on Origin Marketplace
+              contract until buyer confirms receipt.
+            </fbt>
+          </div>
+          <div className="form-group d-flex align-items-center mt-2">
+            <Toggle
+              className="sm"
+              value={state.useEscrow ? true : false}
+              onChange={(useEscrow) =>
+                setState({ hasChanges: true, useEscrow })
+              }
+            >
+              <div className="ml-2">
+                <fbt desc="admin.settings.payments.useEscrow">
+                  Use escrow contract
+                </fbt>
+              </div>
+            </Toggle>
+          </div>
         </>
       )}
 
