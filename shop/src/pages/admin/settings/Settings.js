@@ -11,7 +11,7 @@ import Deployments from './deployments/List'
 import Shipping from './shipping/Edit'
 import Advanced from './Advanced'
 import Checkout from './Checkout'
-import Appearance from './Appearance/Edit'
+import Appearance from './appearance/Edit'
 import List from './List'
 
 const AdminSettings = () => (
