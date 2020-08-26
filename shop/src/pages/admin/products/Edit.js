@@ -50,12 +50,6 @@ function validate(state, { hasOptions }) {
     )
   }
 
-  if (!state.price || state.price < 0) {
-    newState.priceError = fbt('Price is required', 'admin.products.priceError')
-  } else if (!String(state.price).match(/^[0-9]+(\.[0-9]{1,2})?$/)) {
-    newState.priceError = fbt('Invalid price', 'admin.products.priceValError')
-  }
-
   if (hasOptions) {
     newState.variants = state.variants.map((variant) => {
       const out = removeErrorKeys(variant)
@@ -73,12 +67,29 @@ function validate(state, { hasOptions }) {
         )
       }
 
+      if (variant.available) {
+        if (!variant.price || variant.price < 0) {
+          out.priceError = fbt('Price is required', 'admin.products.priceError')
+        } else if (!String(variant.price).match(/^[0-9]+(\.[0-9]{1,2})?$/)) {
+          out.priceError = fbt('Invalid price', 'admin.products.priceValError')
+        }
+      }
+
       return out
     })
 
     validVariants = newState.variants.every((v) =>
       Object.keys(v).every((f) => f.indexOf('Error') < 0)
     )
+  } else {
+    if (!state.price || state.price < 0) {
+      newState.priceError = fbt(
+        'Price is required',
+        'admin.products.priceError'
+      )
+    } else if (!String(state.price).match(/^[0-9]+(\.[0-9]{1,2})?$/)) {
+      newState.priceError = fbt('Invalid price', 'admin.products.priceValError')
+    }
   }
 
   // if (!state.dispatchOrigin) {
@@ -222,6 +233,8 @@ const EditProduct = () => {
 
     // Regenerate variants
     newFormState.variants = generateVariants(newFormState)
+
+    console.log(newFormState)
 
     setMedia(mappedImages)
     setFormState(newFormState)
