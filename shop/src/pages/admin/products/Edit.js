@@ -234,8 +234,6 @@ const EditProduct = () => {
     // Regenerate variants
     newFormState.variants = generateVariants(newFormState)
 
-    console.log(newFormState)
-
     setMedia(mappedImages)
     setFormState(newFormState)
     setHasOptions(!!product.options && product.options.length > 0)

@@ -79,10 +79,7 @@ const EditVariants = ({
                       }}
                     />
                     {!variant.priceError ? null : (
-                      <div
-                        className="invalid-feedback"
-                        style={{ display: 'block' }}
-                      >
+                      <div className="invalid-feedback d-block">
                         {variant.priceError}
                       </div>
                     )}
