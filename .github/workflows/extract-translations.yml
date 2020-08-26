@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  build:
+  extract-translations:
     runs-on: ubuntu-latest
 
     steps:
