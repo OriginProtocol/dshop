@@ -46,16 +46,16 @@ const ContractSettings = ({ state, setState }) => {
             <input
               type="checkbox"
               className="form-check-input"
-              checked={state.disableCryptoPayments}
+              checked={!state.disableCryptoPayments}
               onChange={(e) => {
                 setState({
-                  disableCryptoPayments: e.target.checked,
+                  disableCryptoPayments: !e.target.checked,
                   hasChanges: true
                 })
               }}
             />
-            <fbt desc="admin.settings.payments.disableCryptoPayments">
-              Disable cryptocurrency payments
+            <fbt desc="admin.settings.payments.enableCryptoPayments">
+              Enable cryptocurrency payments
             </fbt>
           </label>
         </div>
