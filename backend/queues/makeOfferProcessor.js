@@ -301,9 +301,9 @@ async function processor(job) {
       paymentCode
     }
     if (networkConfig.useMarketplaceContract) {
-      result = await _makeOffchainOffer(data)
-    } else {
       result = await _makeOnchainOffer(data)
+    } else {
+      result = await _makeOffchainOffer(data)
     }
 
     queueLog(job, 100, 'Finished')

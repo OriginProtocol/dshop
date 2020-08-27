@@ -186,7 +186,6 @@ async function getOrCreateTestNetwork(configOverride = {}) {
       ...configOverride
     })
   }
-  console.log("NETWORK CONFIG=", networkObj)
   // Note: For unclear reasons, the migration file 20200317190719-addIpfs.js
   // inserts a row for network 999. Therefore the update case below...
   let network = await Network.findOne({
