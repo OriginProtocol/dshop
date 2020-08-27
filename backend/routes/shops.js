@@ -809,7 +809,8 @@ module.exports = function (router) {
         'acceptedTokens',
         'customTokens',
         'listingId',
-        'disableCryptoPayments'
+        'disableCryptoPayments',
+        'walletAddress'
       )
       const shopId = req.shop.id
       log.info(`Shop ${shopId} - Saving config`)
@@ -885,8 +886,8 @@ module.exports = function (router) {
         }
         req.shop.hostname = hostname
 
-        // Update the public and dataUrl in the shop's config to
-        // reflect a possible change to the hostname.
+        // Unless explicity set by the UI, update the public and dataUrl in the
+        // shop's config to reflect a possible change to the hostname.
         if (!req.body.publicUrl) {
           additionalOpts.publicUrl = getShopPublicUrl(req.shop, netConfig)
         }

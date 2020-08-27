@@ -131,6 +131,19 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
     return label
   }
 
+  if (!config.walletAddress) {
+    return (
+      <>
+        {label}
+        <div style={{ marginLeft: '2.25rem' }} className="mb-3">
+          <fbt desc="checkout.payment.crypto.unavailable">
+            Sorry, crypto payments are unavailable.
+          </fbt>
+        </div>
+      </>
+    )
+  }
+
   if (!wallet.ready) {
     return <WalletNotReady {...{ wallet, label, config }} />
   }

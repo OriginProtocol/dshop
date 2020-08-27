@@ -2,16 +2,17 @@ import React from 'react'
 import uniqBy from 'lodash/uniqBy'
 import fbt from 'fbt'
 
-import { formInput } from 'utils/formHelpers'
+import { formInput, formFeedback } from 'utils/formHelpers'
 import DefaultTokens from 'data/defaultTokens'
 import ConfirmationModal from 'components/ConfirmationModal'
-import Toggle from 'components/Toggle'
+// import Toggle from 'components/Toggle'
 import CustomTokenModal from './_CustomTokenModal'
 
 const ContractSettings = ({ state, setState }) => {
   const input = formInput(state, (newState) =>
     setState({ ...newState, hasChanges: true })
   )
+  const Feedback = formFeedback(state)
 
   const acceptedTokens = state.acceptedTokens || []
   const customTokens = state.customTokens || []
@@ -65,6 +66,19 @@ const ContractSettings = ({ state, setState }) => {
 
       {state.disableCryptoPayments ? null : (
         <>
+          <div className="form-group">
+            <label>
+              <fbt desc="Wallet address">Ethereum wallet address</fbt>
+            </label>
+            <input {...input('walletAddress')} style={{ maxWidth: 500 }} />
+            {Feedback('walletAddress')}
+            <div className="desc">
+              <fbt desc="admin.settings.payments.walletAddressDesc">
+                Cryptocurrency payments on Ethereum will be sent directly to
+                this address
+              </fbt>
+            </div>
+          </div>
           <label>
             <fbt desc="admin.settings.payments.acceptedTokens">
               Accepted Tokens
@@ -124,7 +138,7 @@ const ContractSettings = ({ state, setState }) => {
             />
           </div>
 
-          <label className="mt-4">
+          {/* <label className="mt-4">
             <fbt desc="Escrow">Escrow</fbt>
           </label>
           <div className="desc">
@@ -147,7 +161,7 @@ const ContractSettings = ({ state, setState }) => {
                 </fbt>
               </div>
             </Toggle>
-          </div>
+          </div> */}
         </>
       )}
 

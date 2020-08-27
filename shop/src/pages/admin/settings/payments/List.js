@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
+import ethers from 'ethers'
 import fbt, { FbtParam } from 'fbt'
 import pickBy from 'lodash/pickBy'
 import uniqBy from 'lodash/uniqBy'
@@ -24,6 +25,34 @@ import CreateListing from './_CreateListing'
 
 import ProcessorsList from 'components/settings/ProcessorsList'
 
+const validate = (state) => {
+  const newState = {}
+
+  if (!state.disableCryptoPayments) {
+    if (!state.walletAddress) {
+      newState.walletAddressError = fbt(
+        'Wallet address is required',
+        'admin.settings.payments.List.walletAddressRequired'
+      )
+    } else if (!ethers.utils.isAddress(state.walletAddress)) {
+      newState.walletAddressError = fbt(
+        'Invalid wallet address',
+        'admin.settings.payments.List.invalidWalletAddressError'
+      )
+    }
+  }
+
+  const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
+
+  return {
+    valid,
+    newState: {
+      ...pickBy(state, (v, k) => !k.endsWith('Error')),
+      ...newState
+    }
+  }
+}
+
 const PaymentSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
   const [{ admin }, dispatch] = useStateValue()
@@ -35,7 +64,8 @@ const PaymentSettings = () => {
       listingId,
       currency,
       offlinePaymentMethods,
-      disableCryptoPayments
+      disableCryptoPayments,
+      walletAddress
     } = config
     const acceptedTokens = config.acceptedTokens || []
     const configCustomTokens = config.customTokens || []
@@ -50,7 +80,8 @@ const PaymentSettings = () => {
       useEscrow: config.useEscrow ? true : false,
       currency: currency || 'USD',
       offlinePaymentMethods,
-      disableCryptoPayments
+      disableCryptoPayments,
+      walletAddress
     })
   }, [config.activeShop])
 
@@ -189,6 +220,10 @@ const PaymentSettings = () => {
       onSubmit={async (e) => {
         e.preventDefault()
         if (saving) return
+
+        const { valid, newState } = validate(state)
+        setState(newState)
+        if (!valid) return
 
         setSaving(true)
 
