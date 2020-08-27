@@ -16,7 +16,7 @@ const { getConfig } = require('./encryptedConfig')
 const { Network, Order, Shop, ExternalPayment } = require('../models')
 const { getLogger } = require('../utils/logger')
 const { ListingID } = require('./id')
-const { processNewOrder } = require('../logic/order')
+const { processNewOrder } = require('../logic/order/order')
 
 const log = getLogger('utils.handleLog')
 

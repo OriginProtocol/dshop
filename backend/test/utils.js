@@ -172,6 +172,7 @@ async function getOrCreateTestNetwork(configOverride = {}) {
     ipfsApi: config.ipfsApi,
     marketplaceContract: ethers.utils.getAddress(config.marketplaceContract), // call getAddress to checksum the address.
     marketplaceVersion: '001',
+    listingId: '999-001-1', // TODO: we may need to create a real listing on the marketplace contract.
     active: true,
     config: setConfig({
       pinataKey: 'pinataKey',
@@ -181,9 +182,11 @@ async function getOrCreateTestNetwork(configOverride = {}) {
       gcpCredentials: 'gcpCredentials',
       domain: 'domain.com',
       deployDir: 'deployDir',
+      useMarketplaceContract: false,
       ...configOverride
     })
   }
+  console.log("NETWORK CONFIG=", networkObj)
   // Note: For unclear reasons, the migration file 20200317190719-addIpfs.js
   // inserts a row for network 999. Therefore the update case below...
   let network = await Network.findOne({
@@ -250,9 +253,9 @@ async function createTestShop({
 
 /**
  * Updates test shop's encrypted config
- * @param {Shop} shop
+ * @param {models.Shop} shop
  * @param {Object} shopConfig
- * @returns {Shop}
+ * @returns {models.Shop}
  */
 async function updateShopConfig(shop, shopConfig) {
   await shop.update({
@@ -263,6 +266,23 @@ async function updateShopConfig(shop, shopConfig) {
   })
 
   return shop
+}
+
+/**
+ * Updates test shop's encrypted config
+ * @param {models.Network} network
+ * @param {Object} networkConfig
+ * @returns {models.Network}
+ */
+async function updateNetworkConfig(network, networkConfig) {
+  await network.update({
+    config: setConfig({
+      ...getConfig(network.config),
+      ...networkConfig
+    })
+  })
+
+  return network
 }
 
 /**
@@ -405,5 +425,6 @@ module.exports = {
   getTestWallet,
   getOrCreateTestNetwork,
   MockBullJob,
-  updateShopConfig
+  updateShopConfig,
+  updateNetworkConfig
 }

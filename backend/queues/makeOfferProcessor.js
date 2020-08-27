@@ -18,7 +18,7 @@ const { getLogger } = require('../utils/logger')
 const { IS_TEST, IS_DEV } = require('../utils/const')
 const { Sentry } = require('../sentry')
 const { TransactionTypes, TransactionStatuses } = require('../enums')
-const { processNewOrder } = require('../logic/order')
+const { processNewOrder } = require('../logic/order/order')
 
 const log = getLogger('offerProcessor')
 const BN = ethers.BigNumber // Ethers' BigNumber implementation.
@@ -287,8 +287,7 @@ async function processor(job) {
 
     queueLog(job, 20, 'Submitting Offer')
 
-    // Create the offer in the system either on or off chain, depending on the
-    // shop's configuration.
+    // Create the offer in the system either on or off chain, depending on the configuration.
     const data = {
       job,
       fqJobId,
@@ -301,7 +300,7 @@ async function processor(job) {
       offerIpfsHash,
       paymentCode
     }
-    if (shopConfig.offchainOffersEnabled) {
+    if (networkConfig.useMarketplaceContract) {
       result = await _makeOffchainOffer(data)
     } else {
       result = await _makeOnchainOffer(data)

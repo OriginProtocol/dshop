@@ -1,35 +1,54 @@
 const randomstring = require('randomstring')
 const util = require('ethereumjs-util')
 
-const { OrderStatuses } = require('../enums')
-const { Sentry } = require('../sentry')
-const { Order } = require('../models')
-const sendNewOrderEmail = require('../utils/emails/newOrder')
-const discordWebhook = require('../utils/discordWebhook')
-const { autoFulfillOrder } = require('../utils/printful')
-const { decryptShopOfferData } = require('../utils/offer')
-const { validateDiscountOnOrder } = require('../utils/discounts')
-const { getLogger } = require('../utils/logger')
+const { OrderStatuses } = require('../../enums')
+const { Sentry } = require('../../sentry')
+const { Order } = require('../../models')
+const sendNewOrderEmail = require('../../utils/emails/newOrder')
+const discordWebhook = require('../../utils/discordWebhook')
+const { autoFulfillOrder } = require('../../utils/printful')
+const { decryptShopOfferData } = require('../../utils/offer')
+const { validateDiscountOnOrder } = require('../../utils/discounts')
+const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('logic.order')
 
 /**
- * Creates an unique ID that is human readable and can be used by
- * the buyer and the seller to reference an order.
- * Format: <networkId>-<shopId>-<randomId>.
- * Example: 1-123-XCQ69BTJ
+ * Returns a new order id in its full-qualified form.
+ * Format: <networkId>-<contractVersion>-<listingId>-<shopID>-<randomId>.
+ * Example: 1-001-12345-6789-XCQ69BTJ
  *
+ * @param {models.Network} network
  * @param {models.Shop} shop
  * @returns {string}
  */
-function createNewOrderId(shop) {
+function createNewOrderId(network, shop) {
   const randomId = randomstring.generate({
     readable: true,
     charset: 'alphanumeric',
     capitalization: 'uppercase',
     length: 8
   })
-  return `${shop.networkId}-${shop.id}-${randomId}`
+  // Note: network.listingId is fully qualified and has format <networkId>-<contractVersion>-<listingId>.
+  return `${network.listingId}-${shop.id}-${randomId}`
+}
+
+/**
+ * Returns the short version of an order id, which is an 8 characters long alphanumerical id.
+ * It is the preferred form to use in external communication with merchants and buyers.
+ *
+ * @param {string} fqOrderId: a fully qualified order id.
+ */
+function getShortOrderId(fqOrderId) {
+  const parts = fqOrderId.split('-')
+  if (parts.length !== 5) {
+    throw new Error(`Invalid order id ${fqOrderId}`)
+  }
+  const shortOrderId = parts[4]
+  if (shortOrderId.length !== 8) {
+    throw new Error(`Invalid order id ${fqOrderId}`)
+  }
+  return shortOrderId
 }
 
 /**
@@ -60,7 +79,7 @@ async function processNewOrder({
   skipDiscord
 }) {
   // Generate a unique order id.
-  const orderId = createNewOrderId(shop)
+  const orderId = createNewOrderId(network, shop)
 
   // Load the encrypted data from IPFS and decrypt it.
   const encryptedHash = offer.encryptedData
@@ -156,5 +175,6 @@ async function processNewOrder({
 }
 
 module.exports = {
+  getShortOrderId,
   processNewOrder
 }
