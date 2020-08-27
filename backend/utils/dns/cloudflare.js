@@ -1,9 +1,26 @@
-const cloudflare = require('cloudflare')
 const find = require('lodash/find')
+const memoize = require('lodash/memoize')
+const stringify = require('json-stable-stringify')
+const cloudflare = require('cloudflare')
 
-const { getLogger } = require('../../utils/logger')
+const { getLogger } = require('../logger')
 
 const log = getLogger('utils.dns.cloudflare')
+
+/**
+ * Return a Cloudflare API client
+ *
+ * @returns {DNS}
+ */
+function _getClient(credentials) {
+  if (typeof credentials === 'string') credentials = JSON.parse(credentials)
+
+  return cloudflare(credentials)
+}
+const getClient = memoize(_getClient, (a) => {
+  if (!a) throw new Error('Must supply Cloudflare credentails')
+  return stringify(a[0])
+})
 
 async function findZone(cf, conditions) {
   const data = { page: 1, per_page: 100 }
@@ -34,7 +51,7 @@ async function findRecord(cf, id, conditions) {
 }
 
 async function setRecords({ email, key, zone, subdomain, ipfsGateway, hash }) {
-  const cf = cloudflare({ email, key })
+  const cf = getClient({ email, key })
 
   const zoneObj = await findZone(cf, { name: zone })
   if (!zoneObj) {

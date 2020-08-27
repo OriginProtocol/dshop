@@ -36,7 +36,9 @@ const Password = () => {
             method: 'POST',
             headers: {
               'content-type': 'application/json',
-              authorization: `bearer ${config.backendAuthToken}`
+              authorization: `bearer ${encodeURIComponent(
+                config.backendAuthToken
+              )}`
             },
             body: JSON.stringify({ password }),
             credentials: 'include'

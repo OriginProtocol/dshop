@@ -31,57 +31,97 @@ const ContractSettings = ({ state, setState }) => {
       </h4>
 
       <label>
-        <fbt desc="admin.settings.payments.acceptedTokens">Accepted Tokens</fbt>
+        <fbt desc="admin.settings.payments.cryptoPayments">
+          Cryptocurrency Payments
+        </fbt>
       </label>
-      <div className="form-group">
-        {allTokens.map((token) => (
-          <div key={token.id} className="form-check d-flex">
-            <label className="form-check-label">
-              <input
-                type="checkbox"
-                className="form-check-input"
-                checked={acceptedTokenIds.includes(token.id)}
-                onChange={(e) => {
-                  const updatedList = e.target.checked
-                    ? [...acceptedTokens, token]
-                    : acceptedTokens.filter((t) => t.id !== token.id)
-                  setState({ acceptedTokens: updatedList, hasChanges: true })
-                }}
-              />
-              {token.displayName
-                ? `${token.displayName} (${token.name})`
-                : token.name}
-            </label>
-            {!customTokenIds.includes(token.id) ? null : (
-              <AdminDeleteCustomToken
-                onConfirm={async () => {
-                  const newAcceptedTokens = acceptedTokens.filter(
-                    (t) => t.id !== token.id
-                  )
-                  const newCustomTokens = customTokens.filter(
-                    (t) => t.id !== token.id
-                  )
-                  setState({
-                    acceptedTokens: newAcceptedTokens,
-                    customTokens: newCustomTokens,
-                    hasChanges: true
-                  })
-                }}
-              />
-            )}
-          </div>
-        ))}
+      <div className="desc">
+        <fbt desc="admin.settings.payments.acceptTokens">
+          Accept Ethereum and other tokens as payment methods
+        </fbt>
+      </div>
+      <div className="form-group mt-2">
+        <div className="form-check">
+          <label className="form-check-label">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              checked={!state.disableCryptoPayments}
+              onChange={(e) => {
+                setState({
+                  disableCryptoPayments: !e.target.checked,
+                  hasChanges: true
+                })
+              }}
+            />
+            <fbt desc="admin.settings.payments.enableCryptoPayments">
+              Enable cryptocurrency payments
+            </fbt>
+          </label>
+        </div>
       </div>
 
-      <CustomTokenModal
-        onNewTokenAdded={(token) =>
-          setState({
-            customTokens: [...customTokens, token],
-            acceptedTokens: [...acceptedTokens, token],
-            hasChanges: true
-          })
-        }
-      />
+      {state.disableCryptoPayments ? null : (
+        <>
+          <label>
+            <fbt desc="admin.settings.payments.acceptedTokens">
+              Accepted Tokens
+            </fbt>
+          </label>
+          <div className="form-group">
+            {allTokens.map((token) => (
+              <div key={token.id} className="form-check d-flex">
+                <label className="form-check-label">
+                  <input
+                    type="checkbox"
+                    className="form-check-input"
+                    checked={acceptedTokenIds.includes(token.id)}
+                    onChange={(e) => {
+                      const updatedList = e.target.checked
+                        ? [...acceptedTokens, token]
+                        : acceptedTokens.filter((t) => t.id !== token.id)
+                      setState({
+                        acceptedTokens: updatedList,
+                        hasChanges: true
+                      })
+                    }}
+                  />
+                  {token.displayName
+                    ? `${token.displayName} (${token.name})`
+                    : token.name}
+                </label>
+                {!customTokenIds.includes(token.id) ? null : (
+                  <AdminDeleteCustomToken
+                    onConfirm={async () => {
+                      const newAcceptedTokens = acceptedTokens.filter(
+                        (t) => t.id !== token.id
+                      )
+                      const newCustomTokens = customTokens.filter(
+                        (t) => t.id !== token.id
+                      )
+                      setState({
+                        acceptedTokens: newAcceptedTokens,
+                        customTokens: newCustomTokens,
+                        hasChanges: true
+                      })
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <CustomTokenModal
+            onNewTokenAdded={(token) =>
+              setState({
+                customTokens: [...customTokens, token],
+                acceptedTokens: [...acceptedTokens, token],
+                hasChanges: true
+              })
+            }
+          />
+        </>
+      )}
 
       {/* <div className="form-group">
         <label>Listing ID</label>
@@ -171,4 +211,9 @@ require('react-styl')(`
 
     .form-check-label
       margin: 0
+
+    .desc
+      color: #8293a4
+      font-size: 0.875rem
+      max-width: 500px
 `)

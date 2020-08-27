@@ -45,6 +45,20 @@ async function getGcpSuperAdminPassword() {
   return password
 }
 
+/**
+ * Gets the EC2 instance ID
+ */
+async function getEC2InstanceID() {
+  const url = 'http://169.254.169.254/latest/meta-data/instance-id'
+  const res = await fetch(url)
+  if (!res.ok) {
+    log.error(`GET ${url} returned ${res}`)
+    throw new Error(`Failed fetching EC2 instance ID.`)
+  }
+  const password = await res.text()
+  return password
+}
+
 module.exports = function (router) {
   router.get('/auth', async (req, res) => {
     const userCount = await Seller.count()
@@ -238,6 +252,7 @@ module.exports = function (router) {
         message: 'An initial user has already been setup'
       })
     }
+
     if (process.env.GCP_MARKETPLACE_DEPLOYMENT) {
       // In the case of a GCP marketplace deployment, the super-admin password is auto-generated
       // when the VM gets launched. It is then displayed to the operator on the deployment page
@@ -258,6 +273,30 @@ module.exports = function (router) {
           success: false,
           message:
             'Invalid password. Please use the super-admin password displayed on the GCP console.'
+        })
+      }
+    }
+
+    if (process.env.AWS_MARKETPLACE_DEPLOYMENT) {
+      /**
+       * In the case of a AWS marketplace deployment, the super-admin password
+       * is the EC2 instance ID.
+       */
+      let password
+      try {
+        password = await getEC2InstanceID()
+      } catch (e) {
+        return res.status(500).json({
+          success: false,
+          message:
+            'An error occurred while fetching super-admin credentials. Please contact support.'
+        })
+      }
+      if (req.body.password !== password) {
+        return res.status(401).json({
+          success: false,
+          message:
+            'Invalid password. Please use the EC2 instance ID as the password.'
         })
       }
     }

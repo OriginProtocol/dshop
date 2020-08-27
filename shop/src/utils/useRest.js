@@ -15,7 +15,9 @@ function useRest(url, opts = {}) {
         const raw = await fetch(`${config.backend}${url}`, {
           credentials: 'include',
           headers: {
-            authorization: `bearer ${config.backendAuthToken}`
+            authorization: `bearer ${encodeURIComponent(
+              config.backendAuthToken
+            )}`
           }
         })
         const res = await raw.json()
