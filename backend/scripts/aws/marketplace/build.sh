@@ -66,6 +66,7 @@ cat > $PACKER_JSON <<EOF
         "most_recent": true
       },
       "ssh_username": "admin",
+      "ssh_clear_authorized_keys": true,
       "ami_name": "$IMAGE_NAME",
       "ami_description": "Origin Dshop backend - $BUILD_ID",
       "region": "us-east-1",
