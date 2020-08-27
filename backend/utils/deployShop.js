@@ -12,6 +12,7 @@ const { getConfig } = require('./encryptedConfig')
 const prime = require('./primeIpfs')
 const setCloudflareRecords = require('./dns/cloudflare')
 const setCloudDNSRecords = require('./dns/clouddns')
+const setRoute53Records = require('./dns/route53')
 
 const { IS_TEST } = require('../utils/const')
 
@@ -95,7 +96,24 @@ async function configureShopDNS({
     }
   }
 
-  if (!['cloudflare', 'gcp'].includes(dnsProvider)) {
+  if (dnsProvider === 'aws') {
+    if (!networkConfig.awsAccessKeyId || !networkConfig.awsSecretAccessKey) {
+      log.warn('AWS DNS Proider selected but no credentials configured!')
+    } else {
+      await setRoute53Records({
+        ipfsGateway: gatewayHost,
+        zone,
+        subdomain,
+        hash,
+        credentials: {
+          accessKeyId: networkConfig.awsAccessKeyId,
+          secretAccessKey: networkConfig.awsSecretAccessKey
+        }
+      })
+    }
+  }
+
+  if (!['cloudflare', 'gcp', 'aws'].includes(dnsProvider)) {
     log.error('Unknown DNS provider selected.  Will not configure DNS')
   }
 }
@@ -173,16 +191,21 @@ async function _deployShop({
       ? 'rinkeby'
       : 'localhost'
 
-  const html = fs.readFileSync(`${OutputDir}/public/index.html`).toString()
-  fs.writeFileSync(
-    `${OutputDir}/public/index.html`,
-    html
+  function replaceVars(html) {
+    return html
       .replace('TITLE', publicShopConfig.fullTitle)
       .replace('META_DESC', publicShopConfig.metaDescription || '')
       .replace('DATA_DIR', dataDir)
       .replace(/NETWORK/g, networkName)
       .replace('FAVICON', publicShopConfig.favicon || 'favicon.ico')
-  )
+      .replace('UI_SRC', networkConfig.uiCdn || '')
+  }
+
+  const html = fs.readFileSync(`${OutputDir}/public/index.html`).toString()
+  fs.writeFileSync(`${OutputDir}/public/index.html`, replaceVars(html))
+
+  const cdnHtml = fs.readFileSync(`${OutputDir}/public/cdn.html`).toString()
+  fs.writeFileSync(`${OutputDir}/public/cdn.html`, replaceVars(cdnHtml))
 
   // Note: for legacy reasons, the URLs for the IPFS Gateway and API are stored in
   // the network.ipfs/ipfsApi fields while other configs are stored under network.config.

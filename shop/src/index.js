@@ -1,3 +1,5 @@
+// eslint-disable-next-line
+__webpack_public_path__ = window.webpackPublicPath || ''
 require('dotenv').config()
 
 import React, { useEffect } from 'react'

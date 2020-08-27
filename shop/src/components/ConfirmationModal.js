@@ -70,7 +70,11 @@ const AdminConfirmationModal = ({
       <button
         type="button"
         className={className}
-        onClick={() => setState({ showModal: true })}
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          setState({ showModal: true })
+        }}
       >
         {buttonText}
       </button>

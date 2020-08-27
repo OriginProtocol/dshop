@@ -1,58 +1,36 @@
 import React, { useReducer, useEffect, useState } from 'react'
-
+import fbt from 'fbt'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
-
-import CKEditor from 'ckeditor4-react'
 
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
 import useBackendApi from 'utils/useBackendApi'
 import { formInput, formFeedback } from 'utils/formHelpers'
+import { AllCurrencies } from 'data/Currencies'
 import { useStateValue } from 'data/state'
 
-import Tabs from '../_Tabs'
+import Link from 'components/Link'
+import PasswordField from 'components/admin/PasswordField'
 import Domains from './_Domains'
-import UploadFile from './_UploadFile'
-import SocialLinks from './social-links/SocialLinks'
 
 function reducer(state, newState) {
   return { ...state, ...newState }
 }
 
-const configFields = [
-  'fullTitle',
-  'title',
-  'logo',
-  'favicon',
-  'byline',
-  'metaDescription',
-  'cartSummaryNote',
-  'discountCodes',
-  'css',
-  'facebook',
-  'twitter',
-  'instagram',
-  'medium',
-  'youtube',
-  'about',
-  'hostname'
-]
-
-const ABOUT_FILENAME = 'about.html'
+const configFields = ['fullTitle', 'hostname', 'currency']
 
 const GeneralSettings = () => {
   const { config } = useConfig()
   const [, dispatch] = useStateValue()
   const { shopConfig } = useShopConfig()
-  const { postRaw, post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, { domain: '' })
   const input = formInput(state, (newState) =>
     setState({ ...newState, hasChanges: true })
   )
   const Feedback = formFeedback(state)
   const [saving, setSaving] = useState(false)
-  const [aboutText, setAboutText] = useState('')
 
   useEffect(() => {
     setState({
@@ -61,35 +39,17 @@ const GeneralSettings = () => {
     })
   }, [shopConfig, config])
 
-  useEffect(() => {
-    let timeout
-    if (config.about) {
-      fetch(`${config.dataSrc}${config.about}`)
-        .then((res) => {
-          if (!res.ok) throw new Error('Failed to fetch')
-          return res.text()
-        })
-        // NOTE: CKEditor takes a few seconds to load
-        .then((body) => (timeout = setTimeout(() => setAboutText(body), 2000)))
-        .catch((err) => {
-          console.error('Failed to load about page', err)
-        })
-    }
-
-    return () => clearTimeout(timeout)
-  }, [config && config.about])
-
   const actions = (
     <div className="actions">
       <button type="button" className="btn btn-outline-primary">
-        Cancel
+        <fbt desc="Cancel">Cancel</fbt>
       </button>
       <button
         type="submit"
         className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
         disabled={saving}
       >
-        Update
+        <fbt desc="Update">Update</fbt>
       </button>
     </div>
   )
@@ -106,10 +66,6 @@ const GeneralSettings = () => {
 
         try {
           const shopConfig = pickBy(state, (v, k) => !k.endsWith('Error'))
-
-          // About file data
-          shopConfig.about = ABOUT_FILENAME
-          shopConfig.aboutText = aboutText || ''
 
           const shopConfigRes = await post('/shop/config', {
             method: 'PUT',
@@ -133,196 +89,115 @@ const GeneralSettings = () => {
             }
           })
           dispatch({ type: 'reload', target: 'shopConfig' })
-          dispatch({ type: 'toast', message: 'Settings saved' })
+          dispatch({
+            type: 'toast',
+            message: (
+              <fbt desc="admin.settings.general.savedMessage">
+                Settings saved
+              </fbt>
+            )
+          })
         } catch (err) {
           console.error(err)
           setSaving(false)
         }
       }}
     >
-      <h3 className="admin-title">
-        Settings
+      <h3 className="admin-title with-border">
+        <Link to="/admin/settings" className="muted">
+          <fbt desc="Settings">Settings</fbt>
+        </Link>
+        <span className="chevron" />
+        <fbt desc="General">General</fbt>
         {actions}
       </h3>
-      <Tabs />
-      <div className="row mt-4">
+      <div className="row">
         <div className="shop-settings col-md-8 col-lg-9">
           <div className="form-group">
-            <label>Store Name</label>
+            <label>
+              <fbt desc="admin.settings.general.storeName">Store Name</fbt>
+            </label>
             <input {...input('fullTitle')} />
             {Feedback('fullTitle')}
           </div>
 
           <Domains {...{ config, state }} />
 
-          <div className="form-group">
-            <label>
-              Tagline
-              <span>(will appear next to your logo on the masthead)</span>
-            </label>
-            <input {...input('byline')} />
-            {Feedback('byline')}
-          </div>
-
-          <div className="form-group">
-            <label>
-              Logo
-              <span>
-                (max. size 200x200 px. 100x100 px recommended. PNG or JPG)
-              </span>
-            </label>
-            {state.logo ? (
-              <div className="mb-3">
-                <img
-                  src={`${config.backendAuthToken}/${state.logo}`}
-                  style={{ maxWidth: '12rem', maxHeight: '3rem' }}
-                />
-              </div>
-            ) : null}
-            <UploadFile
-              accept=".png, .jpeg, .svg"
-              replace={state.logo ? true : false}
-              onUpload={(body) => {
-                body.append('type', 'logo')
-                postRaw('/shop/assets', { method: 'PUT', body }).then((res) => {
-                  const logo = res.path
-                  const newState = { logo }
-                  if (!config.logo) {
-                    newState.title = ''
-                  }
-                  setState(newState)
-                  dispatch({
-                    type: 'setConfigSimple',
-                    config: { ...config, logo }
-                  })
-                })
-              }}
-            />
-          </div>
-          {!state.logo ? null : (
-            <div className="form-group">
+          <div className="row">
+            <div className="form-group col-md-6">
               <label>
-                Logo text
-                <span>(will appear to right of your logo)</span>
+                <fbt desc="admin.settings.general.passwordProtect">
+                  Password protect site
+                </fbt>
               </label>
-              <input {...input('title')} />
-              {Feedback('title')}
+              <PasswordField field="password" input={input} />
+              {Feedback('password')}
             </div>
-          )}
-          <div className="form-group">
-            <label>
-              Favicon
-              <span>
-                (optimal image size 32x32 px in .ico format. Recommended favicon
-                generator: www.favicon.com)
-              </span>
-            </label>
-            {state.favicon ? (
-              <div className="mb-3">
-                <img
-                  src={`${config.backendAuthToken}/${state.favicon}`}
-                  style={{ maxWidth: 32 }}
-                />
-              </div>
-            ) : null}
-            <UploadFile
-              accept=".png, .ico"
-              replace={state.favicon ? true : false}
-              onUpload={(body) => {
-                body.append('type', 'favicon')
-                postRaw('/shop/assets', { method: 'PUT', body }).then((res) => {
-                  const favicon = res.path
-                  setState({ favicon })
-                  dispatch({
-                    type: 'setConfigSimple',
-                    config: { ...config, favicon }
-                  })
-                })
-              }}
-            />
-          </div>
-          <div className="form-group">
-            <label>
-              About your store
-              <span>
-                (visible on your About page to buyers browsing your store)
-              </span>
-            </label>
-            {/* <textarea style={{ minHeight: '20vh' }} {...input('about')} /> */}
-            <CKEditor
-              data={aboutText}
-              config={{
-                toolbar: [
-                  { name: 'styles', items: ['Format'] },
-                  {
-                    name: 'basicstyles',
-                    items: ['Bold', 'Italic', '-', 'RemoveFormat']
-                  },
-                  {
-                    name: 'paragraph',
-                    items: [
-                      'NumberedList',
-                      'BulletedList',
-                      '-',
-                      'Outdent',
-                      'Indent'
-                    ]
-                  },
-                  { name: 'links', items: ['Link', 'Unlink'] },
-                  {
-                    name: 'insert',
-                    items: ['Image', 'Table', 'HorizontalRule']
-                  }
-                ]
-              }}
-              onChange={(e) => setAboutText(e.editor.getData())}
-            />
-          </div>
-          <div className="form-group">
-            <label>
-              Cart Summary Note
-              <span>
-                (appears under summary in checkout process. Use it for any
-                information related to order fulfillment)
-              </span>
-            </label>
-            <input {...input('cartSummaryNote')} />
-          </div>
-          <div>
-            <label>Discount Codes</label>
-            <span className="form-check mb-3">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                checked={state.discountCodes ? true : false}
-                onChange={(e) => setState({ discountCodes: e.target.checked })}
-              />
-              Show discount codes on checkout
-            </span>
           </div>
 
           <div className="row">
             <div className="form-group col-md-6">
-              <label>Support email</label>
+              <label>
+                <fbt desc="admin.settings.general.supportEmail">
+                  Support email
+                </fbt>
+              </label>
               <input {...input('supportEmail')} />
               {Feedback('supportEmail')}
               <div className="desc">
-                Your customers will see this address when receiving emails about
-                their order.
+                <fbt desc="admin.settings.general.supportEmailDesc">
+                  Your customers will see this address when receiving emails
+                  about their order.
+                </fbt>
               </div>
             </div>
             <div className="form-group col-md-6">
               <label>
-                Email subject <span>(for receipt emails)</span>
+                <fbt desc="admin.settings.general.emailSubject">
+                  Email subject
+                </fbt>{' '}
+                <span>
+                  (
+                  <fbt desc="admin.settings.general.forReceiptEmails">
+                    for receipt emails
+                  </fbt>
+                  )
+                </span>
               </label>
               <input {...input('emailSubject')} />
               {Feedback('emailSubject')}
             </div>
           </div>
-        </div>
 
-        <div className="col-lg-3 col-md-4">
-          <SocialLinks socialLinks={state} setSocialLinks={setState} />
+          <div className="select-currency">
+            <h4>
+              <fbt desc="admin.settings.general.storeCurrency">
+                Store currency
+              </fbt>
+            </h4>
+            <div>
+              <div className="description">
+                <fbt desc="admin.settings.general.storeCurrencyDesc">
+                  You should review any potential legal and tax considerations
+                  involved with selling in a currency that is different from the
+                  one associated with the country your store is located in.
+                </fbt>
+              </div>
+              <select
+                className="form-control"
+                value={state.currency}
+                onChange={(e) =>
+                  setState({ hasChanges: true, currency: e.target.value })
+                }
+              >
+                {AllCurrencies.map((currency) => (
+                  <option key={currency[0]} value={currency[0]}>
+                    {currency[1]}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
       </div>
       <div className="footer-actions">{actions}</div>
@@ -359,6 +234,7 @@ require('react-styl')(`
         margin-left: 0.25rem
     a
       color: #3b80ee
+      font-size: 14px
     .suffix-wrap
       position: relative
       .suffix
@@ -369,6 +245,17 @@ require('react-styl')(`
         margin: 8px 0 0 15px
         > span
           visibility: hidden
+
+  .select-currency
+    margin-top: 1.5rem
+    margin-bottom: 2rem
+    line-height: normal
+    > div
+      color: #8293a4
+      max-width: 530px
+      .description
+        font-size: 14px
+        margin-bottom: 1rem
 
   .form-group .desc
     font-size: 14px

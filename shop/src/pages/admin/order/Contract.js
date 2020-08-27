@@ -2,6 +2,7 @@ import React from 'react'
 import { useRouteMatch } from 'react-router-dom'
 import get from 'lodash/get'
 import dayjs from 'dayjs'
+import fbt from 'fbt'
 
 import useOfferData from 'utils/useOfferData'
 import usePrice from 'utils/usePrice'
@@ -26,11 +27,15 @@ const AdminContract = () => {
   return (
     <div className="order-details">
       <div className="contract-data">
-        <div>Status</div>
+        <div>
+          <fbt desc="Status">Status</fbt>
+        </div>
         <div>{status(offer.status)}</div>
         {offer.token ? (
           <>
-            <div>Value</div>
+            <div>
+              <fbt desc="Value">Value</fbt>
+            </div>
             <div>
               {`${offer.value} ${offer.token.name}`}
               <span className="ml-3">{`$${toFiatPrice(
@@ -41,45 +46,73 @@ const AdminContract = () => {
           </>
         ) : (
           <>
-            <div>Token</div>
+            <div>
+              <fbt desc="Token">Token</fbt>
+            </div>
             <div>{get(offer, 'token.name', offer.currency)}</div>
-            <div>Value</div>
+            <div>
+              <fbt desc="Value">Value</fbt>
+            </div>
             <div>{offer.value}</div>
           </>
         )}
-        <div>Finalizes</div>
+        <div>
+          <fbt desc="Finalizes">Finalizes</fbt>
+        </div>
         <div>
           {offer.finalizes < 10000000
-            ? `${offer.finalizes / 60 / 60 / 24} days after offer is accepted`
+            ? fbt(
+                `${fbt.param(
+                  'finalizeTime',
+                  offer.finalizes / 60 / 60 / 24
+                )} days after offer is accepted`,
+                'admin.orders.finalizeWidnow'
+              )
             : dayjs(offer.finalizes * 1000).format('MMM D, h:mm A')}
         </div>
-        <div>Buyer</div>
+        <div>
+          <fbt desc="Buyer">Buyer</fbt>
+        </div>
         <div>{offer.buyer}</div>
 
         {sellerProxy ? (
           <>
-            <div>Seller</div>
+            <div>
+              <fbt desc="Seller">Seller</fbt>
+            </div>
             <div>{sellerProxy.address}</div>
-            <div>Proxy</div>
+            <div>
+              <fbt desc="Proxy">Proxy</fbt>
+            </div>
             <div>{listing.seller}</div>
           </>
         ) : (
           <>
-            <div>Seller</div>
+            <div>
+              <fbt desc="Seller">Seller</fbt>
+            </div>
             <div>{listing ? listing.seller : ''}</div>
           </>
         )}
-        <div>Arbitrator</div>
+        <div>
+          <fbt desc="Arbitrator">Arbitrator</fbt>
+        </div>
         <div>{offer.arbitrator}</div>
-        <div>Affiliate</div>
+        <div>
+          <fbt desc="Affiliate">Affiliate</fbt>
+        </div>
         <div>
           {offer.affiliate.indexOf('0x000000') === 0
-            ? 'None set'
+            ? fbt('None set', 'NoneSet')
             : offer.affiliate}
         </div>
-        <div>Commission</div>
+        <div>
+          <fbt desc="Commission">Commission</fbt>
+        </div>
         <div>{`${offer.commission} OGN`}</div>
-        <div>Refund</div>
+        <div>
+          <fbt desc="Refund">Refund</fbt>
+        </div>
         <div>{offer.refund}</div>
       </div>
     </div>

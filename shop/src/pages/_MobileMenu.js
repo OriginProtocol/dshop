@@ -2,6 +2,7 @@ import React, { useRef, useState, useLayoutEffect, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import fbt from 'fbt'
 import { useStateValue } from 'data/state'
+import useCollections from 'utils/useCollections'
 import Link from 'components/Link'
 import CartIcon from 'components/icons/Cart'
 import SocialLinks from 'components/SocialLinks'
@@ -16,7 +17,8 @@ const Item = ({ id, children, active, onClick }) => (
 )
 
 const MobileMenu = ({ open, onClose }) => {
-  const [{ cart, collections }] = useStateValue()
+  const [{ cart }] = useStateValue()
+  const { visibleCollections } = useCollections()
   const location = useLocation()
   useEffect(() => {
     onClose()
@@ -44,14 +46,18 @@ const MobileMenu = ({ open, onClose }) => {
             {`${cart.items.length ? ` (${cart.items.length})` : ''}`}
           </Link>
         </li>
-        {collections.map((cat) => (
+        {visibleCollections.map((cat) => (
           <Item key={cat.id} onClick={onClose} id={cat.id}>
             {cat.title}
           </Item>
         ))}
         <li>
-          <SocialLinks />
+          <Link to="/about">
+            <fbt desc="About">About</fbt>
+          </Link>
         </li>
+
+        <SocialLinks el="li" />
       </ul>
     </div>
   )

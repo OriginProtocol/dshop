@@ -90,6 +90,7 @@ require('./routes/health')(router)
 require('./routes/offline-payment')(router)
 require('./routes/paypal')(router)
 require('./routes/exchange-rates')(router)
+require('./routes/crypto')(router)
 
 router.get('/', async (req, res) => {
   let html
@@ -120,7 +121,7 @@ router.get('*', async (req, res, next) => {
   if (split.length <= 2) {
     return next()
   }
-  const dataDir = split[1]
+  const dataDir = decodeURIComponent(split[1])
   const dir = `${DSHOP_CACHE}/${dataDir}/data`
   req.url = split.slice(2).join('/')
 

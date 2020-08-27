@@ -43,17 +43,16 @@ function attachToQueue() {
 }
 
 /**
- * Records a credit card purchase on the blockchain by making
+ * Records a purchase on the blockchain by making
  * an offer on the marketplace contract.
  * Note: several processors may get started, resulting in
  * multiple jobs getting processed concurrently.
  *
  * @param {Object} job: Bull job object.
- * job.data is expected to have the following fields:
- *   {string} shopId
- *   {string} amount: Credit card payment amount, in cents.
- *   {string} encryptedData: IPFS hash of the PGP encrypted offer data.
- *   {string} paymentCode: unique payment code passed by the credit card processor.
+ * job.data has the following fields:
+ *   {string} shopId: Unique DB id for the shop.
+ *   {string} paymentCode: Unique payment code.
+ *   {string} encryptedDataIpfsHash: IPFS hash of the PGP encrypted offer data.
  * @returns {Promise<{receipt: ethers.TransactionReceipt, listingId: number, offerId: number, ipfsHash: string }>}
  * @throws
  */
@@ -63,7 +62,7 @@ async function processor(job) {
     job.progress(progress)
   }
   const jobId = `${get(job, 'queue.name', '')}-${job.id}` // Prefix with queue name since job ids are not unique across queues.
-  const { shopId, encryptedData, paymentCode } = job.data
+  const { shopId, paymentCode, encryptedDataIpfsHash } = job.data
   log.info(`Creating offer for shop ${shopId}`)
   let confirmation
 
@@ -79,8 +78,9 @@ async function processor(job) {
     const shopConfig = encConf.getConfig(shop.config)
 
     queueLog(10, 'Creating offer')
+    log.debug('Creating offer on IPFS')
     const lid = ListingID.fromFQLID(shop.listingId)
-    const offer = _createOfferJson(lid, encryptedData, paymentCode)
+    const offer = _createOfferJson(lid, encryptedDataIpfsHash, paymentCode)
     const ipfsHash = await _postOfferIPFS(network, offer)
 
     queueLog(20, 'Submitting Offer')
@@ -184,9 +184,10 @@ async function processor(job) {
     // in the future when the transaction volume scales up. A potential solution
     // will be to run the confirmation logic as a separate queue with multiple workers.
     queueLog(50, `Waiting for tx ${tx.hash} to get confirmed`)
-    log.info('Waiting for tx confirmation...')
+    log.info('Waiting for offer tx confirmation...')
     confirmation = await _waitForMakeOfferTxConfirmation(marketplace, tx)
     const { receipt, offerId } = confirmation
+    log.debug('offer tx confirmed')
 
     // Update the transaction in the DB.
     // Note: Failed transactions (e.g. caused by an EVM revert) are not retried since
@@ -237,8 +238,8 @@ async function _getNetwork(networkId) {
  * Utility method. Creates a JSON object for an offer.
  *
  * @param {ListingID} lid
- * @param {string} encryptedData
- * @param paymentCode
+ * @param {string} encryptedData: IPFS hash of the encrypted offer data
+ * @param {string} paymentCode: Unique payment code.
  * @returns {{finalizes: number, paymentCode: *, totalPrice: {amount: number, currency: string}, schemaId: string, encryptedData: *, listingType: string, commission: {amount: string, currency: string}, listingId: *, unitsPurchased: number}}
  * @private
  */

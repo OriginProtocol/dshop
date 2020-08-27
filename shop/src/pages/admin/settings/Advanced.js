@@ -6,8 +6,7 @@ import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import { formInput } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
-
-import Tabs from './_Tabs'
+import Link from 'components/Link'
 
 function reducer(state, newState) {
   return { ...state, ...newState }
@@ -79,8 +78,12 @@ const AdvancedSettings = () => {
   }
   return (
     <form autoComplete="off" onSubmit={submitForm}>
-      <h3 className="admin-title">
-        <fbt desc="Settings">Settings</fbt>
+      <h3 className="admin-title with-border">
+        <Link to="/admin/settings" className="muted">
+          <fbt desc="Settings">Settings</fbt>
+        </Link>
+        <span className="chevron" />
+        Advanced
         <div className="actions">
           <button type="button" className="btn btn-outline-primary">
             <fbt desc="Cancel">Cancel</fbt>
@@ -94,7 +97,6 @@ const AdvancedSettings = () => {
           </button>
         </div>
       </h3>
-      <Tabs />
       <div className="mt-4">
         <div className="shop-settings">
           <div className="form-group">

@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react'
+import fbt, { FbtParam } from 'fbt'
 
 import useShopConfig from 'utils/useShopConfig'
 import useEmailAppsList from 'utils/useEmailAppsList'
-import { useStateValue } from 'data/state'
 import maskSecret from 'utils/maskSecret'
 
-import Tabs from '../_Tabs'
+import Link from 'components/Link'
 import PrintfulModal from './PrintfulModal'
 import PrintfulSync from './PrintfulSync'
 import SendgridModal from './SendgridModal'
@@ -17,10 +17,7 @@ import ProcessorsList from 'components/settings/ProcessorsList'
 
 const AppSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
-  const [{ admin }] = useStateValue()
-
   const [connectModal, setShowConnectModal] = useState(false)
-
   const { emailAppsList } = useEmailAppsList({ shopConfig })
 
   const appsList = useMemo(() => {
@@ -33,13 +30,17 @@ const AppSettings = () => {
       {
         id: 'printful',
         title: 'Printful',
-        description: printfulEnabled
-          ? `Printful API key: ${maskSecret(printful)}`
-          : 'Import your products from Printful.',
+        description: printfulEnabled ? (
+          <fbt desc="__printfulEnabledDesc">
+            Printful API key:{' '}
+            <FbtParam name="maskedSecret">{maskSecret(printful)}</FbtParam>
+          </fbt>
+        ) : (
+          fbt('Import your products from Printful.', '__printfulDisabledDesc')
+        ),
         icon: <img src="images/printful.svg" width="70%" />,
         enabled: printfulEnabled,
-        actions: <PrintfulSync className="mr-2" />,
-        hide: admin.superuser ? false : true
+        actions: <PrintfulSync className="mr-2" />
       },
       ...emailAppsList
     ]
@@ -57,7 +58,7 @@ const AppSettings = () => {
                   type="button"
                   onClick={() => setShowConnectModal(processor.id)}
                 >
-                  Configure
+                  <fbt desc="Configure">Configure</fbt>
                 </button>
                 <DisconnectModal
                   processor={processor}
@@ -70,7 +71,7 @@ const AppSettings = () => {
                 type="button"
                 onClick={() => setShowConnectModal(processor.id)}
               >
-                Connect
+                <fbt desc="Connect">Connect</fbt>
               </button>
             )}
           </>
@@ -97,8 +98,13 @@ const AppSettings = () => {
 
   return (
     <>
-      <h3 className="admin-title">Settings</h3>
-      <Tabs />
+      <h3 className="admin-title with-border">
+        <Link to="/admin/settings" className="muted">
+          <fbt desc="Settings">Settings</fbt>
+        </Link>
+        <span className="chevron" />
+        <fbt desc="Apps">Apps</fbt>
+      </h3>
       <ProcessorsList processors={appsList} />
       {!connectModal ? null : (
         <ModalToRender

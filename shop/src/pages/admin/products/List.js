@@ -1,8 +1,11 @@
 import React from 'react'
+import fbt from 'fbt'
 import { useHistory, useLocation } from 'react-router-dom'
+import get from 'lodash/get'
 
 import useProducts from 'utils/useProducts'
 import usePaginate from 'utils/usePaginate'
+import useShopConfig from 'utils/useShopConfig'
 import useSearchQuery from 'utils/useSearchQuery'
 
 import ProductImage from 'components/ProductImage'
@@ -13,6 +16,7 @@ import Price from 'components/Price'
 import sortProducts from 'utils/sortProducts'
 import useCollections from 'utils/useCollections'
 
+import PrintfulSync from '../settings/apps/PrintfulSync'
 import DeleteButton from './_Delete'
 
 const AdminProducts = () => {
@@ -21,6 +25,7 @@ const AdminProducts = () => {
   const { start, end } = usePaginate()
   const opts = useSearchQuery()
 
+  const { shopConfig } = useShopConfig()
   const location = useLocation()
   const history = useHistory()
 
@@ -65,22 +70,33 @@ const AdminProducts = () => {
     return result.length ? result.join(', ') : null
   }
 
+  const actions = get(shopConfig, 'printful') ? (
+    <div className="actions">
+      <PrintfulSync
+        buttonClass="btn btn-primary"
+        buttonText={fbt('Sync Printful', 'Sync Printful')}
+      />
+    </div>
+  ) : (
+    <div className="actions">
+      <Link
+        to="/admin/products/new"
+        className="btn btn-primary"
+        children={<fbt desc="admin.products.addProduct">Add Product</fbt>}
+      />
+    </div>
+  )
+
   return (
     <div
       className={`admin-products-page${hasNoProducts ? ' no-products' : ''}`}
     >
       <h3 className="admin-title">
-        Products
+        <fbt desc="Products">Products</fbt>
         {hasNoProducts ? null : (
           <>
             <span className="ml-2">({sortedProducts.length})</span>
-            <div className="actions">
-              <Link
-                to="/admin/products/new"
-                className="btn btn-primary"
-                children="Add Product"
-              />
-            </div>
+            {actions}
           </>
         )}
       </h3>
@@ -92,13 +108,15 @@ const AdminProducts = () => {
           <thead>
             <tr>
               <th onClick={sortByColumnCallback('title')}>
-                Name {getSortIcon('title')}
+                <fbt desc="Name">Name</fbt> {getSortIcon('title')}
               </th>
               <th onClick={sortByColumnCallback('title')}></th>
               <th onClick={sortByColumnCallback('price')}>
-                Price {getSortIcon('price')}
+                <fbt desc="Price">Price</fbt> {getSortIcon('price')}
               </th>
-              <th>Collections</th>
+              <th>
+                <fbt desc="Collections">Collections</fbt>
+              </th>
               <th></th>
             </tr>
           </thead>
@@ -107,7 +125,8 @@ const AdminProducts = () => {
               <tr
                 key={product.id}
                 onClick={(e) => {
-                  if (e.target.matches('.action-icon, .action-icon *')) {
+                  if (e.target.matches('.actions *')) {
+                    e.stopPropagation()
                     return
                   }
                   history.push({
@@ -129,16 +148,18 @@ const AdminProducts = () => {
                 </td>
                 <td>{getCollections(product)}</td>
                 <td>
-                  <div className="actions">
-                    <div className="action-icon">
-                      <Link to={`/admin/products/${product.id}`}>
-                        <img src="images/edit-icon.svg" />
-                      </Link>
+                  {product.externalId ? null : (
+                    <div className="actions">
+                      <div className="action-icon">
+                        <Link to={`/admin/products/${product.id}`}>
+                          <img src="images/edit-icon.svg" />
+                        </Link>
+                      </div>
+                      <DeleteButton product={product} className="action-icon">
+                        <img src="images/delete-icon.svg" />
+                      </DeleteButton>
                     </div>
-                    <DeleteButton product={product} className="action-icon">
-                      <img src="images/delete-icon.svg" />
-                    </DeleteButton>
-                  </div>
+                  )}
                 </td>
               </tr>
             ))}

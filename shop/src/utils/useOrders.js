@@ -16,7 +16,9 @@ function useOrders(pageId, search) {
       if (search) params.set('search', search)
       const raw = await fetch(`${config.backend}/orders?${params.toString()}`, {
         credentials: 'include',
-        headers: { authorization: `bearer ${config.backendAuthToken}` }
+        headers: {
+          authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
+        }
       })
       setLoading(false)
       if (!raw.ok) {

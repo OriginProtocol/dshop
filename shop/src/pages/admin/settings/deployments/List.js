@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react'
+import fbt from 'fbt'
 import dayjs from 'dayjs'
 
 import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
 
 import NoItems from 'components/NoItems'
+import Link from 'components/Link'
 import DeployButton from './_DeployButton'
-import Tabs from '../_Tabs'
 
 const DeployShop = () => {
   const [{ reload }] = useStateValue()
@@ -20,14 +21,17 @@ const DeployShop = () => {
   return (
     <>
       <h3 className="admin-title">
-        Settings
+        <Link to="/admin/settings" className="muted">
+          <fbt desc="Settings">Settings</fbt>
+        </Link>
+        <span className="chevron" />
+        <fbt desc="Publish">Publish</fbt>
         {!deployments.length ? null : (
           <div className="actions">
             <DeployButton className="btn-primary" />
           </div>
         )}
       </h3>
-      <Tabs />
       {!deployments.length ? (
         <NoItems
           heading="You haven't published yet"
@@ -36,12 +40,18 @@ const DeployShop = () => {
           <DeployButton className="btn-primary" buttonText="Publish" />
         </NoItems>
       ) : (
-        <table className="table mt-3">
+        <table className="table">
           <thead>
             <tr>
-              <th>Deployments</th>
-              <th>IPFS</th>
-              <th>Domain</th>
+              <th>
+                <fbt desc="Deployments">Deployments</fbt>
+              </th>
+              <th>
+                <fbt desc="IPFS">IPFS</fbt>
+              </th>
+              <th>
+                <fbt desc="Domain">Domain</fbt>
+              </th>
             </tr>
           </thead>
           <tbody>

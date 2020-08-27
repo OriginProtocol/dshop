@@ -18,7 +18,7 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
       }
       confirmedText={
         <fbt desc="admin.settings.payments.disconnectSuccess">
-          <FbtParam name="processorName">{paymentMethod.label}</FbtParam>{' '}
+          <FbtParam name="processorName">{processor.title}</FbtParam>{' '}
           disconnected
         </fbt>
       }
@@ -49,7 +49,8 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
           case 'printful':
             updatedConfig = {
               printful: '',
-              printfulAutoFulfill: false
+              printfulAutoFulfill: false,
+              shippingApi: false
             }
             break
           case 'sendgrid':

@@ -1,6 +1,8 @@
 import React, { useReducer } from 'react'
 import get from 'lodash/get'
 
+import fbt from 'fbt'
+
 import { useStateValue } from 'data/state'
 import useOfferData from 'utils/useOfferData'
 import useConfig from 'utils/useConfig'
@@ -44,13 +46,21 @@ const PaymentActions = ({ order }) => {
           type="button"
           className="btn btn-outline-primary"
           onClick={() => setState({ acceptOffer: true })}
-          children={isOfflinePayment ? 'Mark as Paid' : 'Accept Payment'}
+          children={
+            isOfflinePayment
+              ? fbt('Mark as Paid', 'admin.order.markPaid')
+              : fbt('Accept Payment', 'admin.order.acceptPayment')
+          }
         />
         <button
           type="button"
           className="btn btn-outline-danger"
           onClick={() => setState({ withdrawOffer: true })}
-          children={isOfflinePayment ? 'Reject' : 'Reject & Refund'}
+          children={
+            isOfflinePayment
+              ? fbt('Reject', 'Reject')
+              : fbt('Reject & Refund', 'admin.order.rejectRefund')
+          }
         />
         <Web3Transaction
           dependencies={[marketplace]}
@@ -91,7 +101,9 @@ const PaymentActions = ({ order }) => {
           type="button"
           className="btn btn-outline-primary"
           onClick={() => setState({ finalizeOffer: true })}
-          children="Finalize Purchase"
+          children={
+            <fbt desc="admin.order.finalizePurchase">Finalize Purchase</fbt>
+          }
         />
         <Web3Transaction
           dependencies={[marketplace]}

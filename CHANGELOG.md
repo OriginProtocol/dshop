@@ -1,5 +1,11 @@
 # Changelog
 
+## dshop/v1.4.0 (2020-08-18)
+
+- Printful integration
+- Localization to Spanish
+- Various bug fixes
+
 ## dshop/v1.3.0 (2020-08-12)
 
 - Localization support

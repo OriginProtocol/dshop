@@ -13,9 +13,10 @@ import Link from 'components/Link'
 
 import PayWithCrypto from './payment-methods/Crypto'
 import PayWithStripe from './payment-methods/Stripe'
-import PayWithUphold from './payment-methods/Uphold'
+import PayWithUphold from './payment-methods/uphold/Uphold'
 import PayOffline from './payment-methods/OfflinePayment'
 import PayWithPayPal from './payment-methods/PayPal'
+import NoPaymentDue from './payment-methods/NoPaymentDue'
 import BillingAddress from './_BillingAddress'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
 
@@ -123,13 +124,15 @@ const ChoosePayment = () => {
 
   useEffect(() => {
     if (paymentState.loading) return
-    setPaymentState({
-      buttonText: isOfflinePayment ? (
-        <fbt desc="checkout.payment.placeOrder">Place Order</fbt>
-      ) : (
-        defaultButtonText
-      )
-    })
+    if (isOfflinePayment) {
+      setPaymentState({
+        buttonText: isOfflinePayment ? (
+          <fbt desc="checkout.payment.placeOrder">Place Order</fbt>
+        ) : (
+          defaultButtonText
+        )
+      })
+    }
   }, [isOfflinePayment, paymentState.loading])
 
   const Feedback = formFeedback(formState)
@@ -166,31 +169,39 @@ const ChoosePayment = () => {
 
   return (
     <form onSubmit={onSubmit}>
-      <div className="checkout-payment-method">
-        {!paymentMethods.find((p) => p.id === 'crypto') ? null : (
-          <PayWithCrypto {...paymentState} onChange={setPaymentState} />
-        )}
-        {!paymentMethods.find((p) => p.id === 'stripe') ? null : (
-          <PayWithStripe {...paymentState} onChange={setPaymentState} />
-        )}
-        {!paymentMethods.find((p) => p.id === 'uphold') ? null : (
-          <PayWithUphold {...paymentState} onChange={setPaymentState} />
-        )}
-        {!paymentMethods.find((p) => p.id === 'paypal') ? null : (
-          <PayWithPayPal {...paymentState} onChange={setPaymentState} />
-        )}
-        {offlinePaymentMethods.map((method) => (
-          <PayOffline
-            {...paymentState}
-            onChange={setPaymentState}
-            key={method.id}
-            paymentMethod={method}
-          />
-        ))}
-      </div>
+      {cart.total === 0 ? (
+        <div className="checkout-payment-method">
+          <NoPaymentDue {...paymentState} onChange={setPaymentState} />
+        </div>
+      ) : (
+        <>
+          <div className="checkout-payment-method">
+            {!paymentMethods.find((p) => p.id === 'crypto') ? null : (
+              <PayWithCrypto {...paymentState} onChange={setPaymentState} />
+            )}
+            {!paymentMethods.find((p) => p.id === 'stripe') ? null : (
+              <PayWithStripe {...paymentState} onChange={setPaymentState} />
+            )}
+            {!paymentMethods.find((p) => p.id === 'uphold') ? null : (
+              <PayWithUphold {...paymentState} onChange={setPaymentState} />
+            )}
+            {!paymentMethods.find((p) => p.id === 'paypal') ? null : (
+              <PayWithPayPal {...paymentState} onChange={setPaymentState} />
+            )}
+            {offlinePaymentMethods.map((method) => (
+              <PayOffline
+                {...paymentState}
+                onChange={setPaymentState}
+                key={method.id}
+                paymentMethod={method}
+              />
+            ))}
+          </div>
 
-      {hideBillingAddress ? null : (
-        <BillingAddress {...{ formState, setFormState, input, Feedback }} />
+          {hideBillingAddress ? null : (
+            <BillingAddress {...{ formState, setFormState, input, Feedback }} />
+          )}
+        </>
       )}
 
       <div className="actions">

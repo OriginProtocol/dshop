@@ -30,7 +30,7 @@ export default ProcessorsList
 require('react-styl')(`
   .processors-list
     .processor
-      margin-top: 2rem
+      margin-bottom: 2rem
       display: flex
       .icon
         display: flex

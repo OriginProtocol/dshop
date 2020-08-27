@@ -3,12 +3,11 @@ const expect = chai.expect
 
 const { Order } = require('../models')
 const { processDShopEvent, handleLog } = require('../utils/handleLog')
-const { post } = require('../utils/_ipfs')
 
 const {
-  addData,
   getTestWallet,
   createTestShop,
+  createTestOffer,
   getOrCreateTestNetwork,
   generatePgpKey
 } = require('./utils')
@@ -37,70 +36,10 @@ describe('Orders', () => {
       pgpPrivateKey
     })
 
-    // Create an order data and store it encrypted on IPFS
-    data = {
-      items: [
-        {
-          product: 'iron mask',
-          quantity: 1,
-          variant: 0,
-          price: 2500,
-          externalProductId: 165524792,
-          externalVariantId: 1811816649
-        }
-      ],
-      instructions: '',
-      subTotal: 2500,
-      discount: 0,
-      donation: 0,
-      total: 2500,
-      shipping: {
-        id: 'STANDARD',
-        label: 'Flat Rate',
-        amount: 399
-      },
-      paymentMethod: {
-        id: 'stripe',
-        label: 'Credit Card'
-      },
-      discountObj: {},
-      userInfo: {
-        firstName: 'The',
-        lastName: 'Mandalorian',
-        email: 'buyer@originprotocol.com',
-        address1: '123 Main St',
-        city: 'Palo Alto',
-        province: 'California',
-        country: 'United States',
-        zip: '94301',
-        billingCountry: 'United States'
-      },
-      dataKey: 'abbfs5a34o4j28arw21ynavek62y2km'
-    }
-    const { hash } = await addData(data, {
-      pgpPublicKey: key.publicKeyArmored,
-      ipfsApi: network.ipfsApi
-    })
-
-    // Create an offer on IPFS.
-    const offer = {
-      schemaId: 'https://schema.originprotocol.com/offer_2.0.0.json',
-      listingId: shop.listingId,
-      listingType: 'unit',
-      unitsPurchased: 1,
-      totalPrice: {
-        amount: '25.00',
-        currency: 'fiat-USD'
-      },
-      commission: {
-        amount: '0.1',
-        currency: 'OGN'
-      },
-      finalizes: 1209600,
-      encryptedData: hash,
-      paymentCode: 'code123'
-    }
-    offerIpfsHash = await post(network.ipfsApi, offer, true)
+    // Create an an offer.
+    const result = await createTestOffer(network, shop, key)
+    offerIpfsHash = result.ipfsHash
+    data = result.data
   })
 
   it('It should ignore an OfferCreated event unrelated to dshop', async () => {

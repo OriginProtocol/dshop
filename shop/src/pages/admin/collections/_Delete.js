@@ -1,5 +1,7 @@
 import React from 'react'
 
+import fbt from 'fbt'
+
 import ConfirmationModal from 'components/ConfirmationModal'
 import useBackendApi from 'utils/useBackendApi'
 import useRedirect from 'utils/useRedirect'
@@ -15,8 +17,11 @@ const AdminDeleteDiscount = ({ className = '', collection }) => {
   return (
     <ConfirmationModal
       className={`btn btn-outline-danger ${className}`}
-      buttonText="Delete"
-      confirmText="Are you sure you want to delete this collection?"
+      buttonText={fbt('Delete', 'Delete')}
+      confirmText={fbt(
+        'Are you sure you want to delete this collection?',
+        'admin.collections.confirmDelete'
+      )}
       confirmedText={false}
       onConfirm={() =>
         post('/collections', {
@@ -28,7 +33,10 @@ const AdminDeleteDiscount = ({ className = '', collection }) => {
       }
       onSuccess={() => {
         dispatch({ type: 'reload', target: 'collections' })
-        dispatch({ type: 'toast', message: 'Deleted OK' })
+        dispatch({
+          type: 'toast',
+          message: fbt('Deleted OK', 'admin.collections.deleteSuccess')
+        })
         redirectTo('/admin/collections')
       }}
     />

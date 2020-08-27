@@ -17,7 +17,8 @@ try {
 const DefaultPaymentMethods = [
   { id: 'crypto', label: fbt('Crypto Currency', 'paymentMethods.crypto') },
   { id: 'stripe', label: fbt('Credit Card', 'paymentMethods.stripe') },
-  { id: 'paypal', label: fbt('PayPal', 'paymentMethods.paypal') }
+  { id: 'paypal', label: fbt('PayPal', 'paymentMethods.paypal') },
+  { id: 'uphold', label: fbt('Uphold', 'paymentMethods.uphold') }
 ]
 
 let config
@@ -47,14 +48,18 @@ export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
         return false
       } else if (m.id === 'paypal' && !config.paypalClientId) {
         return false
+      } else if (m.id === 'uphold' && !config.upholdClient) {
+        return false
+      } else if (m.id === 'crypto' && config.disableCryptoPayments) {
+        return false
       }
+
       return true
     })
 
     config.supportEmailPlain = parsePlainEmail(config.supportEmail)
 
     const networkConfig = activeNetworkConfig(config, netId)
-
     const result = {
       ...config,
       ...networkConfig,
@@ -65,7 +70,7 @@ export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
     // If UI is being served from backend, override 'backend' from config.json
     // returned by shops to prevent auth issues
     if (overrideBackend) {
-      result.backend = ''
+      result.backend = window.location.origin
     }
 
     return result

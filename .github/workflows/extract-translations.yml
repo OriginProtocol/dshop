@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Extract Translations
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  build:
+  extract-translations:
     runs-on: ubuntu-latest
 
     steps:

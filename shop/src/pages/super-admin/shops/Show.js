@@ -1,8 +1,7 @@
 import React from 'react'
 import { Link, Switch, Route, useRouteMatch, Redirect } from 'react-router-dom'
-import get from 'lodash/get'
 
-import { useStateValue } from 'data/state'
+import useShop from 'utils/useShop'
 
 import SyncShop from './shop/Sync'
 import DeleteShop from './shop/_Delete'
@@ -23,13 +22,12 @@ const NavItem = ({ url, active, name }) => (
 )
 
 const AdminShop = () => {
-  const [{ admin }] = useStateValue()
   const match = useRouteMatch('/super-admin/shops/:shopId/:tab?')
   const { shopId, tab } = match.params
 
-  const shops = get(admin, 'shops', [])
-  const shop = shops.find((s) => s.authToken === shopId)
-  if (!shops.length) {
+  const { shop, loading } = useShop(shopId)
+
+  if (loading) {
     return <div>Loading...</div>
   }
   if (!shop) {

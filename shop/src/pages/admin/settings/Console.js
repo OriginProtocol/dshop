@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import fbt from 'fbt'
 
 import { get } from '@origin/ipfs'
 import omit from 'lodash/omit'
@@ -10,8 +11,7 @@ import useSetState from 'utils/useSetState'
 import useWallet from 'utils/useWallet'
 import { updateListing } from 'utils/listing'
 import { formInput, formFeedback } from 'utils/formHelpers'
-
-import Tabs from './_Tabs'
+import Link from 'components/Link'
 
 const AdminConsole = () => {
   const { config } = useConfig()
@@ -30,8 +30,13 @@ const AdminConsole = () => {
 
   return (
     <>
-      <h3 className="admin-title">Settings</h3>
-      <Tabs />
+      <h3 className="admin-title with-border">
+        <Link to="/admin/settings" className="muted">
+          <fbt desc="Settings">Settings</fbt>
+        </Link>
+        <span className="chevron" />
+        Console
+      </h3>
 
       <div className="mt-4">
         <pre>{JSON.stringify(omit(wallet, 'provider', 'signer'), null, 4)}</pre>
@@ -53,7 +58,9 @@ const AdminConsole = () => {
 
               fetch(`${config.backend}/orders/create`, {
                 headers: {
-                  authorization: `bearer ${config.backendAuthToken}`,
+                  authorization: `bearer ${encodeURIComponent(
+                    config.backendAuthToken
+                  )}`,
                   'content-type': 'application/json'
                 },
                 credentials: 'include',
@@ -92,7 +99,9 @@ const AdminConsole = () => {
 
             fetch(`${config.backend}/orders/${orderId}/email`, {
               headers: {
-                authorization: `bearer ${config.backendAuthToken}`,
+                authorization: `bearer ${encodeURIComponent(
+                  config.backendAuthToken
+                )}`,
                 'content-type': 'application/json'
               },
               credentials: 'include',
@@ -202,7 +211,9 @@ const AdminConsole = () => {
             setPrintfulError('')
             fetch(`${config.backend}/shop/sync-printful`, {
               headers: {
-                authorization: `bearer ${config.backendAuthToken}`,
+                authorization: `bearer ${encodeURIComponent(
+                  config.backendAuthToken
+                )}`,
                 'content-type': 'application/json'
               },
               credentials: 'include',

@@ -256,7 +256,7 @@ async function validateWebhooks() {
         limit: 100
       })
 
-      let foundValidWebhook = false
+      const validWebhookIds = []
       for (const webhook of webhookEndpoints.data) {
         const id = webhook.id
 
@@ -271,7 +271,7 @@ async function validateWebhooks() {
         if (url === webhookUrl && isDshop) {
           // Properly configured dshop webhook. Nothing to do.
           log.info(`OK. DShop. Webhook id:${id} url:${url}`)
-          foundValidWebhook = true
+          validWebhookIds.push(id)
           continue
         }
 
@@ -288,8 +288,8 @@ async function validateWebhooks() {
         }
       }
 
-      // Register a new valid Dshop webhook.
-      if (!foundValidWebhook) {
+      if (validWebhookIds.length === 0) {
+        // No valid webhook. Register a new one.
         const webhookData = getWebhookData(shop, webhookUrl)
         if (program.doIt) {
           log.info(`Registering new webhook for shop ${shop.id}...`)
@@ -299,6 +299,26 @@ async function validateWebhooks() {
           )
         } else {
           log.info(`Would register new webhook with data:`, webhookData)
+        }
+      } else if (validWebhookIds.length > 1) {
+        // More than 1 valid webhook. Something is wrong.
+        // De-register all of them and register a new one.
+        log.error(
+          `Found ${validWebhookIds.length} valid webhook. Expected only 1`
+        )
+        if (program.doIt) {
+          for (const id of validWebhookIds) {
+            log.info(`Deleting webhook ${id}`)
+            await stripe.webhookEndpoints.del(id)
+          }
+          log.info(`Registering new webhook for shop ${shop.id}...`)
+          const webhookData = getWebhookData(shop, webhookUrl)
+          const endpoint = await stripe.webhookEndpoints.create(webhookData)
+          log.info(`Shop ${shop.id}: Registered webhook id ${endpoint.id}`)
+        } else {
+          log.info(
+            `Would deregister ${validWebhookIds.length} and register a new one.`
+          )
         }
       }
     } catch (e) {

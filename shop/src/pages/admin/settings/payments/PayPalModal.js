@@ -2,6 +2,7 @@ import React, { useReducer } from 'react'
 
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
+import fbt from 'fbt'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConnectModal from './_ConnectModal'
@@ -24,11 +25,17 @@ const validate = (state) => {
   const newState = {}
 
   if (!state.paypalClientSecret) {
-    newState.paypalClientSecretError = 'Secret key is required'
+    newState.paypalClientSecretError = fbt(
+      'Secret key is required',
+      'admin.settings.payments.paypal.clientSecretError'
+    )
   }
 
   if (!state.paypalClientId) {
-    newState.paypalClientIdError = 'Client ID is required'
+    newState.paypalClientIdError = fbt(
+      'Client ID is required',
+      'admin.settings.payments.paypal.clientIdError'
+    )
   }
 
   const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
@@ -62,7 +69,10 @@ const PayPalModal = ({ onClose, initialConfig }) => {
 
   return (
     <ConnectModal
-      title="Connect to PayPal"
+      title={fbt(
+        'Connect to PayPal',
+        'admin.settings.payments.paypal.connectPayPal'
+      )}
       validate={() => {
         const validateResponse = validate(state)
         setState(validateResponse.newState)
@@ -73,12 +83,16 @@ const PayPalModal = ({ onClose, initialConfig }) => {
       actions={<VerifyButton onVerify={verifyCredentials} />}
     >
       <div className="form-group">
-        <label>Client ID</label>
+        <label>
+          <fbt desc="admin.settings.payments.paypal.clientId">Client ID</fbt>
+        </label>
         <input {...input('paypalClientId')} />
         {Feedback('paypalClientId')}
       </div>
       <div className="form-group">
-        <label>Secret Key</label>
+        <label>
+          <fbt desc="admin.settings.payments.paypal.secretKey">Secret Key</fbt>
+        </label>
         <PasswordField input={input} field="paypalClientSecret" />
         {Feedback('paypalClientSecret')}
       </div>

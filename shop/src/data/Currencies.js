@@ -186,7 +186,7 @@ export const AllCurrencies = [
   ['UYU', fbt('Uruguayan Peso (UYU)', 'currencies.UYU')],
   ['UZS', fbt('Uzbekistani Som (UZS)', 'currencies.UZS')],
   ['VUV', fbt('Vanuatu Vatu (VUV)', 'currencies.VUV')],
-  ['VEF', fbt('Venezuelan Bolívar (VEF)', 'currencies.VEF')],
+  ['VES', fbt('Venezuelan Bolívar (VES)', 'currencies.VES')],
   ['VND', fbt('Vietnamese Dong (VND)', 'currencies.VND')],
   ['XOF', fbt('West African CFA Franc (XOF)', 'currencies.XOF')],
   // ['YER', fbt('Yemeni Rial (YER)', 'currencies.YER')],

@@ -2,6 +2,7 @@ import React, { useReducer } from 'react'
 
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
+import fbt from 'fbt'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import ConnectModal from '../payments/_ConnectModal'
@@ -11,14 +12,18 @@ const reducer = (state, newState) => ({ ...state, ...newState })
 
 const initialState = {
   printful: '',
-  printfulAutoFulfill: false
+  printfulAutoFulfill: false,
+  shippingApi: true
 }
 
 const validate = (state) => {
   const newState = {}
 
   if (!state.printful) {
-    newState.printfulError = 'Secret key is required'
+    newState.printfulError = fbt(
+      'Secret key is required',
+      'admin.settings.apps.printful.secretKeyError'
+    )
   }
 
   const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
@@ -43,7 +48,10 @@ const PrintfulModal = ({ onClose, initialConfig }) => {
 
   return (
     <ConnectModal
-      title="Connect to Printful"
+      title={fbt(
+        'Connect to Printful',
+        'admin.settings.apps.printful.connectPrintful'
+      )}
       validate={() => {
         const validateResponse = validate(state)
         setState(validateResponse.newState)
@@ -53,7 +61,9 @@ const PrintfulModal = ({ onClose, initialConfig }) => {
       onClose={onClose}
     >
       <div className="form-group">
-        <label>Printful API Key</label>
+        <label>
+          <fbt desc="admin.settings.apps.printful.apiKey">Printful API Key</fbt>
+        </label>
         <PasswordField input={input} field="printful" />
         {Feedback('printful')}
       </div>
@@ -67,7 +77,9 @@ const PrintfulModal = ({ onClose, initialConfig }) => {
               setState({ printfulAutoFulfill: e.target.checked })
             }
           />
-          Auto-fulfill orders
+          <fbt desc="admin.settings.apps.printful.autoFulfillOrders">
+            Auto-fulfill orders
+          </fbt>
         </label>
       </div>
     </ConnectModal>

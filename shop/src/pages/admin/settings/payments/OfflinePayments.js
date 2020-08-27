@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import fbt from 'fbt'
 
 import OfflinePaymentModal from './_OfflinePaymentModal'
 import DeleteButton from './_DeleteOfflinePayment'
@@ -27,11 +28,17 @@ const OfflinePayment = ({ offlinePaymentMethods, onChange }) => {
 
   return (
     <div className="manual-payment contract-settings">
-      <h4>Manual payment methods</h4>
+      <h4>
+        <fbt desc="admin.settins.payments.offlinePayments.title">
+          Manual payment methods
+        </fbt>
+      </h4>
       <div className="desc">
-        Payments that are processed outside your online store. When a customer
-        makes a manual payment, you need to approve their order before
-        fulfilling.
+        <fbt desc="admin.settins.payments.offlinePayments.desc">
+          Payments that are processed outside your online store. When a customer
+          makes a manual payment, you need to approve their order before
+          fulfilling.
+        </fbt>
       </div>
 
       {paymentMethods.map((method) => (
@@ -95,10 +102,6 @@ export default OfflinePayment
 
 require('react-styl')(`
   .manual-payment
-    .desc
-      color: #8293a4
-      font-size: 0.875rem
-      max-width: 500px
     .manual-payment-checkboxes
       display: flex
 

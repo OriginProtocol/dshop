@@ -51,7 +51,7 @@ const ProductList = ({ products }) => {
                 {product.title}
               </Link>
               <div className="price">
-                {!product.hasVariants
+                {product.variantPricing
                   ? `${fbt('From', 'component.ProductList.fromPrice')} `
                   : ''}
                 {formatPrice(product.price, currencyOpts)}

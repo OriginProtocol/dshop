@@ -2,6 +2,8 @@ import React, { useEffect } from 'react'
 import { useRouteMatch } from 'react-router-dom'
 import dayjs from 'dayjs'
 
+import fbt from 'fbt'
+
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useRest from 'utils/useRest'
@@ -23,23 +25,41 @@ function validate(state) {
   const newState = {}
 
   if (!state.code) {
-    newState.codeError = 'Enter a discount code'
+    newState.codeError = fbt(
+      'Enter a discount code',
+      'admin.discounts.edit.codeError'
+    )
   } else if (state.code.length < 3) {
-    newState.codeError = 'Code is too short'
+    newState.codeError = fbt(
+      'Code is too short',
+      'admin.discounts.edit.codeError'
+    )
   }
 
   if (!state.value) {
-    newState.valueError = 'Enter a value'
+    newState.valueError = fbt(
+      'Enter a value',
+      'admin.discounts.edit.valueError'
+    )
   } else if (Number(state.value) <= 0) {
-    newState.valueError = 'Value must be greater than zero'
+    newState.valueError = fbt(
+      'Value must be greater than zero',
+      'admin.discounts.edit.invalidValueError'
+    )
   }
 
   if (state.discountType === 'percentage' && state.value > 100) {
-    newState.valueError = 'Discount cannot be greater than 100%'
+    newState.valueError = fbt(
+      'Discount cannot be greater than 100%',
+      'admin.discounts.edit.invalidPercentageError'
+    )
   }
 
   if (state.maxUses && state.maxUses.length && Number(state.maxUses) <= 0) {
-    newState.maxUsesError = 'Max usage must be greater than zero'
+    newState.maxUsesError = fbt(
+      'Max usage must be greater than zero',
+      'admin.discounts.edit.maxUsesError'
+    )
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
@@ -81,13 +101,18 @@ const AdminEditDiscount = () => {
 
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
-  const title = `${discountId === 'new' ? 'Create' : 'Edit'} Discount`
+  const title =
+    discountId === 'new' ? (
+      <fbt desc="admin.discounts.edit.createDiscount">Create Discount</fbt>
+    ) : (
+      <fbt desc="admin.discounts.edit.editDiscount">Edit Discount</fbt>
+    )
 
   const actions = (
     <div className="actions">
       {!discount ? null : <DeleteButton discount={discount} />}
       <button type="submit" className="btn btn-primary">
-        Save
+        <fbt desc="Save">Save</fbt>
       </button>
     </div>
   )
@@ -114,7 +139,9 @@ const AdminEditDiscount = () => {
 
           const raw = await fetch(url, {
             headers: {
-              authorization: `bearer ${config.backendAuthToken}`,
+              authorization: `bearer ${encodeURIComponent(
+                config.backendAuthToken
+              )}`,
               'content-type': 'application/json'
             },
             credentials: 'include',
@@ -142,7 +169,7 @@ const AdminEditDiscount = () => {
     >
       <h3 className="admin-title with-border">
         <Link to="/admin/discounts" className="muted">
-          Discounts
+          <fbt desc="Discounts">Discounts</fbt>
         </Link>
         <span className="chevron" />
         {title}
@@ -150,8 +177,14 @@ const AdminEditDiscount = () => {
       </h3>
       <div className="form-group" style={{ maxWidth: '30rem' }}>
         <label>
-          Discount code
-          <span>(customers will enter this at the checkout)</span>
+          <fbt desc="admin.discounts.edit.discountCode">Discount code</fbt>
+          <span>
+            (
+            <fbt desc="admin.discounts.edit.discountCodeDesc">
+              customers will enter this at the checkout
+            </fbt>
+            )
+          </span>
         </label>
         <input
           autoFocus
@@ -169,16 +202,24 @@ const AdminEditDiscount = () => {
       </div>
       <div className="form-row">
         <div className="form-group col-md-6" style={{ maxWidth: '15rem' }}>
-          <label>Status</label>
+          <label>
+            <fbt desc="Status">Status</fbt>
+          </label>
           <select {...input('status')}>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="active">
+              <fbt desc="Active">Active</fbt>
+            </option>
+            <option value="inactive">
+              <fbt desc="Inactive">Inactive</fbt>
+            </option>
           </select>
           {Feedback('status')}
         </div>
       </div>
       <div className="form-group" style={{ maxWidth: '15rem' }}>
-        <label>Type</label>
+        <label>
+          <fbt desc="Type">Type</fbt>
+        </label>
         <div className="form-check">
           <label className="form-check-label">
             <input
@@ -188,7 +229,7 @@ const AdminEditDiscount = () => {
               checked={state.discountType === 'percentage'}
               onChange={() => setState({ discountType: 'percentage' })}
             />
-            Percentage
+            <fbt desc="Percentage">Percentage</fbt>
           </label>
         </div>
         <div className="form-check">
@@ -200,12 +241,14 @@ const AdminEditDiscount = () => {
               checked={state.discountType === 'fixed'}
               onChange={() => setState({ discountType: 'fixed' })}
             />
-            Fixed amount
+            <fbt desc="admin.discounts.edit.fixedAmount">Fixed amount</fbt>
           </label>
         </div>
       </div>
       <div className="form-group" style={{ maxWidth: '15rem' }}>
-        <label>Discount Value</label>
+        <label>
+          <fbt desc="admin.discounts.edit.discountValue">Discount Value</fbt>
+        </label>
         <div className="input-group">
           {state.discountType !== 'fixed' ? null : (
             <div className="input-group-prepend">
@@ -234,11 +277,15 @@ const AdminEditDiscount = () => {
             checked={state.excludeShipping ? true : false}
             onChange={(e) => setState({ excludeShipping: e.target.checked })}
           />
-          Exclude shipping price from discount
+          <fbt desc="admin.discounts.edit.excludeShipping">
+            Exclude shipping price from discount
+          </fbt>
         </label>
       </div>
       <div className="form-group" style={{ maxWidth: '15rem' }}>
-        <label>Max Uses</label>
+        <label>
+          <fbt desc="admin.discounts.edit.maxUses">Max Uses</fbt>
+        </label>
         <input type="number" {...input('maxUses')} />
         {Feedback('maxUses')}
       </div>
@@ -250,17 +297,21 @@ const AdminEditDiscount = () => {
             checked={state.onePerCustomer ? true : false}
             onChange={(e) => setState({ onePerCustomer: e.target.checked })}
           />
-          One Per Customer
+          <fbt desc="admin.discounts.edit.onePerCustomer">One Per Customer</fbt>
         </label>
       </div>
       <div className="form-row mb-3" style={{ maxWidth: '30rem' }}>
         <div className="col-6">
-          <label>Start Date</label>
+          <label>
+            <fbt desc="StartDate">Start Date</fbt>
+          </label>
           <input type="date" {...input('startDate')} required />
           {Feedback('startDate')}
         </div>
         <div className="col-6">
-          <label>Start Time</label>
+          <label>
+            <fbt desc="StartTime">Start Time</fbt>
+          </label>
           <select {...input('startTime')}>
             {times.map((time, idx) => (
               <option key={idx} value={time[0]}>
@@ -279,18 +330,22 @@ const AdminEditDiscount = () => {
             checked={state.endDateEnabled ? true : false}
             onChange={(e) => setState({ endDateEnabled: e.target.checked })}
           />
-          Set end date
+          <fbt desc="admin.discounts.edit.setEndDate">Set end date</fbt>
         </label>
       </div>
       {!state.endDateEnabled ? null : (
         <div className="form-row mb-3" style={{ maxWidth: '30rem' }}>
           <div className="col-6">
-            <label>End Date</label>
+            <label>
+              <fbt desc="EndDate">End Date</fbt>
+            </label>
             <input type="date" {...input('endDate')} required />
             {Feedback('endDate')}
           </div>
           <div className="col-6">
-            <label>End Time</label>
+            <label>
+              <fbt desc="EndTime">End Time</fbt>
+            </label>
             <select {...input('endTime')}>
               {times.map((time, idx) => (
                 <option key={idx} value={time[0]}>

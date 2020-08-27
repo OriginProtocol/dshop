@@ -98,6 +98,17 @@ module.exports = function (router) {
     }
   )
 
+  router.get('/shop', authSuperUser, async (req, res) => {
+    res.send({
+      success: true,
+      shop: await Shop.findOne({
+        where: {
+          authToken: req.query.shopToken
+        }
+      })
+    })
+  })
+
   router.get('/shops', authUser, async (req, res) => {
     const user = req.seller
     const order = [['id', 'desc']]
@@ -189,7 +200,8 @@ module.exports = function (router) {
         data: {
           OutputDir,
           apiKey: printful,
-          shopId: req.shop.id
+          shopId: req.shop.id,
+          refreshImages: req.body.refreshImages ? true : false
         },
         log: (data) => log.debug(data),
         progress: () => {}
@@ -787,13 +799,16 @@ module.exports = function (router) {
         'logErrors',
         'paypalClientId',
         'offlinePaymentMethods',
-        'supportEmail'
+        'supportEmail',
+        'upholdClient',
+        'shippingApi'
       )
       const jsonNetConfig = pick(
         req.body,
         'acceptedTokens',
         'customTokens',
-        'listingId'
+        'listingId',
+        'disableCryptoPayments'
       )
       const shopId = req.shop.id
       log.info(`Shop ${shopId} - Saving config`)
@@ -1134,7 +1149,8 @@ module.exports = function (router) {
 
       return res.json({ success: true, hash, domain, gateway: network.ipfs })
     } catch (e) {
-      log.error(`Shop ${shop.id} deploy failed: ${e}`)
+      log.error(`Shop ${shop.id} deploy failed`)
+      log.error(e)
       return res.json({ success: false, reason: e.message })
     }
   })
@@ -1181,6 +1197,8 @@ module.exports = function (router) {
         dnsProvider = 'gcp'
       } else if (networkConfig.cloudflareApiKey) {
         dnsProvider = 'cloudflare'
+      } else if (networkConfig.awsAccessKeyId) {
+        dnsProvider = 'aws'
       }
 
       try {
@@ -1210,7 +1228,8 @@ module.exports = function (router) {
 
         return res.json({ success: true, hash, domain, gateway: network.ipfs })
       } catch (e) {
-        log.error(`Shop ${req.shop.id} initial deploy failed: ${e}`)
+        log.error(`Shop ${req.shop.id} initial deploy failed`)
+        log.error(e)
         return res.json({ success: false, reason: e.message })
       }
     }

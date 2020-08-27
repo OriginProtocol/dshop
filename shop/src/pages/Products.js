@@ -28,6 +28,7 @@ const Products = () => {
 
   const collectionParam = get(match, 'params.collection')
   let collection = collections.find((c) => c.id === collectionParam)
+  const homeCollection = collections.find((c) => c.id === 'home')
   if (!collection && collectionParam === 'all') {
     collection = {
       id: 'all',
@@ -44,6 +45,10 @@ const Products = () => {
       .filter((p) => p)
   } else if (collection && collection.products) {
     filteredProducts = collection.products
+      .map((p) => products.find((product) => product.id === p))
+      .filter((p) => p)
+  } else if (homeCollection && homeCollection.products) {
+    filteredProducts = homeCollection.products
       .map((p) => products.find((product) => product.id === p))
       .filter((p) => p)
   }

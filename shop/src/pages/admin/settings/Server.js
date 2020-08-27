@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react'
+import fbt from 'fbt'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
 import useSetState from 'utils/useSetState'
 import { useStateValue } from 'data/state'
+import Link from 'components/Link'
 import PasswordField from 'components/admin/PasswordField'
-
-import Tabs from './_Tabs'
 
 function validate(state) {
   const newState = {}
@@ -148,7 +148,7 @@ const AdminSettings = ({ shop }) => {
           const token = shop ? shop.authToken : config.backendAuthToken
           const raw = await fetch(`${config.backend}/shop/config`, {
             headers: {
-              authorization: `bearer ${token}`,
+              authorization: `bearer ${encodeURIComponent(token)}`,
               'content-type': 'application/json'
             },
             credentials: 'include',
@@ -164,15 +164,18 @@ const AdminSettings = ({ shop }) => {
         }
       }}
     >
-      <h3 className="admin-title">
-        Settings
+      <h3 className="admin-title with-border">
+        <Link to="/admin/settings" className="muted">
+          <fbt desc="Settings">Settings</fbt>
+        </Link>
+        <span className="chevron" />
+        Server
         <div className="actions">
           <button type="submit" className="btn btn-primary" disabled={saving}>
             {saving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </h3>
-      <Tabs />
       <div className="row mt-3">
         {/* <div className="form-group col-md-6">
           <label>Listener</label>

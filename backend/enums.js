@@ -14,7 +14,7 @@ class Enum extends Array {
 }
 
 const TransactionStatuses = new Enum('Pending', 'Confirmed', 'Failed')
-const TransactionTypes = new Enum('OfferCreated')
+const TransactionTypes = new Enum('OfferCreated', 'Payment')
 const ShopDeploymentStatuses = new Enum('Pending', 'Success', 'Failure')
 const ShopDomainStatuses = new Enum('Pending', 'Success', 'Failure')
 

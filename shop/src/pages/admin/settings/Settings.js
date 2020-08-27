@@ -10,6 +10,9 @@ import Apps from './apps/List'
 import Deployments from './deployments/List'
 import Shipping from './shipping/Edit'
 import Advanced from './Advanced'
+import Checkout from './Checkout'
+import Appearance from './appearance/Edit'
+import List from './List'
 
 const AdminSettings = () => (
   <Switch>
@@ -37,8 +40,17 @@ const AdminSettings = () => (
     <Route path="/admin/settings/advanced">
       <Advanced />
     </Route>
-    <Route>
+    <Route path="/admin/settings/checkout">
+      <Checkout />
+    </Route>
+    <Route path="/admin/settings/appearance">
+      <Appearance />
+    </Route>
+    <Route path="/admin/settings/general">
       <General />
+    </Route>
+    <Route>
+      <List />
     </Route>
   </Switch>
 )

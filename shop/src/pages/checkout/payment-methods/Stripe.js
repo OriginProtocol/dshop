@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import get from 'lodash/get'
 import fbt, { FbtParam } from 'fbt'
+import { CardElement, injectStripe } from 'react-stripe-elements'
+import kebabCase from 'lodash/kebabCase'
+
 import formatPrice from 'utils/formatPrice'
 import { formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useIsMobile from 'utils/useIsMobile'
-import { useStateValue } from 'data/state'
-
-import { CardElement, injectStripe } from 'react-stripe-elements'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
+import { useStateValue } from 'data/state'
 
 const PayWithStripe = injectStripe(
   ({ stripe, submit, encryptedData, onChange, loading }) => {
@@ -19,11 +20,12 @@ const PayWithStripe = injectStripe(
     const [formData, setFormData] = useState({})
 
     const currencyOpts = useCurrencyOpts()
+    const minPayment = Math.max(cart.total, 50)
     const defaultButtonText = (
       <fbt desc="checkout.payment.amount">
         Pay{' '}
         <FbtParam name="amount">
-          {formatPrice(cart.total, currencyOpts)}
+          {formatPrice(minPayment, currencyOpts)}
         </FbtParam>
       </fbt>
     )
@@ -40,6 +42,11 @@ const PayWithStripe = injectStripe(
       }
 
       try {
+        const shipping = cart.shipping
+        if (typeof shipping.id !== 'string') {
+          shipping.id = kebabCase(shipping.label)
+        }
+
         const paymentRequest = stripe.paymentRequest({
           country: 'US',
           currency: get(config, 'currency', 'usd').toLowerCase(),
@@ -47,7 +54,7 @@ const PayWithStripe = injectStripe(
           requestPayerName: true,
           requestPayerEmail: true,
           requestShipping: true,
-          shippingOptions: [cart.shipping]
+          shippingOptions: [shipping]
         })
 
         paymentRequest.on('token', ({ complete, token, ...data }) => {
@@ -84,6 +91,7 @@ const PayWithStripe = injectStripe(
             'checkout.payment.stripe.configError'
           )
         })
+        onChange(resetState)
         return
       }
 
@@ -99,13 +107,13 @@ const PayWithStripe = injectStripe(
       fetch(`${config.backend}/pay`, {
         headers: {
           'content-type': 'application/json',
-          authorization: `bearer ${config.backendAuthToken}`
+          authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
         },
         credentials: 'include',
         method: 'POST',
         body: JSON.stringify({
           currency: get(config, 'currency', 'usd').toLowerCase(),
-          amount: cart.total,
+          amount: minPayment,
           data: encryptedData.hash,
           listingId: config.listingId
         })
@@ -214,6 +222,11 @@ const PayWithStripe = injectStripe(
               style={{ base: { fontSize: '16px', lineHeight: '24px' } }}
             />
             {Feedback('card')}
+            {cart.total > 50 || formData.cardError ? null : (
+              <div style={{ marginTop: '0.25rem', fontSize: '80%' }}>
+                <b>Note:</b> minimum credit card charge is $0.50
+              </div>
+            )}
             <div className="d-flex">
               <img
                 src="images/powered_by_stripe.svg"

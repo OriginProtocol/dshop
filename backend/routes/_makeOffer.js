@@ -8,15 +8,15 @@ const { makeOfferQueue } = require('../queues/queues')
 async function makeOffer(req, res) {
   const shop = req.shop
   const amount = req.amount
-  const encryptedData = req.body.data
+  const encryptedDataIpfsHash = req.body.data
   const paymentCode = req.paymentCode
 
   await makeOfferQueue.add(
     {
       shopId: shop.id,
-      amount: amount,
-      encryptedData: encryptedData,
-      paymentCode: paymentCode
+      amount,
+      encryptedDataIpfsHash,
+      paymentCode
     },
     {
       // Up to 6 attempts with exponential backoff with a 60sec initial delay.
@@ -28,7 +28,7 @@ async function makeOffer(req, res) {
     }
   )
 
-  res.sendStatus(200)
+  res.json({ success: true })
 }
 
 module.exports = makeOffer

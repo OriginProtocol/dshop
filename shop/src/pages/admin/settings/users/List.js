@@ -6,7 +6,7 @@ import useBackendApi from 'utils/useBackendApi'
 
 import { useStateValue } from 'data/state'
 
-import Tabs from '../_Tabs'
+import Link from 'components/Link'
 import AddUserModal from './_Add'
 
 const AdminUsers = () => {
@@ -60,18 +60,21 @@ const AdminUsers = () => {
   return (
     <>
       <h3 className="admin-title">
-        <fbt desc="Settings">Settings</fbt>
+        <Link to="/admin/settings" className="muted">
+          <fbt desc="Settings">Settings</fbt>
+        </Link>
+        <span className="chevron" />
+        Users
         <div className="actions">
           <AddUserModal afterSave={() => loadUsers()} />
         </div>
       </h3>
-      <Tabs />
       {state.loading ? (
         <>
           <fbt desc="Loading">Loading</fbt>...
         </>
       ) : (
-        <table className="table mt-4">
+        <table className="table">
           <thead>
             <tr>
               <th>

@@ -171,8 +171,28 @@ module.exports = function (router) {
       const secret = shopConfig.stripeWebhookSecret
       event = stripe.webhooks.constructEvent(req.body, sig, secret)
     } catch (err) {
-      log.error(`⚠️ Webhook signature verification failed:`, err)
       try {
+        if (json) {
+          // Check if an event with the ID has already been processed
+          // If yes, the event could be from an old webhook registration
+          const existingDBItem = await ExternalPayment.findOne({
+            where: {
+              authenticated: true,
+              external_id: json.id
+            }
+          })
+
+          if (existingDBItem) {
+            log.debug(
+              `[Shop ${req.shop.id}] Duplicate event with different sign: ${json.id}`
+            )
+            // Send 200 status, so that Stripe doesn't try to
+            // resend this event again
+            return res.sendStatus(200)
+          }
+        }
+
+        log.error(`⚠️ Webhook signature verification failed:`, err)
         await stripeWebhookErrorEmail(req.shop.id, {
           externalPaymentId: externalPayment.id,
           stackTrace: err.stack,
