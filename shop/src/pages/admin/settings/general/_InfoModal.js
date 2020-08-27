@@ -9,9 +9,7 @@ const InfoModal = ({ onClose, description, title }) => {
     <Modal onClose={onClose} shouldClose={shouldClose}>
       <div className="modal-body p-5 shop-settings">
         <div className="text-lg text-center">{title}</div>
-        <div className="description mt-3 text-center">
-          {description}
-        </div>
+        <div className="description mt-3 text-center">{description}</div>
         <div className="actions text-center">
           <button
             className="btn btn-outline-primary px-5"
