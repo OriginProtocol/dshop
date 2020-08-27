@@ -42,7 +42,7 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
       const codeResponse = await post('/crypto/payment-code', {
         body: JSON.stringify({
           fromAddress,
-          toAddress: config.sellerAccount,
+          toAddress: config.walletAddress,
           amount: cart.total,
           currency: config.currency
         })
@@ -50,10 +50,10 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
 
       let execPromise
       if (token.contract) {
-        execPromise = token.contract.transfer(config.sellerAccount, amountWei)
+        execPromise = token.contract.transfer(config.walletAddress, amountWei)
       } else {
         execPromise = wallet.signer.sendTransaction({
-          to: config.sellerAccount,
+          to: config.walletAddress,
           value: amountWei
         })
       }
@@ -66,7 +66,7 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
             body: JSON.stringify({
               txHash: tx.hash,
               fromAddress,
-              toAddress: config.sellerAccount,
+              toAddress: config.walletAddress,
               encryptedDataIpfsHash: encryptedData.hash,
               paymentCode: codeResponse.paymentCode
             })
