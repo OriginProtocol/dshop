@@ -801,6 +801,7 @@ module.exports = function (router) {
         'offlinePaymentMethods',
         'supportEmail',
         'upholdClient',
+        'useEscrow',
         'shippingApi'
       )
       const jsonNetConfig = pick(
@@ -808,7 +809,8 @@ module.exports = function (router) {
         'acceptedTokens',
         'customTokens',
         'listingId',
-        'disableCryptoPayments'
+        'disableCryptoPayments',
+        'walletAddress'
       )
       const shopId = req.shop.id
       log.info(`Shop ${shopId} - Saving config`)
@@ -884,10 +886,14 @@ module.exports = function (router) {
         }
         req.shop.hostname = hostname
 
-        // Update the public and dataUrl in the shop's config to
-        // reflect a possible change to the hostname.
-        additionalOpts.publicUrl = getShopPublicUrl(req.shop, netConfig)
-        additionalOpts.dataUrl = getShopDataUrl(req.shop, netConfig)
+        // Unless explicity set by the UI, update the public and dataUrl in the
+        // shop's config to reflect a possible change to the hostname.
+        if (!req.body.publicUrl) {
+          additionalOpts.publicUrl = getShopPublicUrl(req.shop, netConfig)
+        }
+        if (!req.body.dataUrl) {
+          additionalOpts.dataUrl = getShopDataUrl(req.shop, netConfig)
+        }
       }
       if (req.body.fullTitle) {
         req.shop.name = req.body.fullTitle

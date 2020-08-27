@@ -11,7 +11,8 @@ import { Countries } from '@origin/utils/Countries'
 
 import Link from 'components/Link'
 
-import PayWithCrypto from './payment-methods/Crypto'
+import PayWithCrypto from './payment-methods/crypto/Crypto'
+import PayWithCryptoDirect from './payment-methods/crypto/CryptoDirect'
 import PayWithStripe from './payment-methods/Stripe'
 import PayWithUphold from './payment-methods/uphold/Uphold'
 import PayOffline from './payment-methods/OfflinePayment'
@@ -167,6 +168,8 @@ const ChoosePayment = () => {
     })
   }
 
+  const CryptoCmp = config.useEscrow ? PayWithCrypto : PayWithCryptoDirect
+
   return (
     <form onSubmit={onSubmit}>
       {cart.total === 0 ? (
@@ -177,7 +180,7 @@ const ChoosePayment = () => {
         <>
           <div className="checkout-payment-method">
             {!paymentMethods.find((p) => p.id === 'crypto') ? null : (
-              <PayWithCrypto {...paymentState} onChange={setPaymentState} />
+              <CryptoCmp {...paymentState} onChange={setPaymentState} />
             )}
             {!paymentMethods.find((p) => p.id === 'stripe') ? null : (
               <PayWithStripe {...paymentState} onChange={setPaymentState} />

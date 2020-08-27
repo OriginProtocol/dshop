@@ -68,9 +68,11 @@ async function processor(job) {
 
   // Load the transaction from the DB.
   const transaction = await Transaction.findOne({
-    networkId: network.networkId,
-    shopId,
-    hash: txHash
+    where: {
+      networkId: network.networkId,
+      shopId,
+      hash: txHash
+    }
   })
   if (!transaction) {
     throw new Error(
