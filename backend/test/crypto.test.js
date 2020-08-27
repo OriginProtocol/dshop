@@ -125,7 +125,6 @@ describe('Crypto Payment', () => {
     ]
 
     for (const networkConfigOverride of networkConfigOverrides) {
-
       await updateNetworkConfig(network, networkConfigOverride)
 
       const { data, paymentCode, txHash } = await _makePayment()
