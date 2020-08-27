@@ -7,10 +7,12 @@ import useBackendApi from 'utils/useBackendApi'
 import CustomDomain from './_AddDomain'
 import DeleteDomain from './_DeleteDomain'
 import EditHostname from './_EditHostname'
+import InfoModal from './_InfoModal'
 
 const Domains = ({ config, state }) => {
   const [{ admin, reload }] = useStateValue()
   const [hostnameModal, setHostnameModal] = useState(false)
+  const [infoModal, setInfoModal] = useState(false)
   const [domains, setDomains] = useState([])
   const { get } = useBackendApi({ authToken: true })
 
@@ -18,7 +20,7 @@ const Domains = ({ config, state }) => {
     get('/shop/domains').then(({ domains }) => setDomains(domains))
   }, [reload.domains])
 
-  const domain = `https://${state.hostname}.${_get(admin, 'network.domain')}`
+  const domain = `${state.hostname}.${_get(admin, 'network.domain')}`
 
   return (
     <div className="form-group mt-4 mb-2">
@@ -52,7 +54,18 @@ const Domains = ({ config, state }) => {
               />
             </td>
             <td>
-              <span className="badge badge-warning">Pending</span>
+              <span className="badge badge-warning">Awaiting Publish</span>
+              <img
+                src="images/info-icon.svg"
+                width="16"
+                className="ml-2"
+                onClick={() =>
+                  setInfoModal({
+                    title: 'Publish your shop',
+                    description: `Your store will be live on ${domain} once it has been published`
+                  })
+                }
+              />
             </td>
             <td className="text-muted">Origin</td>
             <td className="text-right">
@@ -79,9 +92,11 @@ const Domains = ({ config, state }) => {
                 />
               </td>
               <td>
-                <span className="badge badge-warning">{domain.status}</span>
+                <span className="badge badge-warning">
+                  {/*domain.status*/}Pending Registration
+                </span>
               </td>
-              <td className="text-muted" />
+              <td className="text-muted">Unstoppable</td>
               <td className="text-right">
                 <DeleteDomain domain={domain}>
                   <img src="images/delete-icon.svg" />
@@ -93,6 +108,9 @@ const Domains = ({ config, state }) => {
       </table>
       {!hostnameModal ? null : (
         <EditHostname onClose={() => setHostnameModal(false)} />
+      )}
+      {!infoModal ? null : (
+        <InfoModal {...infoModal} onClose={() => setInfoModal(false)} />
       )}
     </div>
   )

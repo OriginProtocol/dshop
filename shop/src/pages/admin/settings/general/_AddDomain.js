@@ -53,13 +53,13 @@ const AddDomain = () => {
             <div className="text-lg text-center">Add a Custom Domain</div>
             <div className="mt-3">
               <div className="form-group">
-                <label>Enter your domain:</label>
+                <label>Enter a domain:</label>
                 <input
                   value={domain}
                   ref={domainRef}
                   onChange={(e) => setDomain(e.target.value)}
                   className="form-control"
-                  placeholder="eg store.example.com"
+                  placeholder="eg store.example.com, mystore.crypto, coolshop.eth"
                 />
               </div>
             </div>
@@ -70,7 +70,7 @@ const AddDomain = () => {
                 onClick={() => setShouldClose(true)}
                 children="Cancel"
               />
-              <button className="btn btn-primary px-5 ml-2" children="Add" />
+              <button className="btn btn-primary px-5 ml-2" children="Submit" />
             </div>
           </form>
         </Modal>
