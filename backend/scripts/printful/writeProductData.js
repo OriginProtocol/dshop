@@ -280,38 +280,33 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
 
   let collections = []
   const collectionsPath = `${OutputDir}/data/collections.json`
-  let writeCollectionData = false
   try {
     const existingCollections = JSON.parse(fs.readFileSync(collectionsPath))
-    if (!existingCollections.length) {
-      writeCollectionData = true
+    const shouldUsePrintfulCollections = existingCollections.length === 0
 
-      const productIds = productsOut.map((p) => p.id)
-      let productsInCollection = []
-      collections = existingCollections.map((c) => {
-        const products = c.products.filter((p) => productIds.indexOf(p) >= 0)
-        productsInCollection = [...productsInCollection, ...c.products]
-        return { ...c, products }
-      })
+    const productIds = productsOut.map((p) => p.id)
+    let productsInCollection = []
+    collections = existingCollections.map((c) => {
+      const products = c.products.filter((p) => productIds.indexOf(p) >= 0)
+      productsInCollection = [...productsInCollection, ...c.products]
+      return { ...c, products }
+    })
 
-      const newProductIds = productIds.filter(
-        (p) => productsInCollection.indexOf(p) < 0
-      )
+    const newProductIds = productIds.filter(
+      (p) => productsInCollection.indexOf(p) < 0
+    )
 
-      for (const pId of newProductIds) {
-        let collectionName = productCollectionMap.get(pId)
-        if (!collectionName) {
-          // Add to 'Other' collection, if there is no type set
-          collectionName = 'Other'
-        }
-
-        collections = addIdToCollection(pId, collectionName, collections)
+    for (const pId of newProductIds) {
+      let collectionName = productCollectionMap.get(pId)
+      if (!shouldUsePrintfulCollections || !collectionName) {
+        // Add to 'Other' collection, if there is no type set
+        collectionName = 'Other'
       }
+
+      collections = addIdToCollection(pId, collectionName, collections)
     }
   } catch (e) {
     log.error('Failed to write collection while syncing printful products', e)
-    // TODO: Should avoid overwrite in case of error??
-    writeCollectionData = true
     collections = [
       {
         id: 'all',
@@ -321,9 +316,7 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
     ]
   }
 
-  if (writeCollectionData) {
-    fs.writeFileSync(collectionsPath, JSON.stringify(collections, null, 2))
-  }
+  fs.writeFileSync(collectionsPath, JSON.stringify(collections, null, 2))
 
   fs.writeFileSync(
     `${OutputDir}/printful-images.json`,
