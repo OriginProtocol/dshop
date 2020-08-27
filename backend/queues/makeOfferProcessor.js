@@ -108,9 +108,10 @@ async function _makeOnchainOffer({
   //    could be getting processed.
   //  - The processing a job could get interrupted while waiting for the tx to get mined.
   //    For example due to a server maintenance or a crash.
-  // TODO: In order to avoid any possible race condition, hold a lock on a DB row
-  //       associated with the wallet address while doing the pending transaction check
-  //       and sending the tx.
+  // TODO: Figure out a way to avoid any possible race condition.
+  //       With Postgres, we could hold a lock on a DB row associated with the wallet address
+  //       while doing the pending transaction check and sending the tx.
+  //       With SqlLite holding a lock is not an option so we'll have to find an alternative.
   transaction = await Transaction.findOne({
     where: {
       networkId: network.networkId,

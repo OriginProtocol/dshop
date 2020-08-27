@@ -14,8 +14,8 @@ const { getLogger } = require('../utils/logger')
 const log = getLogger('logic.order')
 
 /**
- * Create a new unique order ID that is human readable and can be used by
- * the buyer and the seller to reference to a specific order.
+ * Creates an unique ID that is human readable and can be used by
+ * the buyer and the seller to reference an order.
  * Format: <networkId>-<shopId>-<randomId>.
  * Example: 1-123-XCQ69BTJ
  *
