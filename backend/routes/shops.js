@@ -200,7 +200,8 @@ module.exports = function (router) {
         data: {
           OutputDir,
           apiKey: printful,
-          shopId: req.shop.id
+          shopId: req.shop.id,
+          refreshImages: req.body.refreshImages ? true : false
         },
         log: (data) => log.debug(data),
         progress: () => {}
