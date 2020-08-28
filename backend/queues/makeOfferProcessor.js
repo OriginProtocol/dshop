@@ -284,6 +284,7 @@ async function processor(job) {
     const lid = ListingID.fromFQLID(shop.listingId)
     const offer = _createOfferJson(lid, encryptedDataIpfsHash, paymentCode)
     const offerIpfsHash = await _postOfferIPFS(network, offer)
+    log.debug(`Created offer on IPFS with hash ${offerIpfsHash}`)
 
     queueLog(job, 20, 'Submitting Offer')
 
@@ -373,6 +374,7 @@ function _createOfferJson(lid, encryptedData, paymentCode) {
  * @private
  */
 async function _postOfferIPFS(network, offer) {
+  log.debug(`Posting offer on IPFS using gateway ${network.ipfsApi}`)
   try {
     return await post(network.ipfsApi, offer, true)
   } catch (err) {

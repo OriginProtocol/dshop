@@ -72,9 +72,9 @@ require('react-styl')(`
         height: 34px
         width: 34px
         object-fit: contain
-        position: absolute
         right: 13px
         top: 13px
+        align-self: center
 
       &.completed
         .task-name
