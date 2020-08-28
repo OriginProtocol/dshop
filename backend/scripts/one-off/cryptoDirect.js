@@ -71,7 +71,10 @@ async function _getShopWalletAddress(network, shop) {
     return shop.walletAddress
   }
 
-  // As a fallback, check if the shop has a web3 PK and use that to derive the walletAddress to use.
+  // Query the blockchain to find out the address that created the listing on the marketplace.
+  // TODO(franck): implement
+
+  // As a last resort, check if the shop has a web3 PK and use that to derive the walletAddress to use.
   const shopConfig = getConfig(shop.config)
   if (!shopConfig.web3Pk) {
     log.info(
