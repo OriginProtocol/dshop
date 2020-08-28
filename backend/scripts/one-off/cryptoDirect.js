@@ -3,7 +3,7 @@
 const fs = require('fs')
 const ethers = require('ethers')
 
-const { Network, Shop } = require('../../models')
+const { Event, Shop } = require('../../models')
 const { getConfig, setConfig } = require('../../utils/encryptedConfig')
 const { DSHOP_CACHE } = require('../../utils/const')
 const { ListingID } = require('../../id')
@@ -88,14 +88,14 @@ async function _getShopWalletAddress(shop) {
 }
 
 // Set the 'walletAddress' field in all the shops DB config.
-async function setWallet(shops) {
+async function setWallet(config, shops) {
   for (const shop of shops) {
     const walletAddress = await _getShopWalletAddress(shop)
     if (!walletAddress) {
       log.info(`Shop ${shop.id}: no wallet address. Skipping`)
       continue
     }
-    if (program.doIt) {
+    if (config.doIt) {
       log.info(
         `Shop ${shop.id}: Setting walletAddress to ${walletAddress} in the config...`
       )
@@ -113,8 +113,8 @@ async function setWallet(shops) {
 
 // Update all the shop's config.json in the staging area
 // to set a "networks[<networkId]['walletAddress'] value.
-async function updateConfigJson(network, shops) {
-  const networkId = program.networkId
+async function updateConfigJson(config, shops) {
+  const networkId = config.networkId
 
   for (const shop of shops) {
     const walletAddress = await _getShopWalletAddress(shop)
@@ -135,7 +135,7 @@ async function updateConfigJson(network, shops) {
       config['networks'][networkId]['walletAddress'] = walletAddress
       configStr = JSON.stringify(config, null, 2)
 
-      if (program.doIt) {
+      if (config.doIt) {
         log.info(
           `Shop ${shop.id}: updating ${configFile} to set networks[${networkId}].walletAddress to ${walletAddress}`
         )
@@ -155,9 +155,9 @@ async function main(config) {
   const shops = await _getShops(config)
 
   if (config.operation === 'setWallet') {
-    await setWallet(shops)
+    await setWallet(config, shops)
   } else if (config.operation === 'updateConfigJson') {
-    await updateConfigJson(shops)
+    await updateConfigJson(config, shops)
   } else {
     throw new Error(`Unsupported operation ${config.operation}`)
   }
