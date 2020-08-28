@@ -30,16 +30,6 @@ if (!process.argv.slice(2).length) {
 
 program.parse(process.argv)
 
-async function _getNetwork(config) {
-  const network = await Network.findOne({
-    where: { networkId: config.networkId, active: true }
-  })
-  if (!network) {
-    throw new Error(`No active network with id ${config.networkId}`)
-  }
-  return network
-}
-
 async function _getShops(config) {
   let shops
   if (config.shopId) {
@@ -65,7 +55,7 @@ async function _getShops(config) {
   return shops
 }
 
-async function _getShopWalletAddress(network, shop) {
+async function _getShopWalletAddress(shop) {
   if (shop.listingId) {
     // Most recent shops have this field set but legacy ones don't.
     if (shop.walletAddress) {
@@ -98,7 +88,7 @@ async function _getShopWalletAddress(network, shop) {
 }
 
 // Set the 'walletAddress' field in all the shops DB config.
-async function setWallet(network, shops) {
+async function setWallet(shops) {
   for (const shop of shops) {
     const walletAddress = await _getShopWalletAddress(shop)
     if (!walletAddress) {
@@ -162,13 +152,12 @@ async function updateConfigJson(network, shops) {
 }
 
 async function main(config) {
-  const network = await _getNetwork(config)
   const shops = await _getShops(config)
 
   if (config.operation === 'setWallet') {
-    await setWallet(network, shops)
+    await setWallet(shops)
   } else if (config.operation === 'updateConfigJson') {
-    await updateConfigJson(shops, config.key)
+    await updateConfigJson(shops)
   } else {
     throw new Error(`Unsupported operation ${config.operation}`)
   }
