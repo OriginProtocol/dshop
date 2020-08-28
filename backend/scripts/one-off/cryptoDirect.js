@@ -86,7 +86,7 @@ async function _getShopWalletAddress(shop) {
       log.info('Using shop.config.web3Pk')
       return wallet.address
     }
-  } catch(e) {
+  } catch (e) {
     log.info('Invalid web3Pk')
   }
 
