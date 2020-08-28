@@ -4,11 +4,11 @@ const fs = require('fs')
 const ethers = require('ethers')
 
 const { Network, Shop } = require('../../models')
-const { getLogger } = require('../../utils/logger')
-const log = getLogger('cli')
-
 const { getConfig, setConfig } = require('../../utils/encryptedConfig')
 const { DSHOP_CACHE } = require('../../utils/const')
+const { ListingID } = require('../../id')
+const { getLogger } = require('../../utils/logger')
+const log = getLogger('cli')
 
 const program = require('commander')
 
@@ -66,26 +66,35 @@ async function _getShops(config) {
 }
 
 async function _getShopWalletAddress(network, shop) {
-  // Most recent shops have this field set but legacy ones don't.
-  if (shop.walletAddress) {
-    return shop.walletAddress
+  if (shop.listingId) {
+    // Most recent shops have this field set but legacy ones don't.
+    if (shop.walletAddress) {
+      return shop.walletAddress
+    }
+
+    // Query the events table to find out the address that created the listing.
+    const lid = ListingID.fromFQLID(shop.listingId)
+    const event = await Event.findOne({
+      where: {
+        eventName: 'ListingCreated',
+        listingId: lid.listingId
+      }
+    })
+    if (event) {
+      return event.party
+    }
   }
 
-  // Query the blockchain to find out the address that created the listing on the marketplace.
-  // TODO(franck): implement
-
-  // As a last resort, check if the shop has a web3 PK and use that to derive the walletAddress to use.
+  // As a last resort, check if the shop has a web3 PK and use that to
+  // derive the walletAddress to use...
   const shopConfig = getConfig(shop.config)
-  if (!shopConfig.web3Pk) {
-    log.info(
-      `Shop ${shop.id}: shop.walletAddress not set and no web3 pk in config`
-    )
-    return null
+  if (shopConfig.web3Pk) {
+    const wallet = new ethers.Wallet(shopConfig.web3Pk)
+    return wallet.address
   }
 
-  const wallet = new ethers.Wallet(shopConfig.web3Pk)
-  const walletAddress = wallet.address
-  return walletAddress
+  log.info(`Shop ${shop.id}: could not determine a walletAddress`)
+  return null
 }
 
 // Set the 'walletAddress' field in all the shops DB config.
