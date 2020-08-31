@@ -278,11 +278,12 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
     JSON.stringify(printfulIds, null, 2)
   )
 
-  log.debug('Updating collections.json...')
   let collections = []
   const collectionsPath = `${OutputDir}/data/collections.json`
   try {
     const existingCollections = JSON.parse(fs.readFileSync(collectionsPath))
+    const shouldUsePrintfulCollections = existingCollections.length === 0
+
     const productIds = productsOut.map((p) => p.id)
     let productsInCollection = []
     collections = existingCollections.map((c) => {
@@ -297,7 +298,7 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
 
     for (const pId of newProductIds) {
       let collectionName = productCollectionMap.get(pId)
-      if (!collectionName) {
+      if (!shouldUsePrintfulCollections || !collectionName) {
         // Add to 'Other' collection, if there is no type set
         collectionName = 'Other'
       }

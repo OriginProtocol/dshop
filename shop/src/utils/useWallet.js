@@ -144,10 +144,15 @@ function useWallet() {
     })
   }
 
+  const networkOk = String(config.netId) === String(state.netId)
+  const ready =
+    state.status === 'enabled' && state.signerStatus === 'enabled' && networkOk
+
   return {
     enable,
     ...state,
-    networkOk: String(config.netId) === String(state.netId)
+    ready,
+    networkOk
   }
 }
 

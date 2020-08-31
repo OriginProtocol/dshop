@@ -10,8 +10,6 @@ import NoItems from 'components/NoItems'
 import PaymentStatusText from 'components/PaymentStatusText'
 
 import useOrders from 'utils/useOrders'
-import OfferStates from 'data/OfferStates'
-import PaymentActions from './order/_PaymentActions'
 
 const AdminOrders = () => {
   const location = useLocation()
@@ -180,7 +178,6 @@ const AdminOrdersTable = ({ orders }) => {
           <th>
             <fbt desc="Status">Status</fbt>
           </th>
-          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -210,13 +207,6 @@ const AdminOrdersTable = ({ orders }) => {
             </td>
             <td>
               <PaymentStatusText status={order.statusStr} />
-            </td>
-            <td>
-              {![OfferStates.Created, OfferStates.Accepted].includes(
-                order.statusStr
-              ) ? null : (
-                <PaymentActions order={order} />
-              )}
             </td>
           </tr>
         ))}

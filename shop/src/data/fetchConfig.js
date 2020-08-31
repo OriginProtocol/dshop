@@ -40,9 +40,15 @@ export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
     config = await fetch(url).then((raw) => raw.json())
     if (!config.backend) config.backend = ''
     if (!config.currency) config.currency = 'USD'
+
+    const networkConfig = activeNetworkConfig(config, netId)
+    config = { ...config, ...networkConfig }
+
     if (!config.paymentMethods) {
       config.paymentMethods = DefaultPaymentMethods
     }
+    config.supportEmailPlain = parsePlainEmail(config.supportEmail)
+
     config.paymentMethods = config.paymentMethods.filter((m) => {
       if (m.id === 'stripe' && !config.stripeKey) {
         return false
@@ -57,15 +63,7 @@ export async function fetchConfig(dataSrc, activeShop, overrideBackend) {
       return true
     })
 
-    config.supportEmailPlain = parsePlainEmail(config.supportEmail)
-
-    const networkConfig = activeNetworkConfig(config, netId)
-    const result = {
-      ...config,
-      ...networkConfig,
-      dataSrc,
-      activeShop
-    }
+    const result = { ...config, dataSrc, activeShop }
 
     // If UI is being served from backend, override 'backend' from config.json
     // returned by shops to prevent auth issues

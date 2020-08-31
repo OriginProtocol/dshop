@@ -1,15 +1,13 @@
 import React, { useReducer } from 'react'
+import ethers from 'ethers'
 import fbt from 'fbt'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
 
-import Modal from 'components/Modal'
-
 import { formInput, formFeedback } from 'utils/formHelpers'
-
 import useTokenDataProviders from 'utils/useTokenDataProviders'
 
-import ethers from 'ethers'
+import Modal from 'components/Modal'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
 
@@ -100,9 +98,7 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
 
   const testAndAdd = async () => {
     const { valid, newState } = validate(state)
-
     setState(newState)
-
     if (!valid) return
 
     setState({ saving: true })
