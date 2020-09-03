@@ -45,6 +45,7 @@ require('react-styl')(`
     > div:first-child
       padding: 1.5rem 1.25rem
       display: flex
+      flex: 1
       min-height: 5rem
       line-height: normal
       align-items: flex-start
@@ -56,6 +57,7 @@ require('react-styl')(`
       .task-data
         flex: 1
         .task-name
+          padding-right: 2rem
           font-size: 1.25rem
           padding-bottom: 2px
           margin-bottom: 0.5rem
@@ -70,9 +72,9 @@ require('react-styl')(`
         height: 34px
         width: 34px
         object-fit: contain
-        position: absolute
         right: 13px
         top: 13px
+        align-self: center
 
       &.completed
         .task-name

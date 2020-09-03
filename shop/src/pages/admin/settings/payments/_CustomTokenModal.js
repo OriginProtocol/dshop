@@ -1,15 +1,13 @@
 import React, { useReducer } from 'react'
+import ethers from 'ethers'
 import fbt from 'fbt'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
 
-import Modal from 'components/Modal'
-
 import { formInput, formFeedback } from 'utils/formHelpers'
-
 import useTokenDataProviders from 'utils/useTokenDataProviders'
 
-import ethers from 'ethers'
+import Modal from 'components/Modal'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
 
@@ -21,7 +19,7 @@ const validate = (state) => {
       'Token symbol is required',
       'admin.settings.payments.CustomTokenModal.nameError'
     )
-  } else if (state.name.length > 4) {
+  } else if (state.name.length > 6) {
     newState.nameError = fbt(
       'Token symbol too long',
       'admin.settings.payments.CustomTokenModal.nameLenError'
@@ -100,9 +98,7 @@ const CustomTokenModal = ({ onNewTokenAdded }) => {
 
   const testAndAdd = async () => {
     const { valid, newState } = validate(state)
-
     setState(newState)
-
     if (!valid) return
 
     setState({ saving: true })

@@ -2,15 +2,17 @@ import React from 'react'
 import uniqBy from 'lodash/uniqBy'
 import fbt from 'fbt'
 
-import { formInput } from 'utils/formHelpers'
+import { formInput, formFeedback } from 'utils/formHelpers'
 import DefaultTokens from 'data/defaultTokens'
 import ConfirmationModal from 'components/ConfirmationModal'
+// import Toggle from 'components/Toggle'
 import CustomTokenModal from './_CustomTokenModal'
 
 const ContractSettings = ({ state, setState }) => {
   const input = formInput(state, (newState) =>
     setState({ ...newState, hasChanges: true })
   )
+  const Feedback = formFeedback(state)
 
   const acceptedTokens = state.acceptedTokens || []
   const customTokens = state.customTokens || []
@@ -40,6 +42,7 @@ const ContractSettings = ({ state, setState }) => {
           Accept Ethereum and other tokens as payment methods
         </fbt>
       </div>
+
       <div className="form-group mt-2">
         <div className="form-check">
           <label className="form-check-label">
@@ -63,6 +66,19 @@ const ContractSettings = ({ state, setState }) => {
 
       {state.disableCryptoPayments ? null : (
         <>
+          <div className="form-group">
+            <label>
+              <fbt desc="Wallet address">Ethereum wallet address</fbt>
+            </label>
+            <input {...input('walletAddress')} style={{ maxWidth: 500 }} />
+            {Feedback('walletAddress')}
+            <div className="desc">
+              <fbt desc="admin.settings.payments.walletAddressDesc">
+                Cryptocurrency payments on Ethereum will be sent directly to
+                this address
+              </fbt>
+            </div>
+          </div>
           <label>
             <fbt desc="admin.settings.payments.acceptedTokens">
               Accepted Tokens
@@ -110,16 +126,42 @@ const ContractSettings = ({ state, setState }) => {
               </div>
             ))}
           </div>
+          <div>
+            <CustomTokenModal
+              onNewTokenAdded={(token) =>
+                setState({
+                  customTokens: [...customTokens, token],
+                  acceptedTokens: [...acceptedTokens, token],
+                  hasChanges: true
+                })
+              }
+            />
+          </div>
 
-          <CustomTokenModal
-            onNewTokenAdded={(token) =>
-              setState({
-                customTokens: [...customTokens, token],
-                acceptedTokens: [...acceptedTokens, token],
-                hasChanges: true
-              })
-            }
-          />
+          {/* <label className="mt-4">
+            <fbt desc="Escrow">Escrow</fbt>
+          </label>
+          <div className="desc">
+            <fbt desc="admin.settings.payments.useEscrowDesc">
+              Crypto payments will be held in escrow on Origin Marketplace
+              contract until buyer confirms receipt.
+            </fbt>
+          </div>
+          <div className="form-group d-flex align-items-center mt-2">
+            <Toggle
+              className="sm"
+              value={state.useEscrow ? true : false}
+              onChange={(useEscrow) =>
+                setState({ hasChanges: true, useEscrow })
+              }
+            >
+              <div className="ml-2">
+                <fbt desc="admin.settings.payments.useEscrow">
+                  Use escrow contract
+                </fbt>
+              </div>
+            </Toggle>
+          </div> */}
         </>
       )}
 

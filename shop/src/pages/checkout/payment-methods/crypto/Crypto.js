@@ -10,6 +10,9 @@ import useWallet from 'utils/useWallet'
 import useOrigin from 'utils/useOrigin'
 import { useStateValue } from 'data/state'
 
+import WalletNotReady from './_WalletNotReady'
+import TokenList from './_TokenList'
+
 // Check allowance every 5 seconds
 const waitForAllowance = ({ wallet, marketplace, amount, token }) => {
   return new Promise((resolve, reject) => {
@@ -39,7 +42,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
   const [activeToken, setActiveToken] = useState({})
   const [tokenPrice, setTokenPrice] = useState('')
   const token = useToken(activeToken, cart.total)
-  const { toTokenPrice, toFiatPrice } = usePrice(config.currency)
+  const { toTokenPrice } = usePrice(config.currency)
   const [approveUnlockTx, setApproveUnlockTx] = useState(false)
   const [unlockTx, setUnlockTx] = useState(false)
   const wallet = useWallet({ needSigner: true })
@@ -93,56 +96,10 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
 
   if (!cryptoSelected) {
     return label
-  } else if (wallet.status === 'loading') {
-    return (
-      <>
-        {label}
-        <div style={{ marginLeft: '2.25rem' }} className="mb-3">
-          <fbt desc="checkout.payment.crypto.loadingWallet">
-            Loading Wallet Status...
-          </fbt>
-        </div>
-      </>
-    )
-  } else if (
-    wallet.status === 'disabled' ||
-    wallet.signerStatus === 'disabled'
-  ) {
-    return (
-      <>
-        {label}
-        <div style={{ marginLeft: '2.25rem' }} className="mb-3">
-          <button className="btn btn-primary" onClick={() => wallet.enable()}>
-            <fbt desc="checkout.payment.crypto.enable">
-              Enable Crypto Wallet
-            </fbt>
-          </button>
-        </div>
-      </>
-    )
-  } else if (wallet.status === 'no-web3') {
-    return (
-      <>
-        {label}
-        <div style={{ marginLeft: '2.25rem' }} className="mb-3">
-          <fbt desc="checkout.payment.crypto.noWallet">
-            Sorry, no crypto wallet detected.
-          </fbt>
-        </div>
-      </>
-    )
-  } else if (!wallet.networkOk) {
-    return (
-      <>
-        {label}
-        <div style={{ marginLeft: '2.25rem' }} className="mb-3">
-          <fbt desc="checkout.payment.crypto.invalidNetwork">
-            Please switch your wallet to{' '}
-            <FbtParam name="networkName">{config.netName}</FbtParam> to continue
-          </fbt>
-        </div>
-      </>
-    )
+  }
+
+  if (!wallet.ready) {
+    return <WalletNotReady {...{ wallet, label, config }} />
   }
 
   return (
@@ -150,52 +107,16 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
       {label}
       {!cryptoSelected ? null : (
         <div className="pay-with-crypto">
-          <table>
-            <thead>
-              <tr>
-                <th>
-                  <fbt desc="Cryptocurrency">Cryptocurrency</fbt>
-                </th>
-                <th>
-                  <fbt desc="Amount">Amount</fbt>
-                </th>
-                <th>
-                  <fbt desc="ExchangeRate">Exchange Rate</fbt>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {acceptedTokens.map((token) => {
-                const isActive = activeToken.id === token.id
-                return (
-                  <tr key={token.id} onClick={() => setActiveToken(token)}>
-                    <td className="input-container">
-                      <input
-                        type="radio"
-                        disabled={loading}
-                        value={token.id}
-                        checked={isActive}
-                        onChange={() => setActiveToken(token)}
-                      />
-                      <div className={`token-logo${isActive ? ' active' : ''}`}>
-                        <img
-                          src={`images/payment/${token.name.toLowerCase()}.svg`}
-                        />
-                      </div>
-                      <div>{token.name}</div>
-                    </td>
-                    <td>{`${toTokenPrice(cart.total, token.name)} ${
-                      token.name
-                    }`}</td>
-                    <td>{`1 ${token.name} = ${toFiatPrice(
-                      100,
-                      token.name
-                    )}`}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+          <TokenList
+            {...{
+              acceptedTokens,
+              activeToken,
+              setActiveToken,
+              loading,
+              config,
+              cart
+            }}
+          />
           {!activeToken.id || token.loading ? null : token.error ? (
             <div className="alert alert-danger">{token.error}</div>
           ) : !token.hasBalance ? (
