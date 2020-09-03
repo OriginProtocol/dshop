@@ -23,10 +23,10 @@ const AddDomain = () => {
           setShow(true)
         }}
         href="#"
-        className="add"
+        className="btn btn-outline-primary mt-4"
       >
-        <PlusIcon />
-        Add a custom domain
+        <PlusIcon size="9" />
+        <span className="ml-2">Add a custom domain</span>
       </a>
       {!show ? null : (
         <Modal

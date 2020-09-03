@@ -121,7 +121,11 @@ const GeneralSettings = () => {
             {Feedback('fullTitle')}
           </div>
 
+          <hr />
+
           <Domains {...{ config, state }} />
+
+          <hr />
 
           <div className="row">
             <div className="form-group col-md-6">
@@ -134,6 +138,8 @@ const GeneralSettings = () => {
               {Feedback('password')}
             </div>
           </div>
+
+          <hr />
 
           <div className="row">
             <div className="form-group col-md-6">
@@ -168,6 +174,8 @@ const GeneralSettings = () => {
               {Feedback('emailSubject')}
             </div>
           </div>
+
+          <hr />
 
           <div className="select-currency">
             <h4>
@@ -245,6 +253,9 @@ require('react-styl')(`
         margin: 8px 0 0 15px
         > span
           visibility: hidden
+    hr
+      background-color: #cdd7e0
+      margin: 1.5rem 0
 
   .select-currency
     margin-top: 1.5rem
