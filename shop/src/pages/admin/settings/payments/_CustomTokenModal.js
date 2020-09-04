@@ -19,7 +19,7 @@ const validate = (state) => {
       'Token symbol is required',
       'admin.settings.payments.CustomTokenModal.nameError'
     )
-  } else if (state.name.length > 4) {
+  } else if (state.name.length > 6) {
     newState.nameError = fbt(
       'Token symbol too long',
       'admin.settings.payments.CustomTokenModal.nameLenError'
