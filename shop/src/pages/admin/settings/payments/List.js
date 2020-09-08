@@ -3,7 +3,7 @@ import ethers from 'ethers'
 import fbt, { FbtParam } from 'fbt'
 import pickBy from 'lodash/pickBy'
 import uniqBy from 'lodash/uniqBy'
-import get from 'lodash/get'
+//import get from 'lodash/get'
 
 import useShopConfig from 'utils/useShopConfig'
 import useSetState from 'utils/useSetState'
@@ -18,10 +18,9 @@ import Web3Modal from './Web3Modal'
 import StripeModal from './StripeModal'
 import UpholdModal from './UpholdModal'
 import PayPalModal from './PayPalModal'
-import ContractSettings from './ContractSettings'
+import CryptoSettings from './CryptoSettings'
 import OfflinePayments from './OfflinePayments'
 import DisconnectModal from './_DisconnectModal'
-import CreateListing from './_CreateListing'
 
 import ProcessorsList from 'components/settings/ProcessorsList'
 
@@ -212,7 +211,7 @@ const PaymentSettings = () => {
     refetchConfig()
   }
 
-  const sellerWallet = get(shopConfig, 'walletAddress')
+  //const sellerWallet = get(shopConfig, 'walletAddress')
 
   return (
     <form
@@ -266,6 +265,8 @@ const PaymentSettings = () => {
         <h4>
           <fbt desc="Integrations">Integrations</fbt>
         </h4>
+        {/*
+        // Disabling listing creation as part of turnin-on off-chain payment for all merchants.
         <div className="processor web3">
           <div className="icon">
             <Icons.Web3 />
@@ -326,6 +327,7 @@ const PaymentSettings = () => {
             )}
           </div>
         </div>
+    */}
         <ProcessorsList processors={Processors} />
 
         {connectModal === 'web3' && <Web3Modal onClose={onCloseModal} />}
@@ -353,7 +355,7 @@ const PaymentSettings = () => {
           offlinePaymentMethods={state.offlinePaymentMethods}
         />
 
-        <ContractSettings {...{ state, setState, config }} />
+        <CryptoSettings {...{ state, setState, config }} />
       </div>
       <div className="footer-actions">
         <div className="actions">{actions}</div>
