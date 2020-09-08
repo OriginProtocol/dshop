@@ -12,14 +12,10 @@ import TaskItem from './_TaskItem'
 import ArticleItem from './_ArticleItem'
 import Banner from './_Banner'
 
-import CreateListingTx from 'pages/admin/settings/payments/_CreateListingTx'
-
 const Onboarding = () => {
   const { config, refetch } = useConfig()
   const { products } = useProducts()
   const [{ admin }] = useStateValue()
-
-  const [submitTx, setSubmitTx] = useState(false)
 
   const hasSocialLinks = !!(
     config &&
@@ -32,15 +28,15 @@ const Onboarding = () => {
 
   const taskset = [
     {
-      id: 'create_listing',
-      completed: get(config, 'listingId'),
+      id: 'connect_wallet',
+      completed: get(config, 'walletAddress'),
       icon: <Icons.Wallet />,
       name: fbt('Connect your crypto wallet', 'admin.Onboarding.connectWallet'),
       desc: fbt(
-        'You must connect an Ethereum wallet with at least 0.005 ETH in order to publish changes and receive crypto payments.',
+        'Connect an Ethereum wallet in order to receive crypto payments.',
         'admin.Onboarding.connectWalletDesc'
       ),
-      onClick: () => setSubmitTx(true)
+      link: '/admin/settings/payments'
     },
     {
       id: 'verify_email',
@@ -149,15 +145,6 @@ const Onboarding = () => {
           </div>
         </div>
       )}
-
-      <CreateListingTx
-        submit={submitTx}
-        onCreated={() => {
-          refetch()
-          setSubmitTx(false)
-        }}
-        onReset={() => setSubmitTx(false)}
-      />
     </div>
   )
 }

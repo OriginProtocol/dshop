@@ -16,14 +16,12 @@ const ConnectWallet = ({ className, children, onCreated, setState }) => {
       ) : null}
       <Web3WalletConnect
         shouldSubmit={submit}
-        onSuccess={(signer) => {
-          return new Promise(() => {
-            signer.getAddress().then((walletAddress) => {
-              console.log('CONNECTED WALLET', walletAddress)
-              setState({ walletAddress })
-            })
-          })
-        }}
+        onSuccess={async (signer) => {
+          const walletAddress = await signer.getAddress()
+          console.log('CONNECTED WALLET', walletAddress)
+          setState({ walletAddress })
+          }
+        }
         submit={submit}
         onCreated={onCreated}
         onReset={() => setSubmit(false)}

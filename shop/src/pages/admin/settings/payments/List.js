@@ -76,7 +76,7 @@ const PaymentSettings = () => {
       acceptedTokens,
       customTokens,
       listingId,
-      useEscrow: config.useEscrow ? true : false,
+      useEscrow: config.useEscrow ? true : false, // By default, do not use the marketplace contract for crypto payments.
       currency: currency || 'USD',
       offlinePaymentMethods,
       disableCryptoPayments,
