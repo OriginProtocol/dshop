@@ -1,6 +1,6 @@
-const HDWalletProvider = require("truffle-hdwallet-provider")
+const HDWalletProvider = require('truffle-hdwallet-provider')
 const PrivateKeyProvider = require('truffle-privatekey-provider')
-const NonceTrackerSubprovider = require("web3-provider-engine/subproviders/nonce-tracker")
+const NonceTrackerSubprovider = require('web3-provider-engine/subproviders/nonce-tracker')
 
 // How many addresses in wallet should we unlock?
 // (For deploying test data, we use other addresses as buyers and sellers)
@@ -10,21 +10,21 @@ const numAddressesToUnlock = 4
 const providerUrl = process.env.PROVIDER_URL
 
 // Local setup
-truffleSetup = {
-  migrations_directory: "./migrations",
+const truffleSetup = {
+  migrations_directory: './migrations',
   networks: {
     development: {
-      host: "localhost",
+      host: 'localhost',
       port: 8545,
-      network_id: "*" // Match any network id
+      network_id: '*' // Match any network id
     }
   },
   coverage: {
-    host: "localhost",
-    network_id: "*",
-    port: 8555,         // <-- If you change this, also set the port option in .solcover.js.
+    host: 'localhost',
+    network_id: '*',
+    port: 8555, // <-- If you change this, also set the port option in .solcover.js.
     gas: 0xfffffffffff, // <-- Use this high gas value
-    gasPrice: 0x01      // <-- Use this low gas price
+    gasPrice: 0x01 // <-- Use this low gas price
   },
   solc: { optimizer: { enabled: true, runs: 200 } }
 }
@@ -52,7 +52,7 @@ if (process.env.MAINNET_PRIVATE_KEY || process.env.MAINNET_MNEMONIC) {
   // Private key takes precedence over mnemonic.
   if (privateKey) {
     truffleSetup.networks.mainnet = {
-      provider: function() {
+      provider: function () {
         return withNonceTracker(new PrivateKeyProvider(privateKey, providerUrl))
       },
       network_id: 1
@@ -60,7 +60,7 @@ if (process.env.MAINNET_PRIVATE_KEY || process.env.MAINNET_MNEMONIC) {
     console.log('Configured truffle to use PrivateKey provider for Mainnet.')
   } else {
     truffleSetup.networks.mainnet = {
-      provider: function() {
+      provider: function () {
         return withNonceTracker(new HDWalletProvider(mnemonic, providerUrl))
       },
       network_id: 1
@@ -70,24 +70,30 @@ if (process.env.MAINNET_PRIVATE_KEY || process.env.MAINNET_MNEMONIC) {
 }
 if (process.env.RINKEBY_MNEMONIC) {
   truffleSetup.networks.rinkeby = {
-    provider: function() {
-      return withNonceTracker(new HDWalletProvider(
-        process.env.RINKEBY_MNEMONIC,
-        providerUrl,
-        0, numAddressesToUnlock
-      ))
+    provider: function () {
+      return withNonceTracker(
+        new HDWalletProvider(
+          process.env.RINKEBY_MNEMONIC,
+          providerUrl,
+          0,
+          numAddressesToUnlock
+        )
+      )
     },
     network_id: 4
   }
 }
 if (process.env.ROPSTEN_MNEMONIC) {
   truffleSetup.networks.ropsten = {
-    provider: function() {
-      return withNonceTracker(new HDWalletProvider(
-        process.env.ROPSTEN_MNEMONIC,
-        providerUrl,
-        0, numAddressesToUnlock
-      ))
+    provider: function () {
+      return withNonceTracker(
+        new HDWalletProvider(
+          process.env.ROPSTEN_MNEMONIC,
+          providerUrl,
+          0,
+          numAddressesToUnlock
+        )
+      )
     },
     gas: 3712388,
     network_id: 3
@@ -97,13 +103,15 @@ if (process.env.ROPSTEN_MNEMONIC) {
 // Origin's own test network
 if (process.env.ORIGIN_MNEMONIC) {
   truffleSetup.networks.origin = {
-    provider: function() {
-      return withNonceTracker(new HDWalletProvider(
-        process.env.ORIGIN_MNEMONIC,
-        providerUrl,
-        0,
-        numAddressesToUnlock
-      ))
+    provider: function () {
+      return withNonceTracker(
+        new HDWalletProvider(
+          process.env.ORIGIN_MNEMONIC,
+          providerUrl,
+          0,
+          numAddressesToUnlock
+        )
+      )
     },
     gas: 4712388,
     network_id: 2222

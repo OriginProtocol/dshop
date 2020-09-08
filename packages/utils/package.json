@@ -15,7 +15,7 @@
     "prettier:check": "prettier -c *.js \"**/*.js\""
   },
   "dependencies": {
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.20",
     "logplease": "^1.2.15"
   },
   "devDependencies": {

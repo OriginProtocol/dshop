@@ -13,7 +13,7 @@ import MailgunModal from '../../admin/settings/apps/MailgunModal'
 import SendgridModal from '../../admin/settings/apps/SendgridModal'
 
 const Defaults = {
-  '1': {
+  1: {
     ipfs: 'https://ipfs-prod.ogn.app',
     ipfsApi: 'https://ipfs.ogn.app',
     marketplaceContract: '0x698Ff47B84837d3971118a369c570172EE7e54c2',
@@ -21,7 +21,7 @@ const Defaults = {
     provider: '',
     providerWs: ''
   },
-  '4': {
+  4: {
     ipfs: 'https://ipfs-prod.ogn.app',
     ipfsApi: 'https://ipfs.ogn.app',
     marketplaceContract: '0x3D608cCe08819351adA81fC1550841ebc10686fd',
@@ -29,7 +29,7 @@ const Defaults = {
     provider: '',
     providerWs: ''
   },
-  '999': {
+  999: {
     ipfs: process.env.IPFS_GATEWAY || 'http://localhost:8080',
     ipfsApi: process.env.IPFS_API || 'http://localhost:5002',
     marketplaceContract: process.env.MARKETPLACE_CONTRACT,
