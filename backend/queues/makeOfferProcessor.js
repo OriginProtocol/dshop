@@ -281,7 +281,11 @@ async function processor(job) {
 
     queueLog(job, 10, 'Creating offer')
     log.debug('Creating offer on IPFS')
-    const lid = ListingID.fromFQLID(shop.listingId)
+    // Note: use the listing id from either the shop or the network depending on
+    // whether off-chain payments are enabled or not.
+    const lid = ListingID.fromFQLID(
+      networkConfig.useMarketplaceContract ? shop.listingId : network.listingId
+    )
     const offer = _createOfferJson(lid, encryptedDataIpfsHash, paymentCode)
     const offerIpfsHash = await _postOfferIPFS(network, offer)
     log.debug(`Created offer on IPFS with hash ${offerIpfsHash}`)

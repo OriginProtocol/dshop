@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import fbt from 'fbt'
 import get from 'lodash/get'
 
@@ -13,7 +13,7 @@ import ArticleItem from './_ArticleItem'
 import Banner from './_Banner'
 
 const Onboarding = () => {
-  const { config, refetch } = useConfig()
+  const { config } = useConfig()
   const { products } = useProducts()
   const [{ admin }] = useStateValue()
 

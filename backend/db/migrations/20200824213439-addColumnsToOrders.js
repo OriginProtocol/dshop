@@ -1,14 +1,14 @@
 'use strict'
 
-const { OrderStatuses } = require('../../enums')
+const { OrderPaymentStatuses } = require('../../enums')
 
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(async () => {
       await queryInterface.addColumn('orders', 'offer_id', { type: Sequelize.STRING })
-      await queryInterface.removeColumn('orders', 'status')
-      await queryInterface.addColumn('orders', 'status', { type: Sequelize.ENUM(OrderStatuses) })
+      await queryInterface.removeColumn('orders', 'status') // Column of type string, not currently populated.
+      await queryInterface.addColumn('orders', 'payment_status', { type: Sequelize.ENUM(OrderPaymentStatuses) })
       return queryInterface.sequelize.query(`ALTER TABLE orders RENAME COLUMN status_str TO offer_status;`)
     })
   },

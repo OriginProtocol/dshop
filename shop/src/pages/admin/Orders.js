@@ -206,7 +206,7 @@ const AdminOrdersTable = ({ orders }) => {
               <Price amount={get(order, 'data.total')} />
             </td>
             <td>
-              <PaymentStatusText status={order.statusStr} />
+              <PaymentStatusText status={order.paymentStatus} />
             </td>
           </tr>
         ))}

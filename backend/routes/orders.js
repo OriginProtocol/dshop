@@ -60,6 +60,7 @@ module.exports = function (router) {
     authSellerAndShop,
     findOrder,
     async (req, res) => {
+      // Load transactions associated with the order.
       let transactions = []
       if (req.order.paymentCode) {
         transactions = await Transaction.findAll({
@@ -68,7 +69,29 @@ module.exports = function (router) {
           }
         })
       }
-      res.json({ ...req.order.dataValues, transactions })
+
+      // For pagination purposes, load the prev and next orders, if any.
+      const prevOrder = await Order.findOne({
+        where: {
+          shopId: req.order.shopId,
+          createdAt: { [Op.lt]: req.order.createdAt }
+        },
+        order: [['createdAt', 'desc']]
+      })
+      const nextOrder = await Order.findOne({
+        where: {
+          shopId: req.order.shopId,
+          createdAt: { [Op.gt]: req.order.createdAt }
+        },
+        order: [['createdAt', 'asc']]
+      })
+
+      res.json({
+        ...req.order.dataValues,
+        transactions,
+        prevOrderId: prevOrder ? prevOrder.orderId : null,
+        nextOrderId: nextOrder ? nextOrder.orderId : null
+      })
     }
   )
 
@@ -79,6 +102,7 @@ module.exports = function (router) {
     async (req, res) => {
       try {
         await sendNewOrderEmail({
+          orderId: req.params.orderId,
           shop: req.shop,
           cart: JSON.parse(req.order.data)
         })

@@ -28,7 +28,14 @@ function optionsForItem(item) {
   return options
 }
 
-async function sendNewOrderEmail({ shop, network, cart, varsOverride, skip }) {
+async function sendNewOrderEmail({
+  orderId,
+  shop,
+  network,
+  cart,
+  varsOverride,
+  skip
+}) {
   const { transporter, from, replyTo } = await getShopTransport(shop, network)
   if (!transporter) {
     log.info(`No email transport configured. Skiped sending new order email.`)
@@ -116,12 +123,12 @@ async function sendNewOrderEmail({ shop, network, cart, varsOverride, skip }) {
     supportEmailPlain: shopConfig.supportEmail,
     subject,
     storeUrl: publicURL,
-    orderNumber: cart.offerId,
+    orderNumber: orderId,
     firstName: cart.userInfo.firstName,
     lastName: cart.userInfo.lastName,
     email: cart.userInfo.email,
     orderUrl: `${publicURL}/order/${cart.tx}?auth=${cart.dataKey}`,
-    orderUrlAdmin: `${publicURL}/admin/orders/${cart.offerId}`,
+    orderUrlAdmin: `${publicURL}/admin/orders/${orderId}`,
     orderItems,
     orderItemsTxt,
     subTotal: formatPrice(cart.subTotal, { currency }),
@@ -157,7 +164,7 @@ async function sendNewOrderEmail({ shop, network, cart, varsOverride, skip }) {
     to: shopConfig.supportEmail
       ? `${vars.siteName} <${shopConfig.supportEmail}>`
       : null,
-    subject: `[${vars.siteName}] Order #${cart.offerId}`,
+    subject: `[${vars.siteName}] Order #${orderId}`,
     html: htmlOutputVendor.html,
     text: txtOutput,
     attachments,

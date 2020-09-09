@@ -344,9 +344,10 @@ const processShippedEvent = async (event, shopId) => {
 
     const shop = await Shop.findOne({ where: { id: shopId } })
 
+    const orderId = order.external_id
     const dbOrder = await Order.findOne({
       where: {
-        orderId: order.external_id,
+        orderId,
         shopId
       }
     })
@@ -357,6 +358,7 @@ const processShippedEvent = async (event, shopId) => {
     }
 
     await sendNewOrderEmail({
+      orderId,
       shop,
       cart: dbOrder.data,
       varsOverride: {

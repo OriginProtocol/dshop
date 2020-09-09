@@ -1,6 +1,6 @@
 const get = require('lodash/get')
 
-const { OrderStatuses } = require('../enums')
+const { OrderPaymentStatuses } = require('../enums')
 
 module.exports = (sequelize, DataTypes) => {
   const isPostgres = sequelize.options.dialect === 'postgres'
@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true
       },
       // Current status of the order.
-      status: DataTypes.ENUM(OrderStatuses),
+      paymentStatus: DataTypes.ENUM(OrderPaymentStatuses),
       // IPFS hash for the offer data.
       ipfsHash: DataTypes.STRING,
       // IPFS hash of the encrypted offer data.

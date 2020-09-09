@@ -14,7 +14,7 @@ const {
 const { processor } = require('../queues/makeOfferProcessor')
 const { Transaction } = require('../models')
 const {
-  OrderStatuses,
+  OrderPaymentStatuses,
   TransactionTypes,
   TransactionStatuses
 } = require('../enums')
@@ -166,7 +166,7 @@ describe('Offers', () => {
     expect(order).to.be.an('object')
     expect(order.networkId).to.equal(999)
     expect(order.shopId).to.equal(shop.id)
-    expect(order.status).to.equal(OrderStatuses.Paid)
+    expect(order.status).to.equal(OrderPaymentStatuses.Paid)
     expect(order.offerId).to.be.undefined
     expect(order.offerStatus).to.be.undefined
     expect(order.createdBlock).to.be.undefined

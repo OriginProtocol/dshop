@@ -1,7 +1,7 @@
 const randomstring = require('randomstring')
 const util = require('ethereumjs-util')
 
-const { OrderStatuses } = require('../../enums')
+const { OrderPaymentStatuses } = require('../../enums')
 const { Sentry } = require('../../sentry')
 const { Order } = require('../../models')
 const sendNewOrderEmail = require('../../utils/emails/newOrder')
@@ -104,7 +104,7 @@ async function processNewOrder({
     shopId: shop.id,
     orderId,
     data,
-    status: OrderStatuses.Paid,
+    status: OrderPaymentStatuses.Paid,
     ipfsHash: offerIpfsHash,
     encryptedIpfsHash: encryptedHash,
     paymentCode,
@@ -136,6 +136,8 @@ async function processNewOrder({
   if (!valid) {
     orderObj.data.error = error
   }
+
+  // Create the order in the DB.
   const order = await Order.create(orderObj)
   log.info(`Saved order ${order.orderId} to DB.`)
 
@@ -150,7 +152,7 @@ async function processNewOrder({
   // cause the order to get recorded multiple times in the DB.
   if (!skipEmail) {
     try {
-      await sendNewOrderEmail({ shop, cart: data, network })
+      await sendNewOrderEmail({ orderId, shop, cart: data, network })
     } catch (e) {
       log.error('Email sending failure:', e)
       Sentry.captureException(e)

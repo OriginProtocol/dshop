@@ -20,8 +20,7 @@ const ConnectWallet = ({ className, children, onCreated, setState }) => {
           const walletAddress = await signer.getAddress()
           console.log('CONNECTED WALLET', walletAddress)
           setState({ walletAddress })
-          }
-        }
+        }}
         submit={submit}
         onCreated={onCreated}
         onReset={() => setSubmit(false)}

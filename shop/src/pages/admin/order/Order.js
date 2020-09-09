@@ -19,10 +19,8 @@ const AdminOrder = () => {
   const { order, loading } = useOrder(orderId)
   const [{ admin }] = useStateValue()
   const urlPrefix = `/admin/orders/${orderId}`
-
-  const offerSplit = orderId.split('-')
-  const listingId = offerSplit.slice(0, -1).join('-')
-  const offerId = Number(offerSplit[offerSplit.length - 1])
+  const prevOrderId = get(order, 'prevOrderId')
+  const nextOrderId = get(order, 'nextOrderId')
 
   return (
     <>
@@ -33,20 +31,16 @@ const AdminOrder = () => {
         <span className="chevron" />
         {`Order #${orderId}`}
         <div style={{ fontSize: 18 }} className="actions">
-          <Link
-            to={`/admin/orders/${listingId}-${offerId - 1}${
-              tab ? `/${tab}` : ''
-            }`}
-          >
-            &lt; <fbt desc="Older">Older</fbt>
-          </Link>
-          <Link
-            to={`/admin/orders/${listingId}-${offerId + 1}${
-              tab ? `/${tab}` : ''
-            }`}
-          >
-            <fbt desc="Newer">Newer</fbt> &gt;
-          </Link>
+          {prevOrderId ? (
+            <Link to={`/admin/orders/${prevOrderId}${tab ? `/${tab}` : ''}`}>
+              &lt; <fbt desc="Older">Older</fbt>
+            </Link>
+          ) : null}
+          {nextOrderId ? (
+            <Link to={`/admin/orders/${nextOrderId}${tab ? `/${tab}` : ''}`}>
+              <fbt desc="Newer">Newer</fbt> &gt;
+            </Link>
+          ) : null}
         </div>
       </h3>
       {!get(order, 'data.error') ? null : (

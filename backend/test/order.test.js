@@ -1,7 +1,7 @@
 const chai = require('chai')
 const expect = chai.expect
 
-const { OrderStatuses } = require('../enums')
+const { OrderPaymentStatuses } = require('../enums')
 const { Order } = require('../models')
 const { processDShopEvent, handleLog } = require('../utils/handleLog')
 
@@ -130,7 +130,7 @@ describe('Orders', () => {
     expect(order).to.be.an('object')
     expect(order.networkId).to.equal(999)
     expect(order.shopId).to.equal(shop.id)
-    expect(order.status).to.equal(OrderStatuses.Paid)
+    expect(order.status).to.equal(OrderPaymentStatuses.Paid)
     expect(order.offerId).to.equal(fqOfferId)
     expect(order.offerStatus).to.equal('OfferCreated')
     expect(order.ipfsHash).to.equal(offerIpfsHash)

@@ -13,7 +13,7 @@ const AdminDeployShop = ({ className = 'btn-outline-primary', buttonText }) => {
   const { post } = useBackendApi({ authToken: true })
   const [, dispatch] = useStateValue()
 
-  if (!config.listingId) {
+  if (!config.walletAddress) {
     return (
       <ConfirmationModal
         className={`btn ${className}`}
