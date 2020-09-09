@@ -63,10 +63,11 @@
       "truffle-privatekey-provider",
       "solc",
       "sequelize",
-      "sequelize-cli"
+      "sequelize-cli",
+      "ipfs"
     ],
     "ignorePaths": [],
-    "schedule": "before 2am",
+    "schedule": "before 11am",
     "rebaseStalePrs": false
   }
 }
