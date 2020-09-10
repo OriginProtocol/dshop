@@ -32,7 +32,6 @@ function pickConfig(body) {
 }
 
 module.exports = function (router) {
-
   /**
    * Creates a new network. Called during the deployer's initial setup.
    */
@@ -97,7 +96,7 @@ module.exports = function (router) {
         config: setConfig(config, network.dataValues.config),
         ipfs: req.body.ipfs,
         ipfsApi: req.body.ipfsApi,
-        publicSignups: req.body.publicSignups ? true : false,
+        publicSignups: req.body.publicSignups ? true : false
       },
       { where }
     )

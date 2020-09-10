@@ -253,10 +253,7 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
       <div className="form-row">
         <div className="form-group col-md-6">
           <label>Marketplace Listing ID</label>
-          <input
-            {...input('listingId')}
-            placeholder="eg 1-001-12345"
-          />
+          <input {...input('listingId')} placeholder="eg 1-001-12345" />
           {Feedback('listingId')}
         </div>
       </div>
