@@ -182,7 +182,8 @@ async function getOrCreateTestNetwork(opts = {}) {
       cloudflareApiKey: 'cloudflareApiKey',
       gcpCredentials: 'gcpCredentials',
       domain: 'domain.com',
-      deployDir: 'deployDir'
+      deployDir: 'deployDir',
+      ...opts.configOverride
     })
   }
   // Note: For unclear reasons, the migration file 20200317190719-addIpfs.js

@@ -196,7 +196,7 @@ async function _processEventForExistingOrder({ event, shop, order }) {
   }
 
   if (eventName === 'OfferWithdrawn') {
-    updatedFields.status = OrderPaymentStatuses.Refunded
+    updatedFields.paymentStatus = OrderPaymentStatuses.Refunded
 
     // If it's a Stripe payment, initiate a refund.
     const paymentMethod = get(order, 'data.paymentMethod.id')

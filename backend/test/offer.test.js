@@ -163,9 +163,11 @@ describe('Offers', () => {
     // Call the processor to record the offer off-chain. It should return an Order DB row.
     const order = await processor(job)
     expect(order).to.be.an('object')
+    expect(order.fqId).to.be.a('string')
+    expect(order.shortId).to.be.a('string')
     expect(order.networkId).to.equal(999)
     expect(order.shopId).to.equal(shop.id)
-    expect(order.status).to.equal(OrderPaymentStatuses.Paid)
+    expect(order.paymentStatus).to.equal(OrderPaymentStatuses.Paid)
     expect(order.offerId).to.be.undefined
     expect(order.offerStatus).to.be.undefined
     expect(order.createdBlock).to.be.undefined
@@ -173,7 +175,7 @@ describe('Offers', () => {
     expect(order.ipfsHash).to.be.a('string')
     expect(order.encryptedIpfsHash).to.equal(ipfsHash)
     expect(order.paymentCode).to.equal(jobData.paymentCode)
-    expect(order.value).to.equal(data.total)
+    expect(order.total).to.equal(data.total)
     expect(order.currency).to.equal(data.currency)
     expect(order.data).to.eql(data)
   })

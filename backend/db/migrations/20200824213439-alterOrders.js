@@ -14,29 +14,29 @@ module.exports = {
           autoIncrement: true,
           primaryKey: true
         },
-        fqId: Sequelize.STRING,
-        shortId: Sequelize.STRING,
-        shopId: Sequelize.INTEGER,
-        networkId: Sequelize.INTEGER,
-        paymentStatus: Sequelize.ENUM(OrderPaymentStatuses),
-        paymentCode: Sequelize.STRING,
-        ipfsHash: Sequelize.STRING,
-        encryptedIpfsHash: Sequelize.STRING,
+        fq_id: Sequelize.STRING,
+        short_id: Sequelize.STRING,
+        shop_id: Sequelize.INTEGER,
+        network_id: Sequelize.INTEGER,
+        payment_status: Sequelize.ENUM(OrderPaymentStatuses),
+        payment_code: Sequelize.STRING,
+        ipfs_hash: Sequelize.STRING,
+        encrypted_ipfs_hash: Sequelize.STRING,
         currency: Sequelize.STRING,
-        value: Sequelize.STRING,
+        total: Sequelize.STRING,
         data: isPostgres ? Sequelize.JSONB : Sequelize.JSON,
-        offerId: Sequelize.STRING,
-        offerStatus: Sequelize.STRING,
-        createdBlock: Sequelize.INTEGER,
-        updatedBlock: Sequelize.INTEGER,
+        offer_id: Sequelize.STRING,
+        offer_status: Sequelize.STRING,
         referrer: Sequelize.STRING,
-        commissionPending: Sequelize.INTEGER,
-        commissionPaid: Sequelize.INTEGER,
+        commission_pending: Sequelize.INTEGER,
+        commission_paid: Sequelize.INTEGER,
+        created_block: Sequelize.INTEGER,
+        updated_block: Sequelize.INTEGER,
         created_at: Sequelize.DATE,
         updated_at: Sequelize.DATE
       })
-      await queryInterface.addIndex('orders', ['fqId'])
-      await queryInterface.addIndex('orders', ['shopId', 'shortId'])
+      await queryInterface.addIndex('orders', ['fq_id'])
+      await queryInterface.addIndex('orders', ['shop_id', 'short_id'])
     })
   },
   down: (queryInterface) => {
