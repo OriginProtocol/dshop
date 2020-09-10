@@ -85,6 +85,7 @@ function initialState() {
     defaultShopConfig,
     ipfs: '',
     ipfsApi: '',
+    listingId: '',
     marketplaceContract: '',
     marketplaceVersion: '',
     googleAnalytics: '',
@@ -130,6 +131,9 @@ function validate(state) {
     newState.backendUrlError = 'Backend URL required'
   } else if (!state.backendUrl.match(/^https?:\/\//)) {
     newState.backendUrlError = 'Should start https:// or http://'
+  }
+  if (!state.listingId) {
+    newState.listingIdError = 'Marketplace listing ID required'
   }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
@@ -248,20 +252,12 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
       </div>
       <div className="form-row">
         <div className="form-group col-md-6">
-          <label>Provider WebSocket</label>
+          <label>Marketplace Listing ID</label>
           <input
-            {...input('providerWs')}
-            placeholder="eg wss://wss.infura.io/v3/YOUR-PROJECT-ID"
+            {...input('listingId')}
+            placeholder="eg 1-001-12345"
           />
-          {Feedback('providerWs')}
-        </div>
-        <div className="form-group col-md-6">
-          <label>Provider HTTPS</label>
-          <input
-            {...input('provider')}
-            placeholder="eg https://mainnet.infura.io/v3/YOUR-PROJECT-ID"
-          />
-          {Feedback('provider')}
+          {Feedback('listingId')}
         </div>
       </div>
       <div className="form-row">

@@ -14,23 +14,24 @@ const { getLogger } = require('../../utils/logger')
 const log = getLogger('logic.order')
 
 /**
- * Returns a new order id in its full-qualified form.
+ * Returns a new order id. Returns its full-qualified and short form.
  * Format: <networkId>-<contractVersion>-<listingId>-<shopID>-<randomId>.
  * Example: 1-001-12345-6789-XCQ69BTJ
  *
  * @param {models.Network} network
  * @param {models.Shop} shop
- * @returns {string}
+ * @returns {fqId: string, shortId: string}
  */
-function createNewOrderId(network, shop) {
-  const randomId = randomstring.generate({
+function createOrderId(network, shop) {
+  const shortId = randomstring.generate({
     readable: true,
     charset: 'alphanumeric',
     capitalization: 'uppercase',
     length: 8
   })
   // Note: network.listingId is fully qualified and has format <networkId>-<contractVersion>-<listingId>.
-  return `${network.listingId}-${shop.id}-${randomId}`
+  const fqId = `${network.listingId}-${shop.id}-${shortId}`
+  return { fqId, shortId }
 }
 
 /**
@@ -78,8 +79,10 @@ async function processNewOrder({
   skipEmail,
   skipDiscord
 }) {
-  // Generate a unique order id.
-  const orderId = createNewOrderId(network, shop)
+  // Generate a short unique order id.
+  const { fqId, shortId } = createOrderId(network, shop)
+
+  // Generate the fully qualified id.
 
   // Load the encrypted data from IPFS and decrypt it.
   const encryptedHash = offer.encryptedData
@@ -102,13 +105,14 @@ async function processNewOrder({
   const orderObj = {
     networkId: network.networkId,
     shopId: shop.id,
-    orderId,
+    fqId,
+    shortId,
     data,
-    status: OrderPaymentStatuses.Paid,
+    paymentStatus: OrderPaymentStatuses.Paid,
+    paymentCode,
     ipfsHash: offerIpfsHash,
     encryptedIpfsHash: encryptedHash,
-    paymentCode,
-    value: data.total,
+    total: data.total,
     currency: data.currency
   }
   if (event) {
@@ -139,7 +143,7 @@ async function processNewOrder({
 
   // Create the order in the DB.
   const order = await Order.create(orderObj)
-  log.info(`Saved order ${order.orderId} to DB.`)
+  log.info(`Saved order ${order.fqId} to DB.`)
 
   // TODO: move order fulfillment to a queue.
   if (shopConfig.printful && shopConfig.printfulAutoFulfill) {
@@ -152,7 +156,7 @@ async function processNewOrder({
   // cause the order to get recorded multiple times in the DB.
   if (!skipEmail) {
     try {
-      await sendNewOrderEmail({ orderId, shop, cart: data, network })
+      await sendNewOrderEmail({ orderId: shortId, shop, cart: data, network })
     } catch (e) {
       log.error('Email sending failure:', e)
       Sentry.captureException(e)
@@ -162,7 +166,7 @@ async function processNewOrder({
     try {
       await discordWebhook({
         url: networkConfig.discordWebhook,
-        orderId: offerId,
+        orderId: fqId,
         shopName: shop.name,
         total: `${(data.total / 100).toFixed(2)} ${data.currency}`,
         items: data.items.map((i) => i.title).filter((t) => t)

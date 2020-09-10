@@ -2,9 +2,13 @@ module.exports = (sequelize, DataTypes) => {
   const Shop = sequelize.define(
     'Shop',
     {
-      networkId: DataTypes.INTEGER, // 1=Mainnet, 4=Rinkeby, 999=local, etc...
-      listingId: DataTypes.STRING, // Fully qualified listing Id. Ex: 1-001-1212
-      walletAddress: DataTypes.STRING, // Address of the wallet used for sending the ListingCreated transaction.
+      // 1=Mainnet, 4=Rinkeby, 999=local, etc...
+      networkId: DataTypes.INTEGER,
+      // Fully qualified listing Id (ex: 1-001-1212).
+      // Either created by the merchant specifically for the shop or inherited from the network level (default).
+      listingId: DataTypes.STRING,
+      // Address of the merchant's wallet. Used for ex. to receive crypto payments.
+      walletAddress: DataTypes.STRING,
       sellerId: DataTypes.INTEGER,
       hostname: DataTypes.STRING,
       name: DataTypes.STRING,

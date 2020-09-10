@@ -1,3 +1,5 @@
+const pick = require('lodash/pick')
+
 const { authSellerAndShop, authShop } = require('./_auth')
 const {
   Order,
@@ -9,7 +11,44 @@ const { findOrder } = require('../utils/orders')
 const makeOffer = require('./_makeOffer')
 const sendNewOrderEmail = require('../utils/emails/newOrder')
 
+const safeAttributes = [
+  'shopId',
+  'paymentStatus',
+  'paymentCode',
+  'ipfsHash',
+  'encryptedIpfsHash',
+  'offerId',
+  'offerStatus',
+  'currency',
+  'value',
+  'data',
+  'referrer',
+  'createdAt'
+]
+
+/**
+ * Sanitizes an order before it gets sent back to the front-end.
+ * @param {model.Order} order
+ * @return {object} sanitized order
+ */
+function sanitizeOrder(order) {
+  // Pick attributes
+  const result = pick(order, safeAttributes)
+  // The orderId exposed to the front-end is the shortId and not the fqId since:
+  //  - the fqId is much longer and harder to use by the buyer/merchant as a reference for a given order.
+  //  - the fqId includes the shopId which is potentially a sensitive data.
+  result.orderId = order.shortId
+  return result
+}
+
 module.exports = function (router) {
+  /**
+   * Returns a page worth of orders for a shop. Supports searching for a specific order.
+   *
+   * The body of the request is expected to include:
+   *   {integer} page: index of the page.
+   *   {string} search: optional search query.
+   */
   router.get('/orders', authSellerAndShop, async (req, res) => {
     const { page: pageVal, search } = req.query
 
@@ -45,16 +84,23 @@ module.exports = function (router) {
 
     const numPages = Math.ceil(count / limit)
 
+    const sanitizedOrders = orders.map((order) => sanitizeOrder(order))
+
     res.json({
       pagination: {
         numPages,
         totalCount: count,
         perPage: limit
       },
-      orders
+      orders: sanitizedOrders
     })
   })
 
+  /**
+   * Returns an order for a shop based on a shopId and a short order id.
+   * The body of the request is expected to include:
+   *   {string} orderId: short order id.
+   */
   router.get(
     '/orders/:orderId',
     authSellerAndShop,
@@ -74,20 +120,22 @@ module.exports = function (router) {
       const prevOrder = await Order.findOne({
         where: {
           shopId: req.order.shopId,
-          createdAt: { [Op.lt]: req.order.createdAt }
+          id: { [Op.lt]: req.order.id }
         },
-        order: [['createdAt', 'desc']]
+        order: [['id', 'desc']]
       })
       const nextOrder = await Order.findOne({
         where: {
           shopId: req.order.shopId,
-          createdAt: { [Op.gt]: req.order.createdAt }
+          id: { [Op.gt]: req.order.id }
         },
-        order: [['createdAt', 'asc']]
+        order: [['id', 'asc']]
       })
 
+      const sanitizedOrder = sanitizeOrder(req.order)
+
       res.json({
-        ...req.order.dataValues,
+        ...sanitizedOrder,
         transactions,
         prevOrderId: prevOrder ? prevOrder.orderId : null,
         nextOrderId: nextOrder ? nextOrder.orderId : null
@@ -95,6 +143,13 @@ module.exports = function (router) {
     }
   )
 
+  /**
+   * Sends emails to the buyer and merchant about a new order on a shop.
+   * This is called by the shop console when reprocessing an order manually.
+   *
+   * The body of the request is expected to include:
+   *   {string} orderId: short order id.
+   */
   router.post(
     '/orders/:orderId/email',
     authSellerAndShop,

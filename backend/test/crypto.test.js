@@ -9,7 +9,6 @@ const {
   createTestShop,
   createTestEncryptedOfferData,
   getOrCreateTestNetwork,
-  updateNetworkConfig,
   generatePgpKey
 } = require('./utils')
 const { PaymentSession, Transaction } = require('../models')
@@ -119,13 +118,8 @@ describe('Crypto Payment', () => {
   }
 
   it('It should successfully make a crypto payment', async () => {
-    const networkConfigOverrides = [
-      { useMarketplaceContract: true },
-      { useMarketplaceContract: false }
-    ]
-
-    for (const networkConfigOverride of networkConfigOverrides) {
-      await updateNetworkConfig(network, networkConfigOverride)
+    for (const useMarketplace of [true, false]) {
+      await network.update({ useMarketplace })
 
       const { data, paymentCode, txHash } = await _makePayment()
 
@@ -150,7 +144,7 @@ describe('Crypto Payment', () => {
 
       // If the marketplace contract is being used, it should also have created a Transaction row
       // to track the marketplace offer transaction.
-      if (networkConfigOverride.useMarketplaceContract) {
+      if (useMarketplace) {
         transaction = await Transaction.findOne({
           where: {
             type: TransactionTypes.OfferCreated,

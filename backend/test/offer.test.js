@@ -8,7 +8,6 @@ const {
   getOrCreateTestNetwork,
   generatePgpKey,
   MockBullJob,
-  updateNetworkConfig,
   createTestEncryptedOfferData
 } = require('./utils')
 const { processor } = require('../queues/makeOfferProcessor')
@@ -26,7 +25,7 @@ describe('Offers', () => {
   before(async () => {
     // Note: Enable the marketplace contract initially.
     // Then later in this test suite it gets disabled.
-    network = await getOrCreateTestNetwork({ useMarketplaceContract: true })
+    network = await getOrCreateTestNetwork({ useMarketplace: true })
 
     // Use account 1 as the merchant's.
     const sellerWallet = getTestWallet(1)
@@ -143,7 +142,7 @@ describe('Offers', () => {
 
   it('It should make an off-chain offer', async () => {
     // Update the network config to disable the use of the marketplace contract.
-    await updateNetworkConfig(network, { useMarketplaceContract: false })
+    await network.update({ useMarketplace: false })
 
     const { ipfsHash, data } = await createTestEncryptedOfferData(
       network,

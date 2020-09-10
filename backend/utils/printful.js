@@ -347,11 +347,10 @@ const processShippedEvent = async (event, shopId) => {
     const orderId = order.external_id
     const dbOrder = await Order.findOne({
       where: {
-        orderId,
-        shopId
+        shopId,
+        shortId: orderId
       }
     })
-
     if (!dbOrder) {
       log.error(`Shop ${shopId} - Invalid order, not found in DB`, order)
       return

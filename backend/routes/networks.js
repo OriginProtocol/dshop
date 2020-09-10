@@ -32,6 +32,10 @@ function pickConfig(body) {
 }
 
 module.exports = function (router) {
+
+  /**
+   * Creates a new network. Called during the deployer's initial setup.
+   */
   router.post('/networks', authSuperUser, async (req, res) => {
     const networkObj = {
       networkId: req.body.networkId,
@@ -41,7 +45,11 @@ module.exports = function (router) {
       ipfsApi: req.body.ipfsApi,
       marketplaceContract: req.body.marketplaceContract,
       marketplaceVersion: req.body.marketplaceVersion,
+      listingId: req.body.listingId,
       publicSignups: req.body.publicSignups ? true : false,
+      // By default we disable the use of the marketplace.
+      // TODO: expose via a flag in the UI.
+      useMarketplace: false,
       active: req.body.active ? true : false,
       config: setConfig(pickConfig(req.body))
     }
@@ -62,6 +70,9 @@ module.exports = function (router) {
     res.json({ success: true })
   })
 
+  /**
+   * Updates an existing network. Called from the super-admin console.
+   */
   router.get('/networks/:netId', authSuperUser, async (req, res) => {
     const where = { networkId: req.params.netId }
     const network = await Network.findOne({ where })
@@ -86,7 +97,7 @@ module.exports = function (router) {
         config: setConfig(config, network.dataValues.config),
         ipfs: req.body.ipfs,
         ipfsApi: req.body.ipfsApi,
-        publicSignups: req.body.publicSignups ? true : false
+        publicSignups: req.body.publicSignups ? true : false,
       },
       { where }
     )

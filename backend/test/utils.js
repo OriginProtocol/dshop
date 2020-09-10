@@ -145,7 +145,7 @@ async function addData(data, { pgpPublicKey, ipfsApi }) {
  * Creates or return existing network model
  * @returns {Promise<models.Network>}
  */
-async function getOrCreateTestNetwork(configOverride = {}) {
+async function getOrCreateTestNetwork(opts = {}) {
   const config = defaults['999']
 
   // The default config relies on env variable MARKETPLACE_CONTRACT for
@@ -174,6 +174,7 @@ async function getOrCreateTestNetwork(configOverride = {}) {
     marketplaceVersion: '001',
     listingId: '999-001-1', // TODO: we may need to create a real listing on the marketplace contract.
     active: true,
+    useMarketplace: opts.useMarketplace ? opts.useMarketplace : false,
     config: setConfig({
       pinataKey: 'pinataKey',
       pinataSecret: 'pinataSecret',
@@ -181,9 +182,7 @@ async function getOrCreateTestNetwork(configOverride = {}) {
       cloudflareApiKey: 'cloudflareApiKey',
       gcpCredentials: 'gcpCredentials',
       domain: 'domain.com',
-      deployDir: 'deployDir',
-      useMarketplaceContract: false,
-      ...configOverride
+      deployDir: 'deployDir'
     })
   }
   // Note: For unclear reasons, the migration file 20200317190719-addIpfs.js
