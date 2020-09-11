@@ -50,8 +50,6 @@ function getShopTransport(shop, network) {
   const shopTransport = getTransportFromConfig(shopConfig)
 
   const netConfig = encConf.getConfig(network.config)
-  console.log('netConfig=', netConfig)
-  console.log('netConfig.fallbackShopConfig=', netConfig.fallbackShopConfig)
   const netTransport = getTransportFromConfig(netConfig.fallbackShopConfig)
   const netEmailAddress = netConfig.notificationEmail
 
