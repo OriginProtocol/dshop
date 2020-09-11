@@ -181,6 +181,7 @@ async function processNewOrder({
 }
 
 module.exports = {
+  createOrderId,
   getShortOrderId,
   processNewOrder
 }

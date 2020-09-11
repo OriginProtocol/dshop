@@ -7,8 +7,8 @@ const { OrderPaymentStatuses, OrderOfferStatuses } = require('../enums')
 module.exports = (sequelize, DataTypes) => {
   const isPostgres = sequelize.options.dialect === 'postgres'
 
-  const Order = sequelize.define(
-    'Order',
+  const MigOrder = sequelize.define(
+    'MigOrder',
     {
       shopId: DataTypes.INTEGER,
       // Ethereum network id. 1=Mainnet, 4=Rinkeby, 999=local
@@ -56,9 +56,5 @@ module.exports = (sequelize, DataTypes) => {
     }
   )
 
-  Order.associate = function (models) {
-    Order.belongsTo(models.Shop, { as: 'shops', foreignKey: 'shopId' })
-  }
-
-  return Order
+  return MigOrder
 }

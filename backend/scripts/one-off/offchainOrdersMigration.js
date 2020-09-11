@@ -3,18 +3,20 @@
 
 const get = require('lodash/get')
 
-const { MigOrder, OldOrder } = require('../../models')
-const { createOrderId } = require('../../logic/order')
-const { OrderPaymentStatuses, OrderOfferStatuses } = require('../enums')
+const { MigOrder, OldOrder, Network, Shop } = require('../../models')
+const { createOrderId } = require('../../logic/order/order')
+const { OrderPaymentStatuses, OrderOfferStatuses } = require('../../enums')
 
 const { getLogger } = require('../../utils/logger')
 const log = getLogger('cli')
 
 const program = require('commander')
 
-program.option('-d, --doIt <boolean>', 'Write the data to DB/disk.')
+program
+  .requiredOption('-n, --networkId <id>', 'Network id: [1,4,999]')
+  .option('-d, --doIt <boolean>', 'Write the data to DB/disk.')
 
-if (!process.argv.slice(2).length) {
+if (!process.argv.slice(1).length) {
   program.outputHelp()
   process.exit(1)
 }
@@ -41,6 +43,13 @@ function getPaymentStatus(offerStatus) {
 }
 
 async function main() {
+  const network = await Network.findOne({
+    where: { networkId: program.networkId }
+  })
+  if (!network) {
+    throw new Error(`No network with id ${program.networkId}`)
+  }
+
   const oldOrders = await OldOrder.findAll()
   for (const oldOrder of oldOrders) {
     if (oldOrder.statusStr === 'error') {
@@ -50,10 +59,15 @@ async function main() {
       continue
     }
 
-    const { fqId } = createOrderId()
+    const shop = await Shop.findOne({ where: { id: oldOrder.shopId } })
+    if (!shop) {
+      throw new Error(`Failed loading shop ${oldOrder.shopId}`)
+    }
+
+    const { fqId } = createOrderId(network, shop)
     const paymentStatus = getPaymentStatus(oldOrder.statusStr)
     const data = {
-      shopId: oldOrder.shopdId,
+      shopId: oldOrder.shopId,
       networkId: oldOrder.networkId,
       fqId,
       // Important: we set the shortId to the old style orderId which was using the fully qualified offerId.
@@ -61,7 +75,7 @@ async function main() {
       // where those legacy orders have been recorded using the old id scheme.
       // The drawback is that for those legacy orders the fqId and shortId will be inconsistent
       // but this trade-off simplifies the migration quite a bit and seems worth it.
-      shortId: oldOrder.offerId,
+      shortId: oldOrder.orderId,
       paymentStatus,
       paymentCode: oldOrder.paymentCode,
       ipfsHash: oldOrder.ipfsHash,
@@ -70,8 +84,8 @@ async function main() {
       offerStatus: oldOrder.statusStr,
       createdBlock: oldOrder.createdBlock,
       updatedBlock: oldOrder.updatedBlock,
-      currency: get(oldOrder, 'data.currency', null),
-      total: get(oldOrder, 'data.total', null),
+      currency: get(oldOrder, 'data.currency', 'USD'),
+      total: get(oldOrder, 'data.total', 0),
       data: oldOrder.data,
       referrer: oldOrder.referrer,
       commissionPending: oldOrder.commissionPending,
