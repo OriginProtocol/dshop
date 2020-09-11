@@ -137,8 +137,8 @@ module.exports = function (router) {
       res.json({
         ...sanitizedOrder,
         transactions,
-        prevOrderId: prevOrder ? prevOrder.orderId : null,
-        nextOrderId: nextOrder ? nextOrder.orderId : null
+        prevOrderId: prevOrder ? prevOrder.shortId : null,
+        nextOrderId: nextOrder ? nextOrder.shortId : null
       })
     }
   )
