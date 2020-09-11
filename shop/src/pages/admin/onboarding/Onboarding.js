@@ -3,6 +3,7 @@ import fbt from 'fbt'
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
+import useShopConfig from 'utils/useShopConfig'
 import useProducts from 'utils/useProducts'
 
 import { useStateValue } from 'data/state'
@@ -15,6 +16,7 @@ import Banner from './_Banner'
 const Onboarding = () => {
   const { config } = useConfig()
   const { products } = useProducts()
+  const { shopConfig } = useShopConfig()
   const [{ admin }] = useStateValue()
 
   const hasSocialLinks = !!(
@@ -63,7 +65,8 @@ const Onboarding = () => {
     },
     {
       id: 'setup_shipping',
-      completed: get(products, 'length', 0) > 0,
+      completed:
+        get(products, 'length', 0) > 0 || !!get(shopConfig, 'printful'),
       icon: <Icons.Shipping />,
       name: fbt(
         'Set up your shipping options',
