@@ -15,9 +15,11 @@ module.exports = (sequelize, DataTypes) => {
       ipfsApi: DataTypes.STRING, // IPFS API URL.
       marketplaceContract: DataTypes.STRING, // Ethereum address of the marketplace smart contract.
       marketplaceVersion: DataTypes.STRING, // Version of the marketplace. ex: '001'.
+      listingId: DataTypes.STRING, // Fully qualified listing id. ex: '1-001-123'.
       active: DataTypes.BOOLEAN, // True if the network is active.
       publicSignups: DataTypes.BOOLEAN, // True if anyone can sign up as a user.
-      config: DataTypes.TEXT // Encrypted JSON blob storing the configuration.
+      useMarketplace: DataTypes.BOOLEAN, // True if orders should be recorded on the blockchain using the marketplace contract.
+      config: DataTypes.TEXT // Encrypted JSON blob storing sensitive configuration such as API keys and secrets.
     },
     {
       timestamps: false,

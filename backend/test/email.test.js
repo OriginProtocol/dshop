@@ -11,7 +11,7 @@ const {
   updateShopConfig
 } = require('./utils')
 
-describe('Orders', () => {
+describe('Emails', () => {
   let shop, network
 
   before(async () => {
@@ -37,11 +37,12 @@ describe('Orders', () => {
   })
 
   it(`Should fallback to network's config`, async () => {
-    network = await getOrCreateTestNetwork({
+    const configOverride = {
       fallbackShopConfig: { email: 'aws' },
       notificationEmail: 'no-reply@server.com',
       notificationEmailDisplayName: 'Dshop Test'
-    })
+    }
+    network = await getOrCreateTestNetwork({ configOverride })
 
     const updatedShop = await updateShopConfig(shop, {
       supportEmail: 'test@support.email'
@@ -55,11 +56,12 @@ describe('Orders', () => {
   })
 
   it(`Should use shop's config if available`, async () => {
-    network = await getOrCreateTestNetwork({
+    const configOverride = {
       fallbackShopConfig: { email: 'aws' },
       notificationEmail: 'no-reply@server.com',
       notificationEmailDisplayName: 'Dshop Test'
-    })
+    }
+    network = await getOrCreateTestNetwork({ configOverride })
 
     const updatedShop = await updateShopConfig(shop, {
       supportEmail: 'test@support.email',

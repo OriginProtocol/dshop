@@ -473,7 +473,7 @@ module.exports = function (router) {
     const shopResponse = await createShop({
       networkId: network.networkId,
       sellerId: req.session.sellerId,
-      listingId: req.body.listingId,
+      listingId: network.listingId, // by default we set the shop's listingId to the network's listingId.
       hostname,
       name,
       authToken: dataDir,

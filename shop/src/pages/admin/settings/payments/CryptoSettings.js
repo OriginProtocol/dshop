@@ -7,8 +7,9 @@ import DefaultTokens from 'data/defaultTokens'
 import ConfirmationModal from 'components/ConfirmationModal'
 // import Toggle from 'components/Toggle'
 import CustomTokenModal from './_CustomTokenModal'
+import ConnectWallet from './_ConnectWallet'
 
-const ContractSettings = ({ state, setState }) => {
+const CryptoSettings = ({ state, setState }) => {
   const input = formInput(state, (newState) =>
     setState({ ...newState, hasChanges: true })
   )
@@ -28,15 +29,10 @@ const ContractSettings = ({ state, setState }) => {
     <div className="contract-settings">
       <h4>
         <fbt desc="admin.settings.payments.otherPaymentSettings">
-          Other Payment Settings
+          Cryptocurrency Payments
         </fbt>
       </h4>
 
-      <label>
-        <fbt desc="admin.settings.payments.cryptoPayments">
-          Cryptocurrency Payments
-        </fbt>
-      </label>
       <div className="desc">
         <fbt desc="admin.settings.payments.acceptTokens">
           Accept Ethereum and other tokens as payment methods
@@ -70,14 +66,29 @@ const ContractSettings = ({ state, setState }) => {
             <label>
               <fbt desc="Wallet address">Ethereum wallet address</fbt>
             </label>
-            <input {...input('walletAddress')} style={{ maxWidth: 500 }} />
-            {Feedback('walletAddress')}
             <div className="desc">
               <fbt desc="admin.settings.payments.walletAddressDesc">
                 Cryptocurrency payments on Ethereum will be sent directly to
-                this address
+                this address. Either connect your web3 wallet or enter an
+                address manually.
               </fbt>
             </div>
+            <div></div>
+            <input
+              {...input('walletAddress')}
+              style={{ maxWidth: 450, marginTop: '10px', marginBottom: '10px' }}
+              placeholder="0x..."
+            />
+            {Feedback('walletAddress')}
+            <ConnectWallet
+              className="btn btn-outline-primary px-4"
+              setState={setState}
+              children={
+                state.walletAddress ? null : (
+                  <fbt desc="Connect a wallet">Connect a wallet</fbt>
+                )
+              }
+            />
           </div>
           <label>
             <fbt desc="admin.settings.payments.acceptedTokens">
@@ -243,7 +254,7 @@ const AdminDeleteCustomToken = ({ className = '', onConfirm }) => {
   )
 }
 
-export default ContractSettings
+export default CryptoSettings
 
 require('react-styl')(`
   .admin .contract-settings

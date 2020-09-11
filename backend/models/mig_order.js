@@ -1,4 +1,6 @@
-const get = require('lodash/get')
+// Model used during the off-chain migration.
+// Will get deleted once the migration is done.
+// Only difference with the Order model is that it allows to set the createdAt timestamp.
 
 const { OrderPaymentStatuses, OrderOfferStatuses } = require('../enums')
 
@@ -13,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
       networkId: DataTypes.INTEGER,
       // Fully qualified order id. Format: <network_id>-<marketplace_version>-<listing_id>-<shop_id>-<randomId>.
       fqId: DataTypes.STRING,
-      // A short id that can be exposed externally and should be used as a "reference id" by buyers and merchants to refer to an order.
+      // A short id that can be exposed externally and should be used by buyers and merchants to refer to an order.
       shortId: DataTypes.STRING,
       // Current status of the order.
       paymentStatus: DataTypes.ENUM(OrderPaymentStatuses),
@@ -50,24 +52,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       underscored: true,
       tableName: 'orders',
-      hooks: {
-        // Lower cases the email address of the buyer before storing the order in the DB.
-        beforeCreate(order) {
-          const userEmail = get(order, 'data.userInfo.email')
-          if (userEmail) {
-            order = {
-              ...order,
-              data: {
-                ...order.data,
-                userInfo: {
-                  ...order.data.userInfo,
-                  email: userEmail.toLowerCase()
-                }
-              }
-            }
-          }
-        }
-      }
+      timestamps: false
     }
   )
 
