@@ -123,7 +123,7 @@ async function sendNewOrderEmail({
     : `${publicURL}/order/${order.encryptedIpfsHash}?auth=${cart.dataKey}`
 
   // Link for the merchant to the orders admin page.
-  const orderUrlAdmin = `${networkConfig.backendUrl}/admin/orders/${orderId}`
+  const orderUrlAdmin = `${networkConfig.backendUrl}/#/admin/orders/${orderId}`
 
   const subject = shopConfig.emailSubject || `Your ${shop.name} order`
 
