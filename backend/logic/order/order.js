@@ -156,7 +156,13 @@ async function processNewOrder({
   // cause the order to get recorded multiple times in the DB.
   if (!skipEmail) {
     try {
-      await sendNewOrderEmail({ orderId: shortId, shop, cart: data, network })
+      await sendNewOrderEmail({
+        orderId: shortId,
+        order,
+        shop,
+        cart: data,
+        network
+      })
     } catch (e) {
       log.error('Email sending failure:', e)
       Sentry.captureException(e)

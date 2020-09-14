@@ -158,6 +158,7 @@ module.exports = function (router) {
       try {
         await sendNewOrderEmail({
           orderId: req.params.orderId,
+          order: req.order,
           shop: req.shop,
           cart: JSON.parse(req.order.data)
         })

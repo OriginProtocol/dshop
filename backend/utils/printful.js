@@ -358,6 +358,7 @@ const processShippedEvent = async (event, shopId) => {
 
     await sendNewOrderEmail({
       orderId,
+      order: dbOrder,
       shop,
       cart: dbOrder.data,
       varsOverride: {
