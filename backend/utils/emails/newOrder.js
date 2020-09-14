@@ -30,6 +30,7 @@ function optionsForItem(item) {
 
 async function sendNewOrderEmail({
   orderId,
+  order,
   shop,
   network,
   cart,
@@ -47,6 +48,7 @@ async function sendNewOrderEmail({
     skip = true
   }
 
+  const networkConfig = encConf.getConfig(network.config)
   const shopConfig = encConf.getConfig(shop.config)
   const dataURL = shopConfig.dataUrl
   const publicURL = `${shopConfig.publicUrl}/#`
@@ -113,6 +115,16 @@ async function sendNewOrderEmail({
     ]
   }
 
+  // Generate the link for the buyer to see their order.
+  // If the order was recorded on the marketplace, the link uses the transaction hash.
+  // Otherwise the link uses the IPFS hash of the encrypted data.
+  const orderUrl = order.offerId
+    ? `${publicURL}/order/${cart.tx}?auth=${cart.dataKey}`
+    : `${publicURL}/order/${order.encryptedIpfsHash}?auth=${cart.dataKey}`
+
+  // Link for the merchant to the orders admin page.
+  const orderUrlAdmin = `${networkConfig.backendUrl}/admin/orders/${orderId}`
+
   const subject = shopConfig.emailSubject || `Your ${shop.name} order`
 
   const vars = {
@@ -127,8 +139,8 @@ async function sendNewOrderEmail({
     firstName: cart.userInfo.firstName,
     lastName: cart.userInfo.lastName,
     email: cart.userInfo.email,
-    orderUrl: `${publicURL}/order/${cart.tx}?auth=${cart.dataKey}`,
-    orderUrlAdmin: `${publicURL}/admin/orders/${orderId}`,
+    orderUrl,
+    orderUrlAdmin,
     orderItems,
     orderItemsTxt,
     subTotal: formatPrice(cart.subTotal, { currency }),

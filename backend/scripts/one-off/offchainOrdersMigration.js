@@ -80,7 +80,7 @@ async function main() {
       paymentCode: oldOrder.paymentCode,
       ipfsHash: oldOrder.ipfsHash,
       encryptedIpfsHash: oldOrder.encryptedIpfsHash,
-      offerId: oldOrder.offerId,
+      offerId: oldOrder.orderId,
       offerStatus: oldOrder.statusStr,
       createdBlock: oldOrder.createdBlock,
       updatedBlock: oldOrder.updatedBlock,
