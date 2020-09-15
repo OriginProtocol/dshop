@@ -5,11 +5,7 @@ import fbt from 'fbt'
 const statusEnumToText = (status) => {
   switch (status) {
     case 'Pending':
-      return (
-        <fbt desc="admin.settings.general.pendingRegn">
-          Pending registration
-        </fbt>
-      )
+      return <fbt desc="admin.settings.general.pending">Pending</fbt>
 
     case 'Success':
       return <fbt desc="admin.settings.general.live">Live</fbt>

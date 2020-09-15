@@ -5,17 +5,19 @@ import fbt from 'fbt'
 
 import { useStateValue } from 'data/state'
 import useBackendApi from 'utils/useBackendApi'
+import { isUnstoppableName } from '@origin/utils/dns'
 
-import CustomDomain from './_AddDomain'
-import DeleteDomain from './_DeleteDomain'
+import DeleteDomain from './_DeleteModal'
 import EditHostname from './_EditHostname'
-import InfoModal from './_InfoModal'
 import DomainStatus from './_DomainStatus'
+import AddButton from './_AddButton'
+import EditCustomDomain from './_EditModal'
+import OgnSubdomainStatus from './_OgnSubdomainStatus'
 
 const Domains = ({ config, state }) => {
   const [{ admin, reload }] = useStateValue()
   const [hostnameModal, setHostnameModal] = useState(false)
-  const [infoModal, setInfoModal] = useState(false)
+  const [domainEdit, setDomainEdit] = useState(false)
   const [domains, setDomains] = useState([])
   const { get } = useBackendApi({ authToken: true })
 
@@ -64,24 +66,7 @@ const Domains = ({ config, state }) => {
               />
             </td>
             <td>
-              <DomainStatus
-                status="ToPublish"
-                onInfoClick={() =>
-                  setInfoModal({
-                    title: fbt(
-                      'Publish your shop',
-                      'admin.settings.general.domains.publishShop'
-                    ),
-                    description: fbt(
-                      `Your store will be live on ${fbt.param(
-                        'domain',
-                        domain
-                      )} once it has been published`,
-                      'admin.settings.general.domains.publishDesc'
-                    )
-                  })
-                }
-              />
+              <OgnSubdomainStatus hostname={state.hostname} />
             </td>
             <td className="text-muted">Origin</td>
             <td className="text-right">
@@ -92,44 +77,65 @@ const Domains = ({ config, state }) => {
                   setHostnameModal(true)
                 }}
               >
-                <img src="images/edit-icon.svg" />
+                <img src="images/edit-icon.svg" className="action-icon" />
               </a>
             </td>
           </tr>
-          {domains.map((domain, idx) => (
-            <tr key={idx}>
-              <td>
-                <a
-                  onClick={(e) => e.preventDefault()}
-                  href={domain}
-                  target="_blank"
-                  rel="noreferrer"
-                  children={domain.domain}
-                />
-              </td>
-              <td>
-                <DomainStatus status={domain.status} />
-              </td>
-              <td className="text-muted">
-                <fbt desc="Unstoppable">Unstoppable</fbt>
-              </td>
-              <td className="text-right">
-                <DeleteDomain domain={domain}>
-                  <img src="images/delete-icon.svg" />
-                </DeleteDomain>
-              </td>
-            </tr>
-          ))}
+          {domains.map((domain, idx) => {
+            let onInfoClick
+
+            if (domain.status === 'Pending') {
+              onInfoClick = () => {
+                setDomainEdit(domain)
+              }
+            }
+            return (
+              <tr key={idx}>
+                <td>
+                  <a
+                    onClick={(e) => e.preventDefault()}
+                    href={domain}
+                    target="_blank"
+                    rel="noreferrer"
+                    children={domain.domain}
+                  />
+                </td>
+                <td>
+                  <DomainStatus
+                    status={domain.status}
+                    onInfoClick={onInfoClick}
+                  />
+                </td>
+                <td className="text-muted">
+                  {isUnstoppableName(domain.domain) ? (
+                    <fbt desc="Unstoppable">Unstoppable</fbt>
+                  ) : (
+                    <fbt desc="Other">Other</fbt>
+                  )}
+                </td>
+                <td className="text-right">
+                  <DeleteDomain domain={domain}>
+                    <img src="images/delete-icon.svg" className="action-icon" />
+                  </DeleteDomain>
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
       <div className="actions">
-        <CustomDomain hostname={state.hostname} netId={config.netId} />
+        <AddButton hostname={state.hostname} netId={config.netId} />
       </div>
       {!hostnameModal ? null : (
         <EditHostname onClose={() => setHostnameModal(false)} />
       )}
-      {!infoModal ? null : (
-        <InfoModal {...infoModal} onClose={() => setInfoModal(false)} />
+      {!domainEdit ? null : (
+        <EditCustomDomain
+          domainObj={domainEdit}
+          hostname={state.hostname}
+          netId={config.netId}
+          onClose={() => setDomainEdit(null)}
+        />
       )}
     </div>
   )
@@ -140,6 +146,9 @@ require('react-styl')(`
     .table td
       border-bottom: 1px solid #dee2e6
       border-top: 0px
+
+    .action-icon
+      cursor: pointer
 `)
 
 export default Domains

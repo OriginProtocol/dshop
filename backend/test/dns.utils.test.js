@@ -5,7 +5,7 @@ const {
   isPublicDNSName,
   isUnsoppableName,
   isCryptoName
-} = require('../utils/dns')
+} = require('@origin/utils/dns')
 
 const { TEST_DOMAIN_1, TEST_UNSTOPPABLE_DOMAIN_1 } = require('./const')
 

@@ -23,6 +23,7 @@ const defaultState = {
   toasts: [],
   reload: {},
   dashboardStats: {},
+  deployments: [],
 
   // User's preferred currency
   preferredCurrency: '',
@@ -306,6 +307,8 @@ const reducer = (state, action) => {
     localStorage.preferredCurrency = action.currency
   } else if (action.type === 'setLocale') {
     newState = set(newState, 'locale', action.locale)
+  } else if (action.type === 'setDeployments') {
+    newState = set(newState, 'deployments', action.deployments)
   }
 
   // IMPORTANT: Keep this function's total calculation in sync with the calculation

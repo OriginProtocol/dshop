@@ -12,7 +12,7 @@ import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
 import PasswordField from 'components/admin/PasswordField'
-import Domains from './_Domains'
+import Domains from './domains/List'
 
 function reducer(state, newState) {
   return { ...state, ...newState }

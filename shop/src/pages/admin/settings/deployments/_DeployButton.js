@@ -7,7 +7,11 @@ import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 import ConfirmationModal from 'components/ConfirmationModal'
 
-const AdminDeployShop = ({ className = 'btn-outline-primary', buttonText }) => {
+const AdminDeployShop = ({
+  className = 'btn-outline-primary',
+  buttonText,
+  afterDeploy
+}) => {
   const { config } = useConfig()
   const history = useHistory()
   const { post } = useBackendApi({ authToken: true })
@@ -53,6 +57,7 @@ const AdminDeployShop = ({ className = 'btn-outline-primary', buttonText }) => {
       onSuccess={() => {
         dispatch({ type: 'reload', target: 'deployments' })
         dispatch({ type: 'reload', target: 'shopConfig' })
+        if (afterDeploy) afterDeploy()
       }}
     />
   )
