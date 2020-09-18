@@ -26,6 +26,7 @@ function usePrice(targetCurrency = 'USD', preferredCurrency = 'USD') {
     }
     let json = await memoFetch(url)
     json.USD = 1
+    json.OUSD = 1
     const acceptedTokens = config.acceptedTokens || []
 
     // Find tokens that don't have rates and look them up by contract address
