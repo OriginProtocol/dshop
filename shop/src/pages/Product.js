@@ -129,20 +129,7 @@ const Product = ({ history, location, match }) => {
 
   function addToCart(product, variant) {
     setState({ addedToCart: true })
-    dispatch({
-      type: 'addToCart',
-      item: {
-        title: product.title,
-        product: product.id,
-        quantity: 1,
-        variant: variant.id,
-        price: variant.price,
-        externalProductId: product.externalId,
-        externalVariantId: variant.externalId,
-        restrictShippingTo: product.restrictShippingTo,
-        maxQuantity: product.maxQuantity
-      }
-    })
+    dispatch({ type: 'addToCart', product, variant })
   }
 
   if (state.loading) {

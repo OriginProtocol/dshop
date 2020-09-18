@@ -1,0 +1,49 @@
+import React from 'react'
+
+import Link from 'components/Link'
+
+import Header from './_Header'
+import Footer from './_Footer'
+import Products from './_Products'
+
+const App = () => {
+  return (
+    <>
+      <Header />
+
+      <div className="container mb-20">
+        <div className="text-center my-2">
+          <h1 className="text-3xl sm:text-5xl leading-tight font-bold font-serif">
+            Delicious Desserts
+            <br />
+            Delivering to San Diego Today!
+          </h1>
+        </div>
+      </div>
+
+      <div className="mx-auto" style={{ maxWidth: 1300 }}>
+        <div
+          className="bg-contain"
+          style={{
+            backgroundImage: `url(bite-desserts/header-image.jpg)`,
+            paddingTop: '43.4%'
+          }}
+        ></div>
+      </div>
+
+      <div className="container">
+        <Products limit={3} />
+
+        <div className="my-24 flex justify-center">
+          <Link to="/products" className="btn btn-primary">
+            View All Products
+          </Link>
+        </div>
+      </div>
+
+      <Footer />
+    </>
+  )
+}
+
+export default App

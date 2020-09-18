@@ -29,6 +29,13 @@ function useProducts() {
         if (!isSubscribed) {
           return
         }
+        products.forEach((product) => {
+          if (product.data) {
+            product.imageUrl = `${config.ipfsGateway}${product.data}/520/${product.image}`
+          } else if (product.image) {
+            product.imageUrl = `${config.dataSrc}${product.id}/520/${product.image}`
+          }
+        })
         dispatch({ type: 'setProducts', products })
         setLoading(false)
       } catch (e) {

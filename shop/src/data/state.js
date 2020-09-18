@@ -103,7 +103,18 @@ const reducer = (state, action) => {
 
   fbTrack(state, action)
   if (action.type === 'addToCart') {
-    const { product, variant, maxQuantity } = action.item
+    const item = {
+      title: action.product.title,
+      product: action.product.id,
+      quantity: 1,
+      variant: action.variant.id,
+      price: action.variant.price,
+      externalProductId: action.product.externalId,
+      externalVariantId: action.variant.externalId,
+      restrictShippingTo: action.product.restrictShippingTo,
+      maxQuantity: action.product.maxQuantity
+    }
+    const { product, variant, maxQuantity } = item
     const existingIdx = state.cart.items.findIndex(
       (i) => i.product === product && i.variant === variant
     )
@@ -120,7 +131,7 @@ const reducer = (state, action) => {
       )
     } else {
       const lastIdx = state.cart.items.length
-      newState = set(newState, `cart.items[${lastIdx}]`, action.item)
+      newState = set(newState, `cart.items[${lastIdx}]`, item)
     }
     newState = set(newState, 'shippingZones', [])
     newState = set(newState, 'cart.shipping')

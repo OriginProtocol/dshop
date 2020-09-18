@@ -60,6 +60,9 @@ async function start() {
   if (process.env.WATCH === 'true') {
     devServerArgs.push('--watch')
   }
+  if (process.env.THEME) {
+    devServerArgs.push('--config=webpack.theme.js')
+  }
 
   const webpackDevServer = spawn(
     './node_modules/.bin/webpack-dev-server',

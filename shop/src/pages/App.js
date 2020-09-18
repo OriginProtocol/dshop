@@ -1,14 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { Switch, Route, withRouter, useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 import queryString from 'query-string'
 
 import fbt from 'fbt'
 
-import Main from './Main'
-import Checkout from './checkout/Loader'
-import Order from './OrderLoader'
-import Password from './Password'
+import Storefront from './Storefront'
 import Admin from './admin/Admin'
 import SuperAdmin from './super-admin/SuperAdmin'
 
@@ -23,15 +20,13 @@ window.gtag = gtag
 
 const App = ({ location }) => {
   const history = useHistory()
-  const [passwordLoading, setPasswordLoading] = useState(false)
   const { setActiveShop, config, error } = useConfig()
-  const [{ admin, affiliate, passwordAuthed }, dispatch] = useStateValue()
+  const [{ admin, affiliate }, dispatch] = useStateValue()
   const q = queryString.parse(location.search)
   const gaTag = get(admin, 'network.googleAnalytics')
 
   const isSuperAdmin = location.pathname.indexOf('/super-admin') === 0
   const isAdmin = location.pathname.indexOf('/admin') === 0 || isSuperAdmin
-  const isOrder = location.pathname.indexOf('/order') === 0
 
   // Redirect to HTTPS if URL is not local
   useEffect(() => {
@@ -62,26 +57,6 @@ const App = ({ location }) => {
       gtag('config', gaTag, { page_path: location.pathname })
     }
   }, [location.pathname])
-
-  useEffect(() => {
-    if (!get(config, 'passwordProtected') || passwordAuthed) {
-      return
-    }
-    setPasswordLoading(true)
-    fetch(`${config.backend}/password`, {
-      headers: {
-        'content-type': 'application/json',
-        authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
-      },
-      credentials: 'include'
-    }).then(async (response) => {
-      setPasswordLoading(false)
-      if (response.status === 200) {
-        const data = await response.json()
-        dispatch({ type: 'setPasswordAuthed', authed: data.success })
-      }
-    })
-  }, [config, location.pathname])
 
   // Add custom CSS
   useEffect(() => {
@@ -139,23 +114,11 @@ const App = ({ location }) => {
     return <Admin />
   }
 
-  if (passwordLoading) {
-    return null
-  }
-
-  const passwordProtected = get(config, 'passwordProtected')
-  if (passwordProtected && !passwordAuthed && !isAdmin && !isOrder) {
-    return <Password />
-  }
-
   return (
     <Switch>
       <Route path="/admin" component={Admin}></Route>
       <Route path="/super-admin" component={SuperAdmin}></Route>
-      <Route path="/order/:tx" component={Order}></Route>
-      <Route path="/checkout" component={Checkout}></Route>
-      <Route path="/password" component={Password}></Route>
-      <Route component={Main}></Route>
+      <Route component={Storefront}></Route>
     </Switch>
   )
 }
