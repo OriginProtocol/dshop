@@ -1,30 +1,73 @@
 import React from 'react'
+import fbt, { FbtParam } from 'fbt'
+
+import useConfig from 'utils/useConfig'
+import Link from 'components/Link'
+
+import SocialLink from './_SocialLink'
 
 const Footer = () => {
+  const { config } = useConfig()
+
+  const Social = ({ href, height = 16 }) => (
+    <SocialLink
+      className="ml-8"
+      color="#999"
+      href={href}
+      iconStyle={{ height }}
+      iconClass="inline-block"
+    />
+  )
+
+  const date = new Date()
+
   return (
     <>
       <div className="border-t mt-24" />
 
       <div className="container pt-16 pb-16 sm:pb-48">
-        <div className="text-2xl font-medium leading-none">The Peer Art</div>
-        <div />
-        <div className="flex flex-col sm:flex-row justify-between mt-8 text-gray-500 text-sm font-light">
+        <div className="flex flex-col sm:flex-row justify-between">
+          <Link to="/" className="text-2xl font-medium leading-none">
+            {config.title}
+          </Link>
+          <div className="flex flex-row ml-auto">
+            <Social href={config.twitter} height="18" />
+            <Social href={config.facebook} />
+            <Social href={config.instagram} />
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row justify-between mt-8 text-gray-500 text-sm">
           <div className="flex flex-col sm:flex-row pb-8 sm:pb-0">
-            <div className="mr-10">Powered by Origin Dshop</div>
-            <div>© 2020 Origin Protocol</div>
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mr-10"
+              href="https://www.originprotocol.com/en/dshop"
+            >
+              <fbt desc="footer.poweredBy">Powered by Origin Dshop</fbt>
+            </a>
+            <div>
+              <fbt desc="footer.copyrightText">
+                &copy; Origin Protocol{' '}
+                <FbtParam name="year">{date.getFullYear()}</FbtParam>
+              </fbt>
+            </div>
           </div>
           <ul className="flex flex-col sm:flex-row ">
             <li className="pb-4 sm:mr-10">
-              <a href="#">FAQ</a>
+              <Link to="/about">FAQ</Link>
             </li>
             <li className="pb-4 sm:mr-10">
-              <a href="#">About Dshop</a>
-            </li>
-            <li className="pb-4 sm:mr-10">
-              <a href="#">Visit Origin</a>
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0"
+              >
+                <fbt desc="footer.aboutLink">About Dshop</fbt>
+              </a>
             </li>
             <li className="pb-4">
-              <a href="#">Support</a>
+              <Link to="/contact">Contact</Link>
             </li>
           </ul>
         </div>

@@ -51,7 +51,7 @@ const Cart = () => {
           {cart.items.map((item) => (
             <Row
               key={`${item.product}-${item.variant}`}
-              img="peer-art/mool-c26/520/upload_2e596930586d9b842fc35efac45cfded"
+              img={item.imageUrl}
               title={item.title}
               quantity={item.quantity}
               price={formatPrice(item.price, currencyOpts)}

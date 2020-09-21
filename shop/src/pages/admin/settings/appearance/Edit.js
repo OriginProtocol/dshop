@@ -30,7 +30,8 @@ const configFields = [
   'instagram',
   'medium',
   'youtube',
-  'about'
+  'about',
+  'themeId'
 ]
 
 const ABOUT_FILENAME = 'about.html'
@@ -296,6 +297,23 @@ const AppearanceSettings = () => {
               }}
               onChange={(e) => setAboutText(e.editor.getData())}
             />
+          </div>
+
+          <div className="select-currency">
+            <h4>Theme</h4>
+            <div>
+              <select
+                className="form-control"
+                value={state.themeId}
+                onChange={(e) =>
+                  setState({ hasChanges: true, themeId: e.target.value })
+                }
+              >
+                <option value="">Default</option>
+                <option value="art">Art</option>
+                <option value="poly">Poly</option>
+              </select>
+            </div>
           </div>
         </div>
 

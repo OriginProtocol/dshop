@@ -1,12 +1,16 @@
 import React from 'react'
+import get from 'lodash/get'
 
 import useAbout from 'utils/useAbout'
+import useConfig from 'utils/useConfig'
 
 import Header from './_Header'
 import Footer from './_Footer'
 
 const About = () => {
+  const { config } = useConfig()
   const { about } = useAbout()
+  const src = `${config.dataSrc}${get(config, 'theme.home.aboutImage')}`
 
   return (
     <>
@@ -24,7 +28,7 @@ const About = () => {
             )}
           </div>
           <div style={{ flex: '2' }}>
-            <img className="w-full" src="peer-art/artist.png" />
+            <img className="w-full" src={src} />
           </div>
         </div>
       </div>

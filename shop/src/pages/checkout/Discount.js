@@ -91,6 +91,3 @@ const OrderDiscount = ({ cart }) => {
 }
 
 export default OrderDiscount
-
-require('react-styl')(`
-`)

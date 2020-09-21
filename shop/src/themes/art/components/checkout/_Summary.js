@@ -1,7 +1,11 @@
 import React from 'react'
+import fbt from 'fbt'
+import get from 'lodash/get'
 
 import useCurrencyOpts from 'utils/useCurrencyOpts'
 import formatPrice from 'utils/formatPrice'
+
+import Discount from './_Discount'
 
 const OrderSummary = ({ cart, discount = true }) => {
   const currencyOpts = useCurrencyOpts()
@@ -16,30 +20,42 @@ const OrderSummary = ({ cart, discount = true }) => {
           {cart.items.map((item) => (
             <Row
               key={`${item.product}-${item.variant}`}
-              img="peer-art/mool-c26/520/upload_2e596930586d9b842fc35efac45cfded"
+              img={item.imageUrl}
               title={item.title}
               quantity={item.quantity}
               price={formatPrice(item.price, currencyOpts)}
             />
           ))}
         </div>
-        {discount && (
-          <>
-            <div className="mt-4">Discount code</div>
-            <div className="flex justify-between text-lg pt-4 border-b pb-4">
-              <input className="border px-2 py-2 bg-gray-100 w-full" />
-              <button className="btn ml-2 py-2 text-sm">Apply</button>
-            </div>
-          </>
-        )}
+        {discount && <Discount />}
         <div className="flex justify-between mt-4">
           <div>Subtotal</div>
           <div>{formatPrice(cart.subTotal, currencyOpts)}</div>
         </div>
         <div className="flex justify-between mt-4">
           <div>Shipping</div>
-          <div>Calculated at next step</div>
+          <div>
+            {cart.shipping ? (
+              formatPrice(get(cart, 'shipping.amount'), {
+                ...currencyOpts,
+                free: true
+              })
+            ) : (
+              <fbt desc="checkout.shippingAtNextStep">
+                Calculated at next step
+              </fbt>
+            )}
+          </div>
         </div>
+        {!cart.discount ? null : (
+          <div className="flex justify-between mt-4">
+            <div>
+              <fbt desc="Discount">Discount</fbt>{' '}
+              {get(cart, 'discountObj.code', '').toUpperCase()}
+            </div>
+            <div>{formatPrice(cart.discount, currencyOpts)}</div>
+          </div>
+        )}
         <div className="flex justify-between mt-4 border-t text-lg pt-4">
           <div>Total</div>
           <div>{formatPrice(cart.total, currencyOpts)}</div>

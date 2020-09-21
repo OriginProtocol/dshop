@@ -2,6 +2,7 @@ import React from 'react'
 import { Switch, Route } from 'react-router-dom'
 
 import { useStateValue } from 'data/state'
+import useConfig from 'utils/useConfig'
 
 import Link from 'components/Link'
 import Information from './Information'
@@ -10,13 +11,14 @@ import Payment from './Payment'
 import OrderSummary from './_Summary'
 
 const Checkout = () => {
+  const { config } = useConfig()
   const [{ cart }] = useStateValue()
 
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="bg-white">
         <div className="container pt-16 pb-8">
-          <div className="text-2xl">The Peer Art</div>
+          <div className="text-2xl">{config.title}</div>
         </div>
       </div>
       <div className="border-t" />

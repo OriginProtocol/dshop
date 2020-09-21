@@ -7,7 +7,7 @@ import './app.css'
 import { StateProvider } from 'data/state'
 import setLocale from 'utils/setLocale'
 
-import ConfigLoader from './ConfigLoader'
+import ConfigLoader from 'components/ConfigLoader'
 import Home from './components/Home'
 // import Products from './components/Products'
 import Product from './components/Product'

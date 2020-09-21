@@ -80,6 +80,7 @@
   },
   "eslintIgnore": [
     "dist",
+    "themes",
     "docs",
     "node_modules",
     "public"

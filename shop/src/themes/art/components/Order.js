@@ -4,6 +4,7 @@ import queryString from 'query-string'
 import get from 'lodash/get'
 
 import useOrigin from 'utils/useOrigin'
+import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 import formatAddress from 'utils/formatAddress'
 
@@ -12,6 +13,7 @@ import Link from 'components/Link'
 import OrderSummary from './checkout/_Summary'
 
 const Order = () => {
+  const { config } = useConfig()
   const { getOffer, status } = useOrigin()
   const [cart, setCart] = useState()
   const [, setError] = useState()
@@ -46,7 +48,7 @@ const Order = () => {
     <div className="min-h-screen bg-gray-100">
       <div className="bg-white">
         <div className="container pt-24 pb-10">
-          <div className="text-2xl font-medium">The Peer Art</div>
+          <div className="text-2xl font-medium">{config.title}</div>
         </div>
       </div>
       <div className="border-t" />

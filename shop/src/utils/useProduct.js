@@ -76,7 +76,7 @@ function useProduct(id) {
       const variants = get(data, 'variants', [])
       if (!variants.length) {
         variants.push({
-          ...pick(data, ['title', 'price', 'image', 'sku']),
+          ...pick(data, ['title', 'price', 'image', 'sku', 'imageUrl']),
           id: 0,
           name: data.title,
           options: [],
@@ -86,6 +86,11 @@ function useProduct(id) {
           available: true
         })
       }
+      variants.forEach((variant) => {
+        if (variant.image) {
+          variant.imageUrl = `${config.dataSrc}${data.id}/520/${variant.image}`
+        }
+      })
 
       const variant =
         variants.find((v) => String(v.id) === opts.variant) ||

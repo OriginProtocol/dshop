@@ -8,7 +8,7 @@ import InstagramIcon from 'components/icons/Instagram'
 import FacebookIcon from 'components/icons/Facebook'
 import YouTubeIcon from 'components/icons/YouTube'
 
-const SocialLinks = ({ el = 'div' }) => {
+const SocialLinks = ({ el = 'div', className = 'social' }) => {
   const { config } = useConfig()
   const social = config.twitter || config.medium || config.instagram
   if (!social) {
@@ -18,7 +18,7 @@ const SocialLinks = ({ el = 'div' }) => {
   const El = el
 
   return (
-    <El className="social">
+    <El className={className}>
       {!config.twitter ? null : (
         <a href={config.twitter} title={fbt('Twitter', 'Twitter')}>
           <TwitterIcon />
@@ -47,4 +47,5 @@ const SocialLinks = ({ el = 'div' }) => {
     </El>
   )
 }
+
 export default SocialLinks

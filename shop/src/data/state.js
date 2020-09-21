@@ -109,6 +109,7 @@ const reducer = (state, action) => {
       quantity: 1,
       variant: action.variant.id,
       price: action.variant.price,
+      imageUrl: action.variant.imageUrl,
       externalProductId: action.product.externalId,
       externalVariantId: action.variant.externalId,
       restrictShippingTo: action.product.restrictShippingTo,
