@@ -9,10 +9,9 @@ const Home = () => {
   return (
     <div className="container py-20">
       <Header />
-      <div className="text-5xl text-center leading-none my-20">
-        Custom designed art
-        <br />
-        cast out of precious metals
+      <div className="text-5xl text-center leading-none my-20 whitespace-pre-line">
+        {`Custom designed art
+        cast out of precious metals`}
       </div>
       <div className="grid grid-cols-2 gap-12">
         <div>
@@ -91,7 +90,9 @@ const Home = () => {
           around us and turn it into 3D models. We then turn these 3D models
           into real world pieces of art and collectors items.
         </div>
-        <button className="btn text-2xl px-10">About Us</button>
+        <Link to="/about" className="btn text-2xl px-10">
+          About Us
+        </Link>
       </div>
 
       <Footer />
