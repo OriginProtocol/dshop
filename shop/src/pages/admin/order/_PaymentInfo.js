@@ -8,6 +8,7 @@ import PaymentStates from 'data/PaymentStates'
 import OfferStates from 'data/OfferStates'
 
 import PaymentActions from './_PaymentActions'
+import OffchainOfflinePaymentActions from './_OffchainOfflinePaymentActions'
 
 const getStatusText = (
   paymentState,
@@ -35,8 +36,14 @@ const getStatusText = (
             'paymentMethod',
             paymentMethod.label
           )} was refunded.`,
-          'admin.order.paymentStatusPaid'
+          'admin.order.paymentStatusRefunded'
         )
+
+      case PaymentStates.Pending:
+        return fbt(`Pending payment`, 'admin.order.paymentStatusPending')
+
+      default:
+        return fbt('Payment status unknown', 'admin.order.unknownPaymentStatus')
     }
   }
 
@@ -114,6 +121,25 @@ const PaymentInfo = ({ order }) => {
 
   // Direct crypto payment.
   if (offchainPayment) {
+    if (!offchainPayment.hash) {
+      // Offline/Manual payment method
+      return (
+        <div className="order-payment-info">
+          <div className="status-text">
+            {getStatusText(
+              paymentState,
+              offerState,
+              paymentMethod,
+              refundError
+            )}
+          </div>
+          <div className="status-actions">
+            <OffchainOfflinePaymentActions order={order} />
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="admin-customer-info">
         <div>

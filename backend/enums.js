@@ -13,7 +13,7 @@ class Enum extends Array {
   }
 }
 
-const OrderPaymentStatuses = new Enum('Paid', 'Refunded')
+const OrderPaymentStatuses = new Enum('Paid', 'Refunded', 'Pending')
 
 const OrderOfferStatuses = new Enum(
   'OfferCreated',

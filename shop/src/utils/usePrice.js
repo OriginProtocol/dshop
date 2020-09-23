@@ -19,7 +19,7 @@ function usePrice(targetCurrency = 'USD', preferredCurrency = 'USD') {
 
   const { tokenDataProviders } = useTokenDataProviders()
 
-  async function fetchExchangeRates() {
+  async function fetchExchangeRates(abortSignal) {
     let url = `${config.backend}/exchange-rates?target=${targetCurrency}`
     if (preferredCurrency !== targetCurrency) {
       url += `&preferred=${preferredCurrency}`
@@ -50,12 +50,20 @@ function usePrice(targetCurrency = 'USD', preferredCurrency = 'USD') {
       json = { ...json, ...rates }
     }
 
+    if (abortSignal && abortSignal.aborted) {
+      return
+    }
+
     setRates(json)
   }
 
   useEffect(() => {
     if (!exchangeRates[preferredCurrency]) {
-      fetchExchangeRates()
+      const abortController = new AbortController()
+      fetchExchangeRates(abortController.signal)
+      return () => {
+        abortController.abort()
+      }
     }
   }, [preferredCurrency])
 

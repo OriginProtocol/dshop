@@ -77,7 +77,8 @@ async function processNewOrder({
   offerId,
   event,
   skipEmail,
-  skipDiscord
+  skipDiscord,
+  paymentStatus
 }) {
   // Generate a short unique order id.
   const { fqId, shortId } = createOrderId(network, shop)
@@ -108,7 +109,7 @@ async function processNewOrder({
     fqId,
     shortId,
     data,
-    paymentStatus: OrderPaymentStatuses.Paid,
+    paymentStatus: paymentStatus || OrderPaymentStatuses.Paid,
     paymentCode,
     ipfsHash: offerIpfsHash,
     encryptedIpfsHash: encryptedHash,

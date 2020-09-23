@@ -2,10 +2,15 @@ const randomstring = require('randomstring')
 
 const get = require('lodash/get')
 
-const { authShop } = require('./_auth')
-const { Network } = require('../models')
+const { authShop, authSellerAndShop } = require('./_auth')
+const { Network, Transaction, Order } = require('../models')
 const { getConfig } = require('../utils/encryptedConfig')
 const makeOffer = require('./_makeOffer')
+const {
+  OrderPaymentStatuses,
+  TransactionTypes,
+  TransactionStatuses
+} = require('../enums')
 
 module.exports = function (router) {
   /**
@@ -51,13 +56,14 @@ module.exports = function (router) {
     '/offline-payments/order',
     authShop,
     async (req, res, next) => {
+      const { shop } = req
       const { encryptedData, methodId } = req.body
 
       const network = await Network.findOne({
-        where: { networkId: req.shop.networkId }
+        where: { networkId: shop.networkId }
       })
       const networkConfig = getConfig(network.config)
-      const shopConfig = getConfig(req.shop.config)
+      const shopConfig = getConfig(shop.config)
       const web3Pk = shopConfig.web3Pk || networkConfig.web3Pk
 
       // NOTE: `offlinePaymentMethods` values is duplicated
@@ -79,11 +85,69 @@ module.exports = function (router) {
         return res.json({ success: false, message: 'Missing order data' })
       }
 
+      const paymentCode = randomstring.generate()
+
       req.body.data = encryptedData
       req.amount = 0
-      req.paymentCode = randomstring.generate()
+      req.paymentCode = paymentCode
+      req.paymentStatus = OrderPaymentStatuses.Pending
+
+      // Insert a new row in Transaction table
+      await Transaction.create({
+        shopId: shop.id,
+        networkId: network.networkId,
+        type: TransactionTypes.Payment,
+        status: TransactionStatuses.Pending,
+        listingId: shop.listingId,
+        customId: paymentCode // Record the paymentCode in the custom_id field.
+      })
+
       next()
     },
     makeOffer
+  )
+
+  router.put(
+    '/offline-payments/payment-state',
+    authSellerAndShop,
+    async (req, res) => {
+      const { paymentCode, state } = req.body
+
+      const tx = await Transaction.findOne({
+        where: {
+          customId: paymentCode,
+          shopId: req.shop.id
+        }
+      })
+
+      const order = await Order.findOne({
+        where: {
+          shopId: req.shop.id,
+          paymentCode
+        }
+      })
+
+      if (!tx || !order) {
+        return res.status(200).send({
+          reason: 'Invalid payment code'
+        })
+      }
+
+      const orderStateToTxState = {
+        [OrderPaymentStatuses.Paid]: TransactionStatuses.Confirmed,
+        [OrderPaymentStatuses.Pending]: TransactionStatuses.Pending,
+        [OrderPaymentStatuses.Refunded]: TransactionStatuses.Confirmed
+      }
+
+      await order.update({
+        paymentStatus: state
+      })
+
+      await tx.update({
+        status: orderStateToTxState[state]
+      })
+
+      res.status(200).send({ success: true })
+    }
   )
 }
