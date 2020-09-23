@@ -53,7 +53,6 @@ function isValidDNSName(v) {
   return v.includes('.') && v.match(DNS_VALID)
 }
 
-
 module.exports = {
   isUnstoppableName,
   isCryptoName,
