@@ -15,6 +15,7 @@ import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
 import ShippingDestination from './_ShippingDestination'
+import PrintfulShippingAlert from './_PrintfulShippingAlert'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
 
@@ -302,6 +303,12 @@ const Shipping = () => {
     </div>
   )
 
+  const printfulEnabled = !!get(shopConfig, 'printful')
+
+  if (printfulEnabled) {
+    return <PrintfulShippingAlert />
+  }
+
   return (
     <form onSubmit={submitForm} autoComplete="false">
       <div className="shipping-settings">
@@ -310,7 +317,7 @@ const Shipping = () => {
             <fbt desc="Settings">Settings</fbt>
           </Link>
           <span className="chevron" />
-          Shipping
+          <fbt desc="Shipping">Shipping</fbt>
           {actions}
         </h3>
         {loading ? (

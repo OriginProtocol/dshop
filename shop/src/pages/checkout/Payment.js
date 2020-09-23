@@ -56,24 +56,7 @@ const CheckoutPayment = () => {
           </fbt>
         </div>
       </div>
-      {!config.listingId ? (
-        <>
-          <div className="alert alert-danger mt-4">
-            <fbt desc="checkout.payment.notSetup">
-              Sorry, this shop is not set up to accept payment
-            </fbt>
-          </div>
-          <div className="actions">
-            <Link to="/checkout/shipping">
-              &laquo;{' '}
-              <fbt desc="checkout.payment.goback">Return to shipping</fbt>
-            </Link>
-          </div>
-        </>
-      ) : (
-        <ChoosePayment />
-      )}
-
+      <ChoosePayment />
       <BetaWarning />
     </div>
   )

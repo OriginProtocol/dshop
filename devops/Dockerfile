@@ -31,6 +31,7 @@ COPY yarn.lock ./yarn.lock
 
 COPY $DSHOP_BACKEND_SOURCE/db ./backend/db
 COPY $DSHOP_BACKEND_SOURCE/etl ./backend/etl
+COPY $DSHOP_BACKEND_SOURCE/logic/order ./backend/logic/order
 COPY $DSHOP_BACKEND_SOURCE/models ./backend/models
 COPY $DSHOP_BACKEND_SOURCE/queues ./backend/queues
 COPY $DSHOP_BACKEND_SOURCE/routes ./backend/routes

@@ -145,7 +145,7 @@ async function addData(data, { pgpPublicKey, ipfsApi }) {
  * Creates or return existing network model
  * @returns {Promise<models.Network>}
  */
-async function getOrCreateTestNetwork(configOverride = {}) {
+async function getOrCreateTestNetwork(opts = {}) {
   const config = defaults['999']
 
   // The default config relies on env variable MARKETPLACE_CONTRACT for
@@ -172,7 +172,9 @@ async function getOrCreateTestNetwork(configOverride = {}) {
     ipfsApi: config.ipfsApi,
     marketplaceContract: ethers.utils.getAddress(config.marketplaceContract), // call getAddress to checksum the address.
     marketplaceVersion: '001',
+    listingId: '999-001-1', // TODO: we may need to create a real listing on the marketplace contract.
     active: true,
+    useMarketplace: opts.useMarketplace ? opts.useMarketplace : false,
     config: setConfig({
       pinataKey: 'pinataKey',
       pinataSecret: 'pinataSecret',
@@ -181,7 +183,7 @@ async function getOrCreateTestNetwork(configOverride = {}) {
       gcpCredentials: 'gcpCredentials',
       domain: 'domain.com',
       deployDir: 'deployDir',
-      ...configOverride
+      ...opts.configOverride
     })
   }
   // Note: For unclear reasons, the migration file 20200317190719-addIpfs.js
@@ -250,9 +252,9 @@ async function createTestShop({
 
 /**
  * Updates test shop's encrypted config
- * @param {Shop} shop
+ * @param {models.Shop} shop
  * @param {Object} shopConfig
- * @returns {Shop}
+ * @returns {models.Shop}
  */
 async function updateShopConfig(shop, shopConfig) {
   await shop.update({
@@ -263,6 +265,23 @@ async function updateShopConfig(shop, shopConfig) {
   })
 
   return shop
+}
+
+/**
+ * Updates test shop's encrypted config
+ * @param {models.Network} network
+ * @param {Object} networkConfig
+ * @returns {models.Network}
+ */
+async function updateNetworkConfig(network, networkConfig) {
+  await network.update({
+    config: setConfig({
+      ...getConfig(network.config),
+      ...networkConfig
+    })
+  })
+
+  return network
 }
 
 /**
@@ -357,7 +376,7 @@ async function createTestOffer(network, shop, key) {
   }
   const offerIpfsHash = await postIpfs(network.ipfsApi, offer, true)
 
-  return { ipfsHash: offerIpfsHash, data }
+  return { offer, ipfsHash: offerIpfsHash, data }
 }
 
 /**
@@ -405,5 +424,6 @@ module.exports = {
   getTestWallet,
   getOrCreateTestNetwork,
   MockBullJob,
-  updateShopConfig
+  updateShopConfig,
+  updateNetworkConfig
 }
