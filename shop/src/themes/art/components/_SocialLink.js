@@ -21,7 +21,7 @@ const SocialLink = ({ href, className, color, iconStyle, iconClass }) => {
   }
 
   return (
-    <a className={className} href={href}>
+    <a className={className} href={href} target="_blank" rel="noreferrer">
       <Cmp className={iconClass} style={iconStyle} color={color} />
     </a>
   )

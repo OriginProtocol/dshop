@@ -16,6 +16,8 @@ import PayOffline from 'pages/checkout/payment-methods/OfflinePayment'
 import PayWithPayPal from 'pages/checkout/payment-methods/PayPal'
 import NoPaymentDue from 'pages/checkout/payment-methods/NoPaymentDue'
 
+import { ContactInfo, ShippingAddress } from './_Summary'
+
 const Payment = () => {
   const history = useHistory()
   const { state, setState, onSubmit, disabled } = usePayment()
@@ -36,23 +38,10 @@ const Payment = () => {
   const CryptoCmp = config.useEscrow ? PayWithCrypto : PayWithCryptoDirect
 
   return (
-    <form style={{ flex: 3 }} onSubmit={onSubmit}>
-      <div className="text-lg mb-2 font-medium">1. Contact information</div>
-      <div className="shadow-lg p-4 bg-white grid gap-y-2 mb-8 text-sm">
-        <div className="font-semibold">Email</div>
-        <div>{get(cart, 'userInfo.email')}</div>
-      </div>
-      <div className="text-lg mb-2 font-medium">2. Shipping address</div>
-      <div className="shadow-lg p-4 bg-white grid gap-y-2 mb-8 text-sm">
-        <div className="font-semibold">
-          {get(cart, 'userInfo.firstName')} {get(cart, 'userInfo.lastName')}
-        </div>
-        <div>
-          {get(cart, 'userInfo.address1')}, {get(cart, 'userInfo.city')}
-          {', '}
-          {get(cart, 'userInfo.zip')}, {get(cart, 'userInfo.country')}
-        </div>
-      </div>
+    <form onSubmit={onSubmit}>
+      <ContactInfo cart={cart} />
+      <ShippingAddress cart={cart} />
+
       <div className="text-lg mb-2 font-medium">3. Shipping method</div>
       <div className="shadow-lg p-4 bg-white grid gap-y-2 mb-8">
         {get(cart, 'userInfo.zip')}, {get(cart, 'userInfo.country')}

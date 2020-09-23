@@ -9,9 +9,9 @@ import SocialLink from './_SocialLink'
 const Footer = () => {
   const { config } = useConfig()
 
-  const Social = ({ href, height = 16 }) => (
+  const Social = ({ href, height = 16, first }) => (
     <SocialLink
-      className="ml-8"
+      className={first ? null : 'ml-8'}
       color="#999"
       href={href}
       iconStyle={{ height }}
@@ -30,8 +30,8 @@ const Footer = () => {
           <Link to="/" className="text-2xl font-medium leading-none">
             {config.title}
           </Link>
-          <div className="flex flex-row ml-auto">
-            <Social href={config.twitter} height="18" />
+          <div className="flex flex-row mt-4 sm:mt-0">
+            <Social href={config.twitter} height="18" first />
             <Social href={config.facebook} />
             <Social href={config.instagram} />
           </div>
@@ -55,16 +55,7 @@ const Footer = () => {
           </div>
           <ul className="flex flex-col sm:flex-row ">
             <li className="pb-4 sm:mr-10">
-              <Link to="/about">FAQ</Link>
-            </li>
-            <li className="pb-4 sm:mr-10">
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href="https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0"
-              >
-                <fbt desc="footer.aboutLink">About Dshop</fbt>
-              </a>
+              <Link to="/about">About</Link>
             </li>
             <li className="pb-4">
               <Link to="/contact">Contact</Link>

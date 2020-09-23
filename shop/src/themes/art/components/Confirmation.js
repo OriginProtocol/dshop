@@ -10,7 +10,7 @@ import formatAddress from 'utils/formatAddress'
 
 import Link from 'components/Link'
 
-import OrderSummary from './checkout/_Summary'
+import { OrderSummary } from './checkout/_Summary'
 
 const Order = () => {
   const { config } = useConfig()
@@ -98,7 +98,10 @@ const Order = () => {
             </div>
             <div className="flex items-center mt-8 justify-between">
               <div className="text-lg">
-                Need Help? <span className="underline">Contact Us</span>
+                Need Help?{' '}
+                <a href={`mailto:${config.supportEmail}`} className="underline">
+                  Contact Us
+                </a>
               </div>
               <Link className="btn btn-primary" to="/">
                 Continue Shopping

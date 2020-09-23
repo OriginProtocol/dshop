@@ -3,7 +3,7 @@ import get from 'lodash/get'
 
 import { Countries } from '@origin/utils/Countries'
 
-function validate(state) {
+function validate(state, fields) {
   const newState = {}
 
   if (!state.email) {
@@ -73,7 +73,12 @@ function validate(state) {
     )
   }
 
-  const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
+  let filteredFields = Object.keys(newState)
+  if (fields && fields.length) {
+    filteredFields = filteredFields.filter((f) => fields.indexOf(f) >= 0)
+  }
+
+  const valid = filteredFields.every((f) => f.indexOf('Error') < 0)
 
   return { valid, newState: { ...state, ...newState } }
 }

@@ -14,6 +14,9 @@ module.exports = {
         xl: '1024px'
       }
     },
+    boxShadow: {
+      lg: '0 0 5px 0 rgba(0, 0, 0, 0.1)'
+    },
     extend: {
       colors: {
         gray: {

@@ -63,7 +63,7 @@ const Cart = () => {
           {`Subtotal: ${formatPrice(cart.subTotal, currencyOpts)}`}
         </div>
         <div className="mt-12 flex justify-center sm:justify-end">
-          <Link to="/checkout" className="btn btn-primary px-24">
+          <Link to="/checkout" className="btn btn-primary sm:px-24 w-full sm:w-auto">
             Checkout
           </Link>
         </div>

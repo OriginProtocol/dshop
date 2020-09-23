@@ -12,10 +12,10 @@ function useForm({
 
   const formInput = (state, setState) => (field) => {
     const err = state[`${field}Error`] ? true : false
-    className = `${className} ${err ? errorClassName : defaultClassName}`
+    const clsName = `${className} ${err ? errorClassName : defaultClassName}`
     return {
       value: state[field] || '',
-      className,
+      className: clsName,
       name: field,
       onChange: (e) =>
         setState({

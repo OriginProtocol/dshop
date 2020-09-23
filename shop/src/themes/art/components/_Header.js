@@ -13,7 +13,7 @@ import MenuIcon from 'components/icons/Menu'
 import SocialLink from './_SocialLink'
 
 const Cart = ({ cart, bg }) => (
-  <Link to="/cart" className="nav-link relative">
+  <Link to="/cart" className="nav-link relative hover:opacity-50">
     <CartIcon className="w-5" fill={bg ? '#fff' : '#000'} />
     {cart.items.length ? (
       <div className="absolute text-xs" style={{ top: -10, right: -10 }}>
@@ -37,13 +37,23 @@ const Header = ({ bg }) => {
 
   const Social = ({ href, height = 16 }) => (
     <SocialLink
-      className="hidden md:block mr-12 flex items-center"
+      className="hidden md:block mr-12 flex items-center hover:opacity-50"
       color={bg ? '#fff' : '#000'}
       href={href}
       iconStyle={{ height }}
       iconClass="inline-block"
     />
   )
+
+  function toggleMobileMenu() {
+    const body = document.querySelector('body')
+    if (mobileMenu) {
+      body.style.removeProperty('overflow')
+    } else {
+      body.style.overflow = 'hidden'
+    }
+    showMobileMenu(!mobileMenu)
+  }
 
   const content = (
     <div className="container flex flex-row justify-between items-center sm:items-baseline">
@@ -53,19 +63,19 @@ const Header = ({ bg }) => {
       <div className="flex flex-row text-sm">
         <Link
           to="/products"
-          className={`hidden md:block mr-12 pb-1 ${product ? activeClass : ''}`}
+          className={`hidden md:block mr-12 pb-1 ${product ? activeClass : ''} hover:opacity-50`}
         >
           {get(collections, '0.title')}
         </Link>
         <Link
           to="/about"
-          className={`hidden md:block mr-12 pb-1 ${about ? activeClass : ''}`}
+          className={`hidden md:block mr-12 pb-1 ${about ? activeClass : ''} hover:opacity-50`}
         >
           About
         </Link>
         <Link
           to="/contact"
-          className={`hidden md:block mr-12 pb-1 ${contact ? activeClass : ''}`}
+          className={`hidden md:block mr-12 pb-1 ${contact ? activeClass : ''} hover:opacity-50`}
         >
           Contact
         </Link>
@@ -74,7 +84,7 @@ const Header = ({ bg }) => {
           href="#"
           onClick={(e) => {
             e.preventDefault()
-            showMobileMenu(!mobileMenu)
+            toggleMobileMenu()
           }}
         >
           <MenuIcon color={bg ? '#fff' : '#000'} />
@@ -103,43 +113,60 @@ const Header = ({ bg }) => {
       </div>
       {!mobileMenu ? null : (
         <div
-          className="fixed inset-0 bg-white p-12"
-          onClick={() => showMobileMenu(false)}
+          className="fixed inset-0 bg-white p-12 flex flex-col items-center"
+          onClick={() => toggleMobileMenu()}
         >
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center w-full">
             <Close />
             <div className="text-2xl font-medium">{config.title}</div>
             <Cart cart={cart} />
           </div>
-          <ul className="flex flex-col text-3xl items-center font-medium mt-12">
-            <li
+          <div className="text-3xl font-medium mt-12 text-center">
+            <div
               className="pb-4"
               onClick={() => {
-                showMobileMenu(false)
+                toggleMobileMenu()
                 history.push('/products')
               }}
             >
               {get(collections, '0.title')}
-            </li>
-            <li
+            </div>
+            <div
               className="pb-4"
               onClick={() => {
-                showMobileMenu(false)
+                toggleMobileMenu()
                 history.push('/about')
               }}
             >
               About
-            </li>
-            <li
+            </div>
+            <div
               className="pb-4"
               onClick={() => {
-                showMobileMenu(false)
+                toggleMobileMenu()
                 history.push('/contact')
               }}
             >
               Contact
-            </li>
-          </ul>
+            </div>
+          </div>
+          <div className="mt-auto">
+            <SocialLink
+              href={config.twitter}
+              iconStyle={{ height: 18 }}
+              iconClass="inline-block"
+            />
+            <SocialLink
+              href={config.facebook}
+              iconStyle={{ height: 18 }}
+              iconClass="ml-6 inline-block"
+            />
+            <SocialLink
+              href={config.instagram}
+              iconStyle={{ height: 18 }}
+              iconClass="ml-6 inline-block"
+            />
+          </div>
         </div>
       )}
     </>

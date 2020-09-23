@@ -14,7 +14,7 @@ import Product from './components/Product'
 import Contact from './components/Contact'
 import Cart from './components/Cart'
 import About from './components/About'
-import Order from './components/Order'
+import Confirmation from './components/Confirmation'
 import Checkout from './components/checkout/Checkout'
 
 const Providers = () => {
@@ -33,7 +33,7 @@ const Providers = () => {
             <Route path="/cart" component={Cart} />
             <Route path="/about" component={About} />
             <Route path="/checkout" component={Checkout} />
-            <Route path="/order" component={Order} />
+            <Route path="/order" component={Confirmation} />
             <Route component={Home} />
           </Switch>
         </ConfigLoader>

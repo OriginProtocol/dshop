@@ -38,7 +38,10 @@ const Product = ({ match }) => {
               dangerouslySetInnerHTML={{ __html: product.description }}
             />
             {addedToCart ? (
-              <Link to="/cart" className="btn btn-primary sm:px-32">
+              <Link
+                to="/cart"
+                className="btn btn-primary sm:px-32 block sm:inline-block"
+              >
                 View Cart
               </Link>
             ) : (
@@ -49,14 +52,16 @@ const Product = ({ match }) => {
                   dispatch({ type: 'addToCart', product, variant })
                   setAddedToCart(true)
                 }}
-                className="btn btn-primary sm:px-32"
+                className="btn btn-primary sm:px-32 block sm:inline-block"
               >
                 Add to Cart
               </a>
             )}
           </div>
         </div>
-        <div className="mt-24 mb-6 text-4xl">You might also like</div>
+        <div className="mt-24 mb-10 sm:mb-6 text-3xl sm:text-4xl text-center sm:text-left">
+          You might also like
+        </div>
         <Products limit={3} />
       </div>
       <Footer />
