@@ -1,6 +1,6 @@
 const pick = require('lodash/pick')
 
-const { authSellerAndShop, authShop } = require('./_auth')
+const { authSellerAndShop } = require('./_auth')
 const {
   Order,
   Transaction,
