@@ -28,7 +28,15 @@ function optionsForItem(item) {
   return options
 }
 
-async function sendNewOrderEmail({ shop, network, cart, varsOverride, skip }) {
+async function sendNewOrderEmail({
+  orderId,
+  order,
+  shop,
+  network,
+  cart,
+  varsOverride,
+  skip
+}) {
   const { transporter, from, replyTo } = await getShopTransport(shop, network)
   if (!transporter) {
     log.info(`No email transport configured. Skiped sending new order email.`)
@@ -40,6 +48,7 @@ async function sendNewOrderEmail({ shop, network, cart, varsOverride, skip }) {
     skip = true
   }
 
+  const networkConfig = encConf.getConfig(network.config)
   const shopConfig = encConf.getConfig(shop.config)
   const dataURL = shopConfig.dataUrl
   const publicURL = `${shopConfig.publicUrl}/#`
@@ -106,6 +115,16 @@ async function sendNewOrderEmail({ shop, network, cart, varsOverride, skip }) {
     ]
   }
 
+  // Generate the link for the buyer to see their order.
+  // If the order was recorded on the marketplace, the link uses the transaction hash.
+  // Otherwise the link uses the IPFS hash of the encrypted data.
+  const orderUrl = order.offerId
+    ? `${publicURL}/order/${cart.tx}?auth=${cart.dataKey}`
+    : `${publicURL}/order/${order.encryptedIpfsHash}?auth=${cart.dataKey}`
+
+  // Link for the merchant to the orders admin page.
+  const orderUrlAdmin = `${networkConfig.backendUrl}/#/admin/orders/${orderId}`
+
   const subject = shopConfig.emailSubject || `Your ${shop.name} order`
 
   const vars = {
@@ -116,13 +135,12 @@ async function sendNewOrderEmail({ shop, network, cart, varsOverride, skip }) {
     supportEmailPlain: shopConfig.supportEmail,
     subject,
     storeUrl: publicURL,
-
-    orderNumber: cart.offerId,
+    orderNumber: orderId,
     firstName: cart.userInfo.firstName,
     lastName: cart.userInfo.lastName,
     email: cart.userInfo.email,
-    orderUrl: `${publicURL}/order/${cart.tx}?auth=${cart.dataKey}`,
-    orderUrlAdmin: `${publicURL}/admin/orders/${cart.offerId}`,
+    orderUrl,
+    orderUrlAdmin,
     orderItems,
     orderItemsTxt,
     subTotal: formatPrice(cart.subTotal, { currency }),
@@ -158,7 +176,7 @@ async function sendNewOrderEmail({ shop, network, cart, varsOverride, skip }) {
     to: shopConfig.supportEmail
       ? `${vars.siteName} <${shopConfig.supportEmail}>`
       : null,
-    subject: `[${vars.siteName}] Order #${cart.offerId}`,
+    subject: `[${vars.siteName}] Order #${orderId}`,
     html: htmlOutputVendor.html,
     text: txtOutput,
     attachments,

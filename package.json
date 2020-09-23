@@ -19,15 +19,15 @@
     "@pinata/sdk": "1.1.11",
     "babel-eslint": "10.1.0",
     "commander": "6.1.0",
-    "eslint": "7.7.0",
+    "eslint": "7.9.0",
     "eslint-config-standard": "14.1.1",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-promise": "4.2.1",
     "eslint-plugin-react": "7.20.6",
     "eslint-plugin-standard": "4.0.1",
-    "husky": "4.2.5",
-    "mocha": "8.1.2",
-    "prettier": "2.1.1"
+    "husky": "4.3.0",
+    "mocha": "8.1.3",
+    "prettier": "2.1.2"
   },
   "scripts": {
     "bootstrap": "lerna bootstrap --no-ci --progress",
@@ -63,10 +63,11 @@
       "truffle-privatekey-provider",
       "solc",
       "sequelize",
-      "sequelize-cli"
+      "sequelize-cli",
+      "ipfs"
     ],
     "ignorePaths": [],
-    "schedule": "before 2am",
+    "schedule": "before 11am",
     "rebaseStalePrs": false
   }
 }

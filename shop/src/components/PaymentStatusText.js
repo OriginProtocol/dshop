@@ -1,27 +1,24 @@
 import React from 'react'
 import fbt from 'fbt'
-import OfferStates from 'data/OfferStates'
+import PaymentStates from 'data/PaymentStates'
 
 const PaymentStatusText = ({ status }) => {
   const classList = ['order-payment-status']
-  let labelText = fbt('Pending', 'Pending')
+  let labelText
 
   switch (status) {
-    case OfferStates.Created:
-      classList.push('pending')
-      labelText = fbt('Pending', 'Pending')
-      break
-
-    case OfferStates.Accepted:
-    case OfferStates.Finalized:
+    case PaymentStates.Paid:
       classList.push('paid')
       labelText = fbt('Paid', 'Paid')
       break
 
-    case OfferStates.Withdrawn:
+    case PaymentStates.Refunded:
       classList.push('rejected')
-      labelText = fbt('Canceled', 'Canceled')
+      labelText = fbt('Refunded', 'Refunded')
       break
+
+    default:
+      throw new Error(`Unexpected payment status ${status}`)
   }
 
   return <div className={classList.join(' ')}>{labelText}</div>

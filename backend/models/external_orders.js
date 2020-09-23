@@ -1,3 +1,5 @@
+// Note: this table is for future use. It is empty in prod.
+
 module.exports = (sequelize, DataTypes) => {
   const isPostgres = sequelize.options.dialect === 'postgres'
 

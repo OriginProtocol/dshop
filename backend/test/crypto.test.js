@@ -42,7 +42,7 @@ describe('Crypto Payment', () => {
     buyerWallet = getTestWallet(2)
   })
 
-  it('It should successfully make a crypto payment', async () => {
+  async function _makePayment() {
     // Get a paymentCode
     let data = {
       fromAddress: buyerWallet.address,
@@ -114,42 +114,55 @@ describe('Crypto Payment', () => {
     expect(json).to.be.an('object')
     expect(json.success).to.be.equal(true)
 
-    // It should have created a Transaction row to track the payment.
-    let transaction = await Transaction.findOne({
-      where: {
-        hash: txHash,
-        customId: paymentCode
-      }
-    })
-    expect(transaction).to.be.an('object')
-    expect(transaction.shopId).to.be.equal(shop.id)
-    expect(transaction.networkId).to.be.equal(shop.networkId)
-    expect(transaction.fromAddress).to.be.equal(data.fromAddress)
-    expect(transaction.toAddress).to.be.equal(data.toAddress)
-    expect(transaction.type).to.be.equal(TransactionTypes.Payment)
-    expect(transaction.status).to.be.equal(TransactionStatuses.Confirmed)
-    expect(transaction.hash).to.be.equal(txHash)
-    expect(transaction.listingId).to.be.equal(shop.listingId)
-    expect(transaction.customId).to.be.equal(paymentCode)
-    expect(transaction.jobId).to.be.a('string')
+    return { data, paymentCode, txHash }
+  }
 
-    // It should also have created a Transaction row to track the marketplace offer transaction.
-    transaction = await Transaction.findOne({
-      where: {
-        type: TransactionTypes.OfferCreated,
-        customId: paymentCode
+  it('It should successfully make a crypto payment', async () => {
+    for (const useMarketplace of [true, false]) {
+      await network.update({ useMarketplace })
+
+      const { data, paymentCode, txHash } = await _makePayment()
+
+      // It should have created a Transaction row to track the payment.
+      let transaction = await Transaction.findOne({
+        where: {
+          hash: txHash,
+          customId: paymentCode
+        }
+      })
+      expect(transaction).to.be.an('object')
+      expect(transaction.shopId).to.be.equal(shop.id)
+      expect(transaction.networkId).to.be.equal(shop.networkId)
+      expect(transaction.fromAddress).to.be.equal(data.fromAddress)
+      expect(transaction.toAddress).to.be.equal(data.toAddress)
+      expect(transaction.type).to.be.equal(TransactionTypes.Payment)
+      expect(transaction.status).to.be.equal(TransactionStatuses.Confirmed)
+      expect(transaction.hash).to.be.equal(txHash)
+      expect(transaction.listingId).to.be.equal(shop.listingId)
+      expect(transaction.customId).to.be.equal(paymentCode)
+      expect(transaction.jobId).to.be.a('string')
+
+      // If the marketplace contract is being used, it should also have created a Transaction row
+      // to track the marketplace offer transaction.
+      if (useMarketplace) {
+        transaction = await Transaction.findOne({
+          where: {
+            type: TransactionTypes.OfferCreated,
+            customId: paymentCode
+          }
+        })
+        expect(transaction).to.be.an('object')
+        expect(transaction.shopId).to.be.equal(shop.id)
+        expect(transaction.networkId).to.be.equal(shop.networkId)
+        expect(transaction.fromAddress).to.be.equal(sellerWallet.address)
+        expect(transaction.toAddress).to.be.equal(network.marketplaceContract)
+        expect(transaction.type).to.be.equal(TransactionTypes.OfferCreated)
+        expect(transaction.status).to.be.equal(TransactionStatuses.Confirmed)
+        expect(transaction.hash).to.be.a('string')
+        expect(transaction.listingId).to.be.equal(shop.listingId)
+        expect(transaction.customId).to.be.equal(paymentCode)
+        expect(transaction.jobId).to.be.a('string')
       }
-    })
-    expect(transaction).to.be.an('object')
-    expect(transaction.shopId).to.be.equal(shop.id)
-    expect(transaction.networkId).to.be.equal(shop.networkId)
-    expect(transaction.fromAddress).to.be.equal(sellerWallet.address)
-    expect(transaction.toAddress).to.be.equal(network.marketplaceContract)
-    expect(transaction.type).to.be.equal(TransactionTypes.OfferCreated)
-    expect(transaction.status).to.be.equal(TransactionStatuses.Confirmed)
-    expect(transaction.hash).to.be.a('string')
-    expect(transaction.listingId).to.be.equal(shop.listingId)
-    expect(transaction.customId).to.be.equal(paymentCode)
-    expect(transaction.jobId).to.be.a('string')
+    }
   })
 })

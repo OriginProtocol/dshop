@@ -102,6 +102,8 @@ const marketplaceAbi = [
 
 const marketplaceInterface = new ethers.utils.Interface(marketplaceAbi)
 
+// Loads offer data from either the tx hash for the marketplace offer
+// or from the IPFS hash of the encrypted offer data.
 async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
   let encryptedHash, fullOfferId, offer
 
@@ -146,6 +148,8 @@ async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
 
     offer = await marketplace.offers(listingId, offerId)
   } else {
+    // The tx parameter is not a transaction hash but rather the
+    // IPFS hash of the encrypted offer.
     encryptedHash = tx
   }
 

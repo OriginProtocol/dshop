@@ -7,18 +7,25 @@ const {
   createTestShop,
   getOrCreateTestNetwork,
   generatePgpKey,
-  MockBullJob
+  MockBullJob,
+  createTestEncryptedOfferData
 } = require('./utils')
 const { processor } = require('../queues/makeOfferProcessor')
 const { Transaction } = require('../models')
-const { TransactionTypes, TransactionStatuses } = require('../enums')
+const {
+  OrderPaymentStatuses,
+  TransactionTypes,
+  TransactionStatuses
+} = require('../enums')
 const { ListingID, OfferID } = require('../utils/id')
 
 describe('Offers', () => {
-  let network, shop, job, jobId, trans
+  let network, shop, key, job, jobId, trans
 
   before(async () => {
-    network = await getOrCreateTestNetwork()
+    // Note: Enable the marketplace contract initially.
+    // Then later in this test suite it gets disabled.
+    network = await getOrCreateTestNetwork({ useMarketplace: true })
 
     // Use account 1 as the merchant's.
     const sellerWallet = getTestWallet(1)
@@ -26,7 +33,7 @@ describe('Offers', () => {
 
     // Create the merchant's PGP key.
     const pgpPrivateKeyPass = 'password123'
-    const key = await generatePgpKey('tester', pgpPrivateKeyPass)
+    key = await generatePgpKey('tester', pgpPrivateKeyPass)
     const pgpPublicKey = key.publicKeyArmored
     const pgpPrivateKey = key.privateKeyArmored
 
@@ -39,12 +46,12 @@ describe('Offers', () => {
     })
   })
 
-  it('It should make an offer', async () => {
+  it('It should make an on-chain offer', async () => {
     // Create a mock Bull job object.
     const data = {
       shopId: shop.id,
       amount: '100',
-      encryptedData: 'IpfsHashOfEncryptedOfferData', // TODO: replace with a real hash.
+      encryptedDataIpfsHash: 'IpfsHashOfEncryptedOfferData', // TODO: replace with a real hash.
       paymentCode: 'testPaymentCode' + Date.now()
     }
     job = new MockBullJob(data)
@@ -131,5 +138,45 @@ describe('Offers', () => {
       failure = true
     }
     expect(failure).to.be.true
+  })
+
+  it('It should make an off-chain offer', async () => {
+    // Update the network config to disable the use of the marketplace contract.
+    await network.update({ useMarketplace: false })
+
+    const { ipfsHash, data } = await createTestEncryptedOfferData(
+      network,
+      shop,
+      key
+    )
+
+    // Create a mock Bull job object.
+    const jobData = {
+      shopId: shop.id,
+      amount: '200',
+      encryptedDataIpfsHash: ipfsHash,
+      paymentCode: 'testPaymentCode' + Date.now()
+    }
+    job = new MockBullJob(jobData)
+    jobId = `${job.queue.name}-${job.id}`
+
+    // Call the processor to record the offer off-chain. It should return an Order DB row.
+    const order = await processor(job)
+    expect(order).to.be.an('object')
+    expect(order.fqId).to.be.a('string')
+    expect(order.shortId).to.be.a('string')
+    expect(order.networkId).to.equal(999)
+    expect(order.shopId).to.equal(shop.id)
+    expect(order.paymentStatus).to.equal(OrderPaymentStatuses.Paid)
+    expect(order.offerId).to.be.undefined
+    expect(order.offerStatus).to.be.undefined
+    expect(order.createdBlock).to.be.undefined
+    expect(order.updatedBlock).to.be.undefined
+    expect(order.ipfsHash).to.be.a('string')
+    expect(order.encryptedIpfsHash).to.equal(ipfsHash)
+    expect(order.paymentCode).to.equal(jobData.paymentCode)
+    expect(order.total).to.equal(data.total)
+    expect(order.currency).to.equal(data.currency)
+    expect(order.data).to.eql(data)
   })
 })
