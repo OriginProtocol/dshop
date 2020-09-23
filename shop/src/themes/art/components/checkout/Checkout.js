@@ -37,7 +37,10 @@ const Mobile = ({ config }) => {
       </div>
 
       <Switch>
-        <Route path="/checkout/shipping/address" component={MobileShippingAddress} />
+        <Route
+          path="/checkout/shipping/address"
+          component={MobileShippingAddress}
+        />
         {/* <Route path="/checkout/payment/:intentId?" component={MobilePayment} /> */}
         <Route path="/checkout" component={MobileInformation} />
       </Switch>

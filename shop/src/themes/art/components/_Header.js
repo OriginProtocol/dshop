@@ -63,19 +63,25 @@ const Header = ({ bg }) => {
       <div className="flex flex-row text-sm">
         <Link
           to="/products"
-          className={`hidden md:block mr-12 pb-1 ${product ? activeClass : ''} hover:opacity-50`}
+          className={`hidden md:block mr-12 pb-1 ${
+            product ? activeClass : ''
+          } hover:opacity-50`}
         >
           {get(collections, '0.title')}
         </Link>
         <Link
           to="/about"
-          className={`hidden md:block mr-12 pb-1 ${about ? activeClass : ''} hover:opacity-50`}
+          className={`hidden md:block mr-12 pb-1 ${
+            about ? activeClass : ''
+          } hover:opacity-50`}
         >
           About
         </Link>
         <Link
           to="/contact"
-          className={`hidden md:block mr-12 pb-1 ${contact ? activeClass : ''} hover:opacity-50`}
+          className={`hidden md:block mr-12 pb-1 ${
+            contact ? activeClass : ''
+          } hover:opacity-50`}
         >
           Contact
         </Link>
