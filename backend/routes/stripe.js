@@ -15,6 +15,7 @@ const { getLogger } = require('../utils/logger')
 const makeOffer = require('./_makeOffer')
 
 const stripeWebhookErrorEmail = require('../utils/emails/stripeWebhookError')
+const { OrderPaymentTypes } = require('../enums')
 
 const log = getLogger('routes.stripe')
 
@@ -233,6 +234,7 @@ module.exports = function (router) {
     req.body.data = get(event, 'data.object.metadata.encryptedData')
     req.amount = externalPayment.amount
     req.paymentCode = externalPayment.paymentCode
+    req.paymentType = OrderPaymentTypes.CreditCard
     next()
   }
 

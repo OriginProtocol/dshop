@@ -46,8 +46,7 @@ async function createShop({
   if (listingId && !listingId.startsWith(networkId)) {
     return {
       status: 400,
-      error:
-        'Listing ID ${listingId} is not on expected Network ID ${networkId}'
+      error: `Listing ID ${listingId} is not on expected Network ID ${networkId}`
     }
   }
   if (!authToken) {

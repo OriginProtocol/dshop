@@ -6,8 +6,10 @@ import dayjs from 'dayjs'
 
 import PaymentStates from 'data/PaymentStates'
 import OfferStates from 'data/OfferStates'
+import PaymentTypes from 'data/PaymentTypes'
 
 import PaymentActions from './_PaymentActions'
+import OffchainOfflinePaymentActions from './_OffchainOfflinePaymentActions'
 
 const getStatusText = (
   paymentState,
@@ -35,8 +37,14 @@ const getStatusText = (
             'paymentMethod',
             paymentMethod.label
           )} was refunded.`,
-          'admin.order.paymentStatusPaid'
+          'admin.order.paymentStatusRefunded'
         )
+
+      case PaymentStates.Pending:
+        return fbt(`A payment is pending`, 'admin.order.paymentStatusPending')
+
+      default:
+        return fbt('Payment status unknown', 'admin.order.unknownPaymentStatus')
     }
   }
 
@@ -97,10 +105,13 @@ const PaymentInfo = ({ order }) => {
   const cart = get(order, 'data')
   const paymentMethod = get(cart, 'paymentMethod', {})
   const paymentState = get(order, 'paymentStatus')
+  const paymentType = get(order, 'paymentType')
   const offerState = get(order, 'offerStatus')
-  const refundError = !!get(order, 'data.refundError')
+  const refundError = Boolean(get(order, 'data.refundError'))
   const transactions = get(order, 'transactions', [])
-  const offchainPayment = transactions.find((t) => t.type === 'Payment')
+
+  const offchainPaymentTx = transactions.find((t) => t.type === 'Payment')
+  const isOffchainPayment = Boolean(offchainPaymentTx) || !get(order, 'offerId')
 
   if (!cart || !offerId) {
     return (
@@ -113,32 +124,53 @@ const PaymentInfo = ({ order }) => {
   }
 
   // Direct crypto payment.
-  if (offchainPayment) {
+  if (isOffchainPayment) {
+    if (!offchainPaymentTx || paymentType === PaymentTypes.Offline) {
+      // Offline/Manual payment method
+      return (
+        <div className="order-payment-info">
+          <div className="status-text">
+            {getStatusText(
+              paymentState,
+              offerState,
+              paymentMethod,
+              refundError
+            )}
+          </div>
+          <div className="status-actions">
+            <OffchainOfflinePaymentActions order={order} />
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="admin-customer-info">
         <div>
           <div>
             <fbt desc="Date">Date</fbt>
           </div>
-          <div>{dayjs(offchainPayment.createdAt).format('MMM D, h:mm A')}</div>
+          <div>
+            {dayjs(offchainPaymentTx.createdAt).format('MMM D, h:mm A')}
+          </div>
         </div>
         <div>
           <div>
             <fbt desc="From">From</fbt>
           </div>
-          <div>{offchainPayment.fromAddress}</div>
+          <div>{offchainPaymentTx.fromAddress}</div>
         </div>
         <div>
           <div>
             <fbt desc="To">To</fbt>
           </div>
-          <div>{offchainPayment.toAddress}</div>
+          <div>{offchainPaymentTx.toAddress}</div>
         </div>
         <div>
           <div>
             <fbt desc="Hash">Hash</fbt>
           </div>
-          <div>{offchainPayment.hash}</div>
+          <div>{offchainPaymentTx.hash}</div>
         </div>
       </div>
     )
