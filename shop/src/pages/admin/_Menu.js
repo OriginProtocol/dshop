@@ -55,7 +55,7 @@ const AdminMenu = () => {
           <fbt desc="Discounts">Discounts</fbt>
         </Link>
       </li>
-      {admin.role !== 'admin' ? null : (
+      {!(/^admin$/i.test(admin.role)) ? null : (
         <li className={`settings ${active('/admin/settings')}`}>
           <Link to="/admin/settings">
             <Icons.Settings />
