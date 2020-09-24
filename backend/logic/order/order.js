@@ -103,6 +103,12 @@ async function processNewOrder({
   // It is populated for example in case of a Credit Card payment.
   const paymentCode = offer.paymentCode || null
 
+  // Let the status be `Pending` by default for Offline payments.
+  const paymentStatus =
+    paymentType === OrderPaymentTypes.Offline
+      ? OrderPaymentStatuses.Pending
+      : OrderPaymentStatuses.Paid
+
   // Insert a new row in the orders DB table.
   const orderObj = {
     networkId: network.networkId,
@@ -110,11 +116,7 @@ async function processNewOrder({
     fqId,
     shortId,
     data,
-    // Let the status be `Pending` by default for Offline payments
-    paymentStatus:
-      paymentType === OrderPaymentTypes.Offline
-        ? OrderPaymentStatuses.Pending
-        : OrderPaymentStatuses.Paid,
+    paymentStatus,
     paymentType,
     paymentCode,
     ipfsHash: offerIpfsHash,
@@ -152,8 +154,16 @@ async function processNewOrder({
   const order = await Order.create(orderObj)
   log.info(`Saved order ${order.fqId} to DB.`)
 
+  // Note: we only fulfill the order if the payment status is 'Paid'.
+  // If the payment is still pending, the order will get fulfilled
+  // at the time the payment status gets updated to 'Paid' (for ex. when the
+  // merchant marks the payment as received for the order via the admin tool.
   // TODO: move order fulfillment to a queue.
-  if (shopConfig.printful && shopConfig.printfulAutoFulfill) {
+  if (
+    shopConfig.printful &&
+    shopConfig.printfulAutoFulfill &&
+    paymentStatus === OrderPaymentStatuses.Paid
+  ) {
     await autoFulfillOrder(order, shopConfig, shop)
   }
 
