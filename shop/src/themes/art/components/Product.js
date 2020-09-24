@@ -34,7 +34,7 @@ const Product = ({ match }) => {
               {variant.priceStr}
             </div>
             <div
-              className="mb-24 whitespace-pre-line text-sm sm:text-base"
+              className="mb-12 sm:mb-24 whitespace-pre-line text-sm sm:text-base"
               dangerouslySetInnerHTML={{ __html: product.description }}
             />
             {addedToCart ? (
@@ -59,7 +59,7 @@ const Product = ({ match }) => {
             )}
           </div>
         </div>
-        <div className="mt-24 mb-10 sm:mb-6 text-3xl sm:text-4xl text-center sm:text-left">
+        <div className="mt-24 mb-10 sm:mb-6 text-3xl sm:text-4xl text-center sm:text-left font-medium">
           You might also like
         </div>
         <Products limit={3} />

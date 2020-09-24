@@ -11,7 +11,7 @@ import PaymentChooser from 'components/payment/Chooser'
 
 import { ContactInfo, ShippingAddress } from './_Summary'
 
-const Payment = () => {
+export const Payment = () => {
   const history = useHistory()
   const { state, setState, onSubmit, disabled } = usePayment()
   const [{ cart }] = useStateValue()
@@ -54,4 +54,54 @@ const Payment = () => {
   )
 }
 
-export default Payment
+export const MobilePayment = () => {
+  const history = useHistory()
+  const { state, setState, onSubmit, disabled } = usePayment()
+  const [{ cart }] = useStateValue()
+
+  useEffect(() => {
+    if (state.tx) {
+      history.push(`/order/${state.tx}?auth=${state.encryptedData.auth}`)
+    }
+  }, [state.tx])
+
+  return (
+    <>
+      <div className="text-lg font-medium text-gray-500 px-8 my-8 flex justify-between items-center">
+        <div>1. Contact information</div>
+        <Link to="/checkout">
+          <img src="images/edit-icon.svg" />
+        </Link>
+      </div>
+
+      <div className="text-lg font-medium text-gray-500 px-8 my-8 flex justify-between items-center">
+        <div>2. Shipping Address</div>
+        <Link to="/checkout/shipping-address">
+          <img src="images/edit-icon.svg" />
+        </Link>
+      </div>
+      <div className="text-lg font-medium text-gray-500 px-8 my-8 flex justify-between items-center">
+        <div>3. Shipping Method</div>
+        <Link to="/checkout/shipping">
+          <img src="images/edit-icon.svg" />
+        </Link>
+      </div>
+
+      <form onSubmit={onSubmit} className="shadow-lg p-8 bg-white">
+        <div className="text-lg mb-4 font-medium">4. Payment</div>
+        <div className="grid gap-y-2">
+          <PaymentChooser state={state} setState={setState} />
+        </div>
+        <div className="mt-6">
+          <button
+            type="submit"
+            className={`btn btn-primary ${
+              disabled ? ' opacity-50' : ''
+            } w-full`}
+            children={state.buttonText}
+          />
+        </div>
+      </form>
+    </>
+  )
+}

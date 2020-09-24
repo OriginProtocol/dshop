@@ -142,7 +142,7 @@ export const MobileInformation = () => {
       return
     }
     dispatch({ type: 'updateUserInfo', info: newState })
-    history.push('/checkout/shipping/address')
+    history.push('/checkout/shipping-address')
   }
   return (
     <>

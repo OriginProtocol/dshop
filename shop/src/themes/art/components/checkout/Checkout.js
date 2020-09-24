@@ -8,8 +8,8 @@ import useIsMobile from 'utils/useIsMobile'
 import Link from 'components/Link'
 
 import { Information, MobileInformation } from './Information'
-import { MobileShippingAddress, Shipping } from './Shipping'
-import Payment from './Payment'
+import { MobileShippingAddress, MobileShipping, Shipping } from './Shipping'
+import { Payment, MobilePayment } from './Payment'
 
 import { OrderSummary } from './_Summary'
 
@@ -34,10 +34,11 @@ const Mobile = ({ config }) => {
 
       <Switch>
         <Route
-          path="/checkout/shipping/address"
+          path="/checkout/shipping-address"
           component={MobileShippingAddress}
         />
-        {/* <Route path="/checkout/payment/:intentId?" component={MobilePayment} /> */}
+        <Route path="/checkout/shipping" component={MobileShipping} />
+        <Route path="/checkout/payment/:intentId?" component={MobilePayment} />
         <Route path="/checkout" component={MobileInformation} />
       </Switch>
       <div className="shadow-lg p-8 bg-white mt-4">

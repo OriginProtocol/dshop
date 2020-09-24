@@ -9,6 +9,7 @@ import isEqual from 'lodash/isEqual'
 
 import { Countries } from '@origin/utils/Countries'
 
+import 'utils/setLocale'
 import fbTrack from './fbTrack'
 
 const defaultState = {

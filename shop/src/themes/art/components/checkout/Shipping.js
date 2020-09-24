@@ -18,13 +18,13 @@ import ProvinceSelect from 'components/ProvinceSelect'
 
 import { ContactInfo, ShippingAddress } from './_Summary'
 
-const Picker = () => {
+const Picker = ({ className }) => {
   const [{ cart }, dispatch] = useStateValue()
   const currencyOpts = useCurrencyOpts()
 
   const { unshippableItems, zones, loading } = useShipping()
   return (
-    <>
+    <div className={className}>
       {unshippableItems.length ? (
         <>
           Sorry, these items cannot be shipped to{' '}
@@ -66,7 +66,7 @@ const Picker = () => {
           </label>
         ))
       )}
-    </>
+    </div>
   )
 }
 
@@ -82,9 +82,8 @@ export const Shipping = () => {
       <ShippingAddress cart={cart} />
 
       <div className="text-lg mb-2 font-medium">3. Shipping method</div>
-      <div className="shadow-lg p-4 bg-white grid gap-y-2">
-        <Picker />
-      </div>
+      <Picker className="shadow-lg p-4 bg-white grid gap-y-2" />
+
       <div className="flex justify-between mt-12 items-center">
         <Link className="text-lg" to="/checkout">
           &laquo; Back
@@ -104,6 +103,33 @@ export const Shipping = () => {
     </>
   )
 }
+
+export const MobileShipping = () => (
+  <>
+    <div className="text-lg font-medium text-gray-500 px-8 my-8 flex justify-between items-center">
+      <div>1. Contact information</div>
+      <Link to="/checkout">
+        <img src="images/edit-icon.svg" />
+      </Link>
+    </div>
+    <div className="text-lg font-medium text-gray-500 px-8 my-8 flex justify-between items-center">
+      <div>2. Shipping Address</div>
+      <Link to="/checkout">
+        <img src="images/edit-icon.svg" />
+      </Link>
+    </div>
+    <div className="shadow-lg p-8 bg-white">
+      <div className="text-lg mb-4 font-medium">3. Shipping method</div>
+      <Picker className="mb-6" />
+      <Link to="/checkout/payment" className="btn btn-primary w-full">
+        Continue
+      </Link>
+    </div>
+    <div className="text-lg font-medium text-gray-500 px-8 my-8">
+      4. Payment
+    </div>
+  </>
+)
 
 export const MobileShippingAddress = () => {
   const history = useHistory()
@@ -128,7 +154,7 @@ export const MobileShippingAddress = () => {
       return
     }
     dispatch({ type: 'updateUserInfo', info: newState })
-    history.push('/checkout/shipping/address')
+    history.push('/checkout/shipping')
   }
   return (
     <>
