@@ -1,7 +1,7 @@
 const randomstring = require('randomstring')
 const util = require('ethereumjs-util')
 
-const { OrderPaymentStatuses } = require('../../enums')
+const { OrderPaymentStatuses, OrderPaymentTypes } = require('../../enums')
 const { Sentry } = require('../../sentry')
 const { Order } = require('../../models')
 const sendNewOrderEmail = require('../../utils/emails/newOrder')
@@ -65,6 +65,7 @@ function getShortOrderId(fqOrderId) {
  * @param {object || null} event: blockchain OfferCreated event or null in case of an off-chain offer.
  * @param {boolean} skipEmail: If true, do not send email to the buyer/seller.
  * @param {boolean} skipDiscord: If true, do not send Discord notification to the system administrator.
+ * @param {enums.OrderPaymentTypes} paymentType: Payment type of order
  * @returns {Promise<models.Order>}
  */
 async function processNewOrder({
@@ -77,7 +78,8 @@ async function processNewOrder({
   offerId,
   event,
   skipEmail,
-  skipDiscord
+  skipDiscord,
+  paymentType
 }) {
   // Generate a short unique order id.
   const { fqId, shortId } = createOrderId(network, shop)
@@ -108,7 +110,12 @@ async function processNewOrder({
     fqId,
     shortId,
     data,
-    paymentStatus: OrderPaymentStatuses.Paid,
+    // Let the status be `Pending` by default for Offline payments
+    paymentStatus:
+      paymentType === OrderPaymentTypes.Offline
+        ? OrderPaymentStatuses.Pending
+        : OrderPaymentStatuses.Paid,
+    paymentType,
     paymentCode,
     ipfsHash: offerIpfsHash,
     encryptedIpfsHash: encryptedHash,

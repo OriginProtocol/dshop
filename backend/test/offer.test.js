@@ -8,16 +8,20 @@ const {
   getOrCreateTestNetwork,
   generatePgpKey,
   MockBullJob,
-  createTestEncryptedOfferData
+  createTestEncryptedOfferData,
+  apiRequest
 } = require('./utils')
 const { processor } = require('../queues/makeOfferProcessor')
-const { Transaction } = require('../models')
+const { Order, Transaction, Seller } = require('../models')
 const {
   OrderPaymentStatuses,
   TransactionTypes,
-  TransactionStatuses
+  TransactionStatuses,
+  OrderPaymentTypes
 } = require('../enums')
 const { ListingID, OfferID } = require('../utils/id')
+
+const bcrypt = require('bcrypt')
 
 describe('Offers', () => {
   let network, shop, key, job, jobId, trans
@@ -37,6 +41,19 @@ describe('Offers', () => {
     const pgpPublicKey = key.publicKeyArmored
     const pgpPrivateKey = key.privateKeyArmored
 
+    const salt = await bcrypt.genSalt(10)
+    const pwdHash = await bcrypt.hash('test-pass', salt)
+
+    // Create a fake superadmin
+    await Seller.create({
+      name: 'SuperAdmin',
+      email: 'test@test.com',
+      password: pwdHash,
+      superuser: true,
+      emailVerified: true,
+      data: {}
+    })
+
     shop = await createTestShop({
       network,
       sellerPk,
@@ -52,7 +69,8 @@ describe('Offers', () => {
       shopId: shop.id,
       amount: '100',
       encryptedDataIpfsHash: 'IpfsHashOfEncryptedOfferData', // TODO: replace with a real hash.
-      paymentCode: 'testPaymentCode' + Date.now()
+      paymentCode: 'testPaymentCode' + Date.now(),
+      paymentType: OrderPaymentTypes.CryptoCurrency
     }
     job = new MockBullJob(data)
     jobId = `${job.queue.name}-${job.id}`
@@ -155,7 +173,8 @@ describe('Offers', () => {
       shopId: shop.id,
       amount: '200',
       encryptedDataIpfsHash: ipfsHash,
-      paymentCode: 'testPaymentCode' + Date.now()
+      paymentCode: 'testPaymentCode' + Date.now(),
+      paymentType: OrderPaymentTypes.CryptoCurrency
     }
     job = new MockBullJob(jobData)
     jobId = `${job.queue.name}-${job.id}`
@@ -175,8 +194,104 @@ describe('Offers', () => {
     expect(order.ipfsHash).to.be.a('string')
     expect(order.encryptedIpfsHash).to.equal(ipfsHash)
     expect(order.paymentCode).to.equal(jobData.paymentCode)
+    expect(order.paymentType).to.equal(jobData.paymentType)
     expect(order.total).to.equal(data.total)
     expect(order.currency).to.equal(data.currency)
     expect(order.data).to.eql(data)
+  })
+
+  it('It should make an off-chain offer with offline payment method', async () => {
+    // Update the network config to disable the use of the marketplace contract.
+    await network.update({ useMarketplace: false })
+
+    const { ipfsHash, data } = await createTestEncryptedOfferData(
+      network,
+      shop,
+      key
+    )
+
+    // Create a mock Bull job object.
+    const jobData = {
+      shopId: shop.id,
+      amount: '200',
+      encryptedDataIpfsHash: ipfsHash,
+      paymentCode: 'testPaymentCode' + Date.now(),
+      paymentType: OrderPaymentTypes.Offline
+    }
+    job = new MockBullJob(jobData)
+    jobId = `${job.queue.name}-${job.id}`
+
+    // Call the processor to record the offer off-chain. It should return an Order DB row.
+    const order = await processor(job)
+    expect(order).to.be.an('object')
+    expect(order.fqId).to.be.a('string')
+    expect(order.shortId).to.be.a('string')
+    expect(order.networkId).to.equal(999)
+    expect(order.shopId).to.equal(shop.id)
+    expect(order.paymentStatus).to.equal(OrderPaymentStatuses.Pending)
+    expect(order.offerId).to.be.undefined
+    expect(order.offerStatus).to.be.undefined
+    expect(order.createdBlock).to.be.undefined
+    expect(order.updatedBlock).to.be.undefined
+    expect(order.ipfsHash).to.be.a('string')
+    expect(order.encryptedIpfsHash).to.equal(ipfsHash)
+    expect(order.paymentCode).to.equal(jobData.paymentCode)
+    expect(order.paymentType).to.equal(jobData.paymentType)
+    expect(order.total).to.equal(data.total)
+    expect(order.currency).to.equal(data.currency)
+    expect(order.data).to.eql(data)
+
+    const tx = await Transaction.findOne({
+      where: {
+        customId: order.paymentCode
+      }
+    })
+
+    // Should not have a Tx associated
+    expect(tx).to.be.null
+  })
+
+  it('should update payment state of an offline-payment order', async () => {
+    const orderData = {
+      shopId: shop.id,
+      networkId: network.id,
+      paymentType: OrderPaymentTypes.Offline,
+      paymentStatus: OrderPaymentStatuses.Pending,
+      paymentCode: `customId-${Date.now()}`
+    }
+
+    await Order.create(orderData)
+
+    // To simulate login
+    let resp = await apiRequest({
+      method: 'POST',
+      endpoint: '/superuser/login',
+      body: {
+        email: 'test@test.com',
+        password: 'test-pass'
+      }
+    })
+    expect(resp.success).to.be.true
+
+    resp = await apiRequest({
+      method: 'put',
+      endpoint: '/offline-payments/payment-state',
+      body: {
+        paymentCode: orderData.paymentCode,
+        state: OrderPaymentStatuses.Paid
+      },
+      headers: {
+        authorization: `Bearer ${shop.authToken}`
+      }
+    })
+    expect(resp.success).to.be.true
+
+    const order = await Order.findOne({
+      where: {
+        paymentCode: orderData.paymentCode
+      }
+    })
+
+    expect(order.paymentStatus).to.equal(OrderPaymentStatuses.Paid)
   })
 })

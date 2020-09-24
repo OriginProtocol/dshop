@@ -1,6 +1,10 @@
 const get = require('lodash/get')
 
-const { OrderPaymentStatuses, OrderOfferStatuses } = require('../enums')
+const {
+  OrderPaymentStatuses,
+  OrderOfferStatuses,
+  OrderPaymentTypes
+} = require('../enums')
 
 module.exports = (sequelize, DataTypes) => {
   const isPostgres = sequelize.options.dialect === 'postgres'
@@ -17,6 +21,8 @@ module.exports = (sequelize, DataTypes) => {
       shortId: DataTypes.STRING,
       // Current status of the order.
       paymentStatus: DataTypes.ENUM(OrderPaymentStatuses),
+      // Type of payment made
+      paymentType: DataTypes.ENUM(OrderPaymentTypes),
       // Optional. Links an external payment (ex: credit card) to an order. See external_payments.payment_code
       paymentCode: DataTypes.STRING,
       // IPFS hash for the offer data.

@@ -75,7 +75,11 @@ const SentryErrorBoundary = ({ children }) => {
   }, [shouldLogUserErrors])
 
   const onCatch = (error, errorInfo) => {
-    if (!sentryEnabled) {
+    if (
+      !sentryEnabled ||
+      !sentry ||
+      typeof sentry.captureException !== 'function'
+    ) {
       console.error('Exception occured', error)
       return
     }

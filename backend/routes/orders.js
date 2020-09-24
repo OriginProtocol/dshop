@@ -1,6 +1,6 @@
 const pick = require('lodash/pick')
 
-const { authSellerAndShop, authShop } = require('./_auth')
+const { authSellerAndShop } = require('./_auth')
 const {
   Order,
   Transaction,
@@ -14,6 +14,7 @@ const sendNewOrderEmail = require('../utils/emails/newOrder')
 const safeAttributes = [
   'shopId',
   'paymentStatus',
+  'paymentType',
   'paymentCode',
   'ipfsHash',
   'encryptedIpfsHash',
@@ -177,22 +178,6 @@ module.exports = function (router) {
       if (!encryptedData) {
         return res.json({ success: false })
       }
-      req.body.data = encryptedData
-      req.amount = 0
-      next()
-    },
-    makeOffer
-  )
-
-  router.post(
-    '/orders/offline-payment-order',
-    authShop,
-    (req, res, next) => {
-      const { encryptedData } = req.body
-      if (!encryptedData) {
-        return res.json({ success: false })
-      }
-
       req.body.data = encryptedData
       req.amount = 0
       next()
