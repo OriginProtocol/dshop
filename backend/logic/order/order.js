@@ -115,6 +115,7 @@ async function processNewOrder({
       paymentType === OrderPaymentTypes.Offline
         ? OrderPaymentStatuses.Pending
         : OrderPaymentStatuses.Paid,
+    paymentType,
     paymentCode,
     ipfsHash: offerIpfsHash,
     encryptedIpfsHash: encryptedHash,

@@ -14,6 +14,7 @@ const sendNewOrderEmail = require('../utils/emails/newOrder')
 const safeAttributes = [
   'shopId',
   'paymentStatus',
+  'paymentType',
   'paymentCode',
   'ipfsHash',
   'encryptedIpfsHash',

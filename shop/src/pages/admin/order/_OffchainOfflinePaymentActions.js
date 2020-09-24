@@ -56,13 +56,14 @@ const OffchainOfflinePaymentActions = ({ order }) => {
     } finally {
       setState({
         marking: false,
-        refunding: false
+        refunding: false,
+        rejecting: false
       })
     }
   }
 
   const markAsPaid = () => {
-    if (state.marking || state.refunding) return
+    if (state.marking || state.refunding || state.rejecting) return
     setState({
       marking: true
     })
@@ -70,8 +71,17 @@ const OffchainOfflinePaymentActions = ({ order }) => {
     updateState(PaymentStates.Paid)
   }
 
+  const markAsRejected = () => {
+    if (state.marking || state.refunding || state.rejecting) return
+    setState({
+      rejecting: true
+    })
+
+    updateState(PaymentStates.Rejected)
+  }
+
   const markAsRefunded = () => {
-    if (state.marking || state.refunding) return
+    if (state.marking || state.refunding || state.rejecting) return
     setState({
       refunding: true
     })
@@ -85,21 +95,43 @@ const OffchainOfflinePaymentActions = ({ order }) => {
       onClick={(e) => e.stopPropagation()}
     >
       {paymentState !== PaymentStates.Pending ? null : (
-        <button
-          type="button"
-          className="btn btn-outline-primary"
-          onClick={markAsPaid}
-          children={fbt('Mark as Paid', 'admin.order.markPaid')}
-        />
+        <>
+          <button
+            type="button"
+            className="btn btn-outline-primary"
+            onClick={markAsPaid}
+            children={
+              state.marking
+                ? `${fbt('Marking', 'Marking')}...`
+                : fbt('Mark as Paid', 'admin.order.markPaid')
+            }
+            disabled={state.marking || state.refunding || state.rejecting}
+          />
+          <button
+            type="button"
+            className="btn btn-outline-danger"
+            onClick={markAsRejected}
+            children={
+              state.refunding
+                ? `${fbt('Rejecting', 'Rejecting')}...`
+                : fbt('Reject', 'Reject')
+            }
+            disabled={state.marking || state.refunding || state.rejecting}
+          />
+        </>
       )}
 
-      {paymentState === PaymentStates.Refunded ? null : (
+      {paymentState !== PaymentStates.Paid ? null : (
         <button
           type="button"
           className="btn btn-outline-danger"
           onClick={markAsRefunded}
-          children={fbt('Refund', 'Refund')}
-          disabled={state.loading || state.refunding}
+          children={
+            state.refunding
+              ? `${fbt('Refunding', 'Refunding')}...`
+              : fbt('Refund', 'Refund')
+          }
+          disabled={state.marking || state.refunding || state.rejecting}
         />
       )}
     </div>
