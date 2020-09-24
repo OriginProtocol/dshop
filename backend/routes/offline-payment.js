@@ -5,7 +5,7 @@ const get = require('lodash/get')
 const { authShop, authSellerAndShop } = require('./_auth')
 const { Network, Order } = require('../models')
 const { getConfig } = require('../utils/encryptedConfig')
-const { autoFulfillOrder } = require('../../utils/printful')
+const { autoFulfillOrder } = require('../utils/printful')
 const makeOffer = require('./_makeOffer')
 const { OrderPaymentTypes, OrderPaymentStatuses } = require('../enums')
 
