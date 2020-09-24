@@ -45,7 +45,8 @@ async function processor(job) {
     txHash,
     fromAddress,
     encryptedDataIpfsHash,
-    paymentCode
+    paymentCode,
+    paymentType
   } = job.data
   log.info(`txProcessor for job with data: ${JSON.stringify(job.data)}`)
 
@@ -112,7 +113,7 @@ async function processor(job) {
     // Payment was successful.
     // Enqueue a job to record an offer on the marketplace contract.
     const makeOfferQueue = queues['makeOfferQueue']
-    const jobData = { shopId, encryptedDataIpfsHash, paymentCode }
+    const jobData = { shopId, encryptedDataIpfsHash, paymentCode, paymentType }
     const jobOpts = {
       // Up to 6 attempts with exponential backoff with a 60sec initial delay.
       attempts: 6,

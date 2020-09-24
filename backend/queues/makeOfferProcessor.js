@@ -212,7 +212,7 @@ async function _makeOnchainOffer({
  * @param {object} offer: JSON of the unencrypted offer data.
  * @param {string} offerIpfsHash: IPFS hash of the unencrypted offer data.
  * @param {string} paymentCode
- * @param {enums.OrderPaymentStatuses} paymentStatus
+ * @param {enums.OrderPaymentTypes} paymentType
  * @returns {Promise<models.Order>}
  * @private
  */
@@ -227,7 +227,7 @@ async function _makeOffchainOffer({
   offer,
   offerIpfsHash,
   paymentCode,
-  paymentStatus
+  paymentType
 }) {
   queueLog(job, 30, `Creating order`)
   log.info(
@@ -241,7 +241,7 @@ async function _makeOffchainOffer({
     shopConfig,
     offer,
     offerIpfsHash,
-    paymentStatus,
+    paymentType,
     offerId: null, // on-chain offers do not have a blockchain offer Id.
     event: null, // on-chain offers do not have a blockchain event.
     skipEmail: false,
@@ -267,7 +267,7 @@ async function _makeOffchainOffer({
  */
 async function processor(job) {
   const fqJobId = `${get(job, 'queue.name', '')}-${job.id}` // Prefix with queue name since job ids are not unique across queues.
-  const { shopId, paymentCode, encryptedDataIpfsHash, paymentStatus } = job.data
+  const { shopId, paymentCode, encryptedDataIpfsHash, paymentType } = job.data
   log.info(`Creating offer for shop ${shopId}`)
   let result
 
@@ -303,7 +303,7 @@ async function processor(job) {
       offer,
       offerIpfsHash,
       paymentCode,
-      paymentStatus
+      paymentType
     }
     if (network.useMarketplace) {
       result = await _makeOnchainOffer(data)

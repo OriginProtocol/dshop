@@ -3,14 +3,10 @@ const randomstring = require('randomstring')
 const get = require('lodash/get')
 
 const { authShop, authSellerAndShop } = require('./_auth')
-const { Network, Transaction, Order } = require('../models')
+const { Network, Order } = require('../models')
 const { getConfig } = require('../utils/encryptedConfig')
 const makeOffer = require('./_makeOffer')
-const {
-  OrderPaymentStatuses,
-  TransactionTypes,
-  TransactionStatuses
-} = require('../enums')
+const { OrderPaymentTypes } = require('../enums')
 
 module.exports = function (router) {
   /**
@@ -90,17 +86,7 @@ module.exports = function (router) {
       req.body.data = encryptedData
       req.amount = 0
       req.paymentCode = paymentCode
-      req.paymentStatus = OrderPaymentStatuses.Pending
-
-      // Insert a new row in Transaction table
-      await Transaction.create({
-        shopId: shop.id,
-        networkId: network.networkId,
-        type: TransactionTypes.Payment,
-        status: TransactionStatuses.Pending,
-        listingId: shop.listingId,
-        customId: paymentCode // Record the paymentCode in the custom_id field.
-      })
+      req.paymentType = OrderPaymentTypes.Offline
 
       next()
     },
@@ -113,38 +99,22 @@ module.exports = function (router) {
     async (req, res) => {
       const { paymentCode, state } = req.body
 
-      const tx = await Transaction.findOne({
-        where: {
-          customId: paymentCode,
-          shopId: req.shop.id
-        }
-      })
-
       const order = await Order.findOne({
         where: {
           shopId: req.shop.id,
-          paymentCode
+          paymentCode,
+          paymentType: OrderPaymentTypes.Offline
         }
       })
 
-      if (!tx || !order) {
+      if (!order) {
         return res.status(200).send({
           reason: 'Invalid payment code'
         })
       }
 
-      const orderStateToTxState = {
-        [OrderPaymentStatuses.Paid]: TransactionStatuses.Confirmed,
-        [OrderPaymentStatuses.Pending]: TransactionStatuses.Pending,
-        [OrderPaymentStatuses.Refunded]: TransactionStatuses.Confirmed
-      }
-
       await order.update({
         paymentStatus: state
-      })
-
-      await tx.update({
-        status: orderStateToTxState[state]
       })
 
       res.status(200).send({ success: true })
