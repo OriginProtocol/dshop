@@ -8,12 +8,8 @@ import useIsMobile from 'utils/useIsMobile'
 import Link from 'components/Link'
 
 import { Information, MobileInformation } from './Information'
-import Shipping from './Shipping'
+import { MobileShippingAddress, Shipping } from './Shipping'
 import Payment from './Payment'
-
-import MobileShippingAddress from './mobile/ShippingAddress'
-// import Shipping from './Shipping'
-// import Payment from './Payment'
 
 import { OrderSummary } from './_Summary'
 
