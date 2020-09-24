@@ -65,6 +65,7 @@ app.use((req, res, next) => {
 })
 
 app.use(serveStatic(`${__dirname}/dist`, { index: false }))
+app.use('/theme', serveStatic(`${__dirname}/themes`, { index: false }))
 
 // Use express-promise-router which allows middleware to return promises.
 const router = Router()
@@ -112,6 +113,24 @@ router.get('/', async (req, res) => {
     .replace('DATA_DIR', '')
     .replace('TITLE', 'Origin Dshop')
     .replace(/NETWORK/g, NETWORK)
+
+  res.send(html)
+})
+
+router.get('/theme/:theme', (req, res) => {
+  const themeIndex = `${__dirname}/themes/${req.params.theme}/index.html`
+
+  let html
+  try {
+    html = fs.readFileSync(themeIndex).toString()
+  } catch (e) {
+    return res.send('')
+  }
+
+  html = html
+    .replace('DATA_DIR', `/${req.query.shop}`)
+    .replace('TITLE', 'Origin Dshop')
+    .replace(/NETWORK/g, req.query.network || 'localhost')
 
   res.send(html)
 })

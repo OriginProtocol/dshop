@@ -46,7 +46,7 @@
       <% /* To listen on react */ %>
       window._sentryLoaded = true
 
-      Sentry.init({ 
+      Sentry.init({
         dsn: '<%= htmlWebpackPlugin.options.sentryDSN %>',
         environment: '<%= htmlWebpackPlugin.options.sentryEnvironment %>',
       })
@@ -77,14 +77,6 @@
     <div class="loading-screen"></div>
   </div>
 </body>
-<script crossorigin src="<%= htmlWebpackPlugin.options.absolute ? '/' : '' %>dist/openpgp.min.js"></script>
-<script>
-  if (typeof window.openpgp !== 'undefined') {
-    openpgp.config.show_comment = false
-    openpgp.config.show_version = false
-    openpgp.initWorker({ path: '<%= htmlWebpackPlugin.options.absolute ? '/' : '' %>dist/openpgp.worker.min.js' })
-  }
-</script>
 <% _.forEach(htmlWebpackPlugin.files.js, function(file, index) { %>
 <% if (htmlWebpackPlugin.files.jsIntegrity) { %>
 <script src="<%- file %>"

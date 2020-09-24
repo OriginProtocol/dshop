@@ -13,7 +13,11 @@ function useConfig() {
 
     const isBackend = dataDir === 'DATA_DIR'
     if (shopSlug === true) {
-      shopSlug = localStorage.activeShop || dataDir
+      if (dataDir && !isBackend) {
+        shopSlug = dataDir
+      } else {
+        shopSlug = localStorage.activeShop || dataDir
+      }
     }
 
     const dataSrc = !shopSlug

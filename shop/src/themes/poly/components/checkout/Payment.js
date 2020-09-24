@@ -1,82 +1,44 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 
-import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 import usePayment from 'utils/usePayment'
 
 import Link from 'components/Link'
 
-import PayWithCrypto from 'pages/checkout/payment-methods/crypto/Crypto'
-import PayWithCryptoDirect from 'pages/checkout/payment-methods/crypto/CryptoDirect'
-import PayWithStripe from 'pages/checkout/payment-methods/Stripe'
-import PayWithUphold from 'pages/checkout/payment-methods/uphold/Uphold'
-import PayOffline from 'pages/checkout/payment-methods/OfflinePayment'
-import PayWithPayPal from 'pages/checkout/payment-methods/PayPal'
-import NoPaymentDue from 'pages/checkout/payment-methods/NoPaymentDue'
+import PaymentChooser from 'components/payment/Chooser'
 
-const Payment = () => {
+import { ContactInfo, ShippingAddress } from './_Summary'
+
+export const Payment = () => {
+  const history = useHistory()
   const { state, setState, onSubmit, disabled } = usePayment()
-  const { config } = useConfig()
   const [{ cart }] = useStateValue()
 
-  const paymentMethods = get(config, 'paymentMethods', [])
-  const offlinePaymentMethods = get(config, 'offlinePaymentMethods', []).filter(
-    (method) => !method.disabled
-  )
-
-  const CryptoCmp = config.useEscrow ? PayWithCrypto : PayWithCryptoDirect
+  useEffect(() => {
+    if (state.tx) {
+      history.push(`/order/${state.tx}?auth=${state.encryptedData.auth}`)
+    }
+  }, [state.tx])
 
   return (
-    <form style={{ flex: 3 }} onSubmit={onSubmit}>
-      <div className="text-lg mb-2">1. Contact information</div>
-      <div className="shadow-lg p-4 bg-white grid gap-y-2 mb-8 text-sm">
-        <div className="font-semibold">Email</div>
-        <div>{get(cart, 'userInfo.email')}</div>
-      </div>
-      <div className="text-lg mb-2">2. Shipping address</div>
-      <div className="shadow-lg p-4 bg-white grid gap-y-2 mb-8 text-sm">
-        <div className="font-semibold">
-          {get(cart, 'userInfo.firstName')} {get(cart, 'userInfo.lastName')}
-        </div>
-        <div>
-          {get(cart, 'userInfo.address1')}, {get(cart, 'userInfo.city')}
-          {', '}
-          {get(cart, 'userInfo.zip')}, {get(cart, 'userInfo.country')}
-        </div>
-      </div>
-      <div className="text-lg mb-2">3. Shipping method</div>
+    <form onSubmit={onSubmit}>
+      <ContactInfo cart={cart} />
+      <ShippingAddress cart={cart} />
+
+      <div className="text-lg mb-2 font-medium">3. Shipping method</div>
       <div className="shadow-lg p-4 bg-white grid gap-y-2 mb-8">
         {get(cart, 'userInfo.zip')}, {get(cart, 'userInfo.country')}
       </div>
-      <div className="text-lg mb-2">4. Shipping method</div>
+      <div className="mb-2 flex justify-between items-center">
+        <div className="text-lg font-medium">4. Payment</div>
+        <div className="text-gray-500">
+          All transactions are secure and encrypted
+        </div>
+      </div>
       <div className="shadow-lg p-4 bg-white grid gap-y-2">
-        {cart.total === 0 ? (
-          <NoPaymentDue {...state} onChange={setState} />
-        ) : (
-          <>
-            {!paymentMethods.find((p) => p.id === 'crypto') ? null : (
-              <CryptoCmp {...state} onChange={setState} />
-            )}
-            {!paymentMethods.find((p) => p.id === 'stripe') ? null : (
-              <PayWithStripe {...state} onChange={setState} />
-            )}
-            {!paymentMethods.find((p) => p.id === 'uphold') ? null : (
-              <PayWithUphold {...state} onChange={setState} />
-            )}
-            {!paymentMethods.find((p) => p.id === 'paypal') ? null : (
-              <PayWithPayPal {...state} onChange={setState} />
-            )}
-            {offlinePaymentMethods.map((method) => (
-              <PayOffline
-                {...state}
-                onChange={setState}
-                key={method.id}
-                paymentMethod={method}
-              />
-            ))}
-          </>
-        )}
+        <PaymentChooser state={state} setState={setState} />
       </div>
       <div className="flex justify-between mt-12 items-center">
         <Link className="text-lg" to="/checkout">
@@ -92,4 +54,53 @@ const Payment = () => {
   )
 }
 
-export default Payment
+export const MobilePayment = () => {
+  const history = useHistory()
+  const { state, setState, onSubmit, disabled } = usePayment()
+
+  useEffect(() => {
+    if (state.tx) {
+      history.push(`/order/${state.tx}?auth=${state.encryptedData.auth}`)
+    }
+  }, [state.tx])
+
+  return (
+    <>
+      <div className="text-lg font-medium text-gray-500 px-8 my-8 flex justify-between items-center">
+        <div>1. Contact information</div>
+        <Link to="/checkout">
+          <img src="images/edit-icon.svg" />
+        </Link>
+      </div>
+
+      <div className="text-lg font-medium text-gray-500 px-8 my-8 flex justify-between items-center">
+        <div>2. Shipping Address</div>
+        <Link to="/checkout/shipping-address">
+          <img src="images/edit-icon.svg" />
+        </Link>
+      </div>
+      <div className="text-lg font-medium text-gray-500 px-8 my-8 flex justify-between items-center">
+        <div>3. Shipping Method</div>
+        <Link to="/checkout/shipping">
+          <img src="images/edit-icon.svg" />
+        </Link>
+      </div>
+
+      <form onSubmit={onSubmit} className="shadow-lg p-8 bg-white">
+        <div className="text-lg mb-4 font-medium">4. Payment</div>
+        <div className="grid gap-y-2">
+          <PaymentChooser state={state} setState={setState} />
+        </div>
+        <div className="mt-6">
+          <button
+            type="submit"
+            className={`btn btn-primary ${
+              disabled ? ' opacity-50' : ''
+            } w-full`}
+            children={state.buttonText}
+          />
+        </div>
+      </form>
+    </>
+  )
+}

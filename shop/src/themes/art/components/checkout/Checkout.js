@@ -3,6 +3,7 @@ import { Switch, Route, useRouteMatch } from 'react-router-dom'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
+import usePGP from 'utils/usePGP'
 import useIsMobile from 'utils/useIsMobile'
 
 import Link from 'components/Link'
@@ -15,6 +16,7 @@ import { OrderSummary } from './_Summary'
 
 const Checkout = () => {
   const { config } = useConfig()
+  usePGP()
   let currentStep = 1
   if (useRouteMatch('/checkout/shipping')) currentStep = 2
   if (useRouteMatch('/checkout/payment')) currentStep = 3
