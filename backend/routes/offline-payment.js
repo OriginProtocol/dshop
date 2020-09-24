@@ -95,7 +95,7 @@ module.exports = function (router) {
 
   /**
    * To update the payment state of an offline-payment order
-   * 
+   *
    * @param {String} paymentCode the custom ID of the external payment
    * @param {enums.OrderPaymentStatuses} state new payment state to set
    */
