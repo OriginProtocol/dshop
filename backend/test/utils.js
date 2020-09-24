@@ -57,7 +57,7 @@ async function get(url, opts) {
   return await response.json()
 }
 
-async function post(url, body, opts) {
+async function post(url, body, opts, method = 'post') {
   const cookieHeader = setCookies()
   const headers = {
     'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ async function post(url, body, opts) {
   }
 
   const response = await fetch(url, {
-    method: 'post',
+    method: method,
     body: JSON.stringify(body),
     headers
   })
@@ -82,8 +82,8 @@ async function post(url, body, opts) {
 async function apiRequest({ method, endpoint, body, headers }) {
   const url = `${ROOT_BACKEND_URL}${endpoint}`
 
-  if (method === 'POST') {
-    return await post(url, body, { headers })
+  if (/^(post|put)$/i.test(method)) {
+    return await post(url, body, { headers }, method)
   }
 
   if (body) {

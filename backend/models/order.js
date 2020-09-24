@@ -22,7 +22,9 @@ module.exports = (sequelize, DataTypes) => {
       // Current status of the order.
       paymentStatus: DataTypes.ENUM(OrderPaymentStatuses),
       // Type of payment made
-      paymentType: DataTypes.ENUM(OrderPaymentTypes),
+      paymentType: isPostgres
+        ? DataTypes.ENUM(OrderPaymentTypes)
+        : DataTypes.STRING,
       // Optional. Links an external payment (ex: credit card) to an order. See external_payments.payment_code
       paymentCode: DataTypes.STRING,
       // IPFS hash for the offer data.
