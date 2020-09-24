@@ -1018,6 +1018,7 @@ module.exports = function (router) {
         'pgpPrivateKeyPass',
         'pgpPublicKey',
         'printful',
+        'printfulAutoFulfill',
         'processingTime',
         'publicUrl',
         'sendgridApiKey',

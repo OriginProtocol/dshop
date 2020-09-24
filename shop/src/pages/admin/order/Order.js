@@ -52,14 +52,14 @@ const AdminOrder = () => {
             <fbt desc="Details">Details</fbt>
           </NavLink>
         </li>
-        {admin.role !== 'admin' ? null : (
+        {!/^admin$/i.test(admin.role) ? null : (
           <li className="nav-item">
             <NavLink className="nav-link" to={`${urlPrefix}/printful`}>
               Printful
             </NavLink>
           </li>
         )}
-        {admin.role !== 'admin' ? null : (
+        {!/^admin$/i.test(admin.role) ? null : (
           <li className="nav-item">
             <NavLink className="nav-link" to={`${urlPrefix}/contract`}>
               <fbt desc="Contract">Contract</fbt>
