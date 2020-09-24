@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 
@@ -8,10 +9,26 @@ function useShippingZones() {
   const { config } = useConfig()
   const [{ shippingZones, cart, reload }, dispatch] = useStateValue()
   const [loading, setLoading] = useState(true)
+  const [configLoading, setConfigLoading] = useState(true)
   const [error, setError] = useState(false)
+
+  const userInfo = get(cart, 'userInfo')
+  const items = get(cart, 'items')
+
+  useEffect(() => {
+    if (!configLoading || !userInfo || !items) {
+      return
+    }
+
+    setConfigLoading(false)
+  }, [userInfo, items, configLoading])
 
   useEffect(() => {
     async function fetchShippingZones() {
+      if (configLoading) {
+        return
+      }
+
       setLoading(true)
       let zones = []
       try {
@@ -50,7 +67,7 @@ function useShippingZones() {
     }
 
     fetchShippingZones()
-  }, [reload.shippingZones])
+  }, [configLoading, reload.shippingZones])
 
   return { shippingZones, loading, error }
 }
