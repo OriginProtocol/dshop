@@ -57,7 +57,6 @@ export const Payment = () => {
 export const MobilePayment = () => {
   const history = useHistory()
   const { state, setState, onSubmit, disabled } = usePayment()
-  const [{ cart }] = useStateValue()
 
   useEffect(() => {
     if (state.tx) {

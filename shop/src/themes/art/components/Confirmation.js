@@ -14,7 +14,6 @@ import { OrderSummary } from './checkout/_Summary'
 
 const Order = () => {
   const isMobile = useIsMobile()
-
   const match = useRouteMatch('/order/:tx')
   const location = useLocation()
   const opts = queryString.parse(location.search)
