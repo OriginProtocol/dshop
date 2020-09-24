@@ -104,9 +104,10 @@ async function processNewOrder({
   const paymentCode = offer.paymentCode || null
 
   // Let the status be `Pending` by default for Offline payments.
-  const paymentStatus = paymentType === OrderPaymentTypes.Offline
-    ? OrderPaymentStatuses.Pending
-    : OrderPaymentStatuses.Paid
+  const paymentStatus =
+    paymentType === OrderPaymentTypes.Offline
+      ? OrderPaymentStatuses.Pending
+      : OrderPaymentStatuses.Paid
 
   // Insert a new row in the orders DB table.
   const orderObj = {
@@ -158,7 +159,11 @@ async function processNewOrder({
   // at the time the payment status gets updated to 'Paid' (for ex. when the
   // merchant marks the payment as received for the order via the admin tool.
   // TODO: move order fulfillment to a queue.
-  if (shopConfig.printful && shopConfig.printfulAutoFulfill && paymentStatus === OrderPaymentStatuses.Paid) {
+  if (
+    shopConfig.printful &&
+    shopConfig.printfulAutoFulfill &&
+    paymentStatus === OrderPaymentStatuses.Paid
+  ) {
     await autoFulfillOrder(order, shopConfig, shop)
   }
 

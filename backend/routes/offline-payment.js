@@ -134,7 +134,11 @@ module.exports = function (router) {
 
       // Full-fill the order if the payment was marked as "Paid"
       // and the shop has auto-fulfillment enabled.
-      if (shopConfig.printful && shopConfig.printfulAutoFulfill && state === OrderPaymentStatuses.Paid) {
+      if (
+        shopConfig.printful &&
+        shopConfig.printfulAutoFulfill &&
+        state === OrderPaymentStatuses.Paid
+      ) {
         log.info(`Auto-fullfilling order ${order.fqId}`)
         await autoFulfillOrder(order, shopConfig, shop)
       }
