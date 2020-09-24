@@ -93,6 +93,12 @@ module.exports = function (router) {
     makeOffer
   )
 
+  /**
+   * To update the payment state of an offline-payment order
+   * 
+   * @param {String} paymentCode the custom ID of the external payment
+   * @param {enums.OrderPaymentStatuses} state new payment state to set
+   */
   router.put(
     '/offline-payments/payment-state',
     authSellerAndShop,
@@ -112,6 +118,9 @@ module.exports = function (router) {
           reason: 'Invalid payment code'
         })
       }
+
+      // TODO: add some checks to avoid invalid transition of states
+      // Like state should never go back from "Paid" to "Pending"
 
       await order.update({
         paymentStatus: state
