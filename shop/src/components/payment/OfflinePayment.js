@@ -50,11 +50,10 @@ const OfflinePayment = ({
           methodId
         }),
         method: 'POST',
-        suppressError: true,
-        rawData: true
+        suppressError: true
       })
 
-      if (data === 'OK') {
+      if (data.success === true) {
         onChange({
           tx: dataHash,
           submit: 0,
@@ -62,7 +61,7 @@ const OfflinePayment = ({
           disabled: false
         })
       } else {
-        setError(JSON.parse(data).message)
+        setError(data.message)
         onChange({
           loading: false,
           submit: 0,

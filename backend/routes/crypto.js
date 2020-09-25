@@ -6,7 +6,11 @@ const { txQueue } = require('../queues/queues')
 const { decryptShopOfferData } = require('../utils/offer')
 
 const { getLogger } = require('../utils/logger')
-const { TransactionTypes, TransactionStatuses } = require('../enums')
+const {
+  TransactionTypes,
+  TransactionStatuses,
+  OrderPaymentTypes
+} = require('../enums')
 
 const log = getLogger('routes.crypto')
 
@@ -176,7 +180,8 @@ module.exports = function (router) {
       toAddress,
       txHash,
       encryptedDataIpfsHash,
-      paymentCode
+      paymentCode,
+      paymentType: OrderPaymentTypes.CryptoCurrency
     }
     const jobOpts = { attempts: 3 }
     const job = await txQueue.add(jobData, jobOpts)

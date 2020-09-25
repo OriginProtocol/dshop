@@ -16,6 +16,7 @@ const {
 } = require('../utils/paypal')
 
 const makeOffer = require('./_makeOffer')
+const { OrderPaymentTypes } = require('../enums')
 
 const rawJson = bodyParser.raw({ type: 'application/json' })
 const log = getLogger('routes.paypal')
@@ -234,6 +235,7 @@ module.exports = function (router) {
       req.body.data = get(event, 'resource.custom_id')
       req.amount = externalPayment.amount
       req.paymentCode = externalPayment.paymentCode
+      req.paymentType = OrderPaymentTypes.PayPal
 
       next()
     } catch (err) {

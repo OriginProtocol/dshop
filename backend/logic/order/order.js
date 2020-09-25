@@ -1,7 +1,7 @@
 const randomstring = require('randomstring')
 const util = require('ethereumjs-util')
 
-const { OrderPaymentStatuses } = require('../../enums')
+const { OrderPaymentStatuses, OrderPaymentTypes } = require('../../enums')
 const { Sentry } = require('../../sentry')
 const { Order } = require('../../models')
 const sendNewOrderEmail = require('../../utils/emails/newOrder')
@@ -65,6 +65,7 @@ function getShortOrderId(fqOrderId) {
  * @param {object || null} event: blockchain OfferCreated event or null in case of an off-chain offer.
  * @param {boolean} skipEmail: If true, do not send email to the buyer/seller.
  * @param {boolean} skipDiscord: If true, do not send Discord notification to the system administrator.
+ * @param {enums.OrderPaymentTypes} paymentType: Payment type of order
  * @returns {Promise<models.Order>}
  */
 async function processNewOrder({
@@ -77,7 +78,8 @@ async function processNewOrder({
   offerId,
   event,
   skipEmail,
-  skipDiscord
+  skipDiscord,
+  paymentType
 }) {
   // Generate a short unique order id.
   const { fqId, shortId } = createOrderId(network, shop)
@@ -101,6 +103,12 @@ async function processNewOrder({
   // It is populated for example in case of a Credit Card payment.
   const paymentCode = offer.paymentCode || null
 
+  // Let the status be `Pending` by default for Offline payments.
+  const paymentStatus =
+    paymentType === OrderPaymentTypes.Offline
+      ? OrderPaymentStatuses.Pending
+      : OrderPaymentStatuses.Paid
+
   // Insert a new row in the orders DB table.
   const orderObj = {
     networkId: network.networkId,
@@ -108,7 +116,8 @@ async function processNewOrder({
     fqId,
     shortId,
     data,
-    paymentStatus: OrderPaymentStatuses.Paid,
+    paymentStatus,
+    paymentType,
     paymentCode,
     ipfsHash: offerIpfsHash,
     encryptedIpfsHash: encryptedHash,
@@ -145,8 +154,16 @@ async function processNewOrder({
   const order = await Order.create(orderObj)
   log.info(`Saved order ${order.fqId} to DB.`)
 
+  // Note: we only fulfill the order if the payment status is 'Paid'.
+  // If the payment is still pending, the order will get fulfilled
+  // at the time the payment status gets updated to 'Paid' (for ex. when the
+  // merchant marks the payment as received for the order via the admin tool.
   // TODO: move order fulfillment to a queue.
-  if (shopConfig.printful && shopConfig.printfulAutoFulfill) {
+  if (
+    shopConfig.printful &&
+    shopConfig.printfulAutoFulfill &&
+    paymentStatus === OrderPaymentStatuses.Paid
+  ) {
     await autoFulfillOrder(order, shopConfig, shop)
   }
 

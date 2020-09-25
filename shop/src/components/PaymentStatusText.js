@@ -17,8 +17,9 @@ const PaymentStatusText = ({ status }) => {
       labelText = fbt('Refunded', 'Refunded')
       break
 
-    default:
-      throw new Error(`Unexpected payment status ${status}`)
+    case PaymentStates.Pending:
+      classList.push('pending')
+      labelText = fbt('Pending', 'Pending')
   }
 
   return <div className={classList.join(' ')}>{labelText}</div>
