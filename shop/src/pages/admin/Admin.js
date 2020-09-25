@@ -7,6 +7,7 @@ import { useStateValue } from 'data/state'
 import useAuth from 'utils/useAuth'
 import useConfig from 'utils/useConfig'
 import { isLoggedIn } from 'utils/auth'
+import usePGP from 'utils/usePGP'
 
 import Toaster from 'components/Toaster'
 
@@ -29,6 +30,7 @@ import Nav from './_Nav'
 import StoreSelector from './StoreSelector'
 
 const Admin = () => {
+  usePGP()
   const { loading, error } = useAuth()
   const [newShop, setNewShop] = useState()
   const { config, setActiveShop } = useConfig()

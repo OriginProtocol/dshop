@@ -1,10 +1,16 @@
 import React from 'react'
 import fbt from 'fbt'
 
-const PreviewBanner = () => {
+const PreviewBanner = ({
+  wrapperClassName = 'shop-preview-banner',
+  className = 'container px-4'
+}) => {
+  if (window.name !== 'shop_preview') {
+    return null
+  }
   return (
-    <div className="shop-preview-banner">
-      <div className="container px-4">
+    <div className={wrapperClassName}>
+      <div className={className}>
         <div>
           <fbt desc="component.PreviewBanner.desc">
             You’re previewing this shop, close this window when you’re done.

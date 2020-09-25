@@ -5,6 +5,7 @@ import _get from 'lodash/get'
 
 import useWallet from 'utils/useWallet'
 import useConfig from 'utils/useConfig'
+import usePGP from 'utils/usePGP'
 
 const marketplaceAbi = [
   'function makeOffer(uint listingID, bytes32 ipfsHash, uint finalizes, address affiliate, uint256 commission, uint value, address currency, address arbitrator) payable',
@@ -172,6 +173,7 @@ async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
 }
 
 function useOrigin({ marketplaceAddress } = {}) {
+  usePGP()
   const [loading, setLoading] = useState(true)
   const [marketplace, setMarketplace] = useState()
   const { config } = useConfig()

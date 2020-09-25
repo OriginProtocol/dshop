@@ -59,8 +59,6 @@
     "ignoreDeps": [
       "openzeppelin-solidity",
       "truffle",
-      "truffle-hdwallet-provider",
-      "truffle-privatekey-provider",
       "solc",
       "sequelize",
       "sequelize-cli",

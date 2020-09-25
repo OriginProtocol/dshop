@@ -187,6 +187,3 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
 }
 
 export default PayPal
-
-require('react-styl')(`
-`)
