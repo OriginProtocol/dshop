@@ -38,7 +38,7 @@ const ABOUT_FILENAME = 'about.html'
 
 const AppearanceSettings = () => {
   const { config } = useConfig()
-  const [, dispatch] = useStateValue()
+  const [{ admin }, dispatch] = useStateValue()
   const { postRaw, post } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, { domain: '' })
   const input = formInput(state, (newState) =>
@@ -298,23 +298,24 @@ const AppearanceSettings = () => {
               onChange={(e) => setAboutText(e.editor.getData())}
             />
           </div>
-
-          <div className="select-currency">
-            <h4>Theme</h4>
-            <div>
-              <select
-                className="form-control"
-                value={state.themeId}
-                onChange={(e) =>
-                  setState({ hasChanges: true, themeId: e.target.value })
-                }
-              >
-                <option value="">Default</option>
-                <option value="art">Art</option>
-                <option value="poly">Poly</option>
-              </select>
+          {!admin.superuser ? null : (
+            <div className="select-currency">
+              <h4>Theme</h4>
+              <div>
+                <select
+                  className="form-control"
+                  value={state.themeId}
+                  onChange={(e) =>
+                    setState({ hasChanges: true, themeId: e.target.value })
+                  }
+                >
+                  <option value="">Default</option>
+                  <option value="art">Art</option>
+                  <option value="poly">Poly</option>
+                </select>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="col-lg-3 col-md-4">
