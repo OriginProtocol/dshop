@@ -1,34 +1,26 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
+import { Countries, CountriesDefaultInfo } from '@origin/utils/Countries'
 
 import validate from 'data/validations/checkoutInfo'
 import { useStateValue } from 'data/state'
 import useForm from 'utils/useForm'
 
 import Link from 'components/Link'
-import { Countries, CountriesDefaultInfo } from '@origin/utils/Countries'
-
 import CountrySelect from 'components/CountrySelect'
 import ProvinceSelect from 'components/ProvinceSelect'
 
-const Information = () => {
+export const Information = () => {
   const history = useHistory()
   const [{ cart }, dispatch] = useStateValue()
 
-  const { state, setState, input, Feedback } = useForm({
-    initialState: cart.userInfo || { country: 'United States' },
-    className: 'border px-3 py-2 w-full',
-    defaultClassName: 'bg-gray-100',
-    errorClassName: 'bg-red-100 border-red-700',
-    feedbackClassName: 'text-red-700 mt-1 text-sm'
-  })
+  const { state, setState, input, Feedback } = useForm(initialState(cart))
 
   const country = Countries[state.country] || 'United States'
 
   return (
     <form
-      style={{ flex: 3 }}
       onSubmit={(e) => {
         e.preventDefault()
         const { valid, newState } = validate(state)
@@ -44,7 +36,7 @@ const Information = () => {
         })
       }}
     >
-      <div className="text-lg mb-2">1. Contact information</div>
+      <div className="text-lg mb-2 font-medium">1. Contact information</div>
       <div className="shadow-lg p-4 bg-white grid grid-cols-2 gap-x-3 gap-y-2">
         <label className="block mb-2 text-sm">Email</label>
         <label className="block mb-2 text-sm">Mobile Phone (optional)</label>
@@ -57,7 +49,7 @@ const Information = () => {
           <Feedback error={state.phoneError} />
         </div>
       </div>
-      <div className="text-lg mb-2 mt-8">2. Shipping address</div>
+      <div className="text-lg mb-2 mt-8 font-medium">2. Shipping address</div>
       <div className="shadow-lg p-4 bg-white grid gap-y-2">
         <div className="grid grid-cols-2 gap-x-3 gap-y-2">
           <label className="block mb-2 text-sm">First Name</label>
@@ -135,4 +127,60 @@ const Information = () => {
   )
 }
 
-export default Information
+export const MobileInformation = () => {
+  const history = useHistory()
+  const [{ cart }, dispatch] = useStateValue()
+  const { state, input, Feedback, setState } = useForm(initialState(cart))
+
+  const onSubmit = (e) => {
+    e.preventDefault()
+
+    const { valid, newState } = validate(state)
+    setState(newState)
+    if (!valid) {
+      window.scrollTo(0, 0)
+      return
+    }
+    dispatch({ type: 'updateUserInfo', info: newState })
+    history.push('/checkout/shipping-address')
+  }
+  return (
+    <>
+      <form className="shadow-lg p-8 bg-white" onSubmit={onSubmit}>
+        <div className="text-lg mb-4 font-medium">1. Contact information</div>
+        <label className="block mb-2 text-sm font-medium">Email</label>
+        <div className="mb-6">
+          <input {...input('email')} />
+          <Feedback error={state.emailError} />
+        </div>
+        <label className="block mb-2 text-sm font-medium">
+          Mobile Phone (optional)
+        </label>
+        <div className="mb-6">
+          <input type="tel" {...input('phone')} />
+          <Feedback error={state.phoneError} />
+        </div>
+        <button className="btn btn-primary w-full">Continue</button>
+      </form>
+      <div className="text-lg font-medium text-gray-500 px-8 my-8">
+        2. Shipping address
+      </div>
+      <div className="text-lg font-medium text-gray-500 px-8 my-8">
+        3. Shipping method
+      </div>
+      <div className="text-lg font-medium text-gray-500 px-8 my-8">
+        4. Payment
+      </div>
+    </>
+  )
+}
+
+function initialState(cart) {
+  return {
+    initialState: cart.userInfo || { country: 'United States' },
+    className: 'border px-3 py-2 w-full',
+    defaultClassName: 'bg-gray-100',
+    errorClassName: 'bg-red-100 border-red-700',
+    feedbackClassName: 'text-red-700 mt-1 text-sm'
+  }
+}
