@@ -14,14 +14,15 @@ function useShippingZones() {
 
   const userInfo = get(cart, 'userInfo')
   const items = get(cart, 'items')
+  const shippingApi = get(cart, 'shippingApi')
 
   useEffect(() => {
-    if (!configLoading || !userInfo || !items) {
+    if (!configLoading || (shippingApi && (!userInfo || !items))) {
       return
     }
 
     setConfigLoading(false)
-  }, [userInfo, items, configLoading])
+  }, [shippingApi, userInfo, items, configLoading])
 
   useEffect(() => {
     async function fetchShippingZones() {
