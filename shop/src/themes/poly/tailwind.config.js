@@ -19,6 +19,10 @@ module.exports = {
         orange: {
           ...defaultTheme.colors.orange,
           400: '#cfb47d'
+        },
+        gray: {
+          ...defaultTheme.colors.gray,
+          600: '#666666'
         }
       },
       fontFamily: {

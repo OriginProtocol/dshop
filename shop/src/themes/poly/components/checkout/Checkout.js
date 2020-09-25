@@ -29,7 +29,7 @@ const Checkout = () => {
 const Mobile = ({ config }) => {
   const [{ cart }] = useStateValue()
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       <div className="p-8 pb-6 pt-10">
         <div className="text-2xl font-medium">{config.title}</div>
       </div>
@@ -43,7 +43,7 @@ const Mobile = ({ config }) => {
         <Route path="/checkout/payment/:intentId?" component={MobilePayment} />
         <Route path="/checkout" component={MobileInformation} />
       </Switch>
-      <div className="shadow-lg p-8 bg-white mt-4">
+      <div className="shadow-lg p-8 mt-4">
         <div className="text-lg mb-6 font-medium">Order Summary</div>
         <OrderSummary cart={cart} />
       </div>
@@ -60,7 +60,9 @@ const Desktop = ({ currentStep, config }) => {
       className += ' text-gray-500'
     }
     if (currentStep >= step) {
-      className += ' border-black'
+      className += ' border-gray-800'
+    } else {
+      className += ' border-gray-900'
     }
     if (currentStep > step) {
       return (
@@ -73,13 +75,11 @@ const Desktop = ({ currentStep, config }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="bg-white">
-        <div className="container pt-16 pb-8">
-          <div className="text-2xl">{config.title}</div>
-        </div>
+    <div className="min-h-screen">
+      <div className="container pt-16 pb-8">
+        <div className="text-2xl text-white">{config.title}</div>
       </div>
-      <div className="border-t" />
+      <div className="border-t border-gray-600" />
       <div className="container pt-8 pb-24">
         <Link className="text-sm" to="/cart">
           &laquo; Return to cart
@@ -106,7 +106,7 @@ const Desktop = ({ currentStep, config }) => {
 
           <div style={{ flex: 2 }} className="ml-12">
             <div className="text-lg mb-2 font-medium">Order Summary</div>
-            <div className="shadow-lg p-4 bg-white text-sm">
+            <div className="shadow-lg p-4 text-sm">
               <OrderSummary cart={cart} />
             </div>
           </div>

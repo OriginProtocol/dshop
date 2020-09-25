@@ -5,7 +5,9 @@ import Facebook from 'components/icons/Facebook'
 import YouTube from 'components/icons/YouTube'
 import CartIcon from 'components/icons/Cart'
 import Link from 'components/Link'
+import MenuIcon from 'components/icons/Menu'
 
+import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 
 const Cart = ({ cart }) => (
@@ -20,33 +22,44 @@ const Cart = ({ cart }) => (
 )
 
 const Header = () => {
+  const { config } = useConfig()
   const [{ cart }] = useStateValue()
   return (
-    <div className="flex items-center">
+    <div className="container flex items-center pt-8 sm:pt-20">
       <Link to="/" className="flex items-center">
         <img
-          style={{ width: 60, transform: 'translateY(-3px)' }}
-          className="mr-2"
-          src="low-poly-mint/Symbol Transparent Background0.png"
+          style={{ transform: 'translateY(-3px)' }}
+          className="mr-2 w-8 h-8 sm:w-16 sm:h-16"
+          src={`${config.dataSrc}${config.logo}`}
         />
-        <div className="text-3xl">Low Poly Mint</div>
+        <div className="sm:text-3xl text-xl">{config.title}</div>
       </Link>
-      <div className="ml-auto grid grid-flow-col gap-12 items-center">
-        <div>
+      <div className="ml-auto grid grid-flow-col gap-4 sm:gap-12 items-center">
+        <div className="hidden sm:block">
           <Link to="/">Products</Link>
         </div>
-        <div>
+        <div className="hidden sm:block">
           <Link to="/about">About</Link>
         </div>
-        <div>
+        <div className="hidden sm:block">
           <Twitter color="#fff" style={{ width: 20 }} />
         </div>
-        <div>
+        <div className="hidden sm:block">
           <Facebook color="#fff" style={{ width: 12 }} />
         </div>
-        <div>
+        <div className="hidden sm:block">
           <YouTube color="#fff" style={{ width: 20 }} />
         </div>
+        <a
+          className="sm:hidden"
+          href="#"
+          onClick={(e) => {
+            e.preventDefault()
+            // toggleMobileMenu()
+          }}
+        >
+          <MenuIcon color="#fff" />
+        </a>
         <div>
           <Cart cart={cart} />
         </div>

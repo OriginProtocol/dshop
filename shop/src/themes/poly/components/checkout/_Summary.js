@@ -84,7 +84,7 @@ const Row = ({ title, quantity, img, price }) => (
 export const ContactInfo = ({ cart }) => (
   <>
     <div className="text-lg mb-2 font-medium">1. Contact information</div>
-    <div className="shadow-lg p-4 bg-white mb-8 text-sm flex items-center justify-between">
+    <div className="shadow-lg p-4 mb-8 text-sm flex items-center justify-between">
       <div>
         <div className="font-semibold">Email</div>
         <div className="mt-2">{get(cart, 'userInfo.email')}</div>
@@ -115,7 +115,7 @@ function address(cart) {
 export const ShippingAddress = ({ cart }) => (
   <>
     <div className="text-lg mb-2 font-medium">2. Shipping address</div>
-    <div className="shadow-lg p-4 bg-white mb-8 text-sm flex items-center justify-between">
+    <div className="shadow-lg p-4 mb-8 text-sm flex items-center justify-between">
       <div>
         <div className="font-semibold">{name(cart)}</div>
         <div className="mt-2">{address(cart)}</div>
