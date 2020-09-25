@@ -7,6 +7,7 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const serveStatic = require('serve-static')
 const set = require('lodash/set')
+const kebabCase = require('lodash/kebabCase')
 
 const { getConfig } = require('./utils/encryptedConfig')
 const { sequelize, Network } = require('./models')
@@ -93,6 +94,17 @@ require('./routes/paypal')(router)
 require('./routes/exchange-rates')(router)
 require('./routes/crypto')(router)
 
+async function getNetworkName() {
+  const network = await Network.findOne({ where: { active: true } })
+  return !network
+    ? 'NETWORK'
+    : network.networkId === 1
+    ? 'mainnet'
+    : network.networkId === 4
+    ? 'rinkeby'
+    : 'localhost'
+}
+
 router.get('/', async (req, res) => {
   let html
   try {
@@ -100,15 +112,8 @@ router.get('/', async (req, res) => {
   } catch (e) {
     return res.send('')
   }
-  const network = await Network.findOne({ where: { active: true } })
-  const NETWORK = !network
-    ? 'NETWORK'
-    : network.networkId === 1
-    ? 'mainnet'
-    : network.networkId === 4
-    ? 'rinkeby'
-    : 'localhost'
 
+  const NETWORK = await getNetworkName()
   html = html
     .replace('DATA_DIR', '')
     .replace('TITLE', 'Origin Dshop')
@@ -117,8 +122,13 @@ router.get('/', async (req, res) => {
   res.send(html)
 })
 
-router.get('/theme/:theme', (req, res) => {
-  const themeIndex = `${__dirname}/themes/${req.params.theme}/index.html`
+router.get('/theme/:theme', async (req, res) => {
+  const theme = req.params.theme
+  if (theme !== kebabCase(theme)) {
+    return res.send('Invalid theme')
+  }
+
+  const themeIndex = `${__dirname}/themes/${theme}/index.html`
 
   let html
   try {
@@ -127,10 +137,11 @@ router.get('/theme/:theme', (req, res) => {
     return res.send('')
   }
 
+  const NETWORK = await getNetworkName()
   html = html
     .replace('DATA_DIR', `/${req.query.shop}`)
     .replace('TITLE', 'Origin Dshop')
-    .replace(/NETWORK/g, req.query.network || 'localhost')
+    .replace(/NETWORK/g, NETWORK)
 
   res.send(html)
 })
