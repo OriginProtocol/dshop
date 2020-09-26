@@ -8,7 +8,7 @@
     "build:js": "NODE_ENV=production webpack --loglevel notice",
     "build:css": "node scripts/getCss > public/app.css",
     "build:dist": "rm -rf ../backend/dist && npm run build && cp -r public ../backend/dist",
-    "build": "npm run build:css && npm run build:js && npm run translate && npm run theme",
+    "build": "npm run theme && npm run build:css && npm run build:js && npm run translate",
     "theme": "mkdir -p ../backend/themes && npm run theme:art:dist && npm run theme:poly:dist",
     "theme:art": "NODE_ENV=production THEME=art webpack --loglevel notice",
     "theme:art:dist": "rm -rf ../backend/themes/art && npm run theme:art && cp -r public ../backend/themes/art",
