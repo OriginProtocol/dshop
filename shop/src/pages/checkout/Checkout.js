@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react'
 import { Switch, Route } from 'react-router-dom'
-import { StripeProvider } from 'react-stripe-elements'
+import { StripeProvider, Elements } from 'react-stripe-elements'
 import Styl from 'react-styl'
 import fbt from 'fbt'
-import { Elements } from 'react-stripe-elements'
 
 import useConfig from 'utils/useConfig'
 import useStripe from 'utils/useStripe'

@@ -15,6 +15,9 @@ module.exports = {
       }
     },
     extend: {
+      screens: {
+        dark: '0px' // Enable dark mode on shared checkout
+      },
       colors: {
         orange: {
           ...defaultTheme.colors.orange,

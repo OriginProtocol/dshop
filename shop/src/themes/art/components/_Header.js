@@ -23,12 +23,13 @@ const Cart = ({ cart, bg }) => (
   </Link>
 )
 
-const Header = ({ bg }) => {
+const Header = () => {
   const history = useHistory()
   const { collections } = useCollections()
   const [mobileMenu, showMobileMenu] = useState(false)
   const { config } = useConfig()
   const [{ cart }] = useStateValue()
+  const bg = useRouteMatch({ path: '/', exact: true })
   const about = useRouteMatch('/about')
   const product = useRouteMatch('/product') || useRouteMatch('/products')
   const contact = useRouteMatch('/contact')

@@ -10,6 +10,11 @@
   }
   @font-face {
     font-family: Garamond Pro;
+    font-weight: 500;
+    src: url(fonts/AGaramondPro-Semibold.otf);
+  }
+  @font-face {
+    font-family: Garamond Pro;
     font-weight: 600;
     src: url(fonts/AGaramondPro-Semibold.otf);
   }
@@ -40,7 +45,7 @@
   }
 
   .btn-primary:hover {
-    @apply bg-white text-orange-400;
+    @apply bg-black text-orange-400;
   }
 }
 

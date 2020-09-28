@@ -15,8 +15,7 @@ export const Information = () => {
   const history = useHistory()
   const [{ cart }, dispatch] = useStateValue()
 
-  const initState = initialState(cart)
-  const { state, setState, input, Feedback } = useForm(initState)
+  const { state, setState, input, Feedback } = useForm(initialState(cart))
 
   const country = Countries[state.country] || 'United States'
 
@@ -38,7 +37,7 @@ export const Information = () => {
       }}
     >
       <div className="text-lg mb-2 font-medium">1. Contact information</div>
-      <div className="shadow-lg p-4 bg-black grid grid-cols-2 gap-x-3 gap-y-2">
+      <div className="shadow-lg p-4 grid grid-cols-2 gap-x-3 gap-y-2 dark:bg-gray-900 bg-white">
         <label className="block mb-2 text-sm">Email</label>
         <label className="block mb-2 text-sm">Mobile Phone (optional)</label>
         <div>
@@ -51,7 +50,7 @@ export const Information = () => {
         </div>
       </div>
       <div className="text-lg mb-2 mt-8 font-medium">2. Shipping address</div>
-      <div className="shadow-lg p-4 grid gap-y-2">
+      <div className="shadow-lg p-4 dark:bg-gray-900 bg-white grid gap-y-2">
         <div className="grid grid-cols-2 gap-x-3 gap-y-2">
           <label className="block mb-2 text-sm">First Name</label>
           <label className="block mb-2 text-sm">Last Name</label>
@@ -81,7 +80,7 @@ export const Information = () => {
         </div>
         <label className="mt-3 text-sm">Country</label>
         <CountrySelect
-          className="border px-3 py-2 bg-gray-900 w-full border-gray-800"
+          className="border px-3 py-2 dark:bg-black dark:border-gray-700 bg-gray-100 w-full"
           value={state.country}
           onChange={(e) => {
             const provinces = get(Countries[e.target.value], 'provinces')
@@ -147,7 +146,10 @@ export const MobileInformation = () => {
   }
   return (
     <>
-      <form className="shadow-lg p-8" onSubmit={onSubmit}>
+      <form
+        className="shadow-lg p-8 bg-white dark:bg-gray-900"
+        onSubmit={onSubmit}
+      >
         <div className="text-lg mb-4 font-medium">1. Contact information</div>
         <label className="block mb-2 text-sm font-medium">Email</label>
         <div className="mb-6">
@@ -179,9 +181,10 @@ export const MobileInformation = () => {
 function initialState(cart) {
   return {
     initialState: cart.userInfo || { country: 'United States' },
-    className: 'border px-3 py-2 w-full border-gray-800',
-    defaultClassName: 'bg-gray-900',
-    errorClassName: 'bg-red-100 border-red-700',
-    feedbackClassName: 'text-red-700 mt-1 text-sm'
+    className: 'border dark:border-gray-700 px-3 py-2 w-full',
+    defaultClassName: 'dark:bg-black bg-gray-100',
+    errorClassName:
+      'dark:bg-red-800 dark:border-red-600 bg-red-100 border-red-700',
+    feedbackClassName: 'dark:text-red-600 text-red-700 mt-1 text-sm'
   }
 }
