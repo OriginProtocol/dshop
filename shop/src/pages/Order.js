@@ -9,7 +9,6 @@ import Link from 'components/Link'
 import CheckCircle from 'components/icons/CheckCircle'
 import PaymentInstructions from 'components/OfflinePaymentInstructions'
 
-import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import useOrigin from 'utils/useOrigin'
 import formatAddress from 'utils/formatAddress'
@@ -148,7 +147,6 @@ const Order = () => {
   const [cart, setCart] = useState()
   const [error, setError] = useState()
   const [loading, setLoading] = useState()
-  const [, dispatch] = useStateValue()
   const match = useRouteMatch('/order/:tx')
   const location = useLocation()
   const opts = queryString.parse(location.search)

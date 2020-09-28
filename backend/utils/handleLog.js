@@ -3,10 +3,9 @@ require('dotenv').config()
 const fs = require('fs')
 const Web3 = require('web3')
 
-const get = require('lodash/get')
 const set = require('lodash/set')
 
-const { OrderPaymentStatuses } = require('../enums')
+const { OrderPaymentStatuses, OrderPaymentTypes } = require('../enums')
 const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
 const { upsertEvent, getEventObj } = require('./events')
@@ -20,6 +19,7 @@ const log = getLogger('utils.handleLog')
 
 const { DSHOP_CACHE } = require('../utils/const')
 const { processStripeRefund } = require('./stripe')
+const { processPayPalRefund } = require('./paypal')
 
 const IPFS_TIMEOUT = 60000 // 60sec in msec
 
@@ -128,15 +128,20 @@ async function _processEventForExistingOrder({ event, shop, order }) {
   if (eventName === 'OfferWithdrawn') {
     updatedFields.paymentStatus = OrderPaymentStatuses.Refunded
 
+    let refundError = null
+
     // If it's a Stripe payment, initiate a refund.
-    const paymentMethod = get(order, 'data.paymentMethod.id')
-    if (paymentMethod === 'stripe') {
-      const refundError = await processStripeRefund({ shop, order })
-      // Store the refund error in the order's data JSON.
-      updatedFields.data = {
-        ...order.data,
-        refundError
-      }
+    const paymentMethod = order.paymentType
+    if (paymentMethod === OrderPaymentTypes.CreditCard) {
+      refundError = await processStripeRefund({ shop, order })
+    } else if (paymentMethod === OrderPaymentTypes.PayPal) {
+      refundError = await processPayPalRefund({ shop, order })
+    }
+
+    // Store the refund error in the order's data JSON.
+    updatedFields.data = {
+      ...order.data,
+      refundError
     }
   }
 

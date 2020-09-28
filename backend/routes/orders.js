@@ -191,22 +191,22 @@ module.exports = function (router) {
    * @param {String} paymentCode the custom ID of the external payment
    * @param {enums.OrderPaymentStatuses} state new payment state to set
    */
-  router.put('/orders/payment-state', authSellerAndShop, async (req, res) => {
-    const { paymentCode, state } = req.body
+  router.put(
+    '/orders/:orderId/payment-state',
+    authSellerAndShop,
+    findOrder,
+    async (req, res) => {
+      const { state } = req.body
 
-    const order = await Order.findOne({
-      where: {
-        shopId: req.shop.id,
-        paymentCode
+      const order = req.order
+
+      if (!order) {
+        return res.status(200).send({
+          reason: 'Invalid payment code'
+        })
       }
-    })
 
-    if (!order) {
-      return res.status(200).send({
-        reason: 'Invalid payment code'
-      })
+      res.status(200).send(await updatePaymentStatus(order, state, req.shop))
     }
-
-    res.status(200).send(await updatePaymentStatus(order, state, req.shop))
-  })
+  )
 }

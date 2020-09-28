@@ -158,7 +158,11 @@ async function processNewOrder({
   log.info(`Saved order ${order.fqId} to DB.`)
 
   // TODO: move order fulfillment to a queue.
-  if (shopConfig.printful && shopConfig.printfulAutoFulfill) {
+  if (
+    shopConfig.printful &&
+    shopConfig.printfulAutoFulfill &&
+    paymentStatus === OrderPaymentStatuses.Paid
+  ) {
     await autoFulfillOrder(order, shopConfig, shop)
   }
 

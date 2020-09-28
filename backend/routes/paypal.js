@@ -17,6 +17,7 @@ const {
 
 const makeOffer = require('./_makeOffer')
 const { OrderPaymentTypes, OrderPaymentStatuses } = require('../enums')
+const { autoFulfillOrder } = require('../utils/printful')
 
 const rawJson = bodyParser.raw({ type: 'application/json' })
 const log = getLogger('routes.paypal')
@@ -283,6 +284,11 @@ module.exports = function (router) {
           log.info(
             `[Shop ${shopId}] Marking order ${order.id} as paid w.r.t. event ${event.id}`
           )
+
+          const shopConfig = getConfig(req.shop.config)
+          if (shopConfig.printful && shopConfig.printfulAutoFulfill) {
+            await autoFulfillOrder(order, shopConfig, req.shop)
+          }
 
           return res.json({ success: true })
         }
