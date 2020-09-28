@@ -164,7 +164,10 @@ export const MobileShippingAddress = () => {
           <img src="images/edit-icon.svg" />
         </Link>
       </div>
-      <form className="shadow-lg p-8 bg-white dark:bg-gray-900" onSubmit={onSubmit}>
+      <form
+        className="shadow-lg p-8 bg-white dark:bg-gray-900"
+        onSubmit={onSubmit}
+      >
         <div className="text-lg mb-4 font-medium">2. Shipping address</div>
         <label className="block mb-2 text-sm font-medium">First Name</label>
         <div className="mb-6">

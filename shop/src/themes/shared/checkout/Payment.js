@@ -86,7 +86,10 @@ export const MobilePayment = () => {
         </Link>
       </div>
 
-      <form onSubmit={onSubmit} className="shadow-lg p-8 bg-white dark:bg-gray-900">
+      <form
+        onSubmit={onSubmit}
+        className="shadow-lg p-8 bg-white dark:bg-gray-900"
+      >
         <div className="text-lg mb-4 font-medium">4. Payment</div>
         <div className="grid gap-y-2">
           <PaymentChooser state={state} setState={setState} />
