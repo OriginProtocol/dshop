@@ -18,7 +18,7 @@ const configFields = ['cartSummaryNote', 'discountCodes']
 
 const CheckoutSettings = () => {
   const { config } = useConfig()
-  const [dispatch] = useStateValue()
+  const [, dispatch] = useStateValue()
   const { post } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, {})
   const input = formInput(state, (newState) =>

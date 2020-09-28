@@ -146,6 +146,7 @@ async function _deployShop({
   const zone = networkConfig.domain
 
   log.info(`Shop ${shop.id}: Preparing data for deploy...`)
+  log.info(`Outputting to ${OutputDir}/public`)
   await new Promise((resolve, reject) => {
     execFile('rm', ['-rf', `${OutputDir}/public`], (error, stdout) => {
       if (error) reject(error)
@@ -153,10 +154,22 @@ async function _deployShop({
     })
   })
 
+  let publicShopConfig = {}
+  try {
+    const raw = fs.readFileSync(`${OutputDir}/data/config.json`)
+    publicShopConfig = JSON.parse(raw.toString())
+  } catch (e) {
+    log.warning(`Shop ${shop.id}: failed parsing ${OutputDir}/data/config.json`)
+    // TODO: Under which circumstances would it be ok for this to not be a hard error?
+  }
+
   await new Promise((resolve, reject) => {
+    const distDir = publicShopConfig.themeId
+      ? `themes/${publicShopConfig.themeId}`
+      : 'dist'
     execFile(
       'cp',
-      ['-r', `${__dirname}/../dist`, `${OutputDir}/public`],
+      ['-r', `${__dirname}/../${distDir}`, `${OutputDir}/public`],
       (error, stdout) => {
         if (error) reject(error)
         else resolve(stdout)
@@ -174,15 +187,6 @@ async function _deployShop({
       }
     )
   })
-
-  let publicShopConfig = {}
-  try {
-    const raw = fs.readFileSync(`${OutputDir}/data/config.json`)
-    publicShopConfig = JSON.parse(raw.toString())
-  } catch (e) {
-    log.warning(`Shop ${shop.id}: failed parsing ${OutputDir}/data/config.json`)
-    // TODO: Under which circumstances would it be ok for this to not be a hard error?
-  }
 
   const networkName =
     network.networkId === 1

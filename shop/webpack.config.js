@@ -18,11 +18,12 @@ try {
 }
 
 const isProduction = process.env.NODE_ENV === 'production'
+const theme = process.env.THEME
 
-let theme = ''
+let themeCss = ''
 try {
   const themePath = `${__dirname}/data/${process.env.DATA_DIR}/theme.scss`
-  theme = fs.readFileSync(themePath).toString()
+  themeCss = fs.readFileSync(themePath).toString()
 } catch (e) {
   // Ignore
 }
@@ -44,7 +45,7 @@ const absolute = process.env.ABSOLUTE ? true : false // Absolute js / css files
 
 const webpackConfig = {
   entry: {
-    app: './src/index.js'
+    app: theme ? `./src/themes/${theme}/index.js` : './src/index.js'
   },
   devtool,
   output: {
@@ -92,8 +93,23 @@ const webpackConfig = {
                 return url.match(/(svg|png)/) ? false : true
               }
             }
-          }
-        ]
+          },
+          !theme
+            ? null
+            : {
+                loader: 'postcss-loader',
+                options: {
+                  postcssOptions: {
+                    plugins: [
+                      require('tailwindcss')(
+                        `./src/themes/${theme}/tailwind.config.js`
+                      ),
+                      require('autoprefixer')
+                    ]
+                  }
+                }
+              }
+        ].filter((l) => l)
       },
       {
         test: /\.s[ac]ss$/,
@@ -112,7 +128,7 @@ const webpackConfig = {
           {
             loader: 'sass-loader',
             options: {
-              additionalData: theme
+              additionalData: themeCss
             }
           }
         ]
@@ -200,7 +216,8 @@ const webpackConfig = {
       CONTENT_CDN: process.env.CONTENT_CDN || '',
       CONTENT_HASH: process.env.CONTENT_HASH || '',
       ABSOLUTE: process.env.ABSOLUTE || ''
-    })
+    }),
+    new MiniCssExtractPlugin({ filename: '[name].[hash:8].css' })
   ],
 
   optimization: {
@@ -223,10 +240,10 @@ if (isProduction) {
         'app.*.js',
         'app.*.js.map',
         'vendors*',
+        'fonts*',
         'dist/*.bundle.js'
       ]
-    }),
-    new MiniCssExtractPlugin({ filename: '[name].[hash:8].css' })
+    })
   )
   webpackConfig.resolve.alias = {
     'react-styl': 'react-styl/prod.js'

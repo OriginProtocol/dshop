@@ -13,7 +13,7 @@ class Enum extends Array {
   }
 }
 
-const OrderPaymentStatuses = new Enum('Paid', 'Refunded')
+const OrderPaymentStatuses = new Enum('Paid', 'Refunded', 'Pending', 'Rejected')
 
 const OrderOfferStatuses = new Enum(
   'OfferCreated',
@@ -31,6 +31,14 @@ const ShopDomainStatuses = new Enum('Pending', 'Success', 'Failure')
 
 const EtlJobStatuses = new Enum('Running', 'Success', 'Failure')
 
+const OrderPaymentTypes = new Enum(
+  'CreditCard',
+  'PayPal',
+  'Offline',
+  'CryptoCurrency',
+  'Uphold'
+)
+
 module.exports = {
   OrderPaymentStatuses,
   OrderOfferStatuses,
@@ -38,5 +46,6 @@ module.exports = {
   TransactionTypes,
   ShopDeploymentStatuses,
   EtlJobStatuses,
-  ShopDomainStatuses
+  ShopDomainStatuses,
+  OrderPaymentTypes
 }

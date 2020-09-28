@@ -4,7 +4,7 @@ import { NavLink, useRouteMatch, Switch, Route } from 'react-router-dom'
 import get from 'lodash/get'
 import fbt from 'fbt'
 
-import useOrder from 'utils/useOrder'
+import useAdminOrder from 'utils/useAdminOrder'
 import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
@@ -16,7 +16,7 @@ import Contract from './Contract'
 const AdminOrder = () => {
   const match = useRouteMatch('/admin/orders/:orderId/:tab?')
   const { orderId, tab } = match.params
-  const { order, loading } = useOrder(orderId)
+  const { order, loading } = useAdminOrder(orderId)
   const [{ admin }] = useStateValue()
   const urlPrefix = `/admin/orders/${orderId}`
   const prevOrderId = get(order, 'prevOrderId')
@@ -52,14 +52,14 @@ const AdminOrder = () => {
             <fbt desc="Details">Details</fbt>
           </NavLink>
         </li>
-        {admin.role !== 'admin' ? null : (
+        {!/^admin$/i.test(admin.role) ? null : (
           <li className="nav-item">
             <NavLink className="nav-link" to={`${urlPrefix}/printful`}>
               Printful
             </NavLink>
           </li>
         )}
-        {admin.role !== 'admin' ? null : (
+        {!/^admin$/i.test(admin.role) ? null : (
           <li className="nav-item">
             <NavLink className="nav-link" to={`${urlPrefix}/contract`}>
               <fbt desc="Contract">Contract</fbt>

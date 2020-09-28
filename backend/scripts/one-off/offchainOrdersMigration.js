@@ -37,7 +37,7 @@ function getPaymentStatus(offerStatus) {
       paymentStatus = OrderPaymentStatuses.Refunded
       break
     default:
-      throw new Error(`Unexpected offer status $offerStatus{}`)
+      throw new Error(`Unexpected offer status ${offerStatus}`)
   }
   return paymentStatus
 }
@@ -52,12 +52,13 @@ async function main() {
 
   const oldOrders = await OldOrder.findAll()
   for (const oldOrder of oldOrders) {
-    if (oldOrder.statusStr === 'error') {
+    if (!oldOrder.statusStr || oldOrder.statusStr === 'error') {
       // A few order rows created in the system early on were empty and had a status of 'errpr'.
       // Do not migrate those.
-      log.info(`Skipping order ${oldOrder.orderId} with status error`)
+      log.info(`Skipping order ${oldOrder.orderId} with status error or empty`)
       continue
     }
+    log.info(`Processing ${oldOrder.orderId}`)
 
     const shop = await Shop.findOne({ where: { id: oldOrder.shopId } })
     if (!shop) {

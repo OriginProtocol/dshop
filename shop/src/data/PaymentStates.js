@@ -1,4 +1,5 @@
 export default {
   Paid: 'Paid',
-  Refunded: 'Refunded'
+  Refunded: 'Refunded',
+  Pending: 'Pending'
 }
