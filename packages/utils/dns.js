@@ -9,7 +9,7 @@ const DNS_VALID = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Z
  * @param v {string} - The string to check
  * @returns {boolean} - if the given name is a crypto domain
  */
-export function isUnstoppableName(v) {
+function isUnstoppableName(v) {
   if (typeof v !== 'string' || v.length <= 3 || !v.includes('.')) {
     return false
   }
@@ -23,7 +23,7 @@ export function isUnstoppableName(v) {
  * @param v {string} - The string to check
  * @returns {boolean} - if the given name is a crypto domain
  */
-export function isCryptoName(v) {
+function isCryptoName(v) {
   if (typeof v !== 'string' || v.length <= 3 || !v.includes('.')) {
     return false
   }
@@ -37,7 +37,7 @@ export function isCryptoName(v) {
  * @param v {string} - The string to check
  * @returns {boolean} - if the given name is a public DNS name
  */
-export function isPublicDNSName(v) {
+function isPublicDNSName(v) {
   return (
     !isCryptoName(v) && typeof v === 'string' && v.length > 3 && v.includes('.')
   )
@@ -49,6 +49,13 @@ export function isPublicDNSName(v) {
  * @param v {string} - The string to check
  * @returns {boolean} - if the given name is a valid DNS name
  */
-export function isValidDNSName(v) {
+function isValidDNSName(v) {
   return v.includes('.') && v.match(DNS_VALID)
+}
+
+module.exports = {
+  isUnstoppableName,
+  isCryptoName,
+  isPublicDNSName,
+  isValidDNSName
 }

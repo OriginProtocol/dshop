@@ -25,6 +25,7 @@
     "@origin/ipfs": "^0.1.0",
     "@origin/utils": "^0.1.0",
     "@paypal/checkout-server-sdk": "^1.0.2",
+    "@unstoppabledomains/resolution": "^1.6.2",
     "@sentry/node": "^5.24.2",
     "aws-sdk": "^2.760.0",
     "bcrypt": "^5.0.0",
