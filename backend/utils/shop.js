@@ -1,4 +1,7 @@
+const fs = require('fs')
+
 const { Shop } = require('../models')
+const { DSHOP_CACHE } = require('./const')
 
 /**
  * Create a new shop in the DB.
@@ -102,7 +105,7 @@ function getDataUrl(hostname, dataDir, domain, backendUrl) {
 }
 
 /**
- * Get a shop's data URL.
+ * Get a shop's public URL.
  * @param {models.Shop} shop
  * @param {object} networkConfig: Network configuration.
  * @returns {string}
@@ -130,11 +133,50 @@ function getShopDataUrl(shop, networkConfig) {
   )
 }
 
+
+async function _tryDataDir(dataDir) {
+  const hasDir = fs.existsSync(`${DSHOP_CACHE}/${dataDir}`)
+  const [authToken, hostname] = [dataDir, dataDir]
+  const existingShopWithAuthToken = await Shop.findOne({ where: { authToken } })
+  const existingShopWithHostname = await Shop.findOne({ where: { hostname } })
+  return !existingShopWithAuthToken && !hasDir && !existingShopWithHostname
+}
+
+/**
+ * Generates the name of the data directory to use for a new shop
+ * in the dshop cache on-disk. Ensure there is no conflict with any
+ * existing shops by adding a postfix if necessary.
+ *
+ * @param {string} dir: suggested data directory.
+ */
+async function getDataDir(seedDataDir) {
+  let dataDir, basename, postfix
+
+  // Check if the data dir passed as argument already includes a postfix.
+  // If it does, extract the postfix number and increment it.
+  const existingPostfix = seedDataDir.match(/^(.*)-([0-9]+)$/)
+  if (existingPostfix && existingPostfix.length === 2) {
+    basename = existingPostfix[1]
+    postfix = Number(existingPostfix[2]) + 1
+  } else {
+    basename = seedDataDir
+    postfix = 0
+  }
+
+  // If dataDir already exists, try dataDir-1, dataDir-2 etc until it works
+  while (!(await _tryDataDir(dataDir))) {
+    postfix++
+    dataDir = `${basename}-${postfix}`
+  }
+  return dataDir
+}
+
 module.exports = {
   createShop,
   findShopByHostname,
   getShopDataUrl,
   getShopPublicUrl,
   getDataUrl,
-  getPublicUrl
+  getPublicUrl,
+  getDataDir
 }

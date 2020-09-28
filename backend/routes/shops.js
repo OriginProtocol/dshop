@@ -25,9 +25,10 @@ const {
   getShopDataUrl,
   getShopPublicUrl,
   getPublicUrl,
-  getDataUrl
+  getDataUrl,
+  getDataDir
 } = require('../utils/shop')
-const genPGP = require('../utils/pgp')
+const { genPGP } = require('../utils/pgp')
 const get = require('lodash/get')
 const set = require('lodash/set')
 const kebabCase = require('lodash/kebabCase')
@@ -62,13 +63,6 @@ const { readProductsFile } = require('../utils/products')
 const stripeUtils = require('../utils/stripe')
 const { validateStripeKeys } = require('@origin/utils/stripe')
 
-async function tryDataDir(dataDir) {
-  const hasDir = fs.existsSync(`${DSHOP_CACHE}/${dataDir}`)
-  const [authToken, hostname] = [dataDir, dataDir]
-  const existingShopWithAuthToken = await Shop.findOne({ where: { authToken } })
-  const existingShopWithHostname = await Shop.findOne({ where: { hostname } })
-  return !existingShopWithAuthToken && !hasDir && !existingShopWithHostname
-}
 
 module.exports = function (router) {
   router.get(
@@ -369,26 +363,35 @@ module.exports = function (router) {
 
   /**
    * Creates a new shop.
+   * @param {string} req.body.name: Name of the store.
+   * @param {string} req.body.dataDir: Seed data dir. This is usually set to the shop's name.
+   * @param {string} supportEmail: Optional. Shop's support email.
+   * @param {string} web3Pk: Optional. Web3 private key for recording orders as offers on the marketplace.
+   *   Only necessary when the system operates in on-chain mode.
+   * @param {string} req.body.listingId: Optional. Marketplace listingId.
+   *   Only necessary when the system operates in on-chain mode.
+   * @param {string} req.body.printfulApi: Optional. Printful API key.
+   * @param {string} req.body.shopType: Optional. The type of shop.
+   *  The following types are supported:
+   *    'empty': Default shop type. Used the empty template.
+   *    'blank': No template used. Only creates populates the DB and not the data dir.
+   *    'local-dir': Creates a new shop that uses the data dir from an already existing shop. For super-admin use only.
+   *  The following types are not currently enabled/implemented:
+   *    'clone-ipfs': Creates a new shop and clones products data from a shop IPFS hash.
+   *    'affiliate': Creates the shop using the affiliate template.
+   *    'single-product': Creates the shop using the single-product template.
+   *    'multi-product': Creates the shop using the multi-product template.
+   *    'printful': Creates the shop using the printful template.
    */
   router.post('/shop', authUser, async (req, res) => {
-    const { printfulApi } = req.body
+    const { listingId, web3Pk, printfulApi } = req.body
     const shopType = req.body.shopType || 'empty'
-    let originalDataDir = kebabCase(req.body.dataDir)
     let dataDir = kebabCase(req.body.dataDir)
 
+    // Determine the data directory name to use, except in 'local-dir' mode
+    // since in that case we point to the same data directory as the original store.
     if (shopType !== 'local-dir') {
-      // If dataDir already exists, try dataDir-1, dataDir-2 etc until it works
-      let postfix = 1
-      const existingPostfix = dataDir.match(/^(.*)-([0-9]+)$/)
-      if (existingPostfix && existingPostfix[2]) {
-        postfix = Number(existingPostfix[2])
-        originalDataDir = existingPostfix[1]
-      }
-      if (postfix < 1) postfix = 1
-      while (!(await tryDataDir(dataDir))) {
-        postfix++
-        dataDir = `${originalDataDir}-${postfix}`
-      }
+      dataDir = getDataDir(dataDir)
     }
 
     const OutputDir = `${DSHOP_CACHE}/${dataDir}`
@@ -398,9 +401,11 @@ module.exports = function (router) {
     const networkConfig = getConfig(network.config)
     const netAndVersion = `${network.networkId}-${network.marketplaceVersion}`
 
-    if (req.body.listingId) {
+    // Only relevant for on-chain mode. Checks the shop's listingId doesn't
+    // conflict with a listingId from another shop.
+    if (listingId) {
       const existingShopWithListing = await Shop.findOne({
-        where: { listingId: req.body.listingId }
+        where: { listingId: listingId }
       })
       if (existingShopWithListing) {
         return res.json({
@@ -410,7 +415,8 @@ module.exports = function (router) {
           message: 'Already exists'
         })
       }
-      if (req.body.listingId.indexOf(netAndVersion) !== 0) {
+      // Check the listingId has the expected network and marketplace version.
+      if (listingId.indexOf(netAndVersion) !== 0) {
         return res.json({
           success: false,
           reason: 'invalid',
@@ -420,8 +426,12 @@ module.exports = function (router) {
       }
     }
 
+    //
+    // Generate the shop's config
+    //
     let name = req.body.name
 
+    // For 'local-dir' mode get the original's shop name from its config.json
     if (shopType === 'local-dir') {
       const existingData = fs
         .readFileSync(`${OutputDir}/data/config.json`)
@@ -445,6 +455,7 @@ module.exports = function (router) {
 
     const supportEmail = req.body.supportEmail || req.seller.email
 
+    // Get the default shop config at network level.
     let defaultShopConfig = {}
     if (networkConfig.defaultShopConfig) {
       try {
@@ -453,23 +464,31 @@ module.exports = function (router) {
         log.error('Error parsing default shop config')
       }
     }
+
+    // Generate a PGP key for the shop.
     const pgpKeys = await genPGP()
+
+    // Generate the shop's config, seeding it with the default network shop config.
     const config = {
       ...defaultShopConfig,
       ...pgpKeys,
       dataUrl,
       hostname,
       publicUrl,
-      printful: req.body.printfulApi,
-      deliveryApi: req.body.printfulApi ? true : false,
+      printful: printfulApi,
+      deliveryApi: printfulApi ? true : false,
       supportEmail,
       emailSubject: `Your order from ${name}`
     }
-    if (req.body.web3Pk && !config.web3Pk) {
-      config.web3Pk = isHexPrefixed(req.body.web3Pk)
-        ? req.body.web3Pk
-        : addHexPrefix(req.body.web3Pk)
+    // If the network default config did not include a web3pk, use the one
+    // provided by the merchant.
+    if (web3Pk && !config.web3Pk) {
+      config.web3Pk = isHexPrefixed(web3Pk) ? web3Pk : addHexPrefix(web3Pk)
     }
+
+    //
+    // Create the shop in the DB.
+    //
     const shopResponse = await createShop({
       networkId: network.networkId,
       sellerId: req.session.sellerId,
@@ -490,17 +509,25 @@ module.exports = function (router) {
     const shopId = shopResponse.shop.id
     log.info(`Created shop ${shopId} with name ${shopResponse.shop.name}`)
 
+    // Give admin permission in the DB to the creator of the shop.
     const role = 'admin'
     await SellerShop.create({ sellerId: req.session.sellerId, shopId, role })
     log.info(`Added role OK`)
 
+    // For shop of type blank and local-dir, we don't need to create
+    // a data directory. We are done.
     if (shopType === 'blank' || shopType === 'local-dir') {
       return res.json({ success: true, slug: dataDir })
     }
 
+    //
+    // Create files in the data directory.
+    //
     fs.mkdirSync(OutputDir, { recursive: true })
     log.info(`Outputting to ${OutputDir}`)
 
+    // If the shop is using the printful template, sync the data from Printful
+    // to generate products and collections.
     if (shopType === 'printful' && printfulApi) {
       // Should this be made async? Like just moving to the queue instead of blocking?
       await printfulSyncProcessor.processor({
@@ -513,6 +540,11 @@ module.exports = function (router) {
       })
     }
 
+    //
+    // Generate a config.json
+    //
+
+    // TBD: what is this for? Under which scenario would there be a config.json?????
     let shopConfig = { ...configs.shopConfig }
     const existingConfig = fs.existsSync(`${OutputDir}/data/config.json`)
     if (existingConfig) {
@@ -520,15 +552,17 @@ module.exports = function (router) {
       shopConfig = JSON.parse(config)
     }
 
+    // If the shop uses a template, clone the template files to the
+    // shop's data directory on disk.
     log.info(`Shop type: ${shopType}`)
-    const allowedTypes = [
+    const supportedTemplateTypes = [
       'single-product',
       'multi-product',
       'affiliate',
       'empty'
     ]
 
-    if (allowedTypes.indexOf(shopType) >= 0) {
+    if (supportedTemplateTypes.indexOf(shopType) >= 0) {
       const shopTpl = `${__dirname}/../db/shop-templates/${shopType}`
       const config = fs.readFileSync(`${shopTpl}/config.json`).toString()
       shopConfig = JSON.parse(config)
