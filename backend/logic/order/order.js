@@ -66,6 +66,7 @@ function getShortOrderId(fqOrderId) {
  * @param {boolean} skipEmail: If true, do not send email to the buyer/seller.
  * @param {boolean} skipDiscord: If true, do not send Discord notification to the system administrator.
  * @param {enums.OrderPaymentTypes} paymentType: Payment type of order
+ * @param {enums.OrderPaymentStatuses} paymentStatus: Payment status override
  * @returns {Promise<models.Order>}
  */
 async function processNewOrder({
@@ -79,7 +80,8 @@ async function processNewOrder({
   event,
   skipEmail,
   skipDiscord,
-  paymentType
+  paymentType,
+  paymentStatus: _paymentStatus
 }) {
   // Generate a short unique order id.
   const { fqId, shortId } = createOrderId(network, shop)
@@ -103,6 +105,13 @@ async function processNewOrder({
   // It is populated for example in case of a Credit Card payment.
   const paymentCode = offer.paymentCode || null
 
+  // Let the status be `Pending` by default for Offline payments.
+  const paymentStatus =
+    _paymentStatus ||
+    (paymentType === OrderPaymentTypes.Offline
+      ? OrderPaymentStatuses.Pending
+      : OrderPaymentStatuses.Paid)
+
   // Insert a new row in the orders DB table.
   const orderObj = {
     networkId: network.networkId,
@@ -110,11 +119,7 @@ async function processNewOrder({
     fqId,
     shortId,
     data,
-    // Let the status be `Pending` by default for Offline payments
-    paymentStatus:
-      paymentType === OrderPaymentTypes.Offline
-        ? OrderPaymentStatuses.Pending
-        : OrderPaymentStatuses.Paid,
+    paymentStatus,
     paymentType,
     paymentCode,
     ipfsHash: offerIpfsHash,

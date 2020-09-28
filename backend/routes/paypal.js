@@ -4,7 +4,7 @@ const randomstring = require('randomstring')
 
 const PayPal = require('@paypal/checkout-server-sdk')
 
-const { Network, ExternalPayment, Shop } = require('../models')
+const { Network, ExternalPayment, Shop, Order } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
 const { getLogger } = require('../utils/logger')
@@ -16,7 +16,7 @@ const {
 } = require('../utils/paypal')
 
 const makeOffer = require('./_makeOffer')
-const { OrderPaymentTypes } = require('../enums')
+const { OrderPaymentTypes, OrderPaymentStatuses } = require('../enums')
 
 const rawJson = bodyParser.raw({ type: 'application/json' })
 const log = getLogger('routes.paypal')
@@ -65,8 +65,11 @@ module.exports = function (router) {
       const { clientId, currency } = req.body
       const { paypalClientSecret, paypalClientId } = shopConfig
 
+      // Require web3Pk for onchain offers
+      const canUsePaypal = network.useMarketplace ? Boolean(web3Pk) : true
+
       if (
-        !web3Pk ||
+        !canUsePaypal ||
         !paypalClientSecret ||
         !paypalClientId ||
         clientId !== paypalClientId
@@ -136,8 +139,11 @@ module.exports = function (router) {
       const { clientId } = req.body
       const { paypalClientSecret, paypalClientId } = shopConfig
 
+      // Require web3Pk for onchain offers
+      const canUsePaypal = network.useMarketplace ? Boolean(web3Pk) : true
+
       if (
-        !web3Pk ||
+        !canUsePaypal ||
         !paypalClientSecret ||
         !paypalClientId ||
         clientId !== paypalClientId
@@ -227,15 +233,70 @@ module.exports = function (router) {
 
       log.debug(JSON.stringify(event, null, 4))
 
-      if (event.event_type !== 'PAYMENT.CAPTURE.COMPLETED') {
-        log.debug(`Ignoring event ${event.type}`)
+      const eventType = get(event, 'event_type')
+
+      if (
+        !['PAYMENT.CAPTURE.PENDING', 'PAYMENT.CAPTURE.COMPLETED'].includes(
+          eventType
+        )
+      ) {
+        log.debug(`Ignoring event ${eventType}`)
         return res.sendStatus(200)
       }
 
+      const isCompleted = eventType === 'PAYMENT.CAPTURE.COMPLETED'
+
+      if (isCompleted) {
+        // Check if it is an existing pending order
+
+        const order = await Order.findOne({
+          where: {
+            paymentCode: externalPayment.paymentCode,
+            paymentType: OrderPaymentTypes.PayPal,
+            shopId
+          }
+        })
+
+        if (order) {
+          // If yes, mark it as Paid, instead of
+          // creating a new order.
+
+          if (
+            ![OrderPaymentStatuses.Paid, OrderPaymentStatuses.Pending].includes(
+              order.paymentStatus
+            )
+          ) {
+            // Order is not in Paid/Pending state.
+            // TODO: Should email an error??
+
+            log.error(
+              `[Shop ${shopId}] Invalid order state, failed to mark as paid, order: ${order.id}`
+            )
+
+            return res.sendStatus(400)
+          }
+
+          await order.update({
+            paymentStatus: OrderPaymentStatuses.Paid
+          })
+
+          log.info(
+            `[Shop ${shopId}] Marking order ${order.id} as paid w.r.t. event ${event.id}`
+          )
+
+          return res.json({ success: true })
+        }
+      }
+
+      // No existing order exists, create a new one
       req.body.data = get(event, 'resource.custom_id')
       req.amount = externalPayment.amount
       req.paymentCode = externalPayment.paymentCode
       req.paymentType = OrderPaymentTypes.PayPal
+      // Mark as Paid only if it is `PAYMENT.CAPTURE.COMPLETED` event
+      req.paymentStatus = isCompleted
+        ? OrderPaymentStatuses.Paid
+        : OrderPaymentStatuses.Pending
 
       next()
     } catch (err) {

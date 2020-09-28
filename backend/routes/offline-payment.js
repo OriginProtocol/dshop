@@ -2,8 +2,8 @@ const randomstring = require('randomstring')
 
 const get = require('lodash/get')
 
-const { authShop, authSellerAndShop } = require('./_auth')
-const { Network, Order } = require('../models')
+const { authShop } = require('./_auth')
+const { Network } = require('../models')
 const { getConfig } = require('../utils/encryptedConfig')
 const makeOffer = require('./_makeOffer')
 const { OrderPaymentTypes } = require('../enums')
@@ -91,42 +91,5 @@ module.exports = function (router) {
       next()
     },
     makeOffer
-  )
-
-  /**
-   * To update the payment state of an offline-payment order
-   *
-   * @param {String} paymentCode the custom ID of the external payment
-   * @param {enums.OrderPaymentStatuses} state new payment state to set
-   */
-  router.put(
-    '/offline-payments/payment-state',
-    authSellerAndShop,
-    async (req, res) => {
-      const { paymentCode, state } = req.body
-
-      const order = await Order.findOne({
-        where: {
-          shopId: req.shop.id,
-          paymentCode,
-          paymentType: OrderPaymentTypes.Offline
-        }
-      })
-
-      if (!order) {
-        return res.status(200).send({
-          reason: 'Invalid payment code'
-        })
-      }
-
-      // TODO: add some checks to avoid invalid transition of states
-      // Like state should never go back from "Paid" to "Pending"
-
-      await order.update({
-        paymentStatus: state
-      })
-
-      res.status(200).send({ success: true })
-    }
   )
 }

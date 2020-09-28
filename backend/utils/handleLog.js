@@ -3,8 +3,6 @@ require('dotenv').config()
 const fs = require('fs')
 const Web3 = require('web3')
 
-const Stripe = require('stripe')
-
 const get = require('lodash/get')
 const set = require('lodash/set')
 
@@ -13,14 +11,15 @@ const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
 const { upsertEvent, getEventObj } = require('./events')
 const { getConfig } = require('./encryptedConfig')
-const { Network, Order, Shop, ExternalPayment } = require('../models')
+const { Network, Order, Shop } = require('../models')
 const { getLogger } = require('../utils/logger')
 const { ListingID } = require('./id')
 const { processNewOrder } = require('../logic/order/order')
 
 const log = getLogger('utils.handleLog')
 
-const { DSHOP_CACHE, IS_TEST } = require('../utils/const')
+const { DSHOP_CACHE } = require('../utils/const')
+const { processStripeRefund } = require('./stripe')
 
 const IPFS_TIMEOUT = 60000 // 60sec in msec
 
@@ -102,75 +101,6 @@ async function handleLog({
 }
 
 /**
- * Refunds a Stripe payment.
- *
- * @param {models.Event} event: Event DB object.
- * @param {models.Shop} shop: Shop DB object.
- * @param {models.Order} order: Order DB object.
- * @returns {Promise<null|string>} Returns null or the reason for the Stripe failure.
- * @throws {Error}
- * @private
- */
-async function _processStripeRefund({ event, shop, order }) {
-  if (IS_TEST) {
-    log.info('Test environment. Skipping Stripe refund logic.')
-    return null
-  }
-  log.info('Trying to refund Stripe payment')
-  // Load the shop configuration.
-  const shopConfig = getConfig(shop.config)
-  const { dataUrl } = shopConfig
-  const ipfsGateway = await getIPFSGateway(dataUrl, event.networkId)
-  log.info('IPFS Gateway', ipfsGateway)
-
-  // Load the offer data to get the paymentCode
-  log.info(`Fetching offer data with hash ${order.ipfsHash}`)
-  const offerData = await getText(ipfsGateway, order.ipfsHash, IPFS_TIMEOUT)
-  const offer = JSON.parse(offerData)
-  log.info('Payment Code', offer.paymentCode)
-
-  // Load the external payment data to get the payment intent.
-  const externalPayment = await ExternalPayment.findOne({
-    where: {
-      paymentCode: offer.paymentCode
-    },
-    attributes: ['payment_code', 'payment_intent']
-  })
-  if (!externalPayment) {
-    throw new Error(
-      `Failed loading external payment with code ${offer.paymentCode}`
-    )
-  }
-
-  const paymentIntent = externalPayment.get({ plain: true }).payment_intent
-  if (!paymentIntent) {
-    throw new Error(
-      `Missing payment_intent in external payment with id ${externalPayment.id}`
-    )
-  }
-  log.info('Payment Intent', paymentIntent)
-
-  // Call Stripe to perform the refund.
-  const stripe = Stripe(shopConfig.stripeBackend)
-  const piRefund = await stripe.refunds.create({
-    payment_intent: paymentIntent
-  })
-
-  const refundError = piRefund.reason
-  if (refundError) {
-    // If stripe returned an error, log it but do not throw an exception.
-    // TODO: finer grained error handling. Some reasons might be retryable.
-    log.error(
-      `Stripe refund for payment intent ${paymentIntent} failed: ${refundError}`
-    )
-    return refundError
-  }
-
-  log.info('Payment refunded')
-  return null
-}
-
-/**
  * Processes a blockchain event for an order already recorded in the system.
  *
  * TODO:
@@ -201,7 +131,7 @@ async function _processEventForExistingOrder({ event, shop, order }) {
     // If it's a Stripe payment, initiate a refund.
     const paymentMethod = get(order, 'data.paymentMethod.id')
     if (paymentMethod === 'stripe') {
-      const refundError = await _processStripeRefund({ event, shop, order })
+      const refundError = await processStripeRefund({ shop, order })
       // Store the refund error in the order's data JSON.
       updatedFields.data = {
         ...order.data,

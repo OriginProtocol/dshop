@@ -125,8 +125,8 @@ const PaymentInfo = ({ order }) => {
 
   // Direct crypto payment.
   if (isOffchainPayment) {
-    if (!offchainPaymentTx || paymentType === PaymentTypes.Offline) {
-      // Offline/Manual payment method
+    if (!offchainPaymentTx) {
+      // Offchain non-crypto payments
       return (
         <div className="order-payment-info">
           <div className="status-text">
@@ -144,6 +144,7 @@ const PaymentInfo = ({ order }) => {
       )
     }
 
+    // Offchain crypto payments
     return (
       <div className="admin-customer-info">
         <div>

@@ -160,7 +160,7 @@ const Order = () => {
       if (result) {
         setCart(result.cart)
         setError(false)
-        dispatch({ type: 'orderComplete' })
+        // dispatch({ type: 'orderComplete' })
       } else {
         setError(true)
       }

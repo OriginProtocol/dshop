@@ -1,4 +1,9 @@
+const get = require('lodash/get')
+
+const { OrderPaymentStatuses, OrderPaymentTypes } = require('../enums')
 const { Order } = require('../models')
+const { processStripeRefund } = require('./stripe')
+const { processPayPalRefund } = require('./paypal')
 
 /**
  * Middleware to lookup an order.
@@ -30,4 +35,63 @@ async function findOrder(req, res, next) {
   next()
 }
 
-module.exports = { findOrder }
+const validPaymentStateTransitions = {
+  [OrderPaymentStatuses.Refunded]: [],
+  [OrderPaymentStatuses.Rejected]: [],
+  [OrderPaymentStatuses.Pending]: [
+    OrderPaymentStatuses.Paid,
+    OrderPaymentStatuses.Rejected,
+    OrderPaymentStatuses.Refunded
+  ],
+  [OrderPaymentStatuses.Paid]: [OrderPaymentStatuses.Refunded]
+}
+
+/**
+ * Updates the payment state of an order
+ * @param {model.Order} order
+ * @param {enums.OrderPaymentStatuses} newState
+ * @param {mode.Shop} shop
+ */
+async function updatePaymentStatus(order, newState, shop) {
+  if (order.paymentStatus === newState) {
+    // No change, Ignore
+    return { success: true }
+  }
+
+  const isValid = get(
+    validPaymentStateTransitions,
+    order.paymentStatus,
+    validPaymentStateTransitions[OrderPaymentStatuses.Pending]
+  ).includes(newState)
+
+  if (!isValid) {
+    return {
+      reason: `Cannot change payment state from ${order.paymentStatus} to ${newState}`
+    }
+  }
+
+  let refundError = null
+  if (newState === OrderPaymentStatuses.Refunded) {
+    // Initiate a refund in case of Stripe and PayPal
+    switch (order.paymentType) {
+      case OrderPaymentTypes.CreditCard:
+        refundError = await processStripeRefund({ shop, order })
+        break
+      case OrderPaymentTypes.PayPal:
+        refundError = await processPayPalRefund({ shop, order })
+        break
+    }
+  }
+
+  await order.update({
+    paymentStatus: newState,
+    data: {
+      ...order.data,
+      refundError
+    }
+  })
+
+  return { success: !refundError, reason: refundError }
+}
+
+module.exports = { findOrder, updatePaymentStatus }

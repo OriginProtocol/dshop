@@ -275,7 +275,7 @@ describe('Offers', () => {
 
     resp = await apiRequest({
       method: 'put',
-      endpoint: '/offline-payments/payment-state',
+      endpoint: '/orders/payment-state',
       body: {
         paymentCode: orderData.paymentCode,
         state: OrderPaymentStatuses.Paid

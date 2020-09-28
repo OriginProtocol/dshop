@@ -10,7 +10,7 @@ import { useRouteMatch } from 'react-router-dom'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
 
-const OffchainOfflinePaymentActions = ({ order }) => {
+const OtherPaymentActions = ({ order }) => {
   const match = useRouteMatch('/admin/orders/:orderId/:tab?')
   const { orderId } = match.params
 
@@ -140,7 +140,7 @@ const OffchainOfflinePaymentActions = ({ order }) => {
   )
 }
 
-export default OffchainOfflinePaymentActions
+export default OtherPaymentActions
 
 require('react-styl')(`
 `)

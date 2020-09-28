@@ -1,8 +1,9 @@
 const PayPal = require('@paypal/checkout-server-sdk')
-const { IS_PROD } = require('./const')
+const get = require('lodash/get')
+const { IS_PROD, IS_TEST } = require('./const')
 const { getLogger } = require('./logger')
 const { getConfig } = require('./encryptedConfig')
-const { Network } = require('../models')
+const { Network, ExternalPayment } = require('../models')
 
 const log = getLogger('utils.paypal')
 
@@ -69,6 +70,24 @@ const getClient = (paypalEnv, clientId, clientSecret) => {
   return new PayPal.core.PayPalHttpClient(env)
 }
 
+const getClientFromShop = async (shop) => {
+  const network = await Network.findOne({
+    where: { networkId: shop.networkId }
+  })
+  if (!network) {
+    return {}
+  }
+  const networkConfig = getConfig(network.config)
+
+  const shopConfig = getConfig(shop.config)
+  const { paypalClientId, paypalClientSecret, paypalWebhookId } = shopConfig
+
+  const paypalEnv = networkConfig.paypalEnvironment
+  const client = getClient(paypalEnv, paypalClientId, paypalClientSecret)
+
+  return { client, paypalWebhookId }
+}
+
 const validateCredentials = async (client) => {
   try {
     await client.fetchAccessToken()
@@ -91,6 +110,8 @@ const registerWebhooks = async (shopId, shopConfig, netConfig) => {
     if (!IS_PROD && paypalWebhookHost) {
       webhookUrl = `${paypalWebhookHost}/paypal/webhooks/${shopId}`
     }
+
+    log.debug(`[Shop ${shopId}] Webhook URL:`, webhookUrl)
 
     const request = new WebhookCreateRequest(webhookUrl)
 
@@ -170,19 +191,10 @@ const deregisterAllWebhooks = async (shopConfig, netConfig) => {
 
 const verifySignMiddleware = async (req, res, next) => {
   try {
-    const network = await Network.findOne({
-      where: { networkId: req.shop.networkId }
-    })
-    if (!network) {
+    const { client, paypalWebhookId } = await getClientFromShop(req.shop)
+    if (!client) {
       return res.sendStatus(500)
     }
-    const networkConfig = getConfig(network.config)
-
-    const shopConfig = getConfig(req.shop.config)
-    const { paypalClientId, paypalClientSecret, paypalWebhookId } = shopConfig
-
-    const paypalEnv = networkConfig.paypalEnvironment
-    const client = getClient(paypalEnv, paypalClientId, paypalClientSecret)
 
     const request = new WebhookVerifySignRequest(
       req.headers,
@@ -206,10 +218,72 @@ const verifySignMiddleware = async (req, res, next) => {
 
   next()
 }
+
+/**
+ * Refunds a PayPal payment.
+ *
+ * @param {models.Shop} shop: Shop DB object.
+ * @param {models.Order} order: Order DB object.
+ * @returns {Promise<null|string>} Returns null or the reason for the failure.
+ * @throws {Error}
+ */
+async function processPayPalRefund({ shop, order }) {
+  if (IS_TEST) {
+    log.info('Test environment. Skipping PayPal refund logic.')
+    return null
+  }
+
+  // Load the external payment data to get the payment intent.
+  const externalPayment = await ExternalPayment.findOne({
+    where: {
+      paymentCode: order.paymentCode
+    }
+  })
+  if (!externalPayment) {
+    throw new Error(
+      `Failed loading external payment with code ${order.paymentCode}`
+    )
+  }
+
+  const { client } = await getClientFromShop(shop)
+
+  if (!client) {
+    throw new Error(
+      'Invalid shop config, cannot create PayPal client for refund',
+      shop.id
+    )
+  }
+
+  const captureId = get(externalPayment, 'data.resource.id')
+
+  const request = new PayPal.payments.CapturesRefundRequest(captureId)
+
+  // TODO: Should add support for partial refund??
+  request.requestBody()
+
+  try {
+    const response = await client.execute(request)
+    log.debug(response)
+  } catch (err) {
+    log.error(
+      `[Shop ${shop.id}] Failed to process PayPal refund`,
+      captureId,
+      externalPayment.id,
+      err
+    )
+
+    const errorMessage = JSON.parse(err.message).message
+    return errorMessage
+  }
+
+  return null
+}
+
 module.exports = {
   getClient,
   validateCredentials,
   registerWebhooks,
   deregisterWebhook,
-  verifySignMiddleware
+  verifySignMiddleware,
+  processPayPalRefund
 }
