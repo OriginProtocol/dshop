@@ -8,6 +8,7 @@ import fbt, { FbtParam } from 'fbt'
 import Link from 'components/Link'
 import CheckCircle from 'components/icons/CheckCircle'
 import PaymentInstructions from 'components/OfflinePaymentInstructions'
+import { useStateValue } from 'data/state'
 
 import useConfig from 'utils/useConfig'
 import useOrigin from 'utils/useOrigin'
@@ -144,6 +145,7 @@ const OrderDetails = ({ cart }) => {
 const Order = () => {
   const { config } = useConfig()
   const { getOffer, status } = useOrigin()
+  const [, dispatch] = useStateValue()
   const [cart, setCart] = useState()
   const [error, setError] = useState()
   const [loading, setLoading] = useState()
@@ -158,7 +160,7 @@ const Order = () => {
       if (result) {
         setCart(result.cart)
         setError(false)
-        // dispatch({ type: 'orderComplete' })
+        dispatch({ type: 'orderComplete' })
       } else {
         setError(true)
       }
