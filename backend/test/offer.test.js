@@ -257,7 +257,8 @@ describe('Offers', () => {
       networkId: network.id,
       paymentType: OrderPaymentTypes.Offline,
       paymentStatus: OrderPaymentStatuses.Pending,
-      paymentCode: `customId-${Date.now()}`
+      paymentCode: `customId-${Date.now()}`,
+      shortId: 'testorderid'
     }
 
     await Order.create(orderData)
@@ -275,7 +276,7 @@ describe('Offers', () => {
 
     resp = await apiRequest({
       method: 'put',
-      endpoint: '/orders/payment-state',
+      endpoint: `/orders/testorderid/payment-state`,
       body: {
         paymentCode: orderData.paymentCode,
         state: OrderPaymentStatuses.Paid

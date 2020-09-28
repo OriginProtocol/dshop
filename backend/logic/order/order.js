@@ -157,6 +157,10 @@ async function processNewOrder({
   const order = await Order.create(orderObj)
   log.info(`Saved order ${order.fqId} to DB.`)
 
+  // Note: we only fulfill the order if the payment status is 'Paid'.
+  // If the payment is still pending, the order will get fulfilled
+  // at the time the payment status gets updated to 'Paid' (for ex. when the
+  // merchant marks the payment as received for the order via the admin tool.
   // TODO: move order fulfillment to a queue.
   if (
     shopConfig.printful &&

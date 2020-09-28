@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react'
-import { Switch, Route, useHistory } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { Switch, Route } from 'react-router-dom'
 import { StripeProvider } from 'react-stripe-elements'
 import Styl from 'react-styl'
 import fbt from 'fbt'
 import { Elements } from 'react-stripe-elements'
 
 import useConfig from 'utils/useConfig'
+import useStripe from 'utils/useStripe'
 import { useStateValue } from 'data/state'
 
 import Information from './Information'
@@ -15,33 +16,13 @@ import Summary from './Summary'
 
 const Checkout = () => {
   const { config } = useConfig()
-  const history = useHistory()
   const [{ cart }] = useStateValue()
-  const [stripe, setStripe] = useState(null)
+  const stripe = useStripe()
 
   useEffect(() => {
-    if (!config.activeShop) {
-      return
-    }
-    if (!cart.items.length) {
-      history.push('/cart')
-      return
-    }
-    if (window.Stripe && config.stripeKey) {
-      setStripe(window.Stripe(config.stripeKey))
-    } else {
-      if (config.stripeKey) {
-        const script = document.createElement('script')
-        script.src = 'https://js.stripe.com/v3/'
-        script.addEventListener('load', () => {
-          setStripe(window.Stripe(config.stripeKey))
-        })
-        document.head.appendChild(script)
-      }
-      // Need to re-add stylesheet as this component is lazy loaded
-      Styl.addStylesheet()
-    }
-  }, [config.activeShop])
+    // Need to re-add stylesheet as this component is lazy loaded
+    Styl.addStylesheet()
+  }, [])
 
   if (!config) {
     return (

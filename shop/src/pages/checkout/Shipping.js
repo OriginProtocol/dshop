@@ -19,7 +19,11 @@ function isActive(zone, cart) {
 const CheckoutShipping = () => {
   const { config } = useConfig()
   const [{ cart }, dispatch] = useStateValue()
-  const { shippingZones, loading } = useFlattenedShippingZones()
+  const {
+    shippingZones,
+    loading,
+    error: shippingZonesError
+  } = useFlattenedShippingZones()
   const currencyOpts = useCurrencyOpts()
 
   const country = get(cart, 'userInfo.country')
@@ -30,7 +34,11 @@ const CheckoutShipping = () => {
   const filteredShippingZones = shippingZones.filter(
     (zone) => (zone.countries || []).indexOf(countryCode) >= 0
   )
-  if (!filteredShippingZones.length && defaultShippingZone) {
+  if (
+    !shippingZonesError &&
+    !filteredShippingZones.length &&
+    defaultShippingZone
+  ) {
     filteredShippingZones.push(defaultShippingZone)
   }
 
@@ -104,10 +112,11 @@ const CheckoutShipping = () => {
               Loading shipping costs...
             </fbt>
           </div>
-        ) : !filteredShippingZones.length ? (
+        ) : shippingZonesError || !filteredShippingZones.length ? (
           <div className="p-3">
             <fbt desc="checkout.shipping.loadError">
-              Sorry, there was an error calculating shipping costs.
+              Sorry, there was an error calculating shipping costs. Try
+              refreshing the page.
             </fbt>
           </div>
         ) : (

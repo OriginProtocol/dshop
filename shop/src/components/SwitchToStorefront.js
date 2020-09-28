@@ -5,10 +5,15 @@ import { useStateValue } from 'data/state'
 
 const SwitchToStorefront = ({ className, children }) => {
   const location = useLocation()
-  const [{ storefrontLocation }, dispatch] = useStateValue()
+  const [{ storefrontLocation, config }, dispatch] = useStateValue()
 
   const isSuperAdmin = location.pathname.indexOf('/super-admin') === 0
   const isAdmin = location.pathname.indexOf('/admin') === 0 || isSuperAdmin
+
+  let url = window.origin + (storefrontLocation || '/')
+  if (config.themeId) {
+    url = `${window.origin}/theme/${config.themeId}?shop=${config.backendAuthToken}`
+  }
 
   return (
     <button
@@ -17,7 +22,7 @@ const SwitchToStorefront = ({ className, children }) => {
       onClick={() => {
         if (!isAdmin) return
         dispatch({ type: 'setAdminLocation', location })
-        window.open(window.origin + (storefrontLocation || '/'), 'shop_preview')
+        window.open(url, 'shop_preview')
       }}
     >
       {children}

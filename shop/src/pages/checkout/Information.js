@@ -1,93 +1,18 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import get from 'lodash/get'
 import fbt from 'fbt'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useSetState from 'utils/useSetState'
 import { useStateValue } from 'data/state'
-import { Countries } from '@origin/utils/Countries'
 
 import Link from 'components/Link'
 import ShippingForm from 'components/ShippingForm'
 
 import BetaWarning from './_BetaWarning'
 
-function validate(state) {
-  const newState = {}
-
-  if (!state.email) {
-    newState.emailError = fbt(
-      'Enter an email address',
-      'checkout.address.emailError'
-    )
-  } else if (state.email.length < 3) {
-    newState.emailError = fbt(
-      'Email is too short',
-      'checkout.address.emailLenError'
-    )
-  }
-  if (!state.firstName) {
-    newState.firstNameError = fbt(
-      'Enter a first name',
-      'checkout.address.firstNameError'
-    )
-  }
-  if (!state.lastName) {
-    newState.lastNameError = fbt(
-      'Enter a last name',
-      'checkout.address.lastNameError'
-    )
-  }
-  if (!state.address1) {
-    newState.address1Error = fbt(
-      'Enter an address',
-      'checkout.address.address1Error'
-    )
-  } else if (state.address1.length > 80) {
-    newState.address1Error = fbt(
-      'Address too long',
-      'checkout.address.address1LenError'
-    )
-  }
-  if (state.address2 && state.address2.length > 25) {
-    newState.address2Error = fbt(
-      'Address too long',
-      'checkout.address.address2Error'
-    )
-  }
-  if (!state.city) {
-    newState.cityError = fbt('Enter a city', 'checkout.address.cityError')
-  } else if (state.city.length > 32) {
-    newState.cityError = fbt(
-      'City name too long',
-      'checkout.address.cityLenError'
-    )
-  }
-  const provinces = get(Countries, `${state.country}.provinces`, {})
-  if (!state.province && Object.keys(provinces).length) {
-    newState.provinceError = fbt(
-      'Enter a state / province',
-      'checkout.address.provinceError'
-    )
-  }
-  if (!state.zip) {
-    newState.zipError = fbt(
-      'Enter a ZIP / postal code',
-      'checkout.address.zipError'
-    )
-  } else if (state.zip.length > 10) {
-    newState.zipError = fbt(
-      'ZIP / postal code too long',
-      'checkout.address.zipLenError'
-    )
-  }
-
-  const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
-
-  return { valid, newState: { ...state, ...newState } }
-}
+import validate from 'data/validations/checkoutInfo'
 
 const CheckoutInfo = () => {
   const { config } = useConfig()

@@ -26,6 +26,7 @@ const { Network, Shop } = require('../models')
 const { getLogger } = require('../utils/logger')
 const log = getLogger('cli')
 
+const genPGP = require('../utils/pgp')
 const { getConfig, setConfig, decrypt } = require('../utils/encryptedConfig')
 
 const program = require('commander')
@@ -103,6 +104,25 @@ async function setKey(shops, key, val) {
   shop.config = setConfig(shopConfig, shop.config)
   await shop.save()
   log.info('Done')
+}
+
+async function resetPgp(shops) {
+  if (shops.length > 1) {
+    throw new Error('resetPgp operation not supported on more than 1 shop.')
+  }
+  const shop = shops[0]
+
+  const pgpKeys = await genPGP()
+  log.info('Reseting PGP keys for shop to', pgpKeys)
+  let shopConfig = getConfig(shop.config)
+  shopConfig = { ...shopConfig, ...pgpKeys }
+  shop.config = setConfig(shopConfig, shop.config)
+  await shop.save()
+  log.info('Done')
+  // TODO: should also automate updating config.json file on disk.
+  log.info(
+    'IMPORTANT: config.json pgpPublicKey should be updated and the shop re-published'
+  )
 }
 
 async function setRawConfig(shops, val) {
@@ -255,6 +275,8 @@ async function main(config) {
     await checkStripeConfig(network, shops)
   } else if (config.operation === 'checkConfig') {
     await checkShopConfig(shops)
+  } else if (config.operation === 'resetPgp') {
+    await resetPgp(shops)
   } else {
     throw new Error(`Unsupported operation ${config.operation}`)
   }
