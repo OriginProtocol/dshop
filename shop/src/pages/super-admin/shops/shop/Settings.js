@@ -63,12 +63,6 @@ const ShopSettings = ({ shop }) => {
 export default ShopSettings
 
 require('react-styl')(`
-  .shop-settings
-    label
-      margin-top: 0.5rem
-    a
-      color: #3b80ee
-      font-size: 14px
   .upload-image
     border: 1px dashed #3b80ee
     background-color: f8fbff

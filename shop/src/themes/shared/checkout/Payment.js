@@ -28,7 +28,7 @@ export const Payment = () => {
       <ShippingAddress cart={cart} />
 
       <div className="text-lg mb-2 font-medium">3. Shipping method</div>
-      <div className="shadow-lg p-4 grid gap-y-2 mb-8">
+      <div className="shadow-lg p-4 bg-white dark:bg-gray-900 grid gap-y-2 mb-8">
         {get(cart, 'userInfo.zip')}, {get(cart, 'userInfo.country')}
       </div>
       <div className="mb-2 flex justify-between items-center">
@@ -37,7 +37,7 @@ export const Payment = () => {
           All transactions are secure and encrypted
         </div>
       </div>
-      <div className="shadow-lg p-4 grid gap-y-2">
+      <div className="shadow-lg p-4 bg-white dark:bg-gray-900 grid gap-y-2">
         <PaymentChooser state={state} setState={setState} />
       </div>
       <div className="flex justify-between mt-12 items-center">
@@ -86,7 +86,10 @@ export const MobilePayment = () => {
         </Link>
       </div>
 
-      <form onSubmit={onSubmit} className="shadow-lg p-8">
+      <form
+        onSubmit={onSubmit}
+        className="shadow-lg p-8 bg-white dark:bg-gray-900"
+      >
         <div className="text-lg mb-4 font-medium">4. Payment</div>
         <div className="grid gap-y-2">
           <PaymentChooser state={state} setState={setState} />

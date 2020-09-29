@@ -7,8 +7,8 @@ import './app.css'
 import DshopProvider from 'components/DshopProvider'
 import PreviewBanner from 'components/PreviewBanner'
 
-// import Confirmation from './components/Confirmation'
-import Checkout from './components/checkout/Loader'
+import Confirmation from '../shared/Confirmation'
+import Checkout from '../shared/checkout/Loader'
 import Storefront from './components/Storefront'
 
 const Providers = () => {
@@ -16,12 +16,12 @@ const Providers = () => {
     <HashRouter>
       <DshopProvider>
         <PreviewBanner
-          wrapperClassName="bg-black text-white text-sm py-2"
+          wrapperClassName="text-sm py-2 bg-white text-black"
           className="container flex justify-between"
         />
         <Switch>
           <Route path="/checkout" component={Checkout} />
-          {/* <Route path="/order" component={Confirmation} /> */}
+          <Route path="/order" component={Confirmation} />
           <Route component={Storefront} />
         </Switch>
       </DshopProvider>

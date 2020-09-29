@@ -183,7 +183,7 @@ const fetchShippingEstimate = async (apiKey, data) => {
         id: rate.id,
         label,
         detail: `${min}-${max} business days`,
-        amount: Number(rate.rate) * 100,
+        amount: Math.round(Number(rate.rate) * 100),
         countries: [recipient.countryCode]
       }
     })

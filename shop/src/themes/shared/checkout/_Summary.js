@@ -56,7 +56,7 @@ export const OrderSummary = ({ cart, discount = true }) => {
           <div>{formatPrice(cart.discount, currencyOpts)}</div>
         </div>
       )}
-      <div className="flex justify-between mt-4 border-t text-lg pt-4">
+      <div className="flex justify-between mt-4 border-t text-lg pt-4 dark:border-gray-700">
         <div>Total</div>
         <div>{formatPrice(cart.total, currencyOpts)}</div>
       </div>
@@ -66,16 +66,16 @@ export const OrderSummary = ({ cart, discount = true }) => {
 
 const Row = ({ title, quantity, img, price }) => (
   <>
-    <div className="border-b pb-3">
+    <div className="border-b pb-3 dark:border-gray-700">
       <div className="flex items-center text-sm font-semibold">
         <img className="h-16 mr-5" src={img} />
         {title}
       </div>
     </div>
-    <div className="border-b pb-3 text-sm flex items-center justify-center">
+    <div className="border-b pb-3 text-sm flex items-center justify-center dark:border-gray-700">
       {quantity}
     </div>
-    <div className="border-b pb-3 text-sm flex items-center justify-end">
+    <div className="border-b pb-3 text-sm flex items-center justify-end dark:border-gray-700">
       {price}
     </div>
   </>
@@ -84,7 +84,7 @@ const Row = ({ title, quantity, img, price }) => (
 export const ContactInfo = ({ cart }) => (
   <>
     <div className="text-lg mb-2 font-medium">1. Contact information</div>
-    <div className="shadow-lg p-4 mb-8 text-sm flex items-center justify-between">
+    <div className="shadow-lg p-4 bg-white dark:bg-gray-900 mb-8 text-sm flex items-center justify-between">
       <div>
         <div className="font-semibold">Email</div>
         <div className="mt-2">{get(cart, 'userInfo.email')}</div>
@@ -115,7 +115,7 @@ function address(cart) {
 export const ShippingAddress = ({ cart }) => (
   <>
     <div className="text-lg mb-2 font-medium">2. Shipping address</div>
-    <div className="shadow-lg p-4 mb-8 text-sm flex items-center justify-between">
+    <div className="shadow-lg p-4 bg-white dark:bg-gray-900 mb-8 text-sm flex items-center justify-between">
       <div>
         <div className="font-semibold">{name(cart)}</div>
         <div className="mt-2">{address(cart)}</div>

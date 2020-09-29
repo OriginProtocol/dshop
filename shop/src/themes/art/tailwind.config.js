@@ -21,7 +21,8 @@ module.exports = {
       colors: {
         gray: {
           ...defaultTheme.colors.gray,
-          500: '#999999'
+          500: '#999999',
+          900: '#222222'
         }
       },
       fontFamily: {

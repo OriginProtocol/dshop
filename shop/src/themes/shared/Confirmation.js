@@ -33,13 +33,13 @@ const Order = () => {
 const OrderDesktop = ({ order }) => {
   const { config } = useConfig()
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="bg-white">
+    <div className="min-h-screen dark:bg-black bg-gray-100 dark:text-white">
+      <div className="bg-white dark:bg-gray-900">
         <div className="container pt-24 pb-10">
           <div className="text-2xl font-medium">{config.title}</div>
         </div>
       </div>
-      <div className="border-t" />
+      <div className="border-t dark:border-gray-700" />
       <div className="container pt-10 pb-24">
         <div className="text-3xl font-medium">
           {`Thank you, ${get(order, 'userInfo.firstName')}!`}
@@ -51,7 +51,7 @@ const OrderDesktop = ({ order }) => {
         <div className="flex mt-12">
           <div style={{ flex: 3 }}>
             <div className="text-lg mb-2 font-medium">Customer Information</div>
-            <div className="shadow-lg px-4 bg-white text-sm grid grid-cols-2 gap-8 py-6">
+            <div className="shadow-lg px-4 bg-white dark:bg-gray-900 text-sm grid grid-cols-2 gap-8 py-6">
               <div className="grid grid-cols-1 gap-2">
                 <div className="font-medium">Contact Information</div>
                 <div>{get(order, 'userInfo.email')}</div>

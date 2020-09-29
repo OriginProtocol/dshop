@@ -1,99 +1,60 @@
-const fetch = require('node-fetch')
-const get = require('lodash/get')
-
 const { getLogger } = require('../utils/logger')
-const { dnsResolve, isValidDNSName, hasNS } = require('../utils/dns')
-const { Network, ShopDeployment } = require('../models')
+const { dnsResolve, hasNS, verifyDNS } = require('../utils/dns')
+const { Network, ShopDomain } = require('../models')
+const { ShopDomainStatuses } = require('../enums')
 
 const { authSellerAndShop, authRole } = require('./_auth')
 
 const log = getLogger('routes.domains')
 
 module.exports = function (router) {
+  router.get(
+    '/shop/domains',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const domains = await ShopDomain.findAll({
+        where: { shopId: req.shop.id }
+      })
+      res.json({ success: true, domains })
+    }
+  )
+
+  router.post(
+    '/shop/domains',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const domain = await ShopDomain.create({
+        shopId: req.shop.id,
+        domain: req.body.domain,
+        status: ShopDomainStatuses.Pending
+      })
+      res.json({ success: true, domain })
+    }
+  )
+
+  router.delete(
+    '/shop/domains/:domainId',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const domain = await ShopDomain.destroy({
+        where: { id: req.params.domainId, shopId: req.shop.id }
+      })
+      res.json({ success: true, domain })
+    }
+  )
+
   router.post(
     '/domains/verify-dns',
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
       const { domain, hostname, networkId } = req.body
+      const resp = await verifyDNS(domain, hostname, networkId, req.shop)
 
-      log.debug('Trying to verify DNS records of domain', domain, hostname)
-
-      // Verify the domain is RFC-valid
-      if (!isValidDNSName(domain)) {
-        log.debug(`${domain} is not a valid domain`)
-        return res.send({
-          success: true,
-          error: 'Invalid domain'
-        })
-      }
-
-      try {
-        const network = await Network.findOne({
-          where: { networkId }
-        })
-
-        if (!network) {
-          log.debug(`${networkId} is not a valid network for this node`)
-          return res.send({
-            success: true,
-            error: 'Invalid network ID'
-          })
-        }
-
-        const deployment = await ShopDeployment.findOne({
-          where: {
-            shopId: req.shop.id
-          },
-          order: [['created_at', 'DESC']]
-        })
-
-        if (!deployment) {
-          log.debug(`${domain} has no deployments`)
-          return res.send({
-            success: true,
-            error:
-              'No deployments found.  You must publish the shop before setting a custom domain.'
-          })
-        }
-
-        const ipfsURL = `${network.ipfsApi}/api/v0/dns?arg=${encodeURIComponent(
-          domain
-        )}`
-
-        log.debug(`Making request to ${ipfsURL}`)
-
-        const r = await fetch(ipfsURL, {
-          method: 'POST'
-        })
-
-        if (r.ok) {
-          const respJson = await r.json()
-
-          const path = get(respJson, 'Path', '')
-          const expectedValue = `/ipfs/${deployment.ipfsHash}`
-
-          if (path === expectedValue) {
-            return res.send({
-              success: true,
-              valid: true
-            })
-          }
-        } else {
-          log.error(await r.text())
-        }
-
-        return res.send({
-          success: true,
-          valid: false,
-          error: `Your DNS changes haven't propagated yet.`
-        })
-      } catch (err) {
-        log.error('Failed to check DNS of domain', err)
-        res.send({
-          error: 'Unknown error occured'
-        })
-      }
+      res.send(resp)
     }
   )
 

@@ -82,7 +82,7 @@ export const Shipping = () => {
       <ShippingAddress cart={cart} />
 
       <div className="text-lg mb-2 font-medium">3. Shipping method</div>
-      <Picker className="shadow-lg p-4 bg-white grid gap-y-2" />
+      <Picker className="shadow-lg p-4 bg-white dark:bg-gray-900 grid gap-y-2" />
 
       <div className="flex justify-between mt-12 items-center">
         <Link className="text-lg" to="/checkout">
@@ -118,7 +118,7 @@ export const MobileShipping = () => (
         <img src="images/edit-icon.svg" />
       </Link>
     </div>
-    <div className="shadow-lg p-8 bg-white">
+    <div className="shadow-lg p-8 bg-white dark:bg-gray-900">
       <div className="text-lg mb-4 font-medium">3. Shipping method</div>
       <Picker className="mb-6" />
       <Link to="/checkout/payment" className="btn btn-primary w-full">
@@ -164,7 +164,10 @@ export const MobileShippingAddress = () => {
           <img src="images/edit-icon.svg" />
         </Link>
       </div>
-      <form className="shadow-lg p-8 bg-white" onSubmit={onSubmit}>
+      <form
+        className="shadow-lg p-8 bg-white dark:bg-gray-900"
+        onSubmit={onSubmit}
+      >
         <div className="text-lg mb-4 font-medium">2. Shipping address</div>
         <label className="block mb-2 text-sm font-medium">First Name</label>
         <div className="mb-6">

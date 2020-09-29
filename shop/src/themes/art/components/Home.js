@@ -6,8 +6,6 @@ import useCollections from 'utils/useCollections'
 
 import Link from 'components/Link'
 
-import Header from './_Header'
-import Footer from './_Footer'
 import Products from './_Products'
 
 const App = () => {
@@ -15,7 +13,6 @@ const App = () => {
   const { collections } = useCollections()
   return (
     <>
-      <Header bg={true} />
       <div className="container">
         <div className="text-center my-12 sm:my-24">
           <h1 className="text-3xl sm:text-4xl leading-tight mb-4">
@@ -33,7 +30,6 @@ const App = () => {
       <div className="sm:container">
         <About />
       </div>
-      <Footer />
     </>
   )
 }

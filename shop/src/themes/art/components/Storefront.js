@@ -3,6 +3,8 @@ import { Switch, Route } from 'react-router-dom'
 
 import Home from './Home'
 import Product from './Product'
+import Products from './Products'
+import Contact from './Contact'
 import About from './About'
 import Cart from '../../shared/Cart'
 
@@ -15,7 +17,9 @@ const Storefront = () => {
       <Header />
 
       <Switch>
+        <Route path="/products" component={Products} />
         <Route path="/product/:id" component={Product} />
+        <Route path="/contact" component={Contact} />
         <Route path="/cart" component={Cart} />
         <Route path="/about" component={About} />
         <Route component={Home} />
