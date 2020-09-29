@@ -4,7 +4,7 @@
 const get = require('lodash/get')
 
 const { MigOrder, OldOrder, Network, Shop } = require('../../models')
-const { createOrderId } = require('../../logic/order/order')
+const { createOrderId } = require('../../logic/order')
 const { OrderPaymentStatuses, OrderOfferStatuses } = require('../../enums')
 
 const { getLogger } = require('../../utils/logger')

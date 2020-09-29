@@ -2,10 +2,9 @@ const randomstring = require('randomstring')
 
 const get = require('lodash/get')
 
-const { authShop, authSellerAndShop } = require('./_auth')
-const { Network, Order } = require('../models')
+const { authShop } = require('./_auth')
+const { Network } = require('../models')
 const { getConfig } = require('../utils/encryptedConfig')
-const { autoFulfillOrder } = require('../utils/printful')
 const makeOffer = require('./_makeOffer')
 const { OrderPaymentTypes } = require('../enums')
 

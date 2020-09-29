@@ -18,7 +18,7 @@ const { getLogger } = require('../utils/logger')
 const { IS_TEST, IS_DEV } = require('../utils/const')
 const { Sentry } = require('../sentry')
 const { TransactionTypes, TransactionStatuses } = require('../enums')
-const { processNewOrder } = require('../logic/order/order')
+const { processNewOrder } = require('../logic/order')
 
 const log = getLogger('offerProcessor')
 const BN = ethers.BigNumber // Ethers' BigNumber implementation.

@@ -5,7 +5,7 @@ const Web3 = require('web3')
 
 const set = require('lodash/set')
 
-const { OrderPaymentStatuses, OrderPaymentTypes } = require('../enums')
+const { OrderPaymentStatuses } = require('../enums')
 const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
 const { upsertEvent, getEventObj } = require('./events')
@@ -13,13 +13,11 @@ const { getConfig } = require('./encryptedConfig')
 const { Network, Order, Shop } = require('../models')
 const { getLogger } = require('../utils/logger')
 const { ListingID } = require('./id')
-const { processNewOrder } = require('../logic/order/order')
+const { processNewOrder, updatePaymentStatus } = require('../logic/order')
 
 const log = getLogger('utils.handleLog')
 
 const { DSHOP_CACHE } = require('../utils/const')
-const { processStripeRefund } = require('./stripe')
-const { processPayPalRefund } = require('./paypal')
 
 const IPFS_TIMEOUT = 60000 // 60sec in msec
 
@@ -126,23 +124,7 @@ async function _processEventForExistingOrder({ event, shop, order }) {
   }
 
   if (eventName === 'OfferWithdrawn') {
-    updatedFields.paymentStatus = OrderPaymentStatuses.Refunded
-
-    let refundError = null
-
-    // If it's a Stripe payment, initiate a refund.
-    const paymentMethod = order.paymentType
-    if (paymentMethod === OrderPaymentTypes.CreditCard) {
-      refundError = await processStripeRefund({ shop, order })
-    } else if (paymentMethod === OrderPaymentTypes.PayPal) {
-      refundError = await processPayPalRefund({ shop, order })
-    }
-
-    // Store the refund error in the order's data JSON.
-    updatedFields.data = {
-      ...order.data,
-      refundError
-    }
+    await updatePaymentStatus(order, OrderPaymentStatuses.Refunded, shop)
   }
 
   // Update the order in the DB and return it.

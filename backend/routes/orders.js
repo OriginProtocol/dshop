@@ -7,7 +7,8 @@ const {
   sequelize,
   Sequelize: { Op }
 } = require('../models')
-const { findOrder, updatePaymentStatus } = require('../utils/orders')
+const { findOrder } = require('../utils/orders')
+const { updatePaymentStatus } = require('../logic/order')
 const makeOffer = require('./_makeOffer')
 const sendNewOrderEmail = require('../utils/emails/newOrder')
 
@@ -197,16 +198,9 @@ module.exports = function (router) {
     findOrder,
     async (req, res) => {
       const { state } = req.body
+      const { order, shop } = req
 
-      const order = req.order
-
-      if (!order) {
-        return res.status(200).send({
-          reason: 'Invalid payment code'
-        })
-      }
-
-      res.status(200).send(await updatePaymentStatus(order, state, req.shop))
+      res.status(200).send(await updatePaymentStatus(order, state, shop))
     }
   )
 }

@@ -3,8 +3,9 @@ const bodyParser = require('body-parser')
 const randomstring = require('randomstring')
 
 const PayPal = require('@paypal/checkout-server-sdk')
+const { Sentry } = require('../sentry')
 
-const { Network, ExternalPayment, Shop, Order } = require('../models')
+const { Network, ExternalPayment } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
 const { getLogger } = require('../utils/logger')
@@ -17,7 +18,8 @@ const {
 
 const makeOffer = require('./_makeOffer')
 const { OrderPaymentTypes, OrderPaymentStatuses } = require('../enums')
-const { autoFulfillOrder } = require('../utils/printful')
+const { findShop } = require('../utils/shop')
+const { processDeferredPayment } = require('../logic/order')
 
 const rawJson = bodyParser.raw({ type: 'application/json' })
 const log = getLogger('routes.paypal')
@@ -179,13 +181,6 @@ module.exports = function (router) {
     }
   })
 
-  const findShop = async (req, res, next) => {
-    const { shopId } = req.params
-    const shop = await Shop.findOne({ where: { id: shopId } })
-    req.shop = shop
-    next()
-  }
-
   const webhookHandler = async (req, res, next) => {
     const { shopId } = req.params
 
@@ -248,49 +243,18 @@ module.exports = function (router) {
       const isCompleted = eventType === 'PAYMENT.CAPTURE.COMPLETED'
 
       if (isCompleted) {
-        // Check if it is an existing pending order
+        // Check and process if there are any deferred payments
+        const success = await processDeferredPayment(
+          externalPayment.paymentCode,
+          OrderPaymentTypes.PayPal,
+          req.shop,
+          event
+        )
 
-        const order = await Order.findOne({
-          where: {
-            paymentCode: externalPayment.paymentCode,
-            paymentType: OrderPaymentTypes.PayPal,
-            shopId
-          }
-        })
-
-        if (order) {
-          // If yes, mark it as Paid, instead of
-          // creating a new order.
-
-          if (
-            ![OrderPaymentStatuses.Paid, OrderPaymentStatuses.Pending].includes(
-              order.paymentStatus
-            )
-          ) {
-            // Order is not in Paid/Pending state.
-            // TODO: Should email an error??
-
-            log.error(
-              `[Shop ${shopId}] Invalid order state, failed to mark as paid, order: ${order.id}`
-            )
-
-            return res.sendStatus(400)
-          }
-
-          await order.update({
-            paymentStatus: OrderPaymentStatuses.Paid
-          })
-
-          log.info(
-            `[Shop ${shopId}] Marking order ${order.id} as paid w.r.t. event ${event.id}`
-          )
-
-          const shopConfig = getConfig(req.shop.config)
-          if (shopConfig.printful && shopConfig.printfulAutoFulfill) {
-            await autoFulfillOrder(order, shopConfig, req.shop)
-          }
-
-          return res.json({ success: true })
+        if (success) {
+          // Deferred payment has been processed
+          // for existing order
+          return res.send({ success: true })
         }
       }
 
@@ -306,6 +270,9 @@ module.exports = function (router) {
 
       next()
     } catch (err) {
+      Sentry.captureException(
+        new Error(`[Shop ${shopId}] Failed to process PayPal event`)
+      )
       log.error(`[Shop ${shopId}] Failed to process PayPal event`, err)
       log.debug('Body received:', req.body)
       return res.sendStatus(400)
