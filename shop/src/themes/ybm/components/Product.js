@@ -5,8 +5,6 @@ import useProduct from 'utils/useProduct'
 
 import Link from 'components/Link'
 
-import Products from './_Products'
-
 const Product = ({ match }) => {
   const [addedToCart, setAddedToCart] = useState()
   const [, dispatch] = useStateValue()

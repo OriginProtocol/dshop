@@ -12,7 +12,11 @@ const Products = ({ limit = Infinity }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-12">
       {products.slice(0, limit).map((product) => (
-        <Link key={product.id} to={`/product/${product.id}`} className="text-center sm:text-left">
+        <Link
+          key={product.id}
+          to={`/product/${product.id}`}
+          className="text-center sm:text-left"
+        >
           <div
             className="w-full bg-cover bg-center"
             style={{

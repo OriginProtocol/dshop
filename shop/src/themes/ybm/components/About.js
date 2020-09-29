@@ -1,5 +1,4 @@
 import React from 'react'
-import get from 'lodash/get'
 
 import useAbout from 'utils/useAbout'
 import useConfig from 'utils/useConfig'
@@ -10,8 +9,7 @@ import Footer from './_Footer'
 const About = () => {
   const { config } = useConfig()
   const { about } = useAbout()
-  // const src = `${config.dataSrc}${get(config, 'theme.home.aboutImage')}`
-  const src = `ybm/official-ybm-distressed-dad-hat-alternate/orig/2ebf65b9c0d60c039a6c3afe41dc1ae0.jpg`
+  const src = `${config.dataSrc}official-ybm-distressed-dad-hat-alternate/orig/2ebf65b9c0d60c039a6c3afe41dc1ae0.jpg`
 
   return (
     <>

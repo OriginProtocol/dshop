@@ -301,7 +301,7 @@ module.exports = function (router) {
     log.info(`Downloading ${req.body.hash} from ${network.ipfs}`)
     const path = `/api/v0/get?arg=${req.body.hash}&archive=true&compress=true`
 
-    // console.log(`curl -X POST ${network.ipfs}${path}`)
+    log.info(`curl -X POST "${network.ipfs}${path}"`)
 
     await new Promise((resolve) => {
       const f = fs
