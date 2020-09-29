@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useHistory } from 'react-router-dom'
 
 import useConfig from 'utils/useConfig'
 import useIsMobile from 'utils/useIsMobile'
@@ -19,28 +20,110 @@ const defaultStyle = {
   backgroundPosition: 'center 70%'
 }
 
-const HeaderMobile = ({ style }) => {
+const MobileMenu = ({ toggleMobileMenu }) => {
   const [{ cart }] = useStateValue()
+  const { config } = useConfig()
+  const history = useHistory()
+  return (
+    <div
+      className="fixed inset-0 bg-black px-6 pt-2 pb-12 flex flex-col items-center"
+      onClick={() => toggleMobileMenu()}
+    >
+      <div className="flex justify-between items-center w-full">
+        <Close />
+        <img src="ybm/YBM Black trans.PNG" style={{ width: 100 }} />
+        <Cart cart={cart} bg={true} />
+      </div>
+      <div className="text-3xl font-medium mt-12 text-center">
+        <div
+          className="pb-4"
+          onClick={() => {
+            toggleMobileMenu()
+            history.push('/products')
+          }}
+        >
+          Products
+        </div>
+        <div
+          className="pb-4"
+          onClick={() => {
+            toggleMobileMenu()
+            history.push('/about')
+          }}
+        >
+          About
+        </div>
+        <div
+          className="pb-4"
+          onClick={() => {
+            toggleMobileMenu()
+            history.push('/contact')
+          }}
+        >
+          Contact
+        </div>
+      </div>
+      <div className="mt-auto">
+        <SocialLink
+          href={config.twitter}
+          color="#fff"
+          iconStyle={{ height: 18 }}
+          iconClass="inline-block"
+        />
+        <SocialLink
+          href={config.facebook}
+          color="#fff"
+          iconStyle={{ height: 18 }}
+          iconClass="ml-6 inline-block"
+        />
+        <SocialLink
+          href={config.instagram}
+          color="#fff"
+          iconStyle={{ height: 18 }}
+          iconClass="ml-6 inline-block"
+        />
+      </div>
+    </div>
+  )
+}
+
+const HeaderMobile = ({ style, children }) => {
+  const [{ cart }] = useStateValue()
+  const [mobileMenu, showMobileMenu] = useState(false)
+
+  function toggleMobileMenu() {
+    const body = document.querySelector('body')
+    if (mobileMenu) {
+      body.style.removeProperty('overflow')
+    } else {
+      body.style.overflow = 'hidden'
+    }
+    showMobileMenu(!mobileMenu)
+  }
   return (
     <div
       className="text-white bg-cover bg-no-repeat bg-black font-light"
       style={style || defaultStyle}
     >
-      <div style={{ minHeight: '600px', backgroundColor: 'rgba(0,0,0,0.7)' }}>
+      <div style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
         <div className="container flex pt-2 items-center justify-between">
-          <MenuIcon color="#fff" />
-          <img src="ybm/YBM Black trans.PNG" style={{ width: 100 }} />
-          <Cart cart={cart} />
-        </div>
-        <div className="text-center mt-32 text-3xl sm:text-5xl leading-tight">
-          High-quality merch from Atlanta, Georgia since 2017
-        </div>
-        <div className="text-center mt-12">
-          <Link to="/products" className="btn btn-primary btn-xl">
-            Shop Now
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault()
+              toggleMobileMenu()
+            }}
+          >
+            <MenuIcon color="#fff" />
+          </a>
+          <Link to="/">
+            <img src="ybm/YBM Black trans.PNG" style={{ width: 100 }} />
           </Link>
+          <Cart cart={cart} bg={children ? true : false} />
         </div>
+        {children}
       </div>
+      {mobileMenu && <MobileMenu toggleMobileMenu={toggleMobileMenu} />}
     </div>
   )
 }
@@ -106,6 +189,13 @@ const Cart = ({ cart, bg }) => (
       </div>
     ) : null}
   </Link>
+)
+
+const Close = () => (
+  <svg width="18" height="18">
+    <line x1="1" y1="17" x2="17" y2="1" strokeWidth="4" stroke="#fff" />
+    <line x1="1" y1="1" x2="17" y2="17" strokeWidth="4" stroke="#fff" />
+  </svg>
 )
 
 export default Header

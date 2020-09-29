@@ -22,7 +22,7 @@ const Home = () => {
           </Link>
         </div>
       </Header>
-      <div className="bg-gray-100">
+      <div className="bg-orange-100">
         <div className="container text-gray-600 text-center py-12 sm:py-24 text-lg sm:text-2xl leading-tight font-light">
           Our mission is to provide a conglomerate of multi-media services to
           metro-Atlanta and its surrounding areas. We promote and support ideas

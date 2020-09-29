@@ -10,7 +10,7 @@ const Footer = () => {
   const { config } = useConfig()
   const date = new Date()
   return (
-    <div className="bg-black pt-8 pb-24 text-white text-sm mt-16">
+    <div className="bg-black pt-8 pb-24 text-white text-sm sm:mt-16">
       <div className="container flex items-center flex-col sm:flex-row gap-8 sm:gap-0">
         <div className="flex-1 flex gap-8 order-2 sm:order-1">
           <SocialLink

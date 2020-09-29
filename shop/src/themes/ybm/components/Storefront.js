@@ -1,7 +1,6 @@
 import React from 'react'
 import { Switch, Route } from 'react-router-dom'
 
-import Home from './Home'
 import Product from './Product'
 import Products from './Products'
 // import Contact from './Contact'
@@ -20,7 +19,6 @@ const Storefront = () => {
         <Route path="/product/:id" component={Product} />
         {/* <Route path="/contact" component={Contact} /> */}
         <Route path="/cart" component={Cart} />
-        <Route component={Home} />
       </Switch>
 
       <Footer />

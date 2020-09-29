@@ -19,38 +19,38 @@ const About = () => {
           backgroundPosition: 'center 20%'
         }}
       >
-        <div className="container text-center text-5xl pt-20 pb-40">
+        <div className="container text-center text-3xl sm:text-5xl pt-20 pb-32 sm:pb-40">
           About Young Black Money Merch
         </div>
       </Header>
-      <div className="container my-16 flex">
+      <div className="sm:container sm:my-16 flex flex-col sm:flex-row">
         <div
           style={{
-            paddingTop: '56%',
+            paddingTop: '120%',
             backgroundSize: '120%',
             backgroundImage: `url(${src})`,
             backgroundPosition: 'center top'
           }}
-          className="flex-1 bg-no-repeat bg-center bg-cover"
+          className="flex-1 bg-no-repeat bg-center bg-cover order-2 sm:order-1"
         />
-        <div style={{ flex: '1' }}>
+        <div style={{ flex: '1' }} className=" order-1 sm:order-2">
           {!about ? null : (
             <div
-              className="text-xl p-12 whitespace-pre-line font-light"
+              className="text-lg sm:text-xl p-4 py-8 sm:p-12 whitespace-pre-line font-light"
               dangerouslySetInnerHTML={{ __html: about }}
             />
           )}
         </div>
       </div>
-      <div className="bg-gray-100 pb-20">
+      <div className="bg-orange-100 pb-20">
         <div className="container text-gray-600 text-center py-12 sm:py-24 text-lg sm:text-2xl leading-tight font-light">
           Currently we provide Music Publishing/Distribution, Artist/Group
           Management, Artist/Group Consultations, and Digital Web Presence
           Creation/Managment (e-Commerce platforms, Social Media, Youtube, etc).
         </div>
-        <div className="container">
-          <div className="flex gap-10">
-            <div className="flex-1 flex flex-col gap-10">
+        <div className="sm:container">
+          <div className="flex gap-4 sm:gap-10">
+            <div className="flex-1 flex flex-col gap-4 sm:gap-10">
               <div
                 className="bg-no-repeat"
                 style={{
@@ -71,7 +71,7 @@ const About = () => {
                 }}
               />
             </div>
-            <div className="flex-1 flex flex-col gap-10">
+            <div className="flex-1 flex flex-col gap-4 sm:gap-10">
               <div
                 className="bg-no-repeat"
                 style={{

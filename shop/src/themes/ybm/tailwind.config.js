@@ -24,12 +24,13 @@ module.exports = {
       colors: {
         gray: {
           ...defaultTheme.colors.gray,
-          600: '#999999',
-          100: '#f1f1ef'
+          100: '#fcfcfc',
+          600: '#999999'
         },
         orange: {
           ...defaultTheme.colors.orange,
-          400: '#c2a66c'
+          400: '#c2a66c',
+          100: '#f1f1ef'
         }
       }
     }

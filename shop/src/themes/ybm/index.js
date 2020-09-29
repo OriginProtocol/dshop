@@ -10,8 +10,9 @@ import PreviewBanner from 'components/PreviewBanner'
 import Storefront from './components/Storefront'
 import Home from './components/Home'
 import About from './components/About'
-// import Confirmation from '../shared/Confirmation'
-// import Checkout from '../shared/checkout/Loader'
+import Contact from './components/Contact'
+import Confirmation from '../shared/Confirmation'
+import Checkout from '../shared/checkout/Loader'
 
 const Providers = () => {
   return (
@@ -22,10 +23,10 @@ const Providers = () => {
           className="container flex justify-between"
         />
         <Switch>
-          {/* <Route path="/checkout" component={Checkout} />
-          <Route path="/order" component={Confirmation} /> */}
-
+          <Route path="/checkout" component={Checkout} />
+          <Route path="/order" component={Confirmation} />
           <Route path="/about" component={About} />
+          <Route path="/contact" component={Contact} />
           <Route path="/" component={Home} exact />
           <Route component={Storefront} />
         </Switch>
