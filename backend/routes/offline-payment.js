@@ -70,7 +70,11 @@ module.exports = function (router) {
         []
       ).filter((method) => method.id === methodId && !method.disabled)
 
-      if (!web3Pk || !availableOfflinePaymentMethods.length) {
+      const canUseOfflinePayments = network.useMarketplace
+        ? Boolean(web3Pk)
+        : true
+
+      if (!canUseOfflinePayments || !availableOfflinePaymentMethods.length) {
         return res.status(400).send({
           success: false,
           message: 'Offline payments unavailable'
