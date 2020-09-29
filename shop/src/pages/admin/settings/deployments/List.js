@@ -1,23 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import fbt from 'fbt'
 import dayjs from 'dayjs'
 
-import useBackendApi from 'utils/useBackendApi'
-import { useStateValue } from 'data/state'
+import useShopDeployments from 'utils/useShopDeployments'
 
 import NoItems from 'components/NoItems'
 import Link from 'components/Link'
 import DeployButton from './_DeployButton'
 
 const DeployShop = () => {
-  const [{ reload }] = useStateValue()
-  const [deployments, setDeployments] = useState([])
-  const { get } = useBackendApi({ authToken: true })
-  useEffect(() => {
-    get('/shop/deployments').then((res) => {
-      setDeployments(res.deployments)
-    })
-  }, [reload.deployments])
+  const { deployments } = useShopDeployments()
 
   return (
     <>

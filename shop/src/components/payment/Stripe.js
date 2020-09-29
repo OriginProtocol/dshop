@@ -241,6 +241,3 @@ const PayWithStripe = injectStripe(
 )
 
 export default PayWithStripe
-
-require('react-styl')(`
-`)

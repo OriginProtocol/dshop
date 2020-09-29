@@ -1,30 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import fbt, { FbtParam } from 'fbt'
 import Link from 'components/Link'
+
+import useAbout from 'utils/useAbout'
 import useConfig from 'utils/useConfig'
 
 const About = () => {
   const { config } = useConfig()
-  const [loading, setLoading] = useState(config.about ? true : false)
-  const [about, setAbout] = useState()
-
-  useEffect(() => {
-    if (config.about) {
-      setLoading(true)
-      fetch(`${config.dataSrc}${config.about}`)
-        .then((res) => {
-          setLoading(false)
-          if (res.ok) {
-            res.text().then((body) => setAbout(body))
-          }
-        })
-        .catch((err) => {
-          console.error('Failed to load about page', err)
-          setLoading(false)
-        })
-    }
-  }, [config.about])
-
+  const { loading, about } = useAbout()
   if (loading) {
     return null
   }

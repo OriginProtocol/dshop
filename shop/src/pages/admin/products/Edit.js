@@ -8,7 +8,7 @@ import fbt, { FbtParam } from 'fbt'
 
 import { useStateValue } from 'data/state'
 import formatPrice from 'utils/formatPrice'
-import useProduct from 'utils/useProduct'
+import useAdminProduct from 'utils/useAdminProduct'
 import useCollections from 'utils/useCollections'
 import useBackendApi from 'utils/useBackendApi'
 import useSetState from 'utils/useSetState'
@@ -175,7 +175,7 @@ const EditProduct = () => {
     ? fbt('Add product', 'admin.products.addProduct')
     : fbt('Edit product', 'admin.products.editProduct')
 
-  const { product } = useProduct(productId)
+  const { product } = useAdminProduct(productId)
   const { collections } = useCollections()
   const [media, setMedia] = useState([])
 

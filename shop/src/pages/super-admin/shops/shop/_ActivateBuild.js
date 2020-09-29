@@ -7,7 +7,7 @@ import useSetState from 'utils/useSetState'
 import useConfig from 'utils/useConfig'
 import useWallet from 'utils/useWallet'
 import { formInput, formFeedback } from 'utils/formHelpers'
-import { isUnstoppableName } from 'utils/dns'
+import { isUnstoppableName } from '@origin/utils/dns'
 import { getOwner, setIPFSHash } from 'utils/unstoppable'
 import { useStateValue } from 'data/state'
 
