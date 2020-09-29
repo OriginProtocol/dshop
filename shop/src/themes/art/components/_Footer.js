@@ -4,7 +4,7 @@ import fbt, { FbtParam } from 'fbt'
 import useConfig from 'utils/useConfig'
 import Link from 'components/Link'
 
-import SocialLink from './_SocialLink'
+import SocialLink from 'components/SocialLink'
 
 const Footer = () => {
   const { config } = useConfig()

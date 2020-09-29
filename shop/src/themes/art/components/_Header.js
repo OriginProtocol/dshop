@@ -10,7 +10,7 @@ import Link from 'components/Link'
 import CartIcon from 'components/icons/Cart'
 import MenuIcon from 'components/icons/Menu'
 
-import SocialLink from './_SocialLink'
+import SocialLink from 'components/SocialLink'
 
 const Cart = ({ cart, bg }) => (
   <Link to="/cart" className="nav-link relative hover:opacity-50">
