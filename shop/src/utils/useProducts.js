@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react'
+import fbt from 'fbt'
 import memoize from 'lodash/memoize'
+import cloneDeep from 'lodash/cloneDeep'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
+import sortProducts from 'utils/sortProducts'
 
 const getProducts = memoize((url) => fetch(url).then((r) => r.json()))
 
-function useProducts() {
-  const [{ products, productIndex, reload }, dispatch] = useStateValue()
+function useProducts(opts = {}) {
+  const [
+    { products, productIndex, reload, collections },
+    dispatch
+  ] = useStateValue()
   const { config } = useConfig()
   const { get } = useBackendApi()
   const [loading, setLoading] = useState(false)
@@ -55,7 +61,40 @@ function useProducts() {
     return () => (isSubscribed = false)
   }, [config.dataSrc, reload.products])
 
-  return { products, productIndex, loading, error }
+  let collection = collections.find((c) => c.id === opts.collection)
+  const homeCollection = collections.find((c) => c.id === 'home')
+  if (!collection && opts.collection === 'all') {
+    collection = {
+      id: 'all',
+      title: fbt('All Products', 'products.allProducts')
+    }
+  }
+
+  let filteredProducts = cloneDeep(products)
+  if (productIndex && opts.search) {
+    filteredProducts = productIndex
+      .search({ query: opts.search, depth: 1 })
+      .map((p) => products.find((product) => product.id === p))
+      .filter((p) => p)
+  } else if (collection && collection.products) {
+    filteredProducts = collection.products
+      .map((p) => products.find((product) => product.id === p))
+      .filter((p) => p)
+  } else if (homeCollection && homeCollection.products) {
+    filteredProducts = homeCollection.products
+      .map((p) => products.find((product) => product.id === p))
+      .filter((p) => p)
+  }
+
+  filteredProducts = sortProducts(filteredProducts, opts.sort)
+
+  if (opts.start && opts.end) {
+    filteredProducts = filteredProducts.slice(opts.start, opts.end)
+  } else if (opts.limit) {
+    filteredProducts = filteredProducts.slice(0, opts.limit)
+  }
+
+  return { products: filteredProducts, productIndex, loading, error }
 }
 
 export default useProducts

@@ -1,19 +1,54 @@
 import React from 'react'
+import { useRouteMatch, useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 
 import useCollections from 'utils/useCollections'
+import useSearchQuery from 'utils/useSearchQuery'
 
+import SortBy from 'components/SortBy'
+
+import Header from './_Header'
+import Footer from './_Footer'
 import Products from './_Products'
 
 const AllProducts = () => {
-  const { collections } = useCollections()
+  const history = useHistory()
+  const { visibleCollections } = useCollections({ includeAll: 'All Products' })
+  const match = useRouteMatch('/collections/:collection')
+  const opts = useSearchQuery()
+  const collection = get(match, 'params.collection')
+
   return (
-    <div className="container">
-      <div className="text-center text-4xl font-medium mb-24">
-        {get(collections, '0.title')}
+    <>
+      <Header>
+        <div className="container text-center text-lg sm:text-2xl pt-8 sm:pt-16 pb-16 sm:pb-40 max-w-4xl">
+          Our mission is to provide a conglomerate of multi-media services to
+          metro-Atlanta and its surrounding areas. We promote and support ideas
+          from all entrepreneurs, freelancers, business owners, future moguls,
+          etc.
+        </div>
+      </Header>
+      <div className="container flex my-6 sm:my-20 gap-4 sm:gap-10 text-sm justify-center flex-col sm:flex-row">
+        <select
+          value={collection}
+          onChange={(e) => {
+            const products = e.target.value === 'all' ? '/products' : ''
+            history.push(products || `/collections/${e.target.value}`)
+          }}
+        >
+          {visibleCollections.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.title}
+            </option>
+          ))}
+        </select>
+        <SortBy />
       </div>
-      <Products />
-    </div>
+      <div className="sm:container mb-12">
+        <Products collection={collection} sort={opts.sort} />
+      </div>
+      <Footer />
+    </>
   )
 }
 

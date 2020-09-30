@@ -53,7 +53,7 @@ body {
 
 @media (min-width: 640px) {
   .container,
-  .sm:container {
+  .sm\:container {
     padding-left: 2.5rem;
     padding-right: 2.5rem;
   }

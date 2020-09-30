@@ -26,7 +26,7 @@ const MobileMenu = ({ toggleMobileMenu }) => {
   const history = useHistory()
   return (
     <div
-      className="fixed inset-0 bg-black px-6 pt-2 pb-12 flex flex-col items-center"
+      className="fixed inset-0 bg-black px-6 pt-2 pb-12 flex flex-col items-center text-white"
       onClick={() => toggleMobileMenu()}
     >
       <div className="flex justify-between items-center w-full">
@@ -88,9 +88,24 @@ const MobileMenu = ({ toggleMobileMenu }) => {
 }
 
 const HeaderMobile = ({ style, children }) => {
-  const [{ cart }] = useStateValue()
-  const [mobileMenu, showMobileMenu] = useState(false)
+  if (!children) {
+    return <MobileLinks>{children}</MobileLinks>
+  }
+  return (
+    <div
+      className="text-white bg-cover bg-no-repeat bg-black font-light"
+      style={style || defaultStyle}
+    >
+      <div style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
+        <MobileLinks>{children}</MobileLinks>
+      </div>
+    </div>
+  )
+}
 
+const MobileLinks = ({ children }) => {
+  const [mobileMenu, showMobileMenu] = useState(false)
+  const [{ cart }] = useStateValue()
   function toggleMobileMenu() {
     const body = document.querySelector('body')
     if (mobileMenu) {
@@ -101,30 +116,25 @@ const HeaderMobile = ({ style, children }) => {
     showMobileMenu(!mobileMenu)
   }
   return (
-    <div
-      className="text-white bg-cover bg-no-repeat bg-black font-light"
-      style={style || defaultStyle}
-    >
-      <div style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}>
-        <div className="container flex pt-2 items-center justify-between">
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault()
-              toggleMobileMenu()
-            }}
-          >
-            <MenuIcon color="#fff" />
-          </a>
-          <Link to="/">
-            <img src="ybm/YBM Black trans.PNG" style={{ width: 100 }} />
-          </Link>
-          <Cart cart={cart} bg={children ? true : false} />
-        </div>
-        {children}
+    <>
+      <div className="container flex pt-2 items-center justify-between">
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault()
+            toggleMobileMenu()
+          }}
+        >
+          <MenuIcon color={children ? '#fff' : '#000'} />
+        </a>
+        <Link to="/">
+          <img src="ybm/YBM Black trans.PNG" style={{ width: 100 }} />
+        </Link>
+        <Cart cart={cart} bg={children ? true : false} />
       </div>
+      {children}
       {mobileMenu && <MobileMenu toggleMobileMenu={toggleMobileMenu} />}
-    </div>
+    </>
   )
 }
 

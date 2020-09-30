@@ -24,15 +24,17 @@ const About = () => {
         </div>
       </Header>
       <div className="sm:container sm:my-16 flex flex-col sm:flex-row">
-        <div
-          style={{
-            paddingTop: '120%',
-            backgroundSize: '120%',
-            backgroundImage: `url(${src})`,
-            backgroundPosition: 'center top'
-          }}
-          className="flex-1 bg-no-repeat bg-center bg-cover order-2 sm:order-1"
-        />
+        <div className="flex-1 order-2 sm:order-1">
+          <div
+            style={{
+              paddingTop: '120%',
+              backgroundSize: '120%',
+              backgroundImage: `url(${src})`,
+              backgroundPosition: 'center top'
+            }}
+            className="bg-no-repeat bg-center"
+          />
+        </div>
         <div style={{ flex: '1' }} className=" order-1 sm:order-2">
           {!about ? null : (
             <div

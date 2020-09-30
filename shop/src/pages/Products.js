@@ -96,7 +96,9 @@ const Products = () => {
           </div>
           <div className="d-flex flex-row justify-content-between align-items-center">
             <h3>{collection.title}</h3>
-            <SortBy />
+            <div className="sort-by">
+              <SortBy className="form-control form-control-sm" />
+            </div>
           </div>
         </div>
       ) : (

@@ -6,16 +6,18 @@ import useProducts from 'utils/useProducts'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
 import formatPrice from 'utils/formatPrice'
 
-const Products = ({ limit = Infinity }) => {
-  const { products } = useProducts()
+const Products = ({ limit = Infinity, collection, sort }) => {
+  const { products } = useProducts({ collection, sort, limit })
   const currencyOpts = useCurrencyOpts()
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-12">
-      {products.slice(0, limit).map((product) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
+      {products.map((product) => (
         <Link
           key={product.id}
-          to={`/product/${product.id}`}
-          className="text-center sm:text-left"
+          to={`${collection ? `/collections/${collection}` : ''}/product/${
+            product.id
+          }`}
+          className="text-center sm:text-left font-medium text-xl"
         >
           <div
             className="w-full bg-cover bg-center"
@@ -24,8 +26,12 @@ const Products = ({ limit = Infinity }) => {
               paddingTop: '100%'
             }}
           />
-          <div className="mt-6 font-bold">{product.title}</div>
-          <div>{formatPrice(product.price, currencyOpts)}</div>
+          <div className="px-4 sm:px-0">
+            <div className="mt-6 leading-none">{product.title}</div>
+            <div className="mt-2 font-bold">
+              {formatPrice(product.price, currencyOpts)}
+            </div>
+          </div>
         </Link>
       ))}
     </div>
