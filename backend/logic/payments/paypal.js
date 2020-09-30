@@ -56,7 +56,9 @@ async function processPayPalRefund({ shop, order }) {
     log.debug(response)
   } catch (err) {
     Sentry.captureException(
-      new Error(`[Shop ${shop.id}] Failed to process PayPal refund`)
+      new Error(
+        `[Shop ${shop.id}] Failed to process PayPal refund, externalPayment ID: ${externalPayment.id}, paymentCode: ${order.paymentCode}, captureId: ${captureId}`
+      )
     )
     log.error(
       `[Shop ${shop.id}] Failed to process PayPal refund`,

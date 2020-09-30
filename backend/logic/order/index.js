@@ -261,7 +261,7 @@ async function updatePaymentStatus(order, newState, shop) {
     }
   }
 
-  let refundError = null
+  let refundError = get(order, 'data.refundError')
   if (newState === OrderPaymentStatuses.Refunded) {
     // Initiate a refund in case of Stripe and PayPal
     switch (order.paymentType) {

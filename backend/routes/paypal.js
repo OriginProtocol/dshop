@@ -243,7 +243,7 @@ module.exports = function (router) {
       const isCompleted = eventType === 'PAYMENT.CAPTURE.COMPLETED'
 
       if (isCompleted) {
-        // Check and process if there are any deferred payments
+        // Check and process if this happens to be a deferred payment
         const success = await processDeferredPayment(
           externalPayment.paymentCode,
           OrderPaymentTypes.PayPal,
@@ -252,7 +252,7 @@ module.exports = function (router) {
         )
 
         if (success) {
-          // Deferred payment has been processed
+          // Deferred payment indeed and it has been processed
           // for existing order
           return res.send({ success: true })
         }
