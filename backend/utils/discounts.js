@@ -182,6 +182,8 @@ const validateDiscountOnOrder = async (
   }, 0)
 
   const shipping = get(cart, 'shipping.amount', 0)
+  const taxRate = parseFloat(get(cart, 'taxRate', 0))
+  const totalTaxes = Math.ceil(taxRate * subTotal)
 
   let discount = 0
   if (discountObj.discountType === 'percentage') {
@@ -193,7 +195,7 @@ const validateDiscountOnOrder = async (
 
   const donation = get(cart, 'donation', 0)
 
-  const calculatedTotal = subTotal + shipping - discount + donation
+  const calculatedTotal = subTotal + shipping - discount + donation + totalTaxes
 
   if (cart.total !== calculatedTotal) {
     // Something has gone wrong

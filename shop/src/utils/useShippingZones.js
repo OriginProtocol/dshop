@@ -14,7 +14,7 @@ function useShippingZones() {
 
   const userInfo = get(cart, 'userInfo')
   const items = get(cart, 'items')
-  const shippingApi = get(cart, 'shippingApi')
+  const shippingApi = get(config, 'shippingApi')
 
   useEffect(() => {
     if (!configLoading || (shippingApi && (!userInfo || !items))) {

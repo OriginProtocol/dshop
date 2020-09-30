@@ -1,10 +1,12 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import fbt from 'fbt'
+import get from 'lodash/get'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useSetState from 'utils/useSetState'
+import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
@@ -13,6 +15,7 @@ import ShippingForm from 'components/ShippingForm'
 import BetaWarning from './_BetaWarning'
 
 import validate from 'data/validations/checkoutInfo'
+import { Countries } from '@origin/utils/Countries'
 
 const CheckoutInfo = () => {
   const { config } = useConfig()
@@ -21,9 +24,80 @@ const CheckoutInfo = () => {
   const [state, setState] = useSetState(
     cart.userInfo || { country: 'United States' }
   )
+  const shippingApi = get(config, 'shippingApi')
+  const { post } = useBackendApi({ authToken: true })
 
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
+
+  const onSubmit = async (e) => {
+    e.preventDefault()
+
+    if (state.submitting) return
+
+    const { valid, newState } = validate(state)
+    setState({
+      ...newState,
+      submitting: valid
+    })
+
+    if (valid) {
+      let taxRate = 0
+
+      if (shippingApi) {
+        const { city, province, country, zip } = newState
+
+        const countryObj = Countries[country]
+        const countryCode = get(countryObj, 'code')
+
+        const provinceObj = get(countryObj, 'provinces', {})[province]
+
+        let provinceCode = ''
+        if (province && provinceObj) {
+          provinceCode = provinceObj.code
+        }
+
+        const response = await post('/printful/tax-rates', {
+          body: JSON.stringify({
+            recipient: {
+              city,
+              countryCode,
+              provinceCode,
+              zip
+            }
+          }),
+          suppressError: true
+        })
+
+        if (response.success) {
+          taxRate = response.required ? response.rate : 0
+        } else {
+          setState({
+            submitting: false,
+            taxError:
+              response.reason ||
+              fbt(
+                `Couldn't estimate tax rates for the given address, make sure it is valid.`,
+                'checkout.taxRateError'
+              )
+          })
+        }
+      }
+
+      dispatch({ type: 'updateTaxRate', taxRate })
+      dispatch({ type: 'updateUserInfo', info: newState })
+      history.push({
+        pathname: '/checkout/shipping',
+        state: { scrollToTop: true }
+      })
+    } else {
+      window.scrollTo(0, 0)
+    }
+
+    setState({
+      submitting: false
+    })
+  }
 
   return (
     <div className="checkout-information">
@@ -46,22 +120,7 @@ const CheckoutInfo = () => {
           </span>
         </div>
       </div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          const { valid, newState } = validate(state)
-          setState(newState)
-          if (valid) {
-            dispatch({ type: 'updateUserInfo', info: newState })
-            history.push({
-              pathname: '/checkout/shipping',
-              state: { scrollToTop: true }
-            })
-          } else {
-            window.scrollTo(0, 0)
-          }
-        }}
-      >
+      <form onSubmit={onSubmit}>
         <div className="mb-3">
           <b>
             <fbt desc="ContactInformation">Contact information</fbt>
@@ -95,12 +154,26 @@ const CheckoutInfo = () => {
 
         <ShippingForm {...{ state, setState, input, Feedback }} />
 
+        {!state.taxError ? null : (
+          <div className="alert alert-danger">{state.taxError}</div>
+        )}
+
         <div className="actions">
           <Link to="/cart">
             &laquo; <fbt desc="checkout.goback">Return to cart</fbt>
           </Link>
-          <button type="submit" className="btn btn-primary btn-lg">
-            <fbt desc="checkout.continueShopping">Continue to shipping</fbt>
+          <button
+            type="submit"
+            className="btn btn-primary btn-lg"
+            disabled={state.submitting}
+          >
+            {state.submitting ? (
+              <>
+                <fbt desc="Submitting">Submitting</fbt>...
+              </>
+            ) : (
+              <fbt desc="checkout.continueShopping">Continue to shipping</fbt>
+            )}
           </button>
         </div>
         <BetaWarning />
