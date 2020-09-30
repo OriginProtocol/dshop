@@ -8,6 +8,7 @@ const {
   Sequelize: { Op }
 } = require('../models')
 const { findOrder } = require('../utils/orders')
+const { updatePaymentStatus } = require('../logic/order')
 const makeOffer = require('./_makeOffer')
 const sendNewOrderEmail = require('../utils/emails/newOrder')
 
@@ -183,5 +184,23 @@ module.exports = function (router) {
       next()
     },
     makeOffer
+  )
+
+  /**
+   * To update the payment state of an order
+   *
+   * @param {String} paymentCode the custom ID of the external payment
+   * @param {enums.OrderPaymentStatuses} state new payment state to set
+   */
+  router.put(
+    '/orders/:orderId/payment-state',
+    authSellerAndShop,
+    findOrder,
+    async (req, res) => {
+      const { state } = req.body
+      const { order, shop } = req
+
+      res.status(200).send(await updatePaymentStatus(order, state, shop))
+    }
   )
 }
