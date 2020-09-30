@@ -2,15 +2,11 @@ const randomstring = require('randomstring')
 
 const get = require('lodash/get')
 
-const { authShop, authSellerAndShop } = require('./_auth')
-const { Network, Order } = require('../models')
+const { authShop } = require('./_auth')
+const { Network } = require('../models')
 const { getConfig } = require('../utils/encryptedConfig')
-const { autoFulfillOrder } = require('../utils/printful')
 const makeOffer = require('./_makeOffer')
-const { OrderPaymentTypes, OrderPaymentStatuses } = require('../enums')
-
-const { getLogger } = require('../utils/logger')
-const log = getLogger('routes.offline-payment')
+const { OrderPaymentTypes } = require('../enums')
 
 module.exports = function (router) {
   /**
@@ -74,7 +70,11 @@ module.exports = function (router) {
         []
       ).filter((method) => method.id === methodId && !method.disabled)
 
-      if (!web3Pk || !availableOfflinePaymentMethods.length) {
+      const canUseOfflinePayments = network.useMarketplace
+        ? Boolean(web3Pk)
+        : true
+
+      if (!canUseOfflinePayments || !availableOfflinePaymentMethods.length) {
         return res.status(400).send({
           success: false,
           message: 'Offline payments unavailable'
@@ -95,55 +95,5 @@ module.exports = function (router) {
       next()
     },
     makeOffer
-  )
-
-  /**
-   * To update the payment state of an offline-payment order
-   *
-   * @param {String} paymentCode the custom ID of the external payment
-   * @param {enums.OrderPaymentStatuses} state new payment state to set
-   */
-  router.put(
-    '/offline-payments/payment-state',
-    authSellerAndShop,
-    async (req, res) => {
-      const { paymentCode, state } = req.body
-      const shopConfig = getConfig(req.shop.config)
-      const shop = req.shop
-
-      const order = await Order.findOne({
-        where: {
-          shopId: shop.id,
-          paymentCode,
-          paymentType: OrderPaymentTypes.Offline
-        }
-      })
-
-      if (!order) {
-        return res.status(200).send({
-          reason: 'Invalid payment code'
-        })
-      }
-
-      // TODO: add some checks to avoid invalid transition of states
-      // Like state should never go back from "Paid" to "Pending"
-      log.info(`Updating payment status of order ${order.fqId} to ${state}`)
-      await order.update({
-        paymentStatus: state
-      })
-
-      // Full-fill the order if the payment was marked as "Paid"
-      // and the shop has auto-fulfillment enabled.
-      if (
-        shopConfig.printful &&
-        shopConfig.printfulAutoFulfill &&
-        state === OrderPaymentStatuses.Paid
-      ) {
-        log.info(`Auto-fullfilling order ${order.fqId}`)
-        await autoFulfillOrder(order, shopConfig, shop)
-      }
-
-      res.status(200).send({ success: true })
-    }
   )
 }

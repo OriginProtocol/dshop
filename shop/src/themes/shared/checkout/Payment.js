@@ -4,6 +4,7 @@ import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 import usePayment from 'utils/usePayment'
+import usePGP from 'utils/usePGP'
 
 import Link from 'components/Link'
 
@@ -15,6 +16,7 @@ export const Payment = () => {
   const history = useHistory()
   const { state, setState, onSubmit, disabled } = usePayment()
   const [{ cart }] = useStateValue()
+  usePGP()
 
   useEffect(() => {
     if (state.tx) {

@@ -5,6 +5,7 @@ import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
 import useConfig from 'utils/useConfig'
+import usePGP from 'utils/usePGP'
 import Contact from './_Contact'
 import ShipTo from './_ShipTo'
 import ChoosePayment from './ChoosePayment'
@@ -13,6 +14,7 @@ import BetaWarning from './_BetaWarning'
 const CheckoutPayment = () => {
   const { config } = useConfig()
   const [{ cart }] = useStateValue()
+  usePGP()
 
   return (
     <div className="checkout-shipping">

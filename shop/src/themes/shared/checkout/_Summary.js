@@ -11,6 +11,9 @@ import Discount from './_Discount'
 
 export const OrderSummary = ({ cart, discount = true }) => {
   const currencyOpts = useCurrencyOpts()
+
+  console.log(cart)
+
   return (
     <>
       <div
@@ -47,6 +50,23 @@ export const OrderSummary = ({ cart, discount = true }) => {
           )}
         </div>
       </div>
+      {cart.shipping && !cart.totalTaxes ? null : (
+        <div className="flex justify-between">
+          <div>
+            <fbt desc="Taxes">Taxes</fbt>
+          </div>
+
+          <div>
+            {cart.shipping ? (
+              formatPrice(cart.totalTaxes, currencyOpts)
+            ) : (
+              <fbt desc="checkout.shippingAtNextStep">
+                Calculated at next step
+              </fbt>
+            )}
+          </div>
+        </div>
+      )}
       {!cart.discount ? null : (
         <div className="flex justify-between mt-4">
           <div>
