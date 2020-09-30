@@ -6,7 +6,6 @@ import dayjs from 'dayjs'
 
 import PaymentStates from 'data/PaymentStates'
 import OfferStates from 'data/OfferStates'
-import PaymentTypes from 'data/PaymentTypes'
 
 import PaymentActions from './_PaymentActions'
 import OffchainPaymentActions from './_OffchainPaymentActions'
@@ -111,7 +110,6 @@ const PaymentInfo = ({ order }) => {
   const cart = get(order, 'data')
   const paymentMethod = get(cart, 'paymentMethod', {})
   const paymentState = get(order, 'paymentStatus')
-  const paymentType = get(order, 'paymentType')
   const offerState = get(order, 'offerStatus')
   const refundError = Boolean(get(order, 'data.refundError'))
   const transactions = get(order, 'transactions', [])
