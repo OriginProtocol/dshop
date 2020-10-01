@@ -1,93 +1,21 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
-import get from 'lodash/get'
 import fbt from 'fbt'
+import get from 'lodash/get'
 
 import { formInput, formFeedback } from 'utils/formHelpers'
 import useConfig from 'utils/useConfig'
 import useSetState from 'utils/useSetState'
+import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
-import { Countries } from '@origin/utils/Countries'
 
 import Link from 'components/Link'
 import ShippingForm from 'components/ShippingForm'
 
 import BetaWarning from './_BetaWarning'
 
-function validate(state) {
-  const newState = {}
-
-  if (!state.email) {
-    newState.emailError = fbt(
-      'Enter an email address',
-      'checkout.address.emailError'
-    )
-  } else if (state.email.length < 3) {
-    newState.emailError = fbt(
-      'Email is too short',
-      'checkout.address.emailLenError'
-    )
-  }
-  if (!state.firstName) {
-    newState.firstNameError = fbt(
-      'Enter a first name',
-      'checkout.address.firstNameError'
-    )
-  }
-  if (!state.lastName) {
-    newState.lastNameError = fbt(
-      'Enter a last name',
-      'checkout.address.lastNameError'
-    )
-  }
-  if (!state.address1) {
-    newState.address1Error = fbt(
-      'Enter an address',
-      'checkout.address.address1Error'
-    )
-  } else if (state.address1.length > 80) {
-    newState.address1Error = fbt(
-      'Address too long',
-      'checkout.address.address1LenError'
-    )
-  }
-  if (state.address2 && state.address2.length > 25) {
-    newState.address2Error = fbt(
-      'Address too long',
-      'checkout.address.address2Error'
-    )
-  }
-  if (!state.city) {
-    newState.cityError = fbt('Enter a city', 'checkout.address.cityError')
-  } else if (state.city.length > 32) {
-    newState.cityError = fbt(
-      'City name too long',
-      'checkout.address.cityLenError'
-    )
-  }
-  const provinces = get(Countries, `${state.country}.provinces`, {})
-  if (!state.province && Object.keys(provinces).length) {
-    newState.provinceError = fbt(
-      'Enter a state / province',
-      'checkout.address.provinceError'
-    )
-  }
-  if (!state.zip) {
-    newState.zipError = fbt(
-      'Enter a ZIP / postal code',
-      'checkout.address.zipError'
-    )
-  } else if (state.zip.length > 10) {
-    newState.zipError = fbt(
-      'ZIP / postal code too long',
-      'checkout.address.zipLenError'
-    )
-  }
-
-  const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
-
-  return { valid, newState: { ...state, ...newState } }
-}
+import validate from 'data/validations/checkoutInfo'
+import { Countries } from '@origin/utils/Countries'
 
 const CheckoutInfo = () => {
   const { config } = useConfig()
@@ -96,9 +24,80 @@ const CheckoutInfo = () => {
   const [state, setState] = useSetState(
     cart.userInfo || { country: 'United States' }
   )
+  const shippingApi = get(config, 'shippingApi')
+  const { post } = useBackendApi({ authToken: true })
 
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
+
+  const onSubmit = async (e) => {
+    e.preventDefault()
+
+    if (state.submitting) return
+
+    const { valid, newState } = validate(state)
+    setState({
+      ...newState,
+      submitting: valid
+    })
+
+    if (valid) {
+      let taxRate = 0
+
+      if (shippingApi) {
+        const { city, province, country, zip } = newState
+
+        const countryObj = Countries[country]
+        const countryCode = get(countryObj, 'code')
+
+        const provinceObj = get(countryObj, 'provinces', {})[province]
+
+        let provinceCode = ''
+        if (province && provinceObj) {
+          provinceCode = provinceObj.code
+        }
+
+        const response = await post('/printful/tax-rates', {
+          body: JSON.stringify({
+            recipient: {
+              city,
+              countryCode,
+              provinceCode,
+              zip
+            }
+          }),
+          suppressError: true
+        })
+
+        if (response.success) {
+          taxRate = response.required ? response.rate : 0
+        } else {
+          setState({
+            submitting: false,
+            taxError:
+              response.reason ||
+              fbt(
+                `Couldn't estimate tax rates for the given address, make sure it is valid.`,
+                'checkout.taxRateError'
+              )
+          })
+        }
+      }
+
+      dispatch({ type: 'updateTaxRate', taxRate })
+      dispatch({ type: 'updateUserInfo', info: newState })
+      history.push({
+        pathname: '/checkout/shipping',
+        state: { scrollToTop: true }
+      })
+    } else {
+      window.scrollTo(0, 0)
+    }
+
+    setState({
+      submitting: false
+    })
+  }
 
   return (
     <div className="checkout-information">
@@ -121,22 +120,7 @@ const CheckoutInfo = () => {
           </span>
         </div>
       </div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          const { valid, newState } = validate(state)
-          setState(newState)
-          if (valid) {
-            dispatch({ type: 'updateUserInfo', info: newState })
-            history.push({
-              pathname: '/checkout/shipping',
-              state: { scrollToTop: true }
-            })
-          } else {
-            window.scrollTo(0, 0)
-          }
-        }}
-      >
+      <form onSubmit={onSubmit}>
         <div className="mb-3">
           <b>
             <fbt desc="ContactInformation">Contact information</fbt>
@@ -170,12 +154,26 @@ const CheckoutInfo = () => {
 
         <ShippingForm {...{ state, setState, input, Feedback }} />
 
+        {!state.taxError ? null : (
+          <div className="alert alert-danger">{state.taxError}</div>
+        )}
+
         <div className="actions">
           <Link to="/cart">
             &laquo; <fbt desc="checkout.goback">Return to cart</fbt>
           </Link>
-          <button type="submit" className="btn btn-primary btn-lg">
-            <fbt desc="checkout.continueShopping">Continue to shipping</fbt>
+          <button
+            type="submit"
+            className="btn btn-primary btn-lg"
+            disabled={state.submitting}
+          >
+            {state.submitting ? (
+              <>
+                <fbt desc="Submitting">Submitting</fbt>...
+              </>
+            ) : (
+              <fbt desc="checkout.continueShopping">Continue to shipping</fbt>
+            )}
           </button>
         </div>
         <BetaWarning />

@@ -836,7 +836,8 @@ module.exports = function (router) {
         'supportEmail',
         'upholdClient',
         'useEscrow',
-        'shippingApi'
+        'shippingApi',
+        'themeId'
       )
       const jsonNetConfig = pick(
         req.body,

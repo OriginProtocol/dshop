@@ -69,6 +69,24 @@ const getClient = (paypalEnv, clientId, clientSecret) => {
   return new PayPal.core.PayPalHttpClient(env)
 }
 
+const getClientFromShop = async (shop) => {
+  const network = await Network.findOne({
+    where: { networkId: shop.networkId }
+  })
+  if (!network) {
+    return {}
+  }
+  const networkConfig = getConfig(network.config)
+
+  const shopConfig = getConfig(shop.config)
+  const { paypalClientId, paypalClientSecret, paypalWebhookId } = shopConfig
+
+  const paypalEnv = networkConfig.paypalEnvironment
+  const client = getClient(paypalEnv, paypalClientId, paypalClientSecret)
+
+  return { client, paypalWebhookId }
+}
+
 const validateCredentials = async (client) => {
   try {
     await client.fetchAccessToken()
@@ -91,6 +109,8 @@ const registerWebhooks = async (shopId, shopConfig, netConfig) => {
     if (!IS_PROD && paypalWebhookHost) {
       webhookUrl = `${paypalWebhookHost}/paypal/webhooks/${shopId}`
     }
+
+    log.debug(`[Shop ${shopId}] Webhook URL:`, webhookUrl)
 
     const request = new WebhookCreateRequest(webhookUrl)
 
@@ -170,19 +190,10 @@ const deregisterAllWebhooks = async (shopConfig, netConfig) => {
 
 const verifySignMiddleware = async (req, res, next) => {
   try {
-    const network = await Network.findOne({
-      where: { networkId: req.shop.networkId }
-    })
-    if (!network) {
+    const { client, paypalWebhookId } = await getClientFromShop(req.shop)
+    if (!client) {
       return res.sendStatus(500)
     }
-    const networkConfig = getConfig(network.config)
-
-    const shopConfig = getConfig(req.shop.config)
-    const { paypalClientId, paypalClientSecret, paypalWebhookId } = shopConfig
-
-    const paypalEnv = networkConfig.paypalEnvironment
-    const client = getClient(paypalEnv, paypalClientId, paypalClientSecret)
 
     const request = new WebhookVerifySignRequest(
       req.headers,
@@ -206,8 +217,10 @@ const verifySignMiddleware = async (req, res, next) => {
 
   next()
 }
+
 module.exports = {
   getClient,
+  getClientFromShop,
   validateCredentials,
   registerWebhooks,
   deregisterWebhook,

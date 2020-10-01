@@ -102,16 +102,6 @@ function initialState() {
 function validate(state) {
   const newState = {}
 
-  if (!state.provider) {
-    newState.providerError = 'Enter a WS provider'
-  } else if (!state.provider.match(/^https?:\/\//)) {
-    newState.providerError = 'Should start https:// or http://'
-  }
-  if (!state.providerWs) {
-    newState.providerWsError = 'Enter a WS provider'
-  } else if (!state.providerWs.match(/^wss?:\/\//)) {
-    newState.providerWsError = 'Should start wss:// or ws://'
-  }
   if (!state.domain) {
     newState.domainError = 'Enter a root domain'
   }

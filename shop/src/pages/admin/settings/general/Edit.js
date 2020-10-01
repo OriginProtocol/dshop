@@ -1,9 +1,7 @@
 import React, { useReducer, useEffect, useState } from 'react'
 import fbt from 'fbt'
-import get from 'lodash/get'
 import pick from 'lodash/pick'
 import pickBy from 'lodash/pickBy'
-import kebabCase from 'lodash/kebabCase'
 
 import useConfig from 'utils/useConfig'
 import useShopConfig from 'utils/useShopConfig'
@@ -14,7 +12,7 @@ import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
 import PasswordField from 'components/admin/PasswordField'
-import CustomDomain from './_CustomDomain'
+import Domains from './domains/List'
 
 function reducer(state, newState) {
   return { ...state, ...newState }
@@ -24,7 +22,7 @@ const configFields = ['fullTitle', 'hostname', 'currency']
 
 const GeneralSettings = () => {
   const { config } = useConfig()
-  const [{ admin }, dispatch] = useStateValue()
+  const [, dispatch] = useStateValue()
   const { shopConfig } = useShopConfig()
   const { post } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, { domain: '' })
@@ -122,30 +120,12 @@ const GeneralSettings = () => {
             <input {...input('fullTitle')} />
             {Feedback('fullTitle')}
           </div>
-          <div className="form-group">
-            <label>
-              <fbt desc="admin.settings.general.storeDomain">Store Domain</fbt>
-            </label>
-            <div className="suffix-wrap">
-              <input
-                {...input('hostname')}
-                onChange={(e) =>
-                  setState({
-                    hostname: kebabCase(e.target.value),
-                    hostnameError: null
-                  })
-                }
-              />
-              <div className="suffix">
-                <span>{state.hostname}</span>
-                {`.${get(admin, 'network.domain')}`}
-              </div>
-            </div>
-            {Feedback('hostname')}
-            <div className="mt-1 d-flex">
-              <CustomDomain hostname={state.hostname} netId={config.netId} />
-            </div>
-          </div>
+
+          <hr />
+
+          <Domains {...{ config, state }} />
+
+          <hr />
 
           <div className="row">
             <div className="form-group col-md-6">
@@ -158,6 +138,8 @@ const GeneralSettings = () => {
               {Feedback('password')}
             </div>
           </div>
+
+          <hr />
 
           <div className="row">
             <div className="form-group col-md-6">
@@ -192,6 +174,8 @@ const GeneralSettings = () => {
               {Feedback('emailSubject')}
             </div>
           </div>
+
+          <hr />
 
           <div className="select-currency">
             <h4>
@@ -269,6 +253,9 @@ require('react-styl')(`
         margin: 8px 0 0 15px
         > span
           visibility: hidden
+    hr
+      background-color: #cdd7e0
+      margin: 1.5rem 0
 
   .select-currency
     margin-top: 1.5rem

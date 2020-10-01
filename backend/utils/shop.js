@@ -80,6 +80,19 @@ function findShopByHostname(req, res, next) {
 }
 
 /**
+ * Middleware to find a shop using `shopId` param
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+const findShop = async (req, res, next) => {
+  const { shopId } = req.params
+  const shop = await Shop.findOne({ where: { id: shopId } })
+  req.shop = shop
+  next()
+}
+
+/**
  * Get a shop's public URL. To be used before a shop is created.
  * @param {string} hostname: Shop's hostname.
  * @param {string} domain: Network domain or localhost on dev environment.
@@ -173,6 +186,7 @@ async function getDataDir(seedDataDir) {
 
 module.exports = {
   createShop,
+  findShop,
   findShopByHostname,
   getShopDataUrl,
   getShopPublicUrl,

@@ -20,6 +20,7 @@ const encConf = require('./encryptedConfig')
 const { printfulSyncQueue } = require('../queues/queues')
 
 const { PrintfulWebhookEvents } = require('./enums')
+const { pick } = require('lodash')
 
 const PrintfulURL = 'https://api.printful.com'
 
@@ -183,13 +184,57 @@ const fetchShippingEstimate = async (apiKey, data) => {
         id: rate.id,
         label,
         detail: `${min}-${max} business days`,
-        amount: Number(rate.rate) * 100,
+        amount: Math.round(Number(rate.rate) * 100),
         countries: [recipient.countryCode]
       }
     })
     return shipping
   } else {
     return { success: false }
+  }
+}
+
+const fetchTaxRates = async (apiKey, data) => {
+  if (!apiKey) {
+    return {
+      status: 500,
+      success: false,
+      message: 'Service Unavailable'
+    }
+  }
+
+  const apiAuth = Buffer.from(apiKey).toString('base64')
+
+  const { recipient } = data
+
+  const query = {
+    recipient: {
+      city: recipient.city,
+      country_code: recipient.countryCode,
+      state_code: recipient.provinceCode,
+      zip: recipient.zip
+    }
+  }
+
+  const shippingRatesResponse = await fetch(`${PrintfulURL}/tax/rates`, {
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Basic ${apiAuth}`
+    },
+    credentials: 'include',
+    method: 'POST',
+    body: JSON.stringify(query)
+  })
+  const json = await shippingRatesResponse.json()
+  if (json.result && Number.isFinite(json.result.rate)) {
+    return {
+      success: true,
+      ...pick(json.result, ['rate', 'required'])
+    }
+  } else {
+    return {
+      success: false
+    }
   }
 }
 
@@ -407,6 +452,7 @@ module.exports = {
   placeOrder,
   confirmOrder,
   fetchShippingEstimate,
+  fetchTaxRates,
   autoFulfillOrder,
   registerPrintfulWebhook,
   deregisterPrintfulWebhook,

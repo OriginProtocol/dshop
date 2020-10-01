@@ -9,6 +9,7 @@ import isEqual from 'lodash/isEqual'
 
 import { Countries } from '@origin/utils/Countries'
 
+import 'utils/setLocale'
 import fbTrack from './fbTrack'
 
 const defaultState = {
@@ -23,6 +24,7 @@ const defaultState = {
   toasts: [],
   reload: {},
   dashboardStats: {},
+  deployments: [],
 
   // User's preferred currency
   preferredCurrency: '',
@@ -103,7 +105,19 @@ const reducer = (state, action) => {
 
   fbTrack(state, action)
   if (action.type === 'addToCart') {
-    const { product, variant, maxQuantity } = action.item
+    const item = {
+      title: action.product.title,
+      product: action.product.id,
+      quantity: 1,
+      variant: action.variant.id,
+      price: action.variant.price,
+      imageUrl: action.variant.imageUrl,
+      externalProductId: action.product.externalId,
+      externalVariantId: action.variant.externalId,
+      restrictShippingTo: action.product.restrictShippingTo,
+      maxQuantity: action.product.maxQuantity
+    }
+    const { product, variant, maxQuantity } = item
     const existingIdx = state.cart.items.findIndex(
       (i) => i.product === product && i.variant === variant
     )
@@ -120,10 +134,11 @@ const reducer = (state, action) => {
       )
     } else {
       const lastIdx = state.cart.items.length
-      newState = set(newState, `cart.items[${lastIdx}]`, action.item)
+      newState = set(newState, `cart.items[${lastIdx}]`, item)
     }
     newState = set(newState, 'shippingZones', [])
     newState = set(newState, 'cart.shipping')
+    newState = set(newState, 'cart.taxRate')
   } else if (action.type === 'removeFromCart') {
     const items = get(state, 'cart.items').filter(
       (i) => !isEqual(i, action.item)
@@ -131,6 +146,7 @@ const reducer = (state, action) => {
     newState = set(newState, 'cart.items', items)
     newState = set(newState, 'shippingZones', [])
     newState = set(newState, 'cart.shipping')
+    newState = set(newState, 'cart.taxRate')
   } else if (action.type === 'updateCartQuantity') {
     const { quantity } = action
     const idx = get(state, 'cart.items').findIndex((i) =>
@@ -139,6 +155,7 @@ const reducer = (state, action) => {
     newState = set(newState, `cart.items[${idx}].quantity`, quantity)
     newState = set(newState, 'shippingZones', [])
     newState = set(newState, 'cart.shipping')
+    newState = set(newState, 'cart.taxRate')
   } else if (action.type === 'setProducts') {
     newState = set(newState, `products`, action.products)
     const index = FlexSearch.create()
@@ -202,6 +219,8 @@ const reducer = (state, action) => {
     )
     newState = set(newState, `cart.userInfo`, data)
     newState = set(newState, 'shippingZones', [])
+  } else if (action.type === 'updateTaxRate') {
+    newState = set(newState, 'cart.taxRate', action.taxRate)
   } else if (action.type === 'updateShipping') {
     const zone = pick(action.zone, 'id', 'label', 'amount')
     newState = set(newState, `cart.shipping`, zone)
@@ -306,6 +325,8 @@ const reducer = (state, action) => {
     localStorage.preferredCurrency = action.currency
   } else if (action.type === 'setLocale') {
     newState = set(newState, 'locale', action.locale)
+  } else if (action.type === 'setDeployments') {
+    newState = set(newState, 'deployments', action.deployments)
   }
 
   // IMPORTANT: Keep this function's total calculation in sync with the calculation
@@ -319,6 +340,7 @@ const reducer = (state, action) => {
     newState.preferredCurrency || get(newState, 'config.currency', 'USD')
 
   const shipping = get(newState, 'cart.shipping.amount', 0)
+  const taxRate = parseFloat(get(newState, 'cart.taxRate', 0))
 
   const discountObj = get(newState, 'cart.discountObj', {})
   const discountCode = get(newState, 'cart.discountObj.code')
@@ -336,7 +358,13 @@ const reducer = (state, action) => {
 
   newState.cart.currency = get(newState, 'config.currency', 'USD')
   newState.cart.discount = discount
-  newState.cart.total = newState.cart.subTotal + shipping - discount + donation
+  newState.cart.totalTaxes = Math.ceil(taxRate * newState.cart.subTotal)
+  newState.cart.total =
+    newState.cart.subTotal +
+    shipping -
+    discount +
+    donation +
+    newState.cart.totalTaxes
 
   const activeShop = get(newState, 'config.activeShop')
   if (activeShop) {

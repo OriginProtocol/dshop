@@ -27,7 +27,8 @@ function pickConfig(body) {
     'notificationEmailDisplayName',
     'uiCdn',
     'awsAccessKeyId',
-    'awsSecretAccessKey'
+    'awsSecretAccessKey',
+    'listingId'
   ])
 }
 
@@ -96,6 +97,7 @@ module.exports = function (router) {
         config: setConfig(config, network.dataValues.config),
         ipfs: req.body.ipfs,
         ipfsApi: req.body.ipfsApi,
+        listingId: req.body.listingId,
         publicSignups: req.body.publicSignups ? true : false
       },
       { where }

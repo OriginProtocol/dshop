@@ -1,5 +1,6 @@
 const randomstring = require('randomstring')
 const util = require('ethereumjs-util')
+const get = require('lodash/get')
 
 const { OrderPaymentStatuses, OrderPaymentTypes } = require('../../enums')
 const { Sentry } = require('../../sentry')
@@ -10,6 +11,10 @@ const { autoFulfillOrder } = require('../../utils/printful')
 const { decryptShopOfferData } = require('../../utils/offer')
 const { validateDiscountOnOrder } = require('../../utils/discounts')
 const { getLogger } = require('../../utils/logger')
+
+const { processStripeRefund } = require('../payments/stripe')
+const { processPayPalRefund } = require('../payments/paypal')
+const { getConfig } = require('../../utils/encryptedConfig')
 
 const log = getLogger('logic.order')
 
@@ -66,6 +71,7 @@ function getShortOrderId(fqOrderId) {
  * @param {boolean} skipEmail: If true, do not send email to the buyer/seller.
  * @param {boolean} skipDiscord: If true, do not send Discord notification to the system administrator.
  * @param {enums.OrderPaymentTypes} paymentType: Payment type of order
+ * @param {enums.OrderPaymentStatuses} paymentStatus: Payment status override
  * @returns {Promise<models.Order>}
  */
 async function processNewOrder({
@@ -79,7 +85,8 @@ async function processNewOrder({
   event,
   skipEmail,
   skipDiscord,
-  paymentType
+  paymentType,
+  paymentStatus: _paymentStatus
 }) {
   // Generate a short unique order id.
   const { fqId, shortId } = createOrderId(network, shop)
@@ -105,9 +112,10 @@ async function processNewOrder({
 
   // Let the status be `Pending` by default for Offline payments.
   const paymentStatus =
-    paymentType === OrderPaymentTypes.Offline
+    _paymentStatus ||
+    (paymentType === OrderPaymentTypes.Offline
       ? OrderPaymentStatuses.Pending
-      : OrderPaymentStatuses.Paid
+      : OrderPaymentStatuses.Paid)
 
   // Insert a new row in the orders DB table.
   const orderObj = {
@@ -203,8 +211,141 @@ async function processNewOrder({
   return order
 }
 
+const validPaymentStateTransitions = {
+  [OrderPaymentStatuses.Refunded]: [],
+  [OrderPaymentStatuses.Rejected]: [],
+  [OrderPaymentStatuses.Pending]: [
+    OrderPaymentStatuses.Paid,
+    OrderPaymentStatuses.Rejected,
+    OrderPaymentStatuses.Refunded
+  ],
+  [OrderPaymentStatuses.Paid]: [OrderPaymentStatuses.Refunded]
+}
+
+/**
+ * Returns the validity of the payment state
+ * transition on an order
+ * @param {model.Order} order
+ * @param {enums.OrderPaymentStatuses} newState
+ *
+ * @returns {Boolean} true if valid
+ */
+const isValidTransition = function (order, newState) {
+  return get(
+    validPaymentStateTransitions,
+    order.paymentStatus,
+    validPaymentStateTransitions[OrderPaymentStatuses.Pending]
+  ).includes(newState)
+}
+
+/**
+ * Updates the payment state of an order
+ * @param {model.Order} order
+ * @param {enums.OrderPaymentStatuses} newState
+ * @param {mode.Shop} shop
+ *
+ * @returns {{
+ *  success {Boolean}
+ *  reason {String|null} error message if any
+ * }}
+ */
+async function updatePaymentStatus(order, newState, shop) {
+  if (order.paymentStatus === newState) {
+    // No change, Ignore
+    return { success: true }
+  }
+
+  if (!isValidTransition(order, newState)) {
+    return {
+      reason: `Cannot change payment state from ${order.paymentStatus} to ${newState}`
+    }
+  }
+
+  let refundError = get(order, 'data.refundError')
+  if (newState === OrderPaymentStatuses.Refunded) {
+    // Initiate a refund in case of Stripe and PayPal
+    switch (order.paymentType) {
+      case OrderPaymentTypes.CreditCard:
+        refundError = await processStripeRefund({ shop, order })
+        break
+      case OrderPaymentTypes.PayPal:
+        refundError = await processPayPalRefund({ shop, order })
+        break
+    }
+  } else if (newState === OrderPaymentStatuses.Paid) {
+    const shopConfig = getConfig(shop.config)
+    if (shopConfig.printful && shopConfig.printfulAutoFulfill) {
+      await autoFulfillOrder(order, shopConfig, shop)
+    }
+  }
+
+  await order.update({
+    paymentStatus: newState,
+    data: {
+      ...order.data,
+      refundError
+    }
+  })
+
+  return { success: !refundError, reason: refundError }
+}
+
+/**
+ * Marks and processes a deferred payment, used for
+ * PayPal eCheck payments
+ *
+ * @param {String} paymentCode external payment ID, used to find order
+ * @param {enums.OrderPaymentTypes} paymentType
+ * @param {model.Shop} shop
+ * @param {Object} event the webhook event
+ *
+ * @returns {Boolean} true if existing order has been marked as paid
+ */
+async function processDeferredPayment(paymentCode, paymentType, shop, event) {
+  // Check if it is an existing pending order
+  const order = await Order.findOne({
+    where: {
+      paymentCode,
+      paymentType,
+      shopId: shop.id,
+      paymentStatus: OrderPaymentStatuses.Pending
+    }
+  })
+
+  const shopId = shop.id
+
+  if (order) {
+    // If yes, mark it as Paid, instead of
+    // creating a new order.
+
+    const { success, reason } = await updatePaymentStatus(
+      order,
+      OrderPaymentStatuses.Paid,
+      shop
+    )
+
+    if (!success) {
+      const error = new Error(`[Shop ${shopId}] ${reason}`)
+      Sentry.captureException(error)
+
+      throw error
+    }
+
+    log.info(
+      `[Shop ${shopId}] Marking order ${order.id} as paid w.r.t. event ${event}`
+    )
+
+    return true
+  }
+
+  return false
+}
+
 module.exports = {
   createOrderId,
   getShortOrderId,
-  processNewOrder
+  processNewOrder,
+  processDeferredPayment,
+  isValidTransition,
+  updatePaymentStatus
 }
