@@ -35,19 +35,16 @@ const Contact = () => {
           </div>
           <div className="flex-1 flex gap-8 order-2 sm:order-1">
             <SocialLink
-              color="#000"
               href={config.twitter}
-              iconStyle={{ height: '18' }}
+              svg={{ height: '18', color: '#000' }}
             />
             <SocialLink
-              color="#000"
               href={config.facebook}
-              iconStyle={{ height: '18' }}
+              iconStyle={{ height: '18', color: '#000' }}
             />
             <SocialLink
-              color="#000"
               href={config.instagram}
-              iconStyle={{ height: '18' }}
+              iconStyle={{ height: '18', color: '#000' }}
             />
           </div>
         </div>

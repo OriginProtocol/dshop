@@ -28,7 +28,7 @@ const AllProducts = () => {
           etc.
         </div>
       </Header>
-      <div className="container flex my-6 sm:my-20 gap-4 sm:gap-10 text-sm justify-center flex-col sm:flex-row">
+      <div className="container grid my-6 sm:my-20 gap-4 sm:gap-10 text-sm justify-center grid-flow-row sm:grid-flow-col">
         <select
           value={collection}
           onChange={(e) => {

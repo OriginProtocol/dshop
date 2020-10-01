@@ -11,28 +11,27 @@ const Footer = () => {
   const date = new Date()
   return (
     <div className="bg-black pt-8 pb-24 text-white text-sm sm:mt-16">
-      <div className="container flex items-center flex-col sm:flex-row gap-8 sm:gap-0">
-        <div className="flex-1 flex gap-8 order-2 sm:order-1">
-          <SocialLink
-            color="#fff"
-            href={config.twitter}
-            iconStyle={{ height: '18' }}
-          />
-          <SocialLink
-            color="#fff"
-            href={config.facebook}
-            iconStyle={{ height: '18' }}
-          />
-          <SocialLink
-            color="#fff"
-            href={config.instagram}
-            iconStyle={{ height: '18' }}
-          />
+      <div className="container flex items-center flex-col sm:flex-row">
+        <div className="flex-1 order-2 sm:order-1 flex">
+          <div className="grid grid-flow-col gap-4">
+            <SocialLink
+              href={config.twitter}
+              svg={{ height: '18', color: '#fff' }}
+            />
+            <SocialLink
+              href={config.facebook}
+              svg={{ height: '18', color: '#fff' }}
+            />
+            <SocialLink
+              href={config.instagram}
+              svg={{ height: '18', color: '#fff' }}
+            />
+          </div>
         </div>
         <div className="order-1 sm:order-2">
           <img src="ybm/YBM Black trans.PNG" style={{ width: 100 }} />
         </div>
-        <div className="flex-1 flex justify-end order-3">
+        <div className="flex-1 flex justify-end order-3 mt-8 sm:mt-0">
           <fbt desc="footer.copyrightText">
             &copy; Origin Protocol{' '}
             <FbtParam name="year">{date.getFullYear()}</FbtParam>
@@ -48,7 +47,7 @@ const Footer = () => {
         >
           <fbt desc="footer.poweredBy">Powered by Origin Dshop</fbt>
         </a>
-        <div className="flex gap-2 sm:gap-6 mt-4 order-1 sm:order-2 flex-col sm:flex-row text-center sm:text-left">
+        <div className="grid gap-2 sm:gap-6 mt-4 order-1 sm:order-2 grid-flow-row sm:grid-flow-col text-center sm:text-left">
           <div>FAQ</div>
           <div>About Dshop</div>
           <div>Visit Origin</div>

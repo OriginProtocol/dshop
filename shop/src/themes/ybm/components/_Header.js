@@ -26,12 +26,12 @@ const MobileMenu = ({ toggleMobileMenu }) => {
   const history = useHistory()
   return (
     <div
-      className="fixed inset-0 bg-black px-6 pt-2 pb-12 flex flex-col items-center text-white"
+      className="fixed inset-0 bg-black px-6 pt-2 pb-12 flex flex-col items-center text-white z-10"
       onClick={() => toggleMobileMenu()}
     >
       <div className="flex justify-between items-center w-full">
         <Close />
-        <img src="ybm/YBM Black trans.PNG" style={{ width: 100 }} />
+        <img src="ybm/YBM Black trans.PNG" style={{ height: 100 }} />
         <Cart cart={cart} bg={true} />
       </div>
       <div className="text-3xl font-medium mt-12 text-center">
@@ -66,21 +66,15 @@ const MobileMenu = ({ toggleMobileMenu }) => {
       <div className="mt-auto">
         <SocialLink
           href={config.twitter}
-          color="#fff"
-          iconStyle={{ height: 18 }}
-          iconClass="inline-block"
+          svg={{ height: 18, className: 'inline-block', color: '#fff' }}
         />
         <SocialLink
           href={config.facebook}
-          color="#fff"
-          iconStyle={{ height: 18 }}
-          iconClass="ml-6 inline-block"
+          svg={{ height: 18, className: 'ml-6 inline-block', color: '#fff' }}
         />
         <SocialLink
           href={config.instagram}
-          color="#fff"
-          iconStyle={{ height: 18 }}
-          iconClass="ml-6 inline-block"
+          svg={{ height: 18, className: 'ml-6 inline-block', color: '#fff' }}
         />
       </div>
     </div>
@@ -128,7 +122,7 @@ const MobileLinks = ({ children }) => {
           <MenuIcon color={children ? '#fff' : '#000'} />
         </a>
         <Link to="/">
-          <img src="ybm/YBM Black trans.PNG" style={{ width: 100 }} />
+          <img src="ybm/YBM Black trans.PNG" style={{ height: 100 }} />
         </Link>
         <Cart cart={cart} bg={children ? true : false} />
       </div>
@@ -158,32 +152,25 @@ const HeaderDesktop = ({ children, style }) => {
 const DesktopLinks = ({ bg }) => {
   const { config } = useConfig()
   const [{ cart }] = useStateValue()
+  const svgProps = { height: '18', color: bg ? '#fff' : '#000' }
   return (
     <div className="container flex pt-12 items-center">
-      <div className="flex-1 flex gap-10 text-sm ">
+      <div className="flex-1 flex text-sm">
         <Link to="/products">Products</Link>
-        <Link to="/about">About</Link>
-        <Link to="/contact">Contact</Link>
+        <Link className="ml-10" to="/about">
+          About
+        </Link>
+        <Link className="ml-10" to="/contact">
+          Contact
+        </Link>
       </div>
       <Link to="/">
         <img src="ybm/YBM Black trans.PNG" style={{ height: 120 }} />
       </Link>
-      <div className="flex-1 flex justify-end gap-8 items-center">
-        <SocialLink
-          color={bg ? '#fff' : '#000'}
-          href={config.facebook}
-          iconStyle={{ height: '18' }}
-        />
-        <SocialLink
-          color={bg ? '#fff' : '#000'}
-          href={config.twitter}
-          iconStyle={{ height: '18' }}
-        />
-        <SocialLink
-          color={bg ? '#fff' : '#000'}
-          href={config.instagram}
-          iconStyle={{ height: '18' }}
-        />
+      <div className="flex-1 flex justify-end items-center">
+        <SocialLink href={config.facebook} svg={svgProps} />
+        <SocialLink className="ml-8" href={config.twitter} svg={svgProps} />
+        <SocialLink href={config.instagram} className="ml-8" svg={svgProps} />
         <Cart cart={cart} bg={bg} />
       </div>
     </div>
@@ -191,7 +178,7 @@ const DesktopLinks = ({ bg }) => {
 }
 
 const Cart = ({ cart, bg }) => (
-  <Link to="/cart" className="nav-link relative flex">
+  <Link to="/cart" className="nav-link relative sm:ml-8">
     <CartIcon style={{ width: 25 }} fill={bg ? '#fff' : '#000'} />
     {cart.items.length ? (
       <div className="absolute text-xs" style={{ top: -10, right: -10 }}>
