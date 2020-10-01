@@ -9,12 +9,13 @@ import { formInput } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
+import ManualTaxes from './_Taxes'
 
 function reducer(state, newState) {
   return { ...state, ...newState }
 }
 
-const configFields = ['cartSummaryNote', 'discountCodes']
+const configFields = ['cartSummaryNote', 'discountCodes', 'taxRates']
 
 const CheckoutSettings = () => {
   const { config } = useConfig()
@@ -105,6 +106,11 @@ const CheckoutSettings = () => {
       </h3>
       <div className="row">
         <div className="shop-settings col-md-8 col-lg-9">
+
+          <div className="manual-taxes-wrapper">
+            <ManualTaxes state={state} setState={setState} />
+          </div>
+
           <div className="row mb-3">
             <div className="col-md-8">
               <div className="form-group">
@@ -204,4 +210,8 @@ require('react-styl')(`
       text-align: center
       margin: 0.25rem 0 0.5rem 0
       font-size: 0.9rem
+  .manual-taxes-wrapper
+    border-bottom: solid 1px #cdd7e0
+    padding-bottom: 2rem
+    margin-bottom: 2rem
 `)

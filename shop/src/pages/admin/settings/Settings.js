@@ -10,7 +10,7 @@ import Apps from './apps/List'
 import Deployments from './deployments/List'
 import Shipping from './shipping/Edit'
 import Advanced from './Advanced'
-import Checkout from './Checkout'
+import Checkout from './Checkout/Edit'
 import Appearance from './appearance/Edit'
 import List from './List'
 
