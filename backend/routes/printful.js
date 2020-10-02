@@ -8,7 +8,8 @@ const {
   fetchShippingEstimate,
   processShippedEvent,
   processUpdatedEvent,
-  PrintfulWebhookEvents
+  PrintfulWebhookEvents,
+  fetchTaxRates
 } = require('../utils/printful')
 const { getLogger } = require('../utils/logger')
 const log = getLogger('routes.printful')
@@ -61,6 +62,12 @@ module.exports = function (router) {
   router.post('/shipping', authShop, async (req, res) => {
     const apiKey = await encConf.get(req.shop.id, 'printful')
     const result = await fetchShippingEstimate(apiKey, req.body)
+    return res.json(result)
+  })
+
+  router.post('/printful/tax-rates', authShop, async (req, res) => {
+    const apiKey = await encConf.get(req.shop.id, 'printful')
+    const result = await fetchTaxRates(apiKey, req.body)
     return res.json(result)
   })
 

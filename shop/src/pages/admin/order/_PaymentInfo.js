@@ -6,10 +6,9 @@ import dayjs from 'dayjs'
 
 import PaymentStates from 'data/PaymentStates'
 import OfferStates from 'data/OfferStates'
-import PaymentTypes from 'data/PaymentTypes'
 
 import PaymentActions from './_PaymentActions'
-import OffchainOfflinePaymentActions from './_OffchainOfflinePaymentActions'
+import OffchainPaymentActions from './_OffchainPaymentActions'
 
 const getStatusText = (
   paymentState,
@@ -42,6 +41,12 @@ const getStatusText = (
 
       case PaymentStates.Pending:
         return fbt(`A payment is pending`, 'admin.order.paymentStatusPending')
+
+      case PaymentStates.Rejected:
+        return fbt(
+          `A payment was rejected`,
+          'admin.order.paymentStatusRejected'
+        )
 
       default:
         return fbt('Payment status unknown', 'admin.order.unknownPaymentStatus')
@@ -105,7 +110,6 @@ const PaymentInfo = ({ order }) => {
   const cart = get(order, 'data')
   const paymentMethod = get(cart, 'paymentMethod', {})
   const paymentState = get(order, 'paymentStatus')
-  const paymentType = get(order, 'paymentType')
   const offerState = get(order, 'offerStatus')
   const refundError = Boolean(get(order, 'data.refundError'))
   const transactions = get(order, 'transactions', [])
@@ -125,8 +129,8 @@ const PaymentInfo = ({ order }) => {
 
   // Direct crypto payment.
   if (isOffchainPayment) {
-    if (!offchainPaymentTx || paymentType === PaymentTypes.Offline) {
-      // Offline/Manual payment method
+    if (!offchainPaymentTx) {
+      // Offchain non-crypto payments
       return (
         <div className="order-payment-info">
           <div className="status-text">
@@ -138,12 +142,13 @@ const PaymentInfo = ({ order }) => {
             )}
           </div>
           <div className="status-actions">
-            <OffchainOfflinePaymentActions order={order} />
+            <OffchainPaymentActions order={order} />
           </div>
         </div>
       )
     }
 
+    // Offchain crypto payments
     return (
       <div className="admin-customer-info">
         <div>

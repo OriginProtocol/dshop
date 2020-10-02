@@ -138,6 +138,7 @@ const reducer = (state, action) => {
     }
     newState = set(newState, 'shippingZones', [])
     newState = set(newState, 'cart.shipping')
+    newState = set(newState, 'cart.taxRate')
   } else if (action.type === 'removeFromCart') {
     const items = get(state, 'cart.items').filter(
       (i) => !isEqual(i, action.item)
@@ -145,6 +146,7 @@ const reducer = (state, action) => {
     newState = set(newState, 'cart.items', items)
     newState = set(newState, 'shippingZones', [])
     newState = set(newState, 'cart.shipping')
+    newState = set(newState, 'cart.taxRate')
   } else if (action.type === 'updateCartQuantity') {
     const { quantity } = action
     const idx = get(state, 'cart.items').findIndex((i) =>
@@ -153,6 +155,7 @@ const reducer = (state, action) => {
     newState = set(newState, `cart.items[${idx}].quantity`, quantity)
     newState = set(newState, 'shippingZones', [])
     newState = set(newState, 'cart.shipping')
+    newState = set(newState, 'cart.taxRate')
   } else if (action.type === 'setProducts') {
     newState = set(newState, `products`, action.products)
     const index = FlexSearch.create()
@@ -216,6 +219,8 @@ const reducer = (state, action) => {
     )
     newState = set(newState, `cart.userInfo`, data)
     newState = set(newState, 'shippingZones', [])
+  } else if (action.type === 'updateTaxRate') {
+    newState = set(newState, 'cart.taxRate', action.taxRate)
   } else if (action.type === 'updateShipping') {
     const zone = pick(action.zone, 'id', 'label', 'amount')
     newState = set(newState, `cart.shipping`, zone)
@@ -335,6 +340,7 @@ const reducer = (state, action) => {
     newState.preferredCurrency || get(newState, 'config.currency', 'USD')
 
   const shipping = get(newState, 'cart.shipping.amount', 0)
+  const taxRate = parseFloat(get(newState, 'cart.taxRate', 0))
 
   const discountObj = get(newState, 'cart.discountObj', {})
   const discountCode = get(newState, 'cart.discountObj.code')
@@ -352,7 +358,13 @@ const reducer = (state, action) => {
 
   newState.cart.currency = get(newState, 'config.currency', 'USD')
   newState.cart.discount = discount
-  newState.cart.total = newState.cart.subTotal + shipping - discount + donation
+  newState.cart.totalTaxes = Math.ceil(taxRate * newState.cart.subTotal)
+  newState.cart.total =
+    newState.cart.subTotal +
+    shipping -
+    discount +
+    donation +
+    newState.cart.totalTaxes
 
   const activeShop = get(newState, 'config.activeShop')
   if (activeShop) {

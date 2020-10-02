@@ -3,8 +3,9 @@ const bodyParser = require('body-parser')
 const randomstring = require('randomstring')
 
 const PayPal = require('@paypal/checkout-server-sdk')
+const { Sentry } = require('../sentry')
 
-const { Network, ExternalPayment, Shop } = require('../models')
+const { Network, ExternalPayment } = require('../models')
 const { authShop } = require('./_auth')
 const { getConfig } = require('../utils/encryptedConfig')
 const { getLogger } = require('../utils/logger')
@@ -16,7 +17,9 @@ const {
 } = require('../utils/paypal')
 
 const makeOffer = require('./_makeOffer')
-const { OrderPaymentTypes } = require('../enums')
+const { OrderPaymentTypes, OrderPaymentStatuses } = require('../enums')
+const { findShop } = require('../utils/shop')
+const { processDeferredPayment } = require('../logic/order')
 
 const rawJson = bodyParser.raw({ type: 'application/json' })
 const log = getLogger('routes.paypal')
@@ -65,8 +68,11 @@ module.exports = function (router) {
       const { clientId, currency } = req.body
       const { paypalClientSecret, paypalClientId } = shopConfig
 
+      // Require web3Pk for onchain offers
+      const canUsePaypal = network.useMarketplace ? Boolean(web3Pk) : true
+
       if (
-        !web3Pk ||
+        !canUsePaypal ||
         !paypalClientSecret ||
         !paypalClientId ||
         clientId !== paypalClientId
@@ -136,8 +142,11 @@ module.exports = function (router) {
       const { clientId } = req.body
       const { paypalClientSecret, paypalClientId } = shopConfig
 
+      // Require web3Pk for onchain offers
+      const canUsePaypal = network.useMarketplace ? Boolean(web3Pk) : true
+
       if (
-        !web3Pk ||
+        !canUsePaypal ||
         !paypalClientSecret ||
         !paypalClientId ||
         clientId !== paypalClientId
@@ -171,13 +180,6 @@ module.exports = function (router) {
       })
     }
   })
-
-  const findShop = async (req, res, next) => {
-    const { shopId } = req.params
-    const shop = await Shop.findOne({ where: { id: shopId } })
-    req.shop = shop
-    next()
-  }
 
   const webhookHandler = async (req, res, next) => {
     const { shopId } = req.params
@@ -227,18 +229,50 @@ module.exports = function (router) {
 
       log.debug(JSON.stringify(event, null, 4))
 
-      if (event.event_type !== 'PAYMENT.CAPTURE.COMPLETED') {
-        log.debug(`Ignoring event ${event.type}`)
+      const eventType = get(event, 'event_type')
+
+      if (
+        !['PAYMENT.CAPTURE.PENDING', 'PAYMENT.CAPTURE.COMPLETED'].includes(
+          eventType
+        )
+      ) {
+        log.debug(`Ignoring event ${eventType}`)
         return res.sendStatus(200)
       }
 
+      const isCompleted = eventType === 'PAYMENT.CAPTURE.COMPLETED'
+
+      if (isCompleted) {
+        // Check and process if this happens to be a deferred payment
+        const success = await processDeferredPayment(
+          externalPayment.paymentCode,
+          OrderPaymentTypes.PayPal,
+          req.shop,
+          event
+        )
+
+        if (success) {
+          // Deferred payment indeed and it has been processed
+          // for existing order
+          return res.send({ success: true })
+        }
+      }
+
+      // No existing order exists, create a new one
       req.body.data = get(event, 'resource.custom_id')
       req.amount = externalPayment.amount
       req.paymentCode = externalPayment.paymentCode
       req.paymentType = OrderPaymentTypes.PayPal
+      // Mark as Paid only if it is `PAYMENT.CAPTURE.COMPLETED` event
+      req.paymentStatus = isCompleted
+        ? OrderPaymentStatuses.Paid
+        : OrderPaymentStatuses.Pending
 
       next()
     } catch (err) {
+      Sentry.captureException(
+        new Error(`[Shop ${shopId}] Failed to process PayPal event`)
+      )
       log.error(`[Shop ${shopId}] Failed to process PayPal event`, err)
       log.debug('Body received:', req.body)
       return res.sendStatus(400)

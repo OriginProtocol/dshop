@@ -18,7 +18,7 @@ const { getLogger } = require('../utils/logger')
 const { IS_TEST, IS_DEV } = require('../utils/const')
 const { Sentry } = require('../sentry')
 const { TransactionTypes, TransactionStatuses } = require('../enums')
-const { processNewOrder } = require('../logic/order/order')
+const { processNewOrder } = require('../logic/order')
 
 const log = getLogger('offerProcessor')
 const BN = ethers.BigNumber // Ethers' BigNumber implementation.
@@ -213,6 +213,7 @@ async function _makeOnchainOffer({
  * @param {string} offerIpfsHash: IPFS hash of the unencrypted offer data.
  * @param {string} paymentCode
  * @param {enums.OrderPaymentTypes} paymentType
+ * @param {enums.OrderPaymentStatuses} paymentStatus override payment status
  * @returns {Promise<models.Order>}
  * @private
  */
@@ -227,7 +228,8 @@ async function _makeOffchainOffer({
   offer,
   offerIpfsHash,
   paymentCode,
-  paymentType
+  paymentType,
+  paymentStatus
 }) {
   queueLog(job, 30, `Creating order`)
   log.info(
@@ -242,6 +244,7 @@ async function _makeOffchainOffer({
     offer,
     offerIpfsHash,
     paymentType,
+    paymentStatus,
     offerId: null, // on-chain offers do not have a blockchain offer Id.
     event: null, // on-chain offers do not have a blockchain event.
     skipEmail: false,
@@ -262,12 +265,20 @@ async function _makeOffchainOffer({
  *   {string} shopId: Unique DB id for the shop.
  *   {string} paymentCode: Unique payment code.
  *   {string} encryptedDataIpfsHash: IPFS hash of the PGP encrypted offer data.
+ *   {enums.OrderPaymentTypes} paymentType: Payment type of order
+ *   {enums.OrderPaymentStatuses} paymentStatus: To override paymentStatus of the order
  * @returns {Promise<models.Order || {receipt: ethers.TransactionReceipt, listingId: number, offerId: number, ipfsHash: string }>}
  * @throws
  */
 async function processor(job) {
   const fqJobId = `${get(job, 'queue.name', '')}-${job.id}` // Prefix with queue name since job ids are not unique across queues.
-  const { shopId, paymentCode, encryptedDataIpfsHash, paymentType } = job.data
+  const {
+    shopId,
+    paymentCode,
+    encryptedDataIpfsHash,
+    paymentType,
+    paymentStatus
+  } = job.data
   log.info(`Creating offer for shop ${shopId}`)
   let result
 
@@ -303,7 +314,8 @@ async function processor(job) {
       offer,
       offerIpfsHash,
       paymentCode,
-      paymentType
+      paymentType,
+      paymentStatus
     }
     if (network.useMarketplace) {
       result = await _makeOnchainOffer(data)
