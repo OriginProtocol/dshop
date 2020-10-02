@@ -3,7 +3,7 @@ chai.use(require('chai-string'))
 const expect = chai.expect
 const kebabCase = require('lodash/kebabCase')
 
-const { createShop } = require('../utils/shop')
+const { createShopInDB } = require('../logic/shop/create')
 const { deployShop } = require('../utils/deployShop')
 const { setConfig } = require('../utils/encryptedConfig')
 const { ShopDeploymentStatuses } = require('../enums')
@@ -282,7 +282,7 @@ describe('Shops', () => {
       sellerId: 1,
       hostname: kebabCase('cool shoop hostname')
     }
-    const resp = await createShop(data)
+    const resp = await createShopInDB(data)
     const newShop = resp.shop
 
     expect(newShop).to.be.an('object')
@@ -306,26 +306,26 @@ describe('Shops', () => {
       sellerId: 1,
       hostname: kebabCase('cool shoop hostname')
     }
-    let resp = await createShop(data)
+    let resp = await createShopInDB(data)
     expect(resp.status).to.equal(400)
     expect(resp.error).to.be.a('string')
 
     // Shop with a non alphanumeric character in its name.
     data.name = '*bad shoop name'
-    resp = await createShop(data)
+    resp = await createShopInDB(data)
     expect(resp.status).to.equal(400)
     expect(resp.error).to.be.a('string')
 
     // Shop with invalid listing ID
     data.name = 'good name'
     data.listingId = 'abcde'
-    resp = await createShop(data)
+    resp = await createShopInDB(data)
     expect(resp.status).to.equal(400)
     expect(resp.error).to.be.a('string')
 
     // Shop with listing ID on incorrect network
     data.listingId = '1-001-1'
-    resp = await createShop(data)
+    resp = await createShopInDB(data)
     expect(resp.status).to.equal(400)
     expect(resp.error).to.be.a('string')
   })

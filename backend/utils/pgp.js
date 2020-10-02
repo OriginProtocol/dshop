@@ -56,5 +56,5 @@ async function testPGP({ pgpPublicKey, pgpPrivateKey, pgpPrivateKeyPass }) {
 
 module.exports = {
   genPGP,
-  testPGP,
+  testPGP
 }

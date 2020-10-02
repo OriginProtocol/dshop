@@ -306,8 +306,7 @@ async function main(config) {
     await resetPgp(shops)
   } else if (config.operation === 'checkPgp') {
     await checkPgp(shops)
-  }
-  else {
+  } else {
     throw new Error(`Unsupported operation ${config.operation}`)
   }
 }
