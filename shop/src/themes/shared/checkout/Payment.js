@@ -48,7 +48,7 @@ export const Payment = () => {
         </Link>
         <button
           type="submit"
-          className={`btn btn-primary ${disabled ? ' opacity-50' : ''}`}
+          className={`btn btn-primary px-8${disabled ? ' opacity-50' : ''}`}
           children={state.buttonText}
         />
       </div>

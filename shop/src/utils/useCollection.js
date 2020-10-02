@@ -3,14 +3,13 @@ import useCollections from 'utils/useCollections'
 import useProducts from 'utils/useProducts'
 
 function useCollection(id, opts = {}) {
-  const { products: allProducts } = useProducts()
+  const { allProductIds } = useProducts()
   const { visibleCollections } = useCollections(opts)
   const collection = visibleCollections.find((c) => c.id === id)
   let previousProduct, nextProduct
 
   if (opts.product) {
-    const productIds = allProducts.map((p) => p.id)
-    const products = get(collection, 'products', productIds)
+    const products = get(collection, 'products', allProductIds)
     const productIdx = products.indexOf(opts.product)
     if (productIdx > 0) {
       previousProduct = products[productIdx - 1]

@@ -27,7 +27,7 @@ const Products = ({ limit = Infinity, collection, sort }) => {
             }}
           />
           <div className="px-4 sm:px-0">
-            <div className="mt-6 leading-none">{product.title}</div>
+            <div className="mt-6 leading-tight">{product.title}</div>
             <div className="mt-2 font-bold">
               {formatPrice(product.price, currencyOpts)}
             </div>

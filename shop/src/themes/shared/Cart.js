@@ -27,7 +27,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="container mt-12">
+    <div className="container my-12">
       <div className="mb-12 text-center sm:text-left text-3xl sm:text-4xl leading-none font-medium">
         Shopping Cart
       </div>
@@ -49,13 +49,13 @@ const Cart = () => {
           />
         ))}
       </div>
-      <div className="text-right text-lg sm:text-xl pt-6 font-semibold border-t">
+      <div className="text-right text-lg sm:text-xl pt-6 font-semibold border-t dark:border-gray-600">
         {`Subtotal: ${formatPrice(cart.subTotal, currencyOpts)}`}
       </div>
       <div className="mt-12 flex justify-center sm:justify-end">
         <Link
           to="/checkout"
-          className="btn btn-primary sm:px-24 w-full sm:w-auto"
+          className="btn btn-primary sm:px-24 w-full sm:w-auto text-center"
         >
           Checkout
         </Link>
@@ -66,7 +66,7 @@ const Cart = () => {
 
 const Row = ({ title, quantity, img, price, onRemove }) => (
   <>
-    <div className="border-t py-6">
+    <div className="border-t py-6 dark:border-gray-600">
       <div className="flex items-center font-semibold">
         <img className="w-8 sm:w-16 mr-5 sm:mr-10" src={img} />
         {title}
@@ -82,10 +82,10 @@ const Row = ({ title, quantity, img, price, onRemove }) => (
         </a>
       </div>
     </div>
-    <div className="border-t py-6 flex items-center justify-center">
+    <div className="border-t py-6 flex items-center justify-center dark:border-gray-600">
       {quantity}
     </div>
-    <div className="border-t py-6 flex items-center justify-end">{price}</div>
+    <div className="border-t py-6 flex items-center justify-end dark:border-gray-600">{price}</div>
   </>
 )
 

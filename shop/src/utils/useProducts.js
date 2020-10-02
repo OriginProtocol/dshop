@@ -94,7 +94,13 @@ function useProducts(opts = {}) {
     filteredProducts = filteredProducts.slice(0, opts.limit)
   }
 
-  return { products: filteredProducts, productIndex, loading, error }
+  return {
+    products: filteredProducts,
+    allProductIds: products.map((p) => p.id),
+    productIndex,
+    loading,
+    error
+  }
 }
 
 export default useProducts

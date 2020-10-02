@@ -28,7 +28,7 @@ const AllProducts = () => {
           etc.
         </div>
       </Header>
-      <div className="container grid my-6 sm:my-20 gap-4 sm:gap-10 text-sm justify-center grid-flow-row sm:grid-flow-col">
+      <div className="container grid my-12 sm:my-20 gap-8 sm:gap-32 text-sm justify-center grid-flow-row sm:grid-flow-col">
         <select
           value={collection}
           onChange={(e) => {
@@ -38,7 +38,7 @@ const AllProducts = () => {
         >
           {visibleCollections.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.title}
+              {`Category: ${c.title}`}
             </option>
           ))}
         </select>

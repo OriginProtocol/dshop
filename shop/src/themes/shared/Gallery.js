@@ -52,8 +52,8 @@ const Thumbnails = () => {
   if (images.length <= 1) return null
 
   return (
-    <Gallery.Thumbnails className="overflow-auto relative">
-      <div className="grid grid-flow-col gap-2 mt-6 min-w-0">
+    <Gallery.Thumbnails className="overflow-auto relative flex">
+      <div className="grid grid-flow-col gap-2 mt-6 min-w-0 mx-auto">
         {images.map((pic, idx) => {
           const isActive = idx === active ? '' : ' opacity-50 hover:opacity-100'
           return (

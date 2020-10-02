@@ -4,19 +4,19 @@ import Link from 'components/Link'
 
 import Header from './_Header'
 import Footer from './_Footer'
-import Products from './_Products'
+import Collections from './_Collections'
 
 const Home = () => {
   return (
     <>
       <Header>
         <div
-          className="text-center mt-40 text-3xl sm:text-5xl leading-tight mx-auto"
+          className="text-center mt-24 text-3xl sm:text-5xl leading-tight mx-auto"
           style={{ maxWidth: 600 }}
         >
           High-quality merch from Atlanta, Georgia since 2017
         </div>
-        <div className="text-center pt-12 pb-40">
+        <div className="text-center pt-12 pb-40 sm:pb-60">
           <Link to="/products" className="btn btn-primary btn-xl">
             Shop Now
           </Link>
@@ -31,7 +31,7 @@ const Home = () => {
         </div>
       </div>
       <div className="sm:container sm:mt-20 mb-32">
-        <Products limit={4} />
+        <Collections limit={4} />
       </div>
       <div className="text-center mb-32">
         <Link to="/products" className="btn btn-secondary btn-xl">

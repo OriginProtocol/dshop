@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import memoize from 'lodash/memoize'
+import get from 'lodash/get'
 import cloneDeep from 'lodash/cloneDeep'
 
 import { useStateValue } from 'data/state'
@@ -42,7 +43,9 @@ function useCollections(opts = {}) {
     allCollections.unshift({ id: 'all', title: opts.includeAll })
   }
 
-  const visibleCollections = allCollections.filter((c) => c.id !== 'home')
+  const visibleCollections = allCollections.filter(
+    (c) => c.id !== 'home' && get(c, 'products.length')
+  )
 
   return {
     collections: allCollections,

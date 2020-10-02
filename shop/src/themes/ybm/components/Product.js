@@ -7,7 +7,7 @@ import useCollection from 'utils/useCollection'
 
 import Header from './_Header'
 import Footer from './_Footer'
-import Gallery from './_Gallery'
+import Gallery from '../../shared/Gallery'
 
 import Link from 'components/Link'
 
@@ -41,7 +41,10 @@ const ProductDetail = ({ match }) => {
     <div className="mt-8 sm:mt-24">
       <div className="container flex text-sm justify-between">
         <div className="hidden sm:grid grid-flow-col gap-2">
-          <Link to={colLink || '/products'} className="text-gray-600">
+          <Link
+            to={colLink || '/products'}
+            className="text-gray-600 hover:text-black"
+          >
             {get(collection, 'title', 'All Products')}
           </Link>
           <div className="text-gray-600 text-xs">&gt;</div>
@@ -49,16 +52,24 @@ const ProductDetail = ({ match }) => {
         </div>
         <div className="flex text-gray-600 justify-between flex-1 sm:flex-none">
           {previousProduct ? (
-            <Link to={`${colLink}/product/${previousProduct}`}>Previous</Link>
+            <Link
+              className="hover:text-black"
+              to={`${colLink}/product/${previousProduct}`}
+            >
+              Previous
+            </Link>
           ) : (
-            <div>Previous</div>
+            <div className="opacity-50">Previous</div>
           )}
           {nextProduct ? (
-            <Link className="sm:ml-8" to={`${colLink}/product/${nextProduct}`}>
+            <Link
+              className="sm:ml-8 hover:text-black"
+              to={`${colLink}/product/${nextProduct}`}
+            >
               Next
             </Link>
           ) : (
-            <div className="sm:ml-8">Next</div>
+            <div className="sm:ml-8 opacity-50">Next</div>
           )}
         </div>
       </div>
@@ -70,10 +81,6 @@ const ProductDetail = ({ match }) => {
           <div className="mt-4 text-lg mb-12 font-bold">
             {get(variant, 'priceStr', 'Unavailable')}
           </div>
-          <div
-            className="mb-12 whitespace-pre-line"
-            dangerouslySetInnerHTML={{ __html: product.description }}
-          />
           <ProductOptions {...productObj} />
           {!variant ? (
             <a
@@ -103,6 +110,10 @@ const ProductDetail = ({ match }) => {
               Add to Cart
             </a>
           )}
+          <div
+            className="my-12 whitespace-pre-line"
+            dangerouslySetInnerHTML={{ __html: product.description }}
+          />
         </div>
         <div className="sm:ml-12 sm:mb-10 order-1 sm:order-2 flex-1 min-w-0">
           <Gallery

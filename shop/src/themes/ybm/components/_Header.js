@@ -36,7 +36,7 @@ const MobileMenu = ({ toggleMobileMenu }) => {
       </div>
       <div className="text-3xl font-medium mt-12 text-center">
         <div
-          className="pb-4"
+          className="pb-8"
           onClick={() => {
             toggleMobileMenu()
             history.push('/products')
@@ -45,7 +45,7 @@ const MobileMenu = ({ toggleMobileMenu }) => {
           Products
         </div>
         <div
-          className="pb-4"
+          className="pb-8"
           onClick={() => {
             toggleMobileMenu()
             history.push('/about')
@@ -54,7 +54,7 @@ const MobileMenu = ({ toggleMobileMenu }) => {
           About
         </div>
         <div
-          className="pb-4"
+          className="pb-8"
           onClick={() => {
             toggleMobileMenu()
             history.push('/contact')
@@ -156,11 +156,13 @@ const DesktopLinks = ({ bg }) => {
   return (
     <div className="container flex pt-12 items-center">
       <div className="flex-1 flex text-sm">
-        <Link to="/products">Products</Link>
+        <Link className="hover:opacity-75" to="/products">
+          Products
+        </Link>
         <Link className="ml-10" to="/about">
           About
         </Link>
-        <Link className="ml-10" to="/contact">
+        <Link className="ml-10 hover:opacity-75" to="/contact">
           Contact
         </Link>
       </div>
@@ -168,9 +170,21 @@ const DesktopLinks = ({ bg }) => {
         <img src="ybm/YBM Black trans.PNG" style={{ height: 120 }} />
       </Link>
       <div className="flex-1 flex justify-end items-center">
-        <SocialLink href={config.facebook} svg={svgProps} />
-        <SocialLink className="ml-8" href={config.twitter} svg={svgProps} />
-        <SocialLink href={config.instagram} className="ml-8" svg={svgProps} />
+        <SocialLink
+          className="hover:opacity-75"
+          href={config.facebook}
+          svg={svgProps}
+        />
+        <SocialLink
+          className="ml-8 hover:opacity-75"
+          href={config.twitter}
+          svg={svgProps}
+        />
+        <SocialLink
+          href={config.instagram}
+          className="ml-8 hover:opacity-75"
+          svg={svgProps}
+        />
         <Cart cart={cart} bg={bg} />
       </div>
     </div>
@@ -178,7 +192,7 @@ const DesktopLinks = ({ bg }) => {
 }
 
 const Cart = ({ cart, bg }) => (
-  <Link to="/cart" className="nav-link relative sm:ml-8">
+  <Link to="/cart" className="nav-link relative sm:ml-8 hover:opacity-75">
     <CartIcon style={{ width: 25 }} fill={bg ? '#fff' : '#000'} />
     {cart.items.length ? (
       <div className="absolute text-xs" style={{ top: -10, right: -10 }}>

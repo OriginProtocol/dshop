@@ -30,7 +30,6 @@ const Providers = () => {
           <Route path="/about" component={About} />
           <Route path="/contact" component={Contact} />
           <Route path="/products" component={Products} />
-
           <Route path="/product/:id" component={Product} />
           <Route
             path="/collections/:collection/product/:id"

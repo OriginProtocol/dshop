@@ -13,7 +13,7 @@ const Footer = () => {
     <div className="bg-black pt-8 pb-24 text-white text-sm sm:mt-16">
       <div className="container flex items-center flex-col sm:flex-row">
         <div className="flex-1 order-2 sm:order-1 flex">
-          <div className="grid grid-flow-col gap-4">
+          <div className="grid grid-flow-col gap-6">
             <SocialLink
               href={config.twitter}
               svg={{ height: '18', color: '#fff' }}
