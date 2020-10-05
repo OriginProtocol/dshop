@@ -29,10 +29,6 @@ const Product = ({ match }) => {
           <div className="text-center sm:text-left mt-4 text-lg mb-12">
             {variant.priceStr}
           </div>
-          <div
-            className="mb-12 sm:mb-24 whitespace-pre-line text-sm sm:text-base"
-            dangerouslySetInnerHTML={{ __html: product.description }}
-          />
           {addedToCart ? (
             <Link
               to="/cart"
@@ -53,6 +49,10 @@ const Product = ({ match }) => {
               Add to Cart
             </a>
           )}
+          <div
+            className="my-12 sm:mb-24 whitespace-pre-line text-sm sm:text-base"
+            dangerouslySetInnerHTML={{ __html: product.description }}
+          />
         </div>
       </div>
       <div className="mt-24 mb-10 sm:mb-6 text-3xl sm:text-4xl text-center sm:text-left font-medium">

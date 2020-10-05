@@ -121,7 +121,7 @@ export const Information = () => {
         <Link className="text-lg" to="/cart">
           &laquo; Return to cart
         </Link>
-        <button className="btn btn-primary">Continue</button>
+        <button className="btn btn-primary px-8">Continue</button>
       </div>
     </form>
   )
@@ -184,7 +184,7 @@ function initialState(cart) {
     className: 'border dark:border-gray-700 px-3 py-2 w-full',
     defaultClassName: 'dark:bg-black bg-gray-100',
     errorClassName:
-      'dark:bg-red-800 dark:border-red-600 bg-red-100 border-red-700',
-    feedbackClassName: 'dark:text-red-600 text-red-700 mt-1 text-sm'
+      'dark:bg-black dark:border-red-600 bg-red-100 border-red-700',
+    feedbackClassName: 'dark:text-white text-red-700 mt-1 text-sm'
   }
 }

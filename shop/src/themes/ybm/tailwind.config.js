@@ -18,16 +18,20 @@ module.exports = {
       lg: '0 0 5px 0 rgba(0, 0, 0, 0.1)'
     },
     extend: {
+      fontFamily: {
+        sans: ['Avenir', ...defaultTheme.fontFamily.sans]
+      },
       colors: {
         gray: {
           ...defaultTheme.colors.gray,
           100: '#fcfcfc',
-          500: '#999999',
-          900: '#222222'
+          600: '#999999'
+        },
+        orange: {
+          ...defaultTheme.colors.orange,
+          400: '#c2a66c',
+          100: '#f1f1ef'
         }
-      },
-      fontFamily: {
-        sans: ['"Helvetica Neue"', ...defaultTheme.fontFamily.sans]
       }
     }
   }

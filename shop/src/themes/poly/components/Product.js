@@ -12,7 +12,7 @@ const Product = ({ match }) => {
   const [, dispatch] = useStateValue()
   const { product, variant, loading } = useProduct(match.params.id)
 
-  if (loading) {
+  if (loading || !product) {
     return null
   }
 
