@@ -1,6 +1,6 @@
 const ethers = require('ethers')
 const fs = require('fs')
-const { pick, sortBy, get, set, kebabCase } = require('lodash/pick')
+const { pick, sortBy, get, set, kebabCase } = require('lodash')
 const { execFile } = require('child_process')
 const formidable = require('formidable')
 const https = require('https')
@@ -345,6 +345,7 @@ module.exports = function (router) {
 
   /**
    * Creates a new shop.
+   *
    * The following fields from req.body are used:
    * @param {string} name: Name of the store.
    * @param {string} dataDir: Seed data dir. This is usually set to the shop's name.
@@ -369,7 +370,7 @@ module.exports = function (router) {
    */
   router.post('/shop', authUser, async (req, res) => {
     const data = { ...req.body, seller: req.seller }
-    const result = createShop(data)
+    const result = await createShop(data)
     if (!result.success) {
       return res.status(400).json({
         success: false,

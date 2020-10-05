@@ -7,15 +7,18 @@ const set = require('lodash/set')
 const { getPublicUrl, getDataUrl, getDataDir } = require('../../utils/shop')
 const { genPGP } = require('../../utils/pgp')
 const { DSHOP_CACHE } = require('../../utils/const')
-const { getConfig, setConfig } = require('../utils/encryptedConfig')
-const { getLogger } = require('../utils/logger')
-const configs = require('../../shop-templates/configs')
-const { Shop, SellerShop, Network } = require('../models')
+const { getConfig, setConfig } = require('../../utils/encryptedConfig')
+const { getLogger } = require('../../utils/logger')
+const configs = require('../../config/baseConfig')
+const { Shop, SellerShop, Network } = require('../../models')
 const printfulSyncProcessor = require('../../queues/printfulSyncProcessor')
 
 const log = getLogger('logic.shop.create')
 
-// List of shop templates - see src/backend/db/shop-templates
+// Directory containing shop config templates.
+const templatesDir = `${__dirname}/../../config/templates`
+
+// List of shop config templates currently supported.
 const supportedTemplateTypes = [
   'single-product',
   'multi-product',
@@ -124,13 +127,14 @@ async function createShop({
   printfulApi,
   shopType
 }) {
+  log.debug('createShop called')
   shopType = shopType || 'empty'
   dataDir = kebabCase(dataDir)
 
   // Determine the data directory name to use, except in 'local-dir' mode
   // since in that case we point to the same data directory as the original store.
   if (shopType !== 'local-dir') {
-    dataDir = getDataDir(dataDir)
+    dataDir = await getDataDir(dataDir)
   }
 
   const OutputDir = `${DSHOP_CACHE}/${dataDir}`
@@ -287,7 +291,7 @@ async function createShop({
   if (supportedTemplateTypes.indexOf(shopType) >= 0) {
     log.info(`Using shop template for shop type: ${shopType}`)
 
-    const shopTpl = `${__dirname}/../shop-templates/${shopType}`
+    const shopTpl = `${templatesDir}/${shopType}`
     const config = fs.readFileSync(`${shopTpl}/config.json`).toString()
     templateShopJsonConfig = JSON.parse(config)
     await new Promise((resolve, reject) => {

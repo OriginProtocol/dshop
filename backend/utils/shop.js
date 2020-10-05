@@ -87,23 +87,25 @@ async function _tryDataDir(dataDir) {
 
 /**
  * Generates the name of the data directory to use for a new shop
- * in the dshop cache on-disk. Ensure there is no conflict with any
- * existing shops by adding a postfix if necessary.
+ * Ensure there is no conflict with any existing shops by adding
+ * a postfix if necessary.
  *
  * @param {string} dir: suggested data directory.
  */
-async function getDataDir(seedDataDir) {
+async function getDataDir(dir) {
   let dataDir, basename, postfix
 
   // Check if the data dir passed as argument already includes a postfix.
   // If it does, extract the postfix number and increment it.
-  const existingPostfix = seedDataDir.match(/^(.*)-([0-9]+)$/)
+  const existingPostfix = dir.match(/^(.*)-([0-9]+)$/)
   if (existingPostfix && existingPostfix.length === 2) {
     basename = existingPostfix[1]
     postfix = Number(existingPostfix[2]) + 1
+    dataDir = `${basename}-${postfix}`
   } else {
-    basename = seedDataDir
+    basename = dir
     postfix = 0
+    dataDir = dir
   }
 
   // If dataDir already exists, try dataDir-1, dataDir-2 etc until it works

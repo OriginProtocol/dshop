@@ -7,11 +7,16 @@ const fs = require('fs')
 const { exec, execFile } = require('child_process')
 const services = require('@origin/services')
 
+const { apiRequest } = require('./utils')
+
 const {
   BACKEND_PORT,
   TEST_TMP_DIR,
   TEST_DATABASE_URL,
-  TEST_DSHOP_CACHE
+  TEST_DSHOP_CACHE,
+  TEST_NETWORK_ID,
+  USER_EMAIL_1,
+  USER_PASS_1
 } = require('./const')
 
 const isWatchMode = process.argv.some(
@@ -54,6 +59,43 @@ before(async function () {
       deployContracts: true,
       ipfs: true
     })
+  }
+
+  // Create a super-admin user, log it in and activate the 999 network.
+  let body = {
+    name: 'Test user',
+    email: USER_EMAIL_1,
+    password: USER_PASS_1,
+    superuser: true
+  }
+  let response = await apiRequest({
+    method: 'POST',
+    endpoint: '/auth/registration',
+    body
+  })
+  if (!response.success) {
+    throw new Error('Failed registering a super-admin user')
+  }
+
+  body = {
+    email: USER_EMAIL_1,
+    password: USER_PASS_1
+  }
+  response = await apiRequest({
+    method: 'POST',
+    endpoint: '/superuser/login',
+    body
+  })
+  if (!response.success) {
+    throw new Error('Failed logging in the super-admin user')
+  }
+
+  response = await apiRequest({
+    method: 'POST',
+    endpoint: `/networks/${TEST_NETWORK_ID}/make-active`
+  })
+  if (!response.success) {
+    throw new Error('Failed activating network 999')
   }
 })
 
