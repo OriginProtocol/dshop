@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useState, useContext } from 'react'
 
 import useIsMobile from 'utils/useIsMobile'
 import * as Gallery from 'components/Gallery'
@@ -72,30 +72,43 @@ const Thumbnails = () => {
 }
 
 const ActiveImage = () => {
+  const [over, setOver] = useState('0')
   const [{ images, active }, setState] = useContext(Gallery.Context)
   return (
-    <div className="relative">
-      <div
-        className="w-16 h-16 opacity-50 absolute z-10 bg-no-repeat bg-center hover:opacity-100 cursor-pointer bg-contain transition-opacity duration-100"
-        style={{
-          backgroundImage: 'url(images/left-arrow-large.svg)',
-          top: 'calc(50% - 2rem)'
-        }}
-        onClick={() => {
-          setState({ active: active === 0 ? images.length - 1 : active - 1 })
-        }}
-      />
-      <div
-        className="w-16 h-16 opacity-50 absolute z-10 bg-no-repeat bg-center hover:opacity-100 cursor-pointer bg-contain transition-opacity duration-100"
-        style={{
-          backgroundImage: 'url(images/right-arrow-large.svg)',
-          top: 'calc(50% - 2rem)',
-          right: 0
-        }}
-        onClick={() => {
-          setState({ active: active === images.length - 1 ? 0 : active + 1 })
-        }}
-      />
+    <div
+      className="relative"
+      onMouseOver={() => setOver('50')}
+      onMouseOut={() => setOver('0')}
+    >
+      {images.length <= 1 ? null : (
+        <>
+          <div
+            className={`w-16 h-16 opacity-${over} absolute z-10 bg-no-repeat bg-center hover:opacity-100 cursor-pointer bg-contain transition-opacity duration-100`}
+            style={{
+              backgroundImage: 'url(images/left-arrow-large.svg)',
+              top: 'calc(50% - 2rem)'
+            }}
+            onClick={() => {
+              setState({
+                active: active === 0 ? images.length - 1 : active - 1
+              })
+            }}
+          />
+          <div
+            className={`w-16 h-16 opacity-${over} absolute z-10 bg-no-repeat bg-center hover:opacity-100 cursor-pointer bg-contain transition-opacity duration-100`}
+            style={{
+              backgroundImage: 'url(images/right-arrow-large.svg)',
+              top: 'calc(50% - 2rem)',
+              right: 0
+            }}
+            onClick={() => {
+              setState({
+                active: active === images.length - 1 ? 0 : active + 1
+              })
+            }}
+          />
+        </>
+      )}
       <img src={images[active]} />
     </div>
   )

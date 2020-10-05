@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useHistory } from 'react-router-dom'
+import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
 import useIsMobile from 'utils/useIsMobile'
@@ -15,10 +16,6 @@ const Header = ({ children, ...props }) => {
   const Cmp = isMobile ? HeaderMobile : HeaderDesktop
   return <Cmp {...props}>{children}</Cmp>
 }
-const defaultStyle = {
-  backgroundImage: 'url(ybm/header.jpg)',
-  backgroundPosition: 'center 70%'
-}
 
 const MobileMenu = ({ toggleMobileMenu }) => {
   const [{ cart }] = useStateValue()
@@ -31,7 +28,7 @@ const MobileMenu = ({ toggleMobileMenu }) => {
     >
       <div className="flex justify-between items-center w-full">
         <Close />
-        <img src="ybm/YBM Black trans.PNG" style={{ height: 100 }} />
+        <img style={{ height: 100 }} src={`${config.dataSrc}${config.logo}`} />
         <Cart cart={cart} bg={true} />
       </div>
       <div className="text-3xl font-medium mt-12 text-center">
@@ -82,8 +79,14 @@ const MobileMenu = ({ toggleMobileMenu }) => {
 }
 
 const HeaderMobile = ({ style, children }) => {
+  const { config } = useConfig()
   if (!children) {
     return <MobileLinks>{children}</MobileLinks>
+  }
+
+  const defaultStyle = {
+    backgroundImage: `url(${config.dataSrc}${get(config, 'theme.header.src')})`,
+    backgroundPosition: get(config, 'theme.header.position')
   }
   return (
     <div
@@ -100,6 +103,7 @@ const HeaderMobile = ({ style, children }) => {
 const MobileLinks = ({ children }) => {
   const [mobileMenu, showMobileMenu] = useState(false)
   const [{ cart }] = useStateValue()
+  const { config } = useConfig()
   function toggleMobileMenu() {
     const body = document.querySelector('body')
     if (mobileMenu) {
@@ -122,7 +126,10 @@ const MobileLinks = ({ children }) => {
           <MenuIcon color={children ? '#fff' : '#000'} />
         </a>
         <Link to="/">
-          <img src="ybm/YBM Black trans.PNG" style={{ height: 100 }} />
+          <img
+            style={{ height: 100 }}
+            src={`${config.dataSrc}${config.logo}`}
+          />
         </Link>
         <Cart cart={cart} bg={children ? true : false} />
       </div>
@@ -133,9 +140,16 @@ const MobileLinks = ({ children }) => {
 }
 
 const HeaderDesktop = ({ children, style }) => {
+  const { config } = useConfig()
   if (!children) {
     return <DesktopLinks bg={children} />
   }
+
+  const defaultStyle = {
+    backgroundImage: `url(${config.dataSrc}${get(config, 'theme.header.src')})`,
+    backgroundPosition: get(config, 'theme.header.position')
+  }
+
   return (
     <div
       className="text-white bg-cover bg-no-repeat bg-black font-light"
@@ -167,7 +181,7 @@ const DesktopLinks = ({ bg }) => {
         </Link>
       </div>
       <Link to="/">
-        <img src="ybm/YBM Black trans.PNG" style={{ height: 120 }} />
+        <img style={{ height: 120 }} src={`${config.dataSrc}${config.logo}`} />
       </Link>
       <div className="flex-1 flex justify-end items-center">
         <SocialLink

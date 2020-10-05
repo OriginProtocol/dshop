@@ -1,4 +1,5 @@
 import React from 'react'
+import get from 'lodash/get'
 
 import useAbout from 'utils/useAbout'
 import useConfig from 'utils/useConfig'
@@ -9,28 +10,31 @@ import Footer from './_Footer'
 const About = () => {
   const { config } = useConfig()
   const { about } = useAbout()
-  const src = `${config.dataSrc}official-ybm-distressed-dad-hat-alternate/orig/2ebf65b9c0d60c039a6c3afe41dc1ae0.jpg`
+
+  const section = get(config, 'theme.about.section', {})
+  const header = get(config, 'theme.about.header', {})
+  const primaryImage = get(config, 'theme.about.primaryImage', {})
 
   return (
     <>
       <Header
         style={{
-          backgroundImage: 'url(ybm/header-2.jpg)',
-          backgroundPosition: 'center 20%'
+          backgroundImage: `url(${config.dataSrc}${header.src})`,
+          backgroundPosition: header.position
         }}
       >
         <div className="container text-center text-3xl sm:text-5xl pt-20 pb-32 sm:pb-40">
-          About Young Black Money Merch
+          {`About ${config.title}`}
         </div>
       </Header>
       <div className="sm:container sm:my-16 flex flex-col sm:flex-row">
         <div className="flex-1 order-2 sm:order-1">
           <div
             style={{
-              paddingTop: '120%',
-              backgroundSize: '120%',
-              backgroundImage: `url(${src})`,
-              backgroundPosition: 'center top'
+              paddingTop: primaryImage.height,
+              backgroundSize: primaryImage.size,
+              backgroundImage: `url(${config.dataSrc}${primaryImage.src})`,
+              backgroundPosition: primaryImage.position
             }}
             className="bg-no-repeat bg-center"
           />
@@ -46,54 +50,41 @@ const About = () => {
       </div>
       <div className="bg-orange-100 pb-20">
         <div className="container text-gray-600 text-center py-12 sm:py-24 text-lg sm:text-2xl leading-tight font-light">
-          Currently we provide Music Publishing/Distribution, Artist/Group
-          Management, Artist/Group Consultations, and Digital Web Presence
-          Creation/Managment (e-Commerce platforms, Social Media, Youtube, etc).
+          {section.description}
         </div>
         <div className="sm:container">
           <div className="flex gap-4 sm:gap-10">
             <div className="flex-1 flex flex-col gap-4 sm:gap-10">
-              <div
-                className="bg-no-repeat"
-                style={{
-                  paddingTop: '71%',
-                  backgroundSize: '200%',
-                  backgroundPosition: '50% 43%',
-                  backgroundImage:
-                    'url(ybm/official-leano-pandemic-ep-hoodie/orig/eaebc5de0c8bc2127f46cafa2832b3fb.jpg)'
-                }}
-              />
-              <div
-                className="bg-no-repeat"
-                style={{
-                  paddingTop: '128%',
-                  backgroundSize: '175%',
-                  backgroundImage:
-                    'url(ybm/official-leano-pandemic-ep-distressed-dad-hat/orig/e70a1b9c7cb356b4a77d3610a6562c64.jpg)'
-                }}
-              />
+              {get(config, 'theme.about.section.images[0]', []).map(
+                (img, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-no-repeat"
+                    style={{
+                      paddingTop: img.height,
+                      backgroundSize: img.size,
+                      backgroundPosition: img.position,
+                      backgroundImage: `url(${config.dataSrc}${img.src})`
+                    }}
+                  />
+                )
+              )}
             </div>
             <div className="flex-1 flex flex-col gap-4 sm:gap-10">
-              <div
-                className="bg-no-repeat"
-                style={{
-                  flex: '71%',
-                  backgroundSize: '150%',
-                  backgroundPosition: '32% 50%',
-                  backgroundImage:
-                    'url(ybm/official-ybm-embroidered-champion-backpack/orig/952bfdecab4e54c04e5a4900fb56785d.jpg)'
-                }}
-              />
-              <div
-                className="bg-no-repeat"
-                style={{
-                  flex: '31%',
-                  backgroundSize: '200%',
-                  backgroundPosition: '42% 60%',
-                  backgroundImage:
-                    'url(ybm/official-ybm-iphone-case/orig/5dadeb09b1a1e74c47775e53a8f7f177.jpg)'
-                }}
-              />
+              {get(config, 'theme.about.section.images[1]', []).map(
+                (img, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-no-repeat"
+                    style={{
+                      flex: img.flex,
+                      backgroundSize: img.size,
+                      backgroundPosition: img.position,
+                      backgroundImage: `url(${config.dataSrc}${img.src})`
+                    }}
+                  />
+                )
+              )}
             </div>
           </div>
         </div>

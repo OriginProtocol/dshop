@@ -85,7 +85,9 @@ const Row = ({ title, quantity, img, price, onRemove }) => (
     <div className="border-t py-6 flex items-center justify-center dark:border-gray-600">
       {quantity}
     </div>
-    <div className="border-t py-6 flex items-center justify-end dark:border-gray-600">{price}</div>
+    <div className="border-t py-6 flex items-center justify-end dark:border-gray-600">
+      {price}
+    </div>
   </>
 )
 

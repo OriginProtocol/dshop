@@ -1,20 +1,23 @@
-# YBM theme
+# Dshop Themes
 
+Start the UI with `THEME=themename npm start` to override the default theme.
+
+## TODO
+
+### YBM
+
+- 'Products' dropdown with collections in header
 - Product option dropdown move arrow
-- Product image arrows on hover
-- About page social icons on mobile
-- Opacity on checkout breadcrumbs
 - Show logo on checkout
-- Opacity in footer links
 
-## Art theme
+### Art
 
 - Header image on black background 80% opacity
 - Left align crypto payment table
 - Padding under paragraphs on about page
 - Get rid of crypto icons on checkout
 
-## Poly
+### Poly
 
 - Dark mode cryto payment border color
 - Homepage images alignment

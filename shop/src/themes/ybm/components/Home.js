@@ -1,4 +1,7 @@
 import React from 'react'
+import get from 'lodash/get'
+
+import useConfig from 'utils/useConfig'
 
 import Link from 'components/Link'
 
@@ -7,6 +10,7 @@ import Footer from './_Footer'
 import Collections from './_Collections'
 
 const Home = () => {
+  const { config } = useConfig()
   return (
     <>
       <Header>
@@ -14,7 +18,7 @@ const Home = () => {
           className="text-center mt-24 text-3xl sm:text-5xl leading-tight mx-auto"
           style={{ maxWidth: 600 }}
         >
-          High-quality merch from Atlanta, Georgia since 2017
+          {config.byline}
         </div>
         <div className="text-center pt-12 pb-40 sm:pb-60">
           <Link to="/products" className="btn btn-primary btn-xl">
@@ -24,10 +28,7 @@ const Home = () => {
       </Header>
       <div className="bg-orange-100">
         <div className="container text-gray-600 text-center py-12 sm:py-24 text-lg sm:text-2xl leading-tight font-light">
-          Our mission is to provide a conglomerate of multi-media services to
-          metro-Atlanta and its surrounding areas. We promote and support ideas
-          from all entrepreneurs, freelancers, business owners, future moguls,
-          etc.
+          {get(config, 'theme.home.aboutText')}
         </div>
       </div>
       <div className="sm:container sm:mt-20 mb-32">
