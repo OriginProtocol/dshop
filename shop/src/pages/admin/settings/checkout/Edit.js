@@ -10,6 +10,7 @@ import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
 import ManualTaxes from './_Taxes'
+import taxInputValidation from './_taxInputValidation'
 
 function reducer(state, newState) {
   return { ...state, ...newState }
@@ -57,6 +58,14 @@ const CheckoutSettings = () => {
         if (saving) return
 
         setSaving(true)
+
+        const { valid, newState } = taxInputValidation(state)
+
+        if (!valid) {
+          setSaving(false)
+          setState(newState)
+          return
+        }
 
         try {
           const shopConfig = pickBy(state, (v, k) => !k.endsWith('Error'))
@@ -106,7 +115,6 @@ const CheckoutSettings = () => {
       </h3>
       <div className="row">
         <div className="shop-settings col-md-8 col-lg-9">
-
           <div className="manual-taxes-wrapper">
             <ManualTaxes state={state} setState={setState} />
           </div>
