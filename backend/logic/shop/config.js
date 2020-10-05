@@ -1,0 +1,361 @@
+const fs = require('fs')
+const mv = require('mv')
+const path = require('path')
+const { get, set, kebabCase, pick } = require('lodash')
+
+const { validateStripeKeys } = require('@origin/utils/stripe')
+
+const { Shop, Network, Sequelize } = require('../models')
+const { getShopDataUrl, getShopPublicUrl } = require('../utils/shop')
+const {
+  deregisterPrintfulWebhook,
+  registerPrintfulWebhook
+} = require('../utils/printful')
+const paypalUtils = require('../utils/paypal')
+const stripeUtils = require('../utils/stripe')
+const { DSHOP_CACHE } = require('../utils/const')
+const { getConfig, setConfig } = require('../../utils/encryptedConfig')
+const { getLogger } = require('../../utils/logger')
+
+const log = getLogger('logic.shop.config')
+
+/**
+ * Utility function to move offline payment images (QR code for ex.) from
+ * the upload area to the shop's data directory.
+ *
+ * @param {object} paymentMethods
+ * @param {string} dataDir: the shop's data directory name.
+ * @returns {Promise<[]>}
+ */
+async function moveOfflinePaymentMethodImages(paymentMethods, dataDir) {
+  const out = []
+  const tmpDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/__tmp`)
+
+  for (const m of paymentMethods) {
+    const imagePath = m.qrImage
+    if (imagePath && imagePath.includes('/__tmp/')) {
+      const fileName = imagePath.split('/__tmp/', 2)[1]
+      const tmpFilePath = `${tmpDir}/${fileName}`
+
+      const targetDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/uploads`)
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true })
+      }
+      const targetPath = `${targetDir}/${fileName}`
+
+      const movedFileName = await new Promise((resolve) => {
+        mv(tmpFilePath, targetPath, (err) => {
+          if (err) {
+            console.error(`Couldn't move file`, tmpFilePath, targetPath, err)
+          }
+          resolve(fileName)
+        })
+      })
+
+      out.push({
+        ...m,
+        qrImage: movedFileName
+      })
+    } else {
+      out.push(m)
+    }
+  }
+
+  return out
+}
+
+/**
+ * Updates a shop configuration.
+ * Saves the config data in the DB and on disk. Handle the logic to configure
+ * integrations (payments, fulfillment, etc...) based on config changes.
+ *
+ * TODO: This method is not atomic. Any failure to update an on-disk config does not
+ * get rolled back and may result in inconsistent data between the DB and the disk.
+ *
+ * @param {models.Shop} shop
+ * @param {object} data: configuration data
+ * @returns {Promise<{reason: string, field: string, success: boolean}|{success: boolean}|{reason: string, success: boolean}>}
+ */
+async function updateShopConfig({ shop, data }) {
+  const shopId = shop.id
+  log.info(`Shop ${shopId} - Saving config`)
+
+  const dataOverride = {}
+
+  // Pick fields relevant to the shop's configuration stored in the DB.
+  const jsonConfig = pick(
+    data,
+    'currency',
+    'metaDescription',
+    'css',
+    'emailSubject',
+    'cartSummaryNote',
+    'byline',
+    'discountCodes',
+    'stripe',
+    'stripeKey',
+    'title',
+    'fullTitle',
+    'facebook',
+    'twitter',
+    'instagram',
+    'medium',
+    'youtube',
+    'about',
+    'logErrors',
+    'paypalClientId',
+    'offlinePaymentMethods',
+    'supportEmail',
+    'upholdClient',
+    'useEscrow',
+    'shippingApi',
+    'taxRates',
+    'themeId'
+  )
+  // Pick fields relevant to the shop's config.json stored in the cloud.
+  const jsonNetConfig = pick(
+    data,
+    'acceptedTokens',
+    'customTokens',
+    'listingId',
+    'disableCryptoPayments',
+    'walletAddress'
+  )
+
+  // Load the existing shop config from the DB.
+  const existingConfig = getConfig(shop.config)
+
+  // Load the network config from the DB.
+  const network = await Network.findOne({ where: { active: true } })
+  const netConfig = getConfig(network.config)
+
+  // Update shop's config stored directly as fields in the DB.
+  if (data.fullTitle) {
+    shop.name = data.fullTitle
+  }
+  if (data.listingId) {
+    if (!String(data.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
+      return { success: false, reason: 'Invalid listingId format' }
+    }
+    shop.listingId = data.listingId
+  }
+
+  //
+  // Configure the shop's hostname.
+  //
+  if (data.hostname) {
+    const hostname = kebabCase(data.hostname)
+    // Check the hostname picked by the merchant is available.
+    const existingShops = await Shop.findAll({
+      where: { hostname, [Sequelize.Op.not]: { id: shopId } }
+    })
+    if (existingShops.length) {
+      return { success: false, reason: 'Name unavailable', field: 'hostname' }
+    }
+    shop.hostname = hostname
+
+    // Unless explicitly set by the UI, update the public and dataUrl in the
+    // shop's DB config to reflect the change to the hostname.
+    if (!data.publicUrl) {
+      dataOverride.publicUrl = getShopPublicUrl(shop, netConfig)
+    }
+    if (!data.dataUrl) {
+      dataOverride.dataUrl = getShopDataUrl(shop, netConfig)
+    }
+  }
+
+  //
+  // Update the config.json file in the disk cache.
+  //
+  if (Object.keys(jsonConfig).length || Object.keys(jsonNetConfig).length) {
+    const configFile = `${DSHOP_CACHE}/${shop.authToken}/data/config.json`
+
+    if (!fs.existsSync(configFile)) {
+      return { success: false, reason: 'Failed loading config.json from disk' }
+    }
+
+    try {
+      const raw = fs.readFileSync(configFile).toString()
+      const config = JSON.parse(raw)
+      const newConfig = { ...config, ...jsonConfig }
+      if (Object.keys(jsonNetConfig).length) {
+        set(newConfig, `networks.${network.networkId}`, {
+          ...get(newConfig, `networks.${network.networkId}`),
+          ...jsonNetConfig
+        })
+      }
+
+      const jsonStr = JSON.stringify(newConfig, null, 2)
+      fs.writeFileSync(configFile, jsonStr)
+    } catch (e) {
+      log.error(e)
+      return { success: false, reason: 'Failed to update config.json' }
+    }
+  }
+
+  //
+  // Update the about file in the disk cache.
+  //
+  if (data.about) {
+    const dataDir = `${DSHOP_CACHE}/${shop.authToken}/data`
+    const aboutFile = `${dataDir}/${data.about}`
+
+    try {
+      fs.writeFileSync(aboutFile, data.aboutText)
+    } catch (e) {
+      log.error('Failed to update about file', dataDir, aboutFile, e)
+      return { success: false, reason: 'Failed to update about file' }
+    }
+  }
+
+  //
+  // Configure Stripe
+  //
+  if (data.stripe) {
+    log.info(`Shop ${shopId} - Registering Stripe webhook`)
+
+    const validKeys = validateStripeKeys({
+      publishableKey: data.stripeKey,
+      secretKey: data.stripeBackend
+    })
+
+    if (!validKeys) {
+      return { success: false, reason: 'Invalid Stripe credentials' }
+    }
+
+    const { secret } = await stripeUtils.registerWebhooks(
+      shop,
+      data,
+      existingConfig,
+      data.stripeWebhookHost || netConfig.backendUrl
+    )
+    dataOverride.stripeWebhookSecret = secret
+  } else {
+    log.info(`Shop ${shopId} - Deregistering Stripe webhook`)
+    await stripeUtils.deregisterWebhooks(shop, existingConfig)
+    dataOverride.stripeWebhookSecret = ''
+    dataOverride.stripeWebhookHost = ''
+    dataOverride.stripeBackend = ''
+  }
+
+  //
+  // Configure PayPal
+  ///
+  if (data.paypal) {
+    log.info(`Shop ${shopId} - Registering PayPal webhook`)
+    const client = paypalUtils.getClient(
+      netConfig.paypalEnvironment,
+      data.paypalClientId,
+      data.paypalClientSecret
+    )
+    const valid = await paypalUtils.validateCredentials(client)
+    if (!valid) {
+      return { success: false, reason: 'Invalid PayPal credentials' }
+    }
+
+    if (existingConfig.paypal && existingConfig.paypalWebhookId) {
+      await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
+    }
+    const result = await paypalUtils.registerWebhooks(
+      shopId,
+      { ...existingConfig, ...data },
+      netConfig
+    )
+    dataOverride.paypalWebhookId = result.webhookId
+  } else if (existingConfig.paypal && data.paypal === false) {
+    log.info(`Shop ${shopId} - De-registering PayPal webhook`)
+
+    await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
+    dataOverride.paypalWebhookId = null
+  }
+
+  //
+  // Configure offline payment
+  //
+  if (data.offlinePaymentMethods) {
+    jsonConfig.offlinePaymentMethods = await moveOfflinePaymentMethodImages(
+      data.offlinePaymentMethods,
+      shop.authToken
+    )
+  }
+  // Add offlinePaymentMethods to the data save in the DB config
+  if (jsonConfig.offlinePaymentMethods) {
+    dataOverride.offlinePaymentMethods = jsonConfig.offlinePaymentMethods
+  }
+
+  //
+  // Configure Printful
+  //
+  if (data.printful) {
+    log.info(`Shop ${shopId} - Registering Printful webhook`)
+    const printfulWebhookSecret = await registerPrintfulWebhook(
+      shopId,
+      { ...existingConfig, ...data },
+      netConfig.backendUrl
+    )
+
+    dataOverride.printfulWebhookSecret = printfulWebhookSecret
+  } else if (existingConfig.printful && data.printful === false) {
+    log.info(`Shop ${shopId} - Deregistering Printful webhook`)
+    await deregisterPrintfulWebhook(shopId, existingConfig)
+    dataOverride.printfulWebhookSecret = ''
+  }
+
+  //
+  // Save the config in the DB.
+  //
+  log.info(`Shop ${shopId} - Saving config in the DB.`)
+  const shopConfigFields = pick(
+    { ...existingConfig, ...data, ...dataOverride },
+    'awsAccessKey',
+    'awsAccessSecret',
+    'awsRegion',
+    'bigQueryCredentials',
+    'bigQueryTable',
+    'dataUrl',
+    'deliveryApi',
+    'email',
+    'emailSubject',
+    'hostname',
+    'listener',
+    'mailgunSmtpLogin',
+    'mailgunSmtpPassword',
+    'mailgunSmtpPort',
+    'mailgunSmtpServer',
+    'offlinePaymentMethods',
+    'password',
+    'paypal',
+    'paypalClientId',
+    'paypalClientSecret',
+    'paypalWebhookHost',
+    'paypalWebhookId',
+    'pgpPrivateKey',
+    'pgpPrivateKeyPass',
+    'pgpPublicKey',
+    'printful',
+    'printfulAutoFulfill',
+    'processingTime',
+    'publicUrl',
+    'sendgridApiKey',
+    'sendgridPassword',
+    'sendgridUsername',
+    'shippingFrom',
+    'stripeBackend',
+    'stripeWebhookSecret',
+    'stripeWebhookHost',
+    'supportEmail',
+    'upholdApi',
+    'upholdClient',
+    'upholdSecret',
+    'web3Pk'
+  )
+  shop.config = setConfig(shopConfigFields, shop.config) // encrypt the config.
+  shop.hasChanges = true
+  await shop.save()
+
+  return { success: true }
+}
+
+module.exports = {
+  updateShopConfig
+}
