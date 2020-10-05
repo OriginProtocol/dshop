@@ -308,7 +308,7 @@ async function createShop({
   const baseShopJsonConfig = configs.shopConfig
 
   // Use the generic shop json config as a base and adds to it the
-  // template specific overrides. Also set some other fields.
+  // template specific overrides. Also a few other fields.
   let shopJsonConfig = {
     ...baseShopJsonConfig,
     ...templateShopJsonConfig,
@@ -319,7 +319,7 @@ async function createShop({
     pgpPublicKey: pgpKeys.pgpPublicKey.replace(/\\r/g, '')
   }
 
-  // Add the back-end URL.
+  // Set the back-end URL.
   const netPath = `networks[${network.networkId}]`
   shopJsonConfig = set(
     shopJsonConfig,
