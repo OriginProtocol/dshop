@@ -14,7 +14,9 @@
 - Padding under paragraphs on about page
 - Get rid of crypto icons on checkout
 
-# Poly
+## Poly
 
 - Dark mode cryto payment border color
 - Homepage images alignment
+- Product detail pixel space on mobile
+- Mobile menu (from YBM)

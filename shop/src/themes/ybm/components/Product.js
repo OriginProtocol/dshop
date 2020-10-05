@@ -34,6 +34,16 @@ const ProductDetail = ({ match }) => {
   if (loading) {
     return <div className="min-h-screen" />
   }
+  if (!product) {
+    return (
+      <div className="text-center my-32">
+        <div className="text-3xl mb-12">Product not found</div>
+        <Link to="/" className="btn btn-primary">
+          Continue Shopping
+        </Link>
+      </div>
+    )
+  }
 
   const colLink = collection ? `/collections/${collection.id}` : ''
 
