@@ -803,6 +803,7 @@ module.exports = function (router) {
         'upholdClient',
         'useEscrow',
         'shippingApi',
+        'taxRates',
         'themeId'
       )
       const jsonNetConfig = pick(
