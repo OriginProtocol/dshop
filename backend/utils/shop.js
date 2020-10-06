@@ -86,6 +86,17 @@ async function _tryDataDir(dataDir) {
 }
 
 /**
+ * Checks a data dir is valid.
+ * Only alphanumeric and hyphen characters are allowed.
+ *
+ * @param {string} dir
+ * @returns {boolean}
+ */
+function isValidDataDir(dir) {
+  return Boolean(dir.match(/^[a-zA-Z0-9-]+$/))
+}
+
+/**
  * Generates the name of the data directory to use for a new shop
  * Ensure there is no conflict with any existing shops by adding
  * a postfix if necessary.
@@ -123,5 +134,6 @@ module.exports = {
   getShopPublicUrl,
   getDataUrl,
   getPublicUrl,
-  getDataDir
+  getDataDir,
+  isValidDataDir
 }

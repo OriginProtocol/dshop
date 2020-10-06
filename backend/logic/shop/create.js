@@ -4,7 +4,12 @@ const kebabCase = require('lodash/kebabCase')
 const { isHexPrefixed, addHexPrefix } = require('ethereumjs-util')
 const set = require('lodash/set')
 
-const { getPublicUrl, getDataUrl, getDataDir } = require('../../utils/shop')
+const {
+  getPublicUrl,
+  getDataUrl,
+  getDataDir,
+  isValidDataDir
+} = require('../../utils/shop')
 const { genPGP } = require('../../utils/pgp')
 const { DSHOP_CACHE } = require('../../utils/const')
 const { getConfig, setConfig } = require('../../utils/encryptedConfig')
@@ -25,6 +30,20 @@ const supportedTemplateTypes = [
   'affiliate',
   'empty'
 ]
+
+/**
+ * Utility to check the validity of a store name.
+ * Only alphabetical characters, numbers, space, hyphen and apostrophe are allowed.
+ *
+ * TODO: Add support for UTF8 characters. This requires changes throughout
+ * the stack and in particular encoding/decoding the shop name in URLs.
+ *
+ * @param {string} name
+ * @returns {boolean}
+ */
+function isValidStoreName(name) {
+  return Boolean(name.match(/^[a-zA-Z0-9-' ]+$/))
+}
 
 /**
  * Create a new shop in the DB.
@@ -50,13 +69,8 @@ async function createShopInDB({
   if (!name) {
     return { error: 'Provide a shop name' }
   }
-  // Remove any leading/trailing space.
-  name = name.trim()
 
-  // Store name must only contain alpha-numeric characters and space.
-  // TODO: Add support for UTF_8 characters. This requires changes throughout the stack
-  //       and in particular encoding/decoding shop name in URLs.
-  if (!name.match(/^[a-zA-Z0-9\-' ]+$/)) {
+  if (!isValidStoreName(name)) {
     return {
       error:
         'The shop name contains invalid character. Only alphabetical characters, numbers, space, hyphen and apostrophe are allowed.'
@@ -94,6 +108,9 @@ async function createShopInDB({
 
 /**
  * Creates a new shop.
+ *
+ * TODO: break this large method into smaller functions.
+ *
  * @param {models.Seller} seller DB object
  * @param {string} name: Name of the store.
  * @param {string} dataDir: Seed data dir. This is usually set to the shop's name.
@@ -129,10 +146,28 @@ async function createShop({
 }) {
   log.debug('createShop called')
   shopType = shopType || 'empty'
-  dataDir = kebabCase(dataDir)
+
+  if (!isValidStoreName(name)) {
+    return {
+      success: false,
+      reason: 'invalid',
+      field: 'name',
+      message: 'Store name must be alphanumeric'
+    }
+  }
+
+  if (!isValidDataDir(dataDir)) {
+    return {
+      success: false,
+      reason: 'invalid',
+      field: 'dataDir',
+      message: 'Invalid dataDir'
+    }
+  }
 
   // Determine the data directory name to use, except in 'local-dir' mode
   // since in that case we point to the same data directory as the original store.
+  dataDir = kebabCase(dataDir)
   if (shopType !== 'local-dir') {
     dataDir = await getDataDir(dataDir)
   }
