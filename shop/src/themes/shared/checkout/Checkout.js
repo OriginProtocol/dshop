@@ -70,7 +70,7 @@ const Desktop = ({ currentStep, config }) => {
       className += ' text-gray-500'
     }
     if (currentStep >= step) {
-      className += ' dark:border-white border-black'
+      className += ' dark:border-white border-black hover:opacity-75'
     } else {
       className += ' dark:border-gray-500'
     }

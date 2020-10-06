@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  @font-face {
+    font-family: Avenir;
+    font-weight: 300;
+    src: url(fonts/Avenir-Light.ttf);
+  }
+  @font-face {
+    font-family: Avenir;
+    font-weight: 400;
+    src: url(fonts/Avenir-Medium.ttf);
+  }
+  @font-face {
+    font-family: Avenir;
+    font-weight: 800;
+    src: url(fonts/Avenir-Heavy.ttf);
+  }
+
+  .btn {
+    @apply border border-orange-400 px-4 py-3 text-lg transition-all duration-300 ease-in-out text-orange-400 font-medium;
+  }
+  .btn:hover {
+    @apply bg-orange-400 text-black;
+  }
+
+  .btn-xl {
+    @apply text-xl px-6;
+  }
+
+  .btn-primary {
+    @apply bg-orange-400 text-black;
+  }
+
+  .btn-primary:hover {
+    @apply bg-black text-orange-400;
+  }
+
+  .btn-secondary {
+    @apply border-black text-black;
+  }
+  .btn-secondary:hover {
+    @apply bg-black text-white;
+  }
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (min-width: 640px) {
+  .container,
+  .sm\:container {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}

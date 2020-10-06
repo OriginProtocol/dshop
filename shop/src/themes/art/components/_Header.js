@@ -39,10 +39,8 @@ const Header = () => {
   const Social = ({ href, height = 16 }) => (
     <SocialLink
       className="hidden md:block mr-12 flex items-center hover:opacity-50"
-      color={bg ? '#fff' : '#000'}
       href={href}
-      iconStyle={{ height }}
-      iconClass="inline-block"
+      svg={{ className: 'inline-block', height, color: bg ? '#fff' : '#000' }}
     />
   )
 
@@ -160,18 +158,15 @@ const Header = () => {
           <div className="mt-auto">
             <SocialLink
               href={config.twitter}
-              iconStyle={{ height: 18 }}
-              iconClass="inline-block"
+              svg={{ height: 18, className: 'inline-block' }}
             />
             <SocialLink
               href={config.facebook}
-              iconStyle={{ height: 18 }}
-              iconClass="ml-6 inline-block"
+              svg={{ height: 18, className: 'ml-6 inline-block' }}
             />
             <SocialLink
               href={config.instagram}
-              iconStyle={{ height: 18 }}
-              iconClass="ml-6 inline-block"
+              svg={{ height: 18, className: 'ml-6 inline-block' }}
             />
           </div>
         </div>

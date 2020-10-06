@@ -34,14 +34,12 @@ const Footer = () => {
         </div>
         <div className="flex gap-4">
           <SocialLink
-            color="#fff"
             href={config.twitter}
-            iconStyle={{ height: '16' }}
+            svg={{ height: '16', color: '#fff' }}
           />
           <SocialLink
-            color="#fff"
             href={config.instagram}
-            iconStyle={{ height: '16' }}
+            svg={{ height: '16', color: '#fff' }}
           />
         </div>
         <div className="flex-1 flex justify-end gap-4 sm:flex-row">
