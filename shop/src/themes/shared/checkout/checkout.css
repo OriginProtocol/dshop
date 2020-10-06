@@ -34,21 +34,11 @@
   font-weight: normal;
   color: #9faebd;
   padding: 0.5rem;
-}
-
-.pay-with-crypto table tbody tr td.input-container .token-logo.active {
-  background-color: #000;
+  text-align: left;
 }
 
 .pay-with-crypto table tbody tr td.input-container .token-logo {
-  width: 15px;
-  height: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background-color: #cdd7e0;
-  margin-right: 5px;
+  display: none;
 }
 
 .pay-with-crypto table tbody tr td.input-container img {

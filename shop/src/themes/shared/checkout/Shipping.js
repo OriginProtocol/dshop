@@ -90,7 +90,7 @@ export const Shipping = () => {
         </Link>
         <a
           href="#"
-          className={`btn btn-primary${disabled ? ' opacity-50' : ''}`}
+          className={`btn btn-primary px-8${disabled ? ' opacity-50' : ''}`}
           onClick={(e) => {
             e.preventDefault()
             if (disabled) return

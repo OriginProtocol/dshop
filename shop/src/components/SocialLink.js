@@ -10,7 +10,7 @@ const CmpMap = {
   instagram: Instagram
 }
 
-const SocialLink = ({ href, className, color, iconStyle, iconClass }) => {
+const SocialLink = ({ href, className, svg = {} }) => {
   if (!href) return null
 
   const key = Object.keys(CmpMap).find((s) => href.match(new RegExp(s, 'i')))
@@ -22,7 +22,7 @@ const SocialLink = ({ href, className, color, iconStyle, iconClass }) => {
 
   return (
     <a className={className} href={href} target="_blank" rel="noreferrer">
-      <Cmp className={iconClass} style={iconStyle} color={color} />
+      <Cmp {...svg} />
     </a>
   )
 }

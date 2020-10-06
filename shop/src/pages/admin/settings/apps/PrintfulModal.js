@@ -12,7 +12,7 @@ const reducer = (state, newState) => ({ ...state, ...newState })
 
 const initialState = {
   printful: '',
-  printfulAutoFulfill: false,
+  printfulAutoFulfill: true,
   shippingApi: true
 }
 

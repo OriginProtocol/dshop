@@ -12,10 +12,8 @@ const Footer = () => {
   const Social = ({ href, height = 16, first }) => (
     <SocialLink
       className={first ? null : 'ml-8'}
-      color="#999"
       href={href}
-      iconStyle={{ height }}
-      iconClass="inline-block"
+      svg={{ className: 'inline-block', height, color: '#999' }}
     />
   )
 

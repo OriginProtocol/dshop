@@ -37,7 +37,7 @@ function isCryptoName(v, tlds = CRYPTO_DOMAINS) {
  * @param v {string} - The string to check
  * @returns {boolean} - if the given name is a crypto domain
  */
-function isUnsoppableName(v) {
+function isUnstoppableName(v) {
   return isCryptoName(v, UNSTOPPABLE_TLDS)
 }
 
@@ -203,7 +203,7 @@ async function verifyDNS(domain, hostname, networkId, shop) {
     }
   }
 
-  if (isUnsoppableName(domain)) {
+  if (isUnstoppableName(domain)) {
     try {
       const resolution = new Resolution()
       const hash = await resolution.ipfsHash(domain)
@@ -316,7 +316,7 @@ async function verifyDNS(domain, hostname, networkId, shop) {
 
 module.exports = {
   isPublicDNSName,
-  isUnsoppableName,
+  isUnstoppableName,
   isCryptoName,
   isValidDNSName,
   isValidTLD,
