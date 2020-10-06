@@ -13,6 +13,7 @@ module.exports = {
       colors: {
         red: {
           ...defaultTheme.colors.red,
+          100: '#fcf8f8',
           400: '#d18172'
         }
       },

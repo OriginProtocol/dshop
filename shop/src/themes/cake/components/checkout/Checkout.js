@@ -29,7 +29,7 @@ const Checkout = () => {
 const Mobile = ({ config }) => {
   const [{ cart }] = useStateValue()
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-red-100">
       <div className="p-8 pb-6 pt-10">
         <div className="text-2xl font-medium">{config.title}</div>
       </div>
@@ -73,13 +73,12 @@ const Desktop = ({ currentStep, config }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="bg-white">
+    <div className="min-h-screen bg-red-100">
+      <div className="bg-red-100">
         <div className="container pt-16 pb-8">
           <div className="text-2xl">{config.title}</div>
         </div>
       </div>
-      <div className="border-t" />
       <div className="container pt-8 pb-24">
         <Link className="text-sm" to="/cart">
           &laquo; Return to cart
