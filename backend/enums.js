@@ -13,7 +13,11 @@ class Enum extends Array {
   }
 }
 
-const AdminLogActions = new Enum('ShopConfigUpdated', 'ShopPublished')
+const AdminLogActions = new Enum(
+  'ShopCreated',
+  'ShopPublished',
+  'ShopConfigUpdated'
+)
 
 const OrderPaymentStatuses = new Enum('Paid', 'Refunded', 'Pending', 'Rejected')
 

@@ -5,7 +5,7 @@ const { get, set, kebabCase, pick } = require('lodash')
 
 const { validateStripeKeys } = require('@origin/utils/stripe')
 
-const { Shop, Network, Sequelize } = require('../models')
+const { AdminLog, Network, Sequelize, Shop } = require('../models')
 const { getShopDataUrl, getShopPublicUrl } = require('../utils/shop')
 const {
   deregisterPrintfulWebhook,
@@ -16,6 +16,7 @@ const stripeUtils = require('../utils/stripe')
 const { DSHOP_CACHE } = require('../utils/const')
 const { getConfig, setConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
+const { AdminLogActions } = require('../../enums')
 
 const log = getLogger('logic.shop.config')
 
@@ -65,21 +66,42 @@ async function moveOfflinePaymentMethodImages(paymentMethods, dataDir) {
 }
 
 /**
+ * Utility method to compute the keys that have changed between 2 shop objects.
+ * Used for logging admin activity.
+ *
+ * @param {object} newShop: plain representation of the new shop DB model
+ * @param {object} oldShop: plain representation of the old shop DB model
+ * @return {object} Differences
+ */
+function getShopDiffKeys(newShop, oldShop) {
+  const diff = []
+  for (const [key, value] of Object.entries(newShop)) {
+    if (value !== oldShop[key]) {
+      diff.push(key)
+    }
+  }
+  return diff
+}
+
+/**
  * Updates a shop configuration.
  * Saves the config data in the DB and on disk. Handle the logic to configure
  * integrations (payments, fulfillment, etc...) based on config changes.
  *
- * TODO: This method is not atomic. Any failure to update an on-disk config does not
+ * TODO:
+ *  - This method is not atomic. Any failure to update an on-disk config does not
  * get rolled back and may result in inconsistent data between the DB and the disk.
+ *  - Validate fields before persisting them. Foe example currency, discountCodes, etc...
  *
  * @param {models.Shop} shop
  * @param {object} data: configuration data
  * @returns {Promise<{reason: string, field: string, success: boolean}|{success: boolean}|{reason: string, success: boolean}>}
  */
-async function updateShopConfig({ shop, data }) {
+async function updateShopConfig({ seller, shop, data }) {
   const shopId = shop.id
   log.info(`Shop ${shopId} - Saving config`)
 
+  const oldShop = shop.get({ plain: true }) // take a snapshot of the current shop object prior to updating it.
   const dataOverride = {}
 
   // Pick fields relevant to the shop's configuration stored in the DB.
@@ -349,9 +371,19 @@ async function updateShopConfig({ shop, data }) {
     'upholdSecret',
     'web3Pk'
   )
+  // Save the updated shop data in the DB.
   shop.config = setConfig(shopConfigFields, shop.config) // encrypt the config.
   shop.hasChanges = true
   await shop.save()
+
+  // Record the admin activity.
+  const diffKeys = getShopDiffKeys(shop, oldShop)
+  await AdminLog.create({
+    action: AdminLogActions.ShopConfigUpdated,
+    sellerId: seller.id,
+    shopId: shop.id,
+    data: { oldShop, diffKeys }
+  })
 
   return { success: true }
 }

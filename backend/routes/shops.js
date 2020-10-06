@@ -726,7 +726,7 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      const args = { shop: req.shop, data: req.body }
+      const args = { seller: req.seller, shop: req.shop, data: req.body }
       const result = await updateShopConfig(args)
       if (!result.success) {
         return res.status(400).json({

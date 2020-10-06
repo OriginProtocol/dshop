@@ -5,10 +5,11 @@ const kebabCase = require('lodash/kebabCase')
 
 const { createShop } = require('../utils/shop')
 const { deployShop } = require('../utils/deployShop')
-const { setConfig } = require('../utils/encryptedConfig')
-const { ShopDeploymentStatuses } = require('../enums')
+const { getConfig, setConfig } = require('../utils/encryptedConfig')
+const { AdminLogActions, ShopDeploymentStatuses } = require('../enums')
 
 const {
+  AdminLog,
   Shop,
   ShopDeployment,
   ShopDeploymentName,
@@ -104,6 +105,47 @@ describe('Shops', () => {
     expect(shop.name).to.equal(body.name)
     expect(shop.hostname).to.startsWith(body.dataDir)
     // TODO: check shop.config
+  })
+
+  it('should update a shop config', async () => {
+    const body = {
+      hostname: shop.hostname + '-updated',
+      metaDescription: 'Updated test shop'
+    }
+
+    const jason = await apiRequest({
+      method: 'PUT',
+      endpoint: '/shop/config',
+      body
+    })
+
+    expect(jason.success).to.be.true
+
+    // Check the shop's DB config got updated.
+    const updatedShop = await Shop.findOne({ where: { id: shop.id } })
+    expect(updatedShop).to.be.an('object')
+    expect(shop.hostname).to.startsWith(body.hostname)
+
+    const updatedConfig = getConfig(shop.config)
+    expect(updatedConfig.metaDescription).to.equal(body.metaDescription)
+
+    // Check the admin activity was recorded.
+    const adminLog = AdminLog.findOne({ order: [['id', 'desc']] })
+    expect(adminLog).to.be.an('object')
+    expect(adminLog.shopId).to.equal(shop.id)
+    expect(adminLog.sellerId).to.equal()
+    expect(adminLog.action).to.equal(AdminLogActions.ShopConfigUpdated)
+    expect(adminLog.data).to.be.an('object')
+
+    const oldConfig = getConfig(adminLog.data.oldShop)
+    expect(oldConfig).to.be.an('object')
+    expect(oldConfig.metaDescription).to.be.undefined // metaDescription was not set on prev version.
+
+    const diffKeys = adminLog.data.diffKeys
+    expect(diffKeys).to.be.a('object')
+    expect(diffKeys.length).to.equal(2)
+    expect(diffKeys[0]).to.equal('hostname')
+    expect(diffKeys[1]).to.equal('config')
   })
 
   it('should deploy a shop', async () => {
