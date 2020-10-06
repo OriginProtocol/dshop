@@ -25,7 +25,7 @@ const Providers = () => {
           className="container flex justify-between"
         />
         <Switch>
-          <Route path="/products" component={Products} />
+          <Route path="/products/:collection?" component={Products} />
           <Route path="/product/:id" component={Product} />
           <Route path="/contact" component={Contact} />
           <Route path="/cart" component={Cart} />
