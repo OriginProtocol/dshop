@@ -1,19 +1,20 @@
+const ethers = require('ethers')
 const fs = require('fs')
 const mv = require('mv')
 const path = require('path')
-const { get, set, kebabCase, pick } = require('lodash')
+const { get, set, kebabCase, pick, uniq } = require('lodash')
 
 const { validateStripeKeys } = require('@origin/utils/stripe')
 
-const { AdminLog, Network, Sequelize, Shop } = require('../models')
-const { getShopDataUrl, getShopPublicUrl } = require('../utils/shop')
+const { AdminLog, Network, Sequelize, Shop } = require('../../models')
+const { getShopDataUrl, getShopPublicUrl } = require('../../utils/shop')
 const {
   deregisterPrintfulWebhook,
   registerPrintfulWebhook
-} = require('../utils/printful')
-const paypalUtils = require('../utils/paypal')
-const stripeUtils = require('../utils/stripe')
-const { DSHOP_CACHE } = require('../utils/const')
+} = require('../../utils/printful')
+const paypalUtils = require('../../utils/paypal')
+const stripeUtils = require('../../utils/stripe')
+const { DSHOP_CACHE } = require('../../utils/const')
 const { getConfig, setConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
 const { AdminLogActions } = require('../../enums')
@@ -75,9 +76,24 @@ async function moveOfflinePaymentMethodImages(paymentMethods, dataDir) {
  */
 function getShopDiffKeys(newShop, oldShop) {
   const diff = []
-  for (const [key, value] of Object.entries(newShop)) {
-    if (value !== oldShop[key]) {
+  // Generate a set of keys present in either new/old shop.
+  let keys = uniq(Object.keys(newShop).concat(Object.keys(oldShop)))
+  for (const key of keys) {
+    if (key === 'config') {
+      // config is handled as a special case below.
+      continue
+    }
+    if (newShop[key] !== oldShop[key]) {
       diff.push(key)
+    }
+  }
+
+  const newConfig = getConfig(newShop.config)
+  const oldConfig = getConfig(oldShop.config)
+  keys = uniq(Object.keys(newConfig).concat(Object.keys(oldConfig)))
+  for (const key of keys) {
+    if (newConfig[key] !== oldConfig[key]) {
+      diff.push(`config.${key}`)
     }
   }
   return diff
@@ -99,12 +115,12 @@ function getShopDiffKeys(newShop, oldShop) {
  */
 async function updateShopConfig({ seller, shop, data }) {
   const shopId = shop.id
-  log.info(`Shop ${shopId} - Saving config`)
+  log.info(`Shop ${shopId}: updateShopConfig called`)
 
-  const oldShop = shop.get({ plain: true }) // take a snapshot of the current shop object prior to updating it.
+  const oldShop = { ...shop.get({ plain: true }) } // take a snapshot of the current shop object prior to updating it.
   const dataOverride = {}
 
-  // Pick fields relevant to the shop's configuration stored in the DB.
+  // Pick fields relevant to the shop's config.json.
   const jsonConfig = pick(
     data,
     'currency',
@@ -151,7 +167,7 @@ async function updateShopConfig({ seller, shop, data }) {
   const network = await Network.findOne({ where: { active: true } })
   const netConfig = getConfig(network.config)
 
-  // Update shop's config stored directly as fields in the DB.
+  // Update fields that are stored directly on the shop DB row rather than in the config blob.
   if (data.fullTitle) {
     shop.name = data.fullTitle
   }
@@ -160,6 +176,16 @@ async function updateShopConfig({ seller, shop, data }) {
       return { success: false, reason: 'Invalid listingId format' }
     }
     shop.listingId = data.listingId
+  }
+  if (data.walletAddress) {
+    let walletAddress
+    // Validate the address and checksum it before storing it.
+    try {
+      walletAddress = ethers.utils.getAddress(data.walletAddress)
+    } catch (e) {
+      return { success: false, reason: 'Invalid wallet address' }
+    }
+    shop.walletAddress = walletAddress
   }
 
   //
@@ -183,50 +209,6 @@ async function updateShopConfig({ seller, shop, data }) {
     }
     if (!data.dataUrl) {
       dataOverride.dataUrl = getShopDataUrl(shop, netConfig)
-    }
-  }
-
-  //
-  // Update the config.json file in the disk cache.
-  //
-  if (Object.keys(jsonConfig).length || Object.keys(jsonNetConfig).length) {
-    const configFile = `${DSHOP_CACHE}/${shop.authToken}/data/config.json`
-
-    if (!fs.existsSync(configFile)) {
-      return { success: false, reason: 'Failed loading config.json from disk' }
-    }
-
-    try {
-      const raw = fs.readFileSync(configFile).toString()
-      const config = JSON.parse(raw)
-      const newConfig = { ...config, ...jsonConfig }
-      if (Object.keys(jsonNetConfig).length) {
-        set(newConfig, `networks.${network.networkId}`, {
-          ...get(newConfig, `networks.${network.networkId}`),
-          ...jsonNetConfig
-        })
-      }
-
-      const jsonStr = JSON.stringify(newConfig, null, 2)
-      fs.writeFileSync(configFile, jsonStr)
-    } catch (e) {
-      log.error(e)
-      return { success: false, reason: 'Failed to update config.json' }
-    }
-  }
-
-  //
-  // Update the about file in the disk cache.
-  //
-  if (data.about) {
-    const dataDir = `${DSHOP_CACHE}/${shop.authToken}/data`
-    const aboutFile = `${dataDir}/${data.about}`
-
-    try {
-      fs.writeFileSync(aboutFile, data.aboutText)
-    } catch (e) {
-      log.error('Failed to update about file', dataDir, aboutFile, e)
-      return { success: false, reason: 'Failed to update about file' }
     }
   }
 
@@ -294,13 +276,14 @@ async function updateShopConfig({ seller, shop, data }) {
   //
   // Configure offline payment
   //
+  // Add offlinePaymentMethods to the data saved in config.json
   if (data.offlinePaymentMethods) {
     jsonConfig.offlinePaymentMethods = await moveOfflinePaymentMethodImages(
       data.offlinePaymentMethods,
       shop.authToken
     )
   }
-  // Add offlinePaymentMethods to the data save in the DB config
+  // Add offlinePaymentMethods to the data saved in the DB.
   if (jsonConfig.offlinePaymentMethods) {
     dataOverride.offlinePaymentMethods = jsonConfig.offlinePaymentMethods
   }
@@ -321,6 +304,50 @@ async function updateShopConfig({ seller, shop, data }) {
     log.info(`Shop ${shopId} - Deregistering Printful webhook`)
     await deregisterPrintfulWebhook(shopId, existingConfig)
     dataOverride.printfulWebhookSecret = ''
+  }
+
+  //
+  // Update the config on disk.
+  //
+
+  // Save config.json on disk.
+  if (Object.keys(jsonConfig).length || Object.keys(jsonNetConfig).length) {
+    const configFile = `${DSHOP_CACHE}/${shop.authToken}/data/config.json`
+
+    if (!fs.existsSync(configFile)) {
+      return { success: false, reason: 'Failed loading config.json from disk' }
+    }
+
+    try {
+      const raw = fs.readFileSync(configFile).toString()
+      const config = JSON.parse(raw)
+      const newConfig = { ...config, ...jsonConfig }
+      if (Object.keys(jsonNetConfig).length) {
+        set(newConfig, `networks.${network.networkId}`, {
+          ...get(newConfig, `networks.${network.networkId}`),
+          ...jsonNetConfig
+        })
+      }
+
+      const jsonStr = JSON.stringify(newConfig, null, 2)
+      fs.writeFileSync(configFile, jsonStr)
+    } catch (e) {
+      log.error(e)
+      return { success: false, reason: 'Failed to update config.json' }
+    }
+  }
+
+  // Save the about file on disk.
+  if (data.about) {
+    const dataDir = `${DSHOP_CACHE}/${shop.authToken}/data`
+    const aboutFile = `${dataDir}/${data.about}`
+
+    try {
+      fs.writeFileSync(aboutFile, data.aboutText)
+    } catch (e) {
+      log.error('Failed to update about file', dataDir, aboutFile, e)
+      return { success: false, reason: 'Failed to update about file' }
+    }
   }
 
   //
@@ -377,11 +404,11 @@ async function updateShopConfig({ seller, shop, data }) {
   await shop.save()
 
   // Record the admin activity.
-  const diffKeys = getShopDiffKeys(shop, oldShop)
+  const diffKeys = getShopDiffKeys(shop.get({ plain: true }), oldShop)
   await AdminLog.create({
     action: AdminLogActions.ShopConfigUpdated,
     sellerId: seller.id,
-    shopId: shop.id,
+    shopId,
     data: { oldShop, diffKeys }
   })
 

@@ -36,7 +36,8 @@ describe('Shops', () => {
     expect(network).to.be.an('object')
   })
 
-  it('should create a shop', async () => {
+  // FRANCK: remove config
+  it('should create a new shop', async () => {
     const shopName = 'test-shop-' + Date.now() // unique shop name.
     dataDir = shopName
     const body = {
@@ -64,44 +65,61 @@ describe('Shops', () => {
   })
 
   it('should update a shop config', async () => {
+    const configBeforeUpdate = getConfig(shop.config)
+
     const body = {
       hostname: shop.hostname + '-updated',
-      metaDescription: 'Updated test shop'
+      emailSubject: 'Updated subject'
     }
 
     const jason = await apiRequest({
       method: 'PUT',
       endpoint: '/shop/config',
-      body
+      body,
+      headers: {
+        Authorization: `Bearer ${dataDir}`
+      }
     })
-
     expect(jason.success).to.be.true
 
-    // Check the shop's DB config got updated.
-    const updatedShop = await Shop.findOne({ where: { id: shop.id } })
-    expect(updatedShop).to.be.an('object')
+    // Reload it and check the shop's DB config got updated.
+    await shop.reload()
+    expect(shop).to.be.an('object')
     expect(shop.hostname).to.startsWith(body.hostname)
 
-    const updatedConfig = getConfig(shop.config)
-    expect(updatedConfig.metaDescription).to.equal(body.metaDescription)
+    const config = getConfig(shop.config)
+    expect(config.emailSubject).to.equal(body.emailSubject)
 
     // Check the admin activity was recorded.
-    const adminLog = AdminLog.findOne({ order: [['id', 'desc']] })
+    const adminLog = await AdminLog.findOne({ order: [['id', 'desc']] })
     expect(adminLog).to.be.an('object')
     expect(adminLog.shopId).to.equal(shop.id)
-    expect(adminLog.sellerId).to.equal()
+    expect(adminLog.sellerId).to.equal(1) // Shop was created using super admin with id 1.
     expect(adminLog.action).to.equal(AdminLogActions.ShopConfigUpdated)
     expect(adminLog.data).to.be.an('object')
 
-    const oldConfig = getConfig(adminLog.data.oldShop)
+    const oldConfig = getConfig(adminLog.data.oldShop.config)
     expect(oldConfig).to.be.an('object')
-    expect(oldConfig.metaDescription).to.be.undefined // metaDescription was not set on prev version.
+    expect(oldConfig.emailSubject).to.equal(configBeforeUpdate.emailSubject)
 
     const diffKeys = adminLog.data.diffKeys
-    expect(diffKeys).to.be.a('object')
-    expect(diffKeys.length).to.equal(2)
-    expect(diffKeys[0]).to.equal('hostname')
-    expect(diffKeys[1]).to.equal('config')
+    const expectedDiffKeys = [
+      'hostname', // because it was directly updated.
+      'hasChanges', // because the shop DB row was updated.
+      'updatedAt', // because the shop DB row was updated
+      'config.dataUrl', // because the hostname was updated
+      'config.emailSubject', // because it was directly updated
+      'config.hostname', // because it was directly updated
+      'config.publicUrl', // because the hostname was updated
+      // Because the updateShopConfig method by default sets these to empty.
+      'config.stripeBackend',
+      'config.stripeWebhookSecret',
+      'config.stripeWebhookHost'
+    ]
+    expect(diffKeys).to.deep.equal(expectedDiffKeys)
+    //expect(diffKeys.length).to.equal(2)
+    //expect(diffKeys[0]).to.equal('hostname')
+    //expect(diffKeys[1]).to.equal('config')
   })
 
   it('should deploy a shop', async () => {
