@@ -14,16 +14,16 @@ import SendgridModal from '../../admin/settings/apps/SendgridModal'
 
 const Defaults = {
   1: {
-    ipfs: 'https://ipfs-prod.ogn.app',
-    ipfsApi: 'https://ipfs.ogn.app',
+    ipfs: 'https://fs-autossl.ogn.app',
+    ipfsApi: 'https://fs.ogn.app',
     marketplaceContract: '0x698Ff47B84837d3971118a369c570172EE7e54c2',
     marketplaceVersion: '001',
     provider: '',
     providerWs: ''
   },
   4: {
-    ipfs: 'https://ipfs-prod.ogn.app',
-    ipfsApi: 'https://ipfs.ogn.app',
+    ipfs: 'https://fs-autossl.staging.ogn.app',
+    ipfsApi: 'https://fs.staging.ogn.app',
     marketplaceContract: '0x3D608cCe08819351adA81fC1550841ebc10686fd',
     marketplaceVersion: '001',
     provider: '',
@@ -252,16 +252,13 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           <label>IPFS Gateway</label>
           <input
             {...input('ipfs')}
-            placeholder="eg https://ipfs-prod.ogn.app"
+            placeholder="eg https://fs-autossl.ogn.app'"
           />
           {Feedback('ipfs')}
         </div>
         <div className="form-group col-md-6">
           <label>IPFS API</label>
-          <input
-            {...input('ipfsApi')}
-            placeholder="eg https://ipfs-prod.ogn.app"
-          />
+          <input {...input('ipfsApi')} placeholder="eg https://fs.ogn.app" />
           {Feedback('ipfsApi')}
         </div>
       </div>

@@ -12,7 +12,7 @@ const {
   apiRequest
 } = require('./utils')
 const { processor } = require('../queues/makeOfferProcessor')
-const { Order, Transaction, Seller } = require('../models')
+const { Order, Transaction } = require('../models')
 const {
   OrderPaymentStatuses,
   TransactionTypes,
@@ -20,8 +20,6 @@ const {
   OrderPaymentTypes
 } = require('../enums')
 const { ListingID, OfferID } = require('../utils/id')
-
-const bcrypt = require('bcrypt')
 
 describe('Offers', () => {
   let network, shop, key, job, jobId, trans
@@ -40,19 +38,6 @@ describe('Offers', () => {
     key = await generatePgpKey('tester', pgpPrivateKeyPass)
     const pgpPublicKey = key.publicKeyArmored
     const pgpPrivateKey = key.privateKeyArmored
-
-    const salt = await bcrypt.genSalt(10)
-    const pwdHash = await bcrypt.hash('test-pass', salt)
-
-    // Create a fake superadmin
-    await Seller.create({
-      name: 'SuperAdmin',
-      email: 'test@test.com',
-      password: pwdHash,
-      superuser: true,
-      emailVerified: true,
-      data: {}
-    })
 
     shop = await createTestShop({
       network,
@@ -263,18 +248,7 @@ describe('Offers', () => {
 
     await Order.create(orderData)
 
-    // To simulate login
-    let resp = await apiRequest({
-      method: 'POST',
-      endpoint: '/superuser/login',
-      body: {
-        email: 'test@test.com',
-        password: 'test-pass'
-      }
-    })
-    expect(resp.success).to.be.true
-
-    resp = await apiRequest({
+    const resp = await apiRequest({
       method: 'put',
       endpoint: `/orders/testorderid/payment-state`,
       body: {

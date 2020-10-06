@@ -3,7 +3,7 @@ chai.use(require('chai-string'))
 const expect = chai.expect
 const kebabCase = require('lodash/kebabCase')
 
-const { createShop } = require('../utils/shop')
+const { createShopInDB } = require('../logic/shop/create')
 const { deployShop } = require('../utils/deployShop')
 const { setConfig } = require('../utils/encryptedConfig')
 const { ShopDeploymentStatuses } = require('../enums')
@@ -19,9 +19,6 @@ const { apiRequest } = require('./utils')
 const {
   PGP_PUBLIC_KEY,
   ROOT_BACKEND_URL,
-  TEST_NETWORK_ID,
-  USER_EMAIL_1,
-  USER_PASS_1,
   TEST_LISTING_ID_1,
   TEST_HASH_1,
   TEST_IPFS_GATEWAY,
@@ -36,47 +33,6 @@ describe('Shops', () => {
     // Note: the migration inserts a network row for network id 999.
     network = await Network.findOne({ where: { networkId: 999 } })
     expect(network).to.be.an('object')
-  })
-
-  // TODO: Move this to setup/fixture?
-  it('create super admin', async () => {
-    // This explicitly only works in testing to avoid actual deployments
-    const body = {
-      name: 'Test user',
-      email: USER_EMAIL_1,
-      password: USER_PASS_1,
-      superuser: true
-    }
-    const jason = await apiRequest({
-      method: 'POST',
-      endpoint: '/auth/registration',
-      body
-    })
-    expect(jason.success).to.be.true
-  })
-
-  it('login super admin', async () => {
-    const body = {
-      email: USER_EMAIL_1,
-      password: USER_PASS_1
-    }
-
-    const jason = await apiRequest({
-      method: 'POST',
-      endpoint: '/superuser/login',
-      body
-    })
-
-    expect(jason.success).to.be.true
-  })
-
-  it('activate local network', async () => {
-    const jason = await apiRequest({
-      method: 'POST',
-      endpoint: `/networks/${TEST_NETWORK_ID}/make-active`
-    })
-
-    expect(jason.success).to.be.true
   })
 
   it('should create a shop', async () => {
@@ -272,7 +228,7 @@ describe('Shops', () => {
     expect(jason.names[0]).to.be.equal(TEST_UNSTOPPABLE_DOMAIN_1)
   })
 
-  it('create shop logic should create a shop', async () => {
+  it('createShopInDB should create a shop', async () => {
     const data = {
       networkId: 999,
       name: " Robinette's Shoop-2020 ",
@@ -282,7 +238,7 @@ describe('Shops', () => {
       sellerId: 1,
       hostname: kebabCase('cool shoop hostname')
     }
-    const resp = await createShop(data)
+    const resp = await createShopInDB(data)
     const newShop = resp.shop
 
     expect(newShop).to.be.an('object')
@@ -295,7 +251,7 @@ describe('Shops', () => {
     expect(newShop.config).to.be.a('string')
   })
 
-  it('create shop logic should refuse creating a shop with invalid arguments', async () => {
+  it('createShopInDB should refuse creating a shop with invalid arguments', async () => {
     // Shop with an empty name
     const data = {
       networkId: 999,
@@ -306,27 +262,23 @@ describe('Shops', () => {
       sellerId: 1,
       hostname: kebabCase('cool shoop hostname')
     }
-    let resp = await createShop(data)
-    expect(resp.status).to.equal(400)
+    let resp = await createShopInDB(data)
     expect(resp.error).to.be.a('string')
 
     // Shop with a non alphanumeric character in its name.
     data.name = '*bad shoop name'
-    resp = await createShop(data)
-    expect(resp.status).to.equal(400)
+    resp = await createShopInDB(data)
     expect(resp.error).to.be.a('string')
 
     // Shop with invalid listing ID
     data.name = 'good name'
     data.listingId = 'abcde'
-    resp = await createShop(data)
-    expect(resp.status).to.equal(400)
+    resp = await createShopInDB(data)
     expect(resp.error).to.be.a('string')
 
     // Shop with listing ID on incorrect network
     data.listingId = '1-001-1'
-    resp = await createShop(data)
-    expect(resp.status).to.equal(400)
+    resp = await createShopInDB(data)
     expect(resp.error).to.be.a('string')
   })
 })
