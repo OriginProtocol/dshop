@@ -29,16 +29,17 @@ COPY package.json ./package.json
 COPY lerna.json ./lerna.json
 COPY yarn.lock ./yarn.lock
 
+COPY $DSHOP_BACKEND_SOURCE/*.js ./backend/
+COPY $DSHOP_BACKEND_SOURCE/package.json ./backend/package.json
+COPY $DSHOP_BACKEND_SOURCE/config/ ./backend/config/
 COPY $DSHOP_BACKEND_SOURCE/db ./backend/db
 COPY $DSHOP_BACKEND_SOURCE/etl ./backend/etl
 COPY $DSHOP_BACKEND_SOURCE/logic/ ./backend/logic/
 COPY $DSHOP_BACKEND_SOURCE/models ./backend/models
 COPY $DSHOP_BACKEND_SOURCE/queues ./backend/queues
 COPY $DSHOP_BACKEND_SOURCE/routes ./backend/routes
-COPY $DSHOP_BACKEND_SOURCE/utils ./backend/utils
 COPY $DSHOP_BACKEND_SOURCE/scripts ./backend/scripts
-COPY $DSHOP_BACKEND_SOURCE/*.js ./backend/
-COPY $DSHOP_BACKEND_SOURCE/package.json ./backend/package.json
+COPY $DSHOP_BACKEND_SOURCE/utils ./backend/utils
 
 # Shouldn't be necessary?  Something is requiring it
 COPY $DSHOP_BACKEND_SOURCE/test ./backend/test
