@@ -70,6 +70,7 @@ async function createShopInDB({
     return { error: 'Provide a shop name' }
   }
 
+  name = name.trim()
   if (!isValidStoreName(name)) {
     return {
       error:
@@ -152,7 +153,7 @@ async function createShop({
       success: false,
       reason: 'invalid',
       field: 'name',
-      message: 'Store name must be alphanumeric'
+      message: 'Invalid store name'
     }
   }
 
