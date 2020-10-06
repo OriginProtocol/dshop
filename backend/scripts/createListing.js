@@ -9,7 +9,11 @@ async function go() {
   if (!network.marketplaceContract) {
     network.marketplaceContract = contractsJSON.Marketplace_V01
   }
-  const listingId = await createListing({ network, pk, listing: { title: 'Test Shop' } })
+  const listingId = await createListing({
+    network,
+    pk,
+    listing: { title: 'Test Shop' }
+  })
   console.log(`Created listing ${listingId}`)
 }
 
