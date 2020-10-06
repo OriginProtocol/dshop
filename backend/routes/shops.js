@@ -35,7 +35,6 @@ const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
 const { updateShopConfig } = require('../logic/shop/config')
 const { createShop } = require('../logic/shop/create')
 
-
 const log = getLogger('routes.shops')
 
 module.exports = function (router) {
