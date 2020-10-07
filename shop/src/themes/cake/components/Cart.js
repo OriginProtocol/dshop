@@ -7,17 +7,12 @@ import formatPrice from 'utils/formatPrice'
 import Link from 'components/Link'
 import CloseIcon from 'components/icons/Close'
 
-import Header from './_Header'
-import Footer from './_Footer'
-
 const Cart = () => {
   const [{ cart }, dispatch] = useStateValue()
   const currencyOpts = useCurrencyOpts()
 
   return (
     <>
-      <Header />
-
       <div className="container mt-12">
         <div className="mb-12 text-center sm:text-left text-3xl sm:text-4xl leading-none font-bold font-serif">
           Shopping Cart{' '}
@@ -50,8 +45,6 @@ const Cart = () => {
           </Link>
         </div>
       </div>
-
-      <Footer />
     </>
   )
 }

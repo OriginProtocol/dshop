@@ -4,8 +4,6 @@ import { useRouteMatch } from 'react-router-dom'
 
 import useCollections from 'utils/useCollections'
 
-import Header from './_Header'
-import Footer from './_Footer'
 import Products from './_Products'
 
 const AllProducts = () => {
@@ -26,8 +24,6 @@ const AllProducts = () => {
 
   return (
     <>
-      <Header />
-
       <div className="container">
         {!collectionTitle ? null : (
           <div className="text-center text-4xl font-medium mb-24">
@@ -36,8 +32,6 @@ const AllProducts = () => {
         )}
         <Products />
       </div>
-
-      <Footer />
     </>
   )
 }

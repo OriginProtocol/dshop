@@ -4,8 +4,6 @@ import get from 'lodash/get'
 import Link from 'components/Link'
 import useConfig from 'utils/useConfig'
 
-import Header from './_Header'
-import Footer from './_Footer'
 import Products from './_Products'
 
 const App = () => {
@@ -14,8 +12,6 @@ const App = () => {
 
   return (
     <>
-      <Header />
-
       <div className="container mb-20">
         <div className="text-center my-2">
           <h1 className="text-3xl sm:text-5xl leading-tight font-bold font-serif">
@@ -52,8 +48,6 @@ const App = () => {
           </Link>
         </div>
       </div>
-
-      <Footer />
     </>
   )
 }

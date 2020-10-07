@@ -7,8 +7,6 @@ import useCollection from 'utils/useCollection'
 
 import Link from 'components/Link'
 
-import Header from './_Header'
-import Footer from './_Footer'
 import Products from './_Products'
 
 const Product = ({ match }) => {
@@ -35,7 +33,6 @@ const Product = ({ match }) => {
 
   return (
     <>
-      <Header />
       <div className="container mt-8 sm:mt-16">
         <div className="flex flex-col sm:flex-row content-between mb-5">
           <div className="flex-1">
@@ -104,7 +101,6 @@ const Product = ({ match }) => {
         </div>
         <Products limit={3} />
       </div>
-      <Footer />
     </>
   )
 }
