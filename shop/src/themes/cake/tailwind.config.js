@@ -11,8 +11,9 @@ module.exports = {
     },
     extend: {
       colors: {
-        gray: {
+        red: {
           ...defaultTheme.colors.red,
+          100: '#fcf8f8',
           400: '#d18172'
         }
       },

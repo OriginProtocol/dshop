@@ -2,16 +2,11 @@ import React from 'react'
 
 import useAbout from 'utils/useAbout'
 
-import Header from './_Header'
-import Footer from './_Footer'
-
 const About = () => {
   const { about } = useAbout()
 
   return (
     <>
-      <Header />
-
       <div className="container mt-12">
         <div className="text-4xl leading-none font-medium">About</div>
         <div className="flex mt-16">
@@ -28,8 +23,6 @@ const About = () => {
           </div>
         </div>
       </div>
-
-      <Footer />
     </>
   )
 }
