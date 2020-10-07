@@ -3,7 +3,7 @@ import { Switch, Route } from 'react-router-dom'
 
 import Home from './Home'
 import Product from './Product'
-import About from './About'
+import Buy from './Buy'
 import Cart from '../../shared/Cart'
 
 import Header from './_Header'
@@ -14,12 +14,17 @@ const Storefront = () => {
     <>
       <Header />
 
-      <Switch>
-        <Route path="/product/:id" component={Product} />
-        <Route path="/cart" component={Cart} />
-        <Route path="/about" component={About} />
-        <Route component={Home} />
-      </Switch>
+      <div
+        className="container mt-16 flex flex-col items-center justify-center"
+        style={{ width: 480 }}
+      >
+        <Switch>
+          <Route path="/product/:id" component={Product} />
+          <Route path="/cart" component={Cart} />
+          <Route path="/buy" component={Buy} />
+          <Route component={Home} />
+        </Switch>
+      </div>
 
       <Footer />
     </>

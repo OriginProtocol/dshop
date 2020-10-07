@@ -7,6 +7,7 @@ const Footer = () => {
     <div className="container my-20 flex justify-center gap-8">
       <div>
         <a
+          className="hover:opacity-75"
           target="_blank"
           rel="noopener noreferrer"
           href="https://www.originprotocol.com/en/dshop"

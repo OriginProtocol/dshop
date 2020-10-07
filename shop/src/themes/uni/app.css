@@ -24,18 +24,22 @@
 
 @layer components {
   .btn {
-    @apply border border-orange-400 px-4 py-3 font-medium text-lg transition-all duration-300 ease-in-out text-orange-400;
+    @apply w-full text-center text-white font-bold py-3 text-lg border border-white rounded-full transition-all duration-300 ease-in-out;
   }
   .btn:hover {
-    @apply bg-orange-400 text-black;
+    @apply bg-white text-black;
   }
 
   .btn-primary {
-    @apply bg-orange-400 text-black;
+    @apply border-0 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600;
   }
 
   .btn-primary:hover {
-    @apply bg-black text-orange-400;
+    @apply text-white opacity-75;
+  }
+
+  .btn-sm {
+    @apply py-1 text-sm w-auto px-4;
   }
 }
 

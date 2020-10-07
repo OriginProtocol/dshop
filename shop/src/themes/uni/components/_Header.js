@@ -1,39 +1,29 @@
 import React from 'react'
+import { useWeb3React } from '@web3-react/core'
 
 import Twitter from 'components/icons/Twitter'
 import Facebook from 'components/icons/Facebook'
 import YouTube from 'components/icons/YouTube'
-import CartIcon from 'components/icons/Cart'
 import Link from 'components/Link'
-import MenuIcon from 'components/icons/Menu'
 
 import useConfig from 'utils/useConfig'
-import { useStateValue } from 'data/state'
-
-const Cart = ({ cart }) => (
-  <Link to="/cart" className="nav-link relative flex">
-    <CartIcon style={{ width: 25 }} fill="#fff" />
-    {cart.items.length ? (
-      <div className="absolute text-xs" style={{ top: -10, right: -10 }}>
-        {cart.items.length}
-      </div>
-    ) : null}
-  </Link>
-)
+import { injectedConnector, useEagerConnect } from '../utils'
 
 const Header = () => {
   const { config } = useConfig()
-  const [{ cart }] = useStateValue()
+  const { active, error, account, activate } = useWeb3React()
+  useEagerConnect()
+
   return (
     <div className="container grid items-center pt-6 sm:pt-20 grid-cols-3">
       <div className="flex">
-        <div className="hidden sm:block">
+        <div className="hidden sm:block hover:opacity-75">
           <Twitter color="#fff" style={{ width: 20 }} />
         </div>
-        <div className="hidden sm:block ml-10">
+        <div className="hidden sm:block hover:opacity-75 ml-10">
           <Facebook color="#fff" style={{ width: 12 }} />
         </div>
-        <div className="hidden sm:block ml-10">
+        <div className="hidden sm:block hover:opacity-75 ml-10">
           <YouTube color="#fff" style={{ width: 20 }} />
         </div>
       </div>
@@ -50,12 +40,26 @@ const Header = () => {
           />
           123 redeemed
         </div>
-        <div className="flex py-1 px-3 bg-gray-800 rounded-full ml-4 items-center">
-          <svg height="12" width="12" className="mr-2">
-            <circle cx="6" cy="6" r="6" fill="#26d198" />
-          </svg>
-          0x3b22...
-        </div>
+        {!active ? (
+          <button
+            className="btn btn-sm ml-2"
+            onClick={() => activate(injectedConnector)}
+          >
+            Connect Wallet
+          </button>
+        ) : (
+          <div className="flex py-1 px-3 bg-gray-800 rounded-full ml-4 items-center">
+            <svg height="12" width="12" className="mr-2">
+              <circle
+                cx="6"
+                cy="6"
+                r="6"
+                fill={active ? '#26d198' : error ? 'red' : 'orange'}
+              />
+            </svg>
+            {account ? `${account.substr(0, 6)}...` : ''}
+          </div>
+        )}
       </div>
     </div>
   )
