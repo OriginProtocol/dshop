@@ -16,6 +16,8 @@
     "theme:poly:dist": "rm -rf ../backend/themes/poly && npm run theme:poly && cp -r public ../backend/themes/poly",
     "theme:ybm": "NODE_ENV=production THEME=ybm webpack --loglevel notice",
     "theme:ybm:dist": "rm -rf ../backend/themes/ybm && npm run theme:ybm && cp -r public ../backend/themes/ybm",
+    "theme:uni": "NODE_ENV=production THEME=uni webpack --loglevel notice",
+    "theme:uni:dist": "rm -rf ../backend/themes/uni && npm run theme:uni && cp -r public ../backend/themes/uni",
     "lint": "eslint . && npm run prettier:check",
     "prettier": "prettier --write *.js \"{src,test}/**/*.js\"",
     "prettier:check": "prettier -c *.js \"src/**/*.js\"",
