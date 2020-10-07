@@ -1,8 +1,15 @@
 import React, { useState } from 'react'
+import { useWeb3React } from '@web3-react/core'
 import { Link } from 'react-router-dom'
+import ethers from 'ethers'
+
+import { usePrices, dai, router, chico } from '../utils'
 
 const Buy = () => {
+  const { account, library } = useWeb3React()
   const [quantity, setQuantity] = useState(1)
+  const [reload, setReload] = useState(1)
+  const state = usePrices({ quantity, reload })
 
   return (
     <>
@@ -23,8 +30,8 @@ const Buy = () => {
           style={{ height: 290 }}
           src="chico-crypto/t-shirt/orig/upload_2f7c0a222af290fb052fdd9140364ed3"
         />
-        <div className="font-bold text-2xl mt-4">546.90 USD</div>
-        <div className="text-gray-600 text-sm">29/123 available</div>
+        <div className="font-bold text-2xl mt-4">{`${state.priceUSD} USD`}</div>
+        <div className="text-gray-600 text-sm">{`${state.availableChico}/${state.totalChico} available`}</div>
         <div className="grid grid-cols-2 w-full mt-6 items-center gap-y-4">
           <div className="text-xl font-bold">Quantity</div>
           <div
@@ -49,7 +56,7 @@ const Buy = () => {
               className="text-xl text-right px-4 hover:opacity-50"
               onClick={(e) => {
                 e.preventDefault()
-                if (quantity < 10) {
+                if (quantity < 50) {
                   setQuantity(quantity + 1)
                 }
               }}
@@ -63,7 +70,7 @@ const Buy = () => {
               className="rounded-full w-full border border-black px-4 py-2 font-bold appearance-none"
               style={{ minHeight: '2.5rem' }}
             >
-              <option>1.6283 ETH</option>
+              <option>{`${state.priceUSDQ} DAI`}</option>
               <option>OUSD</option>
               <option>OGN</option>
               <option>DAI</option>
@@ -80,18 +87,45 @@ const Buy = () => {
               <path d="M1 1L7 7L13 1" stroke="black" strokeWidth="2" />
             </svg>
           </div>
+          {quantity <= 1 ? null : (
+            <>
+              <div />
+              <div
+                className="text-gray-600 text-sm"
+                style={{ marginTop: -10, paddingLeft: 18 }}
+              >
+                {`${
+                  Math.ceil((Number(state.priceUSDQ) / quantity) * 100) / 100
+                } DAI per item`}
+              </div>
+            </>
+          )}
         </div>
       </div>
-      <Link
-        to="/buy"
+      <button
         className="btn btn-primary"
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, #53ff96, #4b9dff 55%, #f644ff)'
+        onClick={() => {
+          const signer = library.getSigner()
+          dai
+            .connect(signer)
+            .approve(router.address, state.priceUSDA)
+            .then(() =>
+              router
+                .connect(signer)
+                .swapTokensForExactTokens(
+                  ethers.utils.parseEther(String(quantity)),
+                  ethers.utils.parseEther('1000'),
+                  [dai.address, chico.address],
+                  account,
+                  Math.round(new Date() / 1000) + 60 * 60 * 24
+                )
+            )
+            .then((r) => r.wait())
+            .then(() => setReload(reload + 1))
         }}
       >
         Place Order
-      </Link>
+      </button>
     </>
   )
 }

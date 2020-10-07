@@ -1,7 +1,18 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useWeb3React } from '@web3-react/core'
 import { Link } from 'react-router-dom'
+import ethers from 'ethers'
 
-const Buy = () => {
+import { usePrices, dai, router, chico } from '../utils'
+
+const Redeem = () => {
+  const { account, library } = useWeb3React()
+  const [quantity, setQuantity] = useState(1)
+  const [reload, setReload] = useState(1)
+  const state = usePrices({ quantity, reload })
+
+  const ownsNone = Number(state.ownedChico) <= 0
+
   return (
     <>
       <div className="w-full flex flex-col items-center bg-white rounded-lg p-6 pb-8 text-black mb-6">
@@ -15,56 +26,100 @@ const Buy = () => {
               </g>
             </svg>
           </Link>
-          <div className="font-bold text-xl text-center">Buy</div>
+          <div className="font-bold text-xl text-center">Redeem</div>
         </div>
         <img
           style={{ height: 290 }}
           src="chico-crypto/t-shirt/orig/upload_2f7c0a222af290fb052fdd9140364ed3"
         />
-        <div className="font-bold text-2xl mt-4">546.90 USD</div>
-        <div className="text-gray-600 text-sm">29/123 available</div>
-        <div className="grid grid-cols-2 w-full mt-6 items-center gap-y-4">
-          <div className="text-xl font-bold">Quantity</div>
-          <div
-            className="rounded-full border border-black grid grid-cols-3 items-center font-bold m-height-12"
-            style={{ minHeight: '2.5rem' }}
-          >
-            <div className="text-xl px-4">-</div>
-            <div className="text-center">1</div>
-            <div className="text-xl text-right px-4">+</div>
-          </div>
-          <div className="text-xl font-bold">Payment method</div>
-          <div className="relative">
-            <select
-              className="rounded-full w-full border border-black px-4 py-2 font-bold appearance-none"
-              style={{ minHeight: '2.5rem' }}
-            >
-              <option>1.6283 ETH</option>
-            </select>
-            <svg
-              width="14"
-              height="9"
-              fill="none"
-              className="absolute"
-              style={{ top: 'calc(50% - 4px)', right: '1rem' }}
-            >
-              <path d="M1 1L7 7L13 1" stroke="black" strokeWidth="2" />
-            </svg>
-          </div>
-        </div>
+        <div className="font-bold text-2xl mt-4">{`You own ${state.ownedChico}`}</div>
+        {ownsNone ? null : (
+          <>
+            <div className="grid grid-cols-2 w-full mt-6 items-center gap-y-4">
+              <div className="text-xl font-bold">Quantity</div>
+              <div
+                className="rounded-full border border-black grid grid-cols-3 items-center font-bold m-height-12"
+                style={{ minHeight: '2.5rem' }}
+              >
+                <a
+                  href="#"
+                  className="text-xl px-4 hover:opacity-50"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    if (quantity > 1) {
+                      setQuantity(quantity - 1)
+                    }
+                  }}
+                >
+                  -
+                </a>
+                <div className="text-center">{quantity}</div>
+                <a
+                  href="#"
+                  className="text-xl text-right px-4 hover:opacity-50"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    if (quantity < 50) {
+                      setQuantity(quantity + 1)
+                    }
+                  }}
+                >
+                  +
+                </a>
+              </div>
+              <div className="text-xl font-bold">Size</div>
+              <div className="relative">
+                <select
+                  className="rounded-full w-full border border-black px-4 py-2 font-bold appearance-none"
+                  style={{ minHeight: '2.5rem' }}
+                >
+                  <option>Small</option>
+                  <option>Medium</option>
+                  <option>Large</option>
+                </select>
+                <svg
+                  width="14"
+                  height="9"
+                  fill="none"
+                  className="absolute"
+                  style={{ top: 'calc(50% - 4px)', right: '1rem' }}
+                >
+                  <path d="M1 1L7 7L13 1" stroke="black" strokeWidth="2" />
+                </svg>
+              </div>
+            </div>
+          </>
+        )}
       </div>
-      <Link
-        to="/buy"
-        className="btn border-0 hover:text-white hover:opacity-75"
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, #53ff96, #4b9dff 55%, #f644ff)'
+      <button
+        className={`btn btn-primary${ownsNone ? ' opacity-50 hover:opacity-50' : ''}`}
+        onClick={() => {
+          if (ownsNone) {
+            return
+          }
+          const signer = library.getSigner()
+          chico
+            .connect(signer)
+            .approve(router.address, ethers.utils.parseEther(String(quantity)))
+            .then(() =>
+              router
+                .connect(signer)
+                .swapExactTokensForTokens(
+                  ethers.utils.parseEther(String(quantity)),
+                  ethers.utils.parseEther(String(quantity)),
+                  [chico.address, dai.address],
+                  account,
+                  Math.round(new Date() / 1000) + 60 * 60 * 24
+                )
+            )
+            .then((r) => r.wait())
+            .then(() => setReload(reload + 1))
         }}
       >
-        Next
-      </Link>
+        Redeem
+      </button>
     </>
   )
 }
 
-export default Buy
+export default Redeem
