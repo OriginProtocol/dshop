@@ -28,6 +28,11 @@ const ManualTaxes = ({ state, setState }) => {
             right for you.
           </fbt>
         </div>
+        {/**
+         * TODO: We still haven't figured this out. We don't store 
+         * the user's address anywhere, so showing product prices with
+         * taxes is impossible right now. 
+         */}
         {/* <label className="form-check mb-3 font-weight-normal">
           <input
             className="form-check-input"
