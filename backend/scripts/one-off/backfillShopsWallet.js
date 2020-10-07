@@ -1,0 +1,115 @@
+// A utility script for backfilling the column shops.wallet based
+// on data in config.json.
+
+const fs = require('fs')
+const ethers = require('ethers')
+
+const { Shop } = require('../../models')
+const { DSHOP_CACHE } = require('../../utils/const')
+const { getLogger } = require('../../utils/logger')
+const log = getLogger('cli')
+
+const program = require('commander')
+
+program
+  .requiredOption('-n, --networkId <id>', 'Network id: [1,4,999]')
+  .option('-i, --shopId <id>', 'Shop Id')
+  .option('-n, --shopName <name>', 'Shop Name')
+  .option('-a, --allShops', 'Apply the operation to all shops')
+  .option('-d, --doIt <boolean>', 'Write the data to DB/disk.')
+
+if (!process.argv.slice(1).length) {
+  program.outputHelp()
+  process.exit(1)
+}
+
+program.parse(process.argv)
+
+async function _getShops() {
+  let shops
+  if (program.shopId) {
+    const shop = await Shop.findOne({ where: { id: program.shopId } })
+    if (!shop) {
+      throw new Error(`No shop with id ${program.shopId}`)
+    }
+    log.info(`Loaded shop ${shop.name} (${shop.id})`)
+    shops = [shop]
+  } else if (program.shopName) {
+    const shop = await Shop.findOne({ where: { name: program.shopName } })
+    if (!shop) {
+      throw new Error(`No shop with name ${program.shopName}`)
+    }
+    log.info(`Loaded shop ${shop.name} (${shop.id})`)
+    shops = [shop]
+  } else if (program.allShops) {
+    shops = await Shop.findAll({ order: [['id', 'asc']] })
+    log.info(`Loaded ${shops.length} shops`)
+  } else {
+    throw new Error('Must specify shopId or shopName')
+  }
+  return shops
+}
+
+
+async function updateWalletAddress(shops) {
+  const networkId = program.networkId
+
+  for (const shop of shops) {
+    log.info(`Processing Shop ${shop.id}`)
+
+    // Read the wallet address from config.json
+    const configFile = `${DSHOP_CACHE}/${shop.authToken}/data/config.json`
+    if (!fs.existsSync(configFile)) {
+      log.error(`Shop ${shop.id}: file ${configFile} not found`)
+      continue
+    }
+    const configStr = fs.readFileSync(configFile).toString()
+    const jsonConfig = JSON.parse(configStr)
+    let jsonConfigWalletAddress = jsonConfig['networks'][networkId]['walletAddress']
+
+    // Validate the address and checksum it.
+    try {
+      jsonConfigWalletAddress = ethers.utils.getAddress(jsonConfigWalletAddress)
+    } catch (e) {
+      log.info(`Shop ${shop.id} - Invalid address in config.json: ${jsonConfigWalletAddress}`)
+    }
+
+    if (shops.walletAddress) {
+      log.info(`Shop ${shop.id} - walletAddress already set.`)
+
+      if (shops.walletAddress !== jsonConfigWalletAddress) {
+        log.error(`Shop ${shop.id} - DB and config.json mismatch: ${shops.walletAddress} vs ${jsonConfigWalletAddress}`)
+      }
+      continue
+    }
+
+    if (program.doIt) {
+      log.info(`Shop ${shop.id} - Setting DB wallet address to ${jsonConfigWalletAddress}`)
+      shop.walletAddress = jsonConfigWalletAddress
+      await shop.save()
+      log.info('Done.')
+    } else {
+      log.info(`Shop ${shop.id} - Would set DB wallet address to ${jsonConfigWalletAddress}`)
+    }
+  }
+}
+
+async function main() {
+  const shops = await _getShops()
+  await updateWalletAddress(program, shops)
+}
+
+//
+// MAIN
+//
+
+main()
+  .then(() => {
+    log.info('Finished')
+    process.exit()
+  })
+  .catch((err) => {
+    log.error('Failure: ', err)
+    log.error('Exiting')
+    process.exit(-1)
+  })
