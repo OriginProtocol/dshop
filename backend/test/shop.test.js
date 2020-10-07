@@ -126,9 +126,6 @@ describe('Shops', () => {
       'config.stripeWebhookHost'
     ]
     expect(diffKeys).to.deep.equal(expectedDiffKeys)
-    //expect(diffKeys.length).to.equal(2)
-    //expect(diffKeys[0]).to.equal('hostname')
-    //expect(diffKeys[1]).to.equal('config')
   })
 
   it('should deploy a shop', async () => {
