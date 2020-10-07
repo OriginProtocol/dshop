@@ -36,7 +36,6 @@ describe('Shops', () => {
     expect(network).to.be.an('object')
   })
 
-  // FRANCK: remove config
   it('should create a new shop', async () => {
     const shopName = 'test-shop-' + Date.now() // unique shop name.
     dataDir = shopName
@@ -62,6 +61,15 @@ describe('Shops', () => {
     expect(shop.name).to.equal(body.name)
     expect(shop.hostname).to.startsWith(body.dataDir)
     // TODO: check shop.config
+
+    // Check the admin activity was recorded.
+    const adminLog = await AdminLog.findOne({ order: [['id', 'desc']] })
+    expect(adminLog).to.be.an('object')
+    expect(adminLog.shopId).to.equal(shop.id)
+    expect(adminLog.sellerId).to.equal(1) // Shop was created using super admin with id 1.
+    expect(adminLog.action).to.equal(AdminLogActions.ShopCreated)
+    expect(adminLog.data).to.be.null
+    expect(adminLog.createdAt).to.be.a('date')
   })
 
   it('should update a shop config', async () => {
@@ -97,6 +105,7 @@ describe('Shops', () => {
     expect(adminLog.sellerId).to.equal(1) // Shop was created using super admin with id 1.
     expect(adminLog.action).to.equal(AdminLogActions.ShopConfigUpdated)
     expect(adminLog.data).to.be.an('object')
+    expect(adminLog.createdAt).to.be.a('date')
 
     const oldConfig = getConfig(adminLog.data.oldShop.config)
     expect(oldConfig).to.be.an('object')

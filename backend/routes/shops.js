@@ -534,7 +534,6 @@ module.exports = function (router) {
 
   /**
    * Updates a shop configuration.
-   *
    */
   router.put(
     '/shop/config',
@@ -600,6 +599,9 @@ module.exports = function (router) {
     }
   )
 
+  /**
+   * Deletes a shop. Super-admin only.
+   */
   router.delete('/shops/:shopId', authSuperUser, async (req, res) => {
     try {
       const shop = await Shop.findOne({
@@ -630,6 +632,10 @@ module.exports = function (router) {
 
   /**
    * Called by super-admin for deploying a shop.
+   *
+   * TODO:
+   *  - move this under logic/shop/deploy.js
+   *  - record activity in AdminLogs
    */
   router.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
@@ -676,6 +682,10 @@ module.exports = function (router) {
 
   /**
    * Called by admin for deploying a shop.
+   *
+   * TODO:
+   *  - move this under logic/shop/deploy.js
+   *  - record activity in AdminLogs
    */
   router.post(
     '/shop/deploy',

@@ -18,7 +18,6 @@ module.exports = {
         seller_id: Sequelize.INTEGER,
         data: isPostgres ? Sequelize.JSONB : Sequelize.JSON,
         created_at: Sequelize.DATE,
-        updated_at: Sequelize.DATE
       })
       await queryInterface.addIndex(tableName, ['shop_id'])
       await queryInterface.addIndex(tableName, ['seller_id'])

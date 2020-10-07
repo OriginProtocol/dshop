@@ -409,7 +409,9 @@ async function updateShopConfig({ seller, shop, data }) {
     action: AdminLogActions.ShopConfigUpdated,
     sellerId: seller.id,
     shopId,
-    data: { oldShop, diffKeys }
+    // Store in data the old version of the shop row as well as a list of keys that changed.
+    data: { oldShop, diffKeys },
+    createdAt: Date.now()
   })
 
   return { success: true }
