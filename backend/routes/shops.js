@@ -614,7 +614,8 @@ module.exports = function (router) {
         'useEscrow',
         'shippingApi',
         'taxRates',
-        'themeId'
+        'themeId',
+        'gaCode'
       )
       const jsonNetConfig = pick(
         req.body,
