@@ -15,8 +15,9 @@ const { DSHOP_CACHE } = require('../../utils/const')
 const { getConfig, setConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
 const configs = require('../../config/baseConfig')
-const { Shop, SellerShop, Network } = require('../../models')
+const { AdminLog, Shop, SellerShop, Network } = require('../../models')
 const printfulSyncProcessor = require('../../queues/printfulSyncProcessor')
+const { AdminLogActions } = require('../../enums')
 
 const log = getLogger('logic.shop.create')
 
@@ -102,6 +103,14 @@ async function createShopInDB({
     config,
     sellerId,
     hostname
+  })
+
+  // Record the admin activity.
+  await AdminLog.create({
+    action: AdminLogActions.ShopCreated,
+    sellerId,
+    shopId: shop.id,
+    createdAt: Date.now()
   })
 
   return { shop }
