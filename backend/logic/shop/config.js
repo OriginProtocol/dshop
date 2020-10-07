@@ -235,7 +235,7 @@ async function updateShopConfig({ seller, shop, data }) {
     )
     dataOverride.stripeWebhookSecret = secret
   } else {
-    log.info(`Shop ${shopId} - Deregistering Stripe webhook`)
+    log.info(`Shop ${shopId} - De-registering Stripe webhook`)
     await stripeUtils.deregisterWebhooks(shop, existingConfig)
     dataOverride.stripeWebhookSecret = ''
     dataOverride.stripeWebhookHost = ''
@@ -301,7 +301,7 @@ async function updateShopConfig({ seller, shop, data }) {
 
     dataOverride.printfulWebhookSecret = printfulWebhookSecret
   } else if (existingConfig.printful && data.printful === false) {
-    log.info(`Shop ${shopId} - Deregistering Printful webhook`)
+    log.info(`Shop ${shopId} - De-registering Printful webhook`)
     await deregisterPrintfulWebhook(shopId, existingConfig)
     dataOverride.printfulWebhookSecret = ''
   }
@@ -309,6 +309,7 @@ async function updateShopConfig({ seller, shop, data }) {
   //
   // Update the config on disk.
   //
+  log.info(`Shop ${shopId} - Saving config on disk.`)
 
   // Save config.json on disk.
   if (Object.keys(jsonConfig).length || Object.keys(jsonNetConfig).length) {
@@ -414,6 +415,7 @@ async function updateShopConfig({ seller, shop, data }) {
     createdAt: Date.now()
   })
 
+  log.info(`Shop ${shopId} - config updated`)
   return { success: true }
 }
 
