@@ -58,6 +58,33 @@ function getShortOrderId(fqOrderId) {
 }
 
 /**
+ * Utility method to extract the payment type from the encrypted offer data.
+ * @param {object} offerData
+ * @returns {enums.OrderPaymentTypes}
+ */
+function getPaymentType(offerData) {
+  const paymentMethodId = get(offerData, 'paymentMethod.id')
+  let paymentType
+  switch (paymentMethodId) {
+    case 'crypto':
+      paymentType = OrderPaymentTypes.CryptoCurrency
+      break
+    case 'stripe':
+      paymentType = OrderPaymentTypes.Stripe
+      break
+    case 'paypal':
+      paymentType = OrderPaymentTypes.PayPal
+      break
+    case 'uphold':
+      paymentType = OrderPaymentTypes.Uphold
+      break
+    default:
+      paymentType = OrderPaymentTypes.Offline
+  }
+  return paymentType
+}
+
+/**
  * Logic for creating a new order in the system.
  *
  * @param {models.Network} network
@@ -70,7 +97,9 @@ function getShortOrderId(fqOrderId) {
  * @param {object || null} event: blockchain OfferCreated event or null in case of an off-chain offer.
  * @param {boolean} skipEmail: If true, do not send email to the buyer/seller.
  * @param {boolean} skipDiscord: If true, do not send Discord notification to the system administrator.
- * @param {enums.OrderPaymentTypes} paymentType: Payment type of order
+ * @param {enums.OrderPaymentTypes} paymentType: Optional. Payment type of the order.
+ *   It is not passed for on-chain transactions and in that case the logic gets the
+ *   paymentType by inspecting the encrypted offer data.
  * @param {enums.OrderPaymentStatuses} paymentStatus: Payment status override
  * @returns {Promise<models.Order>}
  */
@@ -88,10 +117,8 @@ async function processNewOrder({
   paymentType,
   paymentStatus: _paymentStatus
 }) {
-  // Generate a short unique order id.
+  // Generate a short unique order id and the fully qualified id.
   const { fqId, shortId } = createOrderId(network, shop)
-
-  // Generate the fully qualified id.
 
   // Load the encrypted data from IPFS and decrypt it.
   const encryptedHash = offer.encryptedData
@@ -100,6 +127,11 @@ async function processNewOrder({
   }
   log.info(`Fetching encrypted offer data with hash ${encryptedHash}`)
   const data = await decryptShopOfferData(shop, encryptedHash)
+
+  // On-chain marketplace transactions do not pass the paymentType. Extract it from the offer data.
+  if (offerId) {
+    paymentType = getPaymentType(data)
+  }
 
   // Decorate the data with additional blockchain specific info before storing it in the DB.
   if (event) {

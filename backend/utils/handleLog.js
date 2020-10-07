@@ -180,6 +180,13 @@ async function _processEventForNewOrder({
   const offer = JSON.parse(offerData)
   log.debug('Offer:', offer)
 
+  // Load the encrypted data.
+  const encryptedHash = offer.encryptedData
+  if (!encryptedHash) {
+    throw new Error('No encrypted data found')
+  }
+  log.info(`Fetching encrypted offer data with hash ${encryptedHash}`)
+
   const order = await processNewOrder({
     network,
     networkConfig,
