@@ -66,8 +66,8 @@
     "react-styl": "^0.0.3",
     "serve-static": "^1.14.1",
     "tailwindcss": "^1.8.10",
-    "typeface-lato": "^0.0.75",
-    "typeface-roboto": "^0.0.75",
+    "typeface-lato": "^1.0.0",
+    "typeface-roboto": "^1.0.0",
     "webpack-subresource-integrity": "^1.4.1",
     "x-ray": "^2.3.4"
   },
