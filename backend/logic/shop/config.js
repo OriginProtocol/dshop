@@ -77,7 +77,12 @@ async function moveOfflinePaymentMethodImages(paymentMethods, dataDir) {
 function getShopDiffKeys(newShop, oldShop) {
   const diff = []
   // Generate a set of keys present in either new/old shop.
-  let keys = uniq(Object.keys(newShop).concat(Object.keys(oldShop)))
+  // Filter out keys that are not part of the shops table schema (the shop object
+  // gets decorated with various other keys that are not relevant to this method).
+  const validKeys = Object.keys(Shop.rawAttributes)
+  let keys = uniq(
+    Object.keys(newShop).concat(Object.keys(oldShop))
+  ).filter((k) => validKeys.includes(k))
   for (const key of keys) {
     if (key === 'config') {
       // config is handled as a special case below.
