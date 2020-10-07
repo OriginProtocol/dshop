@@ -1,13 +1,8 @@
 import React from 'react'
 
-import Header from './_Header'
-import Footer from './_Footer'
-
 const Contact = () => {
   return (
     <>
-      <Header />
-
       <div className="container mt-12">
         <div className="flex">
           <div style={{ flex: '2' }}>
@@ -47,8 +42,6 @@ const Contact = () => {
           </form>
         </div>
       </div>
-
-      <Footer />
     </>
   )
 }

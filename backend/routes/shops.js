@@ -1,6 +1,12 @@
 const ethers = require('ethers')
-const pick = require('lodash/pick')
-const sortBy = require('lodash/sortBy')
+const fs = require('fs')
+const { pick, sortBy, get } = require('lodash')
+const { execFile } = require('child_process')
+const formidable = require('formidable')
+const https = require('https')
+const http = require('http')
+const mv = require('mv')
+const dayjs = require('dayjs')
 
 const {
   Seller,
@@ -19,56 +25,17 @@ const {
   authSuperUser
 } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
-const { getConfig, setConfig } = require('../utils/encryptedConfig')
-const {
-  createShop,
-  getShopDataUrl,
-  getShopPublicUrl,
-  getPublicUrl,
-  getDataUrl
-} = require('../utils/shop')
-const genPGP = require('../utils/pgp')
-const get = require('lodash/get')
-const set = require('lodash/set')
-const kebabCase = require('lodash/kebabCase')
-const fs = require('fs')
-const configs = require('../scripts/configs')
-const { execFile } = require('child_process')
-const formidable = require('formidable')
-const https = require('https')
-const http = require('http')
-const mv = require('mv')
-const path = require('path')
-const { isHexPrefixed, addHexPrefix } = require('ethereumjs-util')
-
+const { getConfig } = require('../utils/encryptedConfig')
 const { configureShopDNS, deployShop } = require('../utils/deployShop')
 const { DSHOP_CACHE } = require('../utils/const')
 const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
-const {
-  deregisterPrintfulWebhook,
-  registerPrintfulWebhook
-} = require('../utils/printful')
-
+const { readProductsFile } = require('../utils/products')
 const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
-
-const paypalUtils = require('../utils/paypal')
+const { updateShopConfig } = require('../logic/shop/config')
+const { createShop } = require('../logic/shop/create')
 
 const log = getLogger('routes.shops')
-
-const dayjs = require('dayjs')
-const { readProductsFile } = require('../utils/products')
-
-const stripeUtils = require('../utils/stripe')
-const { validateStripeKeys } = require('@origin/utils/stripe')
-
-async function tryDataDir(dataDir) {
-  const hasDir = fs.existsSync(`${DSHOP_CACHE}/${dataDir}`)
-  const [authToken, hostname] = [dataDir, dataDir]
-  const existingShopWithAuthToken = await Shop.findOne({ where: { authToken } })
-  const existingShopWithHostname = await Shop.findOne({ where: { hostname } })
-  return !existingShopWithAuthToken && !hasDir && !existingShopWithHostname
-}
 
 module.exports = function (router) {
   router.get(
@@ -301,7 +268,7 @@ module.exports = function (router) {
     log.info(`Downloading ${req.body.hash} from ${network.ipfs}`)
     const path = `/api/v0/get?arg=${req.body.hash}&archive=true&compress=true`
 
-    // console.log(`curl -X POST ${network.ipfs}${path}`)
+    log.info(`curl -X POST "${network.ipfs}${path}"`)
 
     await new Promise((resolve) => {
       const f = fs
@@ -369,205 +336,39 @@ module.exports = function (router) {
 
   /**
    * Creates a new shop.
+   *
+   * The following fields from req.body are used:
+   * @param {string} name: Name of the store.
+   * @param {string} dataDir: Seed data dir. This is usually set to the shop's name.
+   * @param {string} supportEmail: Optional. Shop's support email.
+   * @param {string} web3Pk: Optional. Web3 private key for recording orders as offers on the marketplace.
+   *   Only necessary when the system operates in on-chain mode.
+   * @param {string} listingId: Optional. Marketplace listingId.
+   *   Only necessary when the system operates in on-chain mode.
+   * @param {string} printfulApi: Optional. Printful API key.
+   * @param {string} shopType: Optional. The type of shop.
+   *  The following types are supported:
+   *    'empty': Default shop type. Used the empty template.
+   *    'blank': No template used. Only creates populates the DB and not the data dir.
+   *    'local-dir': Creates a new shop that uses the data dir from an already existing shop. For super-admin use only.
+   *  The following types are not currently enabled (the BE supports them but the FE does not use them):
+   *    'clone-ipfs': Creates a new shop and clones products data from a shop IPFS hash.
+   *    'affiliate': Creates the shop using the affiliate template.
+   *    'single-product': Creates the shop using the single-product template.
+   *    'multi-product': Creates the shop using the multi-product template.
+   *    'printful': Create a new shop and populate the products by syncing from printful.
+   * @returns {Promise<{success: false, reason: string, field:string, message: string}|{success: true, slug: string}>}
    */
   router.post('/shop', authUser, async (req, res) => {
-    const { printfulApi } = req.body
-    const shopType = req.body.shopType || 'empty'
-    let originalDataDir = kebabCase(req.body.dataDir)
-    let dataDir = kebabCase(req.body.dataDir)
-
-    if (shopType !== 'local-dir') {
-      // If dataDir already exists, try dataDir-1, dataDir-2 etc until it works
-      let postfix = 1
-      const existingPostfix = dataDir.match(/^(.*)-([0-9]+)$/)
-      if (existingPostfix && existingPostfix[2]) {
-        postfix = Number(existingPostfix[2])
-        originalDataDir = existingPostfix[1]
-      }
-      if (postfix < 1) postfix = 1
-      while (!(await tryDataDir(dataDir))) {
-        postfix++
-        dataDir = `${originalDataDir}-${postfix}`
-      }
-    }
-
-    const OutputDir = `${DSHOP_CACHE}/${dataDir}`
-    const hostname = dataDir
-
-    const network = await Network.findOne({ where: { active: true } })
-    const networkConfig = getConfig(network.config)
-    const netAndVersion = `${network.networkId}-${network.marketplaceVersion}`
-
-    if (req.body.listingId) {
-      const existingShopWithListing = await Shop.findOne({
-        where: { listingId: req.body.listingId }
-      })
-      if (existingShopWithListing) {
-        return res.json({
-          success: false,
-          reason: 'invalid',
-          field: 'listingId',
-          message: 'Already exists'
-        })
-      }
-      if (req.body.listingId.indexOf(netAndVersion) !== 0) {
-        return res.json({
-          success: false,
-          reason: 'invalid',
-          field: 'listingId',
-          message: `Must start with ${netAndVersion}`
-        })
-      }
-    }
-
-    let name = req.body.name
-
-    if (shopType === 'local-dir') {
-      const existingData = fs
-        .readFileSync(`${OutputDir}/data/config.json`)
-        .toString()
-      const json = JSON.parse(existingData)
-      name = json.fullTitle || json.title
-    }
-
-    // Construct the shop's public and data URLs.
-    const publicUrl = getPublicUrl(
-      hostname,
-      networkConfig.domain,
-      networkConfig.backendUrl
-    )
-    const dataUrl = getDataUrl(
-      hostname,
-      dataDir,
-      networkConfig.domain,
-      networkConfig.backendUrl
-    )
-
-    const supportEmail = req.body.supportEmail || req.seller.email
-
-    let defaultShopConfig = {}
-    if (networkConfig.defaultShopConfig) {
-      try {
-        defaultShopConfig = JSON.parse(networkConfig.defaultShopConfig)
-      } catch (e) {
-        log.error('Error parsing default shop config')
-      }
-    }
-    const pgpKeys = await genPGP()
-    const config = {
-      ...defaultShopConfig,
-      ...pgpKeys,
-      dataUrl,
-      hostname,
-      publicUrl,
-      printful: req.body.printfulApi,
-      deliveryApi: req.body.printfulApi ? true : false,
-      supportEmail,
-      emailSubject: `Your order from ${name}`
-    }
-    if (req.body.web3Pk && !config.web3Pk) {
-      config.web3Pk = isHexPrefixed(req.body.web3Pk)
-        ? req.body.web3Pk
-        : addHexPrefix(req.body.web3Pk)
-    }
-    const shopResponse = await createShop({
-      networkId: network.networkId,
-      sellerId: req.session.sellerId,
-      listingId: network.listingId, // by default we set the shop's listingId to the network's listingId.
-      hostname,
-      name,
-      authToken: dataDir,
-      config: setConfig(config)
-    })
-
-    if (!shopResponse.shop) {
-      log.error(`Error creating shop: ${shopResponse.error}`)
-      return res
-        .status(400)
-        .json({ success: false, message: shopResponse.error })
-    }
-
-    const shopId = shopResponse.shop.id
-    log.info(`Created shop ${shopId} with name ${shopResponse.shop.name}`)
-
-    const role = 'admin'
-    await SellerShop.create({ sellerId: req.session.sellerId, shopId, role })
-    log.info(`Added role OK`)
-
-    if (shopType === 'blank' || shopType === 'local-dir') {
-      return res.json({ success: true, slug: dataDir })
-    }
-
-    fs.mkdirSync(OutputDir, { recursive: true })
-    log.info(`Outputting to ${OutputDir}`)
-
-    if (shopType === 'printful' && printfulApi) {
-      // Should this be made async? Like just moving to the queue instead of blocking?
-      await printfulSyncProcessor.processor({
-        data: {
-          OutputDir,
-          apiKey: printfulApi
-        },
-        log: (data) => log.debug(data),
-        progress: () => {}
+    const args = { ...req.body, seller: req.seller }
+    const result = await createShop(args)
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        ...pick(result, ['reason', 'field', 'message'])
       })
     }
-
-    let shopConfig = { ...configs.shopConfig }
-    const existingConfig = fs.existsSync(`${OutputDir}/data/config.json`)
-    if (existingConfig) {
-      const config = fs.readFileSync(`${OutputDir}/data/config.json`).toString()
-      shopConfig = JSON.parse(config)
-    }
-
-    log.info(`Shop type: ${shopType}`)
-    const allowedTypes = [
-      'single-product',
-      'multi-product',
-      'affiliate',
-      'empty'
-    ]
-
-    if (allowedTypes.indexOf(shopType) >= 0) {
-      const shopTpl = `${__dirname}/../db/shop-templates/${shopType}`
-      const config = fs.readFileSync(`${shopTpl}/config.json`).toString()
-      shopConfig = JSON.parse(config)
-      await new Promise((resolve, reject) => {
-        execFile(
-          'cp',
-          ['-r', shopTpl, `${OutputDir}/data`],
-          (error, stdout) => {
-            if (error) reject(error)
-            else resolve(stdout)
-          }
-        )
-      })
-    }
-
-    if (!existingConfig) {
-      shopConfig = {
-        ...shopConfig,
-        title: name,
-        fullTitle: name,
-        backendAuthToken: dataDir,
-        supportEmail,
-        pgpPublicKey: pgpKeys.pgpPublicKey.replace(/\\r/g, '')
-      }
-    }
-
-    const netPath = `networks[${network.networkId}]`
-    shopConfig = set(shopConfig, `${netPath}.backend`, networkConfig.backendUrl)
-    if (req.body.listingId) {
-      shopConfig = set(shopConfig, `${netPath}.listingId`, req.body.listingId)
-    }
-
-    const shopConfigPath = `${OutputDir}/data/config.json`
-    fs.writeFileSync(shopConfigPath, JSON.stringify(shopConfig, null, 2))
-
-    const shippingContent = JSON.stringify(configs.shipping, null, 2)
-    fs.writeFileSync(`${OutputDir}/data/shipping.json`, shippingContent)
-
-    return res.json({ success: true, slug: dataDir })
+    return res.json({ success: true, slug: result.slug })
   })
 
   router.post(
@@ -731,313 +532,22 @@ module.exports = function (router) {
     }
   )
 
-  async function movePaymentMethodImages(paymentMethods, dataDir) {
-    const out = []
-    const tmpDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/__tmp`)
-
-    for (const m of paymentMethods) {
-      const imagePath = m.qrImage
-      if (imagePath && imagePath.includes('/__tmp/')) {
-        const fileName = imagePath.split('/__tmp/', 2)[1]
-        const tmpFilePath = `${tmpDir}/${fileName}`
-
-        const targetDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/uploads`)
-        if (!fs.existsSync(targetDir)) {
-          fs.mkdirSync(targetDir, { recursive: true })
-        }
-        const targetPath = `${targetDir}/${fileName}`
-
-        const movedFileName = await new Promise((resolve) => {
-          mv(tmpFilePath, targetPath, (err) => {
-            if (err) {
-              console.error(`Couldn't move file`, tmpFilePath, targetPath, err)
-            }
-            resolve(fileName)
-          })
-        })
-
-        out.push({
-          ...m,
-          qrImage: movedFileName
-        })
-      } else {
-        out.push(m)
-      }
-    }
-
-    return out
-  }
-
+  /**
+   * Updates a shop configuration.
+   */
   router.put(
     '/shop/config',
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      // Load the network config.
-      const network = await Network.findOne({ where: { active: true } })
-      const netConfig = getConfig(network.config)
-
-      const jsonConfig = pick(
-        req.body,
-        'currency',
-        'metaDescription',
-        'css',
-        'emailSubject',
-        'cartSummaryNote',
-        'byline',
-        'discountCodes',
-        'stripe',
-        'stripeKey',
-        'title',
-        'fullTitle',
-        'facebook',
-        'twitter',
-        'instagram',
-        'medium',
-        'youtube',
-        'about',
-        'logErrors',
-        'paypalClientId',
-        'offlinePaymentMethods',
-        'supportEmail',
-        'upholdClient',
-        'useEscrow',
-        'shippingApi',
-        'themeId'
-      )
-      const jsonNetConfig = pick(
-        req.body,
-        'acceptedTokens',
-        'customTokens',
-        'listingId',
-        'disableCryptoPayments',
-        'walletAddress'
-      )
-      const shopId = req.shop.id
-      log.info(`Shop ${shopId} - Saving config`)
-
-      let listingId
-      if (String(req.body.listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
-        listingId = req.body.listingId
-        req.shop.listingId = listingId
-      }
-
-      // Offline payments
-      if (req.body.offlinePaymentMethods) {
-        jsonConfig.offlinePaymentMethods = await movePaymentMethodImages(
-          req.body.offlinePaymentMethods,
-          req.shop.authToken
-        )
-      }
-
-      if (Object.keys(jsonConfig).length || Object.keys(jsonNetConfig).length) {
-        const configFile = `${DSHOP_CACHE}/${req.shop.authToken}/data/config.json`
-
-        if (!fs.existsSync(configFile)) {
-          return res.json({ success: false, reason: 'dir-not-found' })
-        }
-
-        try {
-          const raw = fs.readFileSync(configFile).toString()
-          const config = JSON.parse(raw)
-          const newConfig = { ...config, ...jsonConfig }
-          if (Object.keys(jsonNetConfig).length) {
-            set(newConfig, `networks.${network.networkId}`, {
-              ...get(newConfig, `networks.${network.networkId}`),
-              ...jsonNetConfig
-            })
-          }
-
-          const jsonStr = JSON.stringify(newConfig, null, 2)
-          fs.writeFileSync(configFile, jsonStr)
-        } catch (e) {
-          log.error(e)
-          return res.json({ success: false })
-        }
-      }
-
-      if (req.body.about) {
-        // Update about file
-        const dataDir = `${DSHOP_CACHE}/${req.shop.authToken}/data`
-        const aboutFile = `${dataDir}/${req.body.about}`
-
-        try {
-          fs.writeFileSync(aboutFile, req.body.aboutText)
-        } catch (e) {
-          log.error('Failed to update about file', dataDir, aboutFile, e)
-          return res.json({ success: false })
-        }
-      }
-
-      const additionalOpts = {}
-
-      // Check the hostname picked by the merchant is available.
-      const existingConfig = getConfig(req.shop.config)
-      if (req.body.hostname) {
-        const hostname = kebabCase(req.body.hostname)
-        const existingShops = await Shop.findAll({
-          where: { hostname, [Sequelize.Op.not]: { id: shopId } }
+      const args = { seller: req.seller, shop: req.shop, data: req.body }
+      const result = await updateShopConfig(args)
+      if (!result.success) {
+        return res.status(400).json({
+          success: false,
+          ...pick(result, ['reason', 'field', 'message'])
         })
-        if (existingShops.length) {
-          return res.json({
-            success: false,
-            reason: 'Name unavailable',
-            field: 'hostname'
-          })
-        }
-        req.shop.hostname = hostname
-
-        // Unless explicity set by the UI, update the public and dataUrl in the
-        // shop's config to reflect a possible change to the hostname.
-        if (!req.body.publicUrl) {
-          additionalOpts.publicUrl = getShopPublicUrl(req.shop, netConfig)
-        }
-        if (!req.body.dataUrl) {
-          additionalOpts.dataUrl = getShopDataUrl(req.shop, netConfig)
-        }
       }
-      if (req.body.fullTitle) {
-        req.shop.name = req.body.fullTitle
-      }
-
-      // Configure Stripe webhooks
-      if (req.body.stripe === false) {
-        log.info(`Shop ${shopId} - Deregistering Stripe webhook`)
-        await stripeUtils.deregisterWebhooks(req.shop, existingConfig)
-        additionalOpts.stripeWebhookSecret = ''
-        additionalOpts.stripeWebhookHost = ''
-        additionalOpts.stripeBackend = ''
-      } else if (req.body.stripe) {
-        log.info(`Shop ${shopId} - Registering Stripe webhook`)
-
-        const validKeys = validateStripeKeys({
-          publishableKey: req.body.stripeKey,
-          secretKey: req.body.stripeBackend
-        })
-
-        if (!validKeys) {
-          return res.json({
-            success: false,
-            reason: 'Invalid Stripe credentials'
-          })
-        }
-
-        const { secret } = await stripeUtils.registerWebhooks(
-          req.shop,
-          req.body,
-          existingConfig,
-          req.body.stripeWebhookHost || netConfig.backendUrl
-        )
-        additionalOpts.stripeWebhookSecret = secret
-      }
-
-      // Configure Printful webhooks
-      if (req.body.printful) {
-        log.info(`Shop ${shopId} - Registering Printful webhook`)
-        const printfulWebhookSecret = await registerPrintfulWebhook(
-          shopId,
-          {
-            ...existingConfig,
-            ...req.body
-          },
-          netConfig.backendUrl
-        )
-
-        additionalOpts.printfulWebhookSecret = printfulWebhookSecret
-      } else if (existingConfig.printful && req.body.printful === false) {
-        log.info(`Shop ${shopId} - Deregistering Printful webhook`)
-        await deregisterPrintfulWebhook(shopId, existingConfig)
-        additionalOpts.printfulWebhookSecret = ''
-      }
-
-      // Duplicate `offlinePaymentMethods` to encrypted config
-      if (jsonConfig.offlinePaymentMethods) {
-        additionalOpts.offlinePaymentMethods = jsonConfig.offlinePaymentMethods
-      }
-
-      // PayPal
-      if (req.body.paypal) {
-        const client = paypalUtils.getClient(
-          netConfig.paypalEnvironment,
-          req.body.paypalClientId,
-          req.body.paypalClientSecret
-        )
-        const valid = await paypalUtils.validateCredentials(client)
-        if (!valid) {
-          return res.json({
-            success: false,
-            reason: 'Invalid PayPal credentials'
-          })
-        }
-
-        log.info(`Shop ${shopId} - Registering PayPal webhook`)
-        if (existingConfig.paypal && existingConfig.paypalWebhookId) {
-          await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
-        }
-        const result = await paypalUtils.registerWebhooks(
-          shopId,
-          {
-            ...existingConfig,
-            ...req.body
-          },
-          netConfig
-        )
-        additionalOpts.paypalWebhookId = result.webhookId
-      } else if (existingConfig.paypal && req.body.paypal === false) {
-        await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
-        additionalOpts.paypalWebhookId = null
-      }
-
-      // Save the config in the DB.
-      log.info(`Shop ${shopId} - Saving config in the DB.`)
-      const shopConfigFields = pick(
-        { ...existingConfig, ...req.body, ...additionalOpts },
-        'awsAccessKey',
-        'awsAccessSecret',
-        'awsRegion',
-        'bigQueryCredentials',
-        'bigQueryTable',
-        'dataUrl',
-        'deliveryApi',
-        'email',
-        'emailSubject',
-        'hostname',
-        'listener',
-        'mailgunSmtpLogin',
-        'mailgunSmtpPassword',
-        'mailgunSmtpPort',
-        'mailgunSmtpServer',
-        'offlinePaymentMethods',
-        'password',
-        'paypal',
-        'paypalClientId',
-        'paypalClientSecret',
-        'paypalWebhookHost',
-        'paypalWebhookId',
-        'pgpPrivateKey',
-        'pgpPrivateKeyPass',
-        'pgpPublicKey',
-        'printful',
-        'printfulAutoFulfill',
-        'processingTime',
-        'publicUrl',
-        'sendgridApiKey',
-        'sendgridPassword',
-        'sendgridUsername',
-        'shippingFrom',
-        'stripeBackend',
-        'stripeWebhookSecret',
-        'stripeWebhookHost',
-        'supportEmail',
-        'upholdApi',
-        'upholdClient',
-        'upholdSecret',
-        'web3Pk'
-      )
-      const newConfig = setConfig(shopConfigFields, req.shop.config)
-      req.shop.config = newConfig
-      req.shop.hasChanges = true
-      await req.shop.save()
       return res.json({ success: true })
     }
   )
@@ -1089,6 +599,9 @@ module.exports = function (router) {
     }
   )
 
+  /**
+   * Deletes a shop. Super-admin only.
+   */
   router.delete('/shops/:shopId', authSuperUser, async (req, res) => {
     try {
       const shop = await Shop.findOne({
@@ -1119,6 +632,10 @@ module.exports = function (router) {
 
   /**
    * Called by super-admin for deploying a shop.
+   *
+   * TODO:
+   *  - move this under logic/shop/deploy.js
+   *  - record activity in AdminLogs
    */
   router.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
     const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
@@ -1165,6 +682,10 @@ module.exports = function (router) {
 
   /**
    * Called by admin for deploying a shop.
+   *
+   * TODO:
+   *  - move this under logic/shop/deploy.js
+   *  - record activity in AdminLogs
    */
   router.post(
     '/shop/deploy',

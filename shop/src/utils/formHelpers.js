@@ -1,6 +1,10 @@
 import React from 'react'
 
-export const formInput = (state, setState, opts = {}) => (field, valueOnly) => {
+export const formInput = (state, setState, opts = {}) => (
+  field,
+  valueOnly,
+  inPercent
+) => {
   let className = 'form-control'
   if (opts.className) {
     className += ` ${opts.className}`
@@ -8,13 +12,23 @@ export const formInput = (state, setState, opts = {}) => (field, valueOnly) => {
   if (state[`${field}Error`]) {
     className += ' is-invalid'
   }
+
+  let value = state[field] || ''
+  if (inPercent && value !== '') {
+    value = parseFloat((value / 100).toFixed(2))
+  }
+
   return {
-    value: state[field] || '',
+    value,
     className,
     name: field,
     onChange: (e) =>
       setState({
-        [field]: valueOnly ? e : e.target.value,
+        [field]: valueOnly
+          ? e
+          : inPercent
+          ? e.target.value * 100
+          : e.target.value,
         [`${field}Error`]: false
       })
   }

@@ -12,7 +12,7 @@ const Home = () => {
         </div>
       </div>
       <div className="sm:container">
-        <div className="grid grid-cols-2 sm:gap-12">
+        <div className="grid grid-cols-2 gap-px sm:gap-12">
           <div>
             <Link
               to="/product/bitcoin-b"
@@ -27,7 +27,7 @@ const Home = () => {
             />
             <Link
               to="/product/bitcoin-b"
-              className="block bg-no-repeat sm:mt-12"
+              className="block bg-no-repeat sm:mt-12 mt-px"
               style={{
                 paddingTop: '153%',
                 backgroundSize: '210%',
@@ -51,7 +51,7 @@ const Home = () => {
             />
             <Link
               to="/product/litecoin-l"
-              className="block bg-no-repeat sm:mt-12"
+              className="block bg-no-repeat sm:mt-12 mt-px"
               style={{
                 paddingTop: '77%',
                 backgroundSize: '308%',
@@ -62,7 +62,7 @@ const Home = () => {
             />
             <Link
               to="/product/litecoin-l"
-              className="block bg-no-repeat sm:mt-12"
+              className="block bg-no-repeat sm:mt-12 mt-px"
               style={{
                 paddingTop: '77%',
                 backgroundSize: '119%',

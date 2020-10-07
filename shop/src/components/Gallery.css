@@ -1,0 +1,37 @@
+.gallery-scroll-wrap {
+  position: relative;
+}
+
+.gallery-scroll-wrap .gallery-scroll {
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-appearance: none;
+  scrollbar-width: none;
+}
+
+.gallery-scroll-wrap .gallery-scroll::-webkit-scrollbar {
+  display: block;
+  -webkit-appearance: none;
+  background-color: transparent;
+}
+
+.gallery-scroll-wrap .gallery-scroll::-webkit-scrollbar-thumb,
+.gallery-scroll-wrap .gallery-scroll::-webkit-scrollbar-track {
+  background-color: transparent;
+  -webkit-appearance: none;
+}
+
+.gallery-scroll-wrap .gallery-scroll > div {
+  display: inline-block;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  width: 100%;
+  padding-top: var(--gallery-ratio, 100%);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}

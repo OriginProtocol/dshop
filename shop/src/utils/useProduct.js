@@ -1,5 +1,5 @@
 import { useEffect, useReducer } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useHistory } from 'react-router-dom'
 import queryString from 'query-string'
 import get from 'lodash/get'
 import pick from 'lodash/pick'
@@ -19,6 +19,13 @@ function getImageForVariant(product, variant) {
     )
     return variantImage > 0 ? variantImage : 0
   }
+}
+
+function getOptions(product, offset) {
+  const options = new Set(
+    product.variants.map((variant) => variant.options[offset])
+  )
+  return Array.from(options)
 }
 
 /**
@@ -46,6 +53,7 @@ function findCheapestVariant(variants, productPrice) {
 function useProduct(id) {
   const [{ config }] = useStateValue()
   const location = useLocation()
+  const history = useHistory()
   const opts = queryString.parse(location.search)
   const currencyOpts = useCurrencyOpts()
   const [state, setState] = useReducer(reducer, {
@@ -141,11 +149,45 @@ function useProduct(id) {
 
     history.replace({
       pathname: location.pathname,
-      search: queryString.stringify({ variant: variant.id })
+      search: queryString.stringify({
+        variant: variant ? variant.id : undefined
+      })
     })
   }
 
-  return { ...state, setOption, variants, variant }
+  function setOptionFromImage(activeId) {
+    const productOptions = state.product.options || []
+    const sizeIdx = productOptions.indexOf('Size')
+    const foundVariant = state.product.variants.find((curVariant) => {
+      if (sizeIdx >= 0 && productOptions.length > 1) {
+        const sizeMatches =
+          variant[`option${sizeIdx + 1}`] == curVariant[`option${sizeIdx + 1}`]
+        const matches =
+          sizeMatches && curVariant.image === state.product.images[activeId]
+        return matches
+      } else {
+        return curVariant.image === state.product.images[activeId]
+      }
+    })
+    if (foundVariant !== undefined) {
+      setState({
+        options: pick(foundVariant, 'option1', 'option2', 'option3')
+      })
+      history.replace({
+        pathname: location.pathname,
+        search: queryString.stringify({ variant: foundVariant.id })
+      })
+    }
+  }
+
+  return {
+    ...state,
+    setOption,
+    setOptionFromImage,
+    getOptions,
+    variants,
+    variant
+  }
 }
 
 export default useProduct

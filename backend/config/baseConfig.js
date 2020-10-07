@@ -28,17 +28,17 @@ const shopConfig = {
       listingId: '1-001-X',
       affiliate: '',
       arbitrator: '',
-      backend: 'https://dshopapi.ogn.app',
-      ipfsGateway: 'https://ipfs-prod.ogn.app',
-      ipfsApi: 'https://ipfs.ogn.app'
+      backend: 'https://dshop.originprotocol.comp',
+      ipfsGateway: 'https://fs-autossl.ogn.app',
+      ipfsApi: 'https://fs.ogn.app'
     },
     4: {
       marketplaceContract: '0x3d608cce08819351ada81fc1550841ebc10686fd',
       marketplaceEpoch: 5119455,
       listingId: '4-001-XXX',
-      backend: 'https://example.herokuapp.com',
-      ipfsGateway: 'https://ipfs.staging.originprotocol.com',
-      ipfsApi: 'https://ipfs.staging.originprotocol.com'
+      backend: 'https://rinkebyapi.ogn.app',
+      ipfsGateway: 'https://fs-autossl.staging.ogn.app',
+      ipfsApi: 'https://fs.staging.ogn.app'
     },
     999: {
       marketplaceEpoch: 0,

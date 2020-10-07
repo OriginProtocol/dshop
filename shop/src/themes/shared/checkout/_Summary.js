@@ -51,7 +51,7 @@ export const OrderSummary = ({ cart, discount = true }) => {
         </div>
       </div>
       {cart.shipping && !cart.totalTaxes ? null : (
-        <div className="flex justify-between">
+        <div className="flex justify-between mt-4">
           <div>
             <fbt desc="Taxes">Taxes</fbt>
           </div>
@@ -92,7 +92,7 @@ const Row = ({ title, quantity, img, price }) => (
         {title}
       </div>
     </div>
-    <div className="border-b pb-3 text-sm flex items-center justify-center dark:border-gray-700">
+    <div className="border-b pb-3 px-2 text-sm flex items-center justify-center dark:border-gray-700">
       {quantity}
     </div>
     <div className="border-b pb-3 text-sm flex items-center justify-end dark:border-gray-700">

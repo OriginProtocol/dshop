@@ -44,6 +44,8 @@ const CheckoutInfo = () => {
     if (valid) {
       let taxRate = 0
 
+      const manualTaxRates = get(config, 'taxRates')
+
       if (shippingApi) {
         const { city, province, country, zip } = newState
 
@@ -81,6 +83,33 @@ const CheckoutInfo = () => {
                 'checkout.taxRateError'
               )
           })
+        }
+      } else if (manualTaxRates && manualTaxRates.length) {
+        const { province, country } = newState
+
+        const countryObj = Countries[country]
+        const countryCode = get(countryObj, 'code')
+
+        const countryTaxObj = manualTaxRates.find(
+          (rateObj) => rateObj.country === countryCode
+        )
+        const provinceObj = get(countryObj, 'provinces', {})[province]
+
+        let provinceCode = ''
+        if (province && provinceObj) {
+          provinceCode = provinceObj.code
+        }
+
+        const provinceTaxObj = get(countryTaxObj, 'provinces', []).find(
+          (rateObj) => rateObj.province === provinceCode
+        )
+
+        if (provinceTaxObj) {
+          taxRate = provinceTaxObj.rate
+        } else if (countryTaxObj) {
+          taxRate = countryTaxObj.rate
+        } else {
+          taxRate = 0
         }
       }
 

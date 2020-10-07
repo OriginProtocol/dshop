@@ -3,7 +3,7 @@ const expect = chai.expect
 
 const {
   isPublicDNSName,
-  isUnsoppableName,
+  isUnstoppableName,
   isCryptoName
 } = require('@origin/utils/dns')
 
@@ -11,7 +11,7 @@ const { TEST_DOMAIN_1, TEST_UNSTOPPABLE_DOMAIN_1 } = require('./const')
 
 describe('DNS Utils', () => {
   it('should recognize an Unstoppable domain', async () => {
-    expect(isUnsoppableName(TEST_UNSTOPPABLE_DOMAIN_1)).to.be.true
+    expect(isUnstoppableName(TEST_UNSTOPPABLE_DOMAIN_1)).to.be.true
   })
 
   it('should recognize crypto domains', async () => {

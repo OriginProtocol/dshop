@@ -21,6 +21,7 @@ module.exports = {
       colors: {
         gray: {
           ...defaultTheme.colors.gray,
+          100: '#fcfcfc',
           500: '#999999',
           900: '#222222'
         }

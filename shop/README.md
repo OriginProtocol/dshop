@@ -49,6 +49,13 @@ pointing to the super-admin interface at `http://0.0.0.0:9000/#/super-admin`
 
 Follow the steps on the super-admin to create a local dshop.
 
+### Create a Listing
+
+To create a listing for super-admin configuration, you can run the
+`createListing.js` script:
+
+    node backend/scripts/createListing.js
+
 ## Troubleshooting
 
 ### Vips error

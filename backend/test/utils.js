@@ -9,7 +9,7 @@ const { getBytes32FromIpfsHash, post: postIpfs } = require('../utils/_ipfs')
 
 const { Network } = require('../models')
 const { defaults } = require('../config')
-const { createShop } = require('../utils/shop')
+const { createShopInDB } = require('../logic/shop/create')
 const { setConfig, getConfig } = require('../utils/encryptedConfig')
 const { createListing, baseListing } = require('../utils/createListing')
 
@@ -225,7 +225,7 @@ async function createTestShop({
   console.log('Created listing ID', listingId)
 
   // Create the shop in the DB.
-  const { shop } = await createShop({
+  const { shop } = await createShopInDB({
     name: 'TestShop' + Date.now(), // Make shop's name unique.
     networkId: network.networkId,
     listingId,

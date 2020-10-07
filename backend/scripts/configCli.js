@@ -26,7 +26,7 @@ const { Network, Shop } = require('../models')
 const { getLogger } = require('../utils/logger')
 const log = getLogger('cli')
 
-const genPGP = require('../utils/pgp')
+const { genPGP, testPGP } = require('../utils/pgp')
 const { getConfig, setConfig, decrypt } = require('../utils/encryptedConfig')
 
 const program = require('commander')
@@ -104,6 +104,33 @@ async function setKey(shops, key, val) {
   shop.config = setConfig(shopConfig, shop.config)
   await shop.save()
   log.info('Done')
+}
+
+/**
+ * Checks the validity of PGP config.
+ * @param shops
+ * @returns {Promise<void>}
+ */
+async function checkPgp(shops) {
+  for (const shop of shops) {
+    let shopConfig
+    try {
+      shopConfig = getConfig(shop.config)
+    } catch (e) {
+      log.error(`Failed loading shop config ${shop.id} ${shop.name}: ${e}`)
+      continue
+    }
+    try {
+      const { pgpPrivateKeyPass, pgpPublicKey, pgpPrivateKey } = shopConfig
+      testPGP({ pgpPrivateKeyPass, pgpPublicKey, pgpPrivateKey })
+    } catch (e) {
+      log.error(`Invalid PGP key: ${e.message}`)
+      continue
+    }
+    // TODO: check config.json
+
+    log.info(`PGP config OK for shop ${shop.id} ${shop.name}`)
+  }
 }
 
 async function resetPgp(shops) {
@@ -277,6 +304,8 @@ async function main(config) {
     await checkShopConfig(shops)
   } else if (config.operation === 'resetPgp') {
     await resetPgp(shops)
+  } else if (config.operation === 'checkPgp') {
+    await checkPgp(shops)
   } else {
     throw new Error(`Unsupported operation ${config.operation}`)
   }
