@@ -2,7 +2,7 @@ const ethers = require('ethers')
 const fs = require('fs')
 const mv = require('mv')
 const path = require('path')
-const { get, set, kebabCase, pick, uniq } = require('lodash')
+const { get, set, kebabCase, pick, uniq, isEqual } = require('lodash')
 
 const { validateStripeKeys } = require('@origin/utils/stripe')
 
@@ -92,7 +92,8 @@ function getShopDiffKeys(newShop, oldShop) {
   const oldConfig = getConfig(oldShop.config)
   keys = uniq(Object.keys(newConfig).concat(Object.keys(oldConfig)))
   for (const key of keys) {
-    if (newConfig[key] !== oldConfig[key]) {
+    // Using isEqual to do a deep comparison since the values could be objects.
+    if (!isEqual(newConfig[key], oldConfig[key])) {
       diff.push(`config.${key}`)
     }
   }
@@ -415,7 +416,7 @@ async function updateShopConfig({ seller, shop, data }) {
     createdAt: Date.now()
   })
 
-  log.info(`Shop ${shopId} - config updated`)
+  log.info(`Shop ${shopId} - config updated. Diff keys: ${diffKeys}`)
   return { success: true }
 }
 
