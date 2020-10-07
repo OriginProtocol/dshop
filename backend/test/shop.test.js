@@ -60,6 +60,8 @@ describe('Shops', () => {
     expect(shop).to.be.an('object')
     expect(shop.name).to.equal(body.name)
     expect(shop.hostname).to.startsWith(body.dataDir)
+    expect(shop.listingId).to.equal(TEST_LISTING_ID_1)
+    expect(shop.authToken).to.equal(dataDir)
     // TODO: check shop.config
 
     // Check the admin activity was recorded.
