@@ -1,0 +1,126 @@
+const deploy = require('ipfs-deploy')
+const ipfsClient = require('ipfs-http-client')
+
+const prime = require('../../utils/primeIpfs')
+const { urlToMultiaddr } = require('../../utils/multiaddr')
+const {
+  PROTOCOL_LABS_GATEWAY,
+  PINATA_API,
+  PINATA_GATEWAY
+} = require('../../utils/const')
+const { getLogger } = require('../../utils/logger')
+
+const log = getLogger('logic.deploy.ipfs')
+
+async function deployToIPFS({
+  shop,
+  network,
+  networkConfig,
+  OutputDir,
+  dataDir,
+  pinner
+}) {
+  // If both an IPFS cluster and Pinata are configured,
+  // we favor pinning on the IPFS cluster.
+  if (!pinner) {
+    if (network.ipfsApi && networkConfig.ipfsClusterPassword) {
+      pinner = 'ipfs-cluster'
+    } else if (networkConfig.pinataKey) {
+      pinner = 'pinata'
+    }
+  }
+
+  if (!pinner && network.ipfsApi.indexOf('http://localhost') < 0) {
+    return false
+  }
+
+  const ipfsClusterConfigured =
+    network.ipfsApi && networkConfig.ipfsClusterPassword
+  const pinataConfigured = networkConfig.pinataKey && networkConfig.pinataSecret
+
+  // Build a list of all configured pinners.
+  let ipfsPinner, ipfsGateway
+  const remotePinners = []
+  const ipfsDeployCredentials = {}
+  if (ipfsClusterConfigured) {
+    const maddr = urlToMultiaddr(network.ipfsApi, {
+      translateLocalhostPort: 9094
+    })
+    log.info(
+      `IPFS cluster configured at ${maddr}. Adding to the list of pinners.`
+    )
+    ipfsDeployCredentials['ipfsCluster'] = {
+      host: maddr,
+      username: networkConfig.ipfsClusterUser || 'dshop', // username can be anything when authenticating to the cluster.
+      password: networkConfig.ipfsClusterPassword
+    }
+    remotePinners.push('ipfs-cluster')
+    if (pinner === 'ipfs-cluster') {
+      ipfsPinner = maddr
+      ipfsGateway = network.ipfs
+    }
+  }
+
+  if (pinataConfigured) {
+    log.info(`Pinata configured. Adding to the list of pinners.`)
+    ipfsDeployCredentials['pinata'] = {
+      apiKey: networkConfig.pinataKey,
+      secretApiKey: networkConfig.pinataSecret
+    }
+    remotePinners.push('pinata')
+    if (pinner === 'pinata') {
+      ipfsPinner = PINATA_API
+      ipfsGateway = PINATA_GATEWAY
+    }
+  }
+
+  // Deploy the shop to all the configured IPFS pinners.
+  let ipfsHash
+  const publicDirPath = `${OutputDir}/public`
+  if (remotePinners.length > 0) {
+    ipfsHash = await deploy({
+      publicDirPath,
+      remotePinners,
+      siteDomain: dataDir,
+      credentials: ipfsDeployCredentials,
+      writeLog: log.info,
+      writeError: log.error
+    })
+    if (!ipfsHash) {
+      throw new Error('IPFS deploy error')
+    }
+    log.info(
+      `Deployed shop to ${remotePinners.length} pinners. Hash=${ipfsHash}`
+    )
+
+    // Prime various IPFS gateways.
+    log.info('Priming gateways...')
+    await prime(`${PROTOCOL_LABS_GATEWAY}/ipfs/${ipfsHash}`, publicDirPath)
+    if (networkConfig.pinataKey) {
+      await prime(`${PINATA_GATEWAY}/ipfs/${ipfsHash}`, publicDirPath)
+    }
+    if (network.ipfs) {
+      await prime(`${network.ipfs}/ipfs/${ipfsHash}`, publicDirPath)
+    }
+  } else if (network.ipfsApi.indexOf('localhost') > 0) {
+    // Local dev deployment.
+    const ipfs = ipfsClient(network.ipfsApi)
+    const file = await ipfs.add(
+      ipfsClient.globSource(publicDirPath, { recursive: true })
+    )
+    ipfsHash = String(file.cid)
+    ipfsPinner = network.ipfsApi
+    ipfsGateway = network.ipfs
+    log.info(`Deployed shop on local IPFS. Hash=${ipfsHash}`)
+  } else {
+    throw new Error('Shop not deployed to IPFS: Pinner service not configured')
+  }
+
+  await shop.update({
+    hasChanges: false
+  })
+
+  return { ipfsHash, ipfsPinner, ipfsGateway }
+}
+
+module.exports = { deployToIPFS }

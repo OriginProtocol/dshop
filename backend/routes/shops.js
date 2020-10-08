@@ -24,6 +24,7 @@ const {
   authRole,
   authSuperUser
 } = require('./_auth')
+const deploy = require('../logic/deploy')
 const { createSeller } = require('../utils/sellers')
 const { getConfig } = require('../utils/encryptedConfig')
 const { configureShopDNS, deployShop } = require('../utils/deployShop')
@@ -634,7 +635,6 @@ module.exports = function (router) {
    * Called by super-admin for deploying a shop.
    *
    * TODO:
-   *  - move this under logic/shop/deploy.js
    *  - record activity in AdminLogs
    */
   router.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
@@ -642,39 +642,30 @@ module.exports = function (router) {
     if (!shop) {
       return res.json({ success: false, reason: 'shop-not-found' })
     }
-    const { networkId } = req.body
+    const dataDir = req.params.shopId
+    const { networkId, pinner, dnsProvider } = req.body
+
     const network = await Network.findOne({ where: { networkId } })
     if (!network) {
       return res.json({ success: false, reason: 'no-such-network' })
     }
 
-    const dataDir = req.params.shopId
-    const OutputDir = `${DSHOP_CACHE}/${dataDir}`
-
     try {
-      const deployOpts = {
-        OutputDir,
-        dataDir,
-        network,
+      const { success, error, message, hash, domain } = await deploy({
+        networkId: networkId ? networkId : network.networkId,
         subdomain: dataDir,
         shop,
-        pinner: req.body.pinner,
-        dnsProvider: req.body.dnsProvider
+        pinner,
+        dnsProvider
+      })
+
+      if (!success && error) {
+        throw new Error(message)
       }
 
-      const start = +new Date()
-
-      const { hash, domain } = await deployShop(deployOpts)
-
-      const end = +new Date()
-      const deployTimeSeconds = Math.floor((end - start) / 1000)
-      log.info(
-        `Deploy duration (shop_id: ${req.params.shopId}): ${deployTimeSeconds}s`
-      )
-
-      return res.json({ success: true, hash, domain, gateway: network.ipfs })
+      return res.json({ success, hash, domain, gateway: network.ipfs })
     } catch (e) {
-      log.error(`Shop ${shop.id} deploy failed`)
+      log.error(`Shop ${req.shop.id} initial deploy failed`)
       log.error(e)
       return res.json({ success: false, reason: e.message })
     }
@@ -696,66 +687,28 @@ module.exports = function (router) {
         return res.json({ success: false, reason: 'no-hostname-configured' })
       }
 
+      const { networkId, hostname } = req.body
       let where = { active: true }
       if (req.seller.superuser && req.body.networkId) {
-        where = { networkId: req.body.networkId }
+        where = { networkId }
       }
       const network = await Network.findOne({ where })
       if (!network) {
         return res.json({ success: false, reason: 'no-active-network' })
       }
-      const networkConfig = getConfig(network.config)
-
-      const dataDir = req.shop.authToken
-      const OutputDir = `${DSHOP_CACHE}/${dataDir}`
-
-      let pinner, dnsProvider
-
-      // If both an IPFS cluster and Pinata are configured,
-      // we favor pinning on the IPFS cluster.
-      if (network.ipfsApi && networkConfig.ipfsClusterPassword) {
-        pinner = 'ipfs-cluster'
-      } else if (networkConfig.pinataKey) {
-        pinner = 'pinata'
-      }
-      if (!pinner && network.ipfsApi.indexOf('http://localhost') < 0) {
-        return res.json({ success: false, reason: 'no-pinner-configured' })
-      }
-
-      if (networkConfig.gcpCredentials) {
-        dnsProvider = 'gcp'
-      } else if (networkConfig.cloudflareApiKey) {
-        dnsProvider = 'cloudflare'
-      } else if (networkConfig.awsAccessKeyId) {
-        dnsProvider = 'aws'
-      }
 
       try {
-        const deployOpts = {
-          OutputDir,
-          dataDir,
-          network,
-          subdomain: req.shop.hostname,
-          shop: req.shop,
-          pinner,
-          dnsProvider
-        }
-
-        const start = +new Date()
-
-        const { hash, domain } = await deployShop(deployOpts)
-
-        await req.shop.update({
-          hasChanges: false
+        const { success, error, message, hash, domain } = await deploy({
+          networkId: networkId ? networkId : network.networkId,
+          subdomain: hostname,
+          shop: req.shop
         })
 
-        const end = +new Date()
-        const deployTimeSeconds = Math.floor((end - start) / 1000)
-        log.info(
-          `Deploy duration (shop_id: ${req.shop.id}): ${deployTimeSeconds}s`
-        )
+        if (!success && error) {
+          throw new Error(message)
+        }
 
-        return res.json({ success: true, hash, domain, gateway: network.ipfs })
+        return res.json({ success, hash, domain, gateway: network.ipfs })
       } catch (e) {
         log.error(`Shop ${req.shop.id} initial deploy failed`)
         log.error(e)
