@@ -55,7 +55,7 @@ async function updateWalletAddress(shops) {
   const networkId = program.networkId
 
   for (const shop of shops) {
-    log.info(`Processing Shop ${shop.id}`)
+    log.info(`Processing Shop ${shop.id} DataDir ${shop.authToken}`)
 
     // Read the wallet address from config.json
     const configFile = `${DSHOP_CACHE}/${shop.authToken}/data/config.json`
@@ -66,12 +66,16 @@ async function updateWalletAddress(shops) {
     const configStr = fs.readFileSync(configFile).toString()
     const jsonConfig = JSON.parse(configStr)
     let jsonConfigWalletAddress = jsonConfig['networks'][networkId]['walletAddress']
+    if (!jsonConfigWalletAddress) {
+      log.info(`Shop ${shop.id} - No wallet address`)
+      continue
+    }
 
     // Validate the address and checksum it.
     try {
       jsonConfigWalletAddress = ethers.utils.getAddress(jsonConfigWalletAddress)
     } catch (e) {
-      log.info(`Shop ${shop.id} - Invalid address in config.json: ${jsonConfigWalletAddress}`)
+      log.error(`Shop ${shop.id} - Invalid address in config.json: ${jsonConfigWalletAddress}`)
     }
 
     if (shops.walletAddress) {
@@ -96,7 +100,7 @@ async function updateWalletAddress(shops) {
 
 async function main() {
   const shops = await _getShops()
-  await updateWalletAddress(program, shops)
+  await updateWalletAddress(shops)
 }
 
 //
