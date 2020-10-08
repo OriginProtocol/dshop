@@ -66,6 +66,12 @@ const DSHOP_CACHE = IS_TEST
   ? TEST_DSHOP_CACHE
   : process.env.DSHOP_CACHE || `${__dirname}/../data`
 
+const THEMES_CACHE = IS_TEST
+  ? TEST_THEMES_CACHE
+  : process.env.THEMES_CACHE || `${__dirname}/../themes`
+
+
+
 module.exports = {
   CONTRACTS,
   ENCRYPTION_KEY,
@@ -83,5 +89,6 @@ module.exports = {
   NETWORK,
   NETWORK_ID: NETWORK_NAME_TO_ID[NETWORK] || 999,
   PRINTFUL_URL,
-  DSHOP_CACHE
+  DSHOP_CACHE,
+  THEMES_CACHE
 }

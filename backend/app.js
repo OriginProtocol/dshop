@@ -93,6 +93,7 @@ require('./routes/offline-payment')(router)
 require('./routes/paypal')(router)
 require('./routes/exchange-rates')(router)
 require('./routes/crypto')(router)
+require('./routes/themes')(router)
 
 async function getNetworkName() {
   const network = await Network.findOne({ where: { active: true } })
