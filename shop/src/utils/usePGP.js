@@ -1,7 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 let loading = false
 function usePGP() {
+  const [pgpLoaded, setLoaded] = useState()
+
   useEffect(() => {
     if (loading) {
       return
@@ -10,13 +12,18 @@ function usePGP() {
 
     const pgpEl = document.createElement('script')
     pgpEl.src = 'dist/openpgp.min.js'
-    pgpEl.onload = () => {
+    pgpEl.onload = async () => {
       openpgp.config.show_comment = false
       openpgp.config.show_version = false
-      openpgp.initWorker({ path: 'dist/openpgp.worker.min.js' })
+      await openpgp.initWorker({ path: 'dist/openpgp.worker.min.js' })
+      setLoaded(true)
     }
     document.head.appendChild(pgpEl)
   }, [])
+
+  return {
+    pgpLoaded
+  }
 }
 
 export default usePGP

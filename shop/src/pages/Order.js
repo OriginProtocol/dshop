@@ -18,7 +18,6 @@ import Summary from './checkout/Summary'
 
 const OrderDetails = ({ cart }) => {
   const { config } = useConfig()
-  usePGP()
   if (!cart) {
     return (
       <div>
@@ -154,6 +153,7 @@ const Order = () => {
   const match = useRouteMatch('/order/:tx')
   const location = useLocation()
   const opts = queryString.parse(location.search)
+  const { pgpLoaded } = usePGP()
 
   useEffect(() => {
     async function go() {
@@ -168,11 +168,11 @@ const Order = () => {
       }
       setLoading(false)
     }
-    if (getOffer && !cart && !loading && status !== 'loading') {
+    if (getOffer && !cart && !loading && status !== 'loading' && pgpLoaded) {
       setLoading(true)
       go()
     }
-  }, [match.params.tx, opts.auth, status])
+  }, [match.params.tx, opts.auth, status, pgpLoaded])
 
   useEffect(() => {
     if (!window.orderCss) {
