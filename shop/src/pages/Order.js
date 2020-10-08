@@ -13,10 +13,12 @@ import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import useOrigin from 'utils/useOrigin'
 import formatAddress from 'utils/formatAddress'
+import usePGP from 'utils/usePGP'
 import Summary from './checkout/Summary'
 
 const OrderDetails = ({ cart }) => {
   const { config } = useConfig()
+  usePGP()
   if (!cart) {
     return (
       <div>
