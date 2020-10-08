@@ -163,14 +163,7 @@ const AdvancedSettings = () => {
               </fbt>
             </div>
 
-            <textarea
-              placeholder={fbt(
-                'Place your Google Analytics code here',
-                'admin.settings.advanced.gaPlaceholder'
-              )}
-              style={{ minHeight: '15vh' }}
-              {...input('gaCode')}
-            />
+            <input {...input('gaCode')} />
           </div>
         </div>
       </div>

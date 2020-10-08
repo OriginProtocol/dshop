@@ -196,19 +196,13 @@ async function _deployShop({
       : 'localhost'
 
   function replaceVars(html) {
-    return (
-      html
-        .replace('TITLE', publicShopConfig.fullTitle)
-        .replace('META_DESC', publicShopConfig.metaDescription || '')
-        .replace('DATA_DIR', dataDir)
-        .replace(/NETWORK/g, networkName)
-        .replace('FAVICON', publicShopConfig.favicon || 'favicon.ico')
-        .replace('UI_SRC', networkConfig.uiCdn || '')
-        // Add GA code just before </head> tag
-        // TODO: Technically any script can be injected,
-        // make sure to add a warning in frontend
-        .replace('</head>', `${publicShopConfig.gaCode || ''}</head>`)
-    )
+    return html
+      .replace('TITLE', publicShopConfig.fullTitle)
+      .replace('META_DESC', publicShopConfig.metaDescription || '')
+      .replace('DATA_DIR', dataDir)
+      .replace(/NETWORK/g, networkName)
+      .replace('FAVICON', publicShopConfig.favicon || 'favicon.ico')
+      .replace('UI_SRC', networkConfig.uiCdn || '')
   }
 
   const html = fs.readFileSync(`${OutputDir}/public/index.html`).toString()
