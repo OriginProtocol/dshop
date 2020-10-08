@@ -43,6 +43,7 @@ function stripExt(fname) {
  * directory given.
  *
  * @param dpath {string} - directory to walk
+ * @returns {Array} - of relative paths from dpath to all files in dpath
  */
 async function walkDir(dpath, depth = 0) {
   let files = []
