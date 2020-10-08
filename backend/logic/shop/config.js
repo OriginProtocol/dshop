@@ -154,7 +154,8 @@ async function updateShopConfig({ seller, shop, data }) {
     'useEscrow',
     'shippingApi',
     'taxRates',
-    'themeId'
+    'themeId',
+    'gaCode'
   )
   // Pick fields relevant to the shop's config.json stored in the cloud.
   const jsonNetConfig = pick(
