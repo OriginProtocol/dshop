@@ -10,7 +10,6 @@ import DshopProvider from 'components/DshopProvider'
 import PreviewBanner from 'components/PreviewBanner'
 
 import Confirmation from '../shared/Confirmation'
-import Checkout from '../shared/checkout/Loader'
 import Storefront from './components/Storefront'
 
 function getLibrary(provider) {
@@ -29,7 +28,6 @@ const Providers = () => {
             className="container flex justify-between"
           />
           <Switch>
-            <Route path="/checkout" component={Checkout} />
             <Route path="/order" component={Confirmation} />
             <Route component={Storefront} />
           </Switch>

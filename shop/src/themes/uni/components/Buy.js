@@ -1,29 +1,24 @@
 import React, { useState } from 'react'
+import { useHistory } from 'react-router-dom'
 import { useWeb3React } from '@web3-react/core'
-import { Link } from 'react-router-dom'
 import ethers from 'ethers'
 
+import BackLink from './_BackLink'
 import { usePrices, dai, router, chico } from '../utils'
 
 const Buy = () => {
+  const history = useHistory()
   const { account, library } = useWeb3React()
   const [quantity, setQuantity] = useState(1)
   const [reload, setReload] = useState(1)
+  const [buttonText, setButtonText] = useState('Place Order')
   const state = usePrices({ quantity, reload })
 
   return (
     <>
       <div className="w-full flex flex-col items-center bg-white rounded-lg p-6 pb-8 text-black mb-6">
         <div className="grid grid-cols-3 mb-4 w-full items-center">
-          <Link to="/" className="hover:opacity-75">
-            <svg width="16" height="16">
-              <g stroke="#000" strokeWidth="2" strokeLinecap="round">
-                <line x1="8" y1="1" x2="1" y2="8" />
-                <line x1="1" y1="8" x2="8" y2="15" />
-                <line x1="2" y1="8" x2="15" y2="8" />
-              </g>
-            </svg>
-          </Link>
+          <BackLink to="/" />
           <div className="font-bold text-xl text-center">Buy</div>
         </div>
         <img
@@ -104,27 +99,48 @@ const Buy = () => {
       </div>
       <button
         className="btn btn-primary"
-        onClick={() => {
+        onClick={async () => {
           const signer = library.getSigner()
-          dai
+          const approved = await dai
             .connect(signer)
-            .approve(router.address, state.priceUSDA)
-            .then(() =>
-              router
+            .allowance(account, router.address)
+
+          if (approved.lt(state.priceUSDBN)) {
+            try {
+              setButtonText('Approve DAI...')
+              const approveTx = await dai
                 .connect(signer)
-                .swapTokensForExactTokens(
-                  ethers.utils.parseEther(String(quantity)),
-                  ethers.utils.parseEther('1000'),
-                  [dai.address, chico.address],
-                  account,
-                  Math.round(new Date() / 1000) + 60 * 60 * 24
-                )
-            )
-            .then((r) => r.wait())
-            .then(() => setReload(reload + 1))
+                .approve(router.address, state.priceUSDA)
+              setButtonText('Awaiting transaction...')
+              await approveTx.wait()
+            } catch (e) {
+              setButtonText('Place Order')
+              return
+            }
+          }
+
+          try {
+            setButtonText('Approve purchase...')
+            const swapTx = await router
+              .connect(signer)
+              .swapTokensForExactTokens(
+                ethers.utils.parseEther(String(quantity)),
+                ethers.utils.parseEther('1000'),
+                [dai.address, chico.address],
+                account,
+                Math.round(new Date() / 1000) + 60 * 60 * 24
+              )
+            setButtonText('Awaiting transaction...')
+            await swapTx.wait()
+          } catch (e) {
+            setButtonText('Place Order')
+            return
+          }
+          setReload(reload + 1)
+          history.push('/')
         }}
       >
-        Place Order
+        {buttonText}
       </button>
     </>
   )

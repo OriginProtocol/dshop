@@ -153,7 +153,7 @@ const webpackConfig = {
     fs: 'empty'
   },
   devServer: {
-    port: 9000,
+    port: process.env.PORT || 9000,
     host: '0.0.0.0',
     disableHostCheck: true,
     historyApiFallback: true,

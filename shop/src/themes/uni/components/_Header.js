@@ -38,7 +38,7 @@ const Header = () => {
             height="12"
             className="mr-2"
           />
-          123 redeemed
+          0 redeemed
         </div>
         {!active ? (
           <button

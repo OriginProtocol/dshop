@@ -1,31 +1,25 @@
 import React, { useState } from 'react'
 import { useWeb3React } from '@web3-react/core'
-import { Link } from 'react-router-dom'
 import ethers from 'ethers'
 
+import BackLink from './_BackLink'
 import { usePrices, dai, router, chico } from '../utils'
 
 const Sell = () => {
   const { account, library } = useWeb3React()
   const [quantity, setQuantity] = useState(1)
   const [reload, setReload] = useState(1)
+  const [buttonText, setButtonText] = useState('Sell')
   const state = usePrices({ quantity, reload })
 
-  const ownsNone = Number(state.ownedChico) <= 0
+  const numOwned = Number(state.ownedChico) || 0
+  const ownsNone = numOwned <= 0
 
   return (
     <>
       <div className="w-full flex flex-col items-center bg-white rounded-lg p-6 pb-8 text-black mb-6">
         <div className="grid grid-cols-3 mb-4 w-full items-center">
-          <Link to="/" className="hover:opacity-75">
-            <svg width="16" height="16">
-              <g stroke="#000" strokeWidth="2" strokeLinecap="round">
-                <line x1="8" y1="1" x2="1" y2="8" />
-                <line x1="1" y1="8" x2="8" y2="15" />
-                <line x1="2" y1="8" x2="15" y2="8" />
-              </g>
-            </svg>
-          </Link>
+          <BackLink to="/" />
           <div className="font-bold text-xl text-center">Sell</div>
         </div>
         <img
@@ -40,31 +34,39 @@ const Sell = () => {
               className="rounded-full border border-black grid grid-cols-3 items-center font-bold m-height-12"
               style={{ minHeight: '2.5rem' }}
             >
-              <a
-                href="#"
-                className="text-xl px-4 hover:opacity-50"
-                onClick={(e) => {
-                  e.preventDefault()
-                  if (quantity > 1) {
-                    setQuantity(quantity - 1)
-                  }
-                }}
-              >
-                -
-              </a>
+              {numOwned <= 1 ? (
+                <div />
+              ) : (
+                <a
+                  href="#"
+                  className="text-xl px-4 hover:opacity-50"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    if (quantity > 1) {
+                      setQuantity(quantity - 1)
+                    }
+                  }}
+                >
+                  -
+                </a>
+              )}
               <div className="text-center">{quantity}</div>
-              <a
-                href="#"
-                className="text-xl text-right px-4 hover:opacity-50"
-                onClick={(e) => {
-                  e.preventDefault()
-                  if (quantity < 50) {
-                    setQuantity(quantity + 1)
-                  }
-                }}
-              >
-                +
-              </a>
+              {numOwned <= 1 ? (
+                <div />
+              ) : (
+                <a
+                  href="#"
+                  className="text-xl text-right px-4 hover:opacity-50"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    if (quantity < numOwned) {
+                      setQuantity(quantity + 1)
+                    }
+                  }}
+                >
+                  +
+                </a>
+              )}
             </div>
             <div className="text-xl font-bold">Payment method</div>
             <div className="relative">
@@ -110,30 +112,49 @@ const Sell = () => {
         className={`btn btn-primary${
           ownsNone ? ' opacity-50 hover:opacity-50' : ''
         }`}
-        onClick={() => {
+        onClick={async () => {
           if (ownsNone) {
             return
           }
+
           const signer = library.getSigner()
-          chico
-            .connect(signer)
-            .approve(router.address, ethers.utils.parseEther(String(quantity)))
-            .then(() =>
-              router
-                .connect(signer)
-                .swapExactTokensForTokens(
-                  ethers.utils.parseEther(String(quantity)),
-                  ethers.utils.parseEther(String(quantity)),
-                  [chico.address, dai.address],
-                  account,
-                  Math.round(new Date() / 1000) + 60 * 60 * 24
-                )
-            )
-            .then((r) => r.wait())
-            .then(() => setReload(reload + 1))
+
+          try {
+            setButtonText('Approve CHICO...')
+            const approveTx = await chico
+              .connect(signer)
+              .approve(
+                router.address,
+                ethers.utils.parseEther(String(quantity))
+              )
+            setButtonText('Awaiting transaction...')
+            await approveTx.wait()
+          } catch (e) {
+            setButtonText('Sell')
+            return
+          }
+
+          try {
+            setButtonText('Approve sale...')
+            const swapTx = await router
+              .connect(signer)
+              .swapExactTokensForTokens(
+                ethers.utils.parseEther(String(quantity)),
+                ethers.utils.parseEther(String(quantity)),
+                [chico.address, dai.address],
+                account,
+                Math.round(new Date() / 1000) + 60 * 60 * 24
+              )
+            setButtonText('Awaiting transaction...')
+            await swapTx.wait()
+            setReload(reload + 1)
+          } catch (e) {
+            setButtonText('Sell')
+            return
+          }
         }}
       >
-        Sell
+        {buttonText}
       </button>
     </>
   )

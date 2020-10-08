@@ -23,6 +23,9 @@
 }
 
 @layer components {
+  .btn-disabled {
+    @apply w-full text-center text-white font-bold py-3 text-lg border border-white rounded-full opacity-50;
+  }
   .btn {
     @apply w-full text-center text-white font-bold py-3 text-lg border border-white rounded-full transition-all duration-300 ease-in-out;
   }

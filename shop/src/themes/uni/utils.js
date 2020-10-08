@@ -39,7 +39,10 @@ export function usePrices({ quantity, reload }) {
     }
 
     pair.getReserves().then((reserves) => {
-      const availableChico = ethers.utils.formatEther(reserves[1])
+      const token1 = ethers.BigNumber.from(dai.address)
+      const token2 = ethers.BigNumber.from(chico.address)
+      const reserve = token1.gt(token2) ? reserves[0] : reserves[1]
+      const availableChico = ethers.utils.formatEther(reserve)
       setState({
         availableChico: availableChico.replace(/^([0-9]+)\..*/, '$1')
       })
@@ -56,6 +59,7 @@ export function usePrices({ quantity, reload }) {
         const priceUSDQ = ethers.utils.formatEther(quote[0])
         setState({
           priceUSDQ: priceUSDQ.replace(/^([0-9]+\.[0-9]{2}).*/, '$1'),
+          priceUSDBN: quote[0].mul(101).div(100),
           priceUSDA: quote[0].mul(101).div(100).toString()
         })
       })
@@ -103,19 +107,36 @@ export function useEagerConnect() {
 
 export const injectedConnector = new InjectedConnector()
 
+// Local addresses
+// const Addresses = {
+//   factory: '0xE0bF6021e023a197DBb3fABE64efA880E13D3f4b',
+//   weth: '0x3f21BC64076e7c9ed8695d053DCCBE6D8d5E6f43',
+//   dai: '0xb848ef765E289762e9BE66a38006DDc4D23AeF24',
+//   chico: '0x774DDa3beEf9650473549Be4EE7054a2ef5B0140',
+//   pair: '0xca8e1619b5f7F0aBB8D16Feda413ffaf0dd67C44',
+//   router: '0x9A6041D25B77A16b0A63c6B157CD49ABBF2aE966'
+// }
+
 const Addresses = {
-  factory: '0x96a08824f87070075262dbce23C6bAbffDCa0493',
-  weth: '0x90FBC44Fc6f93b773D0111B830bb27CD42292C9F',
-  dai: '0x17647EF21C6Fd7e67486C57afFbb1faF9EB30Ea5',
-  chico: '0x4B31c27826C810007749860be339ECC28f56fb1b',
-  pair: '0x8044C85Fc83B27d71aFe898CdF1D6B586EFCCC39',
-  router: '0xCB95F554B1d4Fe89D5d917c0962F81629e97a6DF'
+  factory: '0x279a83a163156EbeE7497e96d427892b9A425512',
+  weth: '0x7C7d2ABE93f74104e262d28083e25b6702b363CB',
+  dai: '0xe51bAbD26239c1B87954698A783AC9C0a06B03DD',
+  chico: '0x6462Bef6bB8a2D764A1B7807C5402796aDF11EC0',
+  pair: '0xc8c3fF93402C16F9085383230C2861D6857B9b87',
+  router: '0x59153Aa7B32aBFB9a3f8b79F88D3763025540C8a'
 }
 
-const provider = new ethers.providers.JsonRpcProvider()
+// const provider = new ethers.providers.JsonRpcProvider()
+const provider = new ethers.providers.Web3Provider(window.ethereum, 4)
+
 export const pair = new ethers.Contract(
   Addresses.pair,
   abi.contracts['contracts/UniswapV2Pair.sol:UniswapV2Pair'].abi,
+  provider
+)
+export const pairErc20 = new ethers.Contract(
+  Addresses.pair,
+  abi.contracts['contracts/interfaces/IUniswapV2ERC20.sol:IUniswapV2ERC20'].abi,
   provider
 )
 export const router = new ethers.Contract(
@@ -125,12 +146,12 @@ export const router = new ethers.Contract(
 )
 export const dai = new ethers.Contract(
   Addresses.dai,
-  abi.contracts['contracts/test/ERC20.sol:ERC20'].abi,
+  abi.contracts['ERC20FixedSupplyBurnable'].abi,
   provider
 )
 export const chico = new ethers.Contract(
   Addresses.chico,
-  abi.contracts['contracts/test/ERC20.sol:ERC20'].abi,
+  abi.contracts['ERC20FixedSupplyBurnable'].abi,
   provider
 )
 
@@ -139,6 +160,7 @@ async function setup() {
   const signer = provider.getSigner(accounts[0])
 
   window.pair = pair.connect(signer)
+  window.pairErc20 = pairErc20.connect(signer)
   window.router = router.connect(signer)
   window.dai = dai.connect(signer)
   window.chico = chico.connect(signer)
@@ -178,17 +200,25 @@ async function go() {
   log(`Deployed factory. Address ${factory.address}`)
 
   erc20 = _ethers.ContractFactory.fromSolidity(
-    us.contracts['contracts/test/ERC20.sol:ERC20'],
+    us.contracts['ERC20FixedSupplyBurnable'],
     signer
   )
 
-  weth = await erc20.deploy(_ethers.utils.parseEther('100'))
+  weth = await erc20.deploy('Weth', 'WETH', _ethers.utils.parseEther('100'))
   log(`Minted 1000 weth. Address ${weth.address}`)
 
-  dai = await erc20.deploy(_ethers.utils.parseEther('10000'))
+  dai = await erc20.deploy(
+    'Maker DAI',
+    'DAI',
+    _ethers.utils.parseEther('10000')
+  )
   log(`Minted 10000 dai. Address ${dai.address}`)
 
-  chico = await erc20.deploy(_ethers.utils.parseEther('50'))
+  chico = await erc20.deploy(
+    'Chico Coin',
+    'CHICO',
+    _ethers.utils.parseEther('50')
+  )
   log(`Minted 50 chico. Address ${chico.address}`)
 
   await factory.createPair(dai.address, chico.address)
@@ -291,4 +321,47 @@ async function go() {
   _ethers.utils.formatEther(quote)
 
   // _ethers.utils.formatEther(await dai.balanceOf(accounts[0]))
+
+  async function removeLiquidity() {
+    provider = new _ethers.providers.JsonRpcProvider()
+    accounts = await provider.listAccounts()
+
+    r = await pair.getReserves()
+    console.log(
+      'reserves before:',
+      r.map((r) => _ethers.utils.formatEther(r))
+    )
+
+    db = await dai.balanceOf(accounts[0])
+    cb = await chico.balanceOf(accounts[0])
+    console.log('dai before:', _ethers.utils.formatEther(db))
+    console.log('chico before:', _ethers.utils.formatEther(cb))
+
+    liqbal = await pairErc20.balanceOf(accounts[0])
+    await pairErc20.approve(router.address, liqbal)
+    await router.removeLiquidity(
+      dai.address,
+      chico.address,
+      liqbal,
+      _ethers.utils.parseEther('0'),
+      _ethers.utils.parseEther('0'),
+      accounts[0],
+      Math.round(new Date() / 1000) + 60 * 60 * 24
+    )
+    console.log('Removed 1 CHICO from liquidity pool')
+
+    r = await pair.getReserves()
+    console.log(
+      'reserves after:',
+      r.map((r) => _ethers.utils.formatEther(r))
+    )
+
+    da = await dai.balanceOf(accounts[0])
+    ca = await chico.balanceOf(accounts[0])
+    console.log('dai after:', _ethers.utils.formatEther(da))
+    console.log('chico after:', _ethers.utils.formatEther(ca))
+
+    console.log('dai diff:', _ethers.utils.formatEther(da.sub(db)))
+    console.log('chico diff:', _ethers.utils.formatEther(ca.sub(cb)))
+  }
 }
