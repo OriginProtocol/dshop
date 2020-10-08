@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+// TODO: the above is temporary until implementation
 const { getLogger } = require('../../../utils/logger')
 
 const log = getLogger('logic.deploy.bucket.aws')

@@ -27,7 +27,7 @@ const {
 const deploy = require('../logic/deploy')
 const { createSeller } = require('../utils/sellers')
 const { getConfig } = require('../utils/encryptedConfig')
-const { configureShopDNS, deployShop } = require('../utils/deployShop')
+const { configureShopDNS } = require('../utils/deployShop')
 const { DSHOP_CACHE } = require('../utils/const')
 const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
