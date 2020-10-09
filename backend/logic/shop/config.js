@@ -126,7 +126,7 @@ async function updateShopConfig({ seller, shop, data }) {
   const oldShop = { ...shop.get({ plain: true }) } // take a snapshot of the current shop object prior to updating it.
   const dataOverride = {}
 
-  // Pick fields relevant to the shop's config.json.
+  // Pick fields relevant to main section of the shop's config.json.
   const jsonConfig = pick(
     data,
     'currency',
@@ -154,9 +154,10 @@ async function updateShopConfig({ seller, shop, data }) {
     'useEscrow',
     'shippingApi',
     'taxRates',
-    'themeId'
+    'themeId',
+    'gaCode'
   )
-  // Pick fields relevant to the shop's config.json stored in the cloud.
+  // Pick fields relevant to the network section of the shop's config.json.
   const jsonNetConfig = pick(
     data,
     'acceptedTokens',
@@ -313,7 +314,7 @@ async function updateShopConfig({ seller, shop, data }) {
   }
 
   //
-  // Update the config on disk.
+  // Update the configs on disk.
   //
   log.info(`Shop ${shopId} - Saving config on disk.`)
 

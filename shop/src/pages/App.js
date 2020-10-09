@@ -24,6 +24,7 @@ const App = ({ location }) => {
   const [{ admin, affiliate }, dispatch] = useStateValue()
   const q = queryString.parse(location.search)
   const gaTag = get(admin, 'network.googleAnalytics')
+  const gaMerchantTag = get(config, 'gaCode')
 
   const isSuperAdmin = location.pathname.indexOf('/super-admin') === 0
   const isAdmin = location.pathname.indexOf('/admin') === 0 || isSuperAdmin
@@ -55,6 +56,8 @@ const App = ({ location }) => {
     }
     if (gaTag && isAdmin) {
       gtag('config', gaTag, { page_path: location.pathname })
+    } else if (gaMerchantTag) {
+      gtag('config', gaMerchantTag, { page_path: location.pathname })
     }
   }, [location.pathname])
 
@@ -90,16 +93,17 @@ const App = ({ location }) => {
   }, [config])
 
   useEffect(() => {
-    if (gaTag) {
+    const gaCode = isAdmin ? gaTag : gaMerchantTag
+    if (gaCode) {
       const gaEl = document.createElement('script')
       gaEl.async = 'async'
-      gaEl.src = `https://www.googletagmanager.com/gtag/js?id=${gaTag}`
+      gaEl.src = `https://www.googletagmanager.com/gtag/js?id=${gaCode}`
       document.head.appendChild(gaEl)
       gtag('js', new Date())
       gtag('set', 'transport', 'beacon')
-      gtag('config', gaTag, { page_path: location.pathname })
+      gtag('config', gaCode, { page_path: location.pathname })
     }
-  }, [gaTag])
+  }, [gaTag, gaMerchantTag])
 
   if (!config) {
     return null
