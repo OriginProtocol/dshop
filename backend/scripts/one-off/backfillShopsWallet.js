@@ -78,11 +78,11 @@ async function updateWalletAddress(shops) {
       log.error(`Shop ${shop.id} - Invalid address in config.json: ${jsonConfigWalletAddress}`)
     }
 
-    if (shops.walletAddress) {
-      log.info(`Shop ${shop.id} - walletAddress already set.`)
+    if (shop.walletAddress) {
+      log.info(`Shop ${shop.id} ${shop.name} - walletAddress set to ${shop.walletAddress}`)
 
-      if (shops.walletAddress !== jsonConfigWalletAddress) {
-        log.error(`Shop ${shop.id} - DB and config.json mismatch: ${shops.walletAddress} vs ${jsonConfigWalletAddress}`)
+      if (shop.walletAddress !== jsonConfigWalletAddress) {
+        log.error(`Shop ${shop.id} - DB and config.json mismatch: ${shop.walletAddress} vs ${jsonConfigWalletAddress}`)
       }
       continue
     }
@@ -93,7 +93,9 @@ async function updateWalletAddress(shops) {
       await shop.save()
       log.info('Done.')
     } else {
-      log.info(`Shop ${shop.id} - Would set DB wallet address to ${jsonConfigWalletAddress}`)
+      const acceptedTokens = jsonConfig['networks'][networkId]['acceptedTokens']
+      const acceptCrypto = Boolean(acceptedTokens && acceptedTokens.length > 1)
+      log.info(`Shop ${shop.id} ${shop.name} acceptCrypto=${acceptCrypto} - Would set DB wallet address to ${jsonConfigWalletAddress}`)
     }
   }
 }
