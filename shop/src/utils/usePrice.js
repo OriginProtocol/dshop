@@ -43,7 +43,7 @@ function usePrice(targetCurrency = 'USD', preferredCurrency = 'USD') {
             : provider.id === 'coingecko_symbol'
         )
 
-        if (filteredTokens.length === 0) break
+        if (filteredTokens.length === 0) continue
 
         const tokenPrices = await provider.getTokenPrices(filteredTokens)
 
