@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import memoize from 'lodash/memoize'
 import get from 'lodash/get'
 import cloneDeep from 'lodash/cloneDeep'
@@ -38,14 +38,21 @@ function useCollections(opts = {}) {
     dispatch({ type: 'reload', target: 'collections' })
   }
 
-  const allCollections = cloneDeep(collections)
-  if (opts.includeAll) {
-    allCollections.unshift({ id: 'all', title: opts.includeAll })
-  }
+  const { allCollections, visibleCollections } = useMemo(() => {
+    const allCollections = cloneDeep(collections)
+    if (opts.includeAll) {
+      allCollections.unshift({ id: 'all', title: opts.includeAll })
+    }
 
-  const visibleCollections = allCollections.filter(
-    (c) => c.id !== 'home' && get(c, 'products.length')
-  )
+    const visibleCollections = allCollections.filter(
+      (c) => c.id !== 'home' && get(c, 'products.length')
+    )
+
+    return {
+      allCollections,
+      visibleCollections
+    }
+  }, [collections])
 
   return {
     collections: allCollections,
