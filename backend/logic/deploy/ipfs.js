@@ -12,6 +12,18 @@ const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('logic.deploy.ipfs')
 
+/**
+ * Deploy a build in OutputDir to IPFS
+ *
+ * @param args {object}
+ * @param args.shop {object} - Shop model instance
+ * @param args.network {object} - Network model instance
+ * @param args.networkConfig {object} - Decrypted network config
+ * @param args.OutputDir {string} - Path to build direcotry
+ * @param args.dataDir {string} - Path to datadir
+ * @param args.pinner {string} - IPFS pinner to use (optional)
+ * @returns {object} - object with relevant IPFS deployment details
+ */
 async function deployToIPFS({
   shop,
   network,

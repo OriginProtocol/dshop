@@ -72,7 +72,7 @@ function loadModule(modName) {
  * @param args.networkConfig <Object> - networkConfig object
  * @param args.OutputDir <string> - Output directory the shop build is in
  * @param args.dataDir <string> - The dataDir the shop configuration is in
- * @returns bool? - TODO
+ * @returns {Array} of response objects from each available module
  */
 async function deployToBucket({ networkConfig, shop, OutputDir, dataDir }) {
   const responses = []

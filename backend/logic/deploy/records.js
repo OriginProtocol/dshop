@@ -13,6 +13,12 @@ const log = getLogger('logic.deploy.records')
 // Max age of a deployment before it is considered as failed.
 const MAX_PENDING_DEPLOYMENT_AGE = 10 * 60 * 1000 // 10 min
 
+/**
+ * Set a deployment as failed with given errorMessage
+ *
+ * @param deployment {object} - ShopDeployment model instance
+ * @param errorMessage {string} - Error message to store
+ */
 async function failDeployment(deployment, errorMessage) {
   await deployment.update({
     status: ShopDeploymentStatuses.Failure,
@@ -22,6 +28,9 @@ async function failDeployment(deployment, errorMessage) {
 
 /**
  * Set a deployment as succeeded
+ *
+ * @param deployment {object} - ShopDeployment model instance
+ * @param props {object} - Any extra model propreties to set
  */
 async function passDeployment(deployment, props) {
   await deployment.update({
@@ -32,6 +41,9 @@ async function passDeployment(deployment, props) {
 
 /**
  * Create a shop deployment record
+ *
+ * @param shopId {number} - Shop ID to create a deployment for
+ * @param status {ShopDeploymentStatuses} - ShopDeploymentStatuses enum value
  */
 async function createDeployment(
   shopId,
@@ -45,6 +57,12 @@ async function createDeployment(
   })
 }
 
+/**
+ * Get a deployment record for a shop with the given status
+ *
+ * @param shopId {number} - Shop ID to create a deployment for
+ * @param status {ShopDeploymentStatuses} - ShopDeploymentStatuses enum value
+ */
 async function getDeployment(shopId, status = ShopDeploymentStatuses.Pending) {
   return await ShopDeployment.findOne({
     where: {
@@ -54,6 +72,14 @@ async function getDeployment(shopId, status = ShopDeploymentStatuses.Pending) {
   })
 }
 
+/**
+ * Act as a lock for pending deployments.  Return a ShopDeployment if there are
+ * no conflicts, or throw a DuplicateDeploymentError if there's a known pending
+ * deployment still active and unexpired.
+ *
+ * @param shopId {number} - Shop ID to create a deployment for
+ * @returns {object} - ShopDeployment model instance
+ */
 async function deploymentLock(shopId) {
   const deployment = await getDeployment(shopId)
 

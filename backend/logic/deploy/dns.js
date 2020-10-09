@@ -1,19 +1,29 @@
 const setCloudflareRecords = require('../../utils/dns/cloudflare')
 const setCloudDNSRecords = require('../../utils/dns/clouddns')
 const setRoute53Records = require('../../utils/dns/route53')
-const { getConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('logic.deploy.dns')
 
+/**
+ * Copy all needed files for a shop deployment to the public build directory and
+ * replace HTML template vars to prepare for deployment.
+ *
+ * @param args {object}
+ * @param args.network {object} - Network model instance
+ * @param args.subdomain {string} - Hostname to configure (e.g. 'host' of 'host.example.com')
+ * @param args.zone {string} - DNS Zone we're configuring
+ * @param args.hash {string} - IPFS hash of deployed shop
+ * @param args.dnsProvider {string} - The DNS provider to use
+ */
 async function configureShopDNS({
   network,
+  networkConfig,
   subdomain,
   zone,
   hash,
   dnsProvider
 }) {
-  const networkConfig = getConfig(network.config)
   const gatewayURL = new URL(network.ipfs)
   const gatewayHost = gatewayURL.hostname
 

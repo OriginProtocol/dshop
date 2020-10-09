@@ -77,23 +77,33 @@ async function deploy({ shop, networkConfig, OutputDir }) {
   }
 }
 
-function getClient(credentials) {
+/**
+ * Return a configured Storege client
+ *
+ * @returns {object} instance of Storage client
+ */
+function getClient() {
   if (cachedClient !== null) return cachedClient
-
-  assert(
-    typeof credentials !== 'undefined',
-    'Either call configureClient() first or provide credentials to getClient()'
-  )
-
-  configure({ credentials })
-  return cachedClient
+  throw new Error('Call configure() first')
 }
 
+/**
+ * Return a Bucket instance for bucketName
+ *
+ * @param bucketName {string} name of the bucket to instantiate
+ * @returns {object} instance of Bucket
+ */
 async function getBucket(bucketName) {
   const client = getClient()
   return client.bucket(bucketName)
 }
 
+/**
+ * Recursively upload all files in updir to bucket
+ *
+ * @param bucket {Object} instance of Bucket
+ * @param updir {string} path to directory to upload
+ */
 async function uploadDirectory(bucket, updir) {
   const files = await walkDir(updir)
 
@@ -107,6 +117,12 @@ async function uploadDirectory(bucket, updir) {
   }
 }
 
+/**
+ * Given a bucketName, return public HTTP URL to said bucket
+ *
+ * @param bucketName {string} name of bucket
+ * @returns {string} HTTP URL to bucket
+ */
 function getHTTPURL(bucketName) {
   return `https://storage.googleapis.com/${bucketName}/`
 }

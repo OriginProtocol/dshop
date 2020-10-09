@@ -182,6 +182,7 @@ async function deploy({ networkId, shop, subdomain, dnsProvider, pinner }) {
     try {
       await configureShopDNS({
         network,
+        networkConfig,
         subdomain,
         zone,
         hash: ipfsHash,
