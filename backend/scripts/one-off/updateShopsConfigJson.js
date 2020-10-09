@@ -1,8 +1,6 @@
-// A utility script for updating the IPFS API and Gateway URLs
-// in the shops config.json files on disk.
+// A utility script for updating the shops config.json on disk.
 
 const fs = require('fs')
-const ethers = require('ethers')
 
 const { Shop } = require('../../models')
 const { DSHOP_CACHE } = require('../../utils/const')
@@ -25,9 +23,12 @@ if (!process.argv.slice(1).length) {
 
 program.parse(process.argv)
 
-
-const newIpfsGateway = 'https://fs-autossl.ogn.app'
+// URLs of the Dshop IPFS cluster.
 const newIpfsApi = 'https://fs.ogn.app'
+const newIpfsGateway = 'https://fs-autossl.ogn.app'
+
+// URL of the Dshop backend.
+const newBackend = 'https://dshop.originprotocol.com'
 
 async function _getShops() {
   let shops
@@ -54,7 +55,6 @@ async function _getShops() {
   return shops
 }
 
-
 async function updateIpfsUrls(shops) {
   const networkId = program.networkId
 
@@ -71,21 +71,43 @@ async function updateIpfsUrls(shops) {
     const jsonConfig = JSON.parse(raw)
     const ipfsApi = jsonConfig['networks'][networkId]['ipfsApi']
     const ipfsGateway = jsonConfig['networks'][networkId]['ipfsGateway']
+    const backend = jsonConfig['networks'][networkId]['backend']
 
     if (!ipfsApi) {
-      log.error(`Shop ${shop.id} - No ipfsApi`)
+      log.warn(
+        `Shop ${shop.id} ${shop.name} - Missing ipfsApi in current config.json`
+      )
     }
     if (!ipfsGateway) {
-      log.error(`Shop ${shop.id} - No ipfsGateway`)
+      log.warn(
+        `Shop ${shop.id} ${shop.name} - Missing ipfsGateway in current config.json`
+      )
+    }
+    if (!backend) {
+      log.warn(
+        `Shop ${shop.id} ${shop.name} - Missing backend in current config.json`
+      )
     }
 
+    // Set the new value in the json.
+    jsonConfig['networks'][networkId]['ipfsApi'] = newIpfsApi
+    jsonConfig['networks'][networkId]['ipfsGateway'] = newIpfsGateway
+    jsonConfig['networks'][networkId]['backend'] = newBackend
 
+    const filename = `${DSHOP_CACHE}/${shop.authToken}/data/config.json`
     if (program.doIt) {
-      // TODO
+      log.info(`Writing to ${filename}`)
+      const raw = JSON.stringify(jsonConfig, null, 2)
+      fs.writeFileSync(filename, raw)
       log.info('Done.')
     } else {
-      log.info(`Shop ${shop.id} ${shop.name} - Would set ipfsApi to ${newIpfsApi}`)
-      log.info(`Shop ${shop.id} ${shop.name} - Would set ipfsGateway to ${newIpfsGateway}`)
+      log.info(`Shop ${shop.id} ${shop.name} - Would write to ${filename}`)
+      log.info(
+        `Shop ${shop.id} ${shop.name} - Would set ipfsApi to ${newIpfsApi}`
+      )
+      log.info(
+        `Shop ${shop.id} ${shop.name} - Would set ipfsGateway to ${newIpfsGateway}`
+      )
     }
   }
 }

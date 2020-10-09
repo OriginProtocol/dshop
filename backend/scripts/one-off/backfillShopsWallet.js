@@ -50,7 +50,6 @@ async function _getShops() {
   return shops
 }
 
-
 async function updateWalletAddress(shops) {
   const originWallet = '0xDF73aF150b8E446a6D39FDdc2CFA7Bf067B88936'
   const networkId = program.networkId
@@ -66,7 +65,8 @@ async function updateWalletAddress(shops) {
     }
     const configStr = fs.readFileSync(configFile).toString()
     const jsonConfig = JSON.parse(configStr)
-    let jsonConfigWalletAddress = jsonConfig['networks'][networkId]['walletAddress']
+    let jsonConfigWalletAddress =
+      jsonConfig['networks'][networkId]['walletAddress']
     if (!jsonConfigWalletAddress) {
       log.info(`Shop ${shop.id} - No wallet address`)
       continue
@@ -76,32 +76,44 @@ async function updateWalletAddress(shops) {
     try {
       jsonConfigWalletAddress = ethers.utils.getAddress(jsonConfigWalletAddress)
     } catch (e) {
-      log.error(`Shop ${shop.id} - Invalid address in config.json: ${jsonConfigWalletAddress}`)
+      log.error(
+        `Shop ${shop.id} - Invalid address in config.json: ${jsonConfigWalletAddress}`
+      )
       continue
     }
 
     if (jsonConfigWalletAddress === originWallet) {
-      log.error(`Shop ${shop.id} ${shop.name} - Address in config.json is Origin's. This should get changed.`)
+      log.error(
+        `Shop ${shop.id} ${shop.name} - Address in config.json is Origin's. This should get changed.`
+      )
     }
 
     if (shop.walletAddress) {
-      log.info(`Shop ${shop.id} ${shop.name} - walletAddress set to ${shop.walletAddress}`)
+      log.info(
+        `Shop ${shop.id} ${shop.name} - walletAddress set to ${shop.walletAddress}`
+      )
 
       if (shop.walletAddress !== jsonConfigWalletAddress) {
-        log.error(`Shop ${shop.id} - DB and config.json mismatch: ${shop.walletAddress} vs ${jsonConfigWalletAddress}`)
+        log.error(
+          `Shop ${shop.id} - DB and config.json mismatch: ${shop.walletAddress} vs ${jsonConfigWalletAddress}`
+        )
       }
       continue
     }
 
     if (program.doIt) {
-      log.info(`Shop ${shop.id} - Setting DB wallet address to ${jsonConfigWalletAddress}`)
+      log.info(
+        `Shop ${shop.id} - Setting DB wallet address to ${jsonConfigWalletAddress}`
+      )
       shop.walletAddress = jsonConfigWalletAddress
       await shop.save()
       log.info('Done.')
     } else {
       const acceptedTokens = jsonConfig['networks'][networkId]['acceptedTokens']
       const acceptCrypto = Boolean(acceptedTokens && acceptedTokens.length > 1)
-      log.info(`Shop ${shop.id} ${shop.name} acceptCrypto=${acceptCrypto} - Would set DB wallet address to ${jsonConfigWalletAddress}`)
+      log.info(
+        `Shop ${shop.id} ${shop.name} acceptCrypto=${acceptCrypto} - Would set DB wallet address to ${jsonConfigWalletAddress}`
+      )
     }
   }
 }
