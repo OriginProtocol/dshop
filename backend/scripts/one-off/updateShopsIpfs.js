@@ -1,5 +1,5 @@
-// A utility script for backfilling the column shops.wallet based
-// on the walletAddress field in the shop's config.json on disk.
+// A utility script for updating the IPFS API and Gateway URLs
+// in the shops config.json files on disk.
 
 const fs = require('fs')
 const ethers = require('ethers')
@@ -24,6 +24,10 @@ if (!process.argv.slice(1).length) {
 }
 
 program.parse(process.argv)
+
+
+const newIpfsGateway = 'https://fs-autossl.ogn.app'
+const newIpfsApi = 'https://fs.ogn.app'
 
 async function _getShops() {
   let shops
@@ -51,64 +55,44 @@ async function _getShops() {
 }
 
 
-async function updateWalletAddress(shops) {
-  const originWallet = '0xDF73aF150b8E446a6D39FDdc2CFA7Bf067B88936'
+async function updateIpfsUrls(shops) {
   const networkId = program.networkId
 
   for (const shop of shops) {
     log.info(`Processing Shop ${shop.id} DataDir ${shop.authToken}`)
 
-    // Read the wallet address from config.json
+    // Read the IPFS URLs from config.json
     const configFile = `${DSHOP_CACHE}/${shop.authToken}/data/config.json`
     if (!fs.existsSync(configFile)) {
       log.error(`Shop ${shop.id}: file ${configFile} not found`)
       continue
     }
-    const configStr = fs.readFileSync(configFile).toString()
-    const jsonConfig = JSON.parse(configStr)
-    let jsonConfigWalletAddress = jsonConfig['networks'][networkId]['walletAddress']
-    if (!jsonConfigWalletAddress) {
-      log.info(`Shop ${shop.id} - No wallet address`)
-      continue
+    const raw = fs.readFileSync(configFile).toString()
+    const jsonConfig = JSON.parse(raw)
+    const ipfsApi = jsonConfig['networks'][networkId]['ipfsApi']
+    const ipfsGateway = jsonConfig['networks'][networkId]['ipfsGateway']
+
+    if (!ipfsApi) {
+      log.error(`Shop ${shop.id} - No ipfsApi`)
+    }
+    if (!ipfsGateway) {
+      log.error(`Shop ${shop.id} - No ipfsGateway`)
     }
 
-    // Validate the address and checksum it.
-    try {
-      jsonConfigWalletAddress = ethers.utils.getAddress(jsonConfigWalletAddress)
-    } catch (e) {
-      log.error(`Shop ${shop.id} - Invalid address in config.json: ${jsonConfigWalletAddress}`)
-      continue
-    }
-
-    if (jsonConfigWalletAddress === originWallet) {
-      log.error(`Shop ${shop.id} ${shop.name} - Address in config.json is Origin's. This should get changed.`)
-    }
-
-    if (shop.walletAddress) {
-      log.info(`Shop ${shop.id} ${shop.name} - walletAddress set to ${shop.walletAddress}`)
-
-      if (shop.walletAddress !== jsonConfigWalletAddress) {
-        log.error(`Shop ${shop.id} - DB and config.json mismatch: ${shop.walletAddress} vs ${jsonConfigWalletAddress}`)
-      }
-      continue
-    }
 
     if (program.doIt) {
-      log.info(`Shop ${shop.id} - Setting DB wallet address to ${jsonConfigWalletAddress}`)
-      shop.walletAddress = jsonConfigWalletAddress
-      await shop.save()
+      // TODO
       log.info('Done.')
     } else {
-      const acceptedTokens = jsonConfig['networks'][networkId]['acceptedTokens']
-      const acceptCrypto = Boolean(acceptedTokens && acceptedTokens.length > 1)
-      log.info(`Shop ${shop.id} ${shop.name} acceptCrypto=${acceptCrypto} - Would set DB wallet address to ${jsonConfigWalletAddress}`)
+      log.info(`Shop ${shop.id} ${shop.name} - Would set ipfsApi to ${newIpfsApi}`)
+      log.info(`Shop ${shop.id} ${shop.name} - Would set ipfsGateway to ${newIpfsGateway}`)
     }
   }
 }
 
 async function main() {
   const shops = await _getShops()
-  await updateWalletAddress(shops)
+  await updateIpfsUrls(shops)
 }
 
 //
