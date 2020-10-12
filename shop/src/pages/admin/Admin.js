@@ -28,7 +28,8 @@ import Onboarding from './onboarding/Onboarding'
 import PublishChanges from './_PublishChanges'
 import Nav from './_Nav'
 import StoreSelector from './StoreSelector'
-import Themes from './themes/Themes'
+import Themes from './themes/List'
+import CustomizeTheme from './themes/Customize'
 
 const Admin = () => {
   usePGP()
@@ -84,6 +85,7 @@ const Admin = () => {
             <Route path="/admin/orders" component={Orders} />
             <Route path="/admin/dashboard" component={Dashboard} />
             <Route path="/admin/onboarding" component={Onboarding} />
+            <Route path="/admin/themes/customize" component={CustomizeTheme} />
             <Route path="/admin/themes" component={Themes} />
             <Redirect to="/admin/dashboard" />
           </Switch>

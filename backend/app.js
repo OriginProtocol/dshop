@@ -143,6 +143,7 @@ router.get('/theme/:theme', async (req, res) => {
     .replace('DATA_DIR', `/${req.query.shop}`)
     .replace('TITLE', 'Origin Dshop')
     .replace(/NETWORK/g, NETWORK)
+    .replace('ENABLE_LIVE_PREVIEW', 'TRUE')
 
   res.send(html)
 })

@@ -56,6 +56,8 @@
   <script>
     localStorage.ognNetwork = "NETWORK"
     window.ognNetwork = "NETWORK"
+
+    window.enableLivePreview = "ENABLE_LIVE_PREVIEW" === "TRUE"
   </script>
 
   <link rel="data-dir" href="<%= htmlWebpackPlugin.options.dataDir || 'DATA_DIR' %>" />

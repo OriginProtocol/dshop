@@ -2,6 +2,7 @@ import React, { useReducer, useEffect, useState } from 'react'
 import fbt from 'fbt'
 import pick from 'lodash/pick'
 
+import Link from 'components/Link'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
@@ -80,8 +81,6 @@ const ThemeSettings = () => {
       </h3>
       <div className="row">
         <div className="shop-settings col-md-8 col-lg-9">
-
-
           {state.loading || !config.backend ? <><fbt desc="Loading">Loading</fbt>...</> : (
             <div className="theme-grid">
               {state.themes.map(theme => {
@@ -94,9 +93,9 @@ const ThemeSettings = () => {
                     </div>
                     <div className="actions">
                       {isSelected ? (
-                        <button type="button" className="btn btn-primary">
+                        <Link to="/admin/themes/customize" className="btn btn-primary fg-white">
                           <fbt desc="admin.themes.customizeTheme">Customize theme</fbt>
-                        </button>
+                        </Link>
                       ) : (
                         <>
                           <button type="button" className="btn btn-primary" onClick={() => switchToTheme(theme.id)}>
@@ -180,6 +179,9 @@ require('react-styl')(`
           width: 200px
           opacity: 1
           z-index: 1
+          color: #fff
+          &:hover
+            color: #fff
       
     
 `)

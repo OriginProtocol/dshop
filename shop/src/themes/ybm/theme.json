@@ -1,4 +1,56 @@
 {
   "id": "ybm",
-  "name": "YBM"
+  "name": "YBM",
+  "config": [{
+    "id": "header",
+    "title": "Header",
+    "fields": [{
+      "id": "headerImage",
+      "title": "Header Image",
+      "type": "media"
+    }]
+  }, {
+    "id": "home",
+    "title": "Home",
+    "fields": [{
+      "id": "aboutText",
+      "title": "About Text",
+      "type": "text",
+      "multiline": true
+    }]
+  }, {
+    "id": "products",
+    "title": "Products",
+    "fields": [{
+      "id": "headerText",
+      "title": "Header Text",
+      "type": "text"
+    }]
+  }, {
+    "id": "contact",
+    "title": "Contact",
+    "fields": [{
+      "id": "title",
+      "title": "Title",
+      "type": "text"
+    }, {
+      "id": "description",
+      "title": "Description",
+      "type": "text",
+      "multiline": true
+    }, {
+      "id": "headerImage",
+      "title": "Header Image",
+      "type": "media"
+    }]
+  }, {
+    "id": "about",
+    "title": "About",
+    "fields": [{
+      "id": "aboutImages",
+      "title": "Images",
+      "type": "media",
+      "multiple": true
+    }]
+  }]
 }
