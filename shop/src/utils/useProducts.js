@@ -62,7 +62,6 @@ function useProducts(opts = {}) {
   }, [config.dataSrc, reload.products])
 
   let collection = collections.find((c) => c.id === opts.collection)
-  const homeCollection = collections.find((c) => c.id === 'home')
   if (!collection && opts.collection === 'all') {
     collection = {
       id: 'all',
@@ -81,10 +80,6 @@ function useProducts(opts = {}) {
       filteredProducts = collection.products
         .map((p) => products.find((product) => product.id === p))
         .filter((p) => p)
-    } else if (homeCollection && homeCollection.products) {
-      filteredProducts = homeCollection.products
-        .map((p) => products.find((product) => product.id === p))
-        .filter((p) => p)
     }
 
     filteredProducts = sortProducts(filteredProducts, opts.sort)
@@ -96,7 +91,7 @@ function useProducts(opts = {}) {
     }
 
     return filteredProducts
-  }, [products, productIndex, opts.search, collection, homeCollection])
+  }, [products, productIndex, opts.search, collection])
 
   return {
     products: filteredProducts,
