@@ -34,18 +34,21 @@ function usePrice(targetCurrency = 'USD', preferredCurrency = 'USD') {
       (token) => !json[token.name] && token.address
     )
     if (withoutRates.length) {
-      const rates = await tokenDataProviders.reduce(async (rates, provider) => {
+      let rates = {}
+
+      for (const provider of tokenDataProviders) {
         const filteredTokens = withoutRates.filter((token) =>
           token.apiProvider
             ? token.apiProvider === provider.id
             : provider.id === 'coingecko_symbol'
         )
 
-        if (filteredTokens.length === 0) return rates
+        if (filteredTokens.length === 0) continue
 
         const tokenPrices = await provider.getTokenPrices(filteredTokens)
-        return { ...rates, ...tokenPrices }
-      }, {})
+
+        rates = { ...rates, ...tokenPrices }
+      }
 
       json = { ...json, ...rates }
     }
