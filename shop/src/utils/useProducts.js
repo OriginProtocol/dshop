@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import fbt from 'fbt'
 import memoize from 'lodash/memoize'
 import cloneDeep from 'lodash/cloneDeep'
@@ -62,7 +62,6 @@ function useProducts(opts = {}) {
   }, [config.dataSrc, reload.products])
 
   let collection = collections.find((c) => c.id === opts.collection)
-  const homeCollection = collections.find((c) => c.id === 'home')
   if (!collection && opts.collection === 'all') {
     collection = {
       id: 'all',
@@ -70,29 +69,29 @@ function useProducts(opts = {}) {
     }
   }
 
-  let filteredProducts = cloneDeep(products)
-  if (productIndex && opts.search) {
-    filteredProducts = productIndex
-      .search({ query: opts.search, depth: 1 })
-      .map((p) => products.find((product) => product.id === p))
-      .filter((p) => p)
-  } else if (collection && collection.products) {
-    filteredProducts = collection.products
-      .map((p) => products.find((product) => product.id === p))
-      .filter((p) => p)
-  } else if (homeCollection && homeCollection.products) {
-    filteredProducts = homeCollection.products
-      .map((p) => products.find((product) => product.id === p))
-      .filter((p) => p)
-  }
+  const filteredProducts = useMemo(() => {
+    let filteredProducts = cloneDeep(products)
+    if (productIndex && opts.search) {
+      filteredProducts = productIndex
+        .search({ query: opts.search, depth: 1 })
+        .map((p) => products.find((product) => product.id === p))
+        .filter((p) => p)
+    } else if (collection && collection.products) {
+      filteredProducts = collection.products
+        .map((p) => products.find((product) => product.id === p))
+        .filter((p) => p)
+    }
 
-  filteredProducts = sortProducts(filteredProducts, opts.sort)
+    filteredProducts = sortProducts(filteredProducts, opts.sort)
 
-  if (opts.start && opts.end) {
-    filteredProducts = filteredProducts.slice(opts.start, opts.end)
-  } else if (opts.limit) {
-    filteredProducts = filteredProducts.slice(0, opts.limit)
-  }
+    if (opts.start && opts.end) {
+      filteredProducts = filteredProducts.slice(opts.start, opts.end)
+    } else if (opts.limit) {
+      filteredProducts = filteredProducts.slice(0, opts.limit)
+    }
+
+    return filteredProducts
+  }, [products, productIndex, opts.search, collection])
 
   return {
     products: filteredProducts,

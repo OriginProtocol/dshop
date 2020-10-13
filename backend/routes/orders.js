@@ -59,7 +59,8 @@ module.exports = function (router) {
     const offset = page ? (page - 1) * limit : undefined
 
     const where = {
-      shopId: req.shop.id
+      shopId: req.shop.id,
+      archived: false
     }
 
     if (search) {
@@ -122,14 +123,16 @@ module.exports = function (router) {
       const prevOrder = await Order.findOne({
         where: {
           shopId: req.order.shopId,
-          id: { [Op.lt]: req.order.id }
+          id: { [Op.lt]: req.order.id },
+          archived: false
         },
         order: [['id', 'desc']]
       })
       const nextOrder = await Order.findOne({
         where: {
           shopId: req.order.shopId,
-          id: { [Op.gt]: req.order.id }
+          id: { [Op.gt]: req.order.id },
+          archived: false
         },
         order: [['id', 'asc']]
       })
