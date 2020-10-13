@@ -59,7 +59,12 @@ async function deploy({ shop, networkConfig, OutputDir }) {
   const [exists] = await bucket.exists()
   if (!exists) {
     log.debug(`Bucket ${bucketName} does not exist. Creating...`)
-    const cres = await bucket.create()
+    const cres = await bucket.create({
+      website: {
+        mainPageSuffix: 'index.html',
+        notFoundPage: 'index.html'
+      }
+    })
     bucket = cres[0]
 
     // This needs to be explicit for whatever reason
