@@ -35,7 +35,7 @@ let cachedClient = null
 let cachedRestClient = null
 
 async function sleep(timeout = 1000) {
-  return new Promise(resolve => setTimeout(() => resolve(), timeout))
+  return new Promise((resolve) => setTimeout(() => resolve(), timeout))
 }
 
 /**
@@ -92,7 +92,7 @@ async function configureCDN({ shop, deployment, domains }) {
     return
   }
 
-  const urls = deployment.bucketUrls.split(',').map(u => new URL(u))
+  const urls = deployment.bucketUrls.split(',').map((u) => new URL(u))
   const bucketUrl = _find(urls, (o) => o.protocol === 'gs:')
 
   if (!bucketUrl) {
@@ -148,12 +148,9 @@ async function configureCDN({ shop, deployment, domains }) {
     proxy = await createHttpProxy(rest, serviceName, urlMap.selfLink)
   }
   if (!sproxy) {
-    sproxy = await createHttpsProxy(
-      rest,
-      serviceName,
-      urlMap.selfLink,
-      [cert.selfLink]
-    )
+    sproxy = await createHttpsProxy(rest, serviceName, urlMap.selfLink, [
+      cert.selfLink
+    ])
   }
 
   /**
@@ -173,10 +170,22 @@ async function configureCDN({ shop, deployment, domains }) {
   const httpsRulesRes = await getForwardingRules(rest, httpsName)
   const httpRulesRes = await getForwardingRules(rest, httpName)
   if (!httpsRulesRes) {
-    await createForwardingRules(rest, httpsName, ipAddressRes.address, '443-443', sproxy.selfLink)
+    await createForwardingRules(
+      rest,
+      httpsName,
+      ipAddressRes.address,
+      '443-443',
+      sproxy.selfLink
+    )
   }
   if (!httpRulesRes) {
-    await createForwardingRules(rest, httpName, ipAddressRes.address, '80-80', proxy.selfLink)
+    await createForwardingRules(
+      rest,
+      httpName,
+      ipAddressRes.address,
+      '80-80',
+      proxy.selfLink
+    )
   }
 
   // Leaving this as an object for potential addition of more data
@@ -259,14 +268,18 @@ async function createUrlMap(client, backendBucketLink, name) {
         hosts: ['*'],
         pathMatcher: 'allpaths'
       },
-      pathMatcher: [{
-        name: 'allpaths',
-        defaultService: backendBucketLink,
-        pathRules: [{
-          service: backendBucketLink,
-          paths: ['/*']
-        }]
-      }]
+      pathMatcher: [
+        {
+          name: 'allpaths',
+          defaultService: backendBucketLink,
+          pathRules: [
+            {
+              service: backendBucketLink,
+              paths: ['/*']
+            }
+          ]
+        }
+      ]
     }
   })
   return await get({ client, url: result.data.targetLink })
@@ -297,7 +310,13 @@ async function getForwardingRules(client, name) {
  * @param target {string} ref URL to a proxy
  * @returns {object} of a forwardingRules if in response
  */
-async function createForwardingRules(client, name, ipAddress, portRange, target) {
+async function createForwardingRules(
+  client,
+  name,
+  ipAddress,
+  portRange,
+  target
+) {
   const result = await create({
     client,
     url: google.endpoint(projectId, 'globalForwardingRules'),
@@ -499,7 +518,7 @@ async function get({ client, url }) {
 async function find({ client, url, name }) {
   const { items } = await get({ client, url })
   log.debug(`found items: `, items)
-  return _find(items, i => i.name === name)
+  return _find(items, (i) => i.name === name)
 }
 
 /**
@@ -553,7 +572,11 @@ async function waitFor(client, url, status = 'DONE') {
       url
     })
     console.log('waitFor checkRes', checkRes)
-    log.debug(`${url} status: ${checkRes && checkRes.data ? checkRes.data.status : 'unavailable'}`)
+    log.debug(
+      `${url} status: ${
+        checkRes && checkRes.data ? checkRes.data.status : 'unavailable'
+      }`
+    )
     if (checkRes && checkRes.data && checkRes.data.status === status) {
       return checkRes
     }

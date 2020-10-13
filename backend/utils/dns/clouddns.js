@@ -283,10 +283,8 @@ async function setRecords({
   if (ipAddresses) {
     // Delete all A records with this name
     if (existingAs && existingAs.length > 0) {
-      for(const arec of existingAs) {
-        changes.push(
-          await deleteA(arec)
-        )
+      for (const arec of existingAs) {
+        changes.push(await deleteA(arec))
       }
     }
     // Create an A record for each IP we get

@@ -58,7 +58,7 @@ async function findRecords(cf, id, conditions) {
   do {
     response = await cf.dnsRecords.browse(id, data)
     if (response.result) {
-      const onThisPage = response.result.filter(r => isEqual(r, conditions))
+      const onThisPage = response.result.filter((r) => isEqual(r, conditions))
       if (onThisPage) {
         found = found.concat(found, onThisPage)
       }
@@ -100,7 +100,11 @@ async function setRecords({
   }
   if (ipAddresses) {
     for (const ip of ipAddresses) {
-      await cf.dnsRecords.add(zoneObj.id, { type: 'A', name: record, content: ip })
+      await cf.dnsRecords.add(zoneObj.id, {
+        type: 'A',
+        name: record,
+        content: ip
+      })
     }
   }
   if (cname) {

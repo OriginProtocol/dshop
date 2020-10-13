@@ -20,7 +20,7 @@ const endpoints = {
   globalForwardingRules: `${serviceEndpoint}/compute/v1/projects/PROJECT_ID/global/forwardingRules`,
   targetHttpProxies: `${serviceEndpoint}/compute/v1/projects/PROJECT_ID/global/targetHttpProxies`,
   targetHttpsProxies: `${serviceEndpoint}/compute/v1/projects/PROJECT_ID/global/targetHttpsProxies`,
-  sslCertificates: `${serviceEndpoint}/compute/v1/projects/PROJECT_ID/global/sslCertificates`,
+  sslCertificates: `${serviceEndpoint}/compute/v1/projects/PROJECT_ID/global/sslCertificates`
 }
 
 function endpoint(projectId, name) {

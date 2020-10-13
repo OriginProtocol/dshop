@@ -169,7 +169,7 @@ async function deploy({ networkId, shop, subdomain, dnsProvider, pinner }) {
       domains: [fqdn]
     })
     if (responses.length > 0) {
-      ipAddresses = responses.map(r => r.ipAddress)
+      ipAddresses = responses.map((r) => r.ipAddress)
     }
   } catch (err) {
     log.error(`Unknown error configuring CDN.`)
@@ -232,7 +232,7 @@ async function deploy({ networkId, shop, subdomain, dnsProvider, pinner }) {
     domain,
     ipfsPinner,
     ipfsGateway,
-    ipfsHash,
+    ipfsHash
   })
   return success({
     hash: ipfsHash,

@@ -13,9 +13,7 @@ async function configureCDN({ networkConfig, shop, deployment, domains }) {
     // Check if it's usable for deployment
     if (mod.isAvailable({ networkConfig })) {
       await mod.configure({ networkConfig })
-      responses.push(
-        await mod.configureCDN({ shop, deployment, domains })
-      )
+      responses.push(await mod.configureCDN({ shop, deployment, domains }))
     } else {
       log.debug(`${modName} bucket deployer is not available or configured`)
     }
