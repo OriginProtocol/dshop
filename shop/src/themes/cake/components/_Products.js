@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import get from 'lodash/get'
 
 import Link from 'components/Link'
+import useThemeVars from 'utils/useThemeVars'
 
 import useConfig from 'utils/useConfig'
 import useProducts from 'utils/useProducts'
@@ -18,7 +19,9 @@ const Products = ({ limit = Infinity, excludeFeatured, onlyFeatured }) => {
   const match = useRouteMatch('/products/:collection')
   const activeCollectionId = get(match, 'params.collection')
 
-  const featuredProductIds = get(config, 'theme.featuredProducts', [])
+  const themeVars = useThemeVars()
+
+  const featuredProductIds = get(themeVars, 'home.featuredProducts', [])
 
   const productsToRender = useMemo(() => {
     let _products = products

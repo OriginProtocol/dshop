@@ -1,4 +1,34 @@
 {
   "id": "cake",
-  "name": "Cake"
+  "name": "Cake",
+  "config": [{
+    "id": "header",
+    "title": "Header",
+    "fields": [{
+      "id": "logo",
+      "title": "Logo",
+      "type": "media"
+    }, {
+      "id": "featuredCollections",
+      "title": "Featured in Menu",
+      "type": "collections_list"
+    }]
+  }, {
+    "id": "home",
+    "title": "Home",
+    "fields": [{
+      "id": "headerText",
+      "title": "Hero Text",
+      "type": "text",
+      "multiline": true
+    }, {
+      "id": "headerImage",
+      "title": "Header Image",
+      "type": "media"
+    }, {
+      "id": "featuredProducts",
+      "title": "Featured Products",
+      "type": "products_list"
+    }]
+  }]
 }

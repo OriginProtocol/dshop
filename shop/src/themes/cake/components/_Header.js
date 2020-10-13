@@ -5,6 +5,7 @@ import get from 'lodash/get'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import useCollections from 'utils/useCollections'
+import useThemeVars from 'utils/useThemeVars'
 
 import Link from 'components/Link'
 import CartIcon from 'components/icons/Cart'
@@ -27,9 +28,10 @@ const Header = ({ bg }) => {
   const [{ cart }] = useStateValue()
   const { config } = useConfig()
   const { collections } = useCollections()
+  const themeVars = useThemeVars()
 
-  const logoUrl = get(config, 'theme.logoUrl')
-  const featuredCollectionIds = get(config, 'theme.featuredCollections', [])
+  const logoUrl = get(themeVars, 'header.logo.0.url')
+  const featuredCollectionIds = get(themeVars, 'header.featuredCollections', [])
   const featuredCollections = useMemo(() => {
     return featuredCollectionIds
       .map((cId) => collections.find((c) => c.id === cId))

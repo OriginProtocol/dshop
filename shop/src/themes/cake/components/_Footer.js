@@ -1,11 +1,11 @@
 import React from 'react'
 import get from 'lodash/get'
-import useConfig from 'utils/useConfig'
+import useThemeVars from 'utils/useThemeVars'
 import SocialLinks from 'components/SocialLinks'
 
 const Footer = () => {
-  const { config } = useConfig()
-  const logoUrl = get(config, 'theme.logoUrl')
+  const themeVars = useThemeVars()
+  const logoUrl = get(themeVars, 'header.logo.0.url')
   return (
     <div className="text-center">
       <div className="border-t mt-24" />

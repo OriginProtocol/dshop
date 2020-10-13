@@ -1,49 +1,90 @@
 import React, { useEffect, useReducer, useState } from 'react'
-import get from 'lodash/get'
-
-import useConfig from 'utils/useConfig'
-import { useStateValue } from 'data/state'
 import { useHistory } from 'react-router-dom'
+import get from 'lodash/get'
+import pick from 'lodash/pick'
+import fbt from 'fbt'
+
+import useBackendApi from 'utils/useBackendApi'
+import useConfig from 'utils/useConfig'
+import useActiveTheme from 'utils/useActiveTheme'
+import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
+import SectionsList from './_Section'
 
-const reducer = (state, newState) => ({ ...state, ...newState })
-
-const EditFields = () => {
+const EditFields = ({ shouldBroadcastChanges }) => {
   const [{ admin, config }, dispatch] = useStateValue()
 
   const { setActiveShop } = useConfig()
   const history = useHistory()
   const [channel, setChannel] = useState()
+  const [changes, setChanges] = useState()
 
-  const [state, setState] = useReducer(reducer, {
-    themeConfig: '{}'
-  })
+  const { post } = useBackendApi({ authToken: true })
 
-  const themeId = get(config, 'themeId')
+  const { activeTheme, activeThemeId } = useActiveTheme()
 
   useEffect(() => {
+    // Disable scroll on body
     document.body.style.overflow = 'hidden'
-
     return () => (document.body.style.overflow = 'auto')
   }, [])
 
   useEffect(() => {
-    const bc = new BroadcastChannel(`${themeId}_preview_channel`)
-
+    // Create a broadcast channel to connect and
+    // interact with the iframe
+    const bc = new BroadcastChannel(`${activeThemeId}_preview_channel`)
     setChannel(bc)
-
     return () => bc.close()
-  }, [themeId])
+  }, [activeThemeId])
+
+  // useEffect(() => {
+  //   if (shouldBroadcastChanges) {
+  //     setTimeout(() => {
+  //       broadcastChanges(get(config.theme, activeThemeId))
+  //     }, 3000)
+  //   }
+  // }, [shouldBroadcastChanges])
 
   const broadcastChanges = (themeConfig) => {
-    if (channel) {
+    dispatch({
+      type: 'setConfigSimple',
+      config: {
+        ...config,
+        theme: {
+          ...config.theme,
+          [activeThemeId]: themeConfig
+        }
+      }
+    })
+
+    if (!channel) return
+    try {
       channel.postMessage(themeConfig)
+    } catch (err) {
+      // Failed to post to iframe
+      console.warn('Failed to push to iframe', err)
     }
   }
-  
-  const onSave = () => {
-    broadcastChanges(JSON.parse(state.themeConfig))
+
+  const onSave = async () => {
+    await post('/shop/config', {
+      method: 'PUT',
+      body: JSON.stringify({
+        theme: {
+          ...config.theme
+        }
+      })
+    })
+
+    dispatch({
+      type: 'toast',
+      message: (
+        <fbt desc="admin.themes.settingsSaved">
+          Your changes have been saved
+        </fbt>
+      )
+    })
   }
 
   return (
@@ -59,21 +100,22 @@ const EditFields = () => {
         />
       </div>
       <div className="fields-actions">
-        <Link to="/admin/themes" className="btn btn-outline-primary">Cancel</Link>
+        <Link to="/admin/themes" className="btn btn-outline-primary">
+          Cancel
+        </Link>
         <button className="btn btn-primary" type="button" onClick={onSave}>
           Save
         </button>
       </div>
 
       <div className="fields-container">
-        <textarea 
-          value={state.themeConfig}
-          onChange={e => {
-            setState({
-              themeConfig: e.target.value
-            })
-          }}
-        />
+        {!activeTheme ? (
+          <div>
+            <fbt desc="Loading">Loading</fbt>...
+          </div>
+        ) : (
+          <SectionsList theme={activeTheme} onChange={broadcastChanges} />
+        )}
       </div>
     </>
   )

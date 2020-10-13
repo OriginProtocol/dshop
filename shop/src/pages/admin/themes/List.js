@@ -1,46 +1,20 @@
-import React, { useReducer, useEffect, useState } from 'react'
+import React from 'react'
 import fbt from 'fbt'
-import pick from 'lodash/pick'
+import get from 'lodash/get'
 
 import Link from 'components/Link'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
-
-function reducer(state, newState) {
-  return { ...state, ...newState }
-}
-
-const configFields = [
-  'themeId'
-]
+import useThemes from '../../../utils/useThemes'
 
 const ThemeSettings = () => {
   const { config } = useConfig()
   const [, dispatch] = useStateValue()
-  const { get, post } = useBackendApi({ authToken: true })
-  const [state, setState] = useReducer(reducer, {
-    loading: true,
-    themes: []
-  })
+  const { post } = useBackendApi({ authToken: true })
+  const { themes, loading } = useThemes()
 
-  useEffect(() => {
-    setState({
-      ...pick(config, configFields)
-    })
-  }, [config])
-
-  useEffect(() => {
-    const loadThemes = async () => {
-      const { data } = await get('/themes')
-      setState({
-        loading: false,
-        themes: data
-      })
-    }
-
-    loadThemes()
-  }, [])
+  const activeThemeId = get(config, 'themeId')
 
   const switchToTheme = async (themeId) => {
     await post('/shop/config', {
@@ -59,11 +33,7 @@ const ThemeSettings = () => {
 
     dispatch({
       type: 'toast',
-      message: (
-        <fbt desc="admin.themes.themeChanged">
-          Theme changed
-        </fbt>
-      )
+      message: <fbt desc="admin.themes.themeChanged">Theme changed</fbt>
     })
 
     window.scrollTo(0, 0)
@@ -81,36 +51,59 @@ const ThemeSettings = () => {
       </h3>
       <div className="row">
         <div className="shop-settings col-md-8 col-lg-9">
-          {state.loading || !config.backend ? <><fbt desc="Loading">Loading</fbt>...</> : (
+          {loading || !config.backend ? (
+            <>
+              <fbt desc="Loading">Loading</fbt>...
+            </>
+          ) : (
             <div className="theme-grid">
-              {state.themes.map(theme => {
-                const isSelected = theme.id === state.themeId
+              {themes.map((theme) => {
+                const isSelected = theme.id === activeThemeId
                 return (
-                  <div className={`theme-select${isSelected ? ' active' : ''}`} key={theme.id}>
-                    <img src={`${config.backend}/theme/${theme.id}/screenshot.png`} />
-                    <div className="theme-label">
-                      {theme.name}
-                    </div>
+                  <div
+                    className={`theme-select${isSelected ? ' active' : ''}`}
+                    key={theme.id}
+                  >
+                    <img
+                      src={`${config.backend}/theme/${theme.id}/screenshot.png`}
+                    />
+                    <div className="theme-label">{theme.name}</div>
                     <div className="actions">
                       {isSelected ? (
-                        <Link to="/admin/themes/customize" className="btn btn-primary fg-white">
-                          <fbt desc="admin.themes.customizeTheme">Customize theme</fbt>
+                        <Link
+                          to="/admin/themes/customize"
+                          className="btn btn-primary fg-white"
+                        >
+                          <fbt desc="admin.themes.customizeTheme">
+                            Customize theme
+                          </fbt>
                         </Link>
                       ) : (
                         <>
-                          <button type="button" className="btn btn-primary" onClick={() => switchToTheme(theme.id)}>
-                            <fbt desc="admin.themes.selectTheme">Select this theme</fbt>
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={() => switchToTheme(theme.id)}
+                          >
+                            <fbt desc="admin.themes.selectTheme">
+                              Select this theme
+                            </fbt>
                           </button>
-                          <button type="button" className="btn btn-primary" onClick={() => previewTheme(theme.id)}>
-                            <fbt desc="admin.themes.previewTheme">Preview Theme</fbt>
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={() => previewTheme(theme.id)}
+                          >
+                            <fbt desc="admin.themes.previewTheme">
+                              Preview Theme
+                            </fbt>
                           </button>
                         </>
                       )}
                     </div>
                   </div>
                 )
-              }
-            )}
+              })}
             </div>
           )}
         </div>
