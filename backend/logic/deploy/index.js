@@ -9,6 +9,7 @@ const { assembleBuild } = require('./build')
 const { deployToIPFS } = require('./ipfs')
 const { deployToBucket } = require('./bucket')
 const { configureShopDNS } = require('./dns')
+const { configureCDN } = require('./cdn')
 const { DuplicateDeploymentError } = require('./common')
 
 const log = getLogger('logic.deploy')
@@ -69,11 +70,9 @@ function success(obj = {}) {
  * @returns {object} - deploy() response
  */
 async function deploy({ networkId, shop, subdomain, dnsProvider, pinner }) {
-  assert(
-    typeof networkId !== 'undefined',
-    'networkId must be provided to deploy()'
-  )
-  assert(typeof shop !== 'undefined', 'shop must be provided to deploy()')
+  assert(!!networkId, 'networkId must be provided to deploy()')
+  assert(!!shop, 'shop must be provided to deploy()')
+  assert(!!subdomain, 'subdomain must be provided to deploy()')
 
   const network = await Network.findOne({ where: { networkId } })
   if (!network) {
@@ -82,6 +81,7 @@ async function deploy({ networkId, shop, subdomain, dnsProvider, pinner }) {
   const start = +new Date()
   const networkConfig = decryptConfig(network.config)
   const zone = networkConfig.domain
+  const fqdn = `${subdomain}.${zone}`
   const dataDir = shop.authToken
   const OutputDir = `${DSHOP_CACHE}/${dataDir}`
 
@@ -145,11 +145,36 @@ async function deploy({ networkId, shop, subdomain, dnsProvider, pinner }) {
     if (responses.length > 0) {
       bucketUrls = responses.map((r) => r.url)
       bucketHttpUrls = responses.map((r) => r.httpUrl)
+      await deployment.update({
+        bucketUrls: bucketUrls.join(','),
+        bucketHttpUrls: bucketHttpUrls.join(',')
+      })
     }
   } catch (err) {
     log.error(`Unknown error deploying to bucket.`)
     log.error(err)
     await failDeployment(deployment, 'Failed to deploy to bucket')
+    return error(ERROR_GENERAL)
+  }
+
+  /**
+   * Configure the CDN(s) to point at bucket(s)
+   */
+  let ipAddresses = null
+  try {
+    const responses = await configureCDN({
+      networkConfig,
+      shop,
+      deployment,
+      domains: [fqdn]
+    })
+    if (responses.length > 0) {
+      ipAddresses = responses.map(r => r.ipAddress)
+    }
+  } catch (err) {
+    log.error(`Unknown error configuring CDN.`)
+    log.error(err)
+    await failDeployment(deployment, 'Failed to configure CDN')
     return error(ERROR_GENERAL)
   }
 
@@ -186,7 +211,8 @@ async function deploy({ networkId, shop, subdomain, dnsProvider, pinner }) {
         subdomain,
         zone,
         hash: ipfsHash,
-        dnsProvider
+        dnsProvider,
+        ipAddresses
       })
     } catch (err) {
       log.error(`Unknown error configuring DNS`)
@@ -207,8 +233,6 @@ async function deploy({ networkId, shop, subdomain, dnsProvider, pinner }) {
     ipfsPinner,
     ipfsGateway,
     ipfsHash,
-    bucketUrls: bucketUrls.join(','),
-    bucketHttpUrls: bucketHttpUrls.join(',')
   })
   return success({
     hash: ipfsHash,

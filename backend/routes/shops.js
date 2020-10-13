@@ -700,7 +700,7 @@ module.exports = function (router) {
       try {
         const { success, error, message, hash, domain } = await deploy({
           networkId: networkId ? networkId : network.networkId,
-          subdomain: hostname,
+          subdomain: hostname ? hostname : req.shop.hostname,
           shop: req.shop
         })
 

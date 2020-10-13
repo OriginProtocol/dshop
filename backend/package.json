@@ -21,6 +21,7 @@
   "license": "MIT",
   "dependencies": {
     "@google-cloud/bigquery": "^5.2.0",
+    "@google-cloud/compute": "^2.2.0",
     "@google-cloud/dns": "^2.0.2",
     "@google-cloud/storage": "^5.3.0",
     "@origin/ipfs": "^0.1.0",
@@ -51,6 +52,7 @@
     "fast-crc32c": "^2.0.0",
     "form-data": "^3.0.0",
     "formidable": "^1.2.2",
+    "google-auth-library": "^6.1.1",
     "inquirer": "^7.3.3",
     "ipfs-deploy": "8.0.1",
     "ipfs-http-client": "^47.0.1",

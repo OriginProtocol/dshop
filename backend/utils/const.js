@@ -46,6 +46,7 @@ const PROTOCOL_LABS_GATEWAY = 'https://gateway.ipfs.io'
 const PINATA_API = 'https://api.pinata.cloud'
 const PINATA_GATEWAY = 'https://gateway.pinata.cloud'
 const DEFAULT_BUCKET_PREFIX = 'dshop-deployment-'
+const DEFAULT_SERVICE_PREFIX = 'dshop-deployment-'
 
 const {
   SESSION_SECRET = randomstring.generate(),
@@ -56,7 +57,8 @@ const {
   PROVIDER_WS,
   REDIS_URL,
   IPFS_GATEWAY, // IPFS gateway override
-  BUCKET_PREFIX = DEFAULT_BUCKET_PREFIX
+  BUCKET_PREFIX = DEFAULT_BUCKET_PREFIX,
+  SERVICE_PREFIX = DEFAULT_SERVICE_PREFIX
 } = process.env
 
 /**
@@ -92,5 +94,6 @@ module.exports = {
   PROTOCOL_LABS_GATEWAY,
   PINATA_API,
   PINATA_GATEWAY,
-  BUCKET_PREFIX
+  BUCKET_PREFIX,
+  SERVICE_PREFIX
 }

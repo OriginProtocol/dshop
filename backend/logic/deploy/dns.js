@@ -22,7 +22,8 @@ async function configureShopDNS({
   subdomain,
   zone,
   hash,
-  dnsProvider
+  dnsProvider,
+  ipAddresses
 }) {
   const gatewayURL = new URL(network.ipfs)
   const gatewayHost = gatewayURL.hostname
@@ -37,7 +38,8 @@ async function configureShopDNS({
         subdomain,
         hash,
         email: networkConfig.cloudflareEmail,
-        key: networkConfig.cloudflareApiKey
+        key: networkConfig.cloudflareApiKey,
+        ipAddresses
       })
     }
   }
@@ -51,7 +53,8 @@ async function configureShopDNS({
         zone,
         subdomain,
         hash,
-        credentials: networkConfig.gcpCredentials
+        credentials: networkConfig.gcpCredentials,
+        ipAddresses
       })
     }
   }
@@ -68,7 +71,8 @@ async function configureShopDNS({
         credentials: {
           accessKeyId: networkConfig.awsAccessKeyId,
           secretAccessKey: networkConfig.awsSecretAccessKey
-        }
+        },
+        ipAddresses
       })
     }
   }
