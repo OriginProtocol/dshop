@@ -71,27 +71,6 @@ async function addA(zone, name, target) {
 }
 
 /**
- * update an A record
- *
- * Ref: https://googleapis.dev/nodejs/dns/latest/Change.html
- * Ref: https://googleapis.dev/nodejs/dns/latest/Zone.html
- *
- * @param existing {Record} Record that we're replacing
- * @param zone {Zone} zone that we're operating on
- * @param name {string} name of DNS record
- * @param target {string} target IP address
- * @returns {Change}
- */
-async function updateA(existing, zone, name, target) {
-  const addRec = zone.record('A', {
-    name,
-    data: target,
-    ttl: DEFAULT_TTL
-  })
-  return await zone.createChange({ add: addRec, delete: existing })
-}
-
-/**
  * delete an A record
  *
  * Ref: https://googleapis.dev/nodejs/dns/latest/Change.html
@@ -99,11 +78,9 @@ async function updateA(existing, zone, name, target) {
  *
  * @param existing {Record} Record that we're replacing
  * @param zone {Zone} zone that we're operating on
- * @param name {string} name of DNS record
- * @param target {string} target IP address
  * @returns {Change}
  */
-async function deleteA(existing) {
+async function deleteA(existing, zone) {
   return await zone.createChange({ delete: existing })
 }
 
@@ -284,7 +261,7 @@ async function setRecords({
     // Delete all A records with this name
     if (existingAs && existingAs.length > 0) {
       for (const arec of existingAs) {
-        changes.push(await deleteA(arec))
+        changes.push(await deleteA(arec, zoneObj))
       }
     }
     // Create an A record for each IP we get

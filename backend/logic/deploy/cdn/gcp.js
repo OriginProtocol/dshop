@@ -16,7 +16,6 @@
  *                                | backendService
  */
 const _find = require('lodash/find')
-const Compute = require('@google-cloud/compute')
 
 const { SERVICE_PREFIX } = require('../../../utils/const')
 const google = require('../../../utils/google')
@@ -31,7 +30,6 @@ const WAIT_INTERVAL = 1000
 const WAIT_INTERVALS_MAX = 10
 
 let projectId = null
-let cachedClient = null
 let cachedRestClient = null
 
 async function sleep(timeout = 1000) {
@@ -64,11 +62,6 @@ async function configure({ networkConfig, credentials }) {
   }
 
   projectId = creds.project_id
-
-  cachedClient = new Compute({
-    projectId: creds.project_id, // Shrug
-    credentials: creds
-  })
 
   cachedRestClient = await google.getAuthenticatedClient(creds)
 }
