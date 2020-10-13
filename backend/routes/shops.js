@@ -976,6 +976,7 @@ module.exports = function (router) {
     const orders = await Order.findAll({
       where: {
         shopId: shop.id,
+        archived: false,
         ...getConstraintForRange(range)
       }
     })
