@@ -2,12 +2,12 @@
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.addColumn('orders', 'hidden', {
+    return queryInterface.addColumn('orders', 'archived', {
       type: Sequelize.BOOLEAN,
       defaultValue: false // by default, show everything
     })
   },
   down: (queryInterface) => {
-    return queryInterface.removeColumn('orders', 'hidden')
+    return queryInterface.removeColumn('orders', 'archived')
   }
 }

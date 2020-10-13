@@ -168,7 +168,7 @@ module.exports = function (router) {
     authAffiliate,
     async (req, res) => {
       const orders = await Order.findAll({
-        where: { shopId: req.shop.id, referrer: req.affiliate, hidden: false }
+        where: { shopId: req.shop.id, referrer: req.affiliate, archived: false }
       })
 
       const results = {

@@ -51,7 +51,7 @@ module.exports = (sequelize, DataTypes) => {
       // Amount of OGN commission paid to the referrer.
       commissionPaid: DataTypes.INTEGER,
       // Hides the order in frontend
-      hidden: DataTypes.BOOLEAN,
+      archived: DataTypes.BOOLEAN,
       // Date at which the order was recorded, either on or off-chain.
       createdAt: DataTypes.DATE
     },

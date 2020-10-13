@@ -60,7 +60,7 @@ module.exports = function (router) {
 
     const where = {
       shopId: req.shop.id,
-      hidden: false
+      archived: false
     }
 
     if (search) {
@@ -124,7 +124,7 @@ module.exports = function (router) {
         where: {
           shopId: req.order.shopId,
           id: { [Op.lt]: req.order.id },
-          hidden: false
+          archived: false
         },
         order: [['id', 'desc']]
       })
@@ -132,7 +132,7 @@ module.exports = function (router) {
         where: {
           shopId: req.order.shopId,
           id: { [Op.gt]: req.order.id },
-          hidden: false
+          archived: false
         },
         order: [['id', 'asc']]
       })
