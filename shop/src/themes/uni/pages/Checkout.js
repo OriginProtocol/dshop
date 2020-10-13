@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
-import { useWeb3React } from '@web3-react/core'
 import ethers from 'ethers'
 import useBackendApi from 'utils/useBackendApi'
 import addData from 'data/addData'
@@ -15,17 +14,18 @@ import validate from 'data/validations/checkoutInfo'
 import CountrySelect from 'components/CountrySelect'
 import ProvinceSelect from 'components/ProvinceSelect'
 
-import { usePrices, chico } from '../utils'
-import BackLink from './_BackLink'
+import { usePrices, useContracts, useWeb3Manager } from '../utils'
+import Title from '../components/Title'
 
 const Checkout = () => {
   usePGP()
+  const { chico } = useContracts()
   const [{ cart }, dispatch] = useStateValue()
   const [buttonText, setButtonText] = useState('Redeem')
   const { state, setState, input, Feedback } = useForm(initialState(cart))
   const { config } = useConfig()
   const history = useHistory()
-  const { library, account } = useWeb3React()
+  const { library, account } = useWeb3Manager()
   const [reload, setReload] = useState(1)
   const { post } = useBackendApi({ authToken: true })
   usePrices({ reload, quantity: 1 })
@@ -100,13 +100,12 @@ const Checkout = () => {
       }}
     >
       <div className="w-full grid grid-cols-1 gap-2 bg-white rounded-lg p-6 pb-8 text-black mb-6">
-        <div className="flex flex-row mb-4 w-full items-center">
-          <BackLink to="/redeem" />
+        <Title back="/redeem">
           <div className="flex-1 flex flex-row justify-center text-lg font-bold">
             <div className="text-gray-600">{'Redeem / '}</div>
             <div className="ml-2">Shipping Details</div>
           </div>
-        </div>
+        </Title>
         <div className="flex">
           <img style={{ height: 150 }} src={item.imageUrl} />
           <div className="ml-6 mt-6 leading-tight">
@@ -121,7 +120,7 @@ const Checkout = () => {
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <input {...input('firstName')} placeholder="First Name" />
+            <input {...input('firstName')} placeholder="First Name" autoFocus />
             <Feedback error={state.firstNameError} />
           </div>
           <div>

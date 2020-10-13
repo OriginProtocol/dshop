@@ -1,30 +1,168 @@
 import { useEffect, useState, useReducer } from 'react'
 import { useWeb3React } from '@web3-react/core'
 import { InjectedConnector } from '@web3-react/injected-connector'
+import { NetworkConnector } from '@web3-react/network-connector'
 import ethers from 'ethers'
+import memoize from 'lodash/memoize'
+import pick from 'lodash/pick'
+import assign from 'lodash/assign'
 
-import abi from './abi.json'
-window.us = abi
+import abis from './abi.json'
+
+import Addresses from './Addresses.js'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
 
+const factC = 'contracts/UniswapV2Factory.sol:UniswapV2Factory'
+const pairC = 'contracts/UniswapV2Pair.sol:UniswapV2Pair'
+const pairEC = 'contracts/interfaces/IUniswapV2ERC20.sol:IUniswapV2ERC20'
+const routerC = 'v2router'
+const ercBurnable = 'ERC20FixedSupplyBurnable'
+const ercFixed = 'ERC20FixedSupplyBurnable'
+const abi = (name) => abis.contracts[name].abi
+const Contract = (name) =>
+  new ethers.ContractFactory(
+    abis.contracts[name].abi,
+    abis.contracts[name].bytecode
+  )
+window.abis = abis
+
+const getContracts = memoize(async function (provider) {
+  const factory = new ethers.Contract(Addresses.factory, abi(factC), provider)
+  const dai = new ethers.Contract(Addresses.dai, abi(ercBurnable), provider)
+  const ogn = new ethers.Contract(Addresses.ogn, abi(ercBurnable), provider)
+  const chico = new ethers.Contract(Addresses.chico, abi(ercFixed), provider)
+  const weth = new ethers.Contract(Addresses.weth, abi(ercFixed), provider)
+  const pairAddress = await factory.getPair(weth.address, chico.address)
+  const pair = new ethers.Contract(pairAddress, abi(pairC), provider)
+  const pairErc20 = new ethers.Contract(pairAddress, abi(pairEC), provider)
+  const router = new ethers.Contract(Addresses.router, abi(routerC), provider)
+  const erc20 = Contract(ercFixed)
+  window.contracts = {
+    factory,
+    pair,
+    pairErc20,
+    router,
+    dai,
+    chico,
+    erc20,
+    weth,
+    ogn
+  }
+  return { factory, pair, pairErc20, router, dai, chico, weth, ogn }
+})
+
+const allFields = [
+  'account',
+  'activate',
+  'active',
+  'chainId',
+  'connector',
+  'deactivate',
+  'error',
+  'library',
+  'setError'
+]
+const activeFields = ['connector', 'library', 'active', 'chainId']
+
+export function useWeb3Manager() {
+  const injectedWeb3React = useWeb3React()
+  const networkWeb3React = useWeb3React('network')
+
+  const { active, chainId } = injectedWeb3React
+
+  useEffect(() => {
+    if (!active || chainId !== defaultChainId) {
+      networkWeb3React.activate(networkConnector)
+    }
+  }, [active, chainId])
+
+  const ret = pick(injectedWeb3React, allFields)
+  ret.activate = () => injectedWeb3React.activate(injectedConnector)
+
+  if (!active || chainId !== defaultChainId) {
+    assign(ret, pick(networkWeb3React, activeFields))
+    ret.isNetwork = true
+    if (chainId !== defaultChainId) {
+      ret.desiredNetwork = `Chain ID ${defaultChainId}`
+    }
+  }
+
+  return ret
+}
+
+export function useContracts() {
+  const { library, chainId } = useWeb3Manager()
+  const [contracts, setContracts] = useState({})
+  useEffect(() => {
+    if (chainId === defaultChainId) {
+      getContracts(library).then(setContracts)
+    }
+  }, [chainId])
+  return contracts
+}
+
+const tokens = [
+  { symbol: 'OGN', address: Addresses.ogn },
+  { symbol: 'DAI', address: Addresses.dai },
+  { symbol: 'ETH', address: Addresses.weth }
+]
+
 export function usePrices({ quantity, reload }) {
-  const { account } = useWeb3React()
+  const { account, connector, active, library } = useWeb3Manager()
+  const { pair, router, chico, weth, dai } = useContracts()
+
   const [state, setState] = useReducer(reducer, {
+    tokens,
+    token: 'ETH',
+    tokenContract: weth,
     priceUSD: '',
+    priceUSDBN: ethers.BigNumber.from(0),
     priceUSDQ: '',
+    priceDAI: '',
     availableChico: '',
     totalChico: '',
-    ownedChico: ''
+    ownedChico: '0',
+    ethBalance: ethers.BigNumber.from(0),
+    tokenBalance: ethers.BigNumber.from(0),
+    tokenAllowance: ethers.BigNumber.from(0)
   })
 
   useEffect(() => {
+    const token = state.tokens.find((t) => t.symbol === state.token)
+    if (token) {
+      const tokenContract = new ethers.Contract(
+        token.address,
+        abi(ercBurnable),
+        library
+      )
+      setState({ tokenContract })
+    }
+  }, [state.token])
+
+  useEffect(() => {
+    if (!connector || !active || !router || !state.tokenContract) return
+
+    const path = [weth.address, chico.address]
+    if (state.token !== 'ETH') {
+      path.unshift(state.tokenContract.address)
+    }
+
     router
-      .getAmountsIn(ethers.utils.parseEther('1'), [dai.address, chico.address])
+      .getAmountsIn(ethers.utils.parseEther('1'), [
+        dai.address,
+        weth.address,
+        chico.address
+      ])
       .then((quote) => {
-        const priceUSD = ethers.utils.formatEther(quote[0])
-        setState({ priceUSD: priceUSD.replace(/^([0-9]+\.[0-9]{2}).*/, '$1') })
+        const priceDAI = ethers.utils.formatEther(quote[0])
+        setState({ priceDAI: priceDAI.replace(/^([0-9]+\.[0-9]{2}).*/, '$1') })
       })
+
+    router.getAmountsIn(ethers.utils.parseEther('1'), path).then((quote) => {
+      const priceUSD = ethers.utils.formatEther(quote[0])
+      setState({ priceUSD: priceUSD.replace(/^([0-9]+\.[0-9]{2}).*/, '$1') })
+    })
 
     chico.totalSupply().then((supply) => {
       const totalChico = ethers.utils.formatEther(supply)
@@ -32,14 +170,37 @@ export function usePrices({ quantity, reload }) {
     })
 
     if (account) {
+      library.getBalance(account).then((ethBalance) => {
+        if (state.token === 'ETH') {
+          setState({
+            ethBalance,
+            tokenBalance: ethBalance,
+            tokenAllowance: ethBalance
+          })
+        } else {
+          setState({ ethBalance })
+        }
+      })
+
       chico.balanceOf(account).then((balance) => {
         const ownedChico = ethers.utils.formatEther(balance)
         setState({ ownedChico: ownedChico.replace(/^([0-9]+)\..*/, '$1') })
       })
+
+      if (state.token !== 'ETH') {
+        state.tokenContract
+          .allowance(account, router.address)
+          .then((tokenAllowance) => {
+            setState({ tokenAllowance })
+          })
+        state.tokenContract.balanceOf(account).then((tokenBalance) => {
+          setState({ tokenBalance })
+        })
+      }
     }
 
     pair.getReserves().then((reserves) => {
-      const token1 = ethers.BigNumber.from(dai.address)
+      const token1 = ethers.BigNumber.from(weth.address)
       const token2 = ethers.BigNumber.from(chico.address)
       const reserve = token1.gt(token2) ? reserves[0] : reserves[1]
       const availableChico = ethers.utils.formatEther(reserve)
@@ -47,54 +208,104 @@ export function usePrices({ quantity, reload }) {
         availableChico: availableChico.replace(/^([0-9]+)\..*/, '$1')
       })
     })
-  }, [reload, account])
+  }, [reload, account, active, router, state.tokenContract])
 
   useEffect(() => {
+    if (!connector || !router || !state.tokenContract) return
+    const path = [weth.address, chico.address]
+    const pathR = [chico.address, weth.address]
+    if (state.token !== 'ETH') {
+      path.unshift(state.tokenContract.address)
+      pathR.push(state.tokenContract.address)
+    }
     router
-      .getAmountsIn(ethers.utils.parseEther(String(quantity)), [
-        dai.address,
-        chico.address
-      ])
+      .getAmountsIn(ethers.utils.parseEther(String(quantity)), path)
       .then((quote) => {
         const priceUSDQ = ethers.utils.formatEther(quote[0])
         setState({
-          priceUSDQ: priceUSDQ.replace(/^([0-9]+\.[0-9]{2}).*/, '$1'),
+          priceUSDQ: priceUSDQ.replace(/^([0-9]+\.[0-9]{5}).*/, '$1'),
           priceUSDBN: quote[0].mul(101).div(100),
           priceUSDA: quote[0].mul(101).div(100).toString()
         })
       })
 
     router
+      .getAmountsIn(ethers.utils.parseEther(String(quantity)), [
+        dai.address,
+        weth.address,
+        chico.address
+      ])
+      .then((quote) => {
+        const priceDAIQ = ethers.utils.formatEther(quote[0])
+        setState({
+          priceDAIQ: priceDAIQ.replace(/^([0-9]+\.[0-9]{2}).*/, '$1')
+        })
+      })
+
+    router
+      .getAmountsOut(ethers.utils.parseEther(String(quantity)), pathR)
+      .then((quote) => {
+        const getUSDQ = ethers.utils.formatEther(quote[pathR.length - 1])
+        setState({
+          getUSDQ: getUSDQ.replace(/^([0-9]+\.[0-9]{5}).*/, '$1')
+        })
+      })
+
+    router
       .getAmountsOut(ethers.utils.parseEther(String(quantity)), [
         chico.address,
+        weth.address,
         dai.address
       ])
       .then((quote) => {
-        const getUSDQ = ethers.utils.formatEther(quote[1])
+        const getDAIQ = ethers.utils.formatEther(quote[2])
         setState({
-          getUSDQ: getUSDQ.replace(/^([0-9]+\.[0-9]{2}).*/, '$1')
+          getDAIQ: getDAIQ.replace(/^([0-9]+\.[0-9]{2}).*/, '$1')
         })
       })
-  }, [quantity, reload, account])
+  }, [quantity, reload, account, router, state.tokenContract])
 
-  return state
+  // console.log(state)
+
+  return [state, setState]
 }
 
-export function useEagerConnect() {
-  const { activate, active } = useWeb3React()
-  const [tried, setTried] = useState(false)
+export const injectedConnector = new InjectedConnector()
 
+const defaultChainId = 4
+const mainnet = `aHR0cHM6Ly9ldGgtbWFpbm5ldC5hbGNoZW15YXBpLmlvL3YyL2ppTXNVaWwyOGViZFJhTG9KOERLNEVxSHZDZ0U5eVEz`
+const rinkeby = `aHR0cHM6Ly9ldGgtcmlua2VieS5hbGNoZW15YXBpLmlvL3YyL1pmT3FJbk9mX1lxYXZfd2ExS2poeWFoeV9EaWE0UmFN`
+const networkConnector = new NetworkConnector({
+  urls: { 1: atob(mainnet), 4: atob(rinkeby), 1337: 'http://localhost:8545' },
+  defaultChainId
+})
+
+export function useEagerConnect() {
+  const { activate, active, chainId, connector } = useWeb3React()
+  const networkWeb3React = useWeb3React('network')
+  const [tried, setTried] = useState(false)
   useEffect(() => {
+    let stale
     injectedConnector.isAuthorized().then((isAuthorized) => {
+      if (stale) return
       if (isAuthorized) {
         activate(injectedConnector, undefined, true).catch(() => {
           setTried(true)
+          networkWeb3React.activate(networkConnector)
         })
       } else {
         setTried(true)
+        networkWeb3React.activate(networkConnector)
       }
     })
+    return () => (stale = true)
   }, [])
+
+  useEffect(() => {
+    if (tried && connector !== injectedConnector && !networkWeb3React.active) {
+      networkWeb3React.activate(networkConnector)
+    }
+  }, [active, connector, chainId, tried])
 
   useEffect(() => {
     if (!tried && active) {
@@ -105,93 +316,100 @@ export function useEagerConnect() {
   return tried
 }
 
-export const injectedConnector = new InjectedConnector()
+// const provider = new ethers.providers.JsonRpcProvider()
+const provider = new ethers.providers.Web3Provider(
+  window.ethereum,
+  defaultChainId
+)
 
-// Local addresses
-// const Addresses = {
-//   factory: '0xE0bF6021e023a197DBb3fABE64efA880E13D3f4b',
-//   weth: '0x3f21BC64076e7c9ed8695d053DCCBE6D8d5E6f43',
-//   dai: '0xb848ef765E289762e9BE66a38006DDc4D23AeF24',
-//   chico: '0x774DDa3beEf9650473549Be4EE7054a2ef5B0140',
-//   pair: '0xca8e1619b5f7F0aBB8D16Feda413ffaf0dd67C44',
-//   router: '0x9A6041D25B77A16b0A63c6B157CD49ABBF2aE966'
+// async function setup() {
+//   const accounts = await provider.listAccounts()
+//   const signer = provider.getSigner(accounts[0])
+
+//   window.pair = pair.connect(signer)
+//   window.pairErc20 = pairErc20.connect(signer)
+//   window.router = router.connect(signer)
+//   window.dai = dai.connect(signer)
+//   window.chico = chico.connect(signer)
+
+//   // const quote = await router.getAmountsIn(ethers.utils.parseEther('1'), [
+//   //   dai.address,
+//   //   chico.address
+//   // ])
+
+//   // console.log(ethers.utils.formatEther(quote[0]))
+
+//   // const reserves = await pair.getReserves()
+//   // console.log(ethers.utils.formatEther(reserves[0]))
+//   // console.log(ethers.utils.formatEther(reserves[1]))
 // }
 
-const Addresses = {
-  factory: '0x279a83a163156EbeE7497e96d427892b9A425512',
-  weth: '0x7C7d2ABE93f74104e262d28083e25b6702b363CB',
-  dai: '0xe51bAbD26239c1B87954698A783AC9C0a06B03DD',
-  chico: '0x6462Bef6bB8a2D764A1B7807C5402796aDF11EC0',
-  pair: '0xc8c3fF93402C16F9085383230C2861D6857B9b87',
-  router: '0x59153Aa7B32aBFB9a3f8b79F88D3763025540C8a'
-}
-
-// const provider = new ethers.providers.JsonRpcProvider()
-const provider = new ethers.providers.Web3Provider(window.ethereum, 4)
-
-export const pair = new ethers.Contract(
-  Addresses.pair,
-  abi.contracts['contracts/UniswapV2Pair.sol:UniswapV2Pair'].abi,
-  provider
-)
-export const pairErc20 = new ethers.Contract(
-  Addresses.pair,
-  abi.contracts['contracts/interfaces/IUniswapV2ERC20.sol:IUniswapV2ERC20'].abi,
-  provider
-)
-export const router = new ethers.Contract(
-  Addresses.router,
-  abi.contracts['v2router'].abi,
-  provider
-)
-export const dai = new ethers.Contract(
-  Addresses.dai,
-  abi.contracts['ERC20FixedSupplyBurnable'].abi,
-  provider
-)
-export const chico = new ethers.Contract(
-  Addresses.chico,
-  abi.contracts['ERC20FixedSupplyBurnable'].abi,
-  provider
-)
-
-async function setup() {
-  const accounts = await provider.listAccounts()
-  const signer = provider.getSigner(accounts[0])
-
-  window.pair = pair.connect(signer)
-  window.pairErc20 = pairErc20.connect(signer)
-  window.router = router.connect(signer)
-  window.dai = dai.connect(signer)
-  window.chico = chico.connect(signer)
-
-  // const quote = await router.getAmountsIn(ethers.utils.parseEther('1'), [
-  //   dai.address,
-  //   chico.address
-  // ])
-
-  // console.log(ethers.utils.formatEther(quote[0]))
-
-  // const reserves = await pair.getReserves()
-  // console.log(ethers.utils.formatEther(reserves[0]))
-  // console.log(ethers.utils.formatEther(reserves[1]))
-}
-
-setup()
+// setup()
 
 /* eslint-disable */
-async function go() {
+
+async function goMeta() {
+  ethers = _ethers
+  provider = new ethers.providers.Web3Provider(window.ethereum)
   log = console.log
-  provider = new _ethers.providers.JsonRpcProvider()
   accounts = await provider.listAccounts()
   signer = provider.getSigner(accounts[0])
 
-  UniswapV2Factory = _ethers.ContractFactory.fromSolidity(
-    us.contracts['contracts/UniswapV2Factory.sol:UniswapV2Factory'],
+  erc20 = _ethers.ContractFactory.fromSolidity(
+    abis.contracts['ERC20FixedSupplyBurnable'],
+    signer
+  )
+
+  factory = new _ethers.Contract(
+    '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f',
+    abis.contracts['contracts/UniswapV2Factory.sol:UniswapV2Factory'].abi,
+    signer
+  )
+  router = new _ethers.Contract(
+    '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
+    abis.contracts['v2router'].abi,
+    signer
+  )
+
+  await router.addLiquidityETH(
+    dai.address,
+    _ethers.utils.parseEther('400'),
+    _ethers.utils.parseEther('400'),
+    _ethers.utils.parseEther('0'),
+    accounts[0],
+    Math.round(new Date() / 1000) + 60 * 60 * 24,
+    { value: _ethers.utils.parseEther('0.5'), gasLimit: '4000000' }
+  )
+
+  await router.addLiquidityETH(
+    chico.address,
+    _ethers.utils.parseEther('50'),
+    _ethers.utils.parseEther('50'),
+    _ethers.utils.parseEther('0'),
+    accounts[0],
+    Math.round(new Date() / 1000) + 60 * 60 * 24,
+    { value: _ethers.utils.parseEther('0.1'), gasLimit: '4000000' }
+  )
+}
+
+async function go() {
+  // provider = new _ethers.providers.JsonRpcProvider()
+  ethers = _ethers
+  provider = new ethers.providers.Web3Provider(window.ethereum)
+  log = console.log
+  accounts = await provider.listAccounts()
+  signer = provider.getSigner(accounts[0])
+  Object.keys(contracts).forEach((c) => {
+    contracts[c] = contracts[c].connect(signer)
+    window[c] = contracts[c]
+  })
+
+  UniswapV2Factory = ethers.ContractFactory.fromSolidity(
+    abis.contracts['contracts/UniswapV2Factory.sol:UniswapV2Factory'],
     signer
   )
   pairIface = new _ethers.utils.Interface(
-    us.contracts['contracts/UniswapV2Pair.sol:UniswapV2Pair'].abi
+    abis.contracts['contracts/UniswapV2Pair.sol:UniswapV2Pair'].abi
   )
   factory = await UniswapV2Factory.deploy(
     '0x0000000000000000000000000000000000000000'
@@ -200,17 +418,21 @@ async function go() {
   log(`Deployed factory. Address ${factory.address}`)
 
   erc20 = _ethers.ContractFactory.fromSolidity(
-    us.contracts['ERC20FixedSupplyBurnable'],
+    abis.contracts['ERC20FixedSupplyBurnable'],
+    signer
+  )
+  wethContract = _ethers.ContractFactory.fromSolidity(
+    abis.contracts['WETH9'],
     signer
   )
 
-  weth = await erc20.deploy('Weth', 'WETH', _ethers.utils.parseEther('100'))
+  weth = await wethContract.deploy()
   log(`Minted 1000 weth. Address ${weth.address}`)
 
   dai = await erc20.deploy(
     'Maker DAI',
     'DAI',
-    _ethers.utils.parseEther('10000')
+    _ethers.utils.parseEther('100000')
   )
   log(`Minted 10000 dai. Address ${dai.address}`)
 
@@ -221,24 +443,57 @@ async function go() {
   )
   log(`Minted 50 chico. Address ${chico.address}`)
 
+  routerContract = _ethers.ContractFactory.fromSolidity(
+    abis.contracts['v2router'],
+    signer
+  )
+  router = await routerContract.deploy(factory.address, weth.address)
+  log(`Deployed router. Address ${router.address}`)
+
+  await dai.approve(router.address, _ethers.utils.parseEther('50000'))
+  await router.addLiquidityETH(
+    dai.address,
+    _ethers.utils.parseEther('50000'),
+    _ethers.utils.parseEther('50000'),
+    _ethers.utils.parseEther('0'),
+    accounts[0],
+    Math.round(new Date() / 1000) + 60 * 60 * 24,
+    { value: _ethers.utils.parseEther('0.5'), gasLimit: '4000000' }
+  )
+  log(`Added 50,000 DAI for 0.5 ETH`)
+
+  await chico.approve(router.address, _ethers.utils.parseEther('50'))
+  await router.addLiquidityETH(
+    chico.address,
+    _ethers.utils.parseEther('50'),
+    _ethers.utils.parseEther('50'),
+    _ethers.utils.parseEther('0'),
+    accounts[0],
+    Math.round(new Date() / 1000) + 60 * 60 * 24,
+    { value: _ethers.utils.parseEther('0.0125'), gasLimit: '4000000' }
+  )
+  log(`Added 50 CHICO for 0.0125 ETH`)
+
   await factory.createPair(dai.address, chico.address)
   pairAddress = await factory.getPair(dai.address, chico.address)
   log(`Created dai / chico pair. Address ${pairAddress}`)
 
   pair = new _ethers.Contract(
     pairAddress,
-    us.contracts['contracts/UniswapV2Pair.sol:UniswapV2Pair'].abi,
+    abis.contracts['contracts/UniswapV2Pair.sol:UniswapV2Pair'].abi,
     signer
   )
   token0 = await pair.token0()
   token1 = await pair.token1()
 
-  routerContract = _ethers.ContractFactory.fromSolidity(
-    us.contracts['v2router'],
-    signer
+  await router.addLiquidityETH(
+    contracts.dai.address,
+    _ethers.utils.parseEther('400'),
+    _ethers.utils.parseEther('400'),
+    _ethers.utils.parseEther('0'),
+    accounts[0],
+    Math.round(new Date() / 1000) + 60 * 60 * 24
   )
-  router = await routerContract.deploy(factory.address, weth.address)
-  log(`Deployed router. Address ${router.address}`)
 
   await dai.approve(router.address, _ethers.utils.parseEther('1250'))
   await chico.approve(router.address, _ethers.utils.parseEther('50'))

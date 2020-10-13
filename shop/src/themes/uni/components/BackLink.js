@@ -1,9 +1,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-const BackLink = ({ to }) => {
+const BackLink = ({ to, className = '' }) => {
   return (
-    <Link to={to} className="hover:opacity-75">
+    <Link to={to} className={`hover:opacity-75 ${className}`}>
       <svg width="16" height="16">
         <g stroke="#000" strokeWidth="2" strokeLinecap="round">
           <line x1="8" y1="1" x2="1" y2="8" />

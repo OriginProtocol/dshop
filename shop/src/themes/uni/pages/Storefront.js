@@ -7,6 +7,9 @@ import Sell from './Sell'
 import Redeem from './Redeem'
 import Checkout from './Checkout'
 import Confirmation from './Confirmation'
+import Connection from './Connection'
+import Stats from './Stats'
+import About from './About'
 
 import Header from './_Header'
 import Footer from './_Footer'
@@ -26,6 +29,9 @@ const Storefront = () => {
           <Route path="/redeem" component={Redeem} />
           <Route path="/checkout" component={Checkout} />
           <Route path="/confirmation" component={Confirmation} />
+          <Route path="/connection" component={Connection} />
+          <Route path="/stats" component={Stats} />
+          <Route path="/about" component={About} />
           <Route component={Home} />
         </Switch>
       </div>

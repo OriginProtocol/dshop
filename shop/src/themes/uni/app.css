@@ -24,20 +24,23 @@
 
 @layer components {
   .btn-disabled {
-    @apply w-full text-center text-white font-bold py-3 text-lg border border-white rounded-full opacity-50;
+    @apply w-full text-center text-white font-bold py-3 text-lg border border-white rounded-full opacity-50 select-none;
   }
   .btn {
     @apply w-full text-center text-white font-bold py-3 text-lg border border-white rounded-full transition-all duration-300 ease-in-out;
   }
-  .btn:hover {
+  .btn:not(.disabled):hover {
     @apply bg-white text-black;
   }
 
   .btn-primary {
-    @apply border-0 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600;
+    @apply border-0 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 flex items-center justify-center;
+  }
+  .btn-primary.disabled {
+    @apply select-none;
   }
 
-  .btn-primary:hover {
+  .btn-primary:not(.disabled):hover {
     @apply text-white opacity-75;
   }
 
