@@ -18,52 +18,10 @@
  *    httpUrl: "https://storage.googleapis.com/mybucket/"
  * }
  */
-
-const fs = require('fs').promises
-const path = require('path')
-
-const { isExt, stripExt } = require('../../../utils/filesystem')
+const { getModules, loadModule } = require('../../../utils/module')
 const { getLogger } = require('../../../utils/logger')
 
 const log = getLogger('logic.deploy.bucket')
-
-const DEFAULT_FILE_EXCLUDES = ['index.js']
-
-const cachedModules = []
-
-/**
- * Return filenames without extension for files in directory excluding excludes
- *
- * @param excludes <String[]> - Array of strings of filenames to exclude
- * @returns Array of module names
- */
-async function getModules(excludes = DEFAULT_FILE_EXCLUDES) {
-  const files = await fs.readdir(__dirname)
-  const mods = []
-  for (const e of files) {
-    if (excludes.includes(e)) continue
-    const fqname = path.join(__dirname, e)
-    const stat = await fs.stat(fqname)
-    if (stat.isFile() && isExt(e, 'js')) {
-      mods.push(stripExt(e))
-    }
-  }
-  return mods
-}
-
-/**
- * Return an imported module
- *
- * @param modName <String> - Name of module
- * @returns imported nodejs module
- */
-function loadModule(modName) {
-  if (modName in cachedModules) {
-    return cachedModules[modName]
-  }
-  cachedModules[modName] = require(`./${modName}`)
-  return cachedModules[modName]
-}
 
 /**
  * Deploy shop to a bucket
@@ -76,10 +34,10 @@ function loadModule(modName) {
  */
 async function deployToBucket({ networkConfig, shop, OutputDir, dataDir }) {
   const responses = []
-  const modules = await getModules()
+  const modules = await getModules(__dirname)
 
   for (const modName of modules) {
-    const mod = loadModule(modName)
+    const mod = loadModule(__dirname, modName)
 
     // Check if it's usable for deployment
     if (mod.isAvailable({ networkConfig })) {
