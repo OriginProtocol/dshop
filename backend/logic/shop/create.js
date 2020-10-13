@@ -15,8 +15,9 @@ const { DSHOP_CACHE } = require('../../utils/const')
 const { getConfig, setConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
 const configs = require('../../config/baseConfig')
-const { Shop, SellerShop, Network } = require('../../models')
+const { AdminLog, Shop, SellerShop, Network } = require('../../models')
 const printfulSyncProcessor = require('../../queues/printfulSyncProcessor')
+const { AdminLogActions } = require('../../enums')
 
 const log = getLogger('logic.shop.create')
 
@@ -104,6 +105,14 @@ async function createShopInDB({
     hostname
   })
 
+  // Record the admin activity.
+  await AdminLog.create({
+    action: AdminLogActions.ShopCreated,
+    sellerId,
+    shopId: shop.id,
+    createdAt: Date.now()
+  })
+
   return { shop }
 }
 
@@ -179,6 +188,10 @@ async function createShop({
   const network = await Network.findOne({ where: { active: true } })
   const networkConfig = getConfig(network.config)
   const netAndVersion = `${network.networkId}-${network.marketplaceVersion}`
+
+  // If a listingId specific to the shop was not passed
+  // use by default the network's listingId.
+  const shopListingId = listingId || network.listingId
 
   // Only relevant for on-chain mode. Checks the shop's listingId doesn't
   // conflict with a listingId from another shop.
@@ -268,7 +281,7 @@ async function createShop({
   const shopResponse = await createShopInDB({
     networkId: network.networkId,
     sellerId: seller.id,
-    listingId: network.listingId, // by default we set the shop's listingId to the network's listingId.
+    listingId: shopListingId,
     hostname,
     name,
     authToken: dataDir,
@@ -363,10 +376,9 @@ async function createShop({
     networkConfig.backendUrl
   )
 
-  // Add the marketplace listing Id, if any.
-  if (listingId) {
-    shopJsonConfig = set(shopJsonConfig, `${netPath}.listingId`, listingId)
-  }
+  // Set the marketplace listing Id. Use shop's listing Id if specified,
+  // otherwise default to the network level listingId.
+  shopJsonConfig = set(shopJsonConfig, `${netPath}.listingId`, shopListingId)
 
   // Write the shop's config.json file to the disk cache.
   const shopConfigPath = `${OutputDir}/data/config.json`

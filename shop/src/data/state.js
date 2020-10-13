@@ -108,8 +108,8 @@ const reducer = (state, action) => {
     const item = {
       title: action.product.title,
       product: action.product.id,
-      quantity: 1,
       options: action.variant.options,
+      quantity: action.product.quantity || 1,
       variant: action.variant.id,
       price: action.variant.price,
       imageUrl: action.variant.imageUrl,

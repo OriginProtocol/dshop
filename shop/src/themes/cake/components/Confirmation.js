@@ -33,13 +33,12 @@ const Order = () => {
 const OrderDesktop = ({ order }) => {
   const { config } = useConfig()
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="bg-white">
+    <div className="min-h-screen bg-red-100">
+      <div className="bg-red-100">
         <div className="container pt-24 pb-10">
           <div className="text-2xl font-medium">{config.title}</div>
         </div>
       </div>
-      <div className="border-t" />
       <div className="container pt-10 pb-24">
         <div className="text-3xl font-medium">
           {`Thank you, ${get(order, 'userInfo.firstName')}!`}

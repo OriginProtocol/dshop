@@ -13,6 +13,16 @@ class Enum extends Array {
   }
 }
 
+const AdminLogActions = new Enum(
+  'ShopCreated',
+  'ShopConfigUpdated',
+  'ShopDeleted',
+  'ShopPublished',
+  'UserAdded',
+  'UserEdited',
+  'UserDeleted'
+)
+
 const OrderPaymentStatuses = new Enum('Paid', 'Refunded', 'Pending', 'Rejected')
 
 const OrderOfferStatuses = new Enum(
@@ -24,13 +34,6 @@ const OrderOfferStatuses = new Enum(
   'OfferData'
 )
 
-const TransactionStatuses = new Enum('Pending', 'Confirmed', 'Failed')
-const TransactionTypes = new Enum('OfferCreated', 'Payment')
-const ShopDeploymentStatuses = new Enum('Pending', 'Success', 'Failure')
-const ShopDomainStatuses = new Enum('Pending', 'Success', 'Failure')
-
-const EtlJobStatuses = new Enum('Running', 'Success', 'Failure')
-
 const OrderPaymentTypes = new Enum(
   'CreditCard',
   'PayPal',
@@ -39,13 +42,21 @@ const OrderPaymentTypes = new Enum(
   'Uphold'
 )
 
+const TransactionStatuses = new Enum('Pending', 'Confirmed', 'Failed')
+const TransactionTypes = new Enum('OfferCreated', 'Payment')
+const ShopDeploymentStatuses = new Enum('Pending', 'Success', 'Failure')
+const ShopDomainStatuses = new Enum('Pending', 'Success', 'Failure')
+
+const EtlJobStatuses = new Enum('Running', 'Success', 'Failure')
+
 module.exports = {
+  AdminLogActions,
+  EtlJobStatuses,
   OrderPaymentStatuses,
   OrderOfferStatuses,
-  TransactionStatuses,
-  TransactionTypes,
+  OrderPaymentTypes,
   ShopDeploymentStatuses,
-  EtlJobStatuses,
   ShopDomainStatuses,
-  OrderPaymentTypes
+  TransactionStatuses,
+  TransactionTypes
 }

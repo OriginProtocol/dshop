@@ -5,10 +5,11 @@ const kebabCase = require('lodash/kebabCase')
 
 const { createShopInDB } = require('../logic/shop/create')
 const { deployShop } = require('../utils/deployShop')
-const { setConfig } = require('../utils/encryptedConfig')
-const { ShopDeploymentStatuses } = require('../enums')
+const { getConfig, setConfig } = require('../utils/encryptedConfig')
+const { AdminLogActions, ShopDeploymentStatuses } = require('../enums')
 
 const {
+  AdminLog,
   Shop,
   ShopDeployment,
   ShopDeploymentName,
@@ -35,7 +36,7 @@ describe('Shops', () => {
     expect(network).to.be.an('object')
   })
 
-  it('should create a shop', async () => {
+  it('should create a new shop', async () => {
     const shopName = 'test-shop-' + Date.now() // unique shop name.
     dataDir = shopName
     const body = {
@@ -59,7 +60,74 @@ describe('Shops', () => {
     expect(shop).to.be.an('object')
     expect(shop.name).to.equal(body.name)
     expect(shop.hostname).to.startsWith(body.dataDir)
+    expect(shop.listingId).to.equal(TEST_LISTING_ID_1)
+    expect(shop.authToken).to.equal(dataDir)
     // TODO: check shop.config
+
+    // Check the admin activity was recorded.
+    const adminLog = await AdminLog.findOne({ order: [['id', 'desc']] })
+    expect(adminLog).to.be.an('object')
+    expect(adminLog.shopId).to.equal(shop.id)
+    expect(adminLog.sellerId).to.equal(1) // Shop was created using super admin with id 1.
+    expect(adminLog.action).to.equal(AdminLogActions.ShopCreated)
+    expect(adminLog.data).to.be.null
+    expect(adminLog.createdAt).to.be.a('date')
+  })
+
+  it('should update a shop config', async () => {
+    const configBeforeUpdate = getConfig(shop.config)
+
+    const body = {
+      hostname: shop.hostname + '-updated',
+      emailSubject: 'Updated subject'
+    }
+
+    const jason = await apiRequest({
+      method: 'PUT',
+      endpoint: '/shop/config',
+      body,
+      headers: {
+        Authorization: `Bearer ${dataDir}`
+      }
+    })
+    expect(jason.success).to.be.true
+
+    // Reload it and check the shop's DB config got updated.
+    await shop.reload()
+    expect(shop).to.be.an('object')
+    expect(shop.hostname).to.startsWith(body.hostname)
+
+    const config = getConfig(shop.config)
+    expect(config.emailSubject).to.equal(body.emailSubject)
+
+    // Check the admin activity was recorded.
+    const adminLog = await AdminLog.findOne({ order: [['id', 'desc']] })
+    expect(adminLog).to.be.an('object')
+    expect(adminLog.shopId).to.equal(shop.id)
+    expect(adminLog.sellerId).to.equal(1) // Shop was created using super admin with id 1.
+    expect(adminLog.action).to.equal(AdminLogActions.ShopConfigUpdated)
+    expect(adminLog.data).to.be.an('object')
+    expect(adminLog.createdAt).to.be.a('date')
+
+    const oldConfig = getConfig(adminLog.data.oldShop.config)
+    expect(oldConfig).to.be.an('object')
+    expect(oldConfig.emailSubject).to.equal(configBeforeUpdate.emailSubject)
+
+    const diffKeys = adminLog.data.diffKeys
+    const expectedDiffKeys = [
+      'hostname', // because it was directly updated.
+      'hasChanges', // because the shop DB row was updated.
+      'updatedAt', // because the shop DB row was updated
+      'config.dataUrl', // because the hostname was updated
+      'config.emailSubject', // because it was directly updated
+      'config.hostname', // because it was directly updated
+      'config.publicUrl', // because the hostname was updated
+      // Because the updateShopConfig method by default sets these to empty.
+      'config.stripeBackend',
+      'config.stripeWebhookSecret',
+      'config.stripeWebhookHost'
+    ]
+    expect(diffKeys).to.deep.equal(expectedDiffKeys)
   })
 
   it('should deploy a shop', async () => {
