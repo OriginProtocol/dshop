@@ -639,12 +639,13 @@ module.exports = function (router) {
    * TODO:
    *  - record activity in AdminLogs
    */
-  router.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
-    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+  router.post('/shops/:authToken/deploy', authSuperUser, async (req, res) => {
+    const { authToken } = req.params
+    const shop = await Shop.findOne({ where: { authToken } })
     if (!shop) {
       return res.json({ success: false, reason: 'shop-not-found' })
     }
-    const dataDir = req.params.shopId
+    const dataDir = authToken
     const { networkId, pinner, dnsProvider } = req.body
 
     const network = await Network.findOne({ where: { networkId } })
@@ -658,7 +659,7 @@ module.exports = function (router) {
         uuid,
         networkId: networkId ? networkId : network.networkId,
         subdomain: dataDir,
-        shopId: req.params.shopId,
+        shopId: shop.id,
         pinner,
         dnsProvider
       },
@@ -718,8 +719,6 @@ module.exports = function (router) {
 
   router.get(
     '/shop/deployment/:uuid',
-    authSellerAndShop,
-    authRole('admin'),
     async (req, res) => {
       const deploymentResult = await ShopDeployment.findOne({
         where: {
@@ -743,6 +742,7 @@ module.exports = function (router) {
             'ipfsGateway',
             'ipfsHash',
             'status',
+            'error',
             'createdAt',
             'updatedAt'
           )
