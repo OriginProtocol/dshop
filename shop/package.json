@@ -116,7 +116,7 @@
     "babel-loader": "8.1.0",
     "babel-plugin-fbt": "0.15.1",
     "babel-plugin-fbt-runtime": "0.9.12",
-    "bootstrap": "4.5.2",
+    "bootstrap": "4.5.3",
     "clean-webpack-plugin": "3.0.0",
     "css-loader": "4.3.0",
     "eslint": "7.11.0",
