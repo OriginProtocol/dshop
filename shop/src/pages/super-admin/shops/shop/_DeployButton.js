@@ -35,12 +35,23 @@ const AdminDeployShop = ({ className = '', shop, buttonText = 'Deploy' }) => {
                   credentials: 'include'
                 }).then((res) => {
                   res.json().then(({ deployment }) => {
-                    const { status, error, ipfsHash, domain, ipfsGateway } = deployment
+                    const {
+                      status,
+                      error,
+                      ipfsHash,
+                      domain,
+                      ipfsGateway
+                    } = deployment
                     if (status === 'Pending') {
                       console.debug(`Deployment ${uuid} is in progress...`)
                       return
                     } else if (status === 'Success') {
-                      setState({ deployed: true, hash: ipfsHash, domain, gateway: ipfsGateway })
+                      setState({
+                        deployed: true,
+                        hash: ipfsHash,
+                        domain,
+                        gateway: ipfsGateway
+                      })
                     } else {
                       setState({ error: error ? error : 'Deploy failed' })
                     }

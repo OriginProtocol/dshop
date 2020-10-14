@@ -717,39 +717,36 @@ module.exports = function (router) {
     }
   )
 
-  router.get(
-    '/shop/deployment/:uuid',
-    async (req, res) => {
-      const deploymentResult = await ShopDeployment.findOne({
-        where: {
-          uuid: req.params.uuid
-        }
-      })
-
-      if (!deploymentResult) {
-        return res.status(404).json({ success: false })
+  router.get('/shop/deployment/:uuid', async (req, res) => {
+    const deploymentResult = await ShopDeployment.findOne({
+      where: {
+        uuid: req.params.uuid
       }
+    })
 
-      res.json({
-        success: true,
-        deployment: {
-          ...pick(
-            deploymentResult.dataValues,
-            'id',
-            'shopId',
-            'domain',
-            'ipfsPinner',
-            'ipfsGateway',
-            'ipfsHash',
-            'status',
-            'error',
-            'createdAt',
-            'updatedAt'
-          )
-        }
-      })
+    if (!deploymentResult) {
+      return res.status(404).json({ success: false })
     }
-  )
+
+    res.json({
+      success: true,
+      deployment: {
+        ...pick(
+          deploymentResult.dataValues,
+          'id',
+          'shopId',
+          'domain',
+          'ipfsPinner',
+          'ipfsGateway',
+          'ipfsHash',
+          'status',
+          'error',
+          'createdAt',
+          'updatedAt'
+        )
+      }
+    })
+  })
 
   router.get(
     '/shop/deployments',

@@ -29,12 +29,12 @@ const AdminDeployShop = ({
       spinner={true}
       onConfirm={() => {
         return new Promise((resolve, reject) => {
-          post(`/shop/deploy`).then(res => {
+          post(`/shop/deploy`).then((res) => {
             const { success, uuid } = res
             if (success) {
               // Check for the deployment to complete
               const interval = setInterval(() => {
-                get(`/shop/deployment/${uuid}`).then(dres => {
+                get(`/shop/deployment/${uuid}`).then((dres) => {
                   const { deployment } = dres
                   if (deployment && deployment.status === 'Success') {
                     clearInterval(interval)
@@ -43,7 +43,7 @@ const AdminDeployShop = ({
                     console.debug(`Deployment ${uuid} is in progress...`)
                   } else {
                     clearInterval(interval)
-                    reject(new Error(dres.error ? dres.error : 'Deploy failed' ))
+                    reject(new Error(dres.error ? dres.error : 'Deploy failed'))
                   }
                 })
               }, 1000)
