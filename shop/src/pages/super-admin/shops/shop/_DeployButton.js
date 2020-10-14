@@ -25,12 +25,30 @@ const AdminDeployShop = ({ className = '', shop, buttonText = 'Deploy' }) => {
         body: JSON.stringify(pick(state, 'networkId', 'pinner', 'dnsProvider'))
       }).then((res) => {
         if (res.ok) {
-          res.json().then(({ success, reason, hash, domain, gateway }) => {
+          res.json().then(({ success, reason, uuid }) => {
             if (success === false) {
               setState({ error: reason })
             } else {
-              setState({ deployed: true, hash, domain, gateway })
-              dispatch({ type: 'reload', target: 'deployments' })
+              const interval = setInterval(() => {
+                fetch(`${config.backend}/shop/deployment/${uuid}`, {
+                  headers: { 'content-type': 'application/json' },
+                  credentials: 'include'
+                }).then((res) => {
+                  res.json().then(({ deployment }) => {
+                    const { status, error, ipfsHash, domain, ipfsGateway } = deployment
+                    if (status === 'Pending') {
+                      console.debug(`Deployment ${uuid} is in progress...`)
+                      return
+                    } else if (status === 'Success') {
+                      setState({ deployed: true, hash: ipfsHash, domain, gateway: ipfsGateway })
+                    } else {
+                      setState({ error: error ? error : 'Deploy failed' })
+                    }
+                    clearInterval(interval)
+                    dispatch({ type: 'reload', target: 'deployments' })
+                  })
+                })
+              }, 1000)
             }
           })
         }

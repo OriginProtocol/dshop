@@ -10,7 +10,7 @@ const AdminDeployShop = ({
   buttonText,
   afterDeploy
 }) => {
-  const { post } = useBackendApi({ authToken: true })
+  const { get, post } = useBackendApi({ authToken: true })
   const [, dispatch] = useStateValue()
 
   return (
@@ -27,7 +27,30 @@ const AdminDeployShop = ({
       )}
       loadingText={`${fbt('Publishing', 'Publishing')}...`}
       spinner={true}
-      onConfirm={() => post(`/shop/deploy`)}
+      onConfirm={() => {
+        return new Promise((resolve, reject) => {
+          post(`/shop/deploy`).then(res => {
+            const { success, uuid } = res
+            if (success) {
+              // Check for the deployment to complete
+              const interval = setInterval(() => {
+                get(`/shop/deployment/${uuid}`).then(dres => {
+                  const { deployment } = dres
+                  if (deployment && deployment.status === 'Success') {
+                    clearInterval(interval)
+                    resolve(dres)
+                  } else if (deployment && deployment.status === 'Pending') {
+                    console.debug(`Deployment ${uuid} is in progress...`)
+                  } else {
+                    clearInterval(interval)
+                    reject(new Error(dres.error ? dres.error : 'Deploy failed' ))
+                  }
+                })
+              }, 1000)
+            }
+          })
+        })
+      }}
       onSuccess={() => {
         dispatch({ type: 'reload', target: 'deployments' })
         dispatch({ type: 'reload', target: 'shopConfig' })
