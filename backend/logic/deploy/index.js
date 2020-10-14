@@ -69,7 +69,14 @@ function success(obj = {}) {
  * @param pinner {string} - Pinner to use (optional)
  * @returns {object} - deploy() response
  */
-async function deploy({ networkId, shop, subdomain, dnsProvider, pinner, uuid }) {
+async function deploy({
+  networkId,
+  shop,
+  subdomain,
+  dnsProvider,
+  pinner,
+  uuid
+}) {
   assert(!!networkId, 'networkId must be provided to deploy()')
   assert(!!shop, 'shop must be provided to deploy()')
   assert(!!subdomain, 'subdomain must be provided to deploy()')
