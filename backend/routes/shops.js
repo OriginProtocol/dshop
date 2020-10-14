@@ -25,7 +25,6 @@ const {
   authRole,
   authSuperUser
 } = require('./_auth')
-const deploy = require('../logic/deploy')
 const { createSeller } = require('../utils/sellers')
 const { getConfig } = require('../utils/encryptedConfig')
 const { configureShopDNS } = require('../logic/deploy/dns')
