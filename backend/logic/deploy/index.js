@@ -69,7 +69,7 @@ function success(obj = {}) {
  * @param pinner {string} - Pinner to use (optional)
  * @returns {object} - deploy() response
  */
-async function deploy({ networkId, shop, subdomain, dnsProvider, pinner }) {
+async function deploy({ networkId, shop, subdomain, dnsProvider, pinner, uuid }) {
   assert(!!networkId, 'networkId must be provided to deploy()')
   assert(!!shop, 'shop must be provided to deploy()')
   assert(!!subdomain, 'subdomain must be provided to deploy()')
@@ -101,7 +101,7 @@ async function deploy({ networkId, shop, subdomain, dnsProvider, pinner }) {
    * Deployment locking.  No concurrent deployments per shop
    */
   try {
-    deployment = await deploymentLock(shop.id)
+    deployment = await deploymentLock(shop.id, uuid)
   } catch (err) {
     if (err instanceof DuplicateDeploymentError) {
       return error(ERROR_DEPLOYMENT_PENDING)

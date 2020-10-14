@@ -12,7 +12,8 @@ module.exports = (sequelize, DataTypes) => {
       ipfsHash: DataTypes.STRING, // IPFS hash of the deployment.
       bucketUrls: DataTypes.STRING, // Native URLs to buckets, comma separated
       bucketHttpUrls: DataTypes.STRING, // HTTP URLs to buckets, comma separated
-      error: DataTypes.STRING // Optional. Only populated when status is 'Failure'.
+      error: DataTypes.STRING, // Optional. Only populated when status is 'Failure'.
+      uuid: DataTypes.STRING // Optional. A UUID used for reference
     },
     {
       underscored: true,

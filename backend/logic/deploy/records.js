@@ -43,17 +43,20 @@ async function passDeployment(deployment, props) {
  * Create a shop deployment record
  *
  * @param shopId {number} - Shop ID to create a deployment for
+ * @param uuid {string} - A UUID identifier that can be used for later retrieval
  * @param status {ShopDeploymentStatuses} - ShopDeploymentStatuses enum value
  */
 async function createDeployment(
   shopId,
+  uuid,
   status = ShopDeploymentStatuses.Pending
 ) {
   assert(status in ShopDeploymentStatuses, 'Invalid deployment status')
 
   return await ShopDeployment.create({
     shopId,
-    status
+    status,
+    uuid
   })
 }
 
@@ -73,14 +76,30 @@ async function getDeployment(shopId, status = ShopDeploymentStatuses.Pending) {
 }
 
 /**
+ * Get a deployment record by its assigned UUID
+ *
+ * @param shopId {number} - Shop ID to create a deployment for
+ * @param uuid {string} - A UUID identifier that can be used for later retrieval
+ * @param status {ShopDeploymentStatuses} - ShopDeploymentStatuses enum value
+ */
+async function getDeploymentByUUID(uuid) {
+  return await ShopDeployment.findOne({
+    where: {
+      uuid
+    }
+  })
+}
+
+/**
  * Act as a lock for pending deployments.  Return a ShopDeployment if there are
  * no conflicts, or throw a DuplicateDeploymentError if there's a known pending
  * deployment still active and unexpired.
  *
  * @param shopId {number} - Shop ID to create a deployment for
+ * @param uuid {string} - A UUID identifier that can be used for later retrieval
  * @returns {object} - ShopDeployment model instance
  */
-async function deploymentLock(shopId) {
+async function deploymentLock(shopId, uuid) {
   const deployment = await getDeployment(shopId)
 
   if (deployment) {
@@ -104,11 +123,12 @@ async function deploymentLock(shopId) {
     }
   }
 
-  return createDeployment(shopId)
+  return createDeployment(shopId, uuid)
 }
 
 module.exports = {
   getDeployment,
+  getDeploymentByUUID,
   deploymentLock,
   createDeployment,
   passDeployment,

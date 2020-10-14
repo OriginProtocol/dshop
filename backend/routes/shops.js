@@ -7,6 +7,7 @@ const https = require('https')
 const http = require('http')
 const mv = require('mv')
 const dayjs = require('dayjs')
+const uuidv4 = require('uuid').v4
 
 const {
   Seller,
@@ -32,6 +33,7 @@ const { DSHOP_CACHE } = require('../utils/const')
 const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
 const { readProductsFile } = require('../utils/products')
+const { queues } = require('../queues')
 const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
 const { updateShopConfig } = require('../logic/shop/config')
 const { createShop } = require('../logic/shop/create')
@@ -649,26 +651,24 @@ module.exports = function (router) {
     if (!network) {
       return res.json({ success: false, reason: 'no-such-network' })
     }
+    const uuid = uuidv4()
 
-    try {
-      const { success, error, message, hash, domain } = await deploy({
+    await queues.deploymentQueue.add(
+      {
+        uuid,
         networkId: networkId ? networkId : network.networkId,
         subdomain: dataDir,
-        shop,
+        shopId: req.params.shopId,
         pinner,
         dnsProvider
-      })
-
-      if (!success && error) {
-        throw new Error(message)
+      },
+      {
+        jobId: `deployment-${uuid}`,
+        attempts: 1
       }
+    )
 
-      return res.json({ success, hash, domain, gateway: network.ipfs })
-    } catch (e) {
-      log.error(`Shop ${req.shop.id} initial deploy failed`)
-      log.error(e)
-      return res.json({ success: false, reason: e.message })
-    }
+    return res.json({ success: true, uuid })
   })
 
   /**
@@ -697,23 +697,57 @@ module.exports = function (router) {
         return res.json({ success: false, reason: 'no-active-network' })
       }
 
-      try {
-        const { success, error, message, hash, domain } = await deploy({
+      const uuid = uuidv4()
+
+      await queues.deploymentQueue.add(
+        {
+          uuid,
           networkId: networkId ? networkId : network.networkId,
           subdomain: hostname ? hostname : req.shop.hostname,
-          shop: req.shop
-        })
-
-        if (!success && error) {
-          throw new Error(message)
+          shopId: req.shop.id
+        },
+        {
+          jobId: `deployment-${uuid}`,
+          attempts: 1
         }
+      )
 
-        return res.json({ success, hash, domain, gateway: network.ipfs })
-      } catch (e) {
-        log.error(`Shop ${req.shop.id} initial deploy failed`)
-        log.error(e)
-        return res.json({ success: false, reason: e.message })
+      return res.json({ success: true, uuid })
+    }
+  )
+
+  router.get(
+    '/shop/deployment/:uuid',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const deploymentResult = await ShopDeployment.findOne({
+        where: {
+          uuid: req.params.uuid
+        }
+      })
+
+      if (!deploymentResult) {
+        return res.status(404).json({ success: false })
       }
+
+      res.json({
+        success: true,
+        deployment: {
+          ...pick(
+            deploymentResult.dataValues,
+            'id',
+            'shopId',
+            'domain',
+            'ipfsPinner',
+            'ipfsGateway',
+            'ipfsHash',
+            'status',
+            'createdAt',
+            'updatedAt'
+          )
+        }
+      })
     }
   )
 
