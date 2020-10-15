@@ -155,6 +155,7 @@ async function updateShopConfig({ seller, shop, data }) {
     'shippingApi',
     'taxRates',
     'themeId',
+    'theme',
     'gaCode'
   )
   // Pick fields relevant to the network section of the shop's config.json.

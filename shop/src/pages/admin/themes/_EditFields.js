@@ -12,13 +12,13 @@ import { useStateValue } from 'data/state'
 import Link from 'components/Link'
 import SectionsList from './_Section'
 
-const EditFields = ({ shouldBroadcastChanges }) => {
-  const [{ admin, config }, dispatch] = useStateValue()
+const EditFields = () => {
+  const [{ config }, dispatch] = useStateValue()
 
   const { setActiveShop } = useConfig()
   const history = useHistory()
   const [channel, setChannel] = useState()
-  const [changes, setChanges] = useState()
+  const [changes, setChanges] = useState({})
 
   const { post } = useBackendApi({ authToken: true })
 
@@ -33,34 +33,45 @@ const EditFields = ({ shouldBroadcastChanges }) => {
   useEffect(() => {
     // Create a broadcast channel to connect and
     // interact with the iframe
+    if (!activeThemeId) return
+
     const bc = new BroadcastChannel(`${activeThemeId}_preview_channel`)
     setChannel(bc)
-    return () => bc.close()
+
+    let firstUpdateSent = false
+    let timeout
+
+    bc.onmessage = () => {
+      if (firstUpdateSent) {
+        return
+      }
+      firstUpdateSent = true
+
+      // Post saved changes, if any, to the channel
+
+      timeout = setTimeout(() => {
+        broadcastChanges({})
+        bc.postMessage(get(config.theme, activeThemeId))
+      })
+    }
+    
+    return () => {
+      clearTimeout(timeout)
+      bc.close()
+    }
   }, [activeThemeId])
 
-  // useEffect(() => {
-  //   if (shouldBroadcastChanges) {
-  //     setTimeout(() => {
-  //       broadcastChanges(get(config.theme, activeThemeId))
-  //     }, 3000)
-  //   }
-  // }, [shouldBroadcastChanges])
+  const broadcastChanges = (updates) => {
+    const newChanges = {
+      ...get(config.theme, activeThemeId),
+      ...updates
+    }
 
-  const broadcastChanges = (themeConfig) => {
-    dispatch({
-      type: 'setConfigSimple',
-      config: {
-        ...config,
-        theme: {
-          ...config.theme,
-          [activeThemeId]: themeConfig
-        }
-      }
-    })
+    setChanges(newChanges)
 
     if (!channel) return
     try {
-      channel.postMessage(themeConfig)
+      channel.postMessage(newChanges)
     } catch (err) {
       // Failed to post to iframe
       console.warn('Failed to push to iframe', err)
@@ -72,7 +83,11 @@ const EditFields = ({ shouldBroadcastChanges }) => {
       method: 'PUT',
       body: JSON.stringify({
         theme: {
-          ...config.theme
+          ...config.theme,
+          [activeThemeId]: {
+            ...get(config.theme, activeThemeId),
+            ...changes
+          }
         }
       })
     })
@@ -114,7 +129,7 @@ const EditFields = ({ shouldBroadcastChanges }) => {
             <fbt desc="Loading">Loading</fbt>...
           </div>
         ) : (
-          <SectionsList theme={activeTheme} onChange={broadcastChanges} />
+          <SectionsList theme={activeTheme} state={changes} onChange={broadcastChanges} />
         )}
       </div>
     </>

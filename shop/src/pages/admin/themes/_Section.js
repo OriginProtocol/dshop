@@ -64,10 +64,10 @@ const Section = ({ section, state, setState }) => {
   )
 }
 
-const SectionsList = ({ theme, onChange }) => {
-  const [{ config }] = useStateValue()
+const SectionsList = ({ state, theme, onChange }) => {
+  // const [{ config }] = useStateValue()
 
-  const state = get(config, `theme.${config.themeId}`, {})
+  // const state = get(config, `theme.${config.themeId}`, {})
 
   if (!theme) return null
 

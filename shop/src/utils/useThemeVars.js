@@ -7,7 +7,7 @@ const useThemeVars = () => {
   const themeId = get(config, 'themeId')
 
   useEffect(() => {
-    if (window.enableLivePreview) {
+    if (window.enableLivePreview && themeId) {
       // Create a BroadcastChannel to listen to changes
       // to the theme config and update them on the go
       // TODO: Should this channel name be unique to each tab???
@@ -25,6 +25,10 @@ const useThemeVars = () => {
           }
         })
       }
+
+      // Hack: To let the theme editor know that page 
+      // has loaded and data can be sent
+      bc.postMessage({})
 
       return () => bc.close()
     }

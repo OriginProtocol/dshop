@@ -8,8 +8,6 @@ const CustomizeTheme = () => {
 
   const [isMobileMode, setIsMobileMode] = useState(false)
 
-  const [shouldBroadcastChanges, setShouldBroadcaseChanges] = useState(false)
-
   useEffect(() => {
     document.body.style.overflow = 'hidden'
 
@@ -20,7 +18,7 @@ const CustomizeTheme = () => {
   return (
     <div className="customize-theme sidebar-layout">
       <div className="sidebar-container d-flex flex-column">
-        <EditFields shouldBroadcastChanges={shouldBroadcastChanges} />
+        <EditFields />
       </div>
       <div className="main-content-container d-flex flex-column">
         <div className="customize-nav preview">
@@ -36,9 +34,7 @@ const CustomizeTheme = () => {
           style={{
             width: isMobileMode ? '340px' : '100%'
           }} 
-          onLoad={() => {
-            setShouldBroadcaseChanges(true)
-          }} />
+        />
       </div>
     </div>
   )
