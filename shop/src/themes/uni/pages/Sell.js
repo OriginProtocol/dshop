@@ -26,9 +26,8 @@ const Sell = () => {
   const [button, setButton] = useReducer(reducer, initialState)
   const { account, library, activate, desiredNetwork } = useWeb3Manager()
   const { router, chico, weth } = useContracts()
-  const [quantity, setQuantity] = useState(1)
   const [reload, setReload] = useState(1)
-  const [state, setState] = usePrices({ quantity, reload })
+  const [state, setState] = usePrices({ reload })
 
   useEffect(() => {
     if (!account) {
@@ -50,9 +49,6 @@ const Sell = () => {
   const numOwned = Number(state.ownedChico) || 0
   const ownsNone = numOwned <= 0
 
-  const perItem = Number(state.getDAIQ) / quantity
-  const perItemRounded = (Math.ceil(perItem * 100) / 100).toFixed(2)
-
   return (
     <>
       <div className="w-full flex flex-col items-center bg-white rounded-lg p-6 pb-8 text-black mb-6 relative">
@@ -62,7 +58,7 @@ const Sell = () => {
         </div>
         <img style={{ height: 290 }} src={product.imageUrl} />
         <div className="font-bold text-2xl mt-4 flex items-baseline">
-          {`${perItemRounded} USD`}
+          {`${state.getDAIQAvg} USD`}
           <div className="text-gray-600 ml-1 text-lg font-normal">/each</div>
         </div>
         <div className="text-gray-600 text-sm flex">
@@ -73,11 +69,17 @@ const Sell = () => {
             {numOwned <= 1 ? null : (
               <>
                 <div className="text-xl font-bold">Quantity</div>
-                <SelectQuantity {...{ quantity, setQuantity, max: numOwned }} />
+                <SelectQuantity
+                  {...{
+                    quantity: state.quantitySell,
+                    setQuantity: (quantitySell) => setState({ quantitySell }),
+                    max: numOwned
+                  }}
+                />
               </>
             )}
             <div className="text-xl font-bold">Token to receive</div>
-            <SelectToken {...{ state, setState }} />
+            <SelectToken {...{ state, setState }} field="getUSDQ" />
           </div>
         )}
         {!button.disabled ? null : (
@@ -96,7 +98,7 @@ const Sell = () => {
           }
 
           const signer = library.getSigner()
-          const chicoBN = ethers.utils.parseEther(String(quantity))
+          const chicoBN = ethers.utils.parseEther(String(state.quantitySell))
 
           const approved = await chico.allowance(account, router.address)
           if (approved.lt(chicoBN)) {
@@ -125,13 +127,19 @@ const Sell = () => {
             if (state.token === 'ETH') {
               swapTx = await router
                 .connect(signer)
-                .swapExactTokensForETH(chicoBN, '0', path, account, deadline)
+                .swapExactTokensForETH(
+                  chicoBN,
+                  state.getUSDQO,
+                  path,
+                  account,
+                  deadline
+                )
             } else {
               swapTx = await router
                 .connect(signer)
                 .swapExactTokensForTokens(
                   chicoBN,
-                  chicoBN,
+                  state.getUSDQO,
                   path,
                   account,
                   deadline

@@ -25,9 +25,8 @@ const Buy = () => {
   const history = useHistory()
   const { router, chico, weth } = useContracts()
   const { account, library, desiredNetwork, activate } = useWeb3Manager()
-  const [quantity, setQuantity] = useState(1)
   const [reload, setReload] = useState(1)
-  const [state, setState] = usePrices({ quantity, reload })
+  const [state, setState] = usePrices({ reload })
 
   useEffect(() => {
     if (!account) {
@@ -48,22 +47,24 @@ const Buy = () => {
     return null
   }
 
-  const perItem = Number(state.priceDAIQ) / quantity
-  const perItemRounded = (Math.ceil(perItem * 100) / 100).toFixed(2)
-
   return (
     <>
       <div className="w-full flex flex-col items-center bg-white rounded-lg p-6 pb-8 text-black mb-6 relative">
         <Title back="/">Buy</Title>
         <img style={{ height: 290 }} src={product.imageUrl} />
         <div className="font-bold text-2xl mt-4 flex items-baseline">
-          {`${perItemRounded} USD`}
+          {`${state.priceDAIAvg} USD`}
           <div className="text-gray-600 ml-1 text-lg font-normal">/each</div>
         </div>
         <div className="text-gray-600 text-sm">{`${state.availableChico}/${state.totalChico} available`}</div>
         <div className="grid grid-cols-2 w-full mt-6 items-center gap-y-4">
           <div className="text-xl font-bold">Quantity</div>
-          <SelectQuantity {...{ quantity, setQuantity }} />
+          <SelectQuantity
+            {...{
+              quantity: state.quantityBuy,
+              setQuantity: (quantityBuy) => setState({ quantityBuy })
+            }}
+          />
           <div className="text-xl font-bold">Payment method</div>
           <SelectToken {...{ state, setState }} />
         </div>
@@ -83,12 +84,12 @@ const Buy = () => {
               .connect(signer)
               .allowance(account, router.address)
 
-            if (approved.lt(state.priceUSDBN)) {
+            if (approved.lt(state.priceUSDQO)) {
               try {
                 setButton({ loading: `Approve ${state.token}...` })
                 const approveTx = await state.tokenContract
                   .connect(signer)
-                  .approve(router.address, state.priceUSDA)
+                  .approve(router.address, state.priceUSDQO)
                 setButton({ loading: `Awaiting transaction...` })
                 await approveTx.wait()
               } catch (e) {
@@ -105,18 +106,18 @@ const Buy = () => {
               swapTx = await router
                 .connect(signer)
                 .swapETHForExactTokens(
-                  ethers.utils.parseEther(String(quantity)),
+                  ethers.utils.parseEther(String(state.quantityBuy)),
                   [weth.address, chico.address],
                   account,
                   Math.round(new Date() / 1000) + 60 * 60 * 24,
-                  { value: state.priceUSDA, gasLimit: '2000000' }
+                  { value: state.priceUSDQO, gasLimit: '2000000' }
                 )
             } else {
               swapTx = await router
                 .connect(signer)
                 .swapTokensForExactTokens(
-                  ethers.utils.parseEther(String(quantity)),
-                  ethers.utils.parseEther('1000'),
+                  ethers.utils.parseEther(String(state.quantityBuy)),
+                  state.priceUSDQO,
                   [state.tokenContract.address, weth.address, chico.address],
                   account,
                   Math.round(new Date() / 1000) + 60 * 60 * 24

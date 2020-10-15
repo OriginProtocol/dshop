@@ -77,7 +77,7 @@ export function useWeb3Manager() {
     if (!active || chainId !== defaultChainId) {
       networkWeb3React.activate(networkConnector)
     }
-  }, [active, chainId])
+  }, [tried, active, chainId])
 
   const ret = pick(injectedWeb3React, allFields)
   ret.activate = () => injectedWeb3React.activate(injectedConnector)
@@ -118,11 +118,12 @@ const tokens = [
   { symbol: 'ETH', address: Addresses.weth }
 ]
 
-export function usePrices({ quantity = 1, reload }) {
+export function usePrices({ reload }) {
   const { account, connector, active, library } = useWeb3Manager()
   const { pair, router, chico, weth, dai } = useContracts()
 
   const [state, setState] = useReducer(reducer, {
+    loading: false,
     tokens,
     token: 'ETH',
     tokenContract: weth,
@@ -133,6 +134,8 @@ export function usePrices({ quantity = 1, reload }) {
     availableChico: '',
     totalChico: '',
     ownedChico: '0',
+    quantityBuy: 1,
+    quantitySell: 1,
     ethBalance: ethers.BigNumber.from(0),
     tokenBalance: ethers.BigNumber.from(0),
     tokenAllowance: ethers.BigNumber.from(0)
@@ -152,12 +155,15 @@ export function usePrices({ quantity = 1, reload }) {
 
   useEffect(() => {
     if (!connector || !active || !router || !state.tokenContract) return
+    let stale
+    const isLoading = {}
 
     const path = [weth.address, chico.address]
     if (state.token !== 'ETH') {
       path.unshift(state.tokenContract.address)
     }
 
+    isLoading.priceDAI = true
     router
       .getAmountsIn(ethers.utils.parseEther('1'), [
         dai.address,
@@ -165,115 +171,172 @@ export function usePrices({ quantity = 1, reload }) {
         chico.address
       ])
       .then((quote) => {
+        if (stale) return
         const priceDAI = ethers.utils.formatEther(quote[0])
-        setState({ priceDAI: priceDAI.replace(/^([0-9]+\.[0-9]{2}).*/, '$1') })
+        delete isLoading.priceDAI
+        setState({
+          priceDAI: priceDAI.replace(/^([0-9]+\.[0-9]{2}).*/, '$1'),
+          loading: Object.keys(isLoading).length > 0
+        })
       })
 
+    isLoading.priceUSD = true
     router.getAmountsIn(ethers.utils.parseEther('1'), path).then((quote) => {
+      if (stale) return
       const priceUSD = ethers.utils.formatEther(quote[0])
-      setState({ priceUSD: priceUSD.replace(/^([0-9]+\.[0-9]{2}).*/, '$1') })
+      delete isLoading.priceUSD
+      setState({
+        priceUSD: priceUSD.replace(/^([0-9]+\.[0-9]{2}).*/, '$1'),
+        loading: Object.keys(isLoading).length > 0
+      })
     })
 
+    isLoading.totalChico = true
     chico.totalSupply().then((supply) => {
+      if (stale) return
       const totalChico = ethers.utils.formatEther(supply)
-      setState({ totalChico: totalChico.replace(/^([0-9]+)\..*/, '$1') })
+      delete isLoading.totalChico
+      setState({
+        totalChico: totalChico.replace(/^([0-9]+)\..*/, '$1'),
+        loading: Object.keys(isLoading).length > 0
+      })
     })
 
     if (account) {
+      isLoading.ethBalance = true
       library.getBalance(account).then((ethBalance) => {
+        if (stale) return
+        delete isLoading.ethBalance
         if (state.token === 'ETH') {
           setState({
             ethBalance,
             tokenBalance: ethBalance,
-            tokenAllowance: ethBalance
+            tokenAllowance: ethBalance,
+            loading: Object.keys(isLoading).length > 0
           })
         } else {
-          setState({ ethBalance })
+          setState({ ethBalance, loading: Object.keys(isLoading).length > 0 })
         }
       })
 
+      isLoading.ownedChico = true
       chico.balanceOf(account).then((balance) => {
+        if (stale) return
         const ownedChico = ethers.utils.formatEther(balance)
-        setState({ ownedChico: ownedChico.replace(/^([0-9]+)\..*/, '$1') })
+        delete isLoading.ownedChico
+        setState({
+          ownedChico: ownedChico.replace(/^([0-9]+)\..*/, '$1'),
+          loading: Object.keys(isLoading).length > 0
+        })
       })
 
       if (state.token !== 'ETH') {
+        isLoading.tokenAllowance = true
         state.tokenContract
           .allowance(account, router.address)
           .then((tokenAllowance) => {
-            setState({ tokenAllowance })
+            if (stale) return
+            delete isLoading.tokenAllowance
+            setState({
+              tokenAllowance,
+              loading: Object.keys(isLoading).length > 0
+            })
           })
+
+        isLoading.tokenBalance = true
         state.tokenContract.balanceOf(account).then((tokenBalance) => {
-          setState({ tokenBalance })
+          if (stale) return
+          delete isLoading.tokenBalance
+          setState({ tokenBalance, loading: Object.keys(isLoading).length > 0 })
         })
       }
     }
 
+    isLoading.availableChico = true
     pair.getReserves().then((reserves) => {
+      if (stale) return
       const token1 = ethers.BigNumber.from(weth.address)
       const token2 = ethers.BigNumber.from(chico.address)
       const reserve = token1.gt(token2) ? reserves[0] : reserves[1]
       const availableChico = ethers.utils.formatEther(reserve)
+      delete isLoading.availableChico
       setState({
-        availableChico: availableChico.replace(/^([0-9]+)\..*/, '$1')
+        availableChico: availableChico.replace(/^([0-9]+)\..*/, '$1'),
+        loading: Object.keys(isLoading).length > 0
       })
     })
+
+    return () => (stale = true)
   }, [reload, account, active, router, state.tokenContract])
 
   useEffect(() => {
     if (!connector || !router || !state.tokenContract) return
     const path = [weth.address, chico.address]
-    const pathR = [chico.address, weth.address]
     if (state.token !== 'ETH') {
       path.unshift(state.tokenContract.address)
-      pathR.push(state.tokenContract.address)
     }
     router
-      .getAmountsIn(ethers.utils.parseEther(String(quantity)), path)
+      .getAmountsIn(ethers.utils.parseEther(String(state.quantityBuy)), path)
       .then((quote) => {
         const priceUSDQ = ethers.utils.formatEther(quote[0])
         setState({
+          priceUSDQO: quote[0],
           priceUSDQ: priceUSDQ.replace(/^([0-9]+\.[0-9]{5}).*/, '$1'),
+          priceUSDQBN: priceUSDQ,
           priceUSDBN: quote[0].mul(101).div(100),
           priceUSDA: quote[0].mul(101).div(100).toString()
         })
       })
 
     router
-      .getAmountsIn(ethers.utils.parseEther(String(quantity)), [
+      .getAmountsIn(ethers.utils.parseEther(String(state.quantityBuy)), [
         dai.address,
         weth.address,
         chico.address
       ])
       .then((quote) => {
-        const priceDAIQ = ethers.utils.formatEther(quote[0])
-        setState({
-          priceDAIQ: priceDAIQ.replace(/^([0-9]+\.[0-9]{2}).*/, '$1')
-        })
+        const rawPriceDAIQ = ethers.utils.formatEther(quote[0])
+        const priceDAIQ = rawPriceDAIQ.replace(/^([0-9]+\.[0-9]{2}).*/, '$1')
+        const perItem = Number(priceDAIQ) / state.quantityBuy
+        const priceDAIAvg = (Math.ceil(perItem * 100) / 100).toFixed(2)
+
+        setState({ priceDAIQ, priceDAIAvg })
       })
+  }, [state.quantityBuy, reload, account, router, state.tokenContract])
+
+  useEffect(() => {
+    if (!connector || !router || !state.tokenContract) return
+    const pathR = [chico.address, weth.address]
+    if (state.token !== 'ETH') {
+      pathR.push(state.tokenContract.address)
+    }
 
     router
-      .getAmountsOut(ethers.utils.parseEther(String(quantity)), pathR)
+      .getAmountsOut(ethers.utils.parseEther(String(state.quantitySell)), pathR)
       .then((quote) => {
         const getUSDQ = ethers.utils.formatEther(quote[pathR.length - 1])
         setState({
-          getUSDQ: getUSDQ.replace(/^([0-9]+\.[0-9]{5}).*/, '$1')
+          getUSDQ: getUSDQ.replace(/^([0-9]+\.[0-9]{5}).*/, '$1'),
+          getUSDQO: getUSDQ
         })
       })
 
     router
-      .getAmountsOut(ethers.utils.parseEther(String(quantity)), [
+      .getAmountsOut(ethers.utils.parseEther(String(state.quantitySell)), [
         chico.address,
         weth.address,
         dai.address
       ])
       .then((quote) => {
-        const getDAIQ = ethers.utils.formatEther(quote[2])
-        setState({
-          getDAIQ: getDAIQ.replace(/^([0-9]+\.[0-9]{2}).*/, '$1')
-        })
+        const rawGetDAIQ = ethers.utils.formatEther(quote[2])
+        const getDAIQ = rawGetDAIQ.replace(/^([0-9]+\.[0-9]{2}).*/, '$1')
+
+        const perItem = Number(getDAIQ) / state.quantitySell
+        const getDAIQAvg = (Math.ceil(perItem * 100) / 100).toFixed(2)
+
+        setState({ getDAIQ, getDAIQAvg })
       })
-  }, [quantity, reload, account, router, state.tokenContract])
+  }, [state.quantitySell, reload, account, router, state.tokenContract])
 
   // console.log(state)
 

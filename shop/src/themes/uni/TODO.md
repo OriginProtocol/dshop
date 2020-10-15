@@ -1,14 +1,15 @@
 # TODO
 
+- Loading state when provider is slow
 - TX completion reliability (assume bad provider)
 - Connect wallet popup
 - Contract addresses from config
 - Network ID in header
 
+- Etherscan links
+- Speed up TX
 - Mint tokens in Beta
 - Multi net support
-- Speed up TX
-- Etherscan links
 - Order status
 
 - Purchase with CC? (Auto-redeem)

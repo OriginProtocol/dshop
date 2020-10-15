@@ -2,7 +2,7 @@ import React from 'react'
 
 import Select from './Select'
 
-const SelectToken = ({ state, setState }) => {
+const SelectToken = ({ state, setState, field = 'priceUSDQ' }) => {
   return (
     <Select>
       <select
@@ -13,7 +13,7 @@ const SelectToken = ({ state, setState }) => {
       >
         {state.tokens.map(({ symbol }) => (
           <option key={symbol} value={symbol}>{`${
-            state.token === symbol ? state.priceUSDQ : ''
+            state.token === symbol ? state[field] : ''
           } ${symbol}`}</option>
         ))}
       </select>

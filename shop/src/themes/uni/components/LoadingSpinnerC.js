@@ -1,5 +1,8 @@
 import React from 'react'
 
+// http://xahlee.info/js/svg_circle_arc.html
+// https://stackoverflow.com/questions/30147879/how-to-draw-a-linear-gradient-circle-by-svg
+
 const LoadingSpinnerC = (props) => {
   return (
     <svg width="50" height="50" viewBox="0 0 110 110" {...props}>
@@ -14,13 +17,13 @@ const LoadingSpinnerC = (props) => {
       </linearGradient>
       <g>
         <path
-          d=" M 105 55 A 50 50 0 0 1 5 55"
+          d="M 105 55 A 50 50 0 0 1 5 55"
           fill="none"
           stroke="url(#linearColors1)"
           strokeWidth="10"
         />
         <path
-          d=" M 5 55 A 50 50 180 0 1 105 55"
+          d="M 5 55 A 50 50 180 0 1 105 55"
           fill="none"
           stroke="url(#linearColors2)"
           strokeWidth="10"
