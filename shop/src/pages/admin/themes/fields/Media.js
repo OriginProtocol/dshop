@@ -1,5 +1,4 @@
 import React from 'react'
-import fbt from 'fbt'
 
 import ImagePicker from './_ImagePicker'
 

@@ -4,7 +4,7 @@ import { useStateValue } from 'data/state'
 import EditFields from './_EditFields'
 
 const CustomizeTheme = () => {
-  const [{ admin, config }] = useStateValue()
+  const [{ config }] = useStateValue()
 
   const [isMobileMode, setIsMobileMode] = useState(false)
 

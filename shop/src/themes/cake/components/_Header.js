@@ -3,7 +3,6 @@ import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
-import useConfig from 'utils/useConfig'
 import useCollections from 'utils/useCollections'
 import useThemeVars from 'utils/useThemeVars'
 
@@ -26,7 +25,6 @@ const Header = ({ bg }) => {
   const history = useHistory()
   const [mobileMenu, showMobileMenu] = useState(false)
   const [{ cart }] = useStateValue()
-  const { config } = useConfig()
   const { collections } = useCollections()
   const themeVars = useThemeVars()
 

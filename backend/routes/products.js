@@ -1,6 +1,5 @@
 const { authSellerAndShop, authRole } = require('./_auth')
 const { upsertProduct, deleteProduct } = require('../utils/products')
-const { getLogger } = require('../utils/logger')
 
 const uploadFiles = require('../logic/shop/upload')
 

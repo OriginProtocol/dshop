@@ -1,8 +1,7 @@
-import React, { useReducer, useState } from 'react'
+import React, { useState } from 'react'
 import fbt from 'fbt'
 import get from 'lodash/get'
 
-import { useStateValue } from 'data/state'
 import TextField from './fields/Text'
 import MediaField from './fields/Media'
 import ProductsList from './fields/ProductsList'
@@ -65,10 +64,6 @@ const Section = ({ section, state, setState }) => {
 }
 
 const SectionsList = ({ state, theme, onChange }) => {
-  // const [{ config }] = useStateValue()
-
-  // const state = get(config, `theme.${config.themeId}`, {})
-
   if (!theme) return null
 
   if (!theme.config || !theme.config.length) {

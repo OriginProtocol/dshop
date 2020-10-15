@@ -9,7 +9,7 @@ try {
   console.log('Is ENVKEY missing?')
 }
 
-const { TEST_DSHOP_CACHE } = require('../test/const')
+const { TEST_DSHOP_CACHE, TEST_THEMES_CACHE } = require('../test/const')
 
 const NETWORK_NAME_TO_ID = {
   localhost: 999,

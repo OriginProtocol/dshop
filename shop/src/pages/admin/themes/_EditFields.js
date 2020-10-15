@@ -1,7 +1,6 @@
-import React, { useEffect, useReducer, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
-import pick from 'lodash/pick'
 import fbt from 'fbt'
 
 import useBackendApi from 'utils/useBackendApi'
