@@ -24,11 +24,20 @@ const Storefront = () => {
         style={{ width: 480 }}
       >
         <Switch>
+          <Route path="/buy/confirmation">
+            <Confirmation buy />
+          </Route>
           <Route path="/buy" component={Buy} />
+          <Route path="/sell/confirmation">
+            <Confirmation sell />
+          </Route>
           <Route path="/sell" component={Sell} />
+          <Route path="/redeem/confirmation">
+            <Confirmation redeem />
+          </Route>
           <Route path="/redeem" component={Redeem} />
+
           <Route path="/checkout" component={Checkout} />
-          <Route path="/confirmation" component={Confirmation} />
           <Route path="/connection" component={Connection} />
           <Route path="/stats" component={Stats} />
           <Route path="/about" component={About} />

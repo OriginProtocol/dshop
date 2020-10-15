@@ -1,7 +1,5 @@
 import React from 'react'
 
-import Loading from './LoadingSpinner'
-
 const ButtonPrimary = ({
   loading,
   disabled,
@@ -13,13 +11,16 @@ const ButtonPrimary = ({
   return (
     <>
       <button
-        className={`btn btn-primary${disabled ? ' disabled' : ''}`}
+        className={`btn btn-primary${
+          disabled || loading ? ' disabled opacity-50 pointer-events-none' : ''
+        }`}
         onClick={() => {
           if (disabled || loading) return
-          onClickOverride ? onClickOverride() : onClick()
+          if (onClickOverride || onClick) {
+            onClickOverride ? onClickOverride() : onClick()
+          }
         }}
       >
-        {loading ? <Loading className="mr-2" /> : null}
         {text}
       </button>
       {!error ? null : (

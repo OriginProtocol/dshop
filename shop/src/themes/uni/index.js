@@ -4,8 +4,6 @@ import { HashRouter, Switch, Route } from 'react-router-dom'
 import { Web3ReactProvider, createWeb3ReactRoot } from '@web3-react/core'
 import { Web3Provider } from '@ethersproject/providers'
 
-import { useEagerConnect } from './utils'
-
 import './app.css'
 
 import DshopProvider from 'components/DshopProvider'
@@ -22,28 +20,21 @@ function getLibrary(provider) {
   return library
 }
 
-const Activate = ({ children }) => {
-  useEagerConnect()
-  return children
-}
-
 const Providers = () => {
   return (
     <HashRouter>
       <Web3ReactProvider getLibrary={getLibrary}>
         <Web3ReactNetworkProvider getLibrary={getLibrary}>
-          <Activate>
-            <DshopProvider>
-              <PreviewBanner
-                wrapperClassName="text-sm py-2 bg-white text-black"
-                className="container flex justify-between"
-              />
-              <Switch>
-                <Route path="/order" component={Confirmation} />
-                <Route component={Storefront} />
-              </Switch>
-            </DshopProvider>
-          </Activate>
+          <DshopProvider>
+            <PreviewBanner
+              wrapperClassName="text-sm py-2 bg-white text-black"
+              className="container flex justify-between"
+            />
+            <Switch>
+              <Route path="/order" component={Confirmation} />
+              <Route component={Storefront} />
+            </Switch>
+          </DshopProvider>
         </Web3ReactNetworkProvider>
       </Web3ReactProvider>
     </HashRouter>

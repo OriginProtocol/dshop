@@ -1,13 +1,16 @@
 import React, { useState, useReducer, useEffect } from 'react'
+import { useHistory } from 'react-router-dom'
 import ethers from 'ethers'
 
 import BackLink from '../components/BackLink'
 import { usePrices, useContracts, useWeb3Manager } from '../utils'
 import useSingleProduct from 'utils/useSingleProduct'
+import useConfig from 'utils/useConfig'
 
 import SelectQuantity from '../components/SelectQuantity'
 import SelectToken from '../components/SelectToken'
 import ButtonPrimary from '../components/ButtonPrimary'
+import Overlay from '../components/Overlay'
 
 const initialState = {
   text: 'Sell',
@@ -18,6 +21,8 @@ const initialState = {
 const reducer = (state, newState = {}) => ({ ...initialState, ...newState })
 
 const Sell = () => {
+  const { config } = useConfig()
+  const history = useHistory()
   const [button, setButton] = useReducer(reducer, initialState)
   const { account, library, activate, desiredNetwork } = useWeb3Manager()
   const { router, chico, weth } = useContracts()
@@ -29,9 +34,9 @@ const Sell = () => {
     if (!account) {
       setButton({ text: `Connect a Web3 Wallet`, onClickOverride: activate })
     } else if (desiredNetwork) {
-      setButton({ text: `Connect wallet to ${desiredNetwork}`, disabled: true })
+      setButton({ disabled: `Connect wallet to ${desiredNetwork}` })
     } else if (state.ethBalance.lt(ethers.utils.parseEther('0.00001'))) {
-      setButton({ text: 'Not Enough ETH to Pay Gas', disabled: true })
+      setButton({ disabled: 'Not Enough ETH to Pay Gas' })
     } else {
       setButton()
     }
@@ -45,15 +50,24 @@ const Sell = () => {
   const numOwned = Number(state.ownedChico) || 0
   const ownsNone = numOwned <= 0
 
+  const perItem = Number(state.getDAIQ) / quantity
+  const perItemRounded = (Math.ceil(perItem * 100) / 100).toFixed(2)
+
   return (
     <>
-      <div className="w-full flex flex-col items-center bg-white rounded-lg p-6 pb-8 text-black mb-6">
+      <div className="w-full flex flex-col items-center bg-white rounded-lg p-6 pb-8 text-black mb-6 relative">
         <div className="grid grid-cols-3 mb-4 w-full items-center">
           <BackLink to="/" />
           <div className="font-bold text-xl text-center">Sell</div>
         </div>
         <img style={{ height: 290 }} src={product.imageUrl} />
-        <div className="font-bold text-2xl mt-4">{`You own ${state.ownedChico}`}</div>
+        <div className="font-bold text-2xl mt-4 flex items-baseline">
+          {`${perItemRounded} USD`}
+          <div className="text-gray-600 ml-1 text-lg font-normal">/each</div>
+        </div>
+        <div className="text-gray-600 text-sm flex">
+          {`You own ${state.ownedChico}`}
+        </div>
         {ownsNone ? null : (
           <div className="grid grid-cols-2 w-full mt-6 items-center gap-y-4">
             {numOwned <= 1 ? null : (
@@ -62,24 +76,16 @@ const Sell = () => {
                 <SelectQuantity {...{ quantity, setQuantity, max: numOwned }} />
               </>
             )}
-
             <div className="text-xl font-bold">Token to receive</div>
             <SelectToken {...{ state, setState }} />
-            {quantity <= 1 ? null : (
-              <>
-                <div />
-                <div
-                  className="text-gray-600 text-sm"
-                  style={{ marginTop: -10, paddingLeft: 18 }}
-                >
-                  {`${
-                    Math.ceil((Number(state.getDAIQ) / quantity) * 100) / 100
-                  } USD per item`}
-                </div>
-              </>
-            )}
           </div>
         )}
+        {!button.disabled ? null : (
+          <div className="text-lg mt-6 font-bold text-red-600">
+            {button.disabled}
+          </div>
+        )}
+        {!button.loading ? null : <Overlay>{button.loading}</Overlay>}
       </div>
 
       <ButtonPrimary
@@ -90,25 +96,28 @@ const Sell = () => {
           }
 
           const signer = library.getSigner()
+          const chicoBN = ethers.utils.parseEther(String(quantity))
 
-          try {
-            setButton({ text: 'Approve CHICO...', loading: true })
-            const approveTx = await chico
-              .connect(signer)
-              .approve(
-                router.address,
-                ethers.utils.parseEther(String(quantity))
-              )
-            setButton({ text: 'Awaiting transaction...', loading: true })
-            await approveTx.wait()
-          } catch (e) {
-            setButton({ error: e.message.toString() })
-            return
+          const approved = await chico.allowance(account, router.address)
+          if (approved.lt(chicoBN)) {
+            try {
+              setButton({ loading: `Approve ${config.coin}...` })
+              const approveTx = await chico
+                .connect(signer)
+                .approve(router.address, chicoBN)
+              setButton({ loading: 'Awaiting transaction...' })
+              await approveTx.wait()
+            } catch (e) {
+              setButton({ error: e.message.toString() })
+              return
+            }
           }
 
           try {
-            setButton({ text: 'Approve sale...', loading: true })
+            setButton({ loading: 'Approve sale...' })
             const path = [chico.address, weth.address]
+            const deadline = Math.round(new Date() / 1000) + 60 * 60 * 24
+
             if (state.token !== 'ETH') {
               path.push(state.tokenContract.address)
             }
@@ -116,30 +125,24 @@ const Sell = () => {
             if (state.token === 'ETH') {
               swapTx = await router
                 .connect(signer)
-                .swapExactTokensForETH(
-                  ethers.utils.parseEther(String(quantity)),
-                  '0',
-                  path,
-                  account,
-                  Math.round(new Date() / 1000) + 60 * 60 * 24
-                )
+                .swapExactTokensForETH(chicoBN, '0', path, account, deadline)
             } else {
               swapTx = await router
                 .connect(signer)
                 .swapExactTokensForTokens(
-                  ethers.utils.parseEther(String(quantity)),
-                  ethers.utils.parseEther(String(quantity)),
+                  chicoBN,
+                  chicoBN,
                   path,
                   account,
-                  Math.round(new Date() / 1000) + 60 * 60 * 24
+                  deadline
                 )
             }
-            setButton({ text: 'Awaiting transaction...', loading: true })
+            setButton({ loading: 'Awaiting transaction...' })
             await swapTx.wait()
             setReload(reload + 1)
+            history.push('/sell/confirmation')
           } catch (e) {
             setButton({ error: e.message.toString() })
-            return
           }
         }}
       />

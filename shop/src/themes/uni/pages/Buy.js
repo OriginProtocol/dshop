@@ -9,6 +9,7 @@ import useSingleProduct from 'utils/useSingleProduct'
 import SelectToken from '../components/SelectToken'
 import SelectQuantity from '../components/SelectQuantity'
 import ButtonPrimary from '../components/ButtonPrimary'
+import Overlay from '../components/Overlay'
 
 const initialState = {
   text: 'Place Order',
@@ -32,11 +33,11 @@ const Buy = () => {
     if (!account) {
       setButton({ text: `Connect a Web3 Wallet`, onClickOverride: activate })
     } else if (desiredNetwork) {
-      setButton({ text: `Connect wallet to ${desiredNetwork}`, disabled: true })
+      setButton({ disabled: `Connect wallet to ${desiredNetwork}` })
     } else if (state.ethBalance.lt(ethers.utils.parseEther('0.00001'))) {
-      setButton({ text: 'Not Enough ETH to Pay Gas', disabled: true })
+      setButton({ disabled: 'Not Enough ETH to Pay Gas' })
     } else if (state.tokenBalance.lt(state.priceUSDBN)) {
-      setButton({ text: `Not Enough ${state.token} Balance`, disabled: true })
+      setButton({ disabled: `Not Enough ${state.token} Balance` })
     } else {
       setButton()
     }
@@ -47,34 +48,31 @@ const Buy = () => {
     return null
   }
 
+  const perItem = Number(state.priceDAIQ) / quantity
+  const perItemRounded = (Math.ceil(perItem * 100) / 100).toFixed(2)
+
   return (
     <>
-      <div className="w-full flex flex-col items-center bg-white rounded-lg p-6 pb-8 text-black mb-6">
+      <div className="w-full flex flex-col items-center bg-white rounded-lg p-6 pb-8 text-black mb-6 relative">
         <Title back="/">Buy</Title>
         <img style={{ height: 290 }} src={product.imageUrl} />
-        <div className="font-bold text-2xl mt-4">{`${state.priceDAI} USD`}</div>
+        <div className="font-bold text-2xl mt-4 flex items-baseline">
+          {`${perItemRounded} USD`}
+          <div className="text-gray-600 ml-1 text-lg font-normal">/each</div>
+        </div>
         <div className="text-gray-600 text-sm">{`${state.availableChico}/${state.totalChico} available`}</div>
         <div className="grid grid-cols-2 w-full mt-6 items-center gap-y-4">
           <div className="text-xl font-bold">Quantity</div>
           <SelectQuantity {...{ quantity, setQuantity }} />
-
           <div className="text-xl font-bold">Payment method</div>
           <SelectToken {...{ state, setState }} />
-          {quantity <= 1 ? null : (
-            <>
-              <div />
-              <div
-                className="text-gray-600 text-sm"
-                style={{ marginTop: -10, paddingLeft: 18 }}
-              >
-                {`${
-                  Math.ceil((Number(state.priceDAIQ) / quantity) * 10000) /
-                  10000
-                } USD per item`}
-              </div>
-            </>
-          )}
         </div>
+        {!button.disabled ? null : (
+          <div className="text-lg mt-6 font-bold text-red-600">
+            {button.disabled}
+          </div>
+        )}
+        {!button.loading ? null : <Overlay>{button.loading}</Overlay>}
       </div>
       <ButtonPrimary
         {...button}
@@ -87,11 +85,11 @@ const Buy = () => {
 
             if (approved.lt(state.priceUSDBN)) {
               try {
-                setButton({ text: `Approve ${state.token}...`, loading: true })
+                setButton({ loading: `Approve ${state.token}...` })
                 const approveTx = await state.tokenContract
                   .connect(signer)
                   .approve(router.address, state.priceUSDA)
-                setButton({ text: `Awaiting transaction...`, loading: true })
+                setButton({ loading: `Awaiting transaction...` })
                 await approveTx.wait()
               } catch (e) {
                 setButton({ error: e.message.toString() })
@@ -101,7 +99,7 @@ const Buy = () => {
           }
 
           try {
-            setButton({ text: `Approve purchase...`, loading: true })
+            setButton({ loading: `Approve purchase...` })
             let swapTx
             if (state.token === 'ETH') {
               swapTx = await router
@@ -124,14 +122,14 @@ const Buy = () => {
                   Math.round(new Date() / 1000) + 60 * 60 * 24
                 )
             }
-            setButton({ text: `Awaiting transaction...`, loading: true })
+            setButton({ loading: `Awaiting transaction...` })
             await swapTx.wait()
           } catch (e) {
             setButton({ error: e.message.toString() })
             return
           }
           setReload(reload + 1)
-          history.push('/')
+          history.push('/buy/confirmation')
         }}
       />
     </>

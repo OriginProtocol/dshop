@@ -2,6 +2,7 @@ import { useEffect, useState, useReducer } from 'react'
 import { useWeb3React } from '@web3-react/core'
 import { InjectedConnector } from '@web3-react/injected-connector'
 import { NetworkConnector } from '@web3-react/network-connector'
+// import { WalletConnectConnector } from '@web3-react/walletconnect-connector'
 import ethers from 'ethers'
 import memoize from 'lodash/memoize'
 import pick from 'lodash/pick'
@@ -68,10 +69,11 @@ const activeFields = ['connector', 'library', 'active', 'chainId']
 export function useWeb3Manager() {
   const injectedWeb3React = useWeb3React()
   const networkWeb3React = useWeb3React('network')
-
+  const tried = useEagerConnect()
   const { active, chainId } = injectedWeb3React
 
   useEffect(() => {
+    if (!tried) return
     if (!active || chainId !== defaultChainId) {
       networkWeb3React.activate(networkConnector)
     }
@@ -79,12 +81,18 @@ export function useWeb3Manager() {
 
   const ret = pick(injectedWeb3React, allFields)
   ret.activate = () => injectedWeb3React.activate(injectedConnector)
+  // ret.activate = () => injectedWeb3React.activate(walletConnectConnector)
 
   if (!active || chainId !== defaultChainId) {
     assign(ret, pick(networkWeb3React, activeFields))
     ret.isNetwork = true
     if (chainId !== defaultChainId) {
-      ret.desiredNetwork = `Chain ID ${defaultChainId}`
+      ret.desiredNetwork =
+        defaultChainId === 1
+          ? 'Mainnet'
+          : defaultChainId === 4
+          ? 'Rinkeby'
+          : `Chain ID ${defaultChainId}`
     }
   }
 
@@ -96,7 +104,9 @@ export function useContracts() {
   const [contracts, setContracts] = useState({})
   useEffect(() => {
     if (chainId === defaultChainId) {
-      getContracts(library).then(setContracts)
+      getContracts(library)
+        .then(setContracts)
+        .catch(() => {})
     }
   }, [chainId])
   return contracts
@@ -108,7 +118,7 @@ const tokens = [
   { symbol: 'ETH', address: Addresses.weth }
 ]
 
-export function usePrices({ quantity, reload }) {
+export function usePrices({ quantity = 1, reload }) {
   const { account, connector, active, library } = useWeb3Manager()
   const { pair, router, chico, weth, dai } = useContracts()
 
@@ -272,13 +282,20 @@ export function usePrices({ quantity, reload }) {
 
 export const injectedConnector = new InjectedConnector()
 
-const defaultChainId = 4
+export const defaultChainId = 4
 const mainnet = `aHR0cHM6Ly9ldGgtbWFpbm5ldC5hbGNoZW15YXBpLmlvL3YyL2ppTXNVaWwyOGViZFJhTG9KOERLNEVxSHZDZ0U5eVEz`
 const rinkeby = `aHR0cHM6Ly9ldGgtcmlua2VieS5hbGNoZW15YXBpLmlvL3YyL1pmT3FJbk9mX1lxYXZfd2ExS2poeWFoeV9EaWE0UmFN`
 const networkConnector = new NetworkConnector({
   urls: { 1: atob(mainnet), 4: atob(rinkeby), 1337: 'http://localhost:8545' },
   defaultChainId
 })
+
+// const walletConnectConnector = new WalletConnectConnector({
+//   rpc: { 1: atob(mainnet) },
+//   bridge: 'https://bridge.walletconnect.org',
+//   qrcode: true,
+//   pollingInterval: 12
+// })
 
 export function useEagerConnect() {
   const { activate, active, chainId, connector } = useWeb3React()
@@ -317,10 +334,10 @@ export function useEagerConnect() {
 }
 
 // const provider = new ethers.providers.JsonRpcProvider()
-const provider = new ethers.providers.Web3Provider(
-  window.ethereum,
-  defaultChainId
-)
+// const provider = new ethers.providers.Web3Provider(
+//   window.ethereum,
+//   defaultChainId
+// )
 
 // async function setup() {
 //   const accounts = await provider.listAccounts()

@@ -14,6 +14,9 @@ module.exports = {
         xl: '1024px'
       }
     },
+    boxShadow: {
+      lg: '0 0 14px 0 #cdd7e0'
+    },
     extend: {
       screens: {
         dark: '0px' // Enable dark mode on shared checkout
@@ -35,7 +38,8 @@ module.exports = {
           ...defaultTheme.colors.gray,
           800: '#333333',
           600: '#666666',
-          400: '#999999'
+          400: '#999999',
+          300: '#cdd7e0'
         }
       },
       fontFamily: {

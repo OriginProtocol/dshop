@@ -22,10 +22,12 @@ const Home = () => {
         <div className="text-gray-600 text-sm mb-3">{`$${config.coin}`}</div>
         <img style={{ height: 290 }} src={product.imageUrl} />
         <div className="font-bold text-2xl mt-4">{`${state.priceDAIQ} USD`}</div>
-        <div className="text-gray-600 text-sm">{`${state.availableChico}/${state.totalChico} available`}</div>
-        {state.ownedChico === '0' ? null : (
-          <div className="text-sm mt-1 font-bold">{`You own ${state.ownedChico}`}</div>
-        )}
+        <div className="text-gray-600 text-sm flex">
+          {`${state.availableChico}/${state.totalChico} available`}
+          {state.ownedChico === '0' ? null : (
+            <div className="ml-4">{`You own ${state.ownedChico}`}</div>
+          )}
+        </div>
       </div>
       <Link to="/buy" className="btn btn-primary">
         Buy

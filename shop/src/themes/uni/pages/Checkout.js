@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useReducer } from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 import ethers from 'ethers'
@@ -16,22 +16,47 @@ import ProvinceSelect from 'components/ProvinceSelect'
 
 import { usePrices, useContracts, useWeb3Manager } from '../utils'
 import Title from '../components/Title'
+import ButtonPrimary from '../components/ButtonPrimary'
+import Overlay from '../components/Overlay'
+
+const initialButtonState = {
+  text: 'Redeem',
+  disabled: false,
+  loading: false,
+  error: ''
+}
+const reducer = (state, newState = {}) => ({
+  ...initialButtonState,
+  ...newState
+})
 
 const Checkout = () => {
   usePGP()
   const { chico } = useContracts()
+  const [button, setButton] = useReducer(reducer, initialButtonState)
+  const { account, library, activate, desiredNetwork } = useWeb3Manager()
   const [{ cart }, dispatch] = useStateValue()
-  const [buttonText, setButtonText] = useState('Redeem')
   const { state, setState, input, Feedback } = useForm(initialState(cart))
   const { config } = useConfig()
   const history = useHistory()
-  const { library, account } = useWeb3Manager()
   const [reload, setReload] = useState(1)
   const { post } = useBackendApi({ authToken: true })
-  usePrices({ reload, quantity: 1 })
+  const [priceState] = usePrices({ reload, quantity: 1 })
 
   const country = Countries[state.country] || 'United States'
   const item = get(cart, 'items.0')
+
+  useEffect(() => {
+    if (!account) {
+      setButton({ text: `Connect a Web3 Wallet`, onClickOverride: activate })
+    } else if (desiredNetwork) {
+      setButton({ disabled: `Connect wallet to ${desiredNetwork}` })
+    } else if (priceState.ethBalance.lt(ethers.utils.parseEther('0.00001'))) {
+      setButton({ disabled: 'Not Enough ETH to Pay Gas' })
+    } else {
+      setButton()
+    }
+  }, [desiredNetwork, priceState, account])
 
   useEffect(() => {
     if (!item) {
@@ -75,12 +100,12 @@ const Checkout = () => {
 
         try {
           const signer = library.getSigner()
-          setButtonText('Approve redemption...')
+          setButton({ loading: 'Approve redemption...' })
           const tx = await chico
             .connect(signer)
             .burn(ethers.utils.parseEther('1'))
 
-          setButtonText('Awaiting transaction...')
+          setButton({ loading: 'Awaiting transaction...' })
           await tx.wait()
           setReload(reload + 1)
 
@@ -93,13 +118,13 @@ const Checkout = () => {
               paymentCode: codeResponse.paymentCode
             })
           })
-          history.push('/confirmation')
+          history.push('/redeem/confirmation')
         } catch (e) {
-          setButtonText('Redeem')
+          setButton({ error: e.message.toString() })
         }
       }}
     >
-      <div className="w-full grid grid-cols-1 gap-2 bg-white rounded-lg p-6 pb-8 text-black mb-6">
+      <div className="w-full grid grid-cols-1 gap-2 bg-white rounded-lg p-6 pb-8 text-black mb-6 relative">
         <Title back="/redeem">
           <div className="flex-1 flex flex-row justify-center text-lg font-bold">
             <div className="text-gray-600">{'Redeem / '}</div>
@@ -182,8 +207,15 @@ const Checkout = () => {
             <Feedback error={state.zipError} />
           </div>
         </div>
+
+        {!button.disabled ? null : (
+          <div className="text-lg mt-6 font-bold text-red-600">
+            {button.disabled}
+          </div>
+        )}
+        {!button.loading ? null : <Overlay>{button.loading}</Overlay>}
       </div>
-      <button className="btn btn-primary">{buttonText}</button>
+      <ButtonPrimary {...button} />
     </form>
   )
 }
@@ -194,7 +226,7 @@ function initialState(cart) {
     className: 'w-full border bg-gray-100 px-2 py-1 rounded',
     defaultClassName: 'border-gray-300',
     errorClassName: 'border-red-600',
-    feedbackClassName: 'mt-1 text-sm'
+    feedbackClassName: 'mt-1 text-sm text-red-600'
   }
 }
 
