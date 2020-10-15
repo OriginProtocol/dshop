@@ -1,3 +1,22 @@
+/**
+ * CDN configuration module
+ *
+ * Sub-Modules
+ * ===========
+ * Sub-modules implement different providers (e.g. GCP, AWS). Every CDN
+ * configuration module in this directory should conform to this minimum API:
+ *
+ * - isAvailable({ networkConfig }) -> bool - If the module can be used
+ * - configure({ networkConfig, credentials }) - Called to allow the module to configure its singleton
+ * - configureCDN({ shop, deployment, domains }) -> CDNConfigurationObject - Configure CDN to serve a bucket
+ *
+ * CDNConfigurationObject
+ * ==================
+ * {
+ *    ipAddress: "12.34.56.78" // the global IP address of the CDN endpoint
+ * }
+ *
+ */
 const { getModules, loadModule } = require('../../../utils/module')
 const { getLogger } = require('../../../utils/logger')
 

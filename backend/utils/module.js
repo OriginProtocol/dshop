@@ -1,3 +1,6 @@
+/**
+ * Utilities for modularizing things.
+ */
 const fs = require('fs').promises
 const path = require('path')
 
@@ -10,8 +13,8 @@ const cachedModules = {}
 /**
  * Return filenames without extension for files in directory excluding excludes
  *
- * @param excludes <String[]> - Array of strings of filenames to exclude
- * @returns Array of module names
+ * @param excludes {string[]} - Array of strings of filenames to exclude
+ * @returns {Array} of module names
  */
 async function getModules(dirPath, excludes = DEFAULT_FILE_EXCLUDES) {
   const files = await fs.readdir(dirPath)
@@ -30,8 +33,8 @@ async function getModules(dirPath, excludes = DEFAULT_FILE_EXCLUDES) {
 /**
  * Return an imported module
  *
- * @param modName <String> - Name of module
- * @returns imported nodejs module
+ * @param modName {string} - Name of module
+ * @returns {object} imported nodejs module
  */
 function loadModule(dirPath, modName) {
   if (!cachedModules[dirPath]) cachedModules[dirPath] = {}

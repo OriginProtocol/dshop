@@ -18,7 +18,7 @@ const processor = async (job) => {
     job.progress(progress)
   }
 
-  log(10, 'Making request AutoSSL priming request...')
+  log(10, 'Starting deploy job.')
 
   const { networkId, subdomain, shopId, pinner, dnsProvider, uuid } = job.data
 
@@ -48,7 +48,7 @@ const processor = async (job) => {
     throw new Error(message)
   }
 
-  log(100, 'Finished')
+  log(100, 'Deploy job finished.')
 }
 
 module.exports = { processor, attachToQueue }

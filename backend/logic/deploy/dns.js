@@ -11,10 +11,12 @@ const log = getLogger('logic.deploy.dns')
  *
  * @param args {object}
  * @param args.network {object} - Network model instance
+ * @param args.networkConfig {object} - Decrypted network config
  * @param args.subdomain {string} - Hostname to configure (e.g. 'host' of 'host.example.com')
  * @param args.zone {string} - DNS Zone we're configuring
  * @param args.hash {string} - IPFS hash of deployed shop
  * @param args.dnsProvider {string} - The DNS provider to use
+ * @param args.ipAddresses {string} - The IP address if configuring an A record (optional)
  */
 async function configureShopDNS({
   network,
@@ -42,9 +44,7 @@ async function configureShopDNS({
         ipAddresses
       })
     }
-  }
-
-  if (dnsProvider === 'gcp') {
+  } else if (dnsProvider === 'gcp') {
     if (!networkConfig.gcpCredentials) {
       log.warn('GCP DNS Proider selected but no credentials configured!')
     } else {
@@ -57,9 +57,7 @@ async function configureShopDNS({
         ipAddresses
       })
     }
-  }
-
-  if (dnsProvider === 'aws') {
+  } else if (dnsProvider === 'aws') {
     if (!networkConfig.awsAccessKeyId || !networkConfig.awsSecretAccessKey) {
       log.warn('AWS DNS Proider selected but no credentials configured!')
     } else {
@@ -75,9 +73,7 @@ async function configureShopDNS({
         ipAddresses
       })
     }
-  }
-
-  if (!['cloudflare', 'gcp', 'aws'].includes(dnsProvider)) {
+  } else {
     log.error('Unknown DNS provider selected.  Will not configure DNS')
   }
 }

@@ -2,6 +2,11 @@ const LOCAL_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 /**
  * Convert an HTTP URL into a multiaddr
+ *
+ * @parma v {string} URL
+ * @param opts {object} Options
+ * @param opts.translateLocalhostPort {object} If URL is localhost, use this port
+ * @returns {string} multiaddr
  */
 function urlToMultiaddr(v, opts) {
   const { translateLocalhostPort = null } = opts

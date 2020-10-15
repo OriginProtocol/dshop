@@ -188,10 +188,9 @@ async function configureCDN({ shop, deployment, domains }) {
 }
 
 /**
- * Create a backendBucket with name for bucketName
+ * Find a backendBucket with name
  *
  * @param client {object} REST client with Oauth
- * @param projectId {string} GCP project ID
  * @param name {string} name of the backendBucket we're looking for
  * @returns {object} of a specific backendBucket from response
  */
@@ -382,6 +381,7 @@ async function getHttpProxy(client, name) {
  *
  * @param client {object} REST client with Oauth
  * @param name {string} name of the targetHttpProxy we're looking for
+ * @param urlMap {string} ref URL to a urlMap
  * @returns {object} of a targetHttpProxy if in response
  */
 async function createHttpProxy(client, name, urlMap) {
@@ -420,8 +420,8 @@ async function getHttpsProxy(client, name) {
  *
  * @param client {object} REST client with Oauth
  * @param name {string} name of the globalAddress we're looking for
- * @param name {urlMap} ref URL for a urlMap REST object
- * @param name {array} of sslCertificate ref URLs the proxy should use
+ * @param urlMap {string} ref URL for a urlMap REST object
+ * @param sslCertificates {array<string>} of sslCertificate ref URLs the proxy should use
  * @returns {object} of a targetHttpsProxy if in response
  */
 async function createHttpsProxy(client, name, urlMap, sslCertificates) {
@@ -500,7 +500,7 @@ async function get({ client, url }) {
 }
 
 /**
- * Find a specific object form a listing endpoint
+ * Find a specific object from a listing endpoint
  *
  * @param args {object}
  * @param args.client {GoogleAuth} client
@@ -515,7 +515,10 @@ async function find({ client, url, name }) {
 }
 
 /**
- * Create an object, returning the Operation object
+ * Create an object, returning the response, which includes an Operation object.
+ * An Operation is more or less like an async transaction for Google API. If the
+ * Operation is still running, it will have a status of 'RUNNING' and if
+ * successfully completed, 'DONE'
  *
  * @param args {object}
  * @param args.client {GoogleAuth} client
@@ -538,7 +541,7 @@ async function create({ client, url, data, method = 'POST' }) {
   log.debug(`created: `, res.data)
   log.info(`Waiting for ${res.data.selfLink} to become ready...`)
 
-  // Wait for the new object to be ready
+  // Wait for the Operation to be `DONE`
   try {
     return await waitFor(client, res.data.selfLink)
   } catch (err) {
@@ -552,24 +555,27 @@ async function create({ client, url, data, method = 'POST' }) {
 }
 
 /**
- * Wait for a REST Operation to become DONE.
+ * Wait for a REST Operation to become status.
  *
  * @param client {GoogleAuth} client
  * @param url {string} ref URL for the Operation object we're waiting for
+ * @param status {string} an Operation status enum value (default: DONE)
  * @returns {object} Operation object
  */
 async function waitFor(client, url, status = 'DONE') {
   for (let i = 0; i < WAIT_INTERVALS_MAX; i++) {
     await sleep(WAIT_INTERVAL)
+
     const checkRes = await client.request({
       url
     })
-    console.log('waitFor checkRes', checkRes)
+
     log.debug(
       `${url} status: ${
         checkRes && checkRes.data ? checkRes.data.status : 'unavailable'
       }`
     )
+
     if (checkRes && checkRes.data && checkRes.data.status === status) {
       return checkRes
     }

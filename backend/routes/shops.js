@@ -716,6 +716,9 @@ module.exports = function (router) {
     }
   )
 
+  /**
+   * Used by clients to get the status of a deployment
+   */
   router.get('/shop/deployment/:uuid', async (req, res) => {
     const deploymentResult = await ShopDeployment.findOne({
       where: {

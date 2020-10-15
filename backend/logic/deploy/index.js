@@ -1,3 +1,23 @@
+/**
+ * Shop deployment module
+ *
+ * Overview
+ * ========
+ * This module abstracts away a lot of steps in the deployment of a shop dapp.
+ * It will upload build to a bucket, IPFS, configure a CDN, and then DNS.
+ *
+ * Common Process
+ * --------------
+ *
+ * 1) Assembles a shop build by copying files from the reference build to a
+ *    build directory.  Replaces template placeholders.  Copies configuration
+ *    data directory into the build.
+ * 2) Uploads the build to a GCS/S3 bucket
+ * 3) Uploads the build to IPFS
+ * 4) Configures a CDN to serve said bucket
+ * 5) Configure DNS to point at either the CDN (if available) or the IPFS
+ *    gateway
+ */
 const { Network } = require('../../models')
 const { decryptConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
@@ -208,7 +228,8 @@ async function deploy({
   }
 
   /**
-   * Deploy the shop to IPFS
+   * Configure DNS by pointing it at either the configured CDN (if available) or
+   * to the IPFS gateway.
    */
   if (subdomain) {
     try {

@@ -10,8 +10,8 @@ const MAX_WALK_DEPTH = 10
 /**
  * Does the filename have an extension matching ext?
  *
- * @param fname <String> filename to check
- * @param ext <String> extension to look for
+ * @param fname {string} filename to check
+ * @param ext {string} extension to look for
  * @returns bool if the filename has an ext extension
  */
 function isExt(fname, ext) {
@@ -23,11 +23,10 @@ function isExt(fname, ext) {
 }
 
 /**
- * Does the filename have an extension matching ext?
+ * Remove an extension and joining period from fname
  *
- * @param fname <String> filename to check
- * @param ext <String> extension to look for
- * @returns bool if the filename has an ext extension
+ * @param fname {string} filename to check
+ * @returns {string} filename without extension
  */
 function stripExt(fname) {
   if (!fname.includes('.')) {
@@ -43,6 +42,7 @@ function stripExt(fname) {
  * directory given.
  *
  * @param dpath {string} - directory to walk
+ * @param depth {number} - current depth (You probably do not want to use this)
  * @returns {Array} - of relative paths from dpath to all files in dpath
  */
 async function walkDir(dpath, depth = 0) {
