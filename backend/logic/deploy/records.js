@@ -2,7 +2,7 @@
  * Funcitonality for deployment records in the database
  */
 const { ShopDeploymentStatuses } = require('../../enums')
-const { ShopDeployment } = require('../../models')
+const { ShopDeployment, ShopDeploymentName } = require('../../models')
 const { assert } = require('../../utils/validators')
 const { getLogger } = require('../../utils/logger')
 
@@ -57,6 +57,38 @@ async function createDeployment(
     shopId,
     status,
     uuid
+  })
+}
+
+/**
+ * Get a ShopDeploymentName associated with an IPFS hash
+ *
+ * @param ipfsHash {string} - An IPFS hash
+ * @returns {ShopDeploymentName} - ShopDeploymentName instance
+ */
+async function getDeploymentNames(ipfsHash) {
+  assert(!!ipfsHash, 'Missing ipfsHash')
+
+  return await ShopDeploymentName.findAll({
+    where: {
+      ipfsHash
+    }
+  })
+}
+
+/**
+ * Create a name for a deployment (e.g. DNS name)
+ *
+ * @param hostname {string} - A hostname that to associate with..
+ * @param ipfsHash {string} - An IPFS hash
+ * @returns {ShopDeploymentName} - ShopDeploymentName instance
+ */
+async function createDeploymentName(hostname, ipfsHash) {
+  assert(!!hostname, 'Missing hostname')
+
+  return await ShopDeploymentName.create({
+    ipfsHash,
+    hostname
   })
 }
 
@@ -131,6 +163,8 @@ module.exports = {
   getDeploymentByUUID,
   deploymentLock,
   createDeployment,
+  getDeploymentNames,
+  createDeploymentName,
   passDeployment,
   failDeployment
 }

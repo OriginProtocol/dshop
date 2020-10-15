@@ -24,7 +24,13 @@ const { getLogger } = require('../../utils/logger')
 const { assert } = require('../../utils/validators')
 const { DSHOP_CACHE } = require('../../utils/const')
 
-const { deploymentLock, passDeployment, failDeployment } = require('./records')
+const {
+  deploymentLock,
+  passDeployment,
+  failDeployment,
+  getDeploymentNames,
+  createDeploymentName
+} = require('./records')
 const { assembleBuild } = require('./build')
 const { deployToIPFS } = require('./ipfs')
 const { deployToBucket } = require('./bucket')
@@ -247,6 +253,14 @@ async function deploy({
       log.error(err)
       await failDeployment(deployment, 'Failed to configure DNS')
       return error(ERROR_GENERAL)
+    }
+  }
+
+  // Set record of IPFS hash to name relation
+  if (ipfsHash) {
+    const names = await getDeploymentNames(ipfsHash)
+    if (names.length < 1) {
+      await createDeploymentName(fqdn, ipfsHash)
     }
   }
 
