@@ -70,8 +70,6 @@ const THEMES_CACHE = IS_TEST
   ? TEST_THEMES_CACHE
   : process.env.THEMES_CACHE || `${__dirname}/../themes`
 
-
-
 module.exports = {
   CONTRACTS,
   ENCRYPTION_KEY,

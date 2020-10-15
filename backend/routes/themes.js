@@ -1,4 +1,6 @@
 const { getAvailableThemes } = require('../logic/themes')
+const { authRole, authSellerAndShop } = require('./_auth')
+const uploadFiles = require('../logic/shop/upload')
 
 module.exports = function (router) {
   /**
@@ -11,4 +13,14 @@ module.exports = function (router) {
       data: getAvailableThemes()
     })
   })
+
+  router.post(
+    '/themes/upload-images',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const { status, ...data } = await uploadFiles(req, '/uploads')
+      res.status(status).send(data)
+    }
+  )
 }

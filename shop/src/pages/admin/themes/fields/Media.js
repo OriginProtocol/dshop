@@ -1,7 +1,7 @@
 import React from 'react'
 import fbt from 'fbt'
 
-import ImagePicker from 'components/ImagePicker'
+import ImagePicker from './_ImagePicker'
 
 const MediaField = ({ field, value, onChange }) => {
   return (
@@ -9,26 +9,8 @@ const MediaField = ({ field, value, onChange }) => {
       <label>{field.title}</label>
       <ImagePicker
         images={value || []}
-        onChange={(data) => {
-          onChange(
-            data.map((d) => ({
-              ...d,
-              name: d.name,
-              url: d.src
-            }))
-          )
-        }}
-        maxImages={1}
-        children={
-          <>
-            <img src="/images/upload.svg" />
-            <div className="btn btn-outline-primary">
-              <fbt desc="admin.settings.payments.offlinePayments.addImage">
-                Add Image
-              </fbt>
-            </div>
-          </>
-        }
+        onChange={onChange}
+        multiple={field.multiple}
       />
     </div>
   )

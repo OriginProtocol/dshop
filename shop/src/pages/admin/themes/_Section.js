@@ -42,17 +42,17 @@ const Section = ({ section, state, setState }) => {
                 value: fieldState,
                 onChange: setFieldState
               }
-            
+
               switch (field.type) {
                 case 'media':
                   return <MediaField {...props} />
-            
+
                 case 'collections_list':
                   return <CollectionsList {...props} />
 
                 case 'products_list':
                   return <ProductsList {...props} />
-            
+
                 default:
                   return <TextField {...props} />
               }
@@ -114,6 +114,7 @@ require('react-styl')(`
   .theme-config-sections-list
     position: relative
     height: 100%
+    overflow-x: hidden
     .section-title
       font-size: 1.25rem
       margin: 0.5rem 0

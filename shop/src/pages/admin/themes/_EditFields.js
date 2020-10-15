@@ -48,13 +48,14 @@ const EditFields = () => {
       firstUpdateSent = true
 
       // Post saved changes, if any, to the channel
-
       timeout = setTimeout(() => {
-        broadcastChanges({})
+        broadcastChanges({
+          ...get(config.theme, activeThemeId)
+        })
         bc.postMessage(get(config.theme, activeThemeId))
       })
     }
-    
+
     return () => {
       clearTimeout(timeout)
       bc.close()
@@ -129,7 +130,11 @@ const EditFields = () => {
             <fbt desc="Loading">Loading</fbt>...
           </div>
         ) : (
-          <SectionsList theme={activeTheme} state={changes} onChange={broadcastChanges} />
+          <SectionsList
+            theme={activeTheme}
+            state={changes}
+            onChange={broadcastChanges}
+          />
         )}
       </div>
     </>

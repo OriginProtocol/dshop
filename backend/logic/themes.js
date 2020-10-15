@@ -9,10 +9,11 @@ let CACHED_LIST
  * and returns the list
  */
 const getAllThemesData = () => {
-  return fs.readdirSync(THEMES_CACHE)
-    .map(file => path.join(THEMES_CACHE, file))
-    .filter(absPath => fs.statSync(absPath).isDirectory())
-    .map(dir => {
+  return fs
+    .readdirSync(THEMES_CACHE)
+    .map((file) => path.join(THEMES_CACHE, file))
+    .filter((absPath) => fs.statSync(absPath).isDirectory())
+    .map((dir) => {
       const metaData = JSON.parse(fs.readFileSync(path.join(dir, 'theme.json')))
 
       return {

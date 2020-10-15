@@ -9,12 +9,9 @@ const ProductsList = ({ field, value, onChange }) => {
 
   const updateList = (productId, checked) => {
     if (checked && !selection.includes(productId)) {
-      onChange([
-        ...selection,
-        productId
-      ])
+      onChange([...selection, productId])
     } else if (!checked) {
-      onChange(selection.filter(pId => pId !== productId))
+      onChange(selection.filter((pId) => pId !== productId))
     }
   }
 
@@ -22,7 +19,7 @@ const ProductsList = ({ field, value, onChange }) => {
     <div className="form-group">
       <label>{field.title}</label>
       <div className="theme-selectable-list form-group">
-        {products.map(product => (
+        {products.map((product) => (
           <div className="form-check" key={product.id}>
             <label className="form-check-label">
               <input

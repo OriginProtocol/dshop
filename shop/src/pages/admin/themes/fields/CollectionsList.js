@@ -9,12 +9,9 @@ const CollectionsList = ({ field, value, onChange }) => {
 
   const updateList = (collId, checked) => {
     if (checked && !selection.includes(collId)) {
-      onChange([
-        ...selection,
-        collId
-      ])
+      onChange([...selection, collId])
     } else if (!checked) {
-      onChange(selection.filter(pId => pId !== collId))
+      onChange(selection.filter((pId) => pId !== collId))
     }
   }
 
@@ -22,7 +19,7 @@ const CollectionsList = ({ field, value, onChange }) => {
     <div className="form-group">
       <label>{field.title}</label>
       <div className="theme-selectable-list form-group">
-        {collections.map(coll => (
+        {collections.map((coll) => (
           <div className="form-check" key={coll.id}>
             <label className="form-check-label">
               <input

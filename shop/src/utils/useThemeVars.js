@@ -26,7 +26,7 @@ const useThemeVars = () => {
         })
       }
 
-      // Hack: To let the theme editor know that page 
+      // Hack: To let the theme editor know that page
       // has loaded and data can be sent
       bc.postMessage({})
 

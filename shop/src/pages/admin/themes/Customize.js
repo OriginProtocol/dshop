@@ -22,18 +22,23 @@ const CustomizeTheme = () => {
       </div>
       <div className="main-content-container d-flex flex-column">
         <div className="customize-nav preview">
-          <div className="action-icon" onClick={() => setIsMobileMode(!isMobileMode)}>
-            <img src={`/images/${isMobileMode ? 'mobile' : 'desktop'}-icon.svg`} />
+          <div
+            className="action-icon"
+            onClick={() => setIsMobileMode(!isMobileMode)}
+          >
+            <img
+              src={`/images/${isMobileMode ? 'mobile' : 'desktop'}-icon.svg`}
+            />
           </div>
           <div className="action-icon">
             <img src="/images/new-window-icon.svg" />
           </div>
         </div>
-        <iframe 
-          src={previewUrl} 
+        <iframe
+          src={previewUrl}
           style={{
             width: isMobileMode ? '340px' : '100%'
-          }} 
+          }}
         />
       </div>
     </div>
@@ -54,6 +59,7 @@ require('react-styl')(`
     .sidebar-container
       border-right: 1px solid #e9f0f3
       width: 320px
+      overflow-x: hidden
     
     .customize-nav
       flex: auto 0 0

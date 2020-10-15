@@ -21,7 +21,11 @@ require('./queues').runProcessors()
 
 const ORIGIN_WHITELIST_ENABLED = false
 const ORIGIN_WHITELIST = []
-const BODYPARSER_EXCLUDES = ['/webhook', '/products/upload-images']
+const BODYPARSER_EXCLUDES = [
+  '/webhook',
+  '/products/upload-images',
+  '/themes/upload-images'
+]
 
 const app = express()
 
