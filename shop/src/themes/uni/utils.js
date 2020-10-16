@@ -317,7 +317,7 @@ export function usePrices({ reload }) {
         const getUSDQ = ethers.utils.formatEther(quote[pathR.length - 1])
         setState({
           getUSDQ: getUSDQ.replace(/^([0-9]+\.[0-9]{5}).*/, '$1'),
-          getUSDQO: getUSDQ
+          getUSDQO: quote[pathR.length - 1]
         })
       })
 
