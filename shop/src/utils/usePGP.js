@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 
-let loading = false
 function usePGP() {
-  const [pgpLoaded, setLoaded] = useState()
+  const [pgpLoaded, setLoaded] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (loading) {
       return
     }
-    loading = true
+    setLoading(true)
 
     const pgpEl = document.createElement('script')
     pgpEl.src = 'dist/openpgp.min.js'
