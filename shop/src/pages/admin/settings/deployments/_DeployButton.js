@@ -29,8 +29,8 @@ const AdminDeployShop = ({
       spinner={true}
       onConfirm={() => {
         return new Promise((resolve, reject) => {
-          post(`/shop/deploy`).then((res) => {
-            const { success, uuid } = res
+          post(`/shop/deploy`, { suppressError: true }).then((res) => {
+            const { success, uuid, error } = res
             if (success) {
               // Check for the deployment to complete
               const interval = setInterval(() => {
@@ -47,6 +47,8 @@ const AdminDeployShop = ({
                   }
                 })
               }, 1000)
+            } else if (error) {
+              reject(new Error(error.message))
             }
           })
         })

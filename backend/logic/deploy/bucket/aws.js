@@ -5,7 +5,7 @@ const { getLogger } = require('../../../utils/logger')
 const log = getLogger('logic.deploy.bucket.aws')
 
 function isAvailable({ networkConfig }) {
-  log.warn('AWS s3 bucket deploy not yet ipmlemented')
+  log.warn('AWS s3 bucket deploy not yet implemented')
   // return !!networkConfig.awsAccessKeyId && !!networkConfig.awsSecretAccessKey
   return false
 }
