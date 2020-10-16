@@ -83,7 +83,7 @@ async function deploy({ shop, networkConfig, OutputDir }) {
 }
 
 /**
- * Return a configured Storege client
+ * Return a configured Storage client
  *
  * @returns {object} instance of Storage client
  */

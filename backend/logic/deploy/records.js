@@ -1,5 +1,5 @@
 /**
- * Funcitonality for deployment records in the database
+ * Functionality for deployment records in the database
  */
 const { ShopDeploymentStatuses } = require('../../enums')
 const { ShopDeployment, ShopDeploymentName } = require('../../models')

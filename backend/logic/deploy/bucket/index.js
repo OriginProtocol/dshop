@@ -24,7 +24,7 @@ const { getLogger } = require('../../../utils/logger')
 const log = getLogger('logic.deploy.bucket')
 
 /**
- * Deploy shop to a bucket
+ * Deploy shop to bucket(s)
  *
  * @param args <Object>
  * @param args.networkConfig <Object> - networkConfig object

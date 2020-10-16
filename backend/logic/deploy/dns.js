@@ -6,8 +6,8 @@ const { getLogger } = require('../../utils/logger')
 const log = getLogger('logic.deploy.dns')
 
 /**
- * Copy all needed files for a shop deployment to the public build directory and
- * replace HTML template vars to prepare for deployment.
+ * Configure DNS to point at either the configured IPFS gateway or ipAddress (if
+ * provided)
  *
  * @param args {object}
  * @param args.network {object} - Network model instance
