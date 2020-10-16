@@ -45,9 +45,9 @@ const IS_DEV = NODE_ENV === 'development' || (!IS_PROD && !IS_TEST)
 const PROTOCOL_LABS_GATEWAY = 'https://gateway.ipfs.io'
 const PINATA_API = 'https://api.pinata.cloud'
 const PINATA_GATEWAY = 'https://gateway.pinata.cloud'
-const DEFAULT_BUCKET_PREFIX = `dshop-deployment-${
+const DEFAULT_BUCKET_PREFIX = `ds-deploy-${
   NODE_ENV ? NODE_ENV : 'development'
-}`
+}-`
 const DEFAULT_SERVICE_PREFIX = DEFAULT_BUCKET_PREFIX
 
 const {

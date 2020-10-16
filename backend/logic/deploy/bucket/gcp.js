@@ -23,6 +23,25 @@ function isAvailable({ networkConfig }) {
 }
 
 /**
+ * Normalize GCS bucket name
+ *
+ * Ref: https://cloud.google.com/storage/docs/naming-buckets
+ *
+ * @param name {string} name wanted
+ * @returns {string} normalized name that fits requirements
+ */
+function normalizeBucketName(name) {
+  name = trimStart(name, '-_.')
+  if (name.length > 63) {
+    name = name.slice(0, 63)
+  }
+  if (!name.match(/^[A-Za-z0-9\-_.]{1,63}$/)) {
+    throw new Error(`Unable to normalize bucket name: ${name}`)
+  }
+  return name
+}
+
+/**
  * Configure this singleton for a use
  *
  * @param args {Object}
@@ -53,7 +72,7 @@ async function deploy({ shop, networkConfig, OutputDir }) {
   assert(!!networkConfig, 'networkConfig must be provided')
   assert(!!OutputDir, 'OutputDir must be provided')
 
-  const bucketName = `${BUCKET_PREFIX}${shop.authToken}`
+  const bucketName = normalizeBucketName(`${BUCKET_PREFIX}${shop.authToken}`)
 
   let bucket = await getBucket(bucketName)
   const [exists] = await bucket.exists()
