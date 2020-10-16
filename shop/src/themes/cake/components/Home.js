@@ -2,22 +2,21 @@ import React from 'react'
 import get from 'lodash/get'
 
 import Link from 'components/Link'
-import useConfig from 'utils/useConfig'
+import useThemeVars from 'utils/useThemeVars'
 
 import Products from './_Products'
 
 const App = () => {
-  const { config } = useConfig()
-  const headerImageUrl = get(config, 'theme.headerImageUrl')
+  const themeVars = useThemeVars()
+  const headerImageUrl = get(themeVars, 'home.headerImage.0.url')
+  const headerText = get(themeVars, 'home.headerText')
 
   return (
     <>
       <div className="container mb-20">
         <div className="text-center my-2">
-          <h1 className="text-3xl sm:text-5xl leading-tight font-bold font-serif">
-            Delicious Desserts
-            <br />
-            Delivering to San Diego Today!
+          <h1 className="text-3xl sm:text-5xl leading-tight font-bold font-serif whitespace-pre">
+            {headerText}
           </h1>
         </div>
       </div>

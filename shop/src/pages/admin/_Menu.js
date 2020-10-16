@@ -56,81 +56,89 @@ const AdminMenu = () => {
         </Link>
       </li>
       {!/^admin$/i.test(admin.role) ? null : (
-        <li className={`settings ${active('/admin/settings')}`}>
-          <Link to="/admin/settings">
-            <Icons.Settings />
-            <fbt desc="Settings">Settings</fbt>
-            <div
-              className="caret"
-              onClick={(e) => {
-                e.stopPropagation()
-                e.preventDefault()
-                console.log('click')
-              }}
-            >
-              <Caret />
-            </div>
-          </Link>
-          {!active('/admin/settings') ? null : (
-            <ul className="sub-menu list-unstyled">
-              <li className={active('/admin/settings/general', true)}>
-                <Link to="/admin/settings/general">
-                  <fbt desc="General">General</fbt>
-                </Link>
-              </li>
-              <li className={active('/admin/settings/appearance', true)}>
-                <Link to="/admin/settings/appearance">
-                  <fbt desc="Appearance">Appearance</fbt>
-                </Link>
-              </li>
-              <li className={active('/admin/settings/payments')}>
-                <Link to="/admin/settings/payments">
-                  <fbt desc="Payments">Payments</fbt>
-                </Link>
-              </li>
-              <li className={active('/admin/settings/apps')}>
-                <Link to="/admin/settings/apps">
-                  <fbt desc="Apps">Apps</fbt>
-                </Link>
-              </li>
-              <li className={active('/admin/settings/shipping')}>
-                <Link to="/admin/settings/shipping">
-                  <fbt desc="Shipping">Shipping</fbt>
-                </Link>
-              </li>
-              <li className={active('/admin/settings/checkout')}>
-                <Link to="/admin/settings/checkout">
-                  <fbt desc="Users">Checkout</fbt>
-                </Link>
-              </li>
-              <li className={active('/admin/settings/users')}>
-                <Link to="/admin/settings/users">
-                  <fbt desc="Users">Users</fbt>
-                </Link>
-              </li>
-              <li className={active('/admin/settings/deployments')}>
-                <Link to="/admin/settings/deployments">
-                  <fbt desc="Publish">Publish</fbt>
-                </Link>
-              </li>
-              <li className={active('/admin/settings/advanced')}>
-                <Link to="/admin/settings/advanced">
-                  <fbt desc="Advanced">Advanced</fbt>
-                </Link>
-              </li>
-              {!admin.superuser ? null : (
-                <>
-                  <li className={active('/admin/settings/server')}>
-                    <Link to="/admin/settings/server">Server</Link>
-                  </li>
-                  <li className={active('/admin/settings/console')}>
-                    <Link to="/admin/settings/console">Console</Link>
-                  </li>
-                </>
-              )}
-            </ul>
-          )}
-        </li>
+        <>
+          <li className={`themes ${active('/admin/themes')}`}>
+            <Link to="/admin/themes">
+              <Icons.Settings />
+              <fbt desc="Themes">Themes</fbt>
+            </Link>
+          </li>
+          <li className={`settings ${active('/admin/settings')}`}>
+            <Link to="/admin/settings">
+              <Icons.Settings />
+              <fbt desc="Settings">Settings</fbt>
+              <div
+                className="caret"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  console.log('click')
+                }}
+              >
+                <Caret />
+              </div>
+            </Link>
+            {!active('/admin/settings') ? null : (
+              <ul className="sub-menu list-unstyled">
+                <li className={active('/admin/settings/general', true)}>
+                  <Link to="/admin/settings/general">
+                    <fbt desc="General">General</fbt>
+                  </Link>
+                </li>
+                <li className={active('/admin/settings/appearance', true)}>
+                  <Link to="/admin/settings/appearance">
+                    <fbt desc="Appearance">Appearance</fbt>
+                  </Link>
+                </li>
+                <li className={active('/admin/settings/payments')}>
+                  <Link to="/admin/settings/payments">
+                    <fbt desc="Payments">Payments</fbt>
+                  </Link>
+                </li>
+                <li className={active('/admin/settings/apps')}>
+                  <Link to="/admin/settings/apps">
+                    <fbt desc="Apps">Apps</fbt>
+                  </Link>
+                </li>
+                <li className={active('/admin/settings/shipping')}>
+                  <Link to="/admin/settings/shipping">
+                    <fbt desc="Shipping">Shipping</fbt>
+                  </Link>
+                </li>
+                <li className={active('/admin/settings/checkout')}>
+                  <Link to="/admin/settings/checkout">
+                    <fbt desc="Users">Checkout</fbt>
+                  </Link>
+                </li>
+                <li className={active('/admin/settings/users')}>
+                  <Link to="/admin/settings/users">
+                    <fbt desc="Users">Users</fbt>
+                  </Link>
+                </li>
+                <li className={active('/admin/settings/deployments')}>
+                  <Link to="/admin/settings/deployments">
+                    <fbt desc="Publish">Publish</fbt>
+                  </Link>
+                </li>
+                <li className={active('/admin/settings/advanced')}>
+                  <Link to="/admin/settings/advanced">
+                    <fbt desc="Advanced">Advanced</fbt>
+                  </Link>
+                </li>
+                {!admin.superuser ? null : (
+                  <>
+                    <li className={active('/admin/settings/server')}>
+                      <Link to="/admin/settings/server">Server</Link>
+                    </li>
+                    <li className={active('/admin/settings/console')}>
+                      <Link to="/admin/settings/console">Console</Link>
+                    </li>
+                  </>
+                )}
+              </ul>
+            )}
+          </li>
+        </>
       )}
       <li className="mt-auto">
         <div className="px-3 pt-4">

@@ -2,8 +2,8 @@ import React, { useMemo } from 'react'
 import get from 'lodash/get'
 
 import Link from 'components/Link'
+import useThemeVars from 'utils/useThemeVars'
 
-import useConfig from 'utils/useConfig'
 import useProducts from 'utils/useProducts'
 import useCollections from 'utils/useCollections'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
@@ -13,12 +13,13 @@ import { useRouteMatch } from 'react-router-dom'
 const Products = ({ limit = Infinity, excludeFeatured, onlyFeatured }) => {
   const { products } = useProducts()
   const { collections } = useCollections()
-  const { config } = useConfig()
   const currencyOpts = useCurrencyOpts()
   const match = useRouteMatch('/products/:collection')
   const activeCollectionId = get(match, 'params.collection')
 
-  const featuredProductIds = get(config, 'theme.featuredProducts', [])
+  const themeVars = useThemeVars()
+
+  const featuredProductIds = get(themeVars, 'home.featuredProducts', [])
 
   const productsToRender = useMemo(() => {
     let _products = products
