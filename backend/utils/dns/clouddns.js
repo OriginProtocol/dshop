@@ -71,20 +71,6 @@ async function addA(zone, name, target) {
 }
 
 /**
- * delete an A record
- *
- * Ref: https://googleapis.dev/nodejs/dns/latest/Change.html
- * Ref: https://googleapis.dev/nodejs/dns/latest/Zone.html
- *
- * @param existing {Record} Record that we're replacing
- * @param zone {Zone} zone that we're operating on
- * @returns {Change}
- */
-async function deleteA(existing, zone) {
-  return await zone.createChange({ delete: existing })
-}
-
-/**
  * add a CNAME record
  *
  * Ref: https://googleapis.dev/nodejs/dns/latest/Change.html
@@ -123,6 +109,22 @@ async function updateCNAME(existing, zone, name, target) {
     ttl: DEFAULT_TTL
   })
   return await zone.createChange({ add: addRec, delete: existing })
+}
+
+/**
+ * Delete a record
+ *
+ * Ref: https://googleapis.dev/nodejs/dns/latest/Change.html
+ * Ref: https://googleapis.dev/nodejs/dns/latest/Zone.html
+ *
+ * @param existing {Record} Record that we're replacing
+ * @param zone {Zone} zone that we're operating on
+ * @param name {string} name of DNS record
+ * @param target {string} target IP address
+ * @returns {Change}
+ */
+async function deleteRecord(existing, zone) {
+  return await zone.createChange({ delete: existing })
 }
 
 /**
@@ -258,33 +260,46 @@ async function setRecords({
 
   // If we got an IP address, we're creating an A record
   if (ipAddresses) {
+    // Delete the CNAME records with this name
+    if (existingCNAME) {
+      log.debug(`Will delete CNAME for ${fqSubdomain}`)
+      changes.push(await deleteRecord(existingCNAME, zoneObj))
+    }
+
     // Delete all A records with this name
     if (existingAs && existingAs.length > 0) {
+      log.debug(`Will delete A records for ${fqSubdomain}`)
       for (const arec of existingAs) {
-        changes.push(await deleteA(arec, zoneObj))
+        changes.push(await deleteRecord(arec, zoneObj))
       }
     }
+
     // Create an A record for each IP we get
     for (const ip of ipAddresses) {
+      log.debug(`Creating A record for ${fqSubdomain} ${ip}`)
       changes.push(await addA(zoneObj, fqSubdomain, ip))
     }
   } else {
     if (existingCNAME) {
       // Update CNAME record pointing to the IPFS gateway
+      log.debug(`Updating CNAME record for ${fqSubdomain}`)
       changes.push(
         await updateCNAME(existingCNAME, zoneObj, fqSubdomain, ipfsGateway)
       )
     } else {
       // Add CNAME record pointing to the IPFS gateway
+      log.debug(`Adding CNAME record for ${fqSubdomain} ${ipfsGateway}`)
       changes.push(await addCNAME(zoneObj, fqSubdomain, ipfsGateway))
     }
   }
 
   if (existingTXT) {
     // Update the DNSLink record pointing at the IPFS hash
+    log.debug(`Updating TXT record for ${fqSubdomain}`)
     changes.push(await updateDNSLink(existingTXT, zoneObj, fqSubdomain, hash))
   } else {
     // Add the DNSLink record pointing at the IPFS hash
+    log.debug(`Adding TXT record for ${fqSubdomain}`)
     changes.push(await addDNSLink(zoneObj, fqSubdomain, hash))
   }
 
