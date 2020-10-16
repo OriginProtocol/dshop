@@ -39,7 +39,9 @@ async function assembleBuild({
   } catch (e) {
     log.error(e)
     // Throw something more clear
-    throw new Error(`Shop ${shop.id}: failed parsing ${OutputDir}/data/config.json`)
+    throw new Error(
+      `Shop ${shop.id}: failed parsing ${OutputDir}/data/config.json`
+    )
   }
 
   await new Promise((resolve, reject) => {
