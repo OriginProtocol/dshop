@@ -5,12 +5,16 @@ import useConfig from 'utils/useConfig'
 
 import Link from 'components/Link'
 
+import useThemeVars from 'utils/useThemeVars'
+
 import Header from './_Header'
 import Footer from './_Footer'
 import Collections from './_Collections'
 
 const Home = () => {
   const { config } = useConfig()
+  const themeVars = useThemeVars()
+
   return (
     <>
       <Header>
@@ -28,7 +32,7 @@ const Home = () => {
       </Header>
       <div className="bg-orange-100">
         <div className="container text-gray-600 text-center py-12 sm:py-24 text-lg sm:text-2xl leading-tight font-light">
-          {get(config, 'theme.home.aboutText')}
+          {get(themeVars, 'home.aboutText')}
         </div>
       </div>
       <div className="sm:container sm:mt-20 mb-32">
