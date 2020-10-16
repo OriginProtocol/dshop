@@ -6,10 +6,12 @@ import formatPrice from 'utils/formatPrice'
 
 import Link from 'components/Link'
 import CloseIcon from 'components/icons/Close'
+import usePalette from '../hoc/usePalette'
 
 const Cart = () => {
   const [{ cart }, dispatch] = useStateValue()
   const currencyOpts = useCurrencyOpts()
+  const palette = usePalette()
 
   return (
     <>
@@ -40,7 +42,10 @@ const Cart = () => {
           {`Subtotal: ${formatPrice(cart.subTotal, currencyOpts)}`}
         </div>
         <div className="mt-12 flex justify-center sm:justify-end">
-          <Link to="/checkout" className="btn btn-primary px-24">
+          <Link
+            to="/checkout"
+            className={`btn btn-primary px-24 bg-${palette.colors.buttonColor}`}
+          >
             Checkout
           </Link>
         </div>

@@ -1,6 +1,8 @@
 import React from 'react'
+import usePalette from '../hoc/usePalette'
 
 const Contact = () => {
+  const { colors } = usePalette()
   return (
     <>
       <div className="container mt-12">
@@ -37,7 +39,11 @@ const Contact = () => {
             <label className="mt-3">Message</label>
             <textarea className="border bg-gray-100 p-3 w-full h-32" />
             <div className="mt-6 flex justify-end">
-              <button className="btn btn-primary px-16">Submit</button>
+              <button
+                className={`btn btn-primary px-16 bg-${colors.buttonColor}`}
+              >
+                Submit
+              </button>
             </div>
           </form>
         </div>

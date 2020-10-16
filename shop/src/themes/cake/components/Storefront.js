@@ -10,8 +10,11 @@ import Cart from '../../shared/Cart'
 
 import Header from './_Header'
 import Footer from './_Footer'
+import usePalette from '../hoc/usePalette'
 
 const Storefront = () => {
+  usePalette()
+
   return (
     <>
       <Header />

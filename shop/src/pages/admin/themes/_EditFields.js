@@ -37,15 +37,9 @@ const EditFields = () => {
     const bc = new BroadcastChannel(`${activeThemeId}_preview_channel`)
     setChannel(bc)
 
-    let firstUpdateSent = false
     let timeout
 
     bc.onmessage = () => {
-      if (firstUpdateSent) {
-        return
-      }
-      firstUpdateSent = true
-
       // Post saved changes, if any, to the channel
       timeout = setTimeout(() => {
         broadcastChanges({

@@ -2,9 +2,11 @@ import React from 'react'
 import fbt from 'fbt'
 
 import useDiscount from 'utils/useDiscount'
+import usePalette from '../../hoc/usePalette'
 
 const Discount = () => {
   const { code, setCode, activeCode, check, remove, error } = useDiscount()
+  const { colors } = usePalette()
 
   return (
     <>
@@ -22,7 +24,9 @@ const Discount = () => {
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />
-          <button className="btn ml-2 py-2 text-sm">Apply</button>
+          <button className={`btn ml-2 py-2 text-sm bg-${colors.buttonColor}`}>
+            Apply
+          </button>
         </form>
         {activeCode && (
           <div className="inline-flex text-white mt-1 text-sm px-2 bg-gray-500 rounded items-center font-medium">

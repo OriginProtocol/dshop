@@ -2,6 +2,63 @@
   "id": "cake",
   "name": "Cake",
   "config": [{
+    "id": "colors",
+    "title": "Colors",
+    "fields": [{
+      "id": "palette",
+      "title": "Color Palette",
+      "type": "color_palettes",
+      "palettes": [
+        {
+          "id": "palette1",
+          "title": "Rose Clay",
+          "colors": {
+            "pageBg": "#fcf8f8",
+            "footerBg": "#faf4f4",
+            "textColor1": "#000000",
+            "textColor2": "#514846",
+            "buttonColor": "#d18172",
+            "linkColor": "#d18172",
+            "accentColor": "#d18172"
+          },
+          "fonts": {
+            "header": "Philosopher",
+            "body": "Avenir"
+          }
+        },
+        {
+          "id": "palette2",
+          "title": "Coral Haze",
+          "colors": {
+            "pageBg": "#fcfbf8",
+            "footerBg": "#f8f6f2",
+            "textColor1": "#000000",
+            "textColor2": "#565248",
+            "buttonColor": "#ff785f",
+            "linkColor": "#ff785f",
+            "accentColor": "#f4c110"
+          },
+          "fonts": {
+            "header": "Rockwell",
+            "body": "HelveticaNeue"
+          }
+        }
+      ],
+      "colorLabels": {
+        "pageBg": "Page Background Color",
+        "footerBg": "Footer Background Color",
+        "textColor1": "Text Color 1",
+        "textColor2": "Text Color 2",
+        "buttonColor": "Button Color",
+        "linkColor": "Link Color",
+        "accentColor": "Accent Color"
+      },
+      "fontLabels": {
+        "header": "Header Font",
+        "body": "Body Font"
+      }
+    }]
+  }, {
     "id": "header",
     "title": "Header",
     "fields": [{

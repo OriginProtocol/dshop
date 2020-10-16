@@ -8,6 +8,7 @@ import useCollection from 'utils/useCollection'
 import Link from 'components/Link'
 
 import Products from './_Products'
+import usePalette from '../hoc/usePalette'
 
 const Product = ({ match }) => {
   const [addedToCart, setAddedToCart] = useState()
@@ -26,6 +27,8 @@ const Product = ({ match }) => {
   const { collection, nextProduct, previousProduct } = useCollection(
     activeCollectionId
   )
+
+  const { colors } = usePalette()
 
   if (loading) {
     return null
@@ -80,7 +83,10 @@ const Product = ({ match }) => {
               dangerouslySetInnerHTML={{ __html: product.description }}
             />
             {addedToCart ? (
-              <Link to="/cart" className="btn btn-primary px-32">
+              <Link
+                to="/cart"
+                className={`btn btn-primary px-32 bg-${colors.buttonColor}`}
+              >
                 View Cart
               </Link>
             ) : (
@@ -89,7 +95,7 @@ const Product = ({ match }) => {
                   dispatch({ type: 'addToCart', product, variant })
                   setAddedToCart(true)
                 }}
-                className="btn btn-primary sm:px-32"
+                className={`btn btn-primary sm:px-32 bg-${colors.buttonColor}`}
               >
                 Add to Cart
               </button>

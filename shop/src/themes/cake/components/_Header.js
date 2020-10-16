@@ -9,17 +9,23 @@ import useThemeVars from 'utils/useThemeVars'
 import Link from 'components/Link'
 import CartIcon from 'components/icons/Cart'
 import MenuIcon from 'components/icons/Menu'
+import usePalette from '../hoc/usePalette'
 
-const Cart = ({ cart, hideText }) => (
-  <Link
-    to="/cart"
-    className="btn btn-primary nav-link flex items-center text-sm px-6 py-1"
-  >
-    <CartIcon className="w-4 mr-2 fill-current" fill={null} />
-    {hideText ? null : 'Cart'}
-    {cart.items.length ? <div className="ml-2">{cart.items.length}</div> : null}
-  </Link>
-)
+const Cart = ({ cart, hideText }) => {
+  const palette = usePalette()
+  return (
+    <Link
+      to="/cart"
+      className={`btn btn-primary nav-link flex items-center text-sm px-6 py-1 bg-${palette.colors.buttonColor}`}
+    >
+      <CartIcon className="w-4 mr-2 fill-current" fill={null} />
+      {hideText ? null : 'Cart'}
+      {cart.items.length ? (
+        <div className="ml-2">{cart.items.length}</div>
+      ) : null}
+    </Link>
+  )
+}
 
 const Header = ({ bg }) => {
   const history = useHistory()

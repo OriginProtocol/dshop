@@ -5,11 +5,13 @@ import Link from 'components/Link'
 import useThemeVars from 'utils/useThemeVars'
 
 import Products from './_Products'
+import usePalette from '../hoc/usePalette'
 
 const App = () => {
   const themeVars = useThemeVars()
   const headerImageUrl = get(themeVars, 'home.headerImage.0.url')
   const headerText = get(themeVars, 'home.headerText')
+  const { colors } = usePalette()
 
   return (
     <>
@@ -42,7 +44,10 @@ const App = () => {
         <Products limit={3} excludeFeatured />
 
         <div className="my-24 flex justify-center">
-          <Link to="/products" className="btn btn-primary">
+          <Link
+            to="/products"
+            className={`btn btn-primary bg-${colors.buttonColor}`}
+          >
             View All Products
           </Link>
         </div>

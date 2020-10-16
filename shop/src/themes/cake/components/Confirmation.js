@@ -11,6 +11,7 @@ import formatAddress from 'utils/formatAddress'
 import Link from 'components/Link'
 
 import { OrderSummary } from './checkout/_Summary'
+import usePalette from '../hoc/usePalette'
 
 const Order = () => {
   const isMobile = useIsMobile()
@@ -32,6 +33,8 @@ const Order = () => {
 
 const OrderDesktop = ({ order }) => {
   const { config } = useConfig()
+  const palette = usePalette()
+
   return (
     <div className="min-h-screen bg-red-100">
       <div className="bg-red-100">
@@ -90,7 +93,10 @@ const OrderDesktop = ({ order }) => {
                   Contact Us
                 </a>
               </div>
-              <Link className="btn btn-primary" to="/">
+              <Link
+                className={`btn btn-primary bg-${palette.colors.buttonColor}`}
+                to="/"
+              >
                 Continue Shopping
               </Link>
             </div>
@@ -106,6 +112,7 @@ const OrderDesktop = ({ order }) => {
 
 const OrderMobile = ({ order }) => {
   const { config } = useConfig()
+  const palette = usePalette()
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -156,7 +163,10 @@ const OrderMobile = ({ order }) => {
 
         <div className="font-medium">Shipping method</div>
         <div className="mb-4">{get(order, 'shipping.label')}</div>
-        <Link className="btn btn-primary w-full block mb-6 mt-8" to="/">
+        <Link
+          className={`btn btn-primary w-full block mb-6 mt-8 bg-${palette.colors.buttonColor}`}
+          to="/"
+        >
           Continue Shopping
         </Link>
         <div className="text-sm text-center">
