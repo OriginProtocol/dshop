@@ -37,8 +37,9 @@ async function assembleBuild({
     const raw = fs.readFileSync(`${OutputDir}/data/config.json`)
     publicShopConfig = JSON.parse(raw.toString())
   } catch (e) {
-    log.warning(`Shop ${shop.id}: failed parsing ${OutputDir}/data/config.json`)
-    // TODO: Under which circumstances would it be ok for this to not be a hard error?
+    log.error(e)
+    // Throw something more clear
+    throw new Error(`Shop ${shop.id}: failed parsing ${OutputDir}/data/config.json`)
   }
 
   await new Promise((resolve, reject) => {
