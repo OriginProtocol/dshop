@@ -54,7 +54,7 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      const { status, ...data } = await uploadFiles(req, '/__tmp')
+      const { status, ...data } = await uploadFiles(req, '/__tmp', true)
       res.status(status).send(data)
     }
   )
