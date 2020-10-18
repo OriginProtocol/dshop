@@ -1,4 +1,29 @@
 {
   "id": "poly",
-  "name": "Poly"
+  "name": "Poly",
+  "config": [{
+    "id": "home",
+    "name": "Home",
+    "fields": [{
+      "id": "headerImage",
+      "title": "Header Image",
+      "type": "media"
+    }, {
+      "id": "aboutText",
+      "title": "About Content",
+      "type": "text"
+    }]
+  },{
+    "id": "about",
+    "title": "About Page",
+    "fields": [{
+      "id": "aboutImage",
+      "title": "Image",
+      "type": "media"
+    }, {
+      "id": "aboutText",
+      "title": "About Content",
+      "type": "text"
+    }]
+  }]
 }

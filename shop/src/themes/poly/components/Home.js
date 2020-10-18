@@ -1,8 +1,14 @@
 import React from 'react'
+import get from 'lodash/get'
 
 import Link from 'components/Link'
+import useThemeVars from 'utils/useThemeVars'
 
 const Home = () => {
+  const themeVars = useThemeVars()
+
+  const aboutText = get(themeVars, 'home.aboutText')
+
   return (
     <>
       <div className="container">
@@ -85,9 +91,7 @@ const Home = () => {
         />
         <div className="container py-16 sm:py-32 flex flex-col items-center">
           <div className="text-2xl leading-tight max-w-sm text-center mb-12">
-            Our team of artists and CAD designers take inspiration from the
-            world around us and turn it into 3D models. We then turn these 3D
-            models into real world pieces of art and collectors items.
+            {aboutText}
           </div>
           <Link to="/about" className="btn text-2xl px-10">
             About Us
