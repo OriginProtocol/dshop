@@ -5,6 +5,7 @@ import get from 'lodash/get'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import useCollections from 'utils/useCollections'
+import useThemeVars from 'utils/useThemeVars'
 
 import Link from 'components/Link'
 import CartIcon from 'components/icons/Cart'
@@ -33,6 +34,8 @@ const Header = () => {
   const about = useRouteMatch('/about')
   const product = useRouteMatch('/product') || useRouteMatch('/products')
   const contact = useRouteMatch('/contact')
+
+  const themeVars = useThemeVars()
 
   const activeClass = ' border-b border-black'
 
@@ -109,7 +112,7 @@ const Header = () => {
     : 'py-12 sm:py-24'
 
   const backgroundImage =
-    bg && `url(${config.dataSrc}${get(config, 'theme.home.backgroundImage')})`
+    bg && `url(${config.dataSrc}${get(themeVars, 'home.headerImage.0.url')})`
 
   return (
     <>

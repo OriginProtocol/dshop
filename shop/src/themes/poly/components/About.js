@@ -1,15 +1,16 @@
 import React from 'react'
 import get from 'lodash/get'
 
-import useAbout from 'utils/useAbout'
 import useConfig from 'utils/useConfig'
+import useThemeVars from 'utils/useThemeVars'
 
 const About = () => {
   const { config } = useConfig()
-  const { about } = useAbout()
-  const src = `${config.dataSrc}${get(config, 'theme.home.aboutImage')}`
+  const themeVars = useThemeVars()
+  const src = `${config.dataSrc}${get(themeVars, 'about.aboutImage')}`
+  const aboutText = get(themeVars, 'about.aboutText')
 
-  if (!about) {
+  if (!aboutText) {
     return <div className="min-h-screen" />
   }
 
@@ -17,12 +18,9 @@ const About = () => {
     <>
       <div className="container my-12 sm:my-24">
         <div className="text-3xl sm:text-5xl leading-none mb-6">About</div>
-        {!about ? null : (
-          <div
-            className="text-xl sm:text-3xl whitespace-pre-line leading-tight max-w-4xl"
-            dangerouslySetInnerHTML={{ __html: about }}
-          />
-        )}
+        <div className="text-xl sm:text-3xl whitespace-pre-line leading-tight max-w-4xl">
+          {aboutText}
+        </div>
       </div>
       <div
         className="bg-no-repeat mb-12"

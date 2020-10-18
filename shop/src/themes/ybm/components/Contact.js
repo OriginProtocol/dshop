@@ -11,10 +11,9 @@ import Footer from './_Footer'
 
 const Contact = () => {
   const { config } = useConfig()
-  const contact = get(config, 'theme.contact', {})
-  const header = get(config, 'theme.contact.header', {})
 
   const themeVars = useThemeVars()
+  const contact = get(themeVars, 'contact', {})
   const headerImage = `${config.dataSrc}${get(
     themeVars,
     'contact.headerImage.0'
@@ -24,7 +23,7 @@ const Contact = () => {
     <>
       <Header
         style={{
-          backgroundImage: `url(${get(headerImageUrl, 'url')})`,
+          backgroundImage: `url(${get(headerImage, 'url')})`,
           backgroundPosition: get(headerImage, 'backgroundPosition')
         }}
       >

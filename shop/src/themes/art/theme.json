@@ -1,4 +1,38 @@
 {
   "id": "art",
-  "name": "Art"
+  "name": "Art",
+  "config": [{
+    "id": "home",
+    "name": "Home",
+    "fields": [{
+      "id": "headerImage",
+      "title": "Header Image",
+      "type": "media"
+    }, {
+      "id": "aboutImage",
+      "title": "Image",
+      "type": "media",
+      "props": ["height"]
+    }]
+  }, {
+    "id": "about",
+    "name": "About Page",
+    "fields": [{
+      "id": "aboutImage",
+      "title": "Image",
+      "type": "media"
+    }, {
+      "id": "aboutText",
+      "title": "About Content",
+      "type": "text"
+    }]
+  }, {
+    "id": "contact",
+    "name": "Contact Page",
+    "fields": [{
+      "id": "contactText",
+      "title": "Contact Content",
+      "type": "text"
+    }]
+  }]
 }

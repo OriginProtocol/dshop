@@ -3,6 +3,7 @@ import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
 import useCollections from 'utils/useCollections'
+import useThemeVars from 'utils/useThemeVars'
 
 import Link from 'components/Link'
 
@@ -36,8 +37,10 @@ const App = () => {
 
 const About = () => {
   const { config } = useConfig()
-  const img = `url(${config.dataSrc}${get(config, 'theme.home.aboutImage')})`
-  const paddingTop = get(config, 'theme.home.aboutImageHeight')
+  const themeVars = useThemeVars()
+
+  const img = `url(${config.dataSrc}${get(themeVars, 'home.aboutImage.0.url')})`
+  const paddingTop = get(config, 'home.aboutImage.0.height')
   return (
     <div className="bg-gray-100 p-8 sm:p-4 border-t border-b sm:border-l sm:border-r border-gray-400 grid grid-cols-1 sm:grid-cols-2">
       <div
