@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 
+import SwitchToStorefront from 'components/SwitchToStorefront'
 import { useStateValue } from 'data/state'
 import EditFields from './_EditFields'
 
@@ -30,16 +31,20 @@ const CustomizeTheme = () => {
               src={`/images/${isMobileMode ? 'mobile' : 'desktop'}-icon.svg`}
             />
           </div>
-          <div className="action-icon">
-            <img src="/images/new-window-icon.svg" />
+          <SwitchToStorefront
+            className="action-icon"
+            children={<img src="/images/new-window-icon.svg" />}
+          />
+        </div>
+        <div className="iframe-container">
+          <div
+            className={`iframe-scroll-wrapper${
+              isMobileMode ? ' mobile-view' : ''
+            }`}
+          >
+            <iframe src={previewUrl} />
           </div>
         </div>
-        <iframe
-          src={previewUrl}
-          style={{
-            width: isMobileMode ? '340px' : '100%'
-          }}
-        />
       </div>
     </div>
   )
@@ -70,19 +75,40 @@ require('react-styl')(`
         min-height: 0.75rem
         margin-bottom: 1.875rem
         .action-icon
-          margin: 0 1rem
+          margin: 0 0.5rem
           cursor: pointer
+          border: 0
+          background: none
           img
             height: 16px
             width: 16px
             object-fit: contain
           &:first-child
             margin-left: auto
-    iframe
-      border-radius: 5px
-      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1)
-      border: solid 1px #d9e1e7
+    .iframe-container
+      width: 100%
       flex: 1
-      margin: 0 auto
+      overflow: hidden
+      position: relative
+      .iframe-scroll-wrapper
+        height: 100%
+        width: 100%
+        overflow: scroll
+        position: absolute
+        top: 0
+        bottom: 0
+        left: 0
+        right: 0
+        iframe
+          border-radius: 5px
+          box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1)
+          border: solid 1px #d9e1e7
+          height: 100%
+          min-width: 990px
+          display: block
+        &.mobile-view iframe
+          width: 340px
+          min-width: 340px
+          margin: 0 auto
 
 `)

@@ -7,16 +7,30 @@
     "fields": [{
       "id": "headerImage",
       "title": "Header Image",
+      "type": "media",
+      "props": ["backgroundPosition"]
+    }, {
+      "id": "logo",
+      "title": "Logo",
       "type": "media"
     }]
   }, {
     "id": "home",
     "title": "Home",
     "fields": [{
+      "id": "headerText",
+      "title": "Header Text",
+      "type": "text",
+      "multiline": true
+    }, {
       "id": "aboutText",
       "title": "About Text",
       "type": "text",
       "multiline": true
+    }, {
+      "id": "featuredCollections",
+      "title": "Featured Collections",
+      "type": "collections_list"
     }]
   }, {
     "id": "products",
@@ -47,10 +61,26 @@
     "id": "about",
     "title": "About",
     "fields": [{
+      "id": "headerImage",
+      "title": "Header Image",
+      "type": "media",
+      "props": ["backgroundPosition"]
+    }, {
+      "id": "primaryImage",
+      "title": "Primary Image",
+      "type": "media",
+      "props": ["backgroundPosition", "backgroundSize", "height"]
+    }, {
+      "id": "description",
+      "title": "Description",
+      "type": "text",
+      "multiline": true
+    }, {
       "id": "aboutImages",
       "title": "Images",
       "type": "media",
-      "multiple": true
+      "multiple": true,
+      "props": ["backgroundPosition", "backgroundSize", "height"]
     }]
   }]
 }

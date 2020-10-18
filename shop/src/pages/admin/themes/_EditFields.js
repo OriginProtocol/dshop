@@ -39,14 +39,18 @@ const EditFields = () => {
 
     let timeout
 
-    bc.onmessage = () => {
+    bc.onmessage = (event) => {
+      if (!get(event, 'data.resendData')) {
+        return
+      }
+
       // Post saved changes, if any, to the channel
-      timeout = setTimeout(() => {
-        broadcastChanges({
-          ...get(config.theme, activeThemeId)
-        })
-        bc.postMessage(get(config.theme, activeThemeId))
-      })
+      const newChanges = {
+        ...get(config.theme, activeThemeId),
+        ...changes
+      }
+      broadcastChanges(newChanges)
+      bc.postMessage(newChanges)
     }
 
     return () => {
@@ -57,7 +61,7 @@ const EditFields = () => {
 
   const broadcastChanges = (updates) => {
     const newChanges = {
-      ...get(config.theme, activeThemeId),
+      ...changes,
       ...updates
     }
 

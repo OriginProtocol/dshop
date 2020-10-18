@@ -2,6 +2,7 @@ import React from 'react'
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
+import useThemeVars from 'utils/useThemeVars'
 
 import SocialLink from 'components/SocialLink'
 
@@ -13,12 +14,18 @@ const Contact = () => {
   const contact = get(config, 'theme.contact', {})
   const header = get(config, 'theme.contact.header', {})
 
+  const themeVars = useThemeVars()
+  const headerImage = `${config.dataSrc}${get(
+    themeVars,
+    'contact.headerImage.0'
+  )}`
+
   return (
     <>
       <Header
         style={{
-          backgroundImage: `url(${config.dataSrc}${header.src})`,
-          backgroundPosition: header.position
+          backgroundImage: `url(${get(headerImageUrl, 'url')})`,
+          backgroundPosition: get(headerImage, 'backgroundPosition')
         }}
       >
         <div className="container text-center text-2xl sm:text-5xl py-20 sm:pb-40">

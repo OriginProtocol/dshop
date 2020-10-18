@@ -52,7 +52,7 @@ module.exports = async (req, targetPath = '/') => {
           uploadedFiles: allFiles.map((file) => ({
             path: file.path.replace(
               uploadDir,
-              path.join(`/${dataDir}`, targetPath)
+              targetPath
             ),
             name: file.name
           }))
