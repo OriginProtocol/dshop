@@ -1,4 +1,3 @@
-
 // Local addresses
 // const Addresses = {
 //   factory: '0xE0bF6021e023a197DBb3fABE64efA880E13D3f4b',

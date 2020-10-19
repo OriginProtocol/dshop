@@ -5,11 +5,11 @@
 - Connect wallet popup
 - Contract addresses from config
 - Network ID in header
+- Order status
 
 - Speed up TX
 - Mint tokens in Beta
 - Multi net support
-- Order status
 
 - Purchase with CC? (Auto-redeem)
 - Currency chooser?
