@@ -19,6 +19,7 @@
  *    gateway
  */
 const { Network } = require('../../models')
+const { queues } = require('../../queues')
 const { decryptConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
 const { assert } = require('../../utils/validators')
@@ -303,6 +304,23 @@ async function deploy({
     if (names.length < 1) {
       await createDeploymentName(fqdn, ipfsHash)
     }
+  }
+
+  // Schedule autossl probe to try and kickstart the cert issuer
+  if (ipAddresses) {
+    // CDN deployment
+    for (const ip of ipAddresses) {
+      await queues.autosslQueue.add({
+        url: `https://${fqdn}/`,
+        host: ip
+      })
+    }
+  } else {
+    // IPFS deployment
+    await queues.autosslQueue.add({
+      url: `https://${fqdn}/`,
+      host: ipfsGateway
+    })
   }
 
   const end = +new Date()

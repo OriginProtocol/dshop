@@ -17,6 +17,7 @@
  * }
  *
  */
+const { queues } = require('../../../queues')
 const { getModules, loadModule } = require('../../../utils/module')
 const { getLogger } = require('../../../utils/logger')
 
