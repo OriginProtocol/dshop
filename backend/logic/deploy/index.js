@@ -87,12 +87,20 @@ function success(obj = {}) {
 /**
  * Deploy a shop
  *
- * @param networkId {number} - Network ID to use for configuration
- * @param subdomain {string} - Subdomain we should configure for DNS
- * @param shop {object} - A Shop loaded from DB
- * @param dnsProvider {string} - The DNS provider to use to configure the domain
- *    name (optional)
- * @param pinner {string} - Pinner to use (optional)
+ * @param args {object}
+ * @param args.networkId {number} - Network ID to use for configuration
+ * @param args.subdomain {string} - Subdomain we should configure for DNS
+ * @param args.shop {object} - A Shop loaded from DB
+ * @param args.dnsProvider {string} - The DNS provider to use to configure the
+ *    domain name (optional)
+ * @param args.pinner {string} - Pinner to use (optional)
+ * @param args.overrides {object} - Deployment module overrides (used for
+ *    testing)
+ * @param args.overrides.assembleBuild - Build assembly function
+ * @param args.overrides.deployToBucket - Bucket deployment function
+ * @param args.overrides.configureCDN - CDN configuration function
+ * @param args.overrides.deployToIPFS - IPFS deployment function
+ * @param args.overrides.configureShopDNS - DNS configuration function
  * @returns {object} - deploy() response
  */
 async function deploy({
@@ -101,11 +109,44 @@ async function deploy({
   subdomain,
   dnsProvider,
   pinner,
-  uuid
+  uuid,
+  overrides
 }) {
   assert(!!networkId, 'networkId must be provided to deploy()')
   assert(!!shop, 'shop must be provided to deploy()')
   assert(!!subdomain, 'subdomain must be provided to deploy()')
+
+  /**
+   * We have the ability to override functions within deployment for unit
+   * testing.
+   */
+  let assemble = assembleBuild
+  let bucketDeploy = deployToBucket
+  let ipfsDeploy = deployToIPFS
+  let cdnConfig = configureCDN
+  let dnsConfig = configureShopDNS
+  if (overrides) {
+    if (overrides.assembleBuild) {
+      log.warn(`Deployment function assembleBuild() has been overridden`)
+      assemble = overrides.assembleBuild
+    }
+    if (overrides.deployToBucket) {
+      log.warn(`Deployment function deployToBucket() has been overridden`)
+      bucketDeploy = overrides.deployToBucket
+    }
+    if (overrides.deployToIPFS) {
+      log.warn(`Deployment function deployToIPFS() has been overridden`)
+      ipfsDeploy = overrides.deployToIPFS
+    }
+    if (overrides.configureCDN) {
+      log.warn(`Deployment function configureCDN() has been overridden`)
+      cdnConfig = overrides.configureCDN
+    }
+    if (overrides.configureShopDNS) {
+      log.warn(`Deployment function configureShopDNS() has been overridden`)
+      dnsConfig = overrides.configureShopDNS
+    }
+  }
 
   const network = await Network.findOne({ where: { networkId } })
   if (!network) {
@@ -149,7 +190,7 @@ async function deploy({
    * Assemble the shop dapp build for deployment
    */
   try {
-    await assembleBuild({
+    await assemble({
       network,
       networkConfig,
       shop,
@@ -169,7 +210,7 @@ async function deploy({
   let bucketUrls = []
   let bucketHttpUrls = []
   try {
-    const responses = await deployToBucket({
+    const responses = await bucketDeploy({
       networkConfig,
       shop,
       OutputDir,
@@ -195,7 +236,7 @@ async function deploy({
    */
   let ipAddresses = null
   try {
-    const responses = await configureCDN({
+    const responses = await cdnConfig({
       networkConfig,
       shop,
       deployment,
@@ -215,7 +256,7 @@ async function deploy({
    * Deploy the shop to IPFS
    */
   try {
-    const ipfsRes = await deployToIPFS({
+    const ipfsRes = await ipfsDeploy({
       shop,
       network,
       networkConfig,
@@ -239,7 +280,7 @@ async function deploy({
    */
   if (subdomain) {
     try {
-      await configureShopDNS({
+      await dnsConfig({
         network,
         networkConfig,
         subdomain,
@@ -278,7 +319,7 @@ async function deploy({
   })
   return success({
     hash: ipfsHash,
-    domain,
+    domain,           // TODO: Bad name since this is a URL
     bucketHttpUrls
   })
 }

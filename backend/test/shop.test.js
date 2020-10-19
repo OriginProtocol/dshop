@@ -4,7 +4,7 @@ const expect = chai.expect
 const kebabCase = require('lodash/kebabCase')
 
 const { createShopInDB } = require('../logic/shop/create')
-const { deployShop } = require('../utils/deployShop')
+const deploy = require('../logic/deploy')
 const { getConfig, setConfig } = require('../utils/encryptedConfig')
 const { AdminLogActions, ShopDeploymentStatuses } = require('../enums')
 
@@ -27,12 +27,40 @@ const {
   TEST_UNSTOPPABLE_DOMAIN_1
 } = require('./const')
 
+/**
+ * Creates a generic set of overrides that can be given to deploy()
+ */
+function createOverrides() {
+  return {
+    deployToBucket: ({
+      dataDir
+    }) => {
+      return [{
+        url: `s3://${dataDir}`,
+        httpUrl: `https://${dataDir}.s3.us-west-2.amazonaws.com`
+      }]
+    },
+    deployToIPFS: () => {
+      return {
+        ipfsHash: TEST_HASH_1,
+        ipfsPinner: TEST_IPFS_API,
+        ipfsGateway: TEST_IPFS_GATEWAY
+      }
+    },
+    configureCDN: () => {
+      return [{ ipAddress: '127.0.0.123' }]
+    },
+    configureShopDNS: () => {}
+  }
+}
+
 describe('Shops', () => {
-  let network, shop, deployment, dataDir
+  let network, networkId, shop, deployment, dataDir
 
   before(async () => {
     // Note: the migration inserts a network row for network id 999.
-    network = await Network.findOne({ where: { networkId: 999 } })
+    networkId = 999
+    network = await Network.findOne({ where: { networkId } })
     expect(network).to.be.an('object')
   })
 
@@ -131,29 +159,19 @@ describe('Shops', () => {
   })
 
   it('should deploy a shop', async () => {
-    const testDomain = 'bugfreecode.ai'
-    async function mockDeployFn(args) {
-      return {
-        ipfsHash: 'hash' + Date.now(), // Unique hash.
-        ipfsPinner: TEST_IPFS_API,
-        ipfsGateway: TEST_IPFS_GATEWAY,
-        domain: testDomain,
-        hostname: `${args.subdomain}.${testDomain}`
-      }
-    }
+    const subdomain = 'test'
+    const expectedURL = `https://${subdomain}.${network.domain}`
     const args = {
-      OutputDir: '/tmp',
-      dataDir: '/tmp/dataDir',
-      network,
+      networkId,
       shop,
-      subdomain: 'test',
-      pinner: undefined,
-      deployFn: mockDeployFn
+      subdomain,
+      dnsProvider: 'randomprovi',
+      overrides: createOverrides()
     }
-    const { hash, domain } = await deployShop(args)
+    const { hash, domain } = await deploy(args)
 
     expect(hash).to.be.an('string')
-    expect(domain).to.be.equal(testDomain)
+    expect(domain).to.be.equal(expectedURL)
 
     // Check a new deployment row was created.
     deployment = await ShopDeployment.findOne({
@@ -173,7 +191,7 @@ describe('Shops', () => {
       where: { ipfsHash: hash }
     })
     expect(deploymentName).to.be.an('object')
-    expect(deploymentName.hostname).to.equal(`${args.subdomain}.${testDomain}`)
+    expect(deploymentName.hostname).to.equal(`${args.subdomain}.${network.domain}`)
   })
 
   it('should not deploy a shop if a deploy is already running', async () => {
@@ -182,24 +200,16 @@ describe('Shops', () => {
 
     // An attempt to do a deploy on the same shop should result in an error.
     const args = {
-      OutputDir: '/tmp',
-      dataDir: '/tmp/dataDir',
-      network,
+      networkId,
       shop,
       subdomain: 'test',
-      pinner: undefined,
-      deployFn: () => {}
+      overrides: createOverrides()
     }
-    let error
-    try {
-      await deployShop(args)
-    } catch (e) {
-      error = e
-    }
-    expect(error).to.not.be.undefined
-    expect(error.message).to.equal(
-      'The shop is already being published. Try again in a few minutes.'
-    )
+    const deployResult = await deploy(args)
+
+    expect(deployResult.success).to.be.false
+    expect(deployResult.error).to.be.true
+    expect(deployResult.message).to.not.be.undefined
   })
 
   it('should deploy a shop if an old deploy is pending', async () => {
@@ -210,29 +220,21 @@ describe('Shops', () => {
       `UPDATE shop_deployments SET status='Pending', created_at='${anHourAgo}' WHERE id = ${deployment.id};`
     )
 
-    const testDomain = 'testsareforchampions.dev'
-    async function mockDeployFn(args) {
-      return {
-        ipfsHash: TEST_HASH_1, // Unique hash.
-        ipfsPinner: TEST_IPFS_API,
-        ipfsGateway: TEST_IPFS_GATEWAY,
-        domain: testDomain,
-        hostname: `${args.subdomain}.${testDomain}`
-      }
-    }
+    const subdomain = 'test'
+    const expectedURL = `https://${subdomain}.${network.domain}`
     const args = {
-      OutputDir: '/tmp',
-      dataDir: '/tmp/dataDir',
-      network,
+      networkId,
       shop,
-      subdomain: 'test',
-      pinner: undefined,
-      deployFn: mockDeployFn
+      subdomain,
+      dnsProvider: 'testprovider',
+      overrides: createOverrides()
     }
-    const { hash, domain } = await deployShop(args)
+    const { success, error, hash, domain } = await deploy(args)
 
+    expect(success).to.be.true
+    expect(error).to.be.false
     expect(hash).to.be.an('string')
-    expect(domain).to.be.equal(testDomain)
+    expect(domain).to.be.equal(expectedURL)
 
     // Check the old deployment status was changed to a failure.
     await deployment.reload()
@@ -258,7 +260,7 @@ describe('Shops', () => {
     })
     expect(newDeploymentName).to.be.an('object')
     expect(newDeploymentName.hostname).to.equal(
-      `${args.subdomain}.${testDomain}`
+      `${args.subdomain}.${network.domain}`
     )
   })
 
@@ -292,7 +294,7 @@ describe('Shops', () => {
 
     expect(jason.success).to.be.true
     expect(jason.names).to.be.an('array')
-    expect(jason.names).to.have.lengthOf(3)
+    expect(jason.names).to.have.lengthOf(2)
     expect(jason.names[0]).to.be.equal(TEST_UNSTOPPABLE_DOMAIN_1)
   })
 
