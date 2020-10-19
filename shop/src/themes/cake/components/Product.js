@@ -6,8 +6,22 @@ import useCollections from 'utils/useCollections'
 import useCollection from 'utils/useCollection'
 
 import Link from 'components/Link'
+import Caret from 'components/icons/Caret'
 
 import Products from './_Products'
+import usePalette from '../hoc/usePalette'
+
+const RightCaret = () => (
+  <div
+    className="d-flex items-center"
+    style={{
+      transform: 'rotateZ(270deg)',
+      padding: '0 5px'
+    }}
+  >
+    <Caret />
+  </div>
+)
 
 const Product = ({ match }) => {
   const [addedToCart, setAddedToCart] = useState()
@@ -27,6 +41,8 @@ const Product = ({ match }) => {
     activeCollectionId
   )
 
+  const { colors, fonts } = usePalette()
+
   if (loading) {
     return null
   }
@@ -35,19 +51,14 @@ const Product = ({ match }) => {
     <>
       <div className="container mt-8 sm:mt-16">
         <div className="flex flex-col sm:flex-row content-between mb-5">
-          <div className="flex-1">
+          <div className="flex-1 flex items-center">
             <Link className="" to="/">
               Home
             </Link>{' '}
-            &raquo;
-            <Link className="ml-3" to="/products">
-              All Products
-            </Link>{' '}
-            &raquo;
+            <RightCaret />
+            <Link to="/products">All Products</Link> <RightCaret />
             {!collection ? null : (
-              <Link className="ml-3" to={`/products/${collection.id}`}>
-                {collection.title}
-              </Link>
+              <Link to={`/products/${collection.id}`}>{collection.title}</Link>
             )}
           </div>
           <div className="flex-1 text-right">
@@ -69,7 +80,9 @@ const Product = ({ match }) => {
             <img src={product.imageUrl} />
           </div>
           <div className="sm:ml-24" style={{ flex: '3' }}>
-            <div className="text-center sm:text-left text-3xl sm:text-4xl font-semibold leading-none">
+            <div
+              className={`text-center sm:text-left text-3xl sm:text-4xl font-semibold leading-none font-${fonts.header}`}
+            >
               {product.title}
             </div>
             <div className="text-center sm:text-left mt-4 text-lg mb-12">
@@ -80,7 +93,10 @@ const Product = ({ match }) => {
               dangerouslySetInnerHTML={{ __html: product.description }}
             />
             {addedToCart ? (
-              <Link to="/cart" className="btn btn-primary px-32">
+              <Link
+                to="/cart"
+                className={`btn btn-primary px-32 bg-${colors.buttonColor}`}
+              >
                 View Cart
               </Link>
             ) : (
@@ -89,14 +105,14 @@ const Product = ({ match }) => {
                   dispatch({ type: 'addToCart', product, variant })
                   setAddedToCart(true)
                 }}
-                className="btn btn-primary sm:px-32"
+                className={`btn btn-primary sm:px-32 bg-${colors.buttonColor}`}
               >
                 Add to Cart
               </button>
             )}
           </div>
         </div>
-        <div className="mt-24 mb-6 text-4xl font-serif text-center">
+        <div className={`mt-24 mb-6 text-4xl font-${fonts.header} text-center`}>
           You might also like
         </div>
         <Products limit={3} />

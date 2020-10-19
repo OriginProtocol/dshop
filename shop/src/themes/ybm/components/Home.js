@@ -22,7 +22,7 @@ const Home = () => {
           className="text-center mt-24 text-3xl sm:text-5xl leading-tight mx-auto"
           style={{ maxWidth: 600 }}
         >
-          {config.byline}
+          {get(themeVars, 'home.headerText', config.byline)}
         </div>
         <div className="text-center pt-12 pb-40 sm:pb-60">
           <Link to="/products" className="btn btn-primary btn-xl">

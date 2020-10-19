@@ -28,7 +28,9 @@ const useThemeVars = () => {
 
       // Hack: To let the theme editor know that page
       // has loaded and data can be sent
-      bc.postMessage({})
+      bc.postMessage({
+        resendData: true
+      })
 
       return () => bc.close()
     }

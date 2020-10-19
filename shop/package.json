@@ -20,6 +20,7 @@
     "theme:ybm:dist": "sh buildThemes.sh ybm",
     "theme:uni": "NODE_ENV=production THEME=uni webpack --loglevel notice",
     "theme:uni:dist": "sh buildThemes.sh uni",
+    "theme:watch": "sh buildThemeDev.sh",
     "lint": "eslint . && npm run prettier:check",
     "prettier": "prettier --write *.js \"{src,test}/**/*.js\"",
     "prettier:check": "prettier -c *.js \"src/**/*.js\"",

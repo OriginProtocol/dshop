@@ -1,5 +1,7 @@
-import React, { useRef, useReducer } from 'react'
+import React, { useRef, useReducer, useState } from 'react'
 import fbt from 'fbt'
+import get from 'lodash/get'
+import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import loadImage from 'utils/loadImage'
 
@@ -14,13 +16,80 @@ function reducer(state, newState) {
   return { ...state, ...newState }
 }
 
-const ImagePicker = ({ images, onChange, multiple }) => {
-  // const { config } = useConfig()
+const EditableProps = ({ imageObj, onChange, editableProps }) => {
+  return (
+    <>
+      {editableProps.map((propName) => {
+        const propVal = get(imageObj, propName)
+        const onPropChange = (e) => {
+          onChange({
+            ...imageObj,
+            [propName]: e.target.value
+          })
+        }
+
+        const fieldProps = {
+          className: 'form-control',
+          value: propVal,
+          onChange: onPropChange
+        }
+
+        const textInput = (label) => (
+          <div key={propName} className="form-group">
+            <label>{label}</label>
+            <input type="text" {...fieldProps} />
+          </div>
+        )
+
+        switch (propName) {
+          case 'backgroundPosition':
+            return (
+              <div key={propName} className="form-group">
+                <label>
+                  <fbt desc="admin.themes.bgPos">Position</fbt>
+                </label>
+                <select {...fieldProps}>
+                  <option value="center">
+                    <fbt desc="Center">Center</fbt>
+                  </option>
+                  <option value="bottom">
+                    <fbt desc="Bottom">Bottom</fbt>
+                  </option>
+                  <option value="left">
+                    <fbt desc="Left">Left</fbt>
+                  </option>
+                  <option value="right">
+                    <fbt desc="Right">Right</fbt>
+                  </option>
+                  <option value="top">
+                    <fbt desc="Top">Top</fbt>
+                  </option>
+                </select>
+              </div>
+            )
+          case 'height':
+            return textInput(<fbt desc="admin.themes.height">Height</fbt>)
+          case 'backgroundSize':
+            return textInput(
+              <fbt desc="admin.themes.bgSize">Background Size</fbt>
+            )
+        }
+
+        return null
+      })}
+    </>
+  )
+}
+
+const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
+  const { config } = useConfig()
   const { postRaw } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, {})
 
   const uploadRef = useRef()
   const uniqueId = useRef('upload_' + Date.now())
+
+  const [editProps, setEditProps] = useState(null)
 
   const uploadImages = async (files) => {
     try {
@@ -68,8 +137,10 @@ const ImagePicker = ({ images, onChange, multiple }) => {
       const newState = [...images]
       newState[replaceAtIndex] = newImages[0]
       onChange(newState)
+      setEditProps(replaceAtIndex)
     } else {
       onChange([...images, ...newImages].slice(0, 50))
+      setEditProps(images.length)
     }
     uploadRef.current.value = ''
   }
@@ -79,24 +150,18 @@ const ImagePicker = ({ images, onChange, multiple }) => {
       {images.length ? (
         images.map((imageObj, index) => (
           <div className="image-box" key={imageObj.url}>
-            <img src={imageObj.url} />
+            <img src={config.dataSrc + imageObj.url} />
             <div className="label-section">
               <div className="label">{imageObj.name}</div>
 
-              <label className="action-icon">
-                <input
-                  type="file"
-                  accept={acceptedFileTypes.join(',')}
-                  multiple={false}
-                  disabled={state.uploading}
-                  onChange={async (e) => {
-                    const { files } = e.currentTarget
-                    await filesAdded(files, index)
-                  }}
-                  style={{ display: 'none' }}
-                />
+              <div
+                className="action-icon"
+                onClick={() => {
+                  setEditProps(editProps === index ? null : index)
+                }}
+              >
                 <img src="/images/edit-icon.svg" />
-              </label>
+              </div>
               <div
                 className="action-icon"
                 onClick={() => {
@@ -107,6 +172,19 @@ const ImagePicker = ({ images, onChange, multiple }) => {
               >
                 <img src="/images/delete-icon.svg" />
               </div>
+            </div>
+            <div className="props-section">
+              {editProps !== index ? null : (
+                <EditableProps
+                  imageObj={imageObj}
+                  onChange={(newObj) => {
+                    const newImages = [...images]
+                    newImages[index] = newObj
+                    onChange(newImages)
+                  }}
+                  editableProps={editableProps}
+                />
+              )}
             </div>
           </div>
         ))

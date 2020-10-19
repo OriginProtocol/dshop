@@ -1,17 +1,20 @@
 import React from 'react'
 import fbt, { FbtParam } from 'fbt'
-
+import get from 'lodash/get'
 import useConfig from 'utils/useConfig'
 import Link from 'components/Link'
 import SocialLink from 'components/SocialLink'
-
+import useThemeVars from 'utils/useThemeVars'
 const Footer = () => {
   const { config } = useConfig()
   const date = new Date()
+  const themeVars = useThemeVars()
+  const logoUrl = `${config.dataSrc}${get(themeVars, 'header.logo.0.url')}`
+
   return (
     <div className="container mb-24">
       <div className="mb-24 flex flex-col items-center">
-        <img style={{ width: 80 }} src={`${config.dataSrc}${config.logo}`} />
+        <img style={{ width: 80 }} src={logoUrl} />
       </div>
 
       <div className="font-sm flex justify-between flex-col sm:flex-row items-center gap-6 sm:gap-0">

@@ -1,12 +1,12 @@
 import React from 'react'
-
+import get from 'lodash/get'
 import Twitter from 'components/icons/Twitter'
 import Facebook from 'components/icons/Facebook'
 import YouTube from 'components/icons/YouTube'
 import CartIcon from 'components/icons/Cart'
 import Link from 'components/Link'
 import MenuIcon from 'components/icons/Menu'
-
+import useThemeVars from 'utils/useThemeVars'
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 
@@ -24,13 +24,17 @@ const Cart = ({ cart }) => (
 const Header = () => {
   const { config } = useConfig()
   const [{ cart }] = useStateValue()
+  const themeVars = useThemeVars()
+
+  const logoUrl = `${config.dataSrc}${get(themeVars, 'header.logo.0.url')}`
+
   return (
     <div className="container flex items-center pt-8 sm:pt-20">
       <Link to="/" className="flex items-center">
         <img
           style={{ transform: 'translateY(-3px)' }}
           className="mr-2 w-8 h-8 sm:w-16 sm:h-16"
-          src={`${config.dataSrc}${config.logo}`}
+          src={logoUrl}
         />
         <div className="sm:text-3xl text-xl">{config.title}</div>
       </Link>

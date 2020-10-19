@@ -35,8 +35,6 @@ const ThemeSettings = () => {
       type: 'toast',
       message: <fbt desc="admin.themes.themeChanged">Theme changed</fbt>
     })
-
-    window.scrollTo(0, 0)
   }
 
   const previewTheme = async (themeId) => {
@@ -130,9 +128,9 @@ require('react-styl')(`
         border: solid 2px #000000
 
       img
-        height: 100%
+        height: 250px
         width: 100%
-        object-fit: contain
+        object-fit: cover
 
       .theme-label
         text-align: center
@@ -155,6 +153,7 @@ require('react-styl')(`
         align-items: center
         justify-content: center
         display: none
+        height: 100%
         &:before
           content: ' '
           display: inline-block

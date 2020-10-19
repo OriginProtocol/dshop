@@ -1,6 +1,6 @@
 const fs = require('fs')
 const path = require('path')
-const { THEMES_CACHE } = require('../utils/const')
+const { THEMES_CACHE, IS_PROD } = require('../utils/const')
 
 let CACHED_LIST
 
@@ -27,6 +27,9 @@ const getAllThemesData = () => {
  * If not, fetches and stores into cache before returning
  */
 const getAvailableThemes = () => {
+  // Disable cache in dev environment
+  if (!IS_PROD) return getAllThemesData()
+
   if (!CACHED_LIST) CACHED_LIST = getAllThemesData()
 
   return CACHED_LIST

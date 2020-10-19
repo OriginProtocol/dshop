@@ -2,6 +2,7 @@ import React from 'react'
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
+import useThemeVars from 'utils/useThemeVars'
 
 import SocialLink from 'components/SocialLink'
 
@@ -10,15 +11,22 @@ import Footer from './_Footer'
 
 const Contact = () => {
   const { config } = useConfig()
-  const contact = get(config, 'theme.contact', {})
-  const header = get(config, 'theme.contact.header', {})
+
+  const themeVars = useThemeVars()
+  const contact = get(themeVars, 'contact', {})
+  const headerImage = `${config.dataSrc}${get(
+    themeVars,
+    'contact.headerImage.0'
+  )}`
+  const contactEmail = get(themeVars, 'contact.email', config.supportEmail)
+  const contactNumber = get(themeVars, 'contact.number', config.supportPhone)
 
   return (
     <>
       <Header
         style={{
-          backgroundImage: `url(${config.dataSrc}${header.src})`,
-          backgroundPosition: header.position
+          backgroundImage: `url(${get(headerImage, 'url')})`,
+          backgroundPosition: get(headerImage, 'backgroundPosition')
         }}
       >
         <div className="container text-center text-2xl sm:text-5xl py-20 sm:pb-40">
@@ -30,7 +38,9 @@ const Contact = () => {
           <div className="text-3xl text-center leading-none">
             {contact.title}
           </div>
-          <div className="font-light text-lg">{contact.description}</div>
+          <div className="font-light text-lg whitespace-pre">
+            {contact.description}
+          </div>
           <div className="flex-1 flex gap-8 order-2 sm:order-1">
             <SocialLink
               href={config.twitter}
@@ -51,15 +61,15 @@ const Contact = () => {
             Email
           </div>
           <div className="text-2xl sm:text-4xl text-center leading-none">
-            {config.supportEmail}
+            {contactEmail}
           </div>
-          {!config.supportPhone ? null : (
+          {!contactNumber ? null : (
             <>
               <div className="mt-12 text-2xl text-center leading-none text-gray-600">
                 Phone
               </div>
               <div className="text-2xl sm:text-4xl text-center leading-none">
-                {config.supportPhone}
+                {contactNumber}
               </div>
             </>
           )}

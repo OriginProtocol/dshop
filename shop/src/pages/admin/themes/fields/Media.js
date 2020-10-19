@@ -1,8 +1,11 @@
 import React from 'react'
+import get from 'lodash/get'
 
 import ImagePicker from './_ImagePicker'
 
 const MediaField = ({ field, value, onChange }) => {
+  const editableProps = get(field, 'props', [])
+
   return (
     <div className="form-group">
       <label>{field.title}</label>
@@ -10,6 +13,7 @@ const MediaField = ({ field, value, onChange }) => {
         images={value || []}
         onChange={onChange}
         multiple={field.multiple}
+        editableProps={editableProps}
       />
     </div>
   )

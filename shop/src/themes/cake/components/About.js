@@ -1,26 +1,32 @@
 import React from 'react'
+import get from 'lodash/get'
 
-import useAbout from 'utils/useAbout'
-
+import useConfig from 'utils/useConfig'
+import useThemeVars from 'utils/useThemeVars'
+import usePalette from '../hoc/usePalette'
 const About = () => {
-  const { about } = useAbout()
+  const { config } = useConfig()
+  const themeVars = useThemeVars()
+  const src = `${config.dataSrc}${get(themeVars, 'about.aboutImage.0.url')}`
+  const aboutText = get(themeVars, 'about.aboutText')
+  const { fonts } = usePalette()
 
   return (
     <>
       <div className="container mt-12">
-        <div className="text-4xl leading-none font-medium">About</div>
-        <div className="flex mt-16">
-          <div style={{ flex: '3' }}>
-            {!about ? null : (
-              <div
-                className="text-sm mr-32"
-                dangerouslySetInnerHTML={{ __html: about }}
-              />
-            )}
-          </div>
-          <div style={{ flex: '2' }}>
-            <img className="w-full" src="peer-art/artist.png" />
-          </div>
+        <div className={`text-4xl leading-none font-${fonts.header}`}>
+          About
+        </div>
+        <div className="my-8">
+          {!aboutText ? null : (
+            <div
+              className="whitespace-pre"
+              dangerouslySetInnerHTML={{ __html: aboutText }}
+            />
+          )}
+        </div>
+        <div>
+          <img className="w-full" src={src} />
         </div>
       </div>
     </>
