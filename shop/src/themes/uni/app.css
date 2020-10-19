@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @font-face {
+    font-family: PTSans;
+    font-weight: 400;
+    src: url(fonts/PTSans-Regular.ttf);
+  }
+  @font-face {
+    font-family: PTSans;
+    font-weight: 800;
+    src: url(fonts/PTSans-Bold.ttf);
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #000;
+    color: #fff;
+  }
+}
+
+@layer components {
+  .btn-disabled {
+    @apply w-full text-center text-white font-bold py-3 text-lg border border-white rounded-full opacity-50 select-none;
+  }
+  .btn {
+    @apply w-full text-center text-white font-bold py-3 text-lg border border-white rounded-full transition-all duration-300 ease-in-out;
+  }
+  .btn:not(.disabled):hover {
+    @apply bg-white text-black;
+  }
+
+  .btn-primary {
+    @apply border-0 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 flex items-center justify-center;
+  }
+  .btn-primary.disabled {
+    @apply select-none;
+  }
+
+  .btn-primary:not(.disabled):hover {
+    @apply text-white opacity-75;
+  }
+
+  .btn-sm {
+    @apply py-1 text-sm w-auto px-4;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}

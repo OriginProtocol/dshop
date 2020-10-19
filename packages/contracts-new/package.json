@@ -1,0 +1,22 @@
+{
+  "name": "contracts-new",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@nomiclabs/buidler": "^1.4.7",
+    "@openzeppelin/contracts": "^3.2.0"
+  },
+  "devDependencies": {
+    "@nomiclabs/buidler-ethers": "^2.0.2",
+    "@nomiclabs/buidler-waffle": "^2.1.0",
+    "chai": "^4.2.0",
+    "ethereum-waffle": "^3.1.1",
+    "ethers": "^5.0.17"
+  }
+}
