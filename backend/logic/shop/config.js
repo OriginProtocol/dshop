@@ -242,7 +242,7 @@ async function updateShopConfig({ seller, shop, data }) {
       data.stripeWebhookHost || netConfig.backendUrl
     )
     dataOverride.stripeWebhookSecret = secret
-  } else {
+  } else if (existingConfig.stripeBackend && data.stripe === false) {
     log.info(`Shop ${shopId} - De-registering Stripe webhook`)
     await stripeUtils.deregisterWebhooks(shop, existingConfig)
     dataOverride.stripeWebhookSecret = ''
