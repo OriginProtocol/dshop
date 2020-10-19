@@ -18,11 +18,14 @@ buildTheme () {
 
   echo $themeName built
 }
-export -f buildTheme
+
 if [ -z "$1" ]; then
   rm -rf ../backend/themes
   mkdir -p ../backend/themes
-  find . -path './src/themes/*' -prune -type d -exec bash -c 'buildTheme "$0"' {} \;
+  for themeDir in `find . -path './src/themes/*' -prune -type d`
+  do
+    buildTheme "$themeDir"
+  done
 else
   rm -rf "../backend/themes/$1"
   buildTheme "src/themes/$1"
