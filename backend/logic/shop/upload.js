@@ -13,10 +13,16 @@ const log = getLogger('logic.shop.upload')
  *
  * @param {Request} req Express's request object
  * @param {String} targetPath The path inside shop's datadir to upload the files to
+ * @param {Boolean} useAbsPath If true, Absolute path will be returning in image's path
  *
+ * @returns {{
+ *  status {Number} HTTP status
+ *  success {Boolean}
+ *  uploadedFiles {Object} An array of uploaded images
+ * }}
  *
  */
-module.exports = async (req, targetPath = '/') => {
+module.exports = async (req, targetPath = '/', useAbsPath) => {
   try {
     const dataDir = req.shop.authToken
     const uploadDir = path.resolve(
@@ -52,7 +58,7 @@ module.exports = async (req, targetPath = '/') => {
           uploadedFiles: allFiles.map((file) => ({
             path: file.path.replace(
               uploadDir,
-              path.join(`/${dataDir}`, targetPath)
+              useAbsPath ? path.join(`/${dataDir}`, targetPath) : targetPath
             ),
             name: file.name
           }))

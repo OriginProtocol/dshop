@@ -6,6 +6,7 @@ import TextField from './fields/Text'
 import MediaField from './fields/Media'
 import ProductsList from './fields/ProductsList'
 import CollectionsList from './fields/CollectionsList'
+import ColorPalettes from './fields/ColorPalettes'
 
 const Section = ({ section, state, setState }) => {
   const [isActive, setIsActive] = useState(false)
@@ -51,6 +52,9 @@ const Section = ({ section, state, setState }) => {
 
                 case 'products_list':
                   return <ProductsList {...props} />
+
+                case 'color_palettes':
+                  return <ColorPalettes {...props} />
 
                 default:
                   return <TextField {...props} />

@@ -5,9 +5,11 @@ import { useRouteMatch } from 'react-router-dom'
 import useCollections from 'utils/useCollections'
 
 import Products from './_Products'
+import usePalette from '../hoc/usePalette'
 
 const AllProducts = () => {
   const { collections } = useCollections()
+  const { fonts } = usePalette()
   const match = useRouteMatch('/products/:collection')
 
   const collectionId = get(match, 'params.collection')
@@ -26,7 +28,9 @@ const AllProducts = () => {
     <>
       <div className="container">
         {!collectionTitle ? null : (
-          <div className="text-center text-4xl font-medium mb-24">
+          <div
+            className={`text-center text-4xl font-medium mb-24 font-${fonts.header}`}
+          >
             {collectionTitle}
           </div>
         )}

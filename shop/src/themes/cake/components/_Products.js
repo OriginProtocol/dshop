@@ -9,6 +9,7 @@ import useCollections from 'utils/useCollections'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
 import formatPrice from 'utils/formatPrice'
 import { useRouteMatch } from 'react-router-dom'
+import usePalette from '../hoc/usePalette'
 
 const Products = ({ limit = Infinity, excludeFeatured, onlyFeatured }) => {
   const { products } = useProducts()
@@ -16,6 +17,8 @@ const Products = ({ limit = Infinity, excludeFeatured, onlyFeatured }) => {
   const currencyOpts = useCurrencyOpts()
   const match = useRouteMatch('/products/:collection')
   const activeCollectionId = get(match, 'params.collection')
+
+  const { fonts } = usePalette()
 
   const themeVars = useThemeVars()
 
@@ -72,7 +75,9 @@ const Products = ({ limit = Infinity, excludeFeatured, onlyFeatured }) => {
                 paddingTop: '100%'
               }}
             />
-            <div className="mt-6 font-bold">{product.title}</div>
+            <div className={`mt-6 font-bold font-${fonts.header}`}>
+              {product.title}
+            </div>
             <div>{formatPrice(product.price, currencyOpts)}</div>
           </Link>
         )

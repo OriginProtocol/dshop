@@ -18,6 +18,7 @@
     "theme:poly:dist": "sh buildThemes.sh poly",
     "theme:ybm": "NODE_ENV=production THEME=ybm webpack --loglevel notice",
     "theme:ybm:dist": "sh buildThemes.sh ybm",
+    "theme:watch": "sh buildThemeDev.sh",
     "lint": "eslint . && npm run prettier:check",
     "prettier": "prettier --write *.js \"{src,test}/**/*.js\"",
     "prettier:check": "prettier -c *.js \"src/**/*.js\"",

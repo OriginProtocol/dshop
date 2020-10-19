@@ -1,14 +1,23 @@
 import React from 'react'
+import get from 'lodash/get'
 
 import fbt, { FbtParam } from 'fbt'
 
 import useConfig from 'utils/useConfig'
+import useThemeVars from 'utils/useThemeVars'
 
 import SocialLink from 'components/SocialLink'
 import Link from 'components/Link'
 
 const Footer = () => {
   const { config } = useConfig()
+  const themeVars = useThemeVars()
+  const logoUrl = `${config.dataSrc}${get(
+    themeVars,
+    'header.logo.0.url',
+    config.logo
+  )}`
+
   const date = new Date()
   return (
     <div className="bg-black pt-8 pb-24 text-white text-sm sm:mt-16">
@@ -33,7 +42,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="order-1 sm:order-2">
-          <img style={{ width: 100 }} src={`${config.dataSrc}${config.logo}`} />
+          <img style={{ width: 100 }} src={logoUrl} />
         </div>
         <div className="flex-1 flex justify-end order-3 mt-8 sm:mt-0">
           <fbt desc="footer.copyrightText">

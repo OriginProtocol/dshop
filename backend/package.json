@@ -95,7 +95,8 @@
   "nodemonConfig": {
     "ignore": [
       "data/**",
-      "dist/**"
+      "dist/**",
+      "backend/themes/**/*"
     ]
   }
 }

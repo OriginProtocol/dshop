@@ -37,33 +37,40 @@ const EditFields = () => {
     const bc = new BroadcastChannel(`${activeThemeId}_preview_channel`)
     setChannel(bc)
 
-    let firstUpdateSent = false
-    let timeout
-
-    bc.onmessage = () => {
-      if (firstUpdateSent) {
-        return
-      }
-      firstUpdateSent = true
-
-      // Post saved changes, if any, to the channel
-      timeout = setTimeout(() => {
-        broadcastChanges({
-          ...get(config.theme, activeThemeId)
-        })
-        bc.postMessage(get(config.theme, activeThemeId))
-      })
-    }
-
     return () => {
-      clearTimeout(timeout)
       bc.close()
     }
   }, [activeThemeId])
 
+  useEffect(() => {
+    if (!channel) return
+
+    let closed = false
+
+    channel.onmessage = (event) => {
+      if (!get(event, 'data.resendData')) {
+        return
+      }
+
+      // Post saved changes, if any, to the channel
+      const newChanges = {
+        ...get(config.theme, activeThemeId),
+        ...changes
+      }
+
+      if (closed) return
+
+      broadcastChanges(newChanges)
+    }
+
+    return () => {
+      closed = true
+    }
+  }, [channel, activeThemeId, changes])
+
   const broadcastChanges = (updates) => {
     const newChanges = {
-      ...get(config.theme, activeThemeId),
+      ...changes,
       ...updates
     }
 
