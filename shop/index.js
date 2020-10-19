@@ -50,7 +50,7 @@ async function start() {
     skipContractsIfExists: process.env.CLEAN ? false : true
   })
 
-  const devServerArgs = ['--host=0.0.0.0']
+  const devServerArgs = ['serve', '--host=0.0.0.0']
   if (process.env.NODE_ENV === 'production') {
     devServerArgs.push('--info=false')
   }
@@ -62,7 +62,7 @@ async function start() {
   }
 
   const webpackDevServer = spawn(
-    './node_modules/.bin/webpack-dev-server',
+    './node_modules/.bin/webpack',
     devServerArgs,
     {
       stdio: 'inherit',
