@@ -12,7 +12,7 @@ const App = () => {
   const { config } = useConfig()
   const headerImageUrl = `${config.dataSrc}${get(
     themeVars,
-    'header.headerImage.0.url'
+    'home.headerImage.0.url'
   )}`
   const headerText = get(themeVars, 'home.headerText')
   const { colors, fonts } = usePalette()

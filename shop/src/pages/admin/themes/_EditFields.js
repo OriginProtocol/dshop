@@ -37,9 +37,17 @@ const EditFields = () => {
     const bc = new BroadcastChannel(`${activeThemeId}_preview_channel`)
     setChannel(bc)
 
-    let timeout
+    return () => {
+      bc.close()
+    }
+  }, [activeThemeId])
 
-    bc.onmessage = (event) => {
+  useEffect(() => {
+    if (!channel) return
+
+    let closed = false
+
+    channel.onmessage = (event) => {
       if (!get(event, 'data.resendData')) {
         return
       }
@@ -49,15 +57,16 @@ const EditFields = () => {
         ...get(config.theme, activeThemeId),
         ...changes
       }
+
+      if (closed) return
+
       broadcastChanges(newChanges)
-      bc.postMessage(newChanges)
     }
 
     return () => {
-      clearTimeout(timeout)
-      bc.close()
+      closed = true
     }
-  }, [activeThemeId])
+  }, [channel, activeThemeId, changes])
 
   const broadcastChanges = (updates) => {
     const newChanges = {
