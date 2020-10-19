@@ -4,6 +4,7 @@ import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
 import useIsMobile from 'utils/useIsMobile'
+import useThemeVars from 'utils/useThemeVars'
 import { useStateValue } from 'data/state'
 
 import SocialLink from 'components/SocialLink'
@@ -21,6 +22,12 @@ const MobileMenu = ({ toggleMobileMenu }) => {
   const [{ cart }] = useStateValue()
   const { config } = useConfig()
   const history = useHistory()
+  const themeVars = useThemeVars()
+  const logoUrl = `${config.dataSrc}${get(
+    themeVars,
+    'header.logo.0.url',
+    config.logo
+  )}`
   return (
     <div
       className="fixed inset-0 bg-black px-6 pt-2 pb-12 flex flex-col items-center text-white z-10"
@@ -28,7 +35,7 @@ const MobileMenu = ({ toggleMobileMenu }) => {
     >
       <div className="flex justify-between items-center w-full">
         <Close />
-        <img style={{ height: 100 }} src={`${config.dataSrc}${config.logo}`} />
+        <img style={{ height: 100 }} src={logoUrl} />
         <Cart cart={cart} bg={true} />
       </div>
       <div className="text-3xl font-medium mt-12 text-center">
@@ -80,14 +87,23 @@ const MobileMenu = ({ toggleMobileMenu }) => {
 
 const HeaderMobile = ({ style, children }) => {
   const { config } = useConfig()
+  const themeVars = useThemeVars()
+
   if (!children) {
     return <MobileLinks>{children}</MobileLinks>
   }
 
   const defaultStyle = {
-    backgroundImage: `url(${config.dataSrc}${get(config, 'theme.header.src')})`,
-    backgroundPosition: get(config, 'theme.header.position')
+    backgroundImage: `url(${config.dataSrc}${get(
+      themeVars,
+      'header.headerImage.0.url'
+    )})`,
+    backgroundPosition: get(
+      themeVars,
+      'header.headerImage.0.backgroundPosition'
+    )
   }
+
   return (
     <div
       className="text-white bg-cover bg-no-repeat bg-black font-light"
@@ -141,13 +157,21 @@ const MobileLinks = ({ children }) => {
 
 const HeaderDesktop = ({ children, style }) => {
   const { config } = useConfig()
+  const themeVars = useThemeVars()
+
   if (!children) {
     return <DesktopLinks bg={children} />
   }
 
   const defaultStyle = {
-    backgroundImage: `url(${config.dataSrc}${get(config, 'theme.header.src')})`,
-    backgroundPosition: get(config, 'theme.header.position')
+    backgroundImage: `url(${config.dataSrc}${get(
+      themeVars,
+      'header.headerImage.0.url'
+    )})`,
+    backgroundPosition: get(
+      themeVars,
+      'header.headerImage.0.backgroundPosition'
+    )
   }
 
   return (
@@ -166,6 +190,14 @@ const HeaderDesktop = ({ children, style }) => {
 const DesktopLinks = ({ bg }) => {
   const { config } = useConfig()
   const [{ cart }] = useStateValue()
+  const themeVars = useThemeVars()
+
+  const logoUrl = `${config.dataSrc}${get(
+    themeVars,
+    'header.logo.0.url',
+    config.logo
+  )}`
+
   const svgProps = { height: '18', color: bg ? '#fff' : '#000' }
   return (
     <div className="container flex pt-12 items-center">
@@ -181,7 +213,7 @@ const DesktopLinks = ({ bg }) => {
         </Link>
       </div>
       <Link to="/">
-        <img style={{ height: 120 }} src={`${config.dataSrc}${config.logo}`} />
+        <img style={{ height: 120 }} src={logoUrl} />
       </Link>
       <div className="flex-1 flex justify-end items-center">
         <SocialLink

@@ -117,6 +117,8 @@ const ImagePicker = (props) => {
 
   const uploadRef = useRef()
 
+  const uniqueId = useRef('upload_' + Date.now())
+
   useEffect(() => {
     setState({ images: props.images || [] })
   }, [props.images])
@@ -238,10 +240,13 @@ const ImagePicker = (props) => {
           onChange={onChange}
         />
       )}
-      <label htmlFor="upload" className={!hasImages ? 'empty-state' : ''}>
+      <label
+        htmlFor={uniqueId.current}
+        className={!hasImages ? 'empty-state' : ''}
+      >
         {state.open ? null : (
           <input
-            id="upload"
+            id={uniqueId.current}
             type="file"
             accept={acceptedFileTypes.join(',')}
             ref={uploadRef}

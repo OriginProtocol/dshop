@@ -11,6 +11,7 @@ module.exports = {
   TEST_TMP_DIR,
   TEST_DATABASE_URL: `sqlite:${TEST_TMP_DIR}/dshop.db`,
   TEST_DSHOP_CACHE: `${TEST_TMP_DIR}/dshop-cache`,
+  TEST_THEMES_CACHE: `${TEST_TMP_DIR}/themes-cache`,
   TEST_HASH_1: 'QmZ4tDuvesekSs4qM5ZBKpXiZGun7S2CYtEZRB3DYXkjGx',
   TEST_DOMAIN_1: 'originprotocol.com',
   BAD_DOMAIN_1: 'thisisnotarealdomaindotcom135.com',
