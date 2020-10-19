@@ -18,6 +18,8 @@ const Contact = () => {
     themeVars,
     'contact.headerImage.0'
   )}`
+  const contactEmail = get(themeVars, 'contact.email', config.supportEmail)
+  const contactNumber = get(themeVars, 'contact.number', config.supportPhone)
 
   return (
     <>
@@ -36,7 +38,9 @@ const Contact = () => {
           <div className="text-3xl text-center leading-none">
             {contact.title}
           </div>
-          <div className="font-light text-lg">{contact.description}</div>
+          <div className="font-light text-lg whitespace-pre">
+            {contact.description}
+          </div>
           <div className="flex-1 flex gap-8 order-2 sm:order-1">
             <SocialLink
               href={config.twitter}
@@ -57,15 +61,15 @@ const Contact = () => {
             Email
           </div>
           <div className="text-2xl sm:text-4xl text-center leading-none">
-            {config.supportEmail}
+            {contactEmail}
           </div>
-          {!config.supportPhone ? null : (
+          {!contactNumber ? null : (
             <>
               <div className="mt-12 text-2xl text-center leading-none text-gray-600">
                 Phone
               </div>
               <div className="text-2xl sm:text-4xl text-center leading-none">
-                {config.supportPhone}
+                {contactNumber}
               </div>
             </>
           )}

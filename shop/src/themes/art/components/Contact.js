@@ -1,21 +1,29 @@
 import React from 'react'
 import get from 'lodash/get'
+import useConfig from 'utils/useConfig'
 import useThemeVars from 'utils/useThemeVars'
 
 const Contact = () => {
+  const { config } = useConfig()
   const themeVars = useThemeVars()
   const contactText = get(themeVars, 'contact.contactText')
+  const contactEmail = get(themeVars, 'contact.email', config.supportEmail)
+  const contactNumber = get(themeVars, 'contact.number')
 
   return (
     <div className="container mt-12">
       <div className="flex">
         <div style={{ flex: '2' }}>
           <div className="text-4xl leading-none font-medium">Contact us</div>
-          <div className="mt-12 text-sm">{contactText}</div>
+          <div className="mt-12 text-sm whitespace-pre">{contactText}</div>
           <div className="mt-4 font-semibold">
-            contact@thepeerart.com
+            {!contactEmail ? null : (
+              <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+            )}
             <br />
-            +1 (123) 456-7890
+            {!contactNumber ? null : (
+              <a href={`tel:${contactNumber}`}>{contactNumber}</a>
+            )}
           </div>
         </div>
         <form

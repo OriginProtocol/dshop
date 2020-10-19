@@ -16,7 +16,7 @@ const App = () => {
     <>
       <div className="container">
         <div className="text-center my-12 sm:my-24">
-          <h1 className="text-3xl sm:text-4xl leading-tight mb-4">
+          <h1 className="text-3xl sm:text-4xl leading-tight mb-4 whitespace-pre">
             {get(config, 'theme.home.subheading')}
           </h1>
           <div className="text-gray-500 text-sm">{config.byline}</div>
@@ -40,7 +40,7 @@ const About = () => {
   const themeVars = useThemeVars()
 
   const img = `url(${config.dataSrc}${get(themeVars, 'home.aboutImage.0.url')})`
-  const paddingTop = get(config, 'home.aboutImage.0.height')
+  const paddingTop = get(themeVars, 'home.aboutImage.0.height')
   return (
     <div className="bg-gray-100 p-8 sm:p-4 border-t border-b sm:border-l sm:border-r border-gray-400 grid grid-cols-1 sm:grid-cols-2">
       <div
@@ -48,8 +48,8 @@ const About = () => {
         style={{ backgroundImage: img, paddingTop }}
       />
       <div className="sm:px-12 flex flex-col items-start justify-center mb-16 sm:mb-0">
-        <div className="text-3xl sm:text-4xl leading-tight mb-8 sm:mb-16">
-          {get(config, 'theme.home.aboutText')}
+        <div className="text-3xl sm:text-4xl leading-tight mb-8 sm:mb-16 whitespace-pre">
+          {get(themeVars, 'home.aboutText')}
         </div>
         <Link to="/about" className="btn self-stretch sm:self-auto">
           Learn More

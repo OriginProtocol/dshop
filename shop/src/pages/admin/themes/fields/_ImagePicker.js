@@ -137,8 +137,10 @@ const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
       const newState = [...images]
       newState[replaceAtIndex] = newImages[0]
       onChange(newState)
+      setEditProps(replaceAtIndex)
     } else {
       onChange([...images, ...newImages].slice(0, 50))
+      setEditProps(images.length)
     }
     uploadRef.current.value = ''
   }

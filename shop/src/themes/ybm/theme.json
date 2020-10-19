@@ -55,7 +55,16 @@
     }, {
       "id": "headerImage",
       "title": "Header Image",
-      "type": "media"
+      "type": "media",
+      "props": ["backgroundPosition"]
+    }, {
+      "id": "email",
+      "title": "Email",
+      "type": "text"
+    }, {
+      "id": "number",
+      "title": "Number",
+      "type": "text"
     }]
   }, {
     "id": "about",

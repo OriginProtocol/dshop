@@ -7,7 +7,7 @@ import useThemeVars from 'utils/useThemeVars'
 const About = () => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
-  const src = `${config.dataSrc}${get(themeVars, 'about.aboutImage')}`
+  const src = `${config.dataSrc}${get(themeVars, 'about.aboutImage.0.url')}`
   const aboutText = get(themeVars, 'about.aboutText')
 
   return (
@@ -15,7 +15,9 @@ const About = () => {
       <div className="text-4xl leading-none font-medium">About</div>
       <div className="flex mt-16">
         <div style={{ flex: '3' }}>
-          {!aboutText ? null : <div className="text-sm mr-32">{aboutText}</div>}
+          {!aboutText ? null : (
+            <div className="text-sm mr-32 whitespace-pre">{aboutText}</div>
+          )}
         </div>
         <div style={{ flex: '2' }}>
           <img className="w-full" src={src} />

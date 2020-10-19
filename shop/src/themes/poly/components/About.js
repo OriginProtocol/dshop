@@ -7,7 +7,7 @@ import useThemeVars from 'utils/useThemeVars'
 const About = () => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
-  const src = `${config.dataSrc}${get(themeVars, 'about.aboutImage')}`
+  const src = `${config.dataSrc}${get(themeVars, 'about.aboutImage.0.url')}`
   const aboutText = get(themeVars, 'about.aboutText')
 
   if (!aboutText) {

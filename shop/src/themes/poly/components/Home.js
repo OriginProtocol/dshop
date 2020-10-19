@@ -1,94 +1,89 @@
-import React from 'react'
+import React, { useEffect, useMemo } from 'react'
 import get from 'lodash/get'
 
 import Link from 'components/Link'
+import useConfig from 'utils/useConfig'
 import useThemeVars from 'utils/useThemeVars'
 
 const Home = () => {
+  const { config } = useConfig()
   const themeVars = useThemeVars()
 
+  const headerText = get(themeVars, 'home.headerText')
   const aboutText = get(themeVars, 'home.aboutText')
+  const media = get(themeVars, 'home.galleryImages', [])
+  const mediaFW = get(themeVars, 'home.galleryImagesFW', [])
+
+  const galleryImages = useMemo(() => {
+    return media.reduce(
+      (out, imgObj, index) => {
+        if (index % 2 === 0) {
+          out.col1.push(imgObj)
+        } else {
+          out.col2.push(imgObj)
+        }
+
+        return out
+      },
+      {
+        col1: [],
+        col2: []
+      }
+    )
+  }, [media])
 
   return (
     <>
       <div className="container">
         <div className="text-3xl sm:text-5xl text-center leading-none my-20 whitespace-pre-line">
-          {`Custom designed art
-        cast out of precious metals`}
+          {headerText}
         </div>
       </div>
       <div className="sm:container">
         <div className="grid grid-cols-2 gap-px sm:gap-12">
           <div>
-            <Link
-              to="/product/bitcoin-b"
-              className="block bg-no-repeat"
-              style={{
-                paddingTop: '90%',
-                backgroundSize: '162%',
-                backgroundPosition: '48% 40%',
-                backgroundImage:
-                  'url(low-poly-mint/bitcoin-b/orig/upload_824345c7f5726b7a7cb5222a6ac8ac2d'
-              }}
-            />
-            <Link
-              to="/product/bitcoin-b"
-              className="block bg-no-repeat sm:mt-12 mt-px"
-              style={{
-                paddingTop: '153%',
-                backgroundSize: '210%',
-                backgroundPosition: '51% 75%',
-                backgroundImage:
-                  'url(low-poly-mint/bitcoin-b/orig/upload_c51617c0e1ca63a07e3c18ea8d7db546'
-              }}
-            />
+            {get(galleryImages, 'col1', []).map((imgObj) => (
+              <div
+                key={imgObj.url}
+                className="block bg-no-repeat"
+                style={{
+                  paddingTop: imgObj.height,
+                  backgroundSize: imgObj.backgroundSize,
+                  backgroundPosition: imgObj.backgroundPosition,
+                  backgroundImage: `url(${config.dataSrc}${imgObj.url})`
+                }}
+              />
+            ))}
           </div>
           <div>
-            <Link
-              to="/product/litecoin-l"
-              className="block bg-no-repeat"
-              style={{
-                paddingTop: '77%',
-                backgroundSize: '141%',
-                backgroundPosition: '48% 54%',
-                backgroundImage:
-                  'url(low-poly-mint/litecoin-l/orig/upload_395e3682f299c3d0548f72120872dee0'
-              }}
-            />
-            <Link
-              to="/product/litecoin-l"
-              className="block bg-no-repeat sm:mt-12 mt-px"
-              style={{
-                paddingTop: '77%',
-                backgroundSize: '308%',
-                backgroundPosition: '34% 88%',
-                backgroundImage:
-                  'url(low-poly-mint/litecoin-l/orig/upload_297f5cd93dcd550412bb6f0daff71633'
-              }}
-            />
-            <Link
-              to="/product/litecoin-l"
-              className="block bg-no-repeat sm:mt-12 mt-px"
-              style={{
-                paddingTop: '77%',
-                backgroundSize: '119%',
-                backgroundPosition: '55% 79%',
-                backgroundImage:
-                  'url(low-poly-mint/litecoin-l/orig/upload_297f5cd93dcd550412bb6f0daff71633'
-              }}
-            />
+            {get(galleryImages, 'col2', []).map((imgObj) => (
+              <div
+                key={imgObj.url}
+                className="block bg-no-repeat"
+                style={{
+                  paddingTop: imgObj.height,
+                  backgroundSize: imgObj.backgroundSize,
+                  backgroundPosition: imgObj.backgroundPosition,
+                  backgroundImage: `url(${config.dataSrc}${imgObj.url})`
+                }}
+              />
+            ))}
           </div>
         </div>
-        <div
-          className="bg-no-repeat sm:mt-12"
-          style={{
-            paddingTop: '50%',
-            backgroundSize: '200%',
-            backgroundPosition: '39% 62%',
-            backgroundImage:
-              'url(low-poly-mint/bitcoin-b/orig/upload_824345c7f5726b7a7cb5222a6ac8ac2d'
-          }}
-        />
+
+        {mediaFW.map((imgObj) => (
+          <div
+            key={imgObj.url}
+            className="bg-no-repeat sm:mt-12"
+            style={{
+              paddingTop: imgObj.height,
+              backgroundSize: imgObj.backgroundSize,
+              backgroundPosition: imgObj.backgroundPosition,
+              backgroundImage: `url(${config.dataSrc}${imgObj.url})`
+            }}
+          />
+        ))}
+
         <div className="container py-16 sm:py-32 flex flex-col items-center">
           <div className="text-2xl leading-tight max-w-sm text-center mb-12">
             {aboutText}

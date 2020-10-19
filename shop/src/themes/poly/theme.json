@@ -2,28 +2,52 @@
   "id": "poly",
   "name": "Poly",
   "config": [{
-    "id": "home",
-    "name": "Home",
+    "id": "header",
+    "title": "Header",
     "fields": [{
-      "id": "headerImage",
-      "title": "Header Image",
+      "id": "logo",
+      "title": "Logo",
       "type": "media"
+    }]
+  }, {
+    "id": "home",
+    "title": "Home",
+    "fields": [{
+      "id": "headerText",
+      "title": "Header Text",
+      "type": "text",
+      "multiline": true
+    }, {
+      "id": "galleryImages",
+      "title": "Gallery (2-column)",
+      "type": "media",
+      "multiple": true,
+      "props": ["backgroundSize", "backgroundPosition", "height"]
+    }, {
+      "id": "galleryImagesFW",
+      "title": "Gallery (Fullwidth)",
+      "type": "media",
+      "multiple": true,
+      "props": ["backgroundSize", "backgroundPosition", "height"]
     }, {
       "id": "aboutText",
       "title": "About Content",
-      "type": "text"
+      "type": "text",
+      "multiline": true
     }]
-  },{
+  }, {
     "id": "about",
     "title": "About Page",
     "fields": [{
       "id": "aboutImage",
       "title": "Image",
-      "type": "media"
+      "type": "media",
+      "props": ["backgroundSize", "backgroundPosition", "height"]
     }, {
       "id": "aboutText",
       "title": "About Content",
-      "type": "text"
+      "type": "text",
+      "multiline": true
     }]
   }]
 }

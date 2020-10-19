@@ -3,20 +3,25 @@
   "name": "Art",
   "config": [{
     "id": "home",
-    "name": "Home",
+    "title": "Home",
     "fields": [{
       "id": "headerImage",
       "title": "Header Image",
       "type": "media"
     }, {
       "id": "aboutImage",
-      "title": "Image",
+      "title": "About Image",
       "type": "media",
       "props": ["height"]
+    }, {
+      "id": "aboutText",
+      "title": "About Content",
+      "type": "text",
+      "multiline": true
     }]
   }, {
     "id": "about",
-    "name": "About Page",
+    "title": "About Page",
     "fields": [{
       "id": "aboutImage",
       "title": "Image",
@@ -24,14 +29,24 @@
     }, {
       "id": "aboutText",
       "title": "About Content",
-      "type": "text"
+      "type": "text",
+      "multiline": true
     }]
   }, {
     "id": "contact",
-    "name": "Contact Page",
+    "title": "Contact Page",
     "fields": [{
       "id": "contactText",
       "title": "Contact Content",
+      "type": "text",
+      "multiline": true
+    }, {
+      "id": "email",
+      "title": "Contact Email",
+      "type": "text"
+    }, {
+      "id": "number",
+      "title": "Contact Number",
       "type": "text"
     }]
   }]
