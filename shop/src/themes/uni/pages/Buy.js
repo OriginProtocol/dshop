@@ -56,7 +56,12 @@ const Buy = () => {
           {`${state.priceDAIAvg} USD`}
           <div className="text-gray-600 ml-1 text-lg font-normal">/each</div>
         </div>
-        <div className="text-gray-600 text-sm">{`${state.availableChico}/${state.totalChico} available`}</div>
+        <div className="text-gray-600 text-sm flex">
+          {`${state.availableChico}/${state.totalChico} available`}
+          {state.ownedChico === '0' ? null : (
+            <div className="ml-4">{`You own ${state.ownedChico}`}</div>
+          )}
+        </div>
         <div className="grid grid-cols-2 w-full mt-6 items-center gap-y-4">
           <div className="text-xl font-bold">Quantity</div>
           <SelectQuantity
@@ -73,7 +78,7 @@ const Buy = () => {
             {button.disabled}
           </div>
         )}
-        {!button.loading ? null : <Overlay>{button.loading}</Overlay>}
+        <Overlay {...button} />
       </div>
       <ButtonPrimary
         {...button}
@@ -90,7 +95,8 @@ const Buy = () => {
                 const approveTx = await state.tokenContract
                   .connect(signer)
                   .approve(router.address, state.priceUSDQO)
-                setButton({ loading: `Awaiting transaction...` })
+                const { hash } = approveTx
+                setButton({ loading: `Awaiting transaction...`, hash })
                 await approveTx.wait()
               } catch (e) {
                 setButton({ error: e.message.toString() })
@@ -123,7 +129,8 @@ const Buy = () => {
                   Math.round(new Date() / 1000) + 60 * 60 * 24
                 )
             }
-            setButton({ loading: `Awaiting transaction...` })
+            const { hash } = swapTx
+            setButton({ loading: `Awaiting transaction...`, hash })
             await swapTx.wait()
           } catch (e) {
             setButton({ error: e.message.toString() })

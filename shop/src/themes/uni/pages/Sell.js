@@ -87,7 +87,7 @@ const Sell = () => {
             {button.disabled}
           </div>
         )}
-        {!button.loading ? null : <Overlay>{button.loading}</Overlay>}
+        <Overlay {...button} />
       </div>
 
       <ButtonPrimary
@@ -107,7 +107,8 @@ const Sell = () => {
               const approveTx = await chico
                 .connect(signer)
                 .approve(router.address, chicoBN)
-              setButton({ loading: 'Awaiting transaction...' })
+              const { hash } = approveTx
+              setButton({ loading: 'Awaiting transaction...', hash })
               await approveTx.wait()
             } catch (e) {
               setButton({ error: e.message.toString() })
@@ -145,7 +146,8 @@ const Sell = () => {
                   deadline
                 )
             }
-            setButton({ loading: 'Awaiting transaction...' })
+            const { hash } = swapTx
+            setButton({ loading: 'Awaiting transaction...', hash })
             await swapTx.wait()
             setReload(reload + 1)
             history.push('/sell/confirmation')

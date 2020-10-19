@@ -6,7 +6,6 @@
 - Contract addresses from config
 - Network ID in header
 
-- Etherscan links
 - Speed up TX
 - Mint tokens in Beta
 - Multi net support

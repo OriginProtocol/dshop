@@ -24,7 +24,7 @@ const ButtonPrimary = ({
         {text}
       </button>
       {!error ? null : (
-        <div className="text-sm mt-2 px-4 text-red-500">{error}</div>
+        <div className="text-sm mt-2 px-4 text-red-500 break-all">{error}</div>
       )}
     </>
   )

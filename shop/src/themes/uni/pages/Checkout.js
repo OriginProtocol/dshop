@@ -105,7 +105,8 @@ const Checkout = () => {
             .connect(signer)
             .burn(ethers.utils.parseEther('1'))
 
-          setButton({ loading: 'Awaiting transaction...' })
+          const { hash } = tx
+          setButton({ loading: 'Awaiting transaction...', hash })
           await tx.wait()
           setReload(reload + 1)
 
@@ -213,7 +214,7 @@ const Checkout = () => {
             {button.disabled}
           </div>
         )}
-        {!button.loading ? null : <Overlay>{button.loading}</Overlay>}
+        <Overlay {...button} />
       </div>
       <ButtonPrimary {...button} />
     </form>
