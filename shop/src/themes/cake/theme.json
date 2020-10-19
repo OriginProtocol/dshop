@@ -39,7 +39,7 @@
             "accentColor": "#f4c110"
           },
           "fonts": {
-            "header": "Rockwell",
+            "header": "RobotoSlab",
             "body": "HelveticaNeue"
           }
         }
@@ -86,6 +86,19 @@
       "id": "featuredProducts",
       "title": "Featured Products",
       "type": "products_list"
+    }]
+  }, {
+    "id": "about",
+    "title": "About Page",
+    "fields": [{
+      "id": "aboutText",
+      "title": "About Text",
+      "type": "text",
+      "multiline": true
+    }, {
+      "id": "aboutImage",
+      "title": "Header Image",
+      "type": "media"
     }]
   }]
 }

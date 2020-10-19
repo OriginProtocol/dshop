@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 import useCollections from 'utils/useCollections'
+import useConfig from 'utils/useConfig'
 import useThemeVars from 'utils/useThemeVars'
 
 import Link from 'components/Link'
@@ -32,9 +33,10 @@ const Header = ({ bg }) => {
   const [mobileMenu, showMobileMenu] = useState(false)
   const [{ cart }] = useStateValue()
   const { collections } = useCollections()
+  const { config } = useConfig()
   const themeVars = useThemeVars()
 
-  const logoUrl = get(themeVars, 'header.logo.0.url')
+  const logoUrl = `${config.dataSrc}${get(themeVars, 'header.logo.0.url')}`
   const featuredCollectionIds = get(themeVars, 'header.featuredCollections', [])
   const featuredCollections = useMemo(() => {
     return featuredCollectionIds
@@ -51,6 +53,12 @@ const Header = ({ bg }) => {
     }
     showMobileMenu(!mobileMenu)
   }
+
+  useEffect(() => {
+    return () => {
+      body.style.removeProperty('overflow')
+    }
+  }, [])
 
   const content = (
     <div className="container flex flex-row justify-between items-center">
@@ -113,11 +121,16 @@ const Header = ({ bg }) => {
       {!mobileMenu ? null : (
         <div
           className="fixed inset-0 bg-white p-12"
-          onClick={() => showMobileMenu(false)}
+          onClick={() => toggleMobileMenu()}
         >
           <div className="flex justify-between items-center">
             <Close />
-            <div className="text-2xl font-medium">Bite Desserts</div>
+            <div className="mx-2">
+              <img
+                src={logoUrl}
+                style={{ maxHeight: '40px', objectFit: 'contain' }}
+              />
+            </div>
             <Cart cart={cart} hideText />
           </div>
           <ul className="flex flex-col text-3xl items-center font-medium mt-12">

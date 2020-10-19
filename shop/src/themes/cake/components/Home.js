@@ -3,21 +3,27 @@ import get from 'lodash/get'
 
 import Link from 'components/Link'
 import useThemeVars from 'utils/useThemeVars'
-
+import useConfig from 'utils/useConfig'
 import Products from './_Products'
 import usePalette from '../hoc/usePalette'
 
 const App = () => {
   const themeVars = useThemeVars()
-  const headerImageUrl = get(themeVars, 'home.headerImage.0.url')
+  const { config } = useConfig()
+  const headerImageUrl = `${config.dataSrc}${get(
+    themeVars,
+    'header.headerImage.0.url'
+  )}`
   const headerText = get(themeVars, 'home.headerText')
-  const { colors } = usePalette()
+  const { colors, fonts } = usePalette()
 
   return (
     <>
       <div className="container mb-20">
         <div className="text-center my-2">
-          <h1 className="text-3xl sm:text-5xl leading-tight font-bold font-serif whitespace-pre">
+          <h1
+            className={`text-3xl sm:text-5xl leading-tight font-${fonts.header} font-bold font-serif whitespace-pre`}
+          >
             {headerText}
           </h1>
         </div>
@@ -34,7 +40,9 @@ const App = () => {
       </div>
 
       <div className="container mb-20 text-center">
-        <h2 className="text-2xl sm:text-5xl leading-tight font-bold font-serif mb-20">
+        <h2
+          className={`text-2xl sm:text-5xl leading-tight font-${fonts.header} font-bold font-serif mb-20`}
+        >
           Featured Desserts
         </h2>
         <Products limit={2} onlyFeatured />

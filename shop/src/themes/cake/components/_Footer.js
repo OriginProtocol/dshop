@@ -1,12 +1,14 @@
 import React from 'react'
 import get from 'lodash/get'
+import useConfig from 'utils/useConfig'
 import useThemeVars from 'utils/useThemeVars'
 import SocialLinks from 'components/SocialLinks'
 import usePalette from '../hoc/usePalette'
 
 const Footer = () => {
+  const { config } = useConfig()
   const themeVars = useThemeVars()
-  const logoUrl = get(themeVars, 'header.logo.0.url')
+  const logoUrl = `${config.dataSrc}${get(themeVars, 'header.logo.0.url')}`
 
   const palette = usePalette()
 
