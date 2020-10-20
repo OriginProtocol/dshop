@@ -61,14 +61,10 @@ async function start() {
     devServerArgs.push('--watch')
   }
 
-  const webpackDevServer = spawn(
-    './node_modules/.bin/webpack',
-    devServerArgs,
-    {
-      stdio: 'inherit',
-      env: process.env
-    }
-  )
+  const webpackDevServer = spawn('./node_modules/.bin/webpack', devServerArgs, {
+    stdio: 'inherit',
+    env: process.env
+  })
 
   let backend
   if (process.env.BACKEND !== 'false') {
