@@ -140,7 +140,7 @@
     "ignore-loader": "0.1.2",
     "inquirer": "7.3.3",
     "ipfs-deploy": "8.0.1",
-    "mini-css-extract-plugin": "1.0.0",
+    "mini-css-extract-plugin": "1.1.1",
     "mocha": "8.2.0",
     "node-sass": "4.14.1",
     "optimize-css-assets-webpack-plugin": "5.0.4",
