@@ -8,6 +8,55 @@ const log = getLogger('utils.stripe')
 const { IS_TEST } = require('../../utils/const')
 const { getConfig } = require('../../utils/encryptedConfig')
 
+
+/**
+ * Check whether a shop is properly configured for Stripe or not.
+ *
+ * @param {models.Network} network
+ * @param {models.Shop} shop
+ * @returns {Promise<{success: boolean, error: string}|{success: boolean}>}
+ */
+async function checkStripeConfig(network, shop) {
+  const networkConfig = getConfig(network.config)
+  const validWebhhokUrls = [
+    `${networkConfig.backendUrl}/webhook`,
+    `https://dshopapi.ogn.app/webhook` // Legacy URL. Still supported.
+  ]
+
+  log.info(`Shop {shop.id} - Checking Stripe config`)
+  let success = false
+  try {
+    const shopConfig = getConfig(shop.config)
+    if (!shopConfig.stripeBackend) {
+      log.info(`Shop {shop.id} - Stripe not configured`)
+      return { success: true }
+    }
+    const stripe = Stripe(shopConfig.stripeBackend)
+    const response = await stripe.webhookEndpoints.list()
+    const webhooks = response.data
+
+    for (const webhook of webhooks) {
+      if (validWebhhokUrls.includes(webhook.url)) {
+        log.info('Shop {shop.id} - Webhook properly configured. Pointing to', webhook.url)
+        success = true
+        break
+      } else {
+        log.warn(
+          `Shop {shop.id} - Webhook id ${webhook.id} points to non-Dshop or invalid URL ${webhook.url}`
+        )
+      }
+    }
+  } catch (e) {
+    log.error(`Shop {shop.id} - Failed checking webhook config: ${e}`)
+  }
+
+  if (!success) {
+    return { success: false, error: 'Stripe Webhook not properly configured' }
+  }
+  return { success: true }
+}
+
+
 /**
  * Refunds a Stripe payment.
  *
@@ -71,5 +120,6 @@ async function processStripeRefund({ shop, order }) {
 }
 
 module.exports = {
-  processStripeRefund
+  checkStripeConfig,
+  processStripeRefund,
 }

@@ -1,6 +1,11 @@
 const { Network } = require('../models')
 const { makeOfferQueue } = require('../queues/queues')
 const { getLogger } = require('../utils/logger')
+const { shopDiagnostic } = require('../logic/shop/health')
+const {
+  authSellerAndShop,
+  authRole,
+} = require('./_auth')
 
 const log = getLogger('routes.health')
 
@@ -32,5 +37,11 @@ module.exports = function (router) {
       // Do not return a 200 on a bad health check
       res.status(500).json({ success: true, health: false })
     }
+  })
+
+  router.get('/health/shop', authSellerAndShop, authRole('admin'), async (req, res) => {
+    // Run a full-diagnostic on the shop's configuration.
+    const { success, result } = await shopDiagnostic(req.shop)
+    res.status(success ? 200: 500).json({ success, result })
   })
 }

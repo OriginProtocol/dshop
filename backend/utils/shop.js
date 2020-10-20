@@ -127,6 +127,26 @@ async function getDataDir(dir) {
   return dataDir
 }
 
+function getJsonConfigPath(shop) {
+  return `${DSHOP_CACHE}/${shop.authToken}/data/config.json`
+}
+
+function loadJsonConfigFromDisk(shop) {
+  const path = getJsonConfigPath(shop)
+
+  if (!fs.existsSync(path)) {
+    throw new Error(`File ${path} does not exist`)
+  }
+
+  try {
+    const raw = fs.readFileSync(path).toString()
+    const config = JSON.parse(raw)
+    return config
+  } catch(e) {
+    throw new Error(`Failed loading config.json: ${e}`)
+  }
+}
+
 module.exports = {
   findShop,
   findShopByHostname,
@@ -135,5 +155,7 @@ module.exports = {
   getDataUrl,
   getPublicUrl,
   getDataDir,
-  isValidDataDir
+  isValidDataDir,
+  getJsonConfigPath,
+  loadJsonConfigFromDisk,
 }
