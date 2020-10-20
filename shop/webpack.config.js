@@ -147,7 +147,15 @@ const webpackConfig = {
   resolve: {
     extensions: ['.js', '.json'],
     modules: [path.resolve(__dirname, 'src/constants'), './node_modules'],
-    symlinks: false
+    symlinks: false,
+    alias: {
+      path: 'path-browserify',
+      crypto: 'crypto-browserify',
+      stream: 'stream-browserify'
+    },
+    fallback: {
+      fs: false
+    }
   },
   devServer: {
     port: process.env.PORT || 9000,
@@ -182,6 +190,9 @@ const webpackConfig = {
   },
   mode: isProduction ? 'production' : 'development',
   plugins: [
+    new webpack.ProvidePlugin({
+      process: 'process/browser'
+    }),
     new SriPlugin({
       hashFuncNames: ['sha256', 'sha384'],
       enabled: isProduction

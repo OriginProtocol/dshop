@@ -55,7 +55,7 @@ async function start() {
     devServerArgs.push('--info=false')
   }
   if (process.env.NOOPENER !== 'true') {
-    devServerArgs.push('--open')
+    devServerArgs.push('--open=true')
   }
   if (process.env.WATCH === 'true') {
     devServerArgs.push('--watch')
