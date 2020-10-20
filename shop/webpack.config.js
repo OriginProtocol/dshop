@@ -9,7 +9,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
-let localContractAddress
+let localContractAddress = ''
 try {
   const Addresses = require(`@origin/contracts/build/contracts.json`)
   localContractAddress = Addresses.Marketplace_V01
