@@ -17,6 +17,6 @@
     "@nomiclabs/buidler-waffle": "^2.1.0",
     "chai": "^4.2.0",
     "ethereum-waffle": "^3.1.1",
-    "ethers": "^5.0.17"
+    "ethers": "5.0.18"
   }
 }
