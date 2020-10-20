@@ -148,13 +148,13 @@ const webpackConfig = {
     extensions: ['.js', '.json'],
     modules: [path.resolve(__dirname, 'src/constants'), './node_modules'],
     symlinks: false,
-    alias: {
-      path: 'path-browserify',
-      crypto: 'crypto-browserify',
-      stream: 'stream-browserify'
-    },
     fallback: {
-      fs: false
+      fs: false,
+      path: require.resolve('path-browserify'),
+      crypto: require.resolve('crypto-browserify'),
+      stream: require.resolve('stream-browserify'),
+      http: require.resolve('stream-http'),
+      https: require.resolve('https-browserify')
     }
   },
   devServer: {
