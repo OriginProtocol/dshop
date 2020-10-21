@@ -12,7 +12,7 @@ const {
   AdminLog,
   Shop,
   ShopDeployment,
-  ShopDeploymentName,
+  ShopDomain,
   Network
 } = require('../models')
 
@@ -166,6 +166,7 @@ describe('Shops', () => {
       shop,
       subdomain,
       dnsProvider: 'randomprovi',
+      skipSSLProbe: true,
       overrides: createOverrides()
     }
     const { hash, domain } = await deploy(args)
@@ -187,11 +188,11 @@ describe('Shops', () => {
     expect(deployment.ipfsHash).to.equal(hash)
 
     // Check a new deployment_name row was created.
-    const deploymentName = await ShopDeploymentName.findOne({
+    const deploymentName = await ShopDomain.findOne({
       where: { ipfsHash: hash }
     })
     expect(deploymentName).to.be.an('object')
-    expect(deploymentName.hostname).to.equal(
+    expect(deploymentName.domain).to.equal(
       `${args.subdomain}.${network.domain}`
     )
   })
@@ -205,6 +206,7 @@ describe('Shops', () => {
       networkId,
       shop,
       subdomain: 'test',
+      skipSSLProbe: true,
       overrides: createOverrides()
     }
     const deployResult = await deploy(args)
@@ -229,6 +231,7 @@ describe('Shops', () => {
       shop,
       subdomain,
       dnsProvider: 'testprovider',
+      skipSSLProbe: true,
       overrides: createOverrides()
     }
     const { success, error, hash, domain } = await deploy(args)
@@ -257,11 +260,11 @@ describe('Shops', () => {
     expect(newDeployment.ipfsHash).to.equal(hash)
 
     // Check a new deployment_name row was created.
-    const newDeploymentName = await ShopDeploymentName.findOne({
+    const newDomain = await ShopDomain.findOne({
       where: { ipfsHash: hash }
     })
-    expect(newDeploymentName).to.be.an('object')
-    expect(newDeploymentName.hostname).to.equal(
+    expect(newDomain).to.be.an('object')
+    expect(newDomain.domain).to.equal(
       `${args.subdomain}.${network.domain}`
     )
   })

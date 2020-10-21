@@ -96,6 +96,9 @@ function success(obj = {}) {
  * @param args.dnsProvider {string} - The DNS provider to use to configure the
  *    domain name (optional)
  * @param args.pinner {string} - Pinner to use (optional)
+ * @param args.skipSSLProbe - Don't bother to run the AutoSSL probe.
+ *    This is especially useful for testing since the non-redis queues do not
+ *    run asynchronously.
  * @param args.overrides {object} - Deployment module overrides (used for
  *    testing)
  * @param args.overrides.assembleBuild - Build assembly function
@@ -112,7 +115,8 @@ async function deploy({
   dnsProvider,
   pinner,
   uuid,
-  overrides
+  skipSSLProbe = false,
+  overrides = {}
 }) {
   assert(!!networkId, 'networkId must be provided to deploy()')
   assert(!!shop, 'shop must be provided to deploy()')
@@ -176,6 +180,7 @@ async function deploy({
   /**
    * Deployment locking.  No concurrent deployments per shop
    */
+  log.info(`Getting deployment lock...`)
   try {
     deployment = await deploymentLock(shop.id, uuid)
   } catch (err) {
@@ -191,6 +196,7 @@ async function deploy({
   /**
    * Assemble the shop dapp build for deployment
    */
+  log.info(`Assembling build...`)
   try {
     await assemble({
       network,
@@ -211,6 +217,7 @@ async function deploy({
    */
   let bucketUrls = []
   let bucketHttpUrls = []
+  log.info(`Deploying to bucket...`)
   try {
     const responses = await bucketDeploy({
       networkConfig,
@@ -237,6 +244,7 @@ async function deploy({
    * Configure the CDN(s) to point at bucket(s)
    */
   let ipAddresses = null
+  log.info(`Configuring CDN...`)
   try {
     const responses = await cdnConfig({
       networkConfig,
@@ -257,6 +265,7 @@ async function deploy({
   /**
    * Deploy the shop to IPFS
    */
+  log.info(`Deploying shop to IPFS...`)
   try {
     const ipfsRes = await ipfsDeploy({
       shop,
@@ -281,6 +290,7 @@ async function deploy({
    * to the IPFS gateway.
    */
   if (subdomain) {
+    log.info(`Configuring DNS...`)
     try {
       await dnsConfig({
         network,
@@ -300,6 +310,7 @@ async function deploy({
   }
 
   // Set record of IP/IPFS hash to name relation
+  log.info(`Updating shop domain records...`)
   const names = await getShopDomain({ shopId: shop.id })
   if (names && names.length > 0) {
     for (const dn of names) {
@@ -346,20 +357,23 @@ async function deploy({
   }
 
   // Schedule autossl probe to try and kickstart the cert issuer
-  if (ipAddresses) {
-    // CDN deployment
-    for (const ip of ipAddresses) {
+  if (!skipSSLProbe) {
+    log.info(`Queueing AutoSSL probe...`)
+    if (ipAddresses) {
+      // CDN deployment
+      for (const ip of ipAddresses) {
+        await queues.autosslQueue.add({
+          url: `https://${fqdn}/`,
+          host: ip
+        })
+      }
+    } else {
+      // IPFS deployment
       await queues.autosslQueue.add({
         url: `https://${fqdn}/`,
-        host: ip
+        host: ipfsGateway
       })
     }
-  } else {
-    // IPFS deployment
-    await queues.autosslQueue.add({
-      url: `https://${fqdn}/`,
-      host: ipfsGateway
-    })
   }
 
   const end = +new Date()

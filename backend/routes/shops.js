@@ -16,10 +16,10 @@ const {
   Network,
   ShopDomain,
   ShopDeployment,
-  ShopDeploymentName,
   Order,
   Sequelize
 } = require('../models')
+const { ShopDomainStatuses } = require('../enums')
 const {
   authSellerAndShop,
   authUser,
@@ -27,7 +27,7 @@ const {
   authSuperUser
 } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
-const { getConfig } = require('../utils/encryptedConfig')
+const { decryptConfig } = require('../utils/encryptedConfig')
 const { configureShopDNS } = require('../logic/deploy/dns')
 const { DSHOP_CACHE } = require('../utils/const')
 const { isPublicDNSName } = require('../utils/dns')
@@ -159,7 +159,7 @@ module.exports = function (router) {
         return res.json({ success: false, reason: 'no-active-network' })
       }
 
-      const { printful } = getConfig(req.shop.config)
+      const { printful } = decryptConfig(req.shop.config)
       if (!printful) {
         return res.json({ success: false, reason: 'no-printful-api-key' })
       }
@@ -191,8 +191,8 @@ module.exports = function (router) {
       where: { shopId: shop.id },
       include: [
         {
-          model: ShopDeploymentName,
-          as: 'names'
+          model: ShopDomain,
+          as: 'domains'
         }
       ],
       order: [['createdAt', 'desc']]
@@ -209,7 +209,7 @@ module.exports = function (router) {
         'createdAt',
         'updatedAt'
       ),
-      domains: row.dataValues.names.map((nam) => nam.hostname)
+      domains: row.dataValues.domains.map(d => d.domain)
     }))
 
     res.json({ deployments })
@@ -760,15 +760,11 @@ module.exports = function (router) {
         where: { shopId: req.shop.id },
         include: [
           {
-            model: ShopDeploymentName,
-            as: 'names'
+            model: ShopDomain,
+            as: 'domains'
           }
         ],
         order: [['createdAt', 'desc']]
-      })
-
-      const domains = await ShopDomain.findAll({
-        where: { shopId: req.shop.id }
       })
 
       const deployments = deploymentResult.map((row) => ({
@@ -783,7 +779,7 @@ module.exports = function (router) {
           'createdAt',
           'updatedAt'
         ),
-        domains: domains ? domains.map((nam) => nam.domain) : []
+        domains: row.dataValues.domains ? row.dataValues.domains.map(d => d.domain) : []
       }))
 
       res.json({ success: true, deployments })
@@ -798,28 +794,22 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      const names = await ShopDeploymentName.findAll({
-        include: [
-          {
-            model: ShopDeployment,
-            as: 'shopDeployments',
-            where: {
-              shopId: req.shop.id
-            }
-          }
-        ],
+      const domains = await ShopDomain.findAll({
+        where: {
+          shopId: req.shop.id
+        },
         order: [['createdAt', 'desc']]
       })
 
-      if (!names) {
+      if (!domains) {
         return res.status(404).json({ success: false })
       }
 
       return res.json({
         success: true,
-        names: names.reduce((acc, nam) => {
-          if (!acc.includes(nam.hostname)) {
-            acc.push(nam.hostname)
+        names: domains.reduce((acc, d) => {
+          if (!acc.includes(d.domain)) {
+            acc.push(d.domain)
           }
           return acc
         }, [])
@@ -835,7 +825,7 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      const { ipfsHash, hostnames, dnsProvider } = req.body
+      const { ipAddresses, ipfsHash, hostnames, dnsProvider } = req.body
 
       if (!ipfsHash || !hostnames) {
         return res.status(400).json({ success: false })
@@ -866,20 +856,39 @@ module.exports = function (router) {
           }
 
           const network = await Network.findOne({ where: { active: true } })
+          const networkConfig = decryptConfig(network.config)
           await configureShopDNS({
             network,
+            networkConfig,
             subdomain: hostname,
-            hostname: zone,
+            zone,
             hash: ipfsHash,
-            dnsProvider
+            dnsProvider,
+            ipAddresses
           })
         }
 
-        log.info(`Adding ${fqn} association to ${ipfsHash}`)
-        await ShopDeploymentName.create({
-          ipfsHash,
-          hostname: fqn
-        })
+        log.info(`Adding ${fqn} association to ${ipAddresses ? ipAddresses.join(', ') : ipfsHash}`)
+        if (ipAddresses) {
+          for (const ip of ipAddresses) {
+            await ShopDomain.create({
+              shopId: req.shop.id,
+              status: ShopDomainStatuses.Pending,
+              domain: `${hostname}.${zone}`,
+              ipfsHash,
+              ipAddress: ip,
+              hostname: fqn
+            })
+          }
+        } else {
+          await ShopDomain.create({
+            shopId: req.shop.id,
+            status: ShopDomainStatuses.Pending,
+            domain: `${hostname}.${zone}`,
+            ipfsHash,
+            hostname: fqn
+          })
+        }
       }
 
       await req.shop.update({
