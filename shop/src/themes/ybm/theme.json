@@ -1,0 +1,95 @@
+{
+  "id": "ybm",
+  "name": "Galleria",
+  "config": [{
+    "id": "header",
+    "title": "Header",
+    "fields": [{
+      "id": "headerImage",
+      "title": "Header Image",
+      "type": "media",
+      "props": ["backgroundPosition"]
+    }, {
+      "id": "logo",
+      "title": "Logo",
+      "type": "media"
+    }]
+  }, {
+    "id": "home",
+    "title": "Home",
+    "fields": [{
+      "id": "headerText",
+      "title": "Header Text",
+      "type": "text",
+      "multiline": true
+    }, {
+      "id": "aboutText",
+      "title": "About Text",
+      "type": "text",
+      "multiline": true
+    }, {
+      "id": "featuredCollections",
+      "title": "Featured Collections",
+      "type": "collections_list"
+    }]
+  }, {
+    "id": "products",
+    "title": "Products",
+    "fields": [{
+      "id": "headerText",
+      "title": "Header Text",
+      "type": "text"
+    }]
+  }, {
+    "id": "contact",
+    "title": "Contact",
+    "fields": [{
+      "id": "title",
+      "title": "Title",
+      "type": "text"
+    }, {
+      "id": "description",
+      "title": "Description",
+      "type": "text",
+      "multiline": true
+    }, {
+      "id": "headerImage",
+      "title": "Header Image",
+      "type": "media",
+      "props": ["backgroundPosition"]
+    }, {
+      "id": "email",
+      "title": "Email",
+      "type": "text"
+    }, {
+      "id": "number",
+      "title": "Number",
+      "type": "text"
+    }]
+  }, {
+    "id": "about",
+    "title": "About",
+    "fields": [{
+      "id": "headerImage",
+      "title": "Header Image",
+      "type": "media",
+      "props": ["backgroundPosition"]
+    }, {
+      "id": "primaryImage",
+      "title": "Primary Image",
+      "type": "media",
+      "props": ["backgroundPosition", "backgroundSize", "height"]
+    }, {
+      "id": "description",
+      "title": "Description",
+      "type": "text",
+      "multiline": true
+    }, {
+      "id": "aboutImages",
+      "title": "Images",
+      "type": "media",
+      "multiple": true,
+      "props": ["backgroundPosition", "backgroundSize", "height"]
+    }]
+  }]
+}

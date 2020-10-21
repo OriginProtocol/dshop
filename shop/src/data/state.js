@@ -25,6 +25,7 @@ const defaultState = {
   reload: {},
   dashboardStats: {},
   deployments: [],
+  themes: [],
 
   // User's preferred currency
   preferredCurrency: '',
@@ -108,6 +109,7 @@ const reducer = (state, action) => {
     const item = {
       title: action.product.title,
       product: action.product.id,
+      options: action.variant.options,
       quantity: action.product.quantity || 1,
       variant: action.variant.id,
       price: action.variant.price,
@@ -327,6 +329,8 @@ const reducer = (state, action) => {
     newState = set(newState, 'locale', action.locale)
   } else if (action.type === 'setDeployments') {
     newState = set(newState, 'deployments', action.deployments)
+  } else if (action.type === 'setThemes') {
+    newState = set(newState, 'themes', action.themes)
   }
 
   // IMPORTANT: Keep this function's total calculation in sync with the calculation

@@ -50,25 +50,21 @@ async function start() {
     skipContractsIfExists: process.env.CLEAN ? false : true
   })
 
-  const devServerArgs = ['--host=0.0.0.0']
+  const devServerArgs = ['serve', '--host=0.0.0.0']
   if (process.env.NODE_ENV === 'production') {
     devServerArgs.push('--info=false')
   }
   if (process.env.NOOPENER !== 'true') {
-    devServerArgs.push('--open')
+    devServerArgs.push('--open=true')
   }
   if (process.env.WATCH === 'true') {
     devServerArgs.push('--watch')
   }
 
-  const webpackDevServer = spawn(
-    './node_modules/.bin/webpack-dev-server',
-    devServerArgs,
-    {
-      stdio: 'inherit',
-      env: process.env
-    }
-  )
+  const webpackDevServer = spawn('./node_modules/.bin/webpack', devServerArgs, {
+    stdio: 'inherit',
+    env: process.env
+  })
 
   let backend
   if (process.env.BACKEND !== 'false') {

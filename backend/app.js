@@ -23,7 +23,11 @@ scheduleDNSVerificationJob()
 
 const ORIGIN_WHITELIST_ENABLED = false
 const ORIGIN_WHITELIST = []
-const BODYPARSER_EXCLUDES = ['/webhook', '/products/upload-images']
+const BODYPARSER_EXCLUDES = [
+  '/webhook',
+  '/products/upload-images',
+  '/themes/upload-images'
+]
 
 const app = express()
 
@@ -95,6 +99,7 @@ require('./routes/offline-payment')(router)
 require('./routes/paypal')(router)
 require('./routes/exchange-rates')(router)
 require('./routes/crypto')(router)
+require('./routes/themes')(router)
 
 async function getNetworkName() {
   const network = await Network.findOne({ where: { active: true } })
@@ -144,6 +149,7 @@ router.get('/theme/:theme', async (req, res) => {
     .replace('DATA_DIR', `/${req.query.shop}`)
     .replace('TITLE', 'Origin Dshop')
     .replace(/NETWORK/g, NETWORK)
+    .replace('ENABLE_LIVE_PREVIEW', 'TRUE')
 
   res.send(html)
 })

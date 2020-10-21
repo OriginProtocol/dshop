@@ -28,7 +28,7 @@ module.exports = function (router) {
       const apiKey = await encConf.get(req.order.shopId, 'printful')
       const { statusCode, ...resp } = await fetchOrder(
         apiKey,
-        req.order.orderId
+        req.params.orderId
       )
 
       return res.status(statusCode || 200).send(resp)

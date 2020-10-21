@@ -9,7 +9,7 @@ try {
   console.log('Is ENVKEY missing?')
 }
 
-const { TEST_DSHOP_CACHE } = require('../test/const')
+const { TEST_DSHOP_CACHE, TEST_THEMES_CACHE } = require('../test/const')
 
 const NETWORK_NAME_TO_ID = {
   localhost: 999,
@@ -75,6 +75,10 @@ const DSHOP_CACHE = IS_TEST
   ? TEST_DSHOP_CACHE
   : process.env.DSHOP_CACHE || `${__dirname}/../data`
 
+const THEMES_CACHE = IS_TEST
+  ? TEST_THEMES_CACHE
+  : process.env.THEMES_CACHE || `${__dirname}/../themes`
+
 module.exports = {
   CONTRACTS,
   ENCRYPTION_KEY,
@@ -93,6 +97,7 @@ module.exports = {
   NETWORK_ID: NETWORK_NAME_TO_ID[NETWORK] || 999,
   PRINTFUL_URL,
   DSHOP_CACHE,
+  THEMES_CACHE,
   PROTOCOL_LABS_GATEWAY,
   PINATA_API,
   PINATA_GATEWAY,

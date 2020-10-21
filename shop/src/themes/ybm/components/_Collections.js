@@ -1,25 +1,32 @@
-import React from 'react'
-
+import React, { useMemo } from 'react'
+import get from 'lodash/get'
 import Link from 'components/Link'
 
 import useProducts from 'utils/useProducts'
 import useCollections from 'utils/useCollections'
+import useThemeVars from 'utils/useThemeVars'
 
 const Collections = ({ limit = Infinity }) => {
-  const { visibleCollections } = useCollections()
+  const { collections } = useCollections()
   const { products } = useProducts()
+  const themeVars = useThemeVars()
 
-  const collections = visibleCollections
-    .map((collection) => {
-      const product = products.find((p) => p.id === collection.products[0])
-      return { collection, product }
-    })
-    .filter((c) => c.product)
-    .slice(0, limit)
+  const featuredCollectionIds = get(themeVars, 'home.featuredCollections', [])
+  const featuredCollections = useMemo(() => {
+    return featuredCollectionIds
+      .map((cId) => collections.find((c) => c.id === cId))
+      .filter((c) => Boolean(c))
+      .map((collection) => {
+        const product = products.find((p) => p.id === collection.products[0])
+        return { collection, product }
+      })
+      .filter((c) => Boolean(c.product))
+      .slice(0, limit)
+  }, [featuredCollectionIds, collections, products, limit])
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-      {collections.map(({ product, collection }) => (
+      {featuredCollections.map(({ product, collection }) => (
         <Link
           key={collection.id}
           to={`/collections/${collection.id}`}

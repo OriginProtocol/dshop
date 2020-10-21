@@ -50,6 +50,7 @@ COPY $DSHOP_DAPP_SOURCE/scripts ./shop/scripts
 COPY $DSHOP_DAPP_SOURCE/translation ./shop/translation
 COPY $DSHOP_DAPP_SOURCE/package.json ./shop/package.json
 COPY $DSHOP_DAPP_SOURCE/*.js ./shop/
+COPY $DSHOP_DAPP_SOURCE/*.sh ./shop/
 
 # Install with dev Dependencies (need to build dapp)
 RUN yarn install --pure-lockfile --no-cache --production=false && yarn cache clean
