@@ -25,6 +25,7 @@ const Domains = ({ config, state }) => {
     get('/shop/domains').then(({ domains }) => setDomains(domains))
   }, [reload.domains])
 
+  const systemDomain = `${_get(admin, 'network.domain')}`
   const domain = `${state.hostname}.${_get(admin, 'network.domain')}`
 
   return (
@@ -81,7 +82,7 @@ const Domains = ({ config, state }) => {
               </a>
             </td>
           </tr>
-          {domains.map((domain, idx) => {
+          {domains.filter(d => !d.domain.includes(systemDomain)).map((domain, idx) => {
             let onInfoClick
 
             if (domain.status === 'Pending') {
