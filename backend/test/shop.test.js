@@ -32,13 +32,13 @@ const {
  */
 function createOverrides() {
   return {
-    deployToBucket: ({
-      dataDir
-    }) => {
-      return [{
-        url: `s3://${dataDir}`,
-        httpUrl: `https://${dataDir}.s3.us-west-2.amazonaws.com`
-      }]
+    deployToBucket: ({ dataDir }) => {
+      return [
+        {
+          url: `s3://${dataDir}`,
+          httpUrl: `https://${dataDir}.s3.us-west-2.amazonaws.com`
+        }
+      ]
     },
     deployToIPFS: () => {
       return {
@@ -191,7 +191,9 @@ describe('Shops', () => {
       where: { ipfsHash: hash }
     })
     expect(deploymentName).to.be.an('object')
-    expect(deploymentName.hostname).to.equal(`${args.subdomain}.${network.domain}`)
+    expect(deploymentName.hostname).to.equal(
+      `${args.subdomain}.${network.domain}`
+    )
   })
 
   it('should not deploy a shop if a deploy is already running', async () => {

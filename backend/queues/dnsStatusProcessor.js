@@ -29,10 +29,12 @@ const processor = async (job) => {
         status: ShopDomainStatuses.Pending
       },
       limit: 100,
-      include: [{
-        model: Shop,
-        as: 'shop'
-      }],
+      include: [
+        {
+          model: Shop,
+          as: 'shop'
+        }
+      ],
       order: [['createdAt', 'desc']]
     })
 

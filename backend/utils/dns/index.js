@@ -1,7 +1,6 @@
 const dns = require('dns')
 const fetch = require('node-fetch')
 const get = require('lodash/get')
-const some = require('lodash/some')
 const every = require('lodash/every')
 const { Resolution } = require('@unstoppabledomains/resolution')
 
@@ -200,7 +199,9 @@ async function verifyDNS(domain, networkId, shop) {
     where: { shopId: shop.id }
   })
 
-  const ipAddresses = domains ? domains.filter(d => !!d.ipAddress).map(d => d.ipAddress) : []
+  const ipAddresses = domains
+    ? domains.filter((d) => !!d.ipAddress).map((d) => d.ipAddress)
+    : []
   const hasIP = ipAddresses ? !!ipAddresses.length : false
 
   // Verify the domain is RFC-valid
@@ -216,7 +217,7 @@ async function verifyDNS(domain, networkId, shop) {
     try {
       const records = await dnsResolve(domain, 'A')
 
-      const valid = every(ipAddresses.map(ip => records.includes(ip)))
+      const valid = every(ipAddresses.map((ip) => records.includes(ip)))
 
       if (valid) {
         await ShopDomain.update(

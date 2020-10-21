@@ -82,46 +82,51 @@ const Domains = ({ config, state }) => {
               </a>
             </td>
           </tr>
-          {domains.filter(d => !d.domain.includes(systemDomain)).map((domain, idx) => {
-            let onInfoClick
+          {domains
+            .filter((d) => !d.domain.includes(systemDomain))
+            .map((domain, idx) => {
+              let onInfoClick
 
-            if (domain.status === 'Pending') {
-              onInfoClick = () => {
-                setDomainEdit(domain)
+              if (domain.status === 'Pending') {
+                onInfoClick = () => {
+                  setDomainEdit(domain)
+                }
               }
-            }
-            return (
-              <tr key={idx}>
-                <td>
-                  <a
-                    onClick={(e) => e.preventDefault()}
-                    href={domain}
-                    target="_blank"
-                    rel="noreferrer"
-                    children={domain.domain}
-                  />
-                </td>
-                <td>
-                  <DomainStatus
-                    status={domain.status}
-                    onInfoClick={onInfoClick}
-                  />
-                </td>
-                <td className="text-muted">
-                  {isUnstoppableName(domain.domain) ? (
-                    <fbt desc="Unstoppable">Unstoppable</fbt>
-                  ) : (
-                    <fbt desc="Other">Other</fbt>
-                  )}
-                </td>
-                <td className="text-right">
-                  <DeleteDomain domain={domain}>
-                    <img src="images/delete-icon.svg" className="action-icon" />
-                  </DeleteDomain>
-                </td>
-              </tr>
-            )
-          })}
+              return (
+                <tr key={idx}>
+                  <td>
+                    <a
+                      onClick={(e) => e.preventDefault()}
+                      href={domain}
+                      target="_blank"
+                      rel="noreferrer"
+                      children={domain.domain}
+                    />
+                  </td>
+                  <td>
+                    <DomainStatus
+                      status={domain.status}
+                      onInfoClick={onInfoClick}
+                    />
+                  </td>
+                  <td className="text-muted">
+                    {isUnstoppableName(domain.domain) ? (
+                      <fbt desc="Unstoppable">Unstoppable</fbt>
+                    ) : (
+                      <fbt desc="Other">Other</fbt>
+                    )}
+                  </td>
+                  <td className="text-right">
+                    <DeleteDomain domain={domain}>
+                      <img
+                        src="images/delete-icon.svg"
+                        className="action-icon"
+                      />
+                    </DeleteDomain>
+                  </td>
+                </tr>
+              )
+            })}
         </tbody>
       </table>
       <div className="actions">

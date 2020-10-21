@@ -90,7 +90,6 @@ async function createShopDomain({
   ipfsHash,
   ipAddress
 }) {
-
   assert(!!shopId, 'Missing domain')
   assert(!!domain, 'Missing domain')
 

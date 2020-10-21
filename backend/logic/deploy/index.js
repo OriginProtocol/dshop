@@ -376,7 +376,7 @@ async function deploy({
   })
   return success({
     hash: ipfsHash,
-    domain,           // TODO: Bad name since this is a URL
+    domain, // TODO: Bad name since this is a URL
     bucketHttpUrls
   })
 }

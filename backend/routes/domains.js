@@ -85,7 +85,7 @@ module.exports = function (router) {
      */
     const domains = await ShopDomain.findAll({ where: { shopId } })
     if (some(domains, 'ipAddress')) {
-      const ips = domains.filter(d => !!d.ipAddress).map(d => d.ipAddress)
+      const ips = domains.filter((d) => !!d.ipAddress).map((d) => d.ipAddress)
       rrtype = 'A'
       rvalue = ips[0]
     } else {
