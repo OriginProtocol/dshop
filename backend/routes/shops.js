@@ -209,7 +209,7 @@ module.exports = function (router) {
         'createdAt',
         'updatedAt'
       ),
-      domains: row.dataValues.domains.map(d => d.domain)
+      domains: row.dataValues.domains.map((d) => d.domain)
     }))
 
     res.json({ deployments })
@@ -779,7 +779,9 @@ module.exports = function (router) {
           'createdAt',
           'updatedAt'
         ),
-        domains: row.dataValues.domains ? row.dataValues.domains.map(d => d.domain) : []
+        domains: row.dataValues.domains
+          ? row.dataValues.domains.map((d) => d.domain)
+          : []
       }))
 
       res.json({ success: true, deployments })
@@ -868,7 +870,11 @@ module.exports = function (router) {
           })
         }
 
-        log.info(`Adding ${fqn} association to ${ipAddresses ? ipAddresses.join(', ') : ipfsHash}`)
+        log.info(
+          `Adding ${fqn} association to ${
+            ipAddresses ? ipAddresses.join(', ') : ipfsHash
+          }`
+        )
         if (ipAddresses) {
           for (const ip of ipAddresses) {
             await ShopDomain.create({
