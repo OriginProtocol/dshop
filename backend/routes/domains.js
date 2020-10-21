@@ -1,3 +1,4 @@
+const some = require('lodash/some')
 const { getLogger } = require('../utils/logger')
 const { dnsResolve, hasNS, verifyDNS } = require('../utils/dns')
 const { Network, ShopDomain } = require('../models')
@@ -51,8 +52,8 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      const { domain, hostname, networkId } = req.body
-      const resp = await verifyDNS(domain, hostname, networkId, req.shop)
+      const { domain, networkId } = req.body
+      const resp = await verifyDNS(domain, networkId, req.shop)
 
       res.send(resp)
     }
@@ -60,6 +61,7 @@ module.exports = function (router) {
 
   router.post('/domains/records', authSellerAndShop, async (req, res) => {
     const { domain, networkId } = req.body
+    const shopId = req.shop.id
 
     let success = true
     let error = ''
@@ -77,34 +79,45 @@ module.exports = function (router) {
       error = 'Invalid network'
     }
 
-    const ipfsURL = network ? new URL(network.ipfs) : null
+    /**
+     * A bit of guesswork being done here, but if previous domains have IPs
+     * associated, this new one probably should as well.
+     */
+    const domains = await ShopDomain.findAll({ where: { shopId } })
+    if (some(domains, 'ipAddress')) {
+      const ips = domains.filter(d => !!d.ipAddress).map(d => d.ipAddress)
+      rrtype = 'A'
+      rvalue = ips[0]
+    } else {
+      const ipfsURL = network ? new URL(network.ipfs) : null
 
-    // A gateway with an unusual port won't work for this
-    if (network && !['', '443', '80'].includes(ipfsURL.port)) {
-      log.warn(
-        `Invalid IPFS gateway(${network.ipfs}). Cannot use as AutoSSL gateway`
-      )
-      success = false
-      error = 'Cannot use this IPFS gateway for DNS configuration'
-    }
-
-    // If success so far...
-    if (success) {
-      try {
-        isApex = await hasNS(domain)
-
-        if (isApex) {
-          const ips = await dnsResolve(ipfsURL.hostname, 'A')
-          rrtype = 'A'
-          rvalue = ips[0]
-        } else {
-          rrtype = 'CNAME'
-          rvalue = `${ipfsURL.hostname}.` // Trailing dot is DNS root terminator
-        }
-      } catch (err) {
-        log.error('Error checking DNS: ', err)
+      // A gateway with an unusual port won't work for this
+      if (network && !['', '443', '80'].includes(ipfsURL.port)) {
+        log.warn(
+          `Invalid IPFS gateway(${network.ipfs}). Cannot use as AutoSSL gateway`
+        )
         success = false
-        error = 'Lookup failed'
+        error = 'Cannot use this IPFS gateway for DNS configuration'
+      }
+
+      // If success so far...
+      if (success) {
+        try {
+          isApex = await hasNS(domain)
+
+          if (isApex) {
+            const ips = await dnsResolve(ipfsURL.hostname, 'A')
+            rrtype = 'A'
+            rvalue = ips.join(',')
+          } else {
+            rrtype = 'CNAME'
+            rvalue = `${ipfsURL.hostname}.` // Trailing dot is DNS root terminator
+          }
+        } catch (err) {
+          log.error('Error checking DNS: ', err)
+          success = false
+          error = 'Lookup failed'
+        }
       }
     }
 

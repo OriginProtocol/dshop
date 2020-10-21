@@ -32,6 +32,11 @@ module.exports = (sequelize, DataTypes) => {
       sourceKey: 'ipfsHash',
       onDelete: 'cascade'
     })
+    ShopDeployment.hasMany(models.ShopDomain, {
+      as: 'domains',
+      foreignKey: 'shopId',
+      sourceKey: 'shopId'
+    })
   }
 
   return ShopDeployment

@@ -14,6 +14,7 @@ const {
   Shop,
   SellerShop,
   Network,
+  ShopDomain,
   ShopDeployment,
   ShopDeploymentName,
   Order,
@@ -766,6 +767,10 @@ module.exports = function (router) {
         order: [['createdAt', 'desc']]
       })
 
+      const domains = await ShopDomain.findAll({
+        where: { shopId: req.shop.id }
+      })
+
       const deployments = deploymentResult.map((row) => ({
         ...pick(
           row.dataValues,
@@ -778,7 +783,7 @@ module.exports = function (router) {
           'createdAt',
           'updatedAt'
         ),
-        domains: row.dataValues.names.map((nam) => nam.hostname)
+        domains: domains ? domains.map((nam) => nam.domain) : []
       }))
 
       res.json({ success: true, deployments })

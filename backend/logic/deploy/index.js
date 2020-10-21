@@ -20,6 +20,7 @@
  */
 const { Network } = require('../../models')
 const { queues } = require('../../queues')
+const { ShopDomainStatuses } = require('../../enums')
 const { decryptConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
 const { assert } = require('../../utils/validators')
@@ -29,8 +30,8 @@ const {
   deploymentLock,
   passDeployment,
   failDeployment,
-  getDeploymentNames,
-  createDeploymentName
+  getShopDomain,
+  createShopDomain
 } = require('./records')
 const { assembleBuild } = require('./build')
 const { deployToIPFS } = require('./ipfs')
@@ -298,11 +299,49 @@ async function deploy({
     }
   }
 
-  // Set record of IPFS hash to name relation
-  if (ipfsHash) {
-    const names = await getDeploymentNames(ipfsHash)
-    if (names.length < 1) {
-      await createDeploymentName(fqdn, ipfsHash)
+  // Set record of IP/IPFS hash to name relation
+  const names = await getShopDomain({ shopId: shop.id })
+  if (names && names.length > 0) {
+    for (const dn of names) {
+      if (ipAddresses) {
+        for (const ip of ipAddresses) {
+          await dn.update({
+            ipfsPinner,
+            ipfsGateway,
+            ipfsHash,
+            ipAddress: ip,
+            status: ShopDomainStatuses.Pending
+          })
+        }
+      } else {
+        await dn.update({
+          ipfsPinner,
+          ipfsGateway,
+          ipfsHash,
+          status: ShopDomainStatuses.Pending
+        })
+      }
+    }
+  } else {
+    if (ipAddresses) {
+      for (const ip of ipAddresses) {
+        await createShopDomain({
+          shopId: shop.id,
+          domain: fqdn,
+          ipfsPinner,
+          ipfsGateway,
+          ipfsHash,
+          ipAddress: ip
+        })
+      }
+    } else {
+      await createShopDomain({
+        shopId: shop.id,
+        domain: fqdn,
+        ipfsPinner,
+        ipfsGateway,
+        ipfsHash
+      })
     }
   }
 

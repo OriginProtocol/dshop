@@ -2,7 +2,8 @@
  * Functionality for deployment records in the database
  */
 const { ShopDeploymentStatuses } = require('../../enums')
-const { ShopDeployment, ShopDeploymentName } = require('../../models')
+const { ShopDeployment, ShopDomain } = require('../../models')
+const { ShopDomainStatuses } = require('../../enums')
 const { assert } = require('../../utils/validators')
 const { getLogger } = require('../../utils/logger')
 
@@ -63,16 +64,14 @@ async function createDeployment(
 /**
  * Get a ShopDeploymentName associated with an IPFS hash
  *
- * @param ipfsHash {string} - An IPFS hash
+ * @param where {object} - Args to use for WHERE clause
+ * @param where.ipfsHash {string} - An IPFS hash
+ * @param where.ipAddress {string} - An IP address
  * @returns {ShopDeploymentName} - ShopDeploymentName instance
  */
-async function getDeploymentNames(ipfsHash) {
-  assert(!!ipfsHash, 'Missing ipfsHash')
-
-  return await ShopDeploymentName.findAll({
-    where: {
-      ipfsHash
-    }
+async function getShopDomain(where) {
+  return await ShopDomain.findAll({
+    where
   })
 }
 
@@ -83,12 +82,26 @@ async function getDeploymentNames(ipfsHash) {
  * @param ipfsHash {string} - An IPFS hash
  * @returns {ShopDeploymentName} - ShopDeploymentName instance
  */
-async function createDeploymentName(hostname, ipfsHash) {
-  assert(!!hostname, 'Missing hostname')
+async function createShopDomain({
+  shopId,
+  domain,
+  ipfsPinner,
+  ipfsGateway,
+  ipfsHash,
+  ipAddress
+}) {
 
-  return await ShopDeploymentName.create({
+  assert(!!shopId, 'Missing domain')
+  assert(!!domain, 'Missing domain')
+
+  return await ShopDomain.create({
+    shopId,
+    status: ShopDomainStatuses.Pending,
+    domain,
+    ipfsPinner,
+    ipfsGateway,
     ipfsHash,
-    hostname
+    ipAddress
   })
 }
 
@@ -163,8 +176,8 @@ module.exports = {
   getDeploymentByUUID,
   deploymentLock,
   createDeployment,
-  getDeploymentNames,
-  createDeploymentName,
+  getShopDomain,
+  createShopDomain,
   passDeployment,
   failDeployment
 }
