@@ -2,7 +2,7 @@ const path = require('path')
 const trimStart = require('lodash/trimStart')
 const { Storage } = require('@google-cloud/storage')
 
-const { BUCKET_PREFIX } = require('../../../utils/const')
+const { NETWORK_ID_TO_NAME, BUCKET_PREFIX } = require('../../../utils/const')
 const { walkDir } = require('../../../utils/filesystem')
 const { assert } = require('../../../utils/validators')
 const { getLogger } = require('../../../utils/logger')
@@ -72,7 +72,13 @@ async function deploy({ shop, networkConfig, OutputDir }) {
   assert(!!networkConfig, 'networkConfig must be provided')
   assert(!!OutputDir, 'OutputDir must be provided')
 
-  const bucketName = normalizeBucketName(`${BUCKET_PREFIX}${shop.authToken}`)
+  const networkName =
+    shop.networkId in NETWORK_ID_TO_NAME
+      ? NETWORK_ID_TO_NAME[shop.networkId]
+      : 'localhost'
+  const bucketName = normalizeBucketName(
+    `${BUCKET_PREFIX}${networkName}-${shop.authToken}`
+  )
 
   let bucket = await getBucket(bucketName)
   const [exists] = await bucket.exists()

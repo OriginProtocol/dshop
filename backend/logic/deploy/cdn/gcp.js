@@ -17,7 +17,7 @@
  */
 const _find = require('lodash/find')
 
-const { SERVICE_PREFIX } = require('../../../utils/const')
+const { NETWORK_ID_TO_NAME, SERVICE_PREFIX } = require('../../../utils/const')
 const google = require('../../../utils/google')
 const { assert } = require('../../../utils/validators')
 const { getLogger } = require('../../../utils/logger')
@@ -78,7 +78,11 @@ async function configureCDN({ shop, deployment, domains }) {
   assert(!!projectId, 'Call configure() first')
 
   const rest = getRestClient()
-  const serviceName = `${SERVICE_PREFIX}${shop.authToken}`
+  const networkName =
+    shop.networkId in NETWORK_ID_TO_NAME
+      ? NETWORK_ID_TO_NAME[shop.networkId]
+      : 'localhost'
+  const serviceName = `${SERVICE_PREFIX}${networkName}-${shop.authToken}`
 
   if (!deployment.bucketUrls) {
     log.warn(`No bucket URLs found in deployment`)

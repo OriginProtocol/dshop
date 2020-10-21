@@ -179,6 +179,12 @@ async function deploy({
 
   /**
    * Deployment locking.  No concurrent deployments per shop
+   *
+   * NOTE: This will never happen on a single-worker local system (with redis)
+   * when being run from Bull queue.  Each Bull worker can only run one job at a
+   * time, so don't expect to be able to test out deployment locking that way.
+   * That said there are unit tests that test this functionality (skipping the
+   * queue), and non-redis instances are run synchronously.
    */
   log.info(`Getting deployment lock...`)
   try {

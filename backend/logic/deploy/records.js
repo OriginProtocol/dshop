@@ -50,14 +50,16 @@ async function passDeployment(deployment, props) {
 async function createDeployment(
   shopId,
   uuid,
-  status = ShopDeploymentStatuses.Pending
+  status = ShopDeploymentStatuses.Pending,
+  error
 ) {
   assert(status in ShopDeploymentStatuses, 'Invalid deployment status')
 
   return await ShopDeployment.create({
     shopId,
     status,
-    uuid
+    uuid,
+    error
   })
 }
 
@@ -161,6 +163,15 @@ async function deploymentLock(shopId, uuid) {
       log.error(
         `Shop ${shopId}: concurrent deployment running. Can not start a new deploy.`
       )
+
+      // So the deployment status can be looked up
+      await createDeployment(
+        shopId,
+        uuid,
+        ShopDeploymentStatuses.Failure,
+        'There is already a deployment running. Try again in a few minutes.'
+      )
+
       throw new DuplicateDeploymentError(
         'There is already an existing deployment in progress'
       )
