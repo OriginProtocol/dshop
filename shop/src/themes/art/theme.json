@@ -4,6 +4,7 @@
   "config": [{
     "id": "home",
     "title": "Home",
+    "pageUrl": "/",
     "fields": [{
       "id": "headerImage",
       "title": "Header Image",
@@ -22,6 +23,7 @@
   }, {
     "id": "about",
     "title": "About Page",
+    "pageUrl": "/about",
     "fields": [{
       "id": "aboutImage",
       "title": "Image",
@@ -35,6 +37,7 @@
   }, {
     "id": "contact",
     "title": "Contact Page",
+    "pageUrl": "/contact",
     "fields": [{
       "id": "contactText",
       "title": "Contact Content",

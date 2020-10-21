@@ -15,7 +15,7 @@ const Contact = () => {
       <div className="flex">
         <div style={{ flex: '2' }}>
           <div className="text-4xl leading-none font-medium">Contact us</div>
-          <div className="mt-12 text-sm whitespace-pre">{contactText}</div>
+          <div className="mt-12 text-sm whitespace-pre-line">{contactText}</div>
           <div className="mt-4 font-semibold">
             {!contactEmail ? null : (
               <a href={`mailto:${contactEmail}`}>{contactEmail}</a>

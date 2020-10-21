@@ -7,7 +7,8 @@ import useThemeVars from 'utils/useThemeVars'
 const About = () => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
-  const src = `${config.dataSrc}${get(themeVars, 'about.aboutImage.0.url')}`
+  const relativePath = get(themeVars, 'about.aboutImage.0.url')
+  const src = !relativePath ? null : `${config.dataSrc}${relativePath}`
   const aboutText = get(themeVars, 'about.aboutText')
 
   if (!aboutText) {
@@ -25,10 +26,10 @@ const About = () => {
       <div
         className="bg-no-repeat mb-12"
         style={{
-          paddingTop: '45%',
-          backgroundSize: '200%',
-          backgroundPosition: '39% 56%',
-          backgroundImage: `url(${src})`
+          paddingTop: '47%',
+          backgroundSize: '100%',
+          backgroundPosition: 'center',
+          backgroundImage: src ? `url(${src})` : undefined
         }}
       />
     </>

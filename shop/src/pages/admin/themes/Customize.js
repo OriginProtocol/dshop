@@ -106,6 +106,9 @@ require('react-styl')(`
           height: 100%
           min-width: 990px
           display: block
+          max-width: 1300px
+          width: 100%
+          margin: 0 auto
         &.mobile-view iframe
           width: 340px
           min-width: 340px

@@ -19,10 +19,7 @@ const About = () => {
         </div>
         <div className="my-8">
           {!aboutText ? null : (
-            <div
-              className="whitespace-pre"
-              dangerouslySetInnerHTML={{ __html: aboutText }}
-            />
+            <div className="whitespace-pre-line" children={aboutText} />
           )}
         </div>
         <div>

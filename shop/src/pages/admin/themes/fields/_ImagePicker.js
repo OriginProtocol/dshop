@@ -4,6 +4,9 @@ import get from 'lodash/get'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import loadImage from 'utils/loadImage'
+import useProducts from 'utils/useProducts'
+
+import ProductsList from './ProductsList'
 
 const acceptedFileTypes = [
   'image/jpeg',
@@ -16,7 +19,14 @@ function reducer(state, newState) {
   return { ...state, ...newState }
 }
 
-const EditableProps = ({ imageObj, onChange, editableProps }) => {
+const EditableProps = ({
+  imageObj,
+  onChange,
+  editableProps,
+  propLabelPrefix
+}) => {
+  const { products } = useProducts()
+
   return (
     <>
       {editableProps.map((propName) => {
@@ -73,6 +83,21 @@ const EditableProps = ({ imageObj, onChange, editableProps }) => {
             return textInput(
               <fbt desc="admin.themes.bgSize">Background Size</fbt>
             )
+
+          case 'productLink':
+            return (
+              <div key={propName} className="form-group">
+                <label>{`${propLabelPrefix} Link`}</label>
+                <select {...fieldProps}>
+                  <option value="">Select one</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )
         }
 
         return null
@@ -81,15 +106,19 @@ const EditableProps = ({ imageObj, onChange, editableProps }) => {
   )
 }
 
-const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
+const ImagePicker = ({
+  images,
+  onChange,
+  multiple,
+  editableProps,
+  propLabelPrefix
+}) => {
   const { config } = useConfig()
   const { postRaw } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, {})
 
   const uploadRef = useRef()
   const uniqueId = useRef('upload_' + Date.now())
-
-  const [editProps, setEditProps] = useState(null)
 
   const uploadImages = async (files) => {
     try {
@@ -137,10 +166,8 @@ const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
       const newState = [...images]
       newState[replaceAtIndex] = newImages[0]
       onChange(newState)
-      setEditProps(replaceAtIndex)
     } else {
       onChange([...images, ...newImages].slice(0, 50))
-      setEditProps(images.length)
     }
     uploadRef.current.value = ''
   }
@@ -153,15 +180,14 @@ const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
             <img src={config.dataSrc + imageObj.url} />
             <div className="label-section">
               <div className="label">{imageObj.name}</div>
-
-              <div
+              {/* <div
                 className="action-icon"
                 onClick={() => {
                   setEditProps(editProps === index ? null : index)
                 }}
               >
                 <img src="/images/edit-icon.svg" />
-              </div>
+              </div> */}
               <div
                 className="action-icon"
                 onClick={() => {
@@ -174,17 +200,16 @@ const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
               </div>
             </div>
             <div className="props-section">
-              {editProps !== index ? null : (
-                <EditableProps
-                  imageObj={imageObj}
-                  onChange={(newObj) => {
-                    const newImages = [...images]
-                    newImages[index] = newObj
-                    onChange(newImages)
-                  }}
-                  editableProps={editableProps}
-                />
-              )}
+              <EditableProps
+                imageObj={imageObj}
+                onChange={(newObj) => {
+                  const newImages = [...images]
+                  newImages[index] = newObj
+                  onChange(newImages)
+                }}
+                editableProps={editableProps}
+                propLabelPrefix={propLabelPrefix}
+              />
             </div>
           </div>
         ))
@@ -207,7 +232,7 @@ const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
         }}
         style={{ display: 'none' }}
       />
-      {!multiple && images.length ? null : (
+      {!multiple || !images.length ? null : (
         <label
           htmlFor={uniqueId.current}
           className="btn btn-outline-primary add-button"
@@ -236,6 +261,7 @@ require('react-styl')(`
 
     .image-box
       margin: 0.5rem 0
+
       > img
         object-fit: contain
         max-height: 155px

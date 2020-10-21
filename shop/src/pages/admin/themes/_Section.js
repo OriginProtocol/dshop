@@ -8,14 +8,20 @@ import ProductsList from './fields/ProductsList'
 import CollectionsList from './fields/CollectionsList'
 import ColorPalettes from './fields/ColorPalettes'
 
-const Section = ({ section, state, setState }) => {
+const Section = ({ section, state, setState, onDrilldown }) => {
   const [isActive, setIsActive] = useState(false)
 
   return (
     <>
       <div
         className="section-title admin-title"
-        onClick={() => setIsActive(true)}
+        onClick={() => {
+          if (onDrilldown) {
+            onDrilldown()
+          }
+
+          setIsActive(true)
+        }}
       >
         {section.title}
         <span className="chevron" />
@@ -67,7 +73,7 @@ const Section = ({ section, state, setState }) => {
   )
 }
 
-const SectionsList = ({ state, theme, onChange }) => {
+const SectionsList = ({ state, theme, onChange, onDrilldown }) => {
   if (!theme) return null
 
   if (!theme.config || !theme.config.length) {
@@ -100,6 +106,7 @@ const SectionsList = ({ state, theme, onChange }) => {
             section={section}
             state={sectionState}
             setState={setSectionState}
+            onDrilldown={() => onDrilldown(section)}
           />
         )
       })}

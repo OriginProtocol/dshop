@@ -10,9 +10,9 @@ import Footer from './_Footer'
 
 const About = () => {
   const { config } = useConfig()
-  const { about } = useAbout()
   const themeVars = useThemeVars()
 
+  const aboutText = get(themeVars, 'about.aboutText')
   const aboutDescription = get(themeVars, 'about.description')
   const header = get(themeVars, 'about.headerImage.0', {})
   const primaryImage = get(themeVars, 'about.primaryImage.0', {})
@@ -60,10 +60,10 @@ const About = () => {
           />
         </div>
         <div style={{ flex: '1' }} className=" order-1 sm:order-2">
-          {!about ? null : (
+          {!aboutText ? null : (
             <div
               className="text-lg sm:text-xl p-4 py-8 sm:p-12 whitespace-pre-line font-light"
-              dangerouslySetInnerHTML={{ __html: about }}
+              children={aboutText}
             />
           )}
         </div>

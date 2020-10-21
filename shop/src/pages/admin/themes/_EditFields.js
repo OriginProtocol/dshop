@@ -48,7 +48,7 @@ const EditFields = () => {
     let closed = false
 
     channel.onmessage = (event) => {
-      if (!get(event, 'data.resendData')) {
+      if (get(event, 'data.type') !== 'DATA_REQUEST') {
         return
       }
 
@@ -68,6 +68,16 @@ const EditFields = () => {
     }
   }, [channel, activeThemeId, changes])
 
+  const postToChannel = (payload) => {
+    if (!channel) return
+    try {
+      channel.postMessage(payload)
+    } catch (err) {
+      // Failed to post to iframe
+      console.warn('Failed to push to iframe', err)
+    }
+  }
+
   const broadcastChanges = (updates) => {
     const newChanges = {
       ...changes,
@@ -76,13 +86,17 @@ const EditFields = () => {
 
     setChanges(newChanges)
 
-    if (!channel) return
-    try {
-      channel.postMessage(newChanges)
-    } catch (err) {
-      // Failed to post to iframe
-      console.warn('Failed to push to iframe', err)
-    }
+    postToChannel({
+      type: 'DATA_UPDATE',
+      changes: newChanges
+    })
+  }
+
+  const broadcastSectionChange = (section) => {
+    postToChannel({
+      type: 'SECTION_CHANGED',
+      section
+    })
   }
 
   const onSave = async () => {
@@ -140,6 +154,7 @@ const EditFields = () => {
             theme={activeTheme}
             state={changes}
             onChange={broadcastChanges}
+            onDrilldown={broadcastSectionChange}
           />
         )}
       </div>

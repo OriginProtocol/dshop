@@ -73,6 +73,7 @@
   }, {
     "id": "home",
     "title": "Home",
+    "pageUrl": "/",
     "fields": [{
       "id": "headerText",
       "title": "Hero Text",
@@ -90,6 +91,7 @@
   }, {
     "id": "about",
     "title": "About Page",
+    "pageUrl": "/about",
     "fields": [{
       "id": "aboutText",
       "title": "About Text",

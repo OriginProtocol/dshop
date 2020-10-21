@@ -44,8 +44,14 @@ const ThemeSettings = () => {
 
   return (
     <div>
-      <h3 className="admin-title with-border">
+      <h3 className="admin-title with-border d-flex align-items-center justify-content-between">
         <fbt desc="Themes">Themes</fbt>
+
+        {!activeThemeId ? null : (
+          <button className="btn btn-primary" onClick={() => switchToTheme('')}>
+            <fbt desc="admin.themes.useDefaultTheme">Use Default Theme</fbt>
+          </button>
+        )}
       </h3>
       <div className="row">
         <div className="shop-settings col-md-8 col-lg-9">
@@ -65,7 +71,14 @@ const ThemeSettings = () => {
                     <img
                       src={`${config.backend}/theme/${theme.id}/screenshot.png`}
                     />
-                    <div className="theme-label">{theme.name}</div>
+                    <div className="theme-label">
+                      {isSelected ? (
+                        <>
+                          <fbt desc="Active">Active</fbt>:{' '}
+                        </>
+                      ) : null}
+                      {theme.name}
+                    </div>
                     <div className="actions">
                       {isSelected ? (
                         <Link
@@ -126,11 +139,14 @@ require('react-styl')(`
       &.active
         box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1)
         border: solid 2px #000000
+        background: #000
+        color: #fff
 
       img
         height: 250px
         width: 100%
         object-fit: cover
+        object-position: top
 
       .theme-label
         text-align: center

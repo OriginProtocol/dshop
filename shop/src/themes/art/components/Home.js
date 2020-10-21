@@ -16,7 +16,7 @@ const App = () => {
     <>
       <div className="container">
         <div className="text-center my-12 sm:my-24">
-          <h1 className="text-3xl sm:text-4xl leading-tight mb-4 whitespace-pre">
+          <h1 className="text-3xl sm:text-4xl leading-tight mb-4 whitespace-pre-line">
             {get(config, 'theme.home.subheading')}
           </h1>
           <div className="text-gray-500 text-sm">{config.byline}</div>
@@ -48,7 +48,7 @@ const About = () => {
         style={{ backgroundImage: img, paddingTop }}
       />
       <div className="sm:px-12 flex flex-col items-start justify-center mb-16 sm:mb-0">
-        <div className="text-3xl sm:text-4xl leading-tight mb-8 sm:mb-16 whitespace-pre">
+        <div className="text-3xl sm:text-4xl leading-tight mb-8 sm:mb-16 whitespace-pre-line">
           {get(themeVars, 'home.aboutText')}
         </div>
         <Link to="/about" className="btn self-stretch sm:self-auto">

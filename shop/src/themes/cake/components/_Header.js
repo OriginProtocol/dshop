@@ -36,7 +36,8 @@ const Header = ({ bg }) => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
 
-  const logoUrl = `${config.dataSrc}${get(themeVars, 'header.logo.0.url')}`
+  const relativeLogoPath = get(themeVars, 'header.logo.0.url')
+  const logoUrl = `${config.dataSrc}${relativeLogoPath}`
   const featuredCollectionIds = get(themeVars, 'header.featuredCollections', [])
   const featuredCollections = useMemo(() => {
     return featuredCollectionIds
@@ -62,8 +63,12 @@ const Header = ({ bg }) => {
 
   const content = (
     <div className="container flex flex-row justify-between items-center">
-      <Link to="/">
-        <img style={{ width: 120 }} src={logoUrl} />
+      <Link to="/" className="font-bold">
+        {relativeLogoPath ? (
+          <img style={{ width: 120 }} src={logoUrl} />
+        ) : (
+          <>Artisan</>
+        )}
       </Link>
       <div className="flex flex-row text-sm items-center">
         <Link
@@ -125,11 +130,15 @@ const Header = ({ bg }) => {
         >
           <div className="flex justify-between items-center">
             <Close />
-            <div className="mx-2">
-              <img
-                src={logoUrl}
-                style={{ maxHeight: '40px', objectFit: 'contain' }}
-              />
+            <div className="mx-2 font-bold text-xl">
+              {relativeLogoPath ? (
+                <img
+                  src={logoUrl}
+                  style={{ maxHeight: '40px', objectFit: 'contain' }}
+                />
+              ) : (
+                <>Artisan</>
+              )}
             </div>
             <Cart cart={cart} hideText />
           </div>

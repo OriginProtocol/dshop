@@ -12,6 +12,7 @@
   }, {
     "id": "home",
     "title": "Home",
+    "pageUrl": "/",
     "fields": [{
       "id": "headerText",
       "title": "Header Text",
@@ -19,16 +20,18 @@
       "multiline": true
     }, {
       "id": "galleryImages",
-      "title": "Gallery (2-column)",
+      "title": "Gallery",
       "type": "media",
-      "multiple": true,
-      "props": ["backgroundSize", "backgroundPosition", "height"]
-    }, {
-      "id": "galleryImagesFW",
-      "title": "Gallery (Fullwidth)",
-      "type": "media",
-      "multiple": true,
-      "props": ["backgroundSize", "backgroundPosition", "height"]
+      "count": 6,
+      "description": [
+        "Recommended size: 440px x 400px",
+        "Recommended size: 440px x 340px",
+        "Recommended size: 440px x 340px",
+        "Recommended size: 440px x 340px",
+        "Recommended size: 440px x 340px",
+        "Recommended size: 940px x 610px"
+      ],
+      "props": ["productLink"]
     }, {
       "id": "aboutText",
       "title": "About Content",
@@ -38,11 +41,11 @@
   }, {
     "id": "about",
     "title": "About Page",
+    "pageUrl": "/about",
     "fields": [{
       "id": "aboutImage",
       "title": "Image",
-      "type": "media",
-      "props": ["backgroundSize", "backgroundPosition", "height"]
+      "type": "media"
     }, {
       "id": "aboutText",
       "title": "About Content",
