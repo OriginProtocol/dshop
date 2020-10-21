@@ -6,7 +6,7 @@ const SriPlugin = require('webpack-subresource-integrity')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 let localContractAddress = ''
@@ -243,7 +243,7 @@ if (isProduction) {
   webpackConfig.output.filename = '[name].[contenthash:8].js'
   webpackConfig.optimization.minimizer = [
     new TerserPlugin({ extractComments: false }),
-    new OptimizeCSSAssetsPlugin({})
+    new CssMinimizerPlugin()
   ]
   webpackConfig.plugins.push(
     new CleanWebpackPlugin({
