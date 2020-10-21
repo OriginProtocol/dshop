@@ -5,7 +5,7 @@ const kebabCase = require('lodash/kebabCase')
 
 const { createShopInDB } = require('../logic/shop/create')
 const deploy = require('../logic/deploy')
-const { getConfig, setConfig } = require('../utils/encryptedConfig')
+const { decryptConfig, encryptConfig } = require('../utils/encryptedConfig')
 const { AdminLogActions, ShopDeploymentStatuses } = require('../enums')
 
 const {
@@ -103,7 +103,7 @@ describe('Shops', () => {
   })
 
   it('should update a shop config', async () => {
-    const configBeforeUpdate = getConfig(shop.config)
+    const configBeforeUpdate = decryptConfig(shop.config)
 
     const body = {
       hostname: shop.hostname + '-updated',
@@ -125,7 +125,7 @@ describe('Shops', () => {
     expect(shop).to.be.an('object')
     expect(shop.hostname).to.startsWith(body.hostname)
 
-    const config = getConfig(shop.config)
+    const config = decryptConfig(shop.config)
     expect(config.emailSubject).to.equal(body.emailSubject)
 
     // Check the admin activity was recorded.
@@ -137,7 +137,7 @@ describe('Shops', () => {
     expect(adminLog.data).to.be.an('object')
     expect(adminLog.createdAt).to.be.a('date')
 
-    const oldConfig = getConfig(adminLog.data.oldShop.config)
+    const oldConfig = decryptConfig(adminLog.data.oldShop.config)
     expect(oldConfig).to.be.an('object')
     expect(oldConfig.emailSubject).to.equal(configBeforeUpdate.emailSubject)
 
@@ -159,8 +159,9 @@ describe('Shops', () => {
   })
 
   it('should deploy a shop', async () => {
+    const networkConfig = decryptConfig(network.config)
     const subdomain = 'test'
-    const expectedURL = `https://${subdomain}.${network.domain}`
+    const expectedURL = `https://${subdomain}.${networkConfig.domain}`
     const args = {
       networkId,
       shop,
@@ -193,7 +194,7 @@ describe('Shops', () => {
     })
     expect(deploymentName).to.be.an('object')
     expect(deploymentName.domain).to.equal(
-      `${args.subdomain}.${network.domain}`
+      `${args.subdomain}.${networkConfig.domain}`
     )
   })
 
@@ -224,8 +225,9 @@ describe('Shops', () => {
       `UPDATE shop_deployments SET status='Pending', created_at='${anHourAgo}' WHERE id = ${deployment.id};`
     )
 
+    const networkConfig = decryptConfig(network.config)
     const subdomain = 'test'
-    const expectedURL = `https://${subdomain}.${network.domain}`
+    const expectedURL = `https://${subdomain}.${networkConfig.domain}`
     const args = {
       networkId,
       shop,
@@ -265,7 +267,7 @@ describe('Shops', () => {
     })
     expect(newDomain).to.be.an('object')
     expect(newDomain.domain).to.equal(
-      `${args.subdomain}.${network.domain}`
+      `${args.subdomain}.${networkConfig.domain}`
     )
   })
 
@@ -309,7 +311,7 @@ describe('Shops', () => {
       name: " Robinette's Shoop-2020 ",
       listingId: '999-001-' + Date.now(),
       authToken: 'token',
-      config: setConfig({}),
+      config: encryptConfig({}),
       sellerId: 1,
       hostname: kebabCase('cool shoop hostname')
     }
@@ -333,7 +335,7 @@ describe('Shops', () => {
       name: undefined,
       listingId: '999-001-' + Date.now(),
       authToken: 'token',
-      config: setConfig({}),
+      config: encryptConfig({}),
       sellerId: 1,
       hostname: kebabCase('cool shoop hostname')
     }
