@@ -1,12 +1,10 @@
-import React, { useRef, useReducer, useState } from 'react'
+import React, { useRef, useReducer } from 'react'
 import fbt from 'fbt'
 import get from 'lodash/get'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import loadImage from 'utils/loadImage'
 import useProducts from 'utils/useProducts'
-
-import ProductsList from './ProductsList'
 
 const acceptedFileTypes = [
   'image/jpeg',

@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react'
 import get from 'lodash/get'
 
-import useAbout from 'utils/useAbout'
 import useConfig from 'utils/useConfig'
 import useThemeVars from 'utils/useThemeVars'
 
