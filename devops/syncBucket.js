@@ -2,7 +2,6 @@
  * Sync a Cloud Storage bucket with local FS
  */
 const fs = require('fs').promises
-const { createReadStream } = require('fs')
 const path = require('path')
 const program = require('commander')
 const { Storage } = require('@google-cloud/storage')
@@ -23,14 +22,13 @@ function getBucket(bucketName) {
   return BUCKET
 }
 
-async function sync(bucketName, dir, opts) {
+async function sync(bucketName, dir) {
   const bucket = getBucket(bucketName)
   const [files] = await bucket.getFiles()
 
   for (const file of files) {
     console.log(`Syncing ${file.name}`)
 
-    const fname = path.basename(file.name)
     const destination = path.join(dir, file.name)
     const parent = path.dirname(destination)
 

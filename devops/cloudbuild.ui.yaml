@@ -12,7 +12,7 @@ substitutions:
 
 steps:
   - id: Build Dshop dapp
-    name: node:10.22.0
+    name: node:14.14.0
     env:
       - PINATA_API_KEY=${_PINATA_API_KEY}
       - PINATA_SECRET_API_KEY=${_PINATA_SECRET_API_KEY}
@@ -42,7 +42,7 @@ steps:
         echo "Done."
 
   - id: Verify IPFS hash
-    name: node:10.22.0
+    name: node:14.14.0
     entrypoint: 'bash'
     args:
       - '-c'
