@@ -8,7 +8,8 @@ import usePalette from '../hoc/usePalette'
 const Footer = () => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
-  const logoUrl = `${config.dataSrc}${get(themeVars, 'header.logo.0.url')}`
+  const relativeLogoPath = get(themeVars, 'header.logo.0.url')
+  const logoUrl = `${config.dataSrc}${relativeLogoPath}`
 
   const palette = usePalette()
 
@@ -17,11 +18,17 @@ const Footer = () => {
       <div className="border-t mt-24" />
 
       <div className="container pt-16 pb-16 sm:pb-48">
-        <div className="text-center mb-10">
-          <img className="mx-auto" style={{ width: 120 }} src={logoUrl} />
+        <div className="text-center text-xl font-bold mb-10">
+          {relativeLogoPath ? (
+            <img className="mx-auto" style={{ width: 120 }} src={logoUrl} />
+          ) : (
+            config.title
+          )}
         </div>
         <div className="mb-10">
-          <SocialLinks className={`social ${palette.colors.linkColor}`} />
+          <SocialLinks 
+            className={`social ${palette.colors.linkColor}`}
+            svg={{ className: 'inline-block mx-3', height: 24 }} />
         </div>
         <div>
           <ul

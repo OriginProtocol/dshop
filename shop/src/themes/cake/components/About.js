@@ -7,7 +7,8 @@ import usePalette from '../hoc/usePalette'
 const About = () => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
-  const src = `${config.dataSrc}${get(themeVars, 'about.aboutImage.0.url')}`
+  const relativePath = get(themeVars, 'about.aboutImage.0.url')
+  const src = `${config.dataSrc}${relativePath}`
   const aboutText = get(themeVars, 'about.aboutText')
   const { fonts } = usePalette()
 
@@ -19,15 +20,14 @@ const About = () => {
         </div>
         <div className="my-8">
           {!aboutText ? null : (
-            <div
-              className="whitespace-pre"
-              dangerouslySetInnerHTML={{ __html: aboutText }}
-            />
+            <div className="whitespace-pre-line" children={aboutText} />
           )}
         </div>
-        <div>
-          <img className="w-full" src={src} />
-        </div>
+        {!relativePath ? null : (
+          <div>
+            <img className="w-full" src={src} />
+          </div>
+        )}
       </div>
     </>
   )

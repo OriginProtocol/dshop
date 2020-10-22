@@ -1,5 +1,6 @@
 {
   "id": "uni",
   "name": "Uni",
+  "disabled": true,
   "config": []
 }

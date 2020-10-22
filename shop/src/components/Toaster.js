@@ -107,7 +107,7 @@ require('react-styl')(`
     padding: 0.25rem 0.75rem
     border-radius: 5px
     font-size: 14px
-    box-shadow: 0 0 10px 10px #fff
+    box-shadow: 0 0 3px 3px #fff
     &.error
       background-color: #ffe8e8
       border-color: #d50000

@@ -26,17 +26,21 @@ const Header = () => {
   const [{ cart }] = useStateValue()
   const themeVars = useThemeVars()
 
-  const logoUrl = `${config.dataSrc}${get(themeVars, 'header.logo.0.url')}`
+  const relativeLogoPath = get(themeVars, 'header.logo.0.url')
+  const logoUrl = `${config.dataSrc}${relativeLogoPath}`
 
   return (
     <div className="container flex items-center pt-8 sm:pt-20">
-      <Link to="/" className="flex items-center">
-        <img
-          style={{ transform: 'translateY(-3px)' }}
-          className="mr-2 w-8 h-8 sm:w-16 sm:h-16"
-          src={logoUrl}
-        />
-        <div className="sm:text-3xl text-xl">{config.title}</div>
+      <Link to="/" className="flex items-center font-bold">
+        {relativeLogoPath ? (
+          <img
+            style={{ transform: 'translateY(-3px)' }}
+            className="mr-2 w-8 h-8 sm:w-16 sm:h-16"
+            src={logoUrl}
+          />
+        ) : (
+          <div className="sm:text-3xl text-xl">{config.title}</div>
+        )}
       </Link>
       <div className="ml-auto grid grid-flow-col gap-4 sm:gap-12 items-center">
         <div className="hidden sm:block">

@@ -1,7 +1,6 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import get from 'lodash/get'
 
-import useAbout from 'utils/useAbout'
 import useConfig from 'utils/useConfig'
 import useThemeVars from 'utils/useThemeVars'
 
@@ -10,30 +9,13 @@ import Footer from './_Footer'
 
 const About = () => {
   const { config } = useConfig()
-  const { about } = useAbout()
   const themeVars = useThemeVars()
 
+  const aboutText = get(themeVars, 'about.aboutText')
   const aboutDescription = get(themeVars, 'about.description')
   const header = get(themeVars, 'about.headerImage.0', {})
   const primaryImage = get(themeVars, 'about.primaryImage.0', {})
-  const aboutImages = useMemo(() => {
-    const allImages = get(themeVars, 'about.aboutImages', [])
-    const col1Images = []
-    const col2Images = []
-
-    allImages.map((img, index) => {
-      if (index % 2 === 0) {
-        col1Images.push(img)
-      } else {
-        col2Images.push(img)
-      }
-    })
-
-    return {
-      col1Images,
-      col2Images
-    }
-  }, [themeVars])
+  const aboutImages = get(themeVars, 'about.aboutImages', [])
 
   return (
     <>
@@ -48,22 +30,22 @@ const About = () => {
         </div>
       </Header>
       <div className="sm:container sm:my-16 flex flex-col sm:flex-row">
-        <div className="flex-1 order-2 sm:order-1">
-          <div
-            style={{
-              paddingTop: primaryImage.height,
-              backgroundSize: primaryImage.backgroundSize,
-              backgroundImage: `url(${config.dataSrc}${primaryImage.url})`,
-              backgroundPosition: primaryImage.backgroundPosition
-            }}
-            className="bg-no-repeat bg-center"
-          />
-        </div>
+        {!primaryImage.url ? null : (
+          <div className="flex-1 order-2 sm:order-1 bg-cover bg-no-repeat bg-center">
+            <div
+              style={{
+                paddingTop: '128%',
+                backgroundImage: `url(${config.dataSrc}${primaryImage.url})`
+              }}
+              className="bg-no-repeat bg-center"
+            />
+          </div>
+        )}
         <div style={{ flex: '1' }} className=" order-1 sm:order-2">
-          {!about ? null : (
+          {!aboutText ? null : (
             <div
               className="text-lg sm:text-xl p-4 py-8 sm:p-12 whitespace-pre-line font-light"
-              dangerouslySetInnerHTML={{ __html: about }}
+              children={aboutText}
             />
           )}
         </div>
@@ -75,29 +57,31 @@ const About = () => {
         <div className="sm:container">
           <div className="flex gap-4 sm:gap-10">
             <div className="flex-1 flex flex-col gap-4 sm:gap-10">
-              {aboutImages.col1Images.map((img, idx) => (
+              {aboutImages.slice(0, 2).map((img, idx) => (
                 <div
                   key={idx}
-                  className="bg-no-repeat"
+                  className="bg-no-repeat bg-center bg-cover"
                   style={{
-                    paddingTop: img.height,
-                    backgroundSize: img.backgroundSize,
-                    backgroundPosition: img.backgroundPosition,
-                    backgroundImage: `url(${config.dataSrc}${img.url})`
+                    paddingTop: idx === 0 ? '71%' : '128%',
+                    backgroundImage:
+                      !img || !img.url
+                        ? null
+                        : `url(${config.dataSrc}${img.url})`
                   }}
                 />
               ))}
             </div>
             <div className="flex-1 flex flex-col gap-4 sm:gap-10">
-              {aboutImages.col2Images.map((img, idx) => (
+              {aboutImages.slice(2, 4).map((img, idx) => (
                 <div
                   key={idx}
-                  className="bg-no-repeat"
+                  className="bg-no-repeat bg-center bg-cover"
                   style={{
-                    paddingTop: img.height,
-                    backgroundSize: img.backgroundSize,
-                    backgroundPosition: img.backgroundPosition,
-                    backgroundImage: `url(${config.dataSrc}${img.url})`
+                    paddingTop: idx === 0 ? '128%' : '71%',
+                    backgroundImage:
+                      !img || !img.url
+                        ? null
+                        : `url(${config.dataSrc}${img.url})`
                   }}
                 />
               ))}

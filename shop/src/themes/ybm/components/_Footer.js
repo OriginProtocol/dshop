@@ -12,11 +12,9 @@ import Link from 'components/Link'
 const Footer = () => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
-  const logoUrl = `${config.dataSrc}${get(
-    themeVars,
-    'header.logo.0.url',
-    config.logo
-  )}`
+
+  const relativeLogoPath = get(themeVars, 'header.logo.0.url')
+  const logoUrl = `${config.dataSrc}${relativeLogoPath}`
 
   const date = new Date()
   return (
@@ -41,8 +39,12 @@ const Footer = () => {
             />
           </div>
         </div>
-        <div className="order-1 sm:order-2">
-          <img style={{ width: 100 }} src={logoUrl} />
+        <div className="order-1 sm:order-2 font-bold text-xl">
+          {relativeLogoPath ? (
+            <img style={{ width: 100 }} src={logoUrl} />
+          ) : (
+            config.title
+          )}
         </div>
         <div className="flex-1 flex justify-end order-3 mt-8 sm:mt-0">
           <fbt desc="footer.copyrightText">

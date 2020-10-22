@@ -9,12 +9,17 @@ const Footer = () => {
   const { config } = useConfig()
   const date = new Date()
   const themeVars = useThemeVars()
-  const logoUrl = `${config.dataSrc}${get(themeVars, 'header.logo.0.url')}`
+  const relativeLogoPath = get(themeVars, 'header.logo.0.url')
+  const logoUrl = `${config.dataSrc}${relativeLogoPath}`
 
   return (
     <div className="container mb-24">
-      <div className="mb-24 flex flex-col items-center">
-        <img style={{ width: 80 }} src={logoUrl} />
+      <div className="mb-24 flex flex-col text-xl font-bold items-center">
+        {relativeLogoPath ? (
+          <img style={{ width: 80 }} src={logoUrl} />
+        ) : (
+          config.title
+        )}
       </div>
 
       <div className="font-sm flex justify-between flex-col sm:flex-row items-center gap-6 sm:gap-0">
