@@ -11,20 +11,30 @@ import Storefront from './components/Storefront'
 
 import Confirmation from '../shared/Confirmation'
 import Checkout from '../shared/checkout/Loader'
+import usePalette from './hoc/usePalette'
+
+const ThemeRoot = () => {
+  usePalette()
+  return (
+    <>
+      <PreviewBanner
+        wrapperClassName="bg-black text-white text-sm py-2"
+        className="container flex justify-between"
+      />
+      <Switch>
+        <Route path="/checkout" component={Checkout} />
+        <Route path="/order" component={Confirmation} />
+        <Route component={Storefront} />
+      </Switch>
+    </>
+  )
+}
 
 const Providers = () => {
   return (
     <HashRouter>
       <DshopProvider>
-        <PreviewBanner
-          wrapperClassName="bg-black text-white text-sm py-2"
-          className="container flex justify-between"
-        />
-        <Switch>
-          <Route path="/checkout" component={Checkout} />
-          <Route path="/order" component={Confirmation} />
-          <Route component={Storefront} />
-        </Switch>
+        <ThemeRoot />
       </DshopProvider>
     </HashRouter>
   )
