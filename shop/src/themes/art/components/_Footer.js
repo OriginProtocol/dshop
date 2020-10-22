@@ -4,18 +4,10 @@ import fbt, { FbtParam } from 'fbt'
 import useConfig from 'utils/useConfig'
 import Link from 'components/Link'
 
-import SocialLink from 'components/SocialLink'
+import SocialLinks from 'components/SocialLinks'
 
 const Footer = () => {
   const { config } = useConfig()
-
-  const Social = ({ href, height = 16, first }) => (
-    <SocialLink
-      className={first ? null : 'ml-8'}
-      href={href}
-      svg={{ className: 'inline-block', height, color: '#999' }}
-    />
-  )
 
   const date = new Date()
 
@@ -28,11 +20,10 @@ const Footer = () => {
           <Link to="/" className="text-2xl font-medium leading-none">
             {config.title}
           </Link>
-          <div className="flex flex-row mt-4 sm:mt-0">
-            <Social href={config.twitter} height="18" first />
-            <Social href={config.facebook} />
-            <Social href={config.instagram} />
-          </div>
+          <SocialLinks
+            className="flex flex-row mt-4 ml-auto sm:mt-0"
+            svg={{ height: 18, className: 'inline-block ml-8', color: '#999' }}
+          />
         </div>
         <div className="flex flex-col sm:flex-row justify-between mt-8 text-gray-500 text-sm">
           <div className="flex flex-col sm:flex-row pb-8 sm:pb-0">
