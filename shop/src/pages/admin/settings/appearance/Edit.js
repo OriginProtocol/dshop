@@ -313,6 +313,7 @@ const AppearanceSettings = () => {
                   <option value="art">Art</option>
                   <option value="poly">Poly</option>
                   <option value="ybm">YBM</option>
+                  <option value="uni">UNI</option>
                 </select>
               </div>
             </div>

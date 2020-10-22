@@ -9,10 +9,10 @@ buildTheme () {
 
   echo "Building $themeName..."
 
-  export NODE_ENV=production 
+  export NODE_ENV=production
   export THEME=$themeName
 
-  ./node_modules/.bin/webpack --loglevel notice --output-path="../backend/themes/$themeName"
+  ./node_modules/.bin/webpack --output-path="../backend/themes/$themeName"
   cp "$1/screenshot.png" "../backend/themes/$themeName/screenshot.png"
   cp "$1/theme.json" "../backend/themes/$themeName/theme.json"
 
