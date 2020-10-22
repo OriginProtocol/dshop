@@ -38,7 +38,23 @@ const ThemeSettings = () => {
   }
 
   const previewTheme = async (themeId) => {
-    const url = `${window.origin}/theme/${themeId}?shop=${config.backendAuthToken}`
+    let url = `${window.origin}/theme/${themeId}?shop=${config.backendAuthToken}`
+
+    switch (url) {
+      case 'art':
+        url = 'https://minimal.ogn.app'
+        break
+      case 'cake':
+        url = 'https://artisan.ogn.app'
+        break
+      case 'ybm':
+        url = 'https://galleria.ogn.app'
+        break
+      case 'poly':
+        url = 'https://showcase.ogn.app'
+        break
+    }
+
     window.open(url, 'shop_preview')
   }
 

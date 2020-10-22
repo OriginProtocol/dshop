@@ -6,19 +6,15 @@ import formatPrice from 'utils/formatPrice'
 
 import Link from 'components/Link'
 import CloseIcon from 'components/icons/Close'
-import usePalette from '../hoc/usePalette'
 
 const Cart = () => {
   const [{ cart }, dispatch] = useStateValue()
   const currencyOpts = useCurrencyOpts()
-  const { fonts, colors } = usePalette()
 
   return (
     <>
       <div className="container mt-12">
-        <div
-          className={`mb-12 text-center sm:text-left text-3xl sm:text-4xl leading-none font-bold font-${fonts.header}`}
-        >
+        <div className="mb-12 text-center sm:text-left text-3xl sm:text-4xl leading-none font-bold font-header">
           Shopping Cart{' '}
           <span className="text-red-500">({cart.items.length})</span>
         </div>
@@ -44,10 +40,7 @@ const Cart = () => {
           {`Subtotal: ${formatPrice(cart.subTotal, currencyOpts)}`}
         </div>
         <div className="mt-12 flex justify-center sm:justify-end">
-          <Link
-            to="/checkout"
-            className={`btn btn-primary px-24 bg-${colors.buttonColor}`}
-          >
+          <Link to="/checkout" className="btn btn-primary px-24 bg-button">
             Checkout
           </Link>
         </div>

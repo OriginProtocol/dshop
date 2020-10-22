@@ -9,13 +9,10 @@ import Cart from '../../shared/Cart'
 
 import Header from './_Header'
 import Footer from './_Footer'
-import usePalette from '../hoc/usePalette'
 
 const Storefront = () => {
-  const { fonts } = usePalette()
-
   return (
-    <div className={`font-${fonts.body}`}>
+    <div className="font-body">
       <Header />
 
       <Switch>

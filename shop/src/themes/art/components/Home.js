@@ -10,16 +10,19 @@ import Link from 'components/Link'
 import Products from './_Products'
 
 const App = () => {
-  const { config } = useConfig()
   const { collections } = useCollections()
+  const themeVars = useThemeVars()
+
   return (
     <>
       <div className="container">
         <div className="text-center my-12 sm:my-24">
           <h1 className="text-3xl sm:text-4xl leading-tight mb-4 whitespace-pre-line">
-            {get(config, 'theme.home.subheading')}
+            {get(themeVars, 'home.subheading')}
           </h1>
-          <div className="text-gray-500 text-sm">{config.byline}</div>
+          <div className="text-gray-500 text-sm">
+            {get(themeVars, 'home.tagline')}
+          </div>
         </div>
         <Products limit={3} onlyFeatured />
         <div className="my-16 sm:my-24 flex justify-center">
