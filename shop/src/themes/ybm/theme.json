@@ -7,8 +7,7 @@
     "fields": [{
       "id": "headerImage",
       "title": "Header Image",
-      "type": "media",
-      "props": ["backgroundPosition"]
+      "type": "media"
     }, {
       "id": "logo",
       "title": "Logo",
@@ -58,8 +57,7 @@
     }, {
       "id": "headerImage",
       "title": "Header Image",
-      "type": "media",
-      "props": ["backgroundPosition"]
+      "type": "media"
     }, {
       "id": "email",
       "title": "Email",
@@ -76,13 +74,12 @@
     "fields": [{
       "id": "headerImage",
       "title": "Header Image",
-      "type": "media",
-      "props": ["backgroundPosition"]
+      "type": "media"
     }, {
       "id": "primaryImage",
       "title": "Primary Image",
       "type": "media",
-      "props": ["backgroundPosition", "backgroundSize", "height"]
+      "description": "Recommended size: 450px x 580px"
     }, {
       "id": "aboutText",
       "title": "About Text",
@@ -97,8 +94,13 @@
       "id": "aboutImages",
       "title": "Images",
       "type": "media",
-      "multiple": true,
-      "props": ["backgroundPosition", "backgroundSize", "height"]
+      "count": 4,
+      "description": [
+        "Recommended size: 450px x 320px",
+        "Recommended size: 450px x 580px",
+        "Recommended size: 450px x 580px",
+        "Recommended size: 450px x 320px"
+      ]
     }]
   }]
 }
