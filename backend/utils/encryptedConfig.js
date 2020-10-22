@@ -25,13 +25,15 @@ function genIV() {
   return crypto.randomBytes(IV_LENGTH)
 }
 
-function getConfig(config) {
+function decryptConfig(config) {
   if (!config) return {}
   const [iv, configRaw] = config.split(':')
   return decryptJSON(Buffer.from(iv, 'hex'), configRaw)
 }
+// TODO: Depreciate in favor of more informative name
+const getConfig = decryptConfig
 
-function setConfig(newConfig, existingConfig) {
+function encryptConfig(newConfig, existingConfig) {
   let iv = genIV()
   if (existingConfig) {
     iv = Buffer.from(existingConfig.split(':')[0], 'hex')
@@ -39,6 +41,8 @@ function setConfig(newConfig, existingConfig) {
   const config = encryptJSON(iv, newConfig)
   return `${iv.toString('hex')}:${config}`
 }
+// TODO: Depreciate in favor of more informative name
+const setConfig = encryptConfig
 
 /**
  * Get already loaded initialization vector or create one
@@ -344,5 +348,7 @@ module.exports = {
   get,
   dump,
   getConfig,
-  setConfig
+  encryptConfig,
+  setConfig,
+  decryptConfig
 }

@@ -63,6 +63,38 @@ function createChangeRequestRecords(values) {
 }
 
 /**
+ * Create a change request record for a A
+ *
+ * @param name {string} the DNS name for the record
+ * @param values {Array} of record values
+ * @returns {object} ResourceRecord change request
+ */
+function addA(name, values) {
+  return createChangeRequest(
+    'CREATE',
+    name,
+    'A',
+    createChangeRequestRecords(values)
+  )
+}
+
+/**
+ * Create a change request record to delete a CNAME
+ *
+ * @param name {string} the DNS name for the record
+ * @param values {Array} of record values
+ * @returns {object} ResourceRecord change request
+ */
+function deleteA(name, values) {
+  return createChangeRequest(
+    'DELETE',
+    name,
+    'A',
+    createChangeRequestRecords(values)
+  )
+}
+
+/**
  * Create a change request record for a CNAME
  *
  * @param name {string} the DNS name for the record
@@ -209,7 +241,14 @@ async function getRecord(client, zoneObj, DNSName, type) {
  * @param {string} args.hash - The IPFS hash to use for DNSLink
  * @returns {array} of Change
  */
-async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
+async function setRecords({
+  credentials,
+  zone,
+  subdomain,
+  ipfsGateway,
+  hash,
+  ipAddresses
+}) {
   const client = getClient(credentials)
 
   // Lookup and verify zone
@@ -223,12 +262,16 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
   const record = append(`${subdomain}.${zone}`, '.')
   const txtRecord = append(`_dnslink.${record}`, '.')
   const txtRecordValue = `"dnslink=/ipfs/${hash}"`
+  const existingA = await getRecord(client, zoneObj, record, 'A')
   const existingCNAME = await getRecord(client, zoneObj, record, 'CNAME')
   const existingTXT = await getRecord(client, zoneObj, txtRecord, 'TXT')
   const changes = []
 
   // Delete records if they exist
-  if (existingCNAME) {
+  if (existingA && ipAddresses) {
+    changes.push(deleteA(record, ipAddresses))
+  }
+  if (existingCNAME && ipfsGateway) {
     changes.push(deleteCNAME(record, [append(ipfsGateway, '.')]))
   }
   if (existingTXT) {
@@ -236,7 +279,13 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
   }
 
   // Create the new ones
-  changes.push(addCNAME(record, [append(ipfsGateway, '.')]))
+  if (ipAddresses) {
+    changes.push(addA(record, ipAddresses))
+  } else if (ipfsGateway) {
+    changes.push(addCNAME(record, [append(ipfsGateway, '.')]))
+  } else {
+    throw new Error('Unable to create an A or CNAME record. Lacking info!')
+  }
   changes.push(addTXT(txtRecord, [txtRecordValue]))
 
   // Create the atomic change batch
