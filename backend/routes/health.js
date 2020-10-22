@@ -36,14 +36,14 @@ module.exports = function (router) {
     }
   })
 
+  // Runs a full-diagnostic on the shop's configuration.
   router.get(
     '/health/shop',
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      // Run a full-diagnostic on the shop's configuration.
-      const { success, result } = await shopDiagnostic(req.shop)
-      res.status(success ? 200 : 500).json({ success, result })
+      const diagnostic = await shopDiagnostic(req.shop)
+      res.json(diagnostic)
     }
   )
 }

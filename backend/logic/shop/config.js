@@ -38,7 +38,7 @@ const dbConfigOptionalKeys = [
   'bigQueryCredentials',
   'bigQueryTable',
   'deliveryApi',
-  'email',
+  'email', // Email provider: 'aws', 'sendgrid', 'mailgun'
   'emailSubject',
   'listener',
   'mailgunSmtpLogin',
@@ -52,8 +52,9 @@ const dbConfigOptionalKeys = [
   'paypalClientSecret',
   'paypalWebhookHost',
   'paypalWebhookId',
-  'printful',
+  'printful', // Printful API key
   'printfulAutoFulfill',
+  'printfulWebhookSecret',
   'processingTime',
   'sendgridApiKey',
   'sendgridPassword',

@@ -1,7 +1,10 @@
+const get = require('lodash/get')
 const Stripe = require('stripe')
+
 const { getLogger } = require('../../utils/logger')
-const { ExternalPayment } = require('../../models')
+const { ExternalPayment, Order } = require('../../models')
 const { Sentry } = require('../../sentry')
+const { OrderPaymentTypes } = require('../../enums')
 
 const log = getLogger('utils.stripe')
 
@@ -13,7 +16,7 @@ const { getConfig } = require('../../utils/encryptedConfig')
  *
  * @param {models.Network} network
  * @param {models.Shop} shop
- * @returns {Promise<{success: boolean, error: string}|{success: boolean}>}
+ * @returns {Promise<{success: false, error: string}|{success: true}>}
  */
 async function checkStripeConfig(network, shop) {
   const networkConfig = getConfig(network.config)
@@ -56,6 +59,82 @@ async function checkStripeConfig(network, shop) {
     return { success: false, error: 'Stripe Webhook not properly configured' }
   }
   return { success: true }
+}
+
+/**
+ * Loads the Stripe payment in the last 30 days for a shop and
+ * checks there is an associated order for each of them in the DB.
+ *
+ * @param {models.Shop} shop
+ * @returns {Promise<{success: false, errors: array<string>}|{success: true}>}
+ */
+async function checkStripePayments(shopId, shopConfig) {
+  const stripeKey = shopConfig.stripeBackend
+  if (!stripeKey) {
+    log.info('No stripe key configured')
+    return
+  }
+  const stripe = Stripe(stripeKey)
+
+  // Load the last 100 shop's orders paid with Stripe and get their encrypted IPFS hashes.
+  const orders = await Order.findAll({
+    where: { shopId, paymentType: OrderPaymentTypes.Stripe },
+    limit: 100,
+    order: [['id', 'desc']]
+  })
+  const encryptedHashes = orders.map((o) => o.encryptedIpfsHash)
+  log.info(`Found ${orders.length} orders`)
+
+  // Call the stripe API to fetch events.
+  // Every event should have an encrypted hash in its metadata that corresponds to an order.
+  const errors = []
+  let after
+  do {
+    await new Promise((resolve) => {
+      const eventArgs = {
+        limit: 100,
+        type: 'payment_intent.succeeded',
+        starting_after: after
+      }
+      log.debug(`Fetching events after ${after}`)
+
+      stripe.events.list(eventArgs, function (err, events) {
+        if (!events) {
+          return { success: true }
+        }
+        if (!events.data) {
+          log.warning('Events object with no data:', events)
+          return { success: false, errors: ['Failed loading data from Stripe'] }
+        }
+        log.debug(
+          `Found ${events.data.length} completed Stripe payments for key (may be shared with multiple dshops)`
+        )
+        events.data.forEach((item) => {
+          const { shopId, encryptedData } = item.data.object.metadata
+          if (Number(shopId) !== shopId) {
+            /* Ignore */
+            // Note: the same Stripe key can be shared across multiple shops
+            // which explains why we may be getting events for other shops.
+          } else if (encryptedHashes.indexOf(encryptedData) < 0) {
+            log.error(`Event id: ${item.id}`)
+            log.error(`Event metadata: ${get(item, 'data.object.metadata')}`)
+            errors.push(
+              `Event ${item.id} with hash ${encryptedHashes} has no associated order`
+            )
+          } else {
+            log.info(`Found hash ${encryptedData} OK`)
+          }
+        })
+        after = events.data.length >= 100 ? events.data[99].id : null
+        resolve()
+      })
+    })
+  } while (after)
+  if (errors.length > 0) {
+    return { success: false, errors }
+  } else {
+    return { success: true }
+  }
 }
 
 /**
@@ -122,5 +201,6 @@ async function processStripeRefund({ shop, order }) {
 
 module.exports = {
   checkStripeConfig,
+  checkStripePayments,
   processStripeRefund
 }
