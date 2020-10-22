@@ -56,23 +56,14 @@ const EditableProps = ({
                 <label>
                   <fbt desc="admin.themes.bgPos">Position</fbt>
                 </label>
-                <select {...fieldProps}>
-                  <option value="center">
-                    <fbt desc="Center">Center</fbt>
-                  </option>
-                  <option value="bottom">
-                    <fbt desc="Bottom">Bottom</fbt>
-                  </option>
-                  <option value="left">
-                    <fbt desc="Left">Left</fbt>
-                  </option>
-                  <option value="right">
-                    <fbt desc="Right">Right</fbt>
-                  </option>
-                  <option value="top">
-                    <fbt desc="Top">Top</fbt>
-                  </option>
-                </select>
+                <PositionPicker
+                  value={propVal}
+                  className="form-control"
+                  onChange={(v) => {
+                    console.log('onChange', v)
+                    onChange({ ...imageObj, [propName]: v })
+                  }}
+                />
               </div>
             )
           case 'height':
@@ -109,7 +100,8 @@ const ImagePicker = ({
   onChange,
   multiple,
   editableProps,
-  propLabelPrefix
+  propLabelPrefix,
+  allowPNG
 }) => {
   const { config } = useConfig()
   const { postRaw } = useBackendApi({ authToken: true })
@@ -123,12 +115,11 @@ const ImagePicker = ({
       const formData = new FormData()
 
       for (const file of files) {
+        const imgType = file.type === 'image/png' && allowPNG ? 'png' : 'jpeg'
         const processedFile = await new Promise((resolve) => {
           loadImage(
             file,
-            (img) => {
-              return img.toBlob((blob) => resolve(blob), 'image/jpeg')
-            },
+            (img) => img.toBlob((blob) => resolve(blob), `image/${imgType}`),
             {
               orientation: true,
               maxWidth: 2000,
@@ -137,7 +128,9 @@ const ImagePicker = ({
             }
           )
         })
-        formData.append('file', processedFile)
+        const ext = imgType === 'png' ? 'png' : 'jpg'
+        const name = (file.name || 'file.jpg').replace(/\.(jpe?g|png)$/i, '')
+        formData.append('file', processedFile, `${name}.${ext}`)
       }
 
       const response = await postRaw(`/themes/upload-images`, {
@@ -249,6 +242,74 @@ const ImagePicker = ({
   )
 }
 
+const PositionPicker = ({ className, value = '', onChange }) => {
+  const selectValue = value.match(/^(center|bottom|left|right|top)$/)
+    ? value
+    : 'custom'
+
+  const customMatch = value.match(/^([0-9]+)% ([0-9]+)%$/)
+  const range = customMatch ? [customMatch[1], customMatch[2]] : ['50', '50']
+
+  return (
+    <>
+      <select
+        value={selectValue}
+        className={className}
+        onChange={(e) => {
+          onChange(e.target.value)
+        }}
+      >
+        <option value="center">
+          <fbt desc="Center">Center</fbt>
+        </option>
+        <option value="bottom">
+          <fbt desc="Bottom">Bottom</fbt>
+        </option>
+        <option value="left">
+          <fbt desc="Left">Left</fbt>
+        </option>
+        <option value="right">
+          <fbt desc="Right">Right</fbt>
+        </option>
+        <option value="top">
+          <fbt desc="Top">Top</fbt>
+        </option>
+        <option value="custom">
+          <fbt desc="Custom">Custom</fbt>
+        </option>
+      </select>
+      {selectValue !== 'custom' ? null : (
+        <>
+          <div className="d-flex align-items-center mt-3">
+            <label className="mb-0 mr-4">X-Axis</label>
+            <input
+              style={{ flex: 1 }}
+              value={customMatch ? customMatch[1] : '50'}
+              onChange={(e) => onChange(`${e.target.value}% ${range[1]}%`)}
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+            />
+          </div>
+          <div className="d-flex align-items-center mt-3">
+            <label className="mb-0 mr-4">Y-Axis</label>
+            <input
+              style={{ flex: 1 }}
+              value={customMatch ? customMatch[2] : '50'}
+              onChange={(e) => onChange(`${range[0]}% ${e.target.value}%`)}
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+            />
+          </div>
+        </>
+      )}
+    </>
+  )
+}
+
 export default ImagePicker
 
 require('react-styl')(`
@@ -267,9 +328,12 @@ require('react-styl')(`
         margin-bottom: 0.5rem
       .label-section
         display: flex
+        margin-bottom: 1rem
         align-items: center
         .label
           flex: 1
+          overflow: hidden
+          text-overflow: ellipsis
         .action-icon
           flex: auto 0 0
           padding: 0 0.5rem
