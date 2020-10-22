@@ -17,7 +17,6 @@ const {
 } = require('./config')
 const { ShopDeploymentStatuses } = require('../../enums')
 
-
 const log = getLogger('logic.shop.health')
 
 /**
@@ -28,33 +27,49 @@ const log = getLogger('logic.shop.health')
  * @returns {{missingKeys: Array<string>, unknownKeys: Array<string>}}
  */
 function checkConfig(config, baseKeys, optionalKeys) {
-  const missingKeys = baseKeys.filter(key => !(key in config))
-  const unknownKeys = Object.keys(config).filter(key => optionalKeys.includes(key))
+  const missingKeys = baseKeys.filter((key) => !(key in config))
+  const unknownKeys = Object.keys(config).filter((key) =>
+    optionalKeys.includes(key)
+  )
   return { missingKeys, unknownKeys }
 }
 
 function checkJsonConfig(shopId, networkId, jsonConfig, configName) {
   const errors = []
   const { missingKeys, unknownKeys } = checkConfig(
-    jsonConfig, jsonConfigBaseKeys, jsonConfigOptionalKeys)
+    jsonConfig,
+    jsonConfigBaseKeys,
+    jsonConfigOptionalKeys
+  )
   if (missingKeys.length > 0) {
     log.error(`Shop ${shopId} - ${configName} misses some keys ${missingKeys}`)
     errors.push(`${configName} misses keys ${missingKeys}`)
   }
   if (unknownKeys.length > 0) {
-    log.error(`Shop ${shopId} - ${configName} includes unexpected keys ${unknownKeys}`)
+    log.error(
+      `Shop ${shopId} - ${configName} includes unexpected keys ${unknownKeys}`
+    )
     errors.push(`${configName} includes unexpected keys ${unknownKeys}`)
   }
   const networkConfig = get(jsonConfig, `networks[${networkId}`, {})
   const { missingNetworkKeys, unallowedNetworkKeys } = checkConfig(
-    networkConfig, jsonConfigNetworkBaseKeys, jsonConfigNetworkOptionalKeys)
+    networkConfig,
+    jsonConfigNetworkBaseKeys,
+    jsonConfigNetworkOptionalKeys
+  )
   if (missingNetworkKeys.length > 0) {
-    log.error(`Shop ${shopId} - ${configName} misses networks keys ${missingKeys}`)
+    log.error(
+      `Shop ${shopId} - ${configName} misses networks keys ${missingKeys}`
+    )
     errors.push(`${configName} misses networks keys ${missingKeys}`)
   }
   if (unallowedNetworkKeys.length > 0) {
-    log.error(`Shop ${shopId} - ${configName} includes unexpected networks keys ${unknownKeys}`)
-    errors.push(`${configName} includes unexpected networks keys ${unknownKeys}`)
+    log.error(
+      `Shop ${shopId} - ${configName} includes unexpected networks keys ${unknownKeys}`
+    )
+    errors.push(
+      `${configName} includes unexpected networks keys ${unknownKeys}`
+    )
   }
   return errors
 }
@@ -71,18 +86,28 @@ async function diagnoseShop(shop) {
   try {
     shopConfig = getConfig(shop.config)
     const { missingKeys, unknownKeys } = checkConfig(
-      shopConfig, dbConfigBaseKeys, dbConfigOptionalKeys)
+      shopConfig,
+      dbConfigBaseKeys,
+      dbConfigOptionalKeys
+    )
     if (missingKeys.length > 0) {
-      log.error(`Shop {shop.id} - json config on disk misses some keys ${missingKeys}`)
+      log.error(
+        `Shop {shop.id} - json config on disk misses some keys ${missingKeys}`
+      )
       errors.push(`Json config on disk misses keys ${missingKeys}`)
     }
     if (unknownKeys.length > 0) {
-      log.error(`Shop {shop.id} - json config on disk includes unexpected keys ${unknownKeys}`)
+      log.error(
+        `Shop {shop.id} - json config on disk includes unexpected keys ${unknownKeys}`
+      )
       errors.push(`Json config on disk includes unexpected keys ${unknownKeys}`)
     }
   } catch (e) {
     log.error(`Shop {shop.id} - Failed loading shop config: ${e}`)
-    diagnostic.dbConfig = { status: 'ERROR', error: 'Failed loading shop\'s config' }
+    diagnostic.dbConfig = {
+      status: 'ERROR',
+      error: "Failed loading shop's config"
+    }
   }
 
   //
@@ -91,7 +116,12 @@ async function diagnoseShop(shop) {
   errors = []
   try {
     const shopJsonConfigOnDisk = loadJsonConfigFromDisk(shop)
-    errors = checkJsonConfig(shop.id, network.networkId, shopJsonConfigOnDisk, 'Json config on disk')
+    errors = checkJsonConfig(
+      shop.id,
+      network.networkId,
+      shopJsonConfigOnDisk,
+      'Json config on disk'
+    )
   } catch (e) {
     log.error(`Shop {shop.id} - Failed loading json config from disk: ${e}`)
     errors.push(`Failed loading json config from disk`)
@@ -117,7 +147,12 @@ async function diagnoseShop(shop) {
       const url = `shopConfig.dataUrl/config.json`
       const res = await fetch(url)
       const shopJsonConfigOnWeb = await res.json()
-      errors = checkJsonConfig(shop.id, network.networkId, shopJsonConfigOnWeb, 'Json config on web')
+      errors = checkJsonConfig(
+        shop.id,
+        network.networkId,
+        shopJsonConfigOnWeb,
+        'Json config on web'
+      )
     } catch (e) {
       log.error(`Shop {shop.id} - Failed loading json config on web: ${e}`)
       errors.push(`Failed loading json config from web`)
@@ -156,9 +191,8 @@ async function diagnoseShop(shop) {
   // Check Email configuration.
 
   // Check Orders
-
 }
 
 module.exports = {
-  diagnoseShop,
+  diagnoseShop
 }

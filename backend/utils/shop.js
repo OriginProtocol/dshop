@@ -142,7 +142,7 @@ function loadJsonConfigFromDisk(shop) {
     const raw = fs.readFileSync(path).toString()
     const config = JSON.parse(raw)
     return config
-  } catch(e) {
+  } catch (e) {
     throw new Error(`Failed loading config.json: ${e}`)
   }
 }
@@ -157,5 +157,5 @@ module.exports = {
   getDataDir,
   isValidDataDir,
   getJsonConfigPath,
-  loadJsonConfigFromDisk,
+  loadJsonConfigFromDisk
 }

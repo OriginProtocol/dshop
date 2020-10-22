@@ -29,7 +29,7 @@ const dbConfigBaseKeys = [
   'pgpPrivateKeyPass',
   'pgpPublicKey',
   'publicUrl',
-  'supportEmail',
+  'supportEmail'
 ]
 const dbConfigOptionalKeys = [
   'awsAccessKey',
@@ -65,15 +65,12 @@ const dbConfigOptionalKeys = [
   'upholdApi',
   'upholdClient',
   'upholdSecret',
-  'web3Pk',
+  'web3Pk'
 ]
 const dbConfigKeys = dbConfigBaseKeys.concat(dbConfigOptionalKeys)
 
 // List of fields stored in the main section of the shop's json config.
-const jsonConfigBaseKeys = [
-  'title',
-  'networks',
-]
+const jsonConfigBaseKeys = ['title', 'networks']
 const jsonConfigOptionalKeys = [
   'currency',
   'metaDescription',
@@ -101,24 +98,22 @@ const jsonConfigOptionalKeys = [
   'taxRates',
   'themeId',
   'theme',
-  'gaCode',
+  'gaCode'
 ]
 const jsonConfigKeys = jsonConfigBaseKeys.concat(jsonConfigOptionalKeys)
 
 // List of fields stored in the networks section of the shop's json config.
-const jsonConfigNetworkBaseKeys = [
-  'backend',
-  'ipfsApi',
-  'ipfsGateway'
-]
+const jsonConfigNetworkBaseKeys = ['backend', 'ipfsApi', 'ipfsGateway']
 const jsonConfigNetworkOptionalKeys = [
   'acceptedTokens',
   'customTokens',
   'listingId',
   'disableCryptoPayments',
-  'walletAddress',
+  'walletAddress'
 ]
-const jsonConfigNetworkKeys = jsonConfigNetworkBaseKeys.concat(jsonConfigNetworkOptionalKeys)
+const jsonConfigNetworkKeys = jsonConfigNetworkBaseKeys.concat(
+  jsonConfigNetworkOptionalKeys
+)
 
 /**
  * Utility function to move offline payment images (QR code for ex.) from
@@ -229,7 +224,7 @@ async function updateShopConfig({ seller, shop, data }) {
   const jsonConfig = pick(data, jsonConfigKeys)
 
   // Pick fields relevant to the network section of the shop's config.json.
-  const jsonNetConfig = pick(data,jsonConfigNetworkKeys)
+  const jsonNetConfig = pick(data, jsonConfigNetworkKeys)
 
   // Load the existing shop config from the DB.
   const existingConfig = getConfig(shop.config)
@@ -427,7 +422,9 @@ async function updateShopConfig({ seller, shop, data }) {
   //
   log.info(`Shop ${shopId} - Saving config in the DB.`)
   const shopConfigFields = pick(
-    { ...existingConfig, ...data, ...dataOverride }, dbConfigKeys)
+    { ...existingConfig, ...data, ...dataOverride },
+    dbConfigKeys
+  )
   // Save the updated shop data in the DB.
   shop.config = setConfig(shopConfigFields, shop.config) // encrypt the config.
   shop.hasChanges = true

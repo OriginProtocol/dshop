@@ -8,7 +8,6 @@ const log = getLogger('utils.stripe')
 const { IS_TEST } = require('../../utils/const')
 const { getConfig } = require('../../utils/encryptedConfig')
 
-
 /**
  * Check whether a shop is properly configured for Stripe or not.
  *
@@ -37,7 +36,10 @@ async function checkStripeConfig(network, shop) {
 
     for (const webhook of webhooks) {
       if (validWebhhokUrls.includes(webhook.url)) {
-        log.info('Shop {shop.id} - Webhook properly configured. Pointing to', webhook.url)
+        log.info(
+          'Shop {shop.id} - Webhook properly configured. Pointing to',
+          webhook.url
+        )
         success = true
         break
       } else {
@@ -55,7 +57,6 @@ async function checkStripeConfig(network, shop) {
   }
   return { success: true }
 }
-
 
 /**
  * Refunds a Stripe payment.
@@ -121,5 +122,5 @@ async function processStripeRefund({ shop, order }) {
 
 module.exports = {
   checkStripeConfig,
-  processStripeRefund,
+  processStripeRefund
 }
