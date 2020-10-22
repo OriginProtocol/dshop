@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
@@ -16,24 +16,6 @@ const About = () => {
   const header = get(themeVars, 'about.headerImage.0', {})
   const primaryImage = get(themeVars, 'about.primaryImage.0', {})
   const aboutImages = get(themeVars, 'about.aboutImages', [])
-  // useMemo(() => {
-  //   const allImages = get(themeVars, 'about.aboutImages', [])
-  //   const col1Images = []
-  //   const col2Images = []
-
-  //   allImages.map((img, index) => {
-  //     if (index % 2 === 0) {
-  //       col1Images.push(img)
-  //     } else {
-  //       col2Images.push(img)
-  //     }
-  //   })
-
-  //   return {
-  //     col1Images,
-  //     col2Images
-  //   }
-  // }, [themeVars])
 
   return (
     <>
