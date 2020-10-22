@@ -11,7 +11,7 @@ import Link from 'components/Link'
 import CartIcon from 'components/icons/Cart'
 import MenuIcon from 'components/icons/Menu'
 
-import SocialLink from 'components/SocialLink'
+import SocialLinks from 'components/SocialLinks'
 
 const Cart = ({ cart, bg }) => (
   <Link to="/cart" className="nav-link relative hover:opacity-50">
@@ -38,14 +38,6 @@ const Header = () => {
   const themeVars = useThemeVars()
 
   const activeClass = ' border-b border-black'
-
-  const Social = ({ href, height = 16 }) => (
-    <SocialLink
-      className="hidden md:block mr-12 flex items-center hover:opacity-50"
-      href={href}
-      svg={{ className: 'inline-block', height, color: bg ? '#fff' : '#000' }}
-    />
-  )
 
   function toggleMobileMenu() {
     const body = document.querySelector('body')
@@ -97,9 +89,15 @@ const Header = () => {
         >
           <MenuIcon color={bg ? '#fff' : '#000'} />
         </a>
-        <Social href={config.twitter} height="18" />
-        <Social href={config.facebook} />
-        <Social href={config.instagram} />
+        <SocialLinks
+          itemsClassName="hidden md:block mx-3 flex items-center hover:opacity-50"
+          svg={{
+            height: 18,
+            className: 'inline-block mr-6',
+            color: bg ? '#fff' : '#000'
+          }}
+          contentOnly
+        />
         <div className="sm:pb-1 flex">
           <Cart cart={cart} bg={bg} />
         </div>
@@ -159,17 +157,9 @@ const Header = () => {
             </div>
           </div>
           <div className="mt-auto">
-            <SocialLink
-              href={config.twitter}
+            <SocialLinks
               svg={{ height: 18, className: 'inline-block' }}
-            />
-            <SocialLink
-              href={config.facebook}
-              svg={{ height: 18, className: 'ml-6 inline-block' }}
-            />
-            <SocialLink
-              href={config.instagram}
-              svg={{ height: 18, className: 'ml-6 inline-block' }}
+              contentOnly
             />
           </div>
         </div>

@@ -3,22 +3,21 @@ import get from 'lodash/get'
 
 import Link from 'components/Link'
 import useThemeVars from 'utils/useThemeVars'
+import useConfig from 'utils/useConfig'
 
 import useProducts from 'utils/useProducts'
 import useCollections from 'utils/useCollections'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
 import formatPrice from 'utils/formatPrice'
 import { useRouteMatch } from 'react-router-dom'
-import usePalette from '../hoc/usePalette'
 
-const Products = ({ limit = Infinity, excludeFeatured, onlyFeatured }) => {
+const Products = ({ offset = 0, limit = Infinity, onlyFeatured, cols = 3 }) => {
+  const { config } = useConfig()
   const { products } = useProducts()
   const { collections } = useCollections()
   const currencyOpts = useCurrencyOpts()
   const match = useRouteMatch('/products/:collection')
   const activeCollectionId = get(match, 'params.collection')
-
-  const { fonts } = usePalette()
 
   const themeVars = useThemeVars()
 
@@ -37,12 +36,6 @@ const Products = ({ limit = Infinity, excludeFeatured, onlyFeatured }) => {
       }
     }
 
-    if (excludeFeatured) {
-      return _products.filter(
-        (product) => !featuredProductIds.includes(product.id)
-      )
-    }
-
     if (onlyFeatured) {
       return featuredProductIds
         .map((productId) => _products.find((p) => p.id === productId))
@@ -51,7 +44,6 @@ const Products = ({ limit = Infinity, excludeFeatured, onlyFeatured }) => {
 
     return _products
   }, [
-    excludeFeatured,
     onlyFeatured,
     products,
     featuredProductIds,
@@ -59,25 +51,27 @@ const Products = ({ limit = Infinity, excludeFeatured, onlyFeatured }) => {
     collections
   ])
 
-  const cols = onlyFeatured ? 2 : 3
-
   return (
     <div
-      className={`grid grid-cols-1 sm:grid-cols-${cols} gap-x-5 gap-y-12 text-center`}
+      className={`grid grid-cols-1 ${
+        cols === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'
+      } gap-x-5 gap-y-12 text-center`}
     >
-      {productsToRender.slice(0, limit).map((product) => {
+      {productsToRender.slice(offset, offset + limit).map((product) => {
+        const relPath =
+          product.imageUrl || `${config.backend}/images/default-image.svg`
         return (
           <Link key={product.id} to={`/product/${product.id}`}>
             <div
-              className="w-full bg-cover bg-center"
+              className="w-full bg-cover bg-center bg-no-repeat"
               style={{
-                backgroundImage: `url(${product.imageUrl})`,
+                backgroundImage: `url(${relPath})`,
+                backgroundSize: product.imageUrl ? undefined : '100px',
+                backgroundColor: product.imageUrl ? undefined : '#cbd5e0',
                 paddingTop: '100%'
               }}
             />
-            <div className={`mt-6 font-bold font-${fonts.header}`}>
-              {product.title}
-            </div>
+            <div className="mt-6 font-bold font-header">{product.title}</div>
             <div>{formatPrice(product.price, currencyOpts)}</div>
           </Link>
         )

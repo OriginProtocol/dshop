@@ -2,11 +2,14 @@ import React, { useMemo } from 'react'
 import get from 'lodash/get'
 import Link from 'components/Link'
 
+import useConfig from 'utils/useConfig'
+
 import useProducts from 'utils/useProducts'
 import useCollections from 'utils/useCollections'
 import useThemeVars from 'utils/useThemeVars'
 
 const Collections = ({ limit = Infinity }) => {
+  const { config } = useConfig()
   const { collections } = useCollections()
   const { products } = useProducts()
   const themeVars = useThemeVars()
@@ -26,24 +29,30 @@ const Collections = ({ limit = Infinity }) => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-      {featuredCollections.map(({ product, collection }) => (
-        <Link
-          key={collection.id}
-          to={`/collections/${collection.id}`}
-          className="text-center sm:text-left font-medium text-2xl"
-        >
-          <div
-            className="w-full bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${product.imageUrl})`,
-              paddingTop: '100%'
-            }}
-          />
-          <div className="px-4 sm:px-0">
-            <div className="mt-6 leading-none ">{collection.title}</div>
-          </div>
-        </Link>
-      ))}
+      {featuredCollections.map(({ product, collection }) => {
+        const relPath =
+          product.imageUrl || `${config.backend}/images/default-image.svg`
+        return (
+          <Link
+            key={collection.id}
+            to={`/collections/${collection.id}`}
+            className="text-center sm:text-left font-medium text-2xl"
+          >
+            <div
+              className="w-full bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: `url(${relPath})`,
+                backgroundSize: product.imageUrl ? undefined : '100px',
+                backgroundColor: product.imageUrl ? undefined : '#cbd5e0',
+                paddingTop: '100%'
+              }}
+            />
+            <div className="px-4 sm:px-0">
+              <div className="mt-6 leading-none ">{collection.title}</div>
+            </div>
+          </Link>
+        )
+      })}
     </div>
   )
 }
