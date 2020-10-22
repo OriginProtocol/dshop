@@ -40,7 +40,7 @@ const ThemeSettings = () => {
   const previewTheme = async (themeId) => {
     let url = `${window.origin}/theme/${themeId}?shop=${config.backendAuthToken}`
 
-    switch (url) {
+    switch (themeId) {
       case 'art':
         url = 'https://minimal.ogn.app'
         break
