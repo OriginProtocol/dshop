@@ -26,9 +26,10 @@ const Footer = () => {
           )}
         </div>
         <div className="mb-10">
-          <SocialLinks 
+          <SocialLinks
             className={`social ${palette.colors.linkColor}`}
-            svg={{ className: 'inline-block mx-3', height: 24 }} />
+            svg={{ className: 'inline-block mx-3', height: 24 }}
+          />
         </div>
         <div>
           <ul

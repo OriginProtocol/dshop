@@ -60,31 +60,36 @@ const Contact = () => {
           <div className="grid grid-cols-2 gap-x-3 gap-y-2">
             <label>First name</label>
             <label>Last name</label>
-            <input 
+            <input
               value={formState.firstName}
-              onChange={e => setFormState({ firstName: e.target.value })}
-              className="border bg-gray-100 p-3 w-full" />
-            <input 
+              onChange={(e) => setFormState({ firstName: e.target.value })}
+              className="border bg-gray-100 p-3 w-full"
+            />
+            <input
               value={formState.lastName}
-              onChange={e => setFormState({ lastName: e.target.value })}
-              className="border bg-gray-100 p-3 w-full" />
+              onChange={(e) => setFormState({ lastName: e.target.value })}
+              className="border bg-gray-100 p-3 w-full"
+            />
           </div>
           <label className="mt-3">Email</label>
-          <input 
+          <input
             type="email"
             value={formState.userEmail}
-            onChange={e => setFormState({ userEmail: e.target.value })}
-            className="border bg-gray-100 p-3 w-full" />
+            onChange={(e) => setFormState({ userEmail: e.target.value })}
+            className="border bg-gray-100 p-3 w-full"
+          />
           <label className="mt-3">Subject</label>
-          <input 
+          <input
             value={formState.subject}
-            onChange={e => setFormState({ subject: e.target.value })}
-            className="border bg-gray-100 p-3 w-full" />
+            onChange={(e) => setFormState({ subject: e.target.value })}
+            className="border bg-gray-100 p-3 w-full"
+          />
           <label className="mt-3">Message</label>
-          <textarea 
+          <textarea
             value={formState.content}
-            onChange={e => setFormState({ content: e.target.value })}
-            className="border bg-gray-100 p-3 w-full h-32" />
+            onChange={(e) => setFormState({ content: e.target.value })}
+            className="border bg-gray-100 p-3 w-full h-32"
+          />
           <div className="mt-6 flex justify-end">
             <button className="btn btn-primary px-16">Submit</button>
           </div>
