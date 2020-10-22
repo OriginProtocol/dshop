@@ -38,7 +38,7 @@ const Contact = () => {
           <div className="text-3xl text-center leading-none">
             {contact.title}
           </div>
-          <div className="font-light text-lg whitespace-pre">
+          <div className="font-light text-lg whitespace-pre-line">
             {contact.description}
           </div>
           <div className="flex-1 flex gap-8 order-2 sm:order-1">

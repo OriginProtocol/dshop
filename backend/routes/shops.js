@@ -22,7 +22,8 @@ const {
   authSellerAndShop,
   authUser,
   authRole,
-  authSuperUser
+  authSuperUser,
+  authShop
 } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
 const { getConfig } = require('../utils/encryptedConfig')
@@ -34,6 +35,7 @@ const { readProductsFile } = require('../utils/products')
 const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
 const { updateShopConfig } = require('../logic/shop/config')
 const { createShop } = require('../logic/shop/create')
+const sellerContactEmail = require('../utils/emails/sellerContact')
 
 const log = getLogger('routes.shops')
 
@@ -1017,5 +1019,20 @@ module.exports = function (router) {
       orders,
       topProducts
     })
+  })
+
+  router.post('/email-seller', authShop, async (req, res) => {
+    const network = await Network.findOne({ where: { active: true } })
+    const seller = await Seller.findOne({
+      where: { id: req.shop.sellerId }
+    })
+
+    await sellerContactEmail({
+      network,
+      seller,
+      data: req.body
+    })
+
+    res.status(200).send({})
   })
 }

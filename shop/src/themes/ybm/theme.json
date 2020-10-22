@@ -7,8 +7,7 @@
     "fields": [{
       "id": "headerImage",
       "title": "Header Image",
-      "type": "media",
-      "props": ["backgroundPosition"]
+      "type": "media"
     }, {
       "id": "logo",
       "title": "Logo",
@@ -17,6 +16,7 @@
   }, {
     "id": "home",
     "title": "Home",
+    "pageUrl": "/",
     "fields": [{
       "id": "headerText",
       "title": "Header Text",
@@ -33,19 +33,12 @@
       "type": "collections_list"
     }]
   }, {
-    "id": "products",
-    "title": "Products",
-    "fields": [{
-      "id": "headerText",
-      "title": "Header Text",
-      "type": "text"
-    }]
-  }, {
     "id": "contact",
     "title": "Contact",
+    "pageUrl": "/contact",
     "fields": [{
       "id": "title",
-      "title": "Title",
+      "title": "Header Text",
       "type": "text"
     }, {
       "id": "description",
@@ -55,8 +48,7 @@
     }, {
       "id": "headerImage",
       "title": "Header Image",
-      "type": "media",
-      "props": ["backgroundPosition"]
+      "type": "media"
     }, {
       "id": "email",
       "title": "Email",
@@ -69,27 +61,37 @@
   }, {
     "id": "about",
     "title": "About",
+    "pageUrl": "/about",
     "fields": [{
       "id": "headerImage",
       "title": "Header Image",
-      "type": "media",
-      "props": ["backgroundPosition"]
+      "type": "media"
     }, {
       "id": "primaryImage",
       "title": "Primary Image",
       "type": "media",
-      "props": ["backgroundPosition", "backgroundSize", "height"]
+      "description": "Recommended size: 450px x 580px"
+    }, {
+      "id": "aboutText",
+      "title": "Primary Image Text",
+      "type": "text",
+      "multiline": true
     }, {
       "id": "description",
-      "title": "Description",
+      "title": "Gallery Text",
       "type": "text",
       "multiline": true
     }, {
       "id": "aboutImages",
       "title": "Images",
       "type": "media",
-      "multiple": true,
-      "props": ["backgroundPosition", "backgroundSize", "height"]
+      "count": 4,
+      "description": [
+        "Recommended size: 450px x 320px",
+        "Recommended size: 450px x 580px",
+        "Recommended size: 450px x 580px",
+        "Recommended size: 450px x 320px"
+      ]
     }]
   }]
 }

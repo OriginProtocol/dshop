@@ -6,10 +6,10 @@ const SriPlugin = require('webpack-subresource-integrity')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
-let localContractAddress
+let localContractAddress = ''
 try {
   const Addresses = require(`@origin/contracts/build/contracts.json`)
   localContractAddress = Addresses.Marketplace_V01
@@ -50,7 +50,7 @@ const webpackConfig = {
   devtool,
   output: {
     filename: '[name].js',
-    chunkFilename: `dist/[name].[hash:8].bundle.js`,
+    chunkFilename: `dist/[name].[contenthash:8].bundle.js`,
     path: path.resolve(__dirname, 'public'),
     publicPath: absolute ? '/' : '',
     crossOriginLoading: 'anonymous'
@@ -63,7 +63,7 @@ const webpackConfig = {
         test: /\.js$/,
         exclude: /node_modules/,
         loader: 'babel-loader',
-        query: {
+        options: {
           plugins: [
             [
               'babel-plugin-fbt',
@@ -147,13 +147,19 @@ const webpackConfig = {
   resolve: {
     extensions: ['.js', '.json'],
     modules: [path.resolve(__dirname, 'src/constants'), './node_modules'],
-    symlinks: false
-  },
-  node: {
-    fs: 'empty'
+    symlinks: false,
+    fallback: {
+      fs: false,
+      path: require.resolve('path-browserify'),
+      crypto: require.resolve('crypto-browserify'),
+      stream: require.resolve('stream-browserify'),
+      http: require.resolve('stream-http'),
+      https: require.resolve('https-browserify'),
+      zlib: require.resolve('browserify-zlib')
+    }
   },
   devServer: {
-    port: 9000,
+    port: process.env.PORT || 9000,
     host: '0.0.0.0',
     disableHostCheck: true,
     historyApiFallback: true,
@@ -162,13 +168,16 @@ const webpackConfig = {
     // Below is so proxy does not take precedence.
     // See https://github.com/webpack/webpack-dev-server/issues/1132#issuecomment-340639565
     features: [
-      'before',
       'setup',
+      'before',
       'headers',
       'middleware',
       'contentBaseFiles',
       'proxy',
+      'historyApiFallback',
       'middleware',
+      'contentBaseFiles',
+      'contentBaseIndex',
       'magicHtml'
     ],
     proxy: {
@@ -182,6 +191,9 @@ const webpackConfig = {
   },
   mode: isProduction ? 'production' : 'development',
   plugins: [
+    new webpack.ProvidePlugin({
+      process: 'process/browser'
+    }),
     new SriPlugin({
       hashFuncNames: ['sha256', 'sha384'],
       enabled: isProduction
@@ -217,7 +229,7 @@ const webpackConfig = {
       CONTENT_HASH: process.env.CONTENT_HASH || '',
       ABSOLUTE: process.env.ABSOLUTE || ''
     }),
-    new MiniCssExtractPlugin({ filename: '[name].[hash:8].css' })
+    new MiniCssExtractPlugin({ filename: '[name].[contenthash:8].css' })
   ],
 
   optimization: {
@@ -228,10 +240,10 @@ const webpackConfig = {
 }
 
 if (isProduction) {
-  webpackConfig.output.filename = '[name].[hash:8].js'
+  webpackConfig.output.filename = '[name].[contenthash:8].js'
   webpackConfig.optimization.minimizer = [
     new TerserPlugin({ extractComments: false }),
-    new OptimizeCSSAssetsPlugin({})
+    new CssMinimizerPlugin()
   ]
   webpackConfig.plugins.push(
     new CleanWebpackPlugin({

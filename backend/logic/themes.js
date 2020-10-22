@@ -20,6 +20,7 @@ const getAllThemesData = () => {
         ...metaData
       }
     })
+    .filter((data) => !data.disabled)
 }
 
 /**

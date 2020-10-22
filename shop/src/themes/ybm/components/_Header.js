@@ -23,11 +23,8 @@ const MobileMenu = ({ toggleMobileMenu }) => {
   const { config } = useConfig()
   const history = useHistory()
   const themeVars = useThemeVars()
-  const logoUrl = `${config.dataSrc}${get(
-    themeVars,
-    'header.logo.0.url',
-    config.logo
-  )}`
+  const relativeLogoPath = get(themeVars, 'header.logo.0.url')
+  const logoUrl = `${config.dataSrc}${relativeLogoPath}`
   return (
     <div
       className="fixed inset-0 bg-black px-6 pt-2 pb-12 flex flex-col items-center text-white z-10"
@@ -35,7 +32,11 @@ const MobileMenu = ({ toggleMobileMenu }) => {
     >
       <div className="flex justify-between items-center w-full">
         <Close />
-        <img style={{ height: 100 }} src={logoUrl} />
+        {relativeLogoPath ? (
+          <img style={{ height: 100 }} src={logoUrl} />
+        ) : (
+          <>Galleria</>
+        )}
         <Cart cart={cart} bg={true} />
       </div>
       <div className="text-3xl font-medium mt-12 text-center">
@@ -192,11 +193,8 @@ const DesktopLinks = ({ bg }) => {
   const [{ cart }] = useStateValue()
   const themeVars = useThemeVars()
 
-  const logoUrl = `${config.dataSrc}${get(
-    themeVars,
-    'header.logo.0.url',
-    config.logo
-  )}`
+  const relativeLogoPath = get(themeVars, 'header.logo.0.url')
+  const logoUrl = `${config.dataSrc}${relativeLogoPath}`
 
   const svgProps = { height: '18', color: bg ? '#fff' : '#000' }
   return (
@@ -213,7 +211,11 @@ const DesktopLinks = ({ bg }) => {
         </Link>
       </div>
       <Link to="/">
-        <img style={{ height: 120 }} src={logoUrl} />
+        {relativeLogoPath ? (
+          <img style={{ height: 120 }} src={logoUrl} />
+        ) : (
+          config.title
+        )}
       </Link>
       <div className="flex-1 flex justify-end items-center">
         <SocialLink

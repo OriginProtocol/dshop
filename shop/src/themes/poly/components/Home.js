@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import get from 'lodash/get'
 
 import Link from 'components/Link'
@@ -12,25 +12,34 @@ const Home = () => {
   const headerText = get(themeVars, 'home.headerText')
   const aboutText = get(themeVars, 'home.aboutText')
   const media = get(themeVars, 'home.galleryImages', [])
-  const mediaFW = get(themeVars, 'home.galleryImagesFW', [])
 
-  const galleryImages = useMemo(() => {
-    return media.reduce(
-      (out, imgObj, index) => {
-        if (index % 2 === 0) {
-          out.col1.push(imgObj)
-        } else {
-          out.col2.push(imgObj)
-        }
-
-        return out
-      },
-      {
-        col1: [],
-        col2: []
-      }
-    )
-  }, [media])
+  const imageProps = [
+    {
+      paddingTop: '90%',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    },
+    {
+      paddingTop: '152%',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    },
+    {
+      paddingTop: '77%',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    },
+    {
+      paddingTop: '77%',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    },
+    {
+      paddingTop: '77%',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    }
+  ]
 
   return (
     <>
@@ -42,44 +51,52 @@ const Home = () => {
       <div className="sm:container">
         <div className="grid grid-cols-2 gap-px sm:gap-12">
           <div>
-            {get(galleryImages, 'col1', []).map((imgObj) => (
-              <div
-                key={imgObj.url}
-                className="block bg-no-repeat"
+            {media.slice(0, 2).map((imgObj, index) => (
+              <Link
+                key={index}
+                to={`/products/${
+                  imgObj && imgObj.productLink ? imgObj.productLink : ''
+                }`}
+                className="block bg-no-repeat mb-12"
                 style={{
-                  paddingTop: imgObj.height,
-                  backgroundSize: imgObj.backgroundSize,
-                  backgroundPosition: imgObj.backgroundPosition,
-                  backgroundImage: `url(${config.dataSrc}${imgObj.url})`
+                  ...imageProps[index],
+                  backgroundImage:
+                    imgObj && imgObj.url
+                      ? `url(${config.dataSrc}${imgObj.url})`
+                      : undefined
                 }}
               />
             ))}
           </div>
           <div>
-            {get(galleryImages, 'col2', []).map((imgObj) => (
+            {media.slice(2, -1).map((imgObj, index) => (
               <div
-                key={imgObj.url}
-                className="block bg-no-repeat"
+                key={index}
+                className="block bg-no-repeat mb-12"
                 style={{
-                  paddingTop: imgObj.height,
-                  backgroundSize: imgObj.backgroundSize,
-                  backgroundPosition: imgObj.backgroundPosition,
-                  backgroundImage: `url(${config.dataSrc}${imgObj.url})`
+                  ...imageProps[2 + index],
+                  backgroundImage:
+                    imgObj && imgObj.url
+                      ? `url(${config.dataSrc}${imgObj.url})`
+                      : undefined
                 }}
               />
             ))}
           </div>
         </div>
 
-        {mediaFW.map((imgObj) => (
+        {media.slice(-1).map((imgObj, index) => (
           <div
-            key={imgObj.url}
+            key={index}
             className="bg-no-repeat sm:mt-12"
             style={{
-              paddingTop: imgObj.height,
-              backgroundSize: imgObj.backgroundSize,
-              backgroundPosition: imgObj.backgroundPosition,
-              backgroundImage: `url(${config.dataSrc}${imgObj.url})`
+              paddingTop: '64%',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundImage:
+                imgObj && imgObj.url
+                  ? `url(${config.dataSrc}${imgObj.url})`
+                  : undefined
             }}
           />
         ))}

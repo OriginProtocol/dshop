@@ -4,40 +4,48 @@
   "config": [{
     "id": "home",
     "title": "Home",
+    "pageUrl": "/",
     "fields": [{
       "id": "headerImage",
       "title": "Header Image",
       "type": "media"
     }, {
+      "id": "featuredProducts",
+      "title": "Featured Products",
+      "type": "products_list"
+    }, {
       "id": "aboutImage",
-      "title": "About Image",
+      "title": "Secondary Image",
       "type": "media",
-      "props": ["height"]
+      "description": "Recommended size: 450px x 568px"
     }, {
       "id": "aboutText",
-      "title": "About Content",
+      "title": "Secondary Text",
       "type": "text",
       "multiline": true
     }]
   }, {
     "id": "about",
     "title": "About Page",
+    "pageUrl": "/about",
     "fields": [{
       "id": "aboutImage",
       "title": "Image",
-      "type": "media"
+      "type": "media",
+      "description": "Recommended size: 480px x 380px"
     }, {
       "id": "aboutText",
-      "title": "About Content",
+      "title": "Text",
       "type": "text",
       "multiline": true
     }]
   }, {
     "id": "contact",
     "title": "Contact Page",
+    "pageUrl": "/contact",
     "fields": [{
       "id": "contactText",
-      "title": "Contact Content",
+      "title": "Description",
       "type": "text",
       "multiline": true
     }, {
