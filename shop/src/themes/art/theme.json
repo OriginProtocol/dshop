@@ -10,6 +10,14 @@
       "title": "Header Image",
       "type": "media"
     }, {
+      "id": "subheading",
+      "title": "Sub-Heading",
+      "type": "text"
+    }, {
+      "id": "tagline",
+      "title": "Tagline",
+      "type": "text"
+    }, {
       "id": "featuredProducts",
       "title": "Featured Products",
       "type": "products_list"
