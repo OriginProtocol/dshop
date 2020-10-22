@@ -23,8 +23,13 @@ const endpoints = {
   sslCertificates: `${serviceEndpoint}/compute/v1/projects/PROJECT_ID/global/sslCertificates`
 }
 
-function endpoint(projectId, name) {
-  return endpoints[name].replace('PROJECT_ID', projectId)
+function endpoint(projectId, name, suffix) {
+  let e = endpoints[name].replace('PROJECT_ID', projectId)
+  if (suffix) {
+    suffix = suffix.startsWith('/') ? suffix : `/${suffix}`
+    e = `${e}${suffix}`
+  }
+  return e
 }
 
 async function getAuthenticatedClient(credentials) {
