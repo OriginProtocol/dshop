@@ -8,8 +8,8 @@ import useConfig from 'utils/useConfig'
 import useActiveTheme from 'utils/useActiveTheme'
 import { useStateValue } from 'data/state'
 
-import Link from 'components/Link'
 import SectionsList from './_Section'
+import Link from 'components/Link'
 
 const EditFields = () => {
   const [{ config }, dispatch] = useStateValue()
@@ -18,6 +18,8 @@ const EditFields = () => {
   const history = useHistory()
   const [channel, setChannel] = useState()
   const [changes, setChanges] = useState({})
+  const [hasChanges, setHasChanges] = useState(false)
+  const [activeSection, setActiveSection] = useState(false)
 
   const { post } = useBackendApi({ authToken: true })
 
@@ -60,7 +62,7 @@ const EditFields = () => {
 
       if (closed) return
 
-      broadcastChanges(newChanges)
+      broadcastChanges(newChanges, true)
     }
 
     return () => {
@@ -78,7 +80,7 @@ const EditFields = () => {
     }
   }
 
-  const broadcastChanges = (updates) => {
+  const broadcastChanges = (updates, overrideNoChange) => {
     const newChanges = {
       ...changes,
       ...updates
@@ -86,31 +88,40 @@ const EditFields = () => {
 
     setChanges(newChanges)
 
+    if (!overrideNoChange) {
+      setHasChanges(true)
+    }
+
     postToChannel({
       type: 'DATA_UPDATE',
       changes: newChanges
     })
   }
 
-  const broadcastSectionChange = (section) => {
-    postToChannel({
-      type: 'SECTION_CHANGED',
-      section
-    })
-  }
-
   const onSave = async () => {
+    const themeData = {
+      ...config.theme,
+      [activeThemeId]: {
+        ...get(config.theme, activeThemeId),
+        ...changes
+      }
+    }
+
     await post('/shop/config', {
       method: 'PUT',
       body: JSON.stringify({
-        theme: {
-          ...config.theme,
-          [activeThemeId]: {
-            ...get(config.theme, activeThemeId),
-            ...changes
-          }
-        }
+        theme: themeData
       })
+    })
+
+    setHasChanges(false)
+
+    dispatch({
+      type: 'setConfigSimple',
+      config: {
+        ...config,
+        theme: themeData
+      }
     })
 
     dispatch({
@@ -120,6 +131,33 @@ const EditFields = () => {
           Your changes have been saved
         </fbt>
       )
+    })
+  }
+
+  const onCancel = () => {
+    if (hasChanges) {
+      const newChanges = {
+        ...get(config.theme, activeThemeId)
+      }
+
+      setChanges(newChanges)
+      setHasChanges(false)
+
+      postToChannel({
+        type: 'DATA_UPDATE',
+        changes: newChanges
+      })
+    } else if (activeSection) {
+      setActiveSection(null)
+    }
+  }
+
+  const onDrilldown = (section) => {
+    setActiveSection(section.id)
+
+    postToChannel({
+      type: 'SECTION_CHANGED',
+      section
     })
   }
 
@@ -136,12 +174,28 @@ const EditFields = () => {
         />
       </div>
       <div className="fields-actions">
-        <Link to="/admin/themes" className="btn btn-outline-primary">
-          Cancel
-        </Link>
-        <button className="btn btn-primary" type="button" onClick={onSave}>
-          Save
-        </button>
+        {hasChanges ? (
+          <>
+            <button
+              className="btn btn-outline-primary"
+              type="button"
+              onClick={onCancel}
+            >
+              <fbt desc="Cancel">Cancel</fbt>
+            </button>
+            <button className="btn btn-primary" type="button" onClick={onSave}>
+              <fbt desc="Save">Save</fbt>
+            </button>
+          </>
+        ) : activeSection ? (
+          <button className="btn btn-link" type="button" onClick={onCancel}>
+            <fbt desc="admin.themes.backToMenu">Back to menu</fbt>
+          </button>
+        ) : (
+          <Link to="/admin/themes" className="btn btn-link">
+            <fbt desc="admin.themes.backToThemes">Back to Themes</fbt>
+          </Link>
+        )}
       </div>
 
       <div className="fields-container">
@@ -154,7 +208,8 @@ const EditFields = () => {
             theme={activeTheme}
             state={changes}
             onChange={broadcastChanges}
-            onDrilldown={broadcastSectionChange}
+            onDrilldown={onDrilldown}
+            activeSection={activeSection}
           />
         )}
       </div>
@@ -178,6 +233,18 @@ require('react-styl')(`
       .btn
         flex: 1
         margin: 0 0.3125rem
+      .btn.btn-link
+        text-align: left
+        &:before
+          content: ""
+          display: inline-block
+          width: 10px
+          height: 10px
+          border-width: 0 2px 2px 0
+          border-style: solid
+          border-color: #3b80ee
+          transform: rotate(-225deg)
+          margin-right: .5rem
 
     .fields-container
       margin: 0 1.25rem

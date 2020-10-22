@@ -8,9 +8,7 @@ import ProductsList from './fields/ProductsList'
 import CollectionsList from './fields/CollectionsList'
 import ColorPalettes from './fields/ColorPalettes'
 
-const Section = ({ section, state, setState, onDrilldown }) => {
-  const [isActive, setIsActive] = useState(false)
-
+const Section = ({ section, state, setState, onDrilldown, isActive }) => {
   return (
     <>
       <div
@@ -19,8 +17,6 @@ const Section = ({ section, state, setState, onDrilldown }) => {
           if (onDrilldown) {
             onDrilldown()
           }
-
-          setIsActive(true)
         }}
       >
         {section.title}
@@ -30,9 +26,6 @@ const Section = ({ section, state, setState, onDrilldown }) => {
       <div className={`section-fields${isActive ? ' active' : ''}`}>
         {!isActive ? null : (
           <>
-            <div className="back-button" onClick={() => setIsActive(false)}>
-              <fbt desc="Back">Back</fbt>
-            </div>
             {section.fields.map((field) => {
               const fieldState = get(state, field.id)
               const setFieldState = (newState) => {
@@ -73,7 +66,13 @@ const Section = ({ section, state, setState, onDrilldown }) => {
   )
 }
 
-const SectionsList = ({ state, theme, onChange, onDrilldown }) => {
+const SectionsList = ({
+  state,
+  theme,
+  onChange,
+  onDrilldown,
+  activeSection
+}) => {
   if (!theme) return null
 
   if (!theme.config || !theme.config.length) {
@@ -107,6 +106,7 @@ const SectionsList = ({ state, theme, onChange, onDrilldown }) => {
             state={sectionState}
             setState={setSectionState}
             onDrilldown={() => onDrilldown(section)}
+            isActive={activeSection === section.id}
           />
         )
       })}
