@@ -34,7 +34,7 @@
       "props": ["productLink"]
     }, {
       "id": "aboutText",
-      "title": "About Content",
+      "title": "About Text",
       "type": "text",
       "multiline": true
     }]
@@ -48,7 +48,7 @@
       "type": "media"
     }, {
       "id": "aboutText",
-      "title": "About Content",
+      "title": "About Text",
       "type": "text",
       "multiline": true
     }]

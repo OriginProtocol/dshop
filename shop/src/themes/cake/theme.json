@@ -67,7 +67,7 @@
       "type": "media"
     }, {
       "id": "featuredCollections",
-      "title": "Featured in Menu",
+      "title": "Primary Menu",
       "type": "collections_list"
     }]
   }, {
@@ -76,7 +76,7 @@
     "pageUrl": "/",
     "fields": [{
       "id": "headerText",
-      "title": "Hero Text",
+      "title": "Text above Header Image",
       "type": "text",
       "multiline": true
     }, {

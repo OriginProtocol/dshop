@@ -33,21 +33,12 @@
       "type": "collections_list"
     }]
   }, {
-    "id": "products",
-    "title": "Products",
-    "pageUrl": "/products",
-    "fields": [{
-      "id": "headerText",
-      "title": "Header Text",
-      "type": "text"
-    }]
-  }, {
     "id": "contact",
     "title": "Contact",
     "pageUrl": "/contact",
     "fields": [{
       "id": "title",
-      "title": "Title",
+      "title": "Header Text",
       "type": "text"
     }, {
       "id": "description",
@@ -82,12 +73,12 @@
       "description": "Recommended size: 450px x 580px"
     }, {
       "id": "aboutText",
-      "title": "About Text",
+      "title": "Primary Image Text",
       "type": "text",
       "multiline": true
     }, {
       "id": "description",
-      "title": "Description",
+      "title": "Gallery Text",
       "type": "text",
       "multiline": true
     }, {

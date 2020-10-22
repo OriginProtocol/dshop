@@ -33,7 +33,7 @@ const useThemeVars = () => {
 
           case 'SECTION_CHANGED':
             const pageUrl = get(event.data, 'section.pageUrl')
-            if (pageUrl) {
+            if (pageUrl && history.location.pathname !== pageUrl) {
               history.push(pageUrl)
               window.scrollTo(0, 0)
             }
