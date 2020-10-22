@@ -124,7 +124,14 @@ async function configureCDN({ shop, deployment, domains }) {
    * Ours is basically wildcards direct to the bucket backend.
    */
   let urlMap = await getUrlMap(rest, serviceName)
-  if (!urlMap) {
+  if (urlMap) {
+    log.info(`Invalidating cache for urlMap ${serviceName}`)
+    await invalidateCache(rest, serviceName, [
+      '/*',
+      `/${shop.authToken}/*`,
+      `/dist/*`
+    ])
+  } else {
     urlMap = await createUrlMap(rest, backendBucketLink, serviceName)
   }
 
@@ -279,6 +286,29 @@ async function createUrlMap(client, backendBucketLink, name) {
     }
   })
   return await get({ client, url: result.data.targetLink })
+}
+
+/**
+ * Invalidate a urlMap cache
+ *
+ * @param client {object} REST client with Oauth
+ * @param urlMapName {string} name (resource ID) of the urlMap
+ * @param paths {Array<string>} paths to invalidate (starting with /)
+ */
+async function invalidateCache(client, urlMapName, paths) {
+  for (const pth of paths) {
+    await post({
+      client,
+      url: google.endpoint(
+        projectId,
+        'urlMaps',
+        `${urlMapName}/invalidateCache`
+      ),
+      data: {
+        path: pth
+      }
+    })
+  }
 }
 
 /**
@@ -514,8 +544,25 @@ async function get({ client, url }) {
  */
 async function find({ client, url, name }) {
   const { items } = await get({ client, url })
-  log.debug(`found items: `, items)
   return _find(items, (i) => i.name === name)
+}
+
+/**
+ * POST to a specific REST endpoint
+ *
+ * @param args {object}
+ * @param args.client {GoogleAuth} client
+ * @param args.url {string} object endpoint we're POSTing to
+ * @param args.body {object} JSON object to send to the endpoint
+ * @returns {object} Operation object
+ */
+async function post({ client, url, data }) {
+  assert(!!projectId, 'Call configure() first')
+  assert(!!client, 'client must be provided')
+  assert(!!url, 'url must be provided')
+  assert(!!data, 'data must be provided')
+  const res = await client.request({ url, method: 'POST', data })
+  return res.data
 }
 
 /**
@@ -528,16 +575,15 @@ async function find({ client, url, name }) {
  * @param args.client {GoogleAuth} client
  * @param args.url {string} object endpoint we're POSTing to
  * @param args.data {object} data (object props) to send to the endpoint
- * @param args.method {string} HTTP method to use (default: POST)
  * @returns {object} Operation object
  */
-async function create({ client, url, data, method = 'POST' }) {
+async function create({ client, url, data }) {
   assert(!!projectId, 'Call configure() first')
   assert(!!client, 'client must be provided')
   assert(!!url, 'url must be provided')
   assert(!!data, 'data must be provided')
 
-  const res = await client.request({ url, method, data })
+  const res = await post({ client, url, data })
   if (res.data.status !== 'RUNNING') {
     throw new Error(`Unexpected status when trying to POST ${url}`)
   }
