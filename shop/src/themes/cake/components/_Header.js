@@ -67,7 +67,7 @@ const Header = ({ bg }) => {
         {relativeLogoPath ? (
           <img style={{ width: 120 }} src={logoUrl} />
         ) : (
-          <>Artisan</>
+          config.title
         )}
       </Link>
       <div className="flex flex-row text-sm items-center">
@@ -137,7 +137,7 @@ const Header = ({ bg }) => {
                   style={{ maxHeight: '40px', objectFit: 'contain' }}
                 />
               ) : (
-                <>Artisan</>
+                config.title
               )}
             </div>
             <Cart cart={cart} hideText />

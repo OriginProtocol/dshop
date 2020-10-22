@@ -10,10 +10,14 @@
       "title": "Header Image",
       "type": "media"
     }, {
+      "id": "featuredProducts",
+      "title": "Featured Products",
+      "type": "products_list"
+    }, {
       "id": "aboutImage",
       "title": "About Image",
       "type": "media",
-      "props": ["height"]
+      "description": "Recommended size: 450px x 568px"
     }, {
       "id": "aboutText",
       "title": "About Content",
@@ -27,7 +31,8 @@
     "fields": [{
       "id": "aboutImage",
       "title": "Image",
-      "type": "media"
+      "type": "media",
+      "description": "Recommended size: 480px x 380px"
     }, {
       "id": "aboutText",
       "title": "About Content",

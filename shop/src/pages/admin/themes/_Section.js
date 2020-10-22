@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import fbt from 'fbt'
 import get from 'lodash/get'
 

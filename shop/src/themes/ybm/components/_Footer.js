@@ -43,7 +43,7 @@ const Footer = () => {
           {relativeLogoPath ? (
             <img style={{ width: 100 }} src={logoUrl} />
           ) : (
-            <>Galleria</>
+            config.title
           )}
         </div>
         <div className="flex-1 flex justify-end order-3 mt-8 sm:mt-0">

@@ -21,7 +21,7 @@ const App = () => {
           </h1>
           <div className="text-gray-500 text-sm">{config.byline}</div>
         </div>
-        <Products limit={3} />
+        <Products limit={3} onlyFeatured />
         <div className="my-16 sm:my-24 flex justify-center">
           <Link to="/products" className="btn flex-1 sm:flex-none">
             {`View ${get(collections, '0.title', 'All Products')}`}
@@ -39,14 +39,16 @@ const About = () => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
 
-  const img = `url(${config.dataSrc}${get(themeVars, 'home.aboutImage.0.url')})`
-  const paddingTop = get(themeVars, 'home.aboutImage.0.height')
+  const relPath = get(themeVars, 'home.aboutImage.0.url')
+  const img = `url(${config.dataSrc}${relPath})`
   return (
     <div className="bg-gray-100 p-8 sm:p-4 border-t border-b sm:border-l sm:border-r border-gray-400 grid grid-cols-1 sm:grid-cols-2">
-      <div
-        className="bg-contain bg-no-repeat order-last sm:order-first"
-        style={{ backgroundImage: img, paddingTop }}
-      />
+      {!relPath ? null : (
+        <div
+          className="bg-cover bg-no-repeat bg-center order-last sm:order-first"
+          style={{ backgroundImage: img, paddingTop: '126%' }}
+        />
+      )}
       <div className="sm:px-12 flex flex-col items-start justify-center mb-16 sm:mb-0">
         <div className="text-3xl sm:text-4xl leading-tight mb-8 sm:mb-16 whitespace-pre-line">
           {get(themeVars, 'home.aboutText')}

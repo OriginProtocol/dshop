@@ -22,7 +22,7 @@ const Footer = () => {
           {relativeLogoPath ? (
             <img className="mx-auto" style={{ width: 120 }} src={logoUrl} />
           ) : (
-            <>Artisan</>
+            config.title
           )}
         </div>
         <div className="mb-10">

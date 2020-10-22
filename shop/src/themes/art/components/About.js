@@ -7,7 +7,8 @@ import useThemeVars from 'utils/useThemeVars'
 const About = () => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
-  const src = `${config.dataSrc}${get(themeVars, 'about.aboutImage.0.url')}`
+  const relPath = get(themeVars, 'about.aboutImage.0.url')
+  const src = `${config.dataSrc}${relPath}`
   const aboutText = get(themeVars, 'about.aboutText')
 
   return (
@@ -19,9 +20,17 @@ const About = () => {
             <div className="text-sm mr-32 whitespace-pre-line">{aboutText}</div>
           )}
         </div>
-        <div style={{ flex: '2' }}>
-          <img className="w-full" src={src} />
-        </div>
+        {!relPath ? null : (
+          <div style={{ flex: '2' }}>
+            <div
+              className="bg-cover bg-center bg-no-repeat"
+              style={{
+                backgroundImage: `url(${src})`,
+                paddingTop: '126%'
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   )

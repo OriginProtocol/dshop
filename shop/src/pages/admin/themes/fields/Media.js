@@ -26,7 +26,10 @@ const MediaField = ({ field, value, onChange }) => {
     <>
       {new Array(count).fill(0).map((_, index) => {
         const imgVal = value && value[index] ? [value[index]] : []
-        const description = get(field, `description.${index}`)
+        let description = get(field, `description`)
+        if (Array.isArray(description)) {
+          description = description[index]
+        }
         return (
           <div key={index} className="form-group">
             <label>{count === 1 ? field.title : `Image ${index + 1}`}</label>

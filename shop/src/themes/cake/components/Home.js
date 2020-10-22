@@ -45,11 +45,11 @@ const App = () => {
         >
           Featured Desserts
         </h2>
-        <Products limit={2} onlyFeatured />
+        <Products cols={2} limit={2} onlyFeatured />
       </div>
 
       <div className="container">
-        <Products limit={3} excludeFeatured />
+        <Products offset={2} limit={3} onlyFeatured />
 
         <div className="my-24 flex justify-center">
           <Link

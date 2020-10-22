@@ -99,7 +99,7 @@
       "multiline": true
     }, {
       "id": "aboutImage",
-      "title": "Header Image",
+      "title": "About Image",
       "type": "media"
     }]
   }]

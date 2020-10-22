@@ -18,7 +18,7 @@ const Footer = () => {
         {relativeLogoPath ? (
           <img style={{ width: 80 }} src={logoUrl} />
         ) : (
-          <>Showcase</>
+          config.title
         )}
       </div>
 

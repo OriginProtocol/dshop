@@ -214,7 +214,7 @@ const DesktopLinks = ({ bg }) => {
         {relativeLogoPath ? (
           <img style={{ height: 120 }} src={logoUrl} />
         ) : (
-          <>Galleria</>
+          config.title
         )}
       </Link>
       <div className="flex-1 flex justify-end items-center">
