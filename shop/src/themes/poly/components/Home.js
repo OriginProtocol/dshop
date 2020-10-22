@@ -91,20 +91,23 @@ const Home = () => {
         {media.slice(5).map((imgObj, index) => (
           <Link
             key={index}
-            className="bg-no-repeat sm:mt-12"
             to={`/product/${
               imgObj && imgObj.productLink ? imgObj.productLink : ''
             }`}
-            style={{
-              paddingTop: '64%',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundImage:
-                imgObj && imgObj.url
-                  ? `url(${config.dataSrc}${imgObj.url})`
-                  : undefined
-            }}
-          />
+          >
+            <div
+              className="bg-no-repeat sm:mt-12"
+              style={{
+                paddingTop: '64%',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundImage:
+                  imgObj && imgObj.url
+                    ? `url(${config.dataSrc}${imgObj.url})`
+                    : undefined
+              }}
+            />
+          </Link>
         ))}
 
         <div className="container py-16 sm:py-32 flex flex-col items-center">
