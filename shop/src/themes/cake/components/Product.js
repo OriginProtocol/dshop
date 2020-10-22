@@ -9,7 +9,6 @@ import Link from 'components/Link'
 import Caret from 'components/icons/Caret'
 
 import Products from './_Products'
-import usePalette from '../hoc/usePalette'
 
 const RightCaret = () => (
   <div
@@ -40,8 +39,6 @@ const Product = ({ match }) => {
   const { collection, nextProduct, previousProduct } = useCollection(
     activeCollectionId
   )
-
-  const { colors, fonts } = usePalette()
 
   if (loading) {
     return null
@@ -80,9 +77,7 @@ const Product = ({ match }) => {
             <img src={product.imageUrl} />
           </div>
           <div className="sm:ml-24" style={{ flex: '3' }}>
-            <div
-              className={`text-center sm:text-left text-3xl sm:text-4xl font-semibold leading-none font-${fonts.header}`}
-            >
+            <div className="text-center sm:text-left text-3xl sm:text-4xl font-semibold leading-none font-header">
               {product.title}
             </div>
             <div className="text-center sm:text-left mt-4 text-lg mb-12">
@@ -93,10 +88,7 @@ const Product = ({ match }) => {
               dangerouslySetInnerHTML={{ __html: product.description }}
             />
             {addedToCart ? (
-              <Link
-                to="/cart"
-                className={`btn btn-primary px-32 bg-${colors.buttonColor}`}
-              >
+              <Link to="/cart" className="btn btn-primary px-32 bg-button">
                 View Cart
               </Link>
             ) : (
@@ -105,14 +97,14 @@ const Product = ({ match }) => {
                   dispatch({ type: 'addToCart', product, variant })
                   setAddedToCart(true)
                 }}
-                className={`btn btn-primary sm:px-32 bg-${colors.buttonColor}`}
+                className="btn btn-primary sm:px-32 bg-button"
               >
                 Add to Cart
               </button>
             )}
           </div>
         </div>
-        <div className={`mt-24 mb-6 text-4xl font-${fonts.header} text-center`}>
+        <div className="mt-24 mb-6 text-4xl font-header text-center">
           You might also like
         </div>
         <Products limit={3} />

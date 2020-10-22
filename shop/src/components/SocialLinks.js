@@ -13,7 +13,8 @@ const SocialLinks = ({
   el = 'div',
   className = 'social',
   itemClassName,
-  svg = {}
+  svg = {},
+  contentOnly
 }) => {
   const { config } = useConfig()
   const social = pick(config, 'twitter', 'medium', 'instagram', 'youtube')
@@ -28,8 +29,8 @@ const SocialLinks = ({
     rel: 'noreferrer'
   }
 
-  return (
-    <El className={className}>
+  const content = (
+    <>
       {!config.twitter ? null : (
         <a
           {...linkProps}
@@ -71,8 +72,12 @@ const SocialLinks = ({
           <InstagramIcon {...svg} />
         </a>
       )}
-    </El>
+    </>
   )
+
+  if (contentOnly) return content
+
+  return <El className={className}>{content}</El>
 }
 
 export default SocialLinks
