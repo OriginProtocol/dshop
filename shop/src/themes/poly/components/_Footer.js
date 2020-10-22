@@ -3,7 +3,7 @@ import fbt, { FbtParam } from 'fbt'
 import get from 'lodash/get'
 import useConfig from 'utils/useConfig'
 import Link from 'components/Link'
-import SocialLink from 'components/SocialLink'
+import SocialLinks from 'components/SocialLinks'
 import useThemeVars from 'utils/useThemeVars'
 const Footer = () => {
   const { config } = useConfig()
@@ -40,16 +40,10 @@ const Footer = () => {
             </fbt>
           </div>
         </div>
-        <div className="flex gap-4">
-          <SocialLink
-            href={config.twitter}
-            svg={{ height: '16', color: '#fff' }}
-          />
-          <SocialLink
-            href={config.instagram}
-            svg={{ height: '16', color: '#fff' }}
-          />
-        </div>
+        <SocialLinks
+          className="flex gap-4"
+          svg={{ height: '16', color: '#fff' }}
+        />
         <div className="flex-1 flex justify-end gap-4 sm:flex-row">
           <Link to="/about">About</Link>
         </div>

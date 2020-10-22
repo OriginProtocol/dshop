@@ -54,7 +54,7 @@ const Home = () => {
             {media.slice(0, 2).map((imgObj, index) => (
               <Link
                 key={index}
-                to={`/products/${
+                to={`/product/${
                   imgObj && imgObj.productLink ? imgObj.productLink : ''
                 }`}
                 className="block bg-no-repeat mb-12"
@@ -69,10 +69,13 @@ const Home = () => {
             ))}
           </div>
           <div>
-            {media.slice(2, -1).map((imgObj, index) => (
-              <div
+            {media.slice(2, 5).map((imgObj, index) => (
+              <Link
                 key={index}
                 className="block bg-no-repeat mb-12"
+                to={`/product/${
+                  imgObj && imgObj.productLink ? imgObj.productLink : ''
+                }`}
                 style={{
                   ...imageProps[2 + index],
                   backgroundImage:
@@ -85,10 +88,13 @@ const Home = () => {
           </div>
         </div>
 
-        {media.slice(-1).map((imgObj, index) => (
-          <div
+        {media.slice(5).map((imgObj, index) => (
+          <Link
             key={index}
             className="bg-no-repeat sm:mt-12"
+            to={`/product/${
+              imgObj && imgObj.productLink ? imgObj.productLink : ''
+            }`}
             style={{
               paddingTop: '64%',
               backgroundSize: 'cover',
