@@ -9,7 +9,7 @@ const queues = require('./queues')
 const logger = getLogger('queues.etlProcessor')
 
 const attachToQueue = () => {
-  const queue = queues['dns']
+  const queue = queues['dnsQueue']
   queue.process(processor)
   queue.resume() // Start if paused
 }
@@ -29,14 +29,18 @@ const processor = async (job) => {
         status: ShopDomainStatuses.Pending
       },
       limit: 100,
-      include: [Shop],
+      include: [
+        {
+          model: Shop,
+          as: 'shop'
+        }
+      ],
       order: [['createdAt', 'desc']]
     })
 
     for (const shopDomain of pendingVerifications) {
       const { valid } = await verifyDNS(
         shopDomain.domain,
-        shopDomain.shop.hostname,
         shopDomain.shop.networkId,
         shopDomain.shop
       )
@@ -65,10 +69,10 @@ const processor = async (job) => {
  */
 async function scheduleDNSVerificationJob() {
   const queue = queues['dnsQueue']
-  // Run daily at 17:00 UTC => ~10:00am PST
+  // Run every 5 minutes
   const job = await queue.add(
     { task: 'dns' },
-    { repeat: { cron: '00 */2 * * *' } }
+    { repeat: { cron: '*/5 * * * *' } }
   )
   logger.info(
     `Scheduled DNS status verification job ${job.id} to run once every two hours.`

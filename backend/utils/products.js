@@ -20,6 +20,8 @@ const validProductFields = [
   'id',
   'title',
   'description',
+  'externalId',
+  'printfulDesc',
   'price',
   'image',
   'images',
@@ -40,7 +42,8 @@ const minimalistProductFields = [
   'description',
   'price',
   'image',
-  'hasVariants'
+  'hasVariants',
+  'externalId'
 ]
 
 /**

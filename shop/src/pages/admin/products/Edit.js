@@ -154,6 +154,8 @@ const EditProduct = () => {
   const isNewProduct = productId === 'new'
   const externallyManaged = formState.externalId ? true : false
 
+  const [allowDescEdit, setAllowDescEdit] = useState(true)
+
   const input = formInput(formState, (newState) => {
     setFormState({ ...newState, hasChanges: true })
   })
@@ -193,7 +195,8 @@ const EditProduct = () => {
       variants: (product.variants || []).map((variant) => ({
         ...variant,
         price: (variant.price / 100).toFixed(2)
-      }))
+      })),
+      printfulDesc: product.printfulDesc || product.description
     }
 
     let imageArray = product.images
@@ -234,6 +237,9 @@ const EditProduct = () => {
     // Regenerate variants
     newFormState.variants = generateVariants(newFormState)
 
+    setAllowDescEdit(
+      !product.externalId || newFormState.printfulDesc !== product.description
+    )
     setMedia(mappedImages)
     setFormState(newFormState)
     setHasOptions(!!product.options && product.options.length > 0)
@@ -420,13 +426,43 @@ const EditProduct = () => {
               </div>
 
               <div className="form-group">
-                <label>
-                  <fbt desc="Description">Description</fbt>
-                </label>
-                <textarea
-                  {...input('description')}
-                  disabled={externallyManaged}
-                />
+                <div className="d-flex justify-content-between">
+                  <label>
+                    <fbt desc="Description">Description</fbt>
+                  </label>
+
+                  {!externallyManaged ? null : (
+                    <div className="form-check mb-0">
+                      <label className="font-weight-normal">
+                        <input
+                          checked={allowDescEdit}
+                          onChange={(e) => {
+                            if (!e.target.checked) {
+                              setFormState({
+                                description: formState.printfulDesc,
+                                // To not lose any changes
+                                customDesc: formState.description
+                              })
+                            } else {
+                              setFormState({
+                                description:
+                                  formState.customDesc || formState.description
+                              })
+                            }
+
+                            setAllowDescEdit(e.target.checked)
+                          }}
+                          type="checkbox"
+                          className="mr-2"
+                        />
+                        <fbt desc="admin.products.edit.overrideDesc">
+                          Override Printful&apos;s description
+                        </fbt>
+                      </label>
+                    </div>
+                  )}
+                </div>
+                <textarea {...input('description')} disabled={!allowDescEdit} />
                 {Feedback('description')}
               </div>
 
