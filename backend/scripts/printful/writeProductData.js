@@ -215,13 +215,20 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
 
     printfulIds[handle] = printfulSyncIds
 
-    const description = product.product.description.replace(/\r\n/g, '<br/>')
+    const printfulDesc = product.product.description.replace(/\r\n/g, '<br/>')
+    const printfulManangedDesc =
+      !existingData.printfulDesc ||
+      existingData.description === existingData.printfulDesc
+    const description = printfulManangedDesc
+      ? printfulDesc
+      : existingData.description
 
     const out = {
       id: handle,
       externalId,
       title: syncProduct.sync_product.name,
-      description: existingData.description || description,
+      description,
+      printfulDesc,
       price: Number(syncProduct.sync_variants[0].retail_price.replace('.', '')),
       available: true,
       options,
