@@ -408,12 +408,10 @@ async function createForwardingRules(
 }
 
 /**
- * Create forwardingRules
+ * Update forwardingRules target
  *
  * @param client {object} REST client with Oauth
  * @param name {string} name of the globalAddress we're looking for
- * @param ipAddress {string} ipAddress the forwarding rules will listen on
- * @param portRange {string} port range to listen on (e.g. 80-80, 8080-8081)
  * @param target {string} ref URL to a proxy
  * @returns {object} of a forwardingRules if in response
  */
