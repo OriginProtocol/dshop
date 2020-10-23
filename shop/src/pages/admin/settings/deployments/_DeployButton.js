@@ -25,6 +25,10 @@ const AdminDeployShop = ({
         'Your changes have been successfully published.',
         'admin.settings.deployments.publishedText'
       )}
+      confirmedSubText={fbt(
+        "We're in the process of deploying your shop to a global content distribution network and the Interplanetary Flie System (IPFS). It may take up to 15 minutes for all changes to take effect. Please be patient.",
+        'admin.settings.deployments.confirmedSubText'
+      )}
       loadingText={`${fbt('Publishing', 'Publishing')}...`}
       spinner={true}
       onConfirm={() => {
