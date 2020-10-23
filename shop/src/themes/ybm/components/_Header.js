@@ -94,15 +94,10 @@ const HeaderMobile = ({ style, children }) => {
     return <MobileLinks>{children}</MobileLinks>
   }
 
+  const header = get(themeVars, 'header.headerImage.0', {})
   const defaultStyle = {
-    backgroundImage: `url(${config.dataSrc}${get(
-      themeVars,
-      'header.headerImage.0.url'
-    )})`,
-    backgroundPosition: get(
-      themeVars,
-      'header.headerImage.0.backgroundPosition'
-    )
+    backgroundImage: `url(${config.dataSrc}${header.url})`,
+    backgroundPosition: header.backgroundPosition
   }
 
   return (

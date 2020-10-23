@@ -57,7 +57,7 @@ const Home = () => {
                 to={`/product/${
                   imgObj && imgObj.productLink ? imgObj.productLink : ''
                 }`}
-                className="block bg-no-repeat mb-12"
+                className="block bg-no-repeat mb-px sm:mb-12"
                 style={{
                   ...imageProps[index],
                   backgroundImage:
@@ -72,7 +72,7 @@ const Home = () => {
             {media.slice(2, 5).map((imgObj, index) => (
               <Link
                 key={index}
-                className="block bg-no-repeat mb-12"
+                className="block bg-no-repeat mb-px sm:mb-12"
                 to={`/product/${
                   imgObj && imgObj.productLink ? imgObj.productLink : ''
                 }`}
@@ -96,7 +96,7 @@ const Home = () => {
             }`}
           >
             <div
-              className="bg-no-repeat sm:mt-12"
+              className="bg-no-repeat"
               style={{
                 paddingTop: '64%',
                 backgroundSize: 'cover',

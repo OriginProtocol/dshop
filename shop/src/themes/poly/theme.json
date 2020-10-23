@@ -1,56 +1,75 @@
 {
   "id": "poly",
   "name": "Showcase",
-  "config": [{
-    "id": "header",
-    "title": "Header",
-    "fields": [{
-      "id": "logo",
-      "title": "Logo",
-      "type": "media"
-    }]
-  }, {
-    "id": "home",
-    "title": "Home",
-    "pageUrl": "/",
-    "fields": [{
-      "id": "headerText",
-      "title": "Header Text",
-      "type": "text",
-      "multiline": true
-    }, {
-      "id": "galleryImages",
-      "title": "Gallery",
-      "type": "media",
-      "count": 6,
-      "description": [
-        "Recommended size: 440px x 400px",
-        "Recommended size: 440px x 680px",
-        "Recommended size: 440px x 340px",
-        "Recommended size: 440px x 340px",
-        "Recommended size: 440px x 340px",
-        "Recommended size: 940px x 610px"
-      ],
-      "props": ["productLink"]
-    }, {
-      "id": "aboutText",
-      "title": "About Text",
-      "type": "text",
-      "multiline": true
-    }]
-  }, {
-    "id": "about",
-    "title": "About Page",
-    "pageUrl": "/about",
-    "fields": [{
-      "id": "aboutImage",
-      "title": "Image",
-      "type": "media"
-    }, {
-      "id": "aboutText",
-      "title": "About Text",
-      "type": "text",
-      "multiline": true
-    }]
-  }]
+  "config": [
+    {
+      "id": "header",
+      "title": "Header",
+      "fields": [
+        {
+          "id": "logo",
+          "title": "Logo",
+          "type": "media",
+          "allowPNG": true
+        },
+        {
+          "id": "logoText",
+          "title": "Logo Text",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "title": "Home",
+      "pageUrl": "/",
+      "fields": [
+        {
+          "id": "headerText",
+          "title": "Header Text",
+          "type": "text",
+          "multiline": true
+        },
+        {
+          "id": "galleryImages",
+          "title": "Gallery",
+          "type": "media",
+          "count": 6,
+          "description": [
+            "Recommended size: 440px x 400px",
+            "Recommended size: 440px x 680px",
+            "Recommended size: 440px x 340px",
+            "Recommended size: 440px x 340px",
+            "Recommended size: 440px x 340px",
+            "Recommended size: 940px x 610px"
+          ],
+          "props": ["productLink"]
+        },
+        {
+          "id": "aboutText",
+          "title": "About Text",
+          "type": "text",
+          "multiline": true
+        }
+      ]
+    },
+    {
+      "id": "about",
+      "title": "About Page",
+      "pageUrl": "/about",
+      "fields": [
+        {
+          "id": "aboutImage",
+          "title": "Image",
+          "type": "media"
+        },
+        {
+          "id": "aboutText",
+          "title": "About Text",
+          "type": "text",
+          "multiline": true
+        }
+      ]
+    }
+  ]
 }
