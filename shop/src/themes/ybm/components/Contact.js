@@ -14,10 +14,7 @@ const Contact = () => {
 
   const themeVars = useThemeVars()
   const contact = get(themeVars, 'contact', {})
-  const headerImage = `${config.dataSrc}${get(
-    themeVars,
-    'contact.headerImage.0.url'
-  )}`
+  const header = get(themeVars, 'contact.headerImage.0', {})
   const contactEmail = get(themeVars, 'contact.email', config.supportEmail)
   const contactNumber = get(themeVars, 'contact.number', config.supportPhone)
 
@@ -25,8 +22,8 @@ const Contact = () => {
     <>
       <Header
         style={{
-          backgroundImage: `url(${headerImage})`,
-          backgroundPosition: 'center'
+          backgroundImage: `url(${config.dataSrc}${header.url})`,
+          backgroundPosition: header.backgroundPosition
         }}
       >
         <div className="container text-center text-2xl sm:text-5xl py-20 sm:pb-40">

@@ -14,10 +14,12 @@ const { sequelize, Network } = require('./models')
 const { getLogger } = require('./utils/logger')
 const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
 const { Sentry, sentryEventPrefix } = require('./sentry')
+const { scheduleDNSVerificationJob } = require('./queues/dnsStatusProcessor')
 
 const log = getLogger('app')
 
 require('./queues').runProcessors()
+scheduleDNSVerificationJob()
 
 const ORIGIN_WHITELIST_ENABLED = false
 const ORIGIN_WHITELIST = []

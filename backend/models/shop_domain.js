@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
       ipfsPinner: DataTypes.STRING, // URL of the IPFS pinner service used for the deployment.
       ipfsGateway: DataTypes.STRING, // URL of the gateway associated with the pinner used for deployment.
       ipfsHash: DataTypes.STRING, // IPFS hash of the deployment.
+      ipAddress: DataTypes.STRING, // An IP address, if relevant
       error: DataTypes.STRING // Optional. Only populated when status is 'Failure'.
     },
     {
@@ -20,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
 
   ShopDomain.associate = function (models) {
     ShopDomain.belongsTo(models.Shop, {
-      as: 'shopDomains',
+      as: 'shop',
       foreignKey: 'shopId'
     })
   }

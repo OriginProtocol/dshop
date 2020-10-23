@@ -15,6 +15,7 @@ const MediaField = ({ field, value, onChange }) => {
           onChange={onChange}
           multiple={field.multiple}
           editableProps={editableProps}
+          allowPNG={field.allowPNG}
         />
       </div>
     )
@@ -46,6 +47,7 @@ const MediaField = ({ field, value, onChange }) => {
               multiple={false}
               editableProps={editableProps}
               propLabelPrefix={`Image ${index + 1}`}
+              allowPNG={field.allowPNG}
             />
           </div>
         )

@@ -31,5 +31,6 @@ function validateShop(shop) {
 }
 
 module.exports = {
+  assert,
   validateShop
 }

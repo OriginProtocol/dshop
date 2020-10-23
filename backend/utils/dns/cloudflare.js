@@ -1,4 +1,5 @@
 const find = require('lodash/find')
+const isEqual = require('lodash/isEqual')
 const memoize = require('lodash/memoize')
 const stringify = require('json-stable-stringify')
 const cloudflare = require('cloudflare')
@@ -50,7 +51,35 @@ async function findRecord(cf, id, conditions) {
   return found
 }
 
-async function setRecords({ email, key, zone, subdomain, ipfsGateway, hash }) {
+async function findRecords(cf, id, conditions) {
+  const data = { page: 1, per_page: 100 }
+  let response
+  let found = []
+  do {
+    response = await cf.dnsRecords.browse(id, data)
+    if (response.result) {
+      const onThisPage = response.result.filter((r) => isEqual(r, conditions))
+      if (onThisPage) {
+        found = found.concat(found, onThisPage)
+      }
+    }
+    data.page = response.result_info.page + 1
+  } while (
+    !found &&
+    response.result_info.page <= response.result_info.total_pages
+  )
+  return found
+}
+
+async function setRecords({
+  email,
+  key,
+  zone,
+  subdomain,
+  ipfsGateway,
+  hash,
+  ipAddresses
+}) {
   const cf = getClient({ email, key })
 
   const zoneObj = await findZone(cf, { name: zone })
@@ -62,16 +91,37 @@ async function setRecords({ email, key, zone, subdomain, ipfsGateway, hash }) {
   log.info(`Found zone ${zoneObj.name} ID ${zoneObj.id}`)
 
   const record = `${subdomain}.${zone}`
+  const arec = await findRecords(cf, zoneId, { type: 'A', name: record })
   const cname = await findRecord(cf, zoneId, { type: 'CNAME', name: record })
-  if (!cname) {
+  if (arec) {
+    for (const rec of arec) {
+      await cf.dnsRecords.del(zoneObj.id, rec.id)
+    }
+  }
+  if (ipAddresses) {
+    for (const ip of ipAddresses) {
+      await cf.dnsRecords.add(zoneObj.id, {
+        type: 'A',
+        name: record,
+        content: ip
+      })
+    }
+  }
+  if (cname) {
+    if (!ipAddresses && cname.content === ipfsGateway) {
+      log.info(`CNAME ${record} exists pointing to ${cname.content}`)
+    } else {
+      log.info(`Removing CNAME ${record}`)
+      await cf.dnsRecords.del(zoneObj.id, cname.id)
+    }
+  }
+  if (ipfsGateway && !ipAddresses) {
     log.info(`Adding CNAME ${record}`)
     await cf.dnsRecords.add(zoneId, {
       type: 'CNAME',
       name: record,
       content: ipfsGateway
     })
-  } else {
-    log.info(`CNAME ${record} exists pointing to ${cname.content}`)
   }
 
   const dnslink = `_dnslink.${record}`
