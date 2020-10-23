@@ -16,9 +16,11 @@
  *                                | backendService
  */
 const _find = require('lodash/find')
+const trimStart = require('lodash/trimStart')
 
 const { NETWORK_ID_TO_NAME, SERVICE_PREFIX } = require('../../../utils/const')
 const google = require('../../../utils/google')
+const { allIn } = require('../../../utils/array')
 const { assert } = require('../../../utils/validators')
 const { getLogger } = require('../../../utils/logger')
 
@@ -138,9 +140,27 @@ async function configureCDN({ shop, deployment, domains }) {
   /**
    * Certificate that will be used by the targetHttpsProxies
    */
-  let cert = await getSSLCertificate(rest, serviceName)
-  if (!cert) {
-    cert = await createSSLCertificate(rest, serviceName, domains)
+  let certUpdate = false
+  let cert
+  const certs = await getSSLCertificates(rest, serviceName)
+
+  if (certs) {
+    const latestCertName = lastSortedName(certs.map((c) => c.name))
+    cert = _find(certs, (c) => c.name === latestCertName)
+  }
+
+  if (!cert || !cert.managed || !allIn(cert.managed.domains, domains)) {
+    // Cleanup the old certs, but not the last
+    if (certs && certs.length > 2) {
+      for (const c of certs.filter((c) => c.name !== cert.name)) {
+        log.info(`Deleting old certificate ${c.name}`)
+        deleteSSLCertificate(rest, c.name)
+      }
+    }
+
+    const certName = cert ? incrementName(cert.name, serviceName) : serviceName
+    cert = await createSSLCertificate(rest, certName, domains)
+    certUpdate = true
   }
 
   /**
@@ -153,6 +173,32 @@ async function configureCDN({ shop, deployment, domains }) {
   }
   if (!sproxy) {
     sproxy = await createHttpsProxy(rest, serviceName, urlMap.selfLink, [
+      cert.selfLink
+    ])
+  } else if (certUpdate) {
+    /**
+     * This sucks.  We can't just update the cert because of what looks like an
+     * implementation error on Google's part.  Leaving the code here in hopes it
+     * will one day be useful.
+     *
+     * Instead, we have to create a new httpsProxy, and replace the proxy on the
+     * forwardingRules later down.
+     */
+    /*sproxy = await setHttpsProxyCerts(rest, serviceName, [
+      cert.selfLink
+    ])*/
+    const sproxies = await getHttpsProxies(rest, serviceName)
+    const latestSproxyName = sproxies
+      ? lastSortedName(sproxies.map((c) => c.name))
+      : serviceName
+    if (sproxies.length > 2) {
+      for (const sp of sproxies.filter((s) => s.name !== latestSproxyName)) {
+        deletHttpsProxy(rest, sp.name)
+      }
+    }
+
+    const newSproxyName = incrementName(latestSproxyName, serviceName)
+    sproxy = await createHttpsProxy(rest, newSproxyName, urlMap.selfLink, [
       cert.selfLink
     ])
   }
@@ -181,6 +227,8 @@ async function configureCDN({ shop, deployment, domains }) {
       '443-443',
       sproxy.selfLink
     )
+  } else if (certUpdate) {
+    await updateForwardingRulesTarget(rest, httpsName, sproxy.selfLink)
   }
   if (!httpRulesRes) {
     await createForwardingRules(
@@ -360,6 +408,29 @@ async function createForwardingRules(
 }
 
 /**
+ * Update forwardingRules target
+ *
+ * @param client {object} REST client with Oauth
+ * @param name {string} name of the globalAddress we're looking for
+ * @param target {string} ref URL to a proxy
+ * @returns {object} of a forwardingRules if in response
+ */
+async function updateForwardingRulesTarget(client, name, target) {
+  const result = await create({
+    client,
+    url: google.endpoint(
+      projectId,
+      'globalForwardingRules',
+      `${name}/setTarget`
+    ),
+    data: {
+      target
+    }
+  })
+  return await get({ client, url: result.data.targetLink })
+}
+
+/**
  * Get a globalAddress with name
  *
  * @param client {object} REST client with Oauth
@@ -450,6 +521,21 @@ async function getHttpsProxy(client, name) {
 }
 
 /**
+ * Get a targetHttpsProxies with name
+ *
+ * @param client {object} REST client with Oauth
+ * @param name {string} name of the targetHttpsProxy we're looking for
+ * @returns {object} of a targetHttpsProxy if in response
+ */
+async function getHttpsProxies(client, beginning) {
+  return await findStartsWith({
+    client,
+    beginning,
+    url: google.endpoint(projectId, 'targetHttpsProxies')
+  })
+}
+
+/**
  * Create a targetHttpsProxies with name and urlMap
  *
  * @param client {object} REST client with Oauth
@@ -460,6 +546,7 @@ async function getHttpsProxy(client, name) {
  */
 async function createHttpsProxy(client, name, urlMap, sslCertificates) {
   assert(!!urlMap, 'urlMap must be provided')
+  assert(!!sslCertificates, 'sslCertificates must be provided')
 
   const result = await create({
     client,
@@ -476,16 +563,88 @@ async function createHttpsProxy(client, name, urlMap, sslCertificates) {
 }
 
 /**
+ * Delete a targetHttpsProxies with name
+ *
+ * @param client {object} REST client with Oauth
+ * @param name {string} name of the globalAddress we're looking for
+ * @returns {object} Operation
+ */
+async function deletHttpsProxy(client, name) {
+  assert(!!name, 'name must be provided')
+
+  return await post({
+    client,
+    url: google.endpoint(projectId, 'targetHttpsProxies', `${name}`),
+    method: 'DELETE'
+  })
+}
+
+/**
+ * Update a targetHttpsProxies with new SSL certs
+ *
+ * NOTE: While I think this should work, it does not.  Looks like an endpoint
+ * they forgot to implement.  The documentation suggests this should have been
+ * implemented on the global endpoint, the doc page actually shows the regional
+ * endpoint instead.  Seems to be a bug, like a copy & paste error.  So, I will
+ * leave this here in the hopes that it will one day be implemented.   In the
+ * mean time, it looks like we have to recreate the proxy.
+ *
+ * Ref: https://cloud.google.com/compute/docs/reference/rest/v1/targetHttpsProxies/setSslCertificates
+ *
+ * @param client {object} REST client with Oauth
+ * @param name {string} name of the globalAddress we're looking for
+ * @param urlMap {string} ref URL for a urlMap REST object
+ * @param sslCertificates {array<string>} of sslCertificate ref URLs the proxy should use
+ * @returns {object} of a targetHttpsProxy if in response
+ */
+// eslint-disable-next-line no-unused-vars
+async function setHttpsProxyCerts(client, name, sslCertificates) {
+  assert(false, 'setHttpsProxyCerts can not be used')
+  assert(!!sslCertificates, 'sslCertificates must be provided')
+
+  const result = await create({
+    client,
+    url: google.endpoint(
+      projectId,
+      'targetHttpsProxies',
+      `${name}/setSslCertificates`
+    ),
+    data: {
+      sslCertificates
+    }
+  })
+
+  return await get({ client, url: result.data.targetLink })
+}
+
+/**
  * Get a sslCertificate with name
  *
  * @param client {object} REST client with Oauth
  * @param name {string} name of the sslCertificate we're looking for
  * @returns {object} of a sslCertificate if in response
  */
+// eslint-disable-next-line no-unused-vars
 async function getSSLCertificate(client, name) {
   return await find({
     client,
     name,
+    url: google.endpoint(projectId, 'sslCertificates')
+  })
+}
+
+/**
+ * Get a sslCertificate with name
+ *
+ * @param client {object} REST client with Oauth
+ * @param beginning {string} beginning of the name of the sslCertificate
+ *    we're looking for
+ * @returns {object} of a sslCertificate if in response
+ */
+async function getSSLCertificates(client, beginning) {
+  return await findStartsWith({
+    client,
+    beginning,
     url: google.endpoint(projectId, 'sslCertificates')
   })
 }
@@ -515,6 +674,24 @@ async function createSSLCertificate(client, name, domains) {
   })
 
   return await get({ client, url: result.data.targetLink })
+}
+
+/**
+ * Create a sslCertificate with name, for domains
+ *
+ * @param client {object} REST client with Oauth
+ * @param name {string} name of the SSL certificate object
+ * @param domains {array} of domains the cert should be valid for
+ * @returns {object} of a sslCertificate if in response
+ */
+async function deleteSSLCertificate(client, name) {
+  assert(!!name, 'name must be provided')
+
+  return await post({
+    client,
+    method: 'DELETE',
+    url: google.endpoint(projectId, 'sslCertificates', name)
+  })
 }
 
 /**
@@ -548,6 +725,20 @@ async function find({ client, url, name }) {
 }
 
 /**
+ * Find a specific object from a listing endpoint
+ *
+ * @param args {object}
+ * @param args.client {GoogleAuth} client
+ * @param args.url {string} object endpoint we're POSTing to
+ * @param args.beginning {string} The unique object name to look for
+ * @returns {object} REST object, if found
+ */
+async function findStartsWith({ client, url, beginning }) {
+  const { items } = await get({ client, url })
+  return items.filter((i) => i.name.startsWith(beginning))
+}
+
+/**
  * POST to a specific REST endpoint
  *
  * @param args {object}
@@ -556,12 +747,12 @@ async function find({ client, url, name }) {
  * @param args.body {object} JSON object to send to the endpoint
  * @returns {object} Operation object
  */
-async function post({ client, url, data }) {
+async function post({ client, url, data, method = 'POST' }) {
   assert(!!projectId, 'Call configure() first')
   assert(!!client, 'client must be provided')
   assert(!!url, 'url must be provided')
-  assert(!!data, 'data must be provided')
-  const res = await client.request({ url, method: 'POST', data })
+  if (method === 'POST') assert(!!data, 'data must be provided')
+  const res = await client.request({ url, method, data })
   return res.data
 }
 
@@ -583,7 +774,7 @@ async function create({ client, url, data }) {
   assert(!!url, 'url must be provided')
   assert(!!data, 'data must be provided')
 
-  const res = await post({ client, url, data })
+  const res = await client.request({ url, method: 'POST', data })
   if (res.data.status !== 'RUNNING') {
     throw new Error(`Unexpected status when trying to POST ${url}`)
   }
@@ -642,6 +833,32 @@ async function waitFor(client, url, status = 'DONE') {
 function getRestClient() {
   if (cachedRestClient !== null) return cachedRestClient
   throw new Error('Call configure() first')
+}
+
+/**
+ * Find last name of sorted array of names (e.g. name, name-1, name-2, etc)
+ *
+ * @param names {Array<string>} array of incremental names
+ * @returns {string} "latest" name
+ */
+function lastSortedName(names) {
+  return names.sort().slice(names.length - 1)[0]
+}
+
+/**
+ * Increment the suffix of a name (e.g. name becomes name-1, name-2 becomse
+ * name-3, etc)
+ *
+ * @param names {string} name to increment
+ * @returns {string} incremented name
+ */
+function incrementName(name, baseName) {
+  const strSuffix = trimStart(name.replace(baseName, ''), '-')
+  let suffix = 0
+  if (strSuffix) {
+    suffix = Number(strSuffix) + 1
+  }
+  return `${baseName}-${suffix}`
 }
 
 module.exports = { isAvailable, configure, configureCDN }
