@@ -599,8 +599,8 @@ async function deletHttpsProxy(client, name) {
  * @param sslCertificates {array<string>} of sslCertificate ref URLs the proxy should use
  * @returns {object} of a targetHttpsProxy if in response
  */
+// eslint-disable-next-line no-unused-vars
 async function setHttpsProxyCerts(client, name, sslCertificates) {
-  // eslint-disable-line no-unused-vars
   assert(false, 'setHttpsProxyCerts can not be used')
   assert(!!sslCertificates, 'sslCertificates must be provided')
 
@@ -626,8 +626,8 @@ async function setHttpsProxyCerts(client, name, sslCertificates) {
  * @param name {string} name of the sslCertificate we're looking for
  * @returns {object} of a sslCertificate if in response
  */
+// eslint-disable-next-line no-unused-vars
 async function getSSLCertificate(client, name) {
-  // eslint-disable-line no-unused-vars
   return await find({
     client,
     name,
