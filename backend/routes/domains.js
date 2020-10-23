@@ -1,7 +1,9 @@
 const some = require('lodash/some')
+const { configureCDN } = require('../logic/deploy/cdn')
 const { getLogger } = require('../utils/logger')
 const { dnsResolve, hasNS, verifyDNS } = require('../utils/dns')
-const { Network, ShopDomain } = require('../models')
+const { decryptConfig } = require('../utils/encryptedConfig')
+const { Network, ShopDeployment, ShopDomain } = require('../models')
 const { ShopDomainStatuses } = require('../enums')
 
 const { authSellerAndShop, authRole } = require('./_auth')
@@ -31,6 +33,32 @@ module.exports = function (router) {
         domain: req.body.domain,
         status: ShopDomainStatuses.Pending
       })
+
+      // Re-configure CDN to pick up domain changes
+      const deployments = await ShopDeployment.findAll({
+        where: {
+          shopId: req.shop.id
+        },
+        limit: 1,
+        order: [['createdAt', 'DESC']]
+      })
+      if (deployments) {
+        const network = await Network.findOne({ where: { active: true } })
+        const networkConfig = decryptConfig(network.config)
+
+        const dres = await ShopDomain.findAll({
+          where: { shopId: req.shop.id }
+        })
+        const domains = dres.map((d) => d.domain)
+
+        await configureCDN({
+          networkConfig,
+          shop: req.shop,
+          deployment: deployments[0],
+          domains
+        })
+      }
+
       res.json({ success: true, domain })
     }
   )
