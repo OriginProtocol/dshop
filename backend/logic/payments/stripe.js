@@ -1,8 +1,9 @@
+const dayjs = require('dayjs')
 const get = require('lodash/get')
 const Stripe = require('stripe')
 
 const { getLogger } = require('../../utils/logger')
-const { ExternalPayment, Order } = require('../../models')
+const { ExternalPayment, Order, Sequelize } = require('../../models')
 const { Sentry } = require('../../sentry')
 const { OrderPaymentTypes } = require('../../enums')
 
@@ -20,10 +21,7 @@ const { getConfig } = require('../../utils/encryptedConfig')
  */
 async function checkStripeConfig(network, shop) {
   const networkConfig = getConfig(network.config)
-  const validWebhhokUrls = [
-    `${networkConfig.backendUrl}/webhook`,
-    `https://dshopapi.ogn.app/webhook` // Legacy URL. Still supported.
-  ]
+  const validWebhookUrl = `${networkConfig.backendUrl}/webhook`
 
   log.info(`Shop {shop.id} - Checking Stripe config`)
   let success = false
@@ -38,7 +36,7 @@ async function checkStripeConfig(network, shop) {
     const webhooks = response.data
 
     for (const webhook of webhooks) {
-      if (validWebhhokUrls.includes(webhook.url)) {
+      if (webhook.url === validWebhookUrl) {
         log.info(
           'Shop {shop.id} - Webhook properly configured. Pointing to',
           webhook.url
@@ -55,14 +53,15 @@ async function checkStripeConfig(network, shop) {
     log.error(`Shop {shop.id} - Failed checking webhook config: ${e}`)
   }
 
-  if (!success) {
+  if (success) {
+    return { success: true }
+  } else {
     return { success: false, error: 'Stripe Webhook not properly configured' }
   }
-  return { success: true }
 }
 
 /**
- * Loads the Stripe payment in the last 30 days for a shop and
+ * Loads the Stripe payments in the last 30 days for a shop and
  * checks there is an associated order for each of them in the DB.
  *
  * @param {models.Shop} shop
@@ -76,13 +75,20 @@ async function checkStripePayments(shopId, shopConfig) {
   }
   const stripe = Stripe(stripeKey)
 
-  // Load the last 100 shop's orders paid with Stripe and get their encrypted IPFS hashes.
+  // Load the last 30 days shop's orders paid with Stripe and get their encrypted IPFS hashes.
+  // Get the unique paymentCode for each of the orders.
+  const startOfDay = dayjs().startOf('day')
+  const thirtyDaysAgo = startOfDay.subtract(30, 'days')
   const orders = await Order.findAll({
-    where: { shopId, paymentType: OrderPaymentTypes.Stripe },
-    limit: 100,
+    where: {
+      shopId,
+      paymentType: OrderPaymentTypes.Stripe,
+      createdAt: { [Sequelize.Op.gte]: thirtyDaysAgo },
+    },
+    attributes: ['paymentCode'],
     order: [['id', 'desc']]
   })
-  const encryptedHashes = orders.map((o) => o.encryptedIpfsHash)
+  const paymentCodes = orders.map((o) => o.paymentCode)
   log.info(`Found ${orders.length} orders`)
 
   // Call the stripe API to fetch events.
@@ -110,19 +116,19 @@ async function checkStripePayments(shopId, shopConfig) {
           `Found ${events.data.length} completed Stripe payments for key (may be shared with multiple dshops)`
         )
         events.data.forEach((item) => {
-          const { shopId, encryptedData } = item.data.object.metadata
+          const { shopId, paymentCode } = item.data.object.metadata
           if (Number(shopId) !== shopId) {
             /* Ignore */
             // Note: the same Stripe key can be shared across multiple shops
             // which explains why we may be getting events for other shops.
-          } else if (encryptedHashes.indexOf(encryptedData) < 0) {
+          } else if (paymentCodes.indexOf(paymentCode) < 0) {
             log.error(`Event id: ${item.id}`)
             log.error(`Event metadata: ${get(item, 'data.object.metadata')}`)
             errors.push(
-              `Event ${item.id} with hash ${encryptedHashes} has no associated order`
+              `Event ${item.id} with hash ${paymentCode} has no associated order`
             )
           } else {
-            log.info(`Found hash ${encryptedData} OK`)
+            log.info(`Found payment code ${paymentCode} OK`)
           }
         })
         after = events.data.length >= 100 ? events.data[99].id : null

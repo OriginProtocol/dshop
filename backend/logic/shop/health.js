@@ -95,11 +95,12 @@ function checkJsonConfig(shopId, networkId, jsonConfig, configName) {
 /**
  * Checks the validity of a shop's offline payment config (subsection of json config).
  *
+ * @param {number} shopId
  * @param {object} config
  * @param {string} configName
  * @returns {{success: false, errors: array<string>}|{success: true}}
  */
-function checkOfflinePaymentConfig(config, configName) {
+function checkOfflinePaymentConfig(shopId,config, configName) {
   const offlinePaymentBaseKeys = [
     'label',
     'details',
@@ -117,7 +118,7 @@ function checkOfflinePaymentConfig(config, configName) {
     )
     if (missingKeys.length > 0) {
       log.error(
-        `Shop {shop.id} - ${configName} misses offline payment keys ${missingKeys}`
+        `Shop ${shopId} - ${configName} misses offline payment keys ${missingKeys}`
       )
       errors.push(
         `Method ${method.label}: DB config misses keys ${missingKeys}`
@@ -125,7 +126,7 @@ function checkOfflinePaymentConfig(config, configName) {
     }
     if (unknownKeys.length > 0) {
       log.error(
-        `Shop {shop.id} - ${configName} includes unexpected keys ${unknownKeys}`
+        `Shop ${shopId} - ${configName} includes unexpected keys ${unknownKeys}`
       )
       errors.push(`DB config includes unexpected keys ${unknownKeys}`)
     }
@@ -165,18 +166,18 @@ async function diagnoseShop(shop) {
     )
     if (missingKeys.length > 0) {
       log.error(
-        `Shop {shop.id} - json config on disk misses some keys ${missingKeys}`
+        `Shop ${shop.id} - json config on disk misses some keys ${missingKeys}`
       )
       errors.push(`Json config on disk misses keys ${missingKeys}`)
     }
     if (unknownKeys.length > 0) {
       log.error(
-        `Shop {shop.id} - json config on disk includes unexpected keys ${unknownKeys}`
+        `Shop ${shop.id} - json config on disk includes unexpected keys ${unknownKeys}`
       )
       errors.push(`Json config on disk includes unexpected keys ${unknownKeys}`)
     }
   } catch (e) {
-    log.error(`Shop {shop.id} - Failed loading shop config: ${e}`)
+    log.error(`Shop ${shop.id} - Failed loading shop config: ${e}`)
     diagnostic.dbConfig = {
       status: 'ERROR',
       error: "Failed loading shop's config"
@@ -197,7 +198,7 @@ async function diagnoseShop(shop) {
       'Json config on disk'
     )
   } catch (e) {
-    log.error(`Shop {shop.id} - Failed loading json config from disk: ${e}`)
+    log.error(`Shop ${shop.id} - Failed loading json config from disk: ${e}`)
     errors.push(`Failed loading json config from disk`)
   }
   if (errors.length > 0) {
@@ -213,7 +214,7 @@ async function diagnoseShop(shop) {
   let shopJsonConfigOnWeb = {}
   if (shopIsPublished) {
     try {
-      const url = `shopConfig.dataUrl/config.json`
+      const url = `${shopConfig.dataUrl}/config.json`
       const res = await fetch(url)
       shopJsonConfigOnWeb = await res.json()
       errors = checkJsonConfig(
@@ -223,7 +224,7 @@ async function diagnoseShop(shop) {
         'Json config on web'
       )
     } catch (e) {
-      log.error(`Shop {shop.id} - Failed loading json config on web: ${e}`)
+      log.error(`Shop ${shop.id} - Failed loading json config on web: ${e}`)
       errors.push(`Failed loading json config from web`)
     }
   }
@@ -239,7 +240,7 @@ async function diagnoseShop(shop) {
     testPGP({ pgpPrivateKeyPass, pgpPublicKey, pgpPrivateKey })
     diagnostic.pgp = { status: 'OK' }
   } catch (e) {
-    log.error(`Shop {shop.id} - Invalid PGP key: ${e}`)
+    log.error(`Shop ${shop.id} - Invalid PGP key: ${e}`)
     diagnostic.pgp = { status: 'ERROR', errors: ['Invalid PGP key'] }
   }
 
@@ -270,12 +271,11 @@ async function diagnoseShop(shop) {
   errors = []
   if (shopConfig.offlinePaymentMethods) {
     errors = checkOfflinePaymentConfig(
-      shopConfig.offlinePaymentMethods,
-      'DB config'
-    )
+      shop.id, shopConfig.offlinePaymentMethods, 'DB config')
   }
   if (shopIsPublished) {
-    errors.concat(checkOfflinePaymentConfig(shopJsonConfigOnWeb, 'Web config'))
+    errors.concat(
+      checkOfflinePaymentConfig(shop.id, shopJsonConfigOnWeb, 'Web config'))
   }
   if (errors.length > 0) {
     diagnostic.offlinePayment = { status: 'ERROR', errors }
@@ -304,7 +304,7 @@ async function diagnoseShop(shop) {
       getShopTransport(shop, network)
       diagnostic.email = { status: 'OK' }
     } catch (e) {
-      log.error(`Shop {shop.id} - Invalid email configuration: ${e}`)
+      log.error(`Shop ${shop.id} - Invalid email configuration: ${e}`)
       diagnostic.email = {
         status: 'ERROR',
         errors: ['Email provider incorrectly configured']
