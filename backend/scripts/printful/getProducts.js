@@ -2,7 +2,7 @@ const fs = require('fs')
 const { get } = require('./_api')
 
 async function getProducts({ apiAuth, OutputDir }) {
-  const limit = 10
+  const limit = 100
   let offset = 0
 
   const allProducts = []
