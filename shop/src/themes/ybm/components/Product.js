@@ -65,6 +65,7 @@ const ProductDetail = ({ match }) => {
             <Link
               className="hover:text-black"
               to={`${colLink}/product/${previousProduct}`}
+              scrollToTop={false}
             >
               Previous
             </Link>
@@ -75,6 +76,7 @@ const ProductDetail = ({ match }) => {
             <Link
               className="sm:ml-8 hover:text-black"
               to={`${colLink}/product/${nextProduct}`}
+              scrollToTop={false}
             >
               Next
             </Link>
