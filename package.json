@@ -19,7 +19,7 @@
     "@pinata/sdk": "1.1.11",
     "babel-eslint": "10.1.0",
     "commander": "6.1.0",
-    "eslint": "7.11.0",
+    "eslint": "7.12.0",
     "eslint-config-standard": "15.0.0",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-promise": "4.2.1",
