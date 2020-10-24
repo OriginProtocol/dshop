@@ -121,7 +121,7 @@ describe('Shops', () => {
       'config.dataUrl', // because the hostname was updated
       'config.hostname', // because it was directly updated
       'config.publicUrl', // because the hostname was updated
-      'config.emailSubject', // because it was directly updated
+      'config.emailSubject' // because it was directly updated
     ]
     expect(diffKeys).to.deep.equal(expectedDiffKeys)
   })

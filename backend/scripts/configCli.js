@@ -19,14 +19,14 @@
 //  - check a shop's config
 //  node configCli.js --networkId=1 --allShops --operation=checkConfig
 //
+const program = require('commander')
 
 const { Network, Shop } = require('../models')
 const { getLogger } = require('../utils/logger')
 const { genPGP, testPGP } = require('../utils/pgp')
 const { getConfig, setConfig, decrypt } = require('../utils/encryptedConfig')
 const { checkStripeConfig } = require('../logic/payments/stripe')
-
-const program = require('commander')
+const { diagnoseShop } = require('../logic/shop/health')
 
 const log = getLogger('cli')
 
@@ -216,6 +216,18 @@ async function checkShopConfig(shops) {
   }
 }
 
+async function diagnose(shops) {
+  for (const shop of shops) {
+    const diagnostic = await diagnoseShop(shop)
+    for (const [key, item] of Object.entries(diagnostic)) {
+      console.log(key.padEnd(24, ' '), item.status)
+      if (item.status === 'ERROR') {
+        console.log(item.errors.map((e) => '  - ' + e).join('\n'))
+      }
+    }
+  }
+}
+
 async function _getNetwork(config) {
   const network = await Network.findOne({
     where: { networkId: config.networkId, active: true }
@@ -275,6 +287,8 @@ async function main(config) {
     await resetPgp(shops)
   } else if (config.operation === 'checkPgp') {
     await checkPgp(shops)
+  } else if (config.operation === 'diagnose') {
+    await diagnose(shops)
   } else {
     throw new Error(`Unsupported operation ${config.operation}`)
   }

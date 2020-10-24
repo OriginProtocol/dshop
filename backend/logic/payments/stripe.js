@@ -50,7 +50,7 @@ async function checkStripeConfig(network, shop) {
       }
     }
   } catch (e) {
-    log.error(`Shop {shop.id} - Failed checking webhook config: ${e}`)
+    log.error(`Shop {shop.id} - Failed checking Stripe webhook config: ${e}`)
   }
 
   if (success) {
@@ -83,7 +83,7 @@ async function checkStripePayments(shopId, shopConfig) {
     where: {
       shopId,
       paymentType: OrderPaymentTypes.Stripe,
-      createdAt: { [Sequelize.Op.gte]: thirtyDaysAgo },
+      createdAt: { [Sequelize.Op.gte]: thirtyDaysAgo }
     },
     attributes: ['paymentCode'],
     order: [['id', 'desc']]

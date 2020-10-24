@@ -27,16 +27,14 @@ const log = getLogger('logic.shop.health')
  * @param config
  * @param baseKeys
  * @param optionalKeys
- * @returns {{missingKeys: Array<string>, unknownKeys: Array<string>}}
+ * @returns {Array<string>} errors
  */
 function checkConfig(config, baseKeys, optionalKeys) {
   // Look for missing base keys.
   const missingKeys = baseKeys.filter((key) => !(key in config))
   // Look for keys not part of the base or optional set.
   const knownKeys = baseKeys.concat(optionalKeys)
-  const unknownKeys = Object.keys(config).filter((key) =>
-    knownKeys.includes(key)
-  )
+  const unknownKeys = Object.keys(config).filter((k) => !knownKeys.includes(k))
   return { missingKeys, unknownKeys }
 }
 
@@ -47,7 +45,7 @@ function checkConfig(config, baseKeys, optionalKeys) {
  * @param {number} networkId
  * @param {object} jsonConfig
  * @param {string} configName
- * @returns {{success: false, errors: array<string>}|{success: true}}
+ * @returns {Array<string>} errors
  */
 function checkJsonConfig(shopId, networkId, jsonConfig, configName) {
   const errors = []
@@ -69,7 +67,7 @@ function checkJsonConfig(shopId, networkId, jsonConfig, configName) {
     errors.push(`${configName} includes unexpected keys ${check.unknownKeys}`)
   }
 
-  const networkConfig = get(jsonConfig, `networks[${networkId}`, {})
+  const networkConfig = get(jsonConfig, `networks[${networkId}]`, {})
   check = checkConfig(
     networkConfig,
     jsonConfigNetworkBaseKeys,
@@ -96,11 +94,11 @@ function checkJsonConfig(shopId, networkId, jsonConfig, configName) {
  * Checks the validity of a shop's offline payment config (subsection of json config).
  *
  * @param {number} shopId
- * @param {object} config
+ * @param {object} config: offline payment config
  * @param {string} configName
  * @returns {{success: false, errors: array<string>}|{success: true}}
  */
-function checkOfflinePaymentConfig(shopId,config, configName) {
+function checkOfflinePaymentConfig(shopId, config, configName) {
   const offlinePaymentBaseKeys = [
     'label',
     'details',
@@ -110,7 +108,7 @@ function checkOfflinePaymentConfig(shopId,config, configName) {
   ]
   const offlinePaymentsOptionalKeys = ['qrImage']
   const errors = []
-  for (const method of config.offlinePaymentMethods) {
+  for (const method of config) {
     const { missingKeys, unknownKeys } = checkConfig(
       method,
       offlinePaymentBaseKeys,
@@ -214,7 +212,7 @@ async function diagnoseShop(shop) {
   let shopJsonConfigOnWeb = {}
   if (shopIsPublished) {
     try {
-      const url = `${shopConfig.dataUrl}/config.json`
+      const url = `${shopConfig.dataUrl}config.json`
       const res = await fetch(url)
       shopJsonConfigOnWeb = await res.json()
       errors = checkJsonConfig(
@@ -231,7 +229,9 @@ async function diagnoseShop(shop) {
   if (errors.length > 0) {
     diagnostic.jsonConfigOnWeb = { status: 'ERROR', errors }
   } else {
-    diagnostic.jsonConfigOnWeb = { status: shopIsPublished ? 'OK' : 'N/A' }
+    diagnostic.jsonConfigOnWeb = {
+      status: shopIsPublished ? 'OK' : 'Not published'
+    }
   }
 
   // Check PGP key.
@@ -245,24 +245,32 @@ async function diagnoseShop(shop) {
   }
 
   // Check Stripe configuration.
-  const stripeCheck = checkStripeConfig(network, shop)
-  if (stripeCheck.success) {
-    diagnostic.stripe = { status: 'OK' }
+  if (shopConfig.stripeBackend) {
+    const stripeCheck = await checkStripeConfig(network, shop)
+    if (stripeCheck.success) {
+      diagnostic.stripe = { status: 'OK' }
+    } else {
+      diagnostic.stripe = { status: 'ERROR', errors: [stripeCheck.error] }
+    }
   } else {
-    diagnostic.stripe = { status: 'ERROR', errors: [stripeCheck.error] }
+    diagnostic.stripe = { status: 'Not configured' }
   }
 
   // Check PayPal configuration.
-  const client = paypalUtils.getClient(
-    networkConfig.paypalEnvironment,
-    shopConfig.paypalClientId,
-    shopConfig.paypalClientSecret
-  )
-  const valid = await paypalUtils.validateCredentials(client)
-  if (valid) {
-    diagnostic.paypal = { status: 'OK' }
+  if (shopConfig.paypal) {
+    const client = paypalUtils.getClient(
+      networkConfig.paypalEnvironment,
+      shopConfig.paypalClientId,
+      shopConfig.paypalClientSecret
+    )
+    const valid = await paypalUtils.validateCredentials(client)
+    if (valid) {
+      diagnostic.paypal = { status: 'OK' }
+    } else {
+      diagnostic.paypal = { status: 'ERROR', errors: ['Invalid credentials'] }
+    }
   } else {
-    diagnostic.paypal = { status: 'ERROR', errors: ['Invalid credentials'] }
+    diagnostic.paypal = { status: 'Not configured' }
   }
   // TODO: check PayPal webhook.
 
@@ -271,16 +279,26 @@ async function diagnoseShop(shop) {
   errors = []
   if (shopConfig.offlinePaymentMethods) {
     errors = checkOfflinePaymentConfig(
-      shop.id, shopConfig.offlinePaymentMethods, 'DB config')
-  }
-  if (shopIsPublished) {
-    errors.concat(
-      checkOfflinePaymentConfig(shop.id, shopJsonConfigOnWeb, 'Web config'))
-  }
-  if (errors.length > 0) {
-    diagnostic.offlinePayment = { status: 'ERROR', errors }
+      shop.id,
+      shopConfig.offlinePaymentMethods,
+      'DB config'
+    )
+    if (shopIsPublished) {
+      errors.concat(
+        checkOfflinePaymentConfig(
+          shop.id,
+          shopJsonConfigOnWeb.offlinePaymentMethods,
+          'Web config'
+        )
+      )
+    }
+    if (errors.length > 0) {
+      diagnostic.offlinePayment = { status: 'ERROR', errors }
+    } else {
+      diagnostic.offlinePayment = { status: 'OK' }
+    }
   } else {
-    diagnostic.offlinePayment = { status: 'OK' }
+    diagnostic.offlinePayment = { status: 'Not configured' }
   }
 
   // Check Printful configuration.
@@ -310,19 +328,25 @@ async function diagnoseShop(shop) {
         errors: ['Email provider incorrectly configured']
       }
     }
+  } else {
+    diagnostic.email = { status: 'Not configured' }
   }
 
   // Check Orders
-  const checkStripeOrders = checkStripePayments(shop.id, shopConfig)
-  if (checkStripeOrders.success) {
-    diagnostic.stripePayments = { status: 'OK' }
-  } else {
-    diagnostic.stripePayments = {
-      status: 'ERROR',
-      errors: checkStripeOrders.errors
+  if (shopConfig.stripeBackend) {
+    const checkStripeOrders = checkStripePayments(shop.id, shopConfig)
+    if (checkStripeOrders.success) {
+      diagnostic.stripePayments = { status: 'OK' }
+    } else {
+      diagnostic.stripePayments = {
+        status: 'ERROR',
+        errors: checkStripeOrders.errors
+      }
     }
   }
   // TODO: check orders made with other types of payment.
+
+  diagnostic.test = { status: 'ERROR', errors: ['boo', 'foo', 'bar'] }
 
   return diagnostic
 }

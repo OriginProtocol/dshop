@@ -73,33 +73,38 @@ const dbConfigKeys = dbConfigBaseKeys.concat(dbConfigOptionalKeys)
 // List of fields stored in the main section of the shop's json config.
 const jsonConfigBaseKeys = ['title', 'networks']
 const jsonConfigOptionalKeys = [
-  'currency',
-  'metaDescription',
-  'css',
-  'emailSubject',
-  'cartSummaryNote',
+  'about',
+  'backendAuthToken',
+  'beta',
   'byline',
+  'cartSummaryNote',
+  'css',
+  'currency',
   'discountCodes',
+  'emailSubject',
+  'facebook',
+  'favicon',
+  'fullTitle',
+  'gaCode',
+  'instagram',
+  'logErrors',
+  'logo',
+  'medium',
+  'metaDescription',
+  'offlinePaymentMethods',
+  'paypalClientId',
+  'pgpPublicKey',
+  'shippingApi',
   'stripe',
   'stripeKey',
-  'fullTitle',
-  'facebook',
-  'twitter',
-  'instagram',
-  'medium',
-  'youtube',
-  'about',
-  'logErrors',
-  'paypalClientId',
-  'offlinePaymentMethods',
   'supportEmail',
-  'upholdClient',
-  'useEscrow',
-  'shippingApi',
   'taxRates',
   'themeId',
   'theme',
-  'gaCode'
+  'twitter',
+  'useEscrow',
+  'upholdClient',
+  'youtube'
 ]
 const jsonConfigKeys = jsonConfigBaseKeys.concat(jsonConfigOptionalKeys)
 
@@ -107,9 +112,13 @@ const jsonConfigKeys = jsonConfigBaseKeys.concat(jsonConfigOptionalKeys)
 const jsonConfigNetworkBaseKeys = ['backend', 'ipfsApi', 'ipfsGateway']
 const jsonConfigNetworkOptionalKeys = [
   'acceptedTokens',
+  'arbitrator',
+  'affiliate',
   'customTokens',
-  'listingId',
   'disableCryptoPayments',
+  'listingId',
+  'marketplaceContract',
+  'marketplaceEpoch',
   'walletAddress'
 ]
 const jsonConfigNetworkKeys = jsonConfigNetworkBaseKeys.concat(
