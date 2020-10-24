@@ -15,20 +15,19 @@ const { getConfig } = require('../../utils/encryptedConfig')
 /**
  * Check whether a shop is properly configured for Stripe or not.
  *
- * @param {models.Network} network
- * @param {models.Shop} shop
+ * @param {number} shopId
+ * @param {object} shopConfig: shop's DB config
+ * @param {object} networkConfig: network's config
  * @returns {Promise<{success: false, error: string}|{success: true}>}
  */
-async function checkStripeConfig(network, shop) {
-  const networkConfig = getConfig(network.config)
+async function checkStripeConfig(shopId, shopConfig, networkConfig) {
   const validWebhookUrl = `${networkConfig.backendUrl}/webhook`
 
-  log.info(`Shop {shop.id} - Checking Stripe config`)
+  log.info(`Shop ${shopId} - Checking Stripe config`)
   let success = false
   try {
-    const shopConfig = getConfig(shop.config)
     if (!shopConfig.stripeBackend) {
-      log.info(`Shop {shop.id} - Stripe not configured`)
+      log.info(`Shop ${shopId} - Stripe not configured`)
       return { success: true }
     }
     const stripe = Stripe(shopConfig.stripeBackend)
@@ -38,19 +37,19 @@ async function checkStripeConfig(network, shop) {
     for (const webhook of webhooks) {
       if (webhook.url === validWebhookUrl) {
         log.info(
-          'Shop {shop.id} - Webhook properly configured. Pointing to',
+          `Shop ${shopId} - Webhook properly configured. Pointing to`,
           webhook.url
         )
         success = true
         break
       } else {
         log.warn(
-          `Shop {shop.id} - Webhook id ${webhook.id} points to non-Dshop or invalid URL ${webhook.url}`
+          `Shop ${shopId} - Webhook id ${webhook.id} points to non-Dshop or invalid URL ${webhook.url}`
         )
       }
     }
   } catch (e) {
-    log.error(`Shop {shop.id} - Failed checking Stripe webhook config: ${e}`)
+    log.error(`Shop ${shopId} - Failed checking Stripe webhook config: ${e}`)
   }
 
   if (success) {
@@ -64,26 +63,27 @@ async function checkStripeConfig(network, shop) {
  * Loads the Stripe payments in the last 30 days for a shop and
  * checks there is an associated order for each of them in the DB.
  *
- * @param {models.Shop} shop
+ * @param {number} shopId
+ * @param {object} shopConfig: shop's DB config
  * @returns {Promise<{success: false, errors: array<string>}|{success: true}>}
  */
 async function checkStripePayments(shopId, shopConfig) {
   const stripeKey = shopConfig.stripeBackend
   if (!stripeKey) {
     log.info('No stripe key configured')
-    return
+    return { success: true }
   }
   const stripe = Stripe(stripeKey)
 
   // Load the last 30 days shop's orders paid with Stripe and get their encrypted IPFS hashes.
   // Get the unique paymentCode for each of the orders.
-  const startOfDay = dayjs().startOf('day')
+  const startOfDay = dayjs().endOf('day')
   const thirtyDaysAgo = startOfDay.subtract(30, 'days')
   const orders = await Order.findAll({
     where: {
       shopId,
-      paymentType: OrderPaymentTypes.Stripe,
-      createdAt: { [Sequelize.Op.gte]: thirtyDaysAgo }
+      paymentType: OrderPaymentTypes.CreditCard,
+      createdAt: { [Sequelize.Op.gte]: thirtyDaysAgo.toDate() }
     },
     attributes: ['paymentCode'],
     order: [['id', 'desc']]
@@ -91,51 +91,56 @@ async function checkStripePayments(shopId, shopConfig) {
   const paymentCodes = orders.map((o) => o.paymentCode)
   log.info(`Found ${orders.length} orders`)
 
-  // Call the stripe API to fetch events.
+  // Call the stripe API to fetch events. It only returns the last 30 days worth of events.
   // Every event should have an encrypted hash in its metadata that corresponds to an order.
   const errors = []
-  let after
+  let after,
+    events,
+    match = 0
   do {
-    await new Promise((resolve) => {
-      const eventArgs = {
+    log.debug(`Fetching events after ${after}`)
+
+    try {
+      events = await stripe.events.list({
         limit: 100,
         type: 'payment_intent.succeeded',
         starting_after: after
-      }
-      log.debug(`Fetching events after ${after}`)
-
-      stripe.events.list(eventArgs, function (err, events) {
-        if (!events) {
-          return { success: true }
-        }
-        if (!events.data) {
-          log.warning('Events object with no data:', events)
-          return { success: false, errors: ['Failed loading data from Stripe'] }
-        }
-        log.debug(
-          `Found ${events.data.length} completed Stripe payments for key (may be shared with multiple dshops)`
-        )
-        events.data.forEach((item) => {
-          const { shopId, paymentCode } = item.data.object.metadata
-          if (Number(shopId) !== shopId) {
-            /* Ignore */
-            // Note: the same Stripe key can be shared across multiple shops
-            // which explains why we may be getting events for other shops.
-          } else if (paymentCodes.indexOf(paymentCode) < 0) {
-            log.error(`Event id: ${item.id}`)
-            log.error(`Event metadata: ${get(item, 'data.object.metadata')}`)
-            errors.push(
-              `Event ${item.id} with hash ${paymentCode} has no associated order`
-            )
-          } else {
-            log.info(`Found payment code ${paymentCode} OK`)
-          }
-        })
-        after = events.data.length >= 100 ? events.data[99].id : null
-        resolve()
       })
+    } catch (e) {
+      return { success: false, errors: e.message }
+    }
+    if (!events) {
+      return { success: true }
+    }
+    if (!events.data) {
+      log.warning('Events object with no data:', events)
+      return { success: false, errors: ['Failed loading data from Stripe'] }
+    }
+    log.debug(
+      `Found ${events.data.length} completed Stripe payments for key (may be shared with multiple dshops)`
+    )
+    events.data.forEach((item) => {
+      const metadata = get(item, 'data.object.metadata', {})
+      if (Number(metadata.shopId) !== shopId) {
+        log.debug(
+          `Ignoring event ${item.id} - it belongs to shop ${metadata.shopId}`
+        )
+      } else if (paymentCodes.indexOf(metadata.paymentCode) < 0) {
+        log.error(`No matching order found for payment ${metadata.paymentCode}`)
+        errors.push(
+          `Event ${item.id} with paymentCode ${metadata.paymentCode} has no associated order`
+        )
+      } else {
+        log.debug(`Found payment code ${metadata.paymentCode} OK`)
+        match++
+      }
     })
+    after = events.data.length >= 100 ? events.data[99].id : null
   } while (after)
+  log.info(`Found ${match} / ${orders.length} orders with matching payment`)
+  if (match !== orders.length) {
+    errors.push(`Mismatch: ${orders.length} orders vs ${match} payments`)
+  }
   if (errors.length > 0) {
     return { success: false, errors }
   } else {

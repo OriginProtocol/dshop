@@ -195,9 +195,15 @@ async function delKey(shops, key) {
 }
 
 async function checkStripe(network, shops) {
+  const networkConfig = getConfig(network.config)
   for (const shop of shops) {
     log.info(`Checking Stripe config for shop ${shop.id} ${shop.name}`)
-    const { success, error } = await checkStripeConfig(network, shop)
+    const shopConfig = getConfig(shop.config)
+    const { success, error } = await checkStripeConfig(
+      shop.id,
+      shopConfig,
+      networkConfig
+    )
     if (success) {
       log.info(`Shop ${shop.id} - Successfully verified Stripe configuration`)
     } else {

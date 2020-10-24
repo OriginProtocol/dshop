@@ -235,18 +235,34 @@ async function diagnoseShop(shop) {
   }
 
   // Check PGP key.
+  errors = []
   try {
     const { pgpPrivateKeyPass, pgpPublicKey, pgpPrivateKey } = shopConfig
-    testPGP({ pgpPrivateKeyPass, pgpPublicKey, pgpPrivateKey })
-    diagnostic.pgp = { status: 'OK' }
+    await testPGP({ pgpPrivateKeyPass, pgpPublicKey, pgpPrivateKey })
+    if (shopIsPublished) {
+      // Make sure the web config.json pgpPublicKey matches the one stored in the DB config.
+      if (shopConfig.pgpPublicKey !== shopJsonConfigOnWeb.pgpPublicKey) {
+        log.error(`Shop ${shop.id} - pgpPublicKey mismatch in DB vs web config`)
+        errors.push('pgpPublicKey mismatch in DB vs web config')
+      }
+    }
   } catch (e) {
     log.error(`Shop ${shop.id} - Invalid PGP key: ${e}`)
-    diagnostic.pgp = { status: 'ERROR', errors: ['Invalid PGP key'] }
+    errors.push('Invalid PGP key')
+  }
+  if (errors.length > 0) {
+    diagnostic.pgp = { status: 'ERROR', errors }
+  } else {
+    diagnostic.pgp = { status: 'OK' }
   }
 
   // Check Stripe configuration.
   if (shopConfig.stripeBackend) {
-    const stripeCheck = await checkStripeConfig(network, shop)
+    const stripeCheck = await checkStripeConfig(
+      shop.id,
+      shopConfig,
+      networkConfig
+    )
     if (stripeCheck.success) {
       diagnostic.stripe = { status: 'OK' }
     } else {
@@ -334,7 +350,7 @@ async function diagnoseShop(shop) {
 
   // Check Orders
   if (shopConfig.stripeBackend) {
-    const checkStripeOrders = checkStripePayments(shop.id, shopConfig)
+    const checkStripeOrders = await checkStripePayments(shop.id, shopConfig)
     if (checkStripeOrders.success) {
       diagnostic.stripePayments = { status: 'OK' }
     } else {
@@ -345,8 +361,6 @@ async function diagnoseShop(shop) {
     }
   }
   // TODO: check orders made with other types of payment.
-
-  diagnostic.test = { status: 'ERROR', errors: ['boo', 'foo', 'bar'] }
 
   return diagnostic
 }

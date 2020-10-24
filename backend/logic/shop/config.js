@@ -74,6 +74,7 @@ const dbConfigKeys = dbConfigBaseKeys.concat(dbConfigOptionalKeys)
 const jsonConfigBaseKeys = ['title', 'networks']
 const jsonConfigOptionalKeys = [
   'about',
+  'acceptedTokens',
   'backendAuthToken',
   'beta',
   'byline',
@@ -84,6 +85,7 @@ const jsonConfigOptionalKeys = [
   'emailSubject',
   'facebook',
   'favicon',
+  'footer',
   'fullTitle',
   'gaCode',
   'instagram',
@@ -91,6 +93,8 @@ const jsonConfigOptionalKeys = [
   'logo',
   'medium',
   'metaDescription',
+  'notice',
+  'noticeFooter',
   'offlinePaymentMethods',
   'paypalClientId',
   'pgpPublicKey',
