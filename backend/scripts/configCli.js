@@ -19,17 +19,16 @@
 //  - check a shop's config
 //  node configCli.js --networkId=1 --allShops --operation=checkConfig
 //
-
-const Stripe = require('stripe')
+const program = require('commander')
 
 const { Network, Shop } = require('../models')
 const { getLogger } = require('../utils/logger')
-const log = getLogger('cli')
-
 const { genPGP, testPGP } = require('../utils/pgp')
 const { getConfig, setConfig, decrypt } = require('../utils/encryptedConfig')
+const { checkStripeConfig } = require('../logic/payments/stripe')
+const { diagnoseShop } = require('../logic/shop/health')
 
-const program = require('commander')
+const log = getLogger('cli')
 
 program
   .requiredOption(
@@ -195,44 +194,20 @@ async function delKey(shops, key) {
   log.info('Done')
 }
 
-async function checkStripeConfig(network, shops) {
+async function checkStripe(network, shops) {
   const networkConfig = getConfig(network.config)
-  const validWebhhokUrls = [
-    `${networkConfig.backendUrl}/webhook`,
-    `https://dshopapi.ogn.app/webhook` // Legacy URL. Still supported.
-  ]
-
   for (const shop of shops) {
     log.info(`Checking Stripe config for shop ${shop.id} ${shop.name}`)
-    try {
-      const shopConfig = getConfig(shop.config)
-      if (!shopConfig.stripeBackend) {
-        log.info(
-          `Stripe not configured for shop ${shop.id} ${shop.name} - Skipping.`
-        )
-        continue
-      }
-      const stripe = Stripe(shopConfig.stripeBackend)
-      const response = await stripe.webhookEndpoints.list()
-      const webhooks = response.data
-
-      let success = false
-      for (const webhook of webhooks) {
-        if (validWebhhokUrls.includes(webhook.url)) {
-          log.info('Webhook properly configured. Pointing to', webhook.url)
-          success = true
-          break
-        } else {
-          log.warn(
-            `Webhook id ${webhook.id} points to non-Dshop or invalid URL ${webhook.url}`
-          )
-        }
-      }
-      if (!success) {
-        log.error(`Webhook not properly configured.`)
-      }
-    } catch (e) {
-      log.error(`Failed checking webhook config: ${e}`)
+    const shopConfig = getConfig(shop.config)
+    const { success, error } = await checkStripeConfig(
+      shop.id,
+      shopConfig,
+      networkConfig
+    )
+    if (success) {
+      log.info(`Shop ${shop.id} - Successfully verified Stripe configuration`)
+    } else {
+      log.error(`Shop ${shop.id} - ${error}`)
     }
   }
 }
@@ -243,6 +218,18 @@ async function checkShopConfig(shops) {
       getConfig(shop.config)
     } catch (e) {
       log.error(`Failed checking config for shop ${shop.id} ${shop.name}: ${e}`)
+    }
+  }
+}
+
+async function diagnose(shops) {
+  for (const shop of shops) {
+    const diagnostic = await diagnoseShop(shop)
+    for (const [key, item] of Object.entries(diagnostic)) {
+      console.log(key.padEnd(24, ' '), item.status)
+      if (item.status === 'ERROR') {
+        console.log(item.errors.map((e) => '  - ' + e).join('\n'))
+      }
     }
   }
 }
@@ -298,14 +285,16 @@ async function main(config) {
     await getRawConfig(shops)
   } else if (config.operation === 'del') {
     await delKey(shops, config.key, config.value)
-  } else if (config.operation === 'checkStripeConfig') {
-    await checkStripeConfig(network, shops)
+  } else if (config.operation === 'checkStripe') {
+    await checkStripe(network, shops)
   } else if (config.operation === 'checkConfig') {
     await checkShopConfig(shops)
   } else if (config.operation === 'resetPgp') {
     await resetPgp(shops)
   } else if (config.operation === 'checkPgp') {
     await checkPgp(shops)
+  } else if (config.operation === 'diagnose') {
+    await diagnose(shops)
   } else {
     throw new Error(`Unsupported operation ${config.operation}`)
   }

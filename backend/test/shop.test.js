@@ -147,13 +147,9 @@ describe('Shops', () => {
       'hasChanges', // because the shop DB row was updated.
       'updatedAt', // because the shop DB row was updated
       'config.dataUrl', // because the hostname was updated
-      'config.emailSubject', // because it was directly updated
       'config.hostname', // because it was directly updated
       'config.publicUrl', // because the hostname was updated
-      // Because the updateShopConfig method by default sets these to empty.
-      'config.stripeBackend',
-      'config.stripeWebhookSecret',
-      'config.stripeWebhookHost'
+      'config.emailSubject' // because it was directly updated
     ]
     expect(diffKeys).to.deep.equal(expectedDiffKeys)
   })
