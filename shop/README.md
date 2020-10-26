@@ -2,12 +2,20 @@
 
 An experimental decentralized e-commerce store served entirely from IPFS.
 
-## Clone the repo
+## Operating System requirements
+The instructions in the README have only been tested on MacOS and Linux systems. We have NOT tested on Windows. As an alternative, Windows users can use docker to run a Linux container.
+
+# Installation steps
+
+### Clone the repo
 
     git clone git@github.com:OriginProtocol/dshop.git dshop
     cd dshop
 
-## Configure the database
+### Install Node.js
+We recommend Node v14.14.0. A useful tool for managing different version of Node on your local host is [nvm](https://github.com/nvm-sh/nvm)
+
+### Configure the database
 
 By default, the back-end uses SQLite. If you want to use Postgres, do the
 following:
@@ -21,21 +29,21 @@ following:
 
       export DATABASE_URL="postgres://origin:origin@localhost/dshop"
 
-## Configure Redis
+### Configure Redis
 
 The backend uses redis for queues. While you can skip this, it's highly
 recommended to run a local redis so your testing matches production behavior
 
     export REDIS_URL=redis://localhost:6379/
 
-## Install
+### Install packages
 
 This will install packages, run database migrations to create the schema and
 copy various files in the right place.
 
     yarn install
 
-## Build the shop bundle, Start the stack
+### Build the shop bundle, start the stack
 
 This will start all the necessary services for running a local dshop stack:
 IPFS, ganache blockchain, back-end, front-end. It will then open a browser page
@@ -45,18 +53,11 @@ pointing to the super-admin interface at `http://0.0.0.0:9000/#/super-admin`
     yarn run build:dist
     yarn start
 
-## Create a local dshop
+### Create a local dshop
 
-Follow the steps on the super-admin to create a local dshop.
+Follow the steps on the super-admin UI to create a local dshop.
 
-### Create a Listing
-
-To create a listing for super-admin configuration, you can run the
-`createListing.js` script:
-
-    node backend/scripts/createListing.js
-
-## Troubleshooting
+# Troubleshooting
 
 ### Vips error
 
