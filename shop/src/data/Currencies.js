@@ -39,10 +39,15 @@ export const CurrenciesByCountryCode = {
 
 // Items commented out not supported by crypto-compare
 export const AllCurrencies = [
-  ['USD', fbt('US Dollar (USD)', 'currencies.USD'), '${{amount}}'],
-  ['EUR', fbt('Euro (EUR)', 'currencies.EUR'), '€{{amount}}'],
-  ['GBP', fbt('British Pound (GBP)', 'currencies.GBP'), '£{{amount}}'],
-  ['CAD', fbt('Canadian Dollar (CAD)', 'currencies.CAD'), '${{amount}} CAD'],
+  ['USD', fbt('US Dollar (USD)', 'currencies.USD'), '${{amount}}', '$'],
+  ['EUR', fbt('Euro (EUR)', 'currencies.EUR'), '€{{amount}}', '€'],
+  ['GBP', fbt('British Pound (GBP)', 'currencies.GBP'), '£{{amount}}', '£'],
+  [
+    'CAD',
+    fbt('Canadian Dollar (CAD)', 'currencies.CAD'),
+    '${{amount}} CAD',
+    '$'
+  ],
   // ['AFN', 'Afghan Afghani (AFN)'],
   ['ALL', fbt('Albanian Lek (ALL)', 'currencies.ALL')],
   ['DZD', fbt('Algerian Dinar (DZD)', 'currencies.DZD')],

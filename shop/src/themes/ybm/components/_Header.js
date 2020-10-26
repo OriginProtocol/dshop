@@ -23,8 +23,11 @@ const MobileMenu = ({ toggleMobileMenu }) => {
   const { config } = useConfig()
   const history = useHistory()
   const themeVars = useThemeVars()
+
   const relativeLogoPath = get(themeVars, 'header.logo.0.url')
   const logoUrl = `${config.dataSrc}${relativeLogoPath}`
+  const logoHeight = Number(get(themeVars, 'header.logo.0.height', 100)) - 20
+
   return (
     <div
       className="fixed inset-0 bg-black px-6 pt-2 pb-12 flex flex-col items-center text-white z-10"
@@ -33,7 +36,7 @@ const MobileMenu = ({ toggleMobileMenu }) => {
       <div className="flex justify-between items-center w-full">
         <Close />
         {relativeLogoPath ? (
-          <img style={{ height: 100 }} src={logoUrl} />
+          <img style={{ height: logoHeight }} src={logoUrl} />
         ) : (
           <>Galleria</>
         )}
@@ -94,15 +97,10 @@ const HeaderMobile = ({ style, children }) => {
     return <MobileLinks>{children}</MobileLinks>
   }
 
+  const header = get(themeVars, 'header.headerImage.0', {})
   const defaultStyle = {
-    backgroundImage: `url(${config.dataSrc}${get(
-      themeVars,
-      'header.headerImage.0.url'
-    )})`,
-    backgroundPosition: get(
-      themeVars,
-      'header.headerImage.0.backgroundPosition'
-    )
+    backgroundImage: `url(${config.dataSrc}${header.url})`,
+    backgroundPosition: header.backgroundPosition
   }
 
   return (
@@ -121,6 +119,12 @@ const MobileLinks = ({ children }) => {
   const [mobileMenu, showMobileMenu] = useState(false)
   const [{ cart }] = useStateValue()
   const { config } = useConfig()
+  const themeVars = useThemeVars()
+
+  const relativeLogoPath = get(themeVars, 'header.logo.0.url')
+  const logoUrl = `${config.dataSrc}${relativeLogoPath}`
+  const logoHeight = Number(get(themeVars, 'header.logo.0.height', 120)) - 20
+
   function toggleMobileMenu() {
     const body = document.querySelector('body')
     if (mobileMenu) {
@@ -143,10 +147,11 @@ const MobileLinks = ({ children }) => {
           <MenuIcon color={children ? '#fff' : '#000'} />
         </a>
         <Link to="/">
-          <img
-            style={{ height: 100 }}
-            src={`${config.dataSrc}${config.logo}`}
-          />
+          {relativeLogoPath ? (
+            <img style={{ height: logoHeight }} src={logoUrl} />
+          ) : (
+            <>Galleria</>
+          )}
         </Link>
         <Cart cart={cart} bg={children ? true : false} />
       </div>
@@ -195,6 +200,7 @@ const DesktopLinks = ({ bg }) => {
 
   const relativeLogoPath = get(themeVars, 'header.logo.0.url')
   const logoUrl = `${config.dataSrc}${relativeLogoPath}`
+  const logoHeight = get(themeVars, 'header.logo.0.height', 100)
 
   const svgProps = { height: '18', color: bg ? '#fff' : '#000' }
   return (
@@ -203,7 +209,7 @@ const DesktopLinks = ({ bg }) => {
         <Link className="hover:opacity-75" to="/products">
           Products
         </Link>
-        <Link className="ml-10" to="/about">
+        <Link className="ml-10 hover:opacity-75" to="/about">
           About
         </Link>
         <Link className="ml-10 hover:opacity-75" to="/contact">
@@ -212,7 +218,7 @@ const DesktopLinks = ({ bg }) => {
       </div>
       <Link to="/">
         {relativeLogoPath ? (
-          <img style={{ height: 120 }} src={logoUrl} />
+          <img style={{ height: Number(logoHeight) }} src={logoUrl} />
         ) : (
           config.title
         )}

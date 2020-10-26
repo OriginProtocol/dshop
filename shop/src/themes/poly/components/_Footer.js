@@ -26,6 +26,7 @@ const Footer = () => {
         <div className="flex sm:gap-8 flex-1 flex-col sm:flex-row">
           <div>
             <a
+              className="hover:opacity-75"
               target="_blank"
               rel="noopener noreferrer"
               href="https://www.originprotocol.com/en/dshop"
@@ -42,10 +43,13 @@ const Footer = () => {
         </div>
         <SocialLinks
           className="flex gap-4"
+          itemClassName="hover:opacity-75"
           svg={{ height: '16', color: '#fff' }}
         />
         <div className="flex-1 flex justify-end gap-4 sm:flex-row">
-          <Link to="/about">About</Link>
+          <Link to="/about" className="hover:opacity-75">
+            About
+          </Link>
         </div>
       </div>
     </div>

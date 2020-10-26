@@ -21,7 +21,8 @@ const EditableProps = ({
   imageObj,
   onChange,
   editableProps,
-  propLabelPrefix
+  propLabelPrefix,
+  field
 }) => {
   const { products } = useProducts()
 
@@ -49,6 +50,21 @@ const EditableProps = ({
           </div>
         )
 
+        const rangeInput = (label) => (
+          <div key={propName} className="form-group d-flex align-items-center">
+            <label className="mb-0 mr-4">{label}</label>
+            <input
+              style={{ flex: 1 }}
+              value={propVal || ''}
+              onChange={onPropChange}
+              type="range"
+              min={field.minHeight || '0'}
+              max={field.maxHeight || '100'}
+              step="1"
+            />
+          </div>
+        )
+
         switch (propName) {
           case 'backgroundPosition':
             return (
@@ -66,8 +82,10 @@ const EditableProps = ({
                 />
               </div>
             )
+
           case 'height':
-            return textInput(<fbt desc="admin.themes.height">Height</fbt>)
+            return rangeInput(<fbt desc="admin.themes.height">Height</fbt>)
+
           case 'backgroundSize':
             return textInput(
               <fbt desc="admin.themes.bgSize">Background Size</fbt>
@@ -95,14 +113,9 @@ const EditableProps = ({
   )
 }
 
-const ImagePicker = ({
-  images,
-  onChange,
-  multiple,
-  editableProps,
-  propLabelPrefix,
-  allowPNG
-}) => {
+const ImagePicker = (props) => {
+  const { images, onChange, editableProps, propLabelPrefix, field } = props
+  const { multiple, allowPNG } = field
   const { config } = useConfig()
   const { postRaw } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, {})
@@ -198,6 +211,7 @@ const ImagePicker = ({
                   newImages[index] = newObj
                   onChange(newImages)
                 }}
+                field={field}
                 editableProps={editableProps}
                 propLabelPrefix={propLabelPrefix}
               />

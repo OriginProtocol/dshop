@@ -7,6 +7,7 @@ import MediaField from './fields/Media'
 import ProductsList from './fields/ProductsList'
 import CollectionsList from './fields/CollectionsList'
 import ColorPalettes from './fields/ColorPalettes'
+import Range from './fields/Range'
 
 const Section = ({ section, state, setState, onDrilldown, isActive }) => {
   return (
@@ -54,6 +55,9 @@ const Section = ({ section, state, setState, onDrilldown, isActive }) => {
 
                 case 'color_palettes':
                   return <ColorPalettes {...props} />
+
+                case 'range':
+                  return <Range {...props} />
 
                 default:
                   return <TextField {...props} />

@@ -31,7 +31,9 @@ const Footer = () => {
         <div>
           <div className="links">
             <LocaleSelect />
-            <CurrencySelect />
+            <div className="currency-select">
+              <CurrencySelect />
+            </div>
             {config.terms ? (
               <Link to="/terms">
                 <fbt desc="TermsAndConditions">Terms &amp; Conditions</fbt>
@@ -83,6 +85,33 @@ require('react-styl')(`
       align-items: baseline
       :not(:last-child)
         margin-right: 2rem
+
+  .currency-select
+    position: relative
+    select
+      cursor: pointer
+      border-radius: 30px
+      border: 1px solid #c2cbd3
+      background-color: var(--white)
+      -webkit-appearance: none
+      padding: 0 1.125rem 0 0.75rem
+      font-size: 0.875rem
+      height: 1.75rem
+      line-height: 1.5rem
+    &:after
+      content: ""
+      position: absolute
+      display: inline-block
+      width: 5px
+      background-image: url(images/caret-dark.svg)
+      background-repeat: no-repeat
+      background-position: 100%
+      background-size: 5px
+      top: 0
+      bottom: 0
+      right: 12px
+      pointer-events: none
+      transform: rotate(90deg)
 
   @media (max-width: 767.98px)
     .footer

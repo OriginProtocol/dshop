@@ -9,6 +9,7 @@ import { Spinner } from 'components/icons/Admin'
 const AdminConfirmationModal = ({
   className = 'btn btn-outline-primary',
   confirmedText = fbt('Success', 'success'),
+  confirmedSubText,
   confirmText = fbt('Are you sure?', 'areYouSure'),
   onConfirm,
   onSuccess,
@@ -125,6 +126,9 @@ const AdminConfirmationModal = ({
             ) : state.confirmed ? (
               <>
                 <div className="text-lg">{confirmedText}</div>
+                {confirmedSubText ? (
+                  <div className="text-sm mt-3">{confirmedSubText}</div>
+                ) : null}
                 <div className="actions">
                   <button
                     className="btn btn-primary px-5"
