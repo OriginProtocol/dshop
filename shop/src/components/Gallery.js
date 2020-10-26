@@ -30,7 +30,9 @@ export const Provider = ({ children, images, active = 0, onChange }) => {
 export const Thumbnails = ({ className, children }) => {
   const [{ thumbnailsEl, active }] = useContext(Context)
   useEffect(() => {
-    if (!thumbnailsEl || !thumbnailsEl.current) return
+    if (!thumbnailsEl || !thumbnailsEl.current || typeof active !== 'number') {
+      return
+    }
     const img = thumbnailsEl.current.querySelector(
       `img:nth-child(${active + 1})`
     )

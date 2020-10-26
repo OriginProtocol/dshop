@@ -5,6 +5,7 @@ import get from 'lodash/get'
 import useCollections from 'utils/useCollections'
 import useSearchQuery from 'utils/useSearchQuery'
 import useConfig from 'utils/useConfig'
+import useThemeVars from 'utils/useThemeVars'
 
 import SortBy from 'components/SortBy'
 
@@ -13,8 +14,8 @@ import Footer from './_Footer'
 import Products from './_Products'
 
 const AllProducts = () => {
-  const { config } = useConfig()
   const history = useHistory()
+  const themeVars = useThemeVars()
   const { visibleCollections } = useCollections({ includeAll: 'All Products' })
   const match = useRouteMatch('/collections/:collection')
   const opts = useSearchQuery()
@@ -24,7 +25,7 @@ const AllProducts = () => {
     <>
       <Header>
         <div className="container text-center text-lg sm:text-2xl pt-8 sm:pt-16 pb-16 sm:pb-40 max-w-4xl">
-          {get(config, 'theme.products.header')}
+          {get(themeVars, 'products.headerText')}
         </div>
       </Header>
       <div className="container grid my-12 sm:my-20 gap-8 sm:gap-32 text-sm justify-center grid-flow-row sm:grid-flow-col">
