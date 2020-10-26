@@ -1,4 +1,4 @@
-FROM node:10
+FROM node:14
 
 ARG ENVKEY
 ARG APP_DIR=/app
