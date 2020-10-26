@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import get from 'lodash/get'
 import kebabCase from 'lodash/kebabCase'
 import useThemeVars from 'utils/useThemeVars'
@@ -12,44 +12,40 @@ const usePalette = () => {
   const themeVars = useThemeVars()
   const selectedPaletteId = get(themeVars, 'colors.palette')
 
-  const [values, setValues] = useState({
-    colors: {},
-    fonts: {}
-  })
-
   useEffect(() => {
-    const palettes = themeJson.config
+    const paletteField = themeJson.config
       .find((section) => section.id === 'colors')
       .fields.find((field) => field.type === 'color_palettes')
 
+    const palettes = get(paletteField, 'palettes', [])
     const paletteId = selectedPaletteId || get(palettes, 'palettes.0.id')
 
-    const newValues = {
-      colors: Object.keys(palettes.colorLabels).reduce((colors, label) => {
-        return {
-          ...colors,
-          [label]: kebabCase(`${paletteId}-${label}`)
-        }
-      }, {}),
-      fonts: Object.keys(palettes.fontLabels).reduce((fonts, label) => {
-        return {
-          ...fonts,
-          [label]: kebabCase(`${paletteId}-${label}`)
-        }
-      }, {})
-    }
+    const selectedPalette = palettes.find((p) => p.id === paletteId)
 
-    setValues(newValues)
+    if (!selectedPalette) return
+
+    // Set CSS variables
+    Object.keys(selectedPalette.colors).map((key) => {
+      document.documentElement.style.setProperty(
+        `--${kebabCase(key)}-color`,
+        selectedPalette.colors[key]
+      )
+    })
+
+    Object.keys(selectedPalette.fonts).map((key) => {
+      document.documentElement.style.setProperty(
+        `--${kebabCase(key)}-font`,
+        selectedPalette.fonts[key]
+      )
+    })
 
     // Override page background
-    document.body.classList.add(`bg-${newValues.colors.pageBg}`)
+    document.body.classList.add('bg-page')
 
     return () => {
-      document.body.classList.remove(`bg-${newValues.colors.pageBg}`)
+      document.body.classList.remove('bg-page')
     }
   }, [selectedPaletteId])
-
-  return values
 }
 
 export default usePalette

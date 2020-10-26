@@ -59,7 +59,7 @@ const AdminMenu = () => {
         <>
           <li className={`themes ${active('/admin/themes')}`}>
             <Link to="/admin/themes">
-              <Icons.Settings />
+              <Icons.Themes />
               <fbt desc="Themes">Themes</fbt>
             </Link>
           </li>

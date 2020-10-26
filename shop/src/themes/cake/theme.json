@@ -13,13 +13,13 @@
           "id": "palette1",
           "title": "Rose Clay",
           "colors": {
-            "pageBg": "#fcf8f8",
-            "footerBg": "#faf4f4",
-            "textColor1": "#000000",
-            "textColor2": "#514846",
-            "buttonColor": "#d18172",
-            "linkColor": "#d18172",
-            "accentColor": "#d18172"
+            "page": "#fcf8f8",
+            "footer": "#faf4f4",
+            "primary": "#000000",
+            "secondary": "#514846",
+            "button": "#d18172",
+            "link": "#d18172",
+            "accent": "#d18172"
           },
           "fonts": {
             "header": "Philosopher",
@@ -30,13 +30,13 @@
           "id": "palette2",
           "title": "Coral Haze",
           "colors": {
-            "pageBg": "#fcfbf8",
-            "footerBg": "#f8f6f2",
-            "textColor1": "#000000",
-            "textColor2": "#565248",
-            "buttonColor": "#ff785f",
-            "linkColor": "#ff785f",
-            "accentColor": "#f4c110"
+            "page": "#fcfbf8",
+            "footer": "#f8f6f2",
+            "primary": "#000000",
+            "secondary": "#565248",
+            "button": "#ff785f",
+            "link": "#ff785f",
+            "accent": "#f4c110"
           },
           "fonts": {
             "header": "RobotoSlab",
@@ -45,13 +45,13 @@
         }
       ],
       "colorLabels": {
-        "pageBg": "Page Background Color",
-        "footerBg": "Footer Background Color",
-        "textColor1": "Text Color 1",
-        "textColor2": "Text Color 2",
-        "buttonColor": "Button Color",
-        "linkColor": "Link Color",
-        "accentColor": "Accent Color"
+        "page": "Page Background Color",
+        "footer": "Footer Background Color",
+        "primary": "Text Color 1",
+        "secondary": "Text Color 2",
+        "button": "Button Color",
+        "link": "Link Color",
+        "accent": "Accent Color"
       },
       "fontLabels": {
         "header": "Header Font",
@@ -67,15 +67,16 @@
       "type": "media"
     }, {
       "id": "featuredCollections",
-      "title": "Featured in Menu",
+      "title": "Primary Menu",
       "type": "collections_list"
     }]
   }, {
     "id": "home",
     "title": "Home",
+    "pageUrl": "/",
     "fields": [{
       "id": "headerText",
-      "title": "Hero Text",
+      "title": "Text above Header Image",
       "type": "text",
       "multiline": true
     }, {
@@ -90,6 +91,7 @@
   }, {
     "id": "about",
     "title": "About Page",
+    "pageUrl": "/about",
     "fields": [{
       "id": "aboutText",
       "title": "About Text",
@@ -97,7 +99,7 @@
       "multiline": true
     }, {
       "id": "aboutImage",
-      "title": "Header Image",
+      "title": "About Image",
       "type": "media"
     }]
   }]

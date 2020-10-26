@@ -95,6 +95,13 @@ const all = [
     Object.assign(queueOpts, {
       prefix: '{dns}'
     })
+  ),
+  new Queue(
+    'deployment',
+    backendUrl,
+    Object.assign(queueOpts, {
+      prefix: '{deployment}'
+    })
   )
 ]
 

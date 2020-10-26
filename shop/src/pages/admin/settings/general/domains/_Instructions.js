@@ -154,13 +154,13 @@ const DomainInstructions = ({ domain, close, netId, hostname }) => {
               </thead>
               <tbody>
                 <tr>
-                  <td>CNAME</td>
-                  <td>@</td>
+                  <td>{get(records, 'rrtype')}</td>
+                  <td>{`${domainName}.`}</td>
                   <td>{get(records, 'rvalue')}</td>
                 </tr>
                 <tr>
                   <td>TXT</td>
-                  <td>{txtHost}</td>
+                  <td>{`${txtHost}.`}</td>
                   <td>{txtRecordVal}</td>
                 </tr>
               </tbody>

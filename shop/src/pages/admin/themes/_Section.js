@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import fbt from 'fbt'
 import get from 'lodash/get'
 
@@ -8,14 +8,16 @@ import ProductsList from './fields/ProductsList'
 import CollectionsList from './fields/CollectionsList'
 import ColorPalettes from './fields/ColorPalettes'
 
-const Section = ({ section, state, setState }) => {
-  const [isActive, setIsActive] = useState(false)
-
+const Section = ({ section, state, setState, onDrilldown, isActive }) => {
   return (
     <>
       <div
         className="section-title admin-title"
-        onClick={() => setIsActive(true)}
+        onClick={() => {
+          if (onDrilldown) {
+            onDrilldown()
+          }
+        }}
       >
         {section.title}
         <span className="chevron" />
@@ -24,9 +26,6 @@ const Section = ({ section, state, setState }) => {
       <div className={`section-fields${isActive ? ' active' : ''}`}>
         {!isActive ? null : (
           <>
-            <div className="back-button" onClick={() => setIsActive(false)}>
-              <fbt desc="Back">Back</fbt>
-            </div>
             {section.fields.map((field) => {
               const fieldState = get(state, field.id)
               const setFieldState = (newState) => {
@@ -67,7 +66,13 @@ const Section = ({ section, state, setState }) => {
   )
 }
 
-const SectionsList = ({ state, theme, onChange }) => {
+const SectionsList = ({
+  state,
+  theme,
+  onChange,
+  onDrilldown,
+  activeSection
+}) => {
   if (!theme) return null
 
   if (!theme.config || !theme.config.length) {
@@ -100,6 +105,8 @@ const SectionsList = ({ state, theme, onChange }) => {
             section={section}
             state={sectionState}
             setState={setSectionState}
+            onDrilldown={() => onDrilldown(section)}
+            isActive={activeSection === section.id}
           />
         )
       })}

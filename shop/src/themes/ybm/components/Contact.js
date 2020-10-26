@@ -14,10 +14,7 @@ const Contact = () => {
 
   const themeVars = useThemeVars()
   const contact = get(themeVars, 'contact', {})
-  const headerImage = `${config.dataSrc}${get(
-    themeVars,
-    'contact.headerImage.0'
-  )}`
+  const header = get(themeVars, 'contact.headerImage.0', {})
   const contactEmail = get(themeVars, 'contact.email', config.supportEmail)
   const contactNumber = get(themeVars, 'contact.number', config.supportPhone)
 
@@ -25,8 +22,8 @@ const Contact = () => {
     <>
       <Header
         style={{
-          backgroundImage: `url(${get(headerImage, 'url')})`,
-          backgroundPosition: get(headerImage, 'backgroundPosition')
+          backgroundImage: `url(${config.dataSrc}${header.url})`,
+          backgroundPosition: header.backgroundPosition
         }}
       >
         <div className="container text-center text-2xl sm:text-5xl py-20 sm:pb-40">
@@ -38,7 +35,7 @@ const Contact = () => {
           <div className="text-3xl text-center leading-none">
             {contact.title}
           </div>
-          <div className="font-light text-lg whitespace-pre">
+          <div className="font-light text-lg whitespace-pre-line">
             {contact.description}
           </div>
           <div className="flex-1 flex gap-8 order-2 sm:order-1">

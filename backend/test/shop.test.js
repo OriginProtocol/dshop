@@ -4,15 +4,15 @@ const expect = chai.expect
 const kebabCase = require('lodash/kebabCase')
 
 const { createShopInDB } = require('../logic/shop/create')
-const { deployShop } = require('../utils/deployShop')
-const { getConfig, setConfig } = require('../utils/encryptedConfig')
+const deploy = require('../logic/deploy')
+const { decryptConfig, encryptConfig } = require('../utils/encryptedConfig')
 const { AdminLogActions, ShopDeploymentStatuses } = require('../enums')
 
 const {
   AdminLog,
   Shop,
   ShopDeployment,
-  ShopDeploymentName,
+  ShopDomain,
   Network
 } = require('../models')
 
@@ -27,12 +27,40 @@ const {
   TEST_UNSTOPPABLE_DOMAIN_1
 } = require('./const')
 
+/**
+ * Creates a generic set of overrides that can be given to deploy()
+ */
+function createOverrides() {
+  return {
+    deployToBucket: ({ dataDir }) => {
+      return [
+        {
+          url: `s3://${dataDir}`,
+          httpUrl: `https://${dataDir}.s3.us-west-2.amazonaws.com`
+        }
+      ]
+    },
+    deployToIPFS: () => {
+      return {
+        ipfsHash: TEST_HASH_1,
+        ipfsPinner: TEST_IPFS_API,
+        ipfsGateway: TEST_IPFS_GATEWAY
+      }
+    },
+    configureCDN: () => {
+      return [{ ipAddress: '127.0.0.123' }]
+    },
+    configureShopDNS: () => {}
+  }
+}
+
 describe('Shops', () => {
-  let network, shop, deployment, dataDir
+  let network, networkId, shop, deployment, dataDir
 
   before(async () => {
     // Note: the migration inserts a network row for network id 999.
-    network = await Network.findOne({ where: { networkId: 999 } })
+    networkId = 999
+    network = await Network.findOne({ where: { networkId } })
     expect(network).to.be.an('object')
   })
 
@@ -75,7 +103,7 @@ describe('Shops', () => {
   })
 
   it('should update a shop config', async () => {
-    const configBeforeUpdate = getConfig(shop.config)
+    const configBeforeUpdate = decryptConfig(shop.config)
 
     const body = {
       hostname: shop.hostname + '-updated',
@@ -97,7 +125,7 @@ describe('Shops', () => {
     expect(shop).to.be.an('object')
     expect(shop.hostname).to.startsWith(body.hostname)
 
-    const config = getConfig(shop.config)
+    const config = decryptConfig(shop.config)
     expect(config.emailSubject).to.equal(body.emailSubject)
 
     // Check the admin activity was recorded.
@@ -109,7 +137,7 @@ describe('Shops', () => {
     expect(adminLog.data).to.be.an('object')
     expect(adminLog.createdAt).to.be.a('date')
 
-    const oldConfig = getConfig(adminLog.data.oldShop.config)
+    const oldConfig = decryptConfig(adminLog.data.oldShop.config)
     expect(oldConfig).to.be.an('object')
     expect(oldConfig.emailSubject).to.equal(configBeforeUpdate.emailSubject)
 
@@ -127,29 +155,21 @@ describe('Shops', () => {
   })
 
   it('should deploy a shop', async () => {
-    const testDomain = 'bugfreecode.ai'
-    async function mockDeployFn(args) {
-      return {
-        ipfsHash: 'hash' + Date.now(), // Unique hash.
-        ipfsPinner: TEST_IPFS_API,
-        ipfsGateway: TEST_IPFS_GATEWAY,
-        domain: testDomain,
-        hostname: `${args.subdomain}.${testDomain}`
-      }
-    }
+    const networkConfig = decryptConfig(network.config)
+    const subdomain = 'test'
+    const expectedURL = `https://${subdomain}.${networkConfig.domain}`
     const args = {
-      OutputDir: '/tmp',
-      dataDir: '/tmp/dataDir',
-      network,
+      networkId,
       shop,
-      subdomain: 'test',
-      pinner: undefined,
-      deployFn: mockDeployFn
+      subdomain,
+      dnsProvider: 'randomprovi',
+      skipSSLProbe: true,
+      overrides: createOverrides()
     }
-    const { hash, domain } = await deployShop(args)
+    const { hash, domain } = await deploy(args)
 
     expect(hash).to.be.an('string')
-    expect(domain).to.be.equal(testDomain)
+    expect(domain).to.be.equal(expectedURL)
 
     // Check a new deployment row was created.
     deployment = await ShopDeployment.findOne({
@@ -165,11 +185,13 @@ describe('Shops', () => {
     expect(deployment.ipfsHash).to.equal(hash)
 
     // Check a new deployment_name row was created.
-    const deploymentName = await ShopDeploymentName.findOne({
+    const deploymentName = await ShopDomain.findOne({
       where: { ipfsHash: hash }
     })
     expect(deploymentName).to.be.an('object')
-    expect(deploymentName.hostname).to.equal(`${args.subdomain}.${testDomain}`)
+    expect(deploymentName.domain).to.equal(
+      `${args.subdomain}.${networkConfig.domain}`
+    )
   })
 
   it('should not deploy a shop if a deploy is already running', async () => {
@@ -178,24 +200,17 @@ describe('Shops', () => {
 
     // An attempt to do a deploy on the same shop should result in an error.
     const args = {
-      OutputDir: '/tmp',
-      dataDir: '/tmp/dataDir',
-      network,
+      networkId,
       shop,
       subdomain: 'test',
-      pinner: undefined,
-      deployFn: () => {}
+      skipSSLProbe: true,
+      overrides: createOverrides()
     }
-    let error
-    try {
-      await deployShop(args)
-    } catch (e) {
-      error = e
-    }
-    expect(error).to.not.be.undefined
-    expect(error.message).to.equal(
-      'The shop is already being published. Try again in a few minutes.'
-    )
+    const deployResult = await deploy(args)
+
+    expect(deployResult.success).to.be.false
+    expect(deployResult.error).to.be.true
+    expect(deployResult.message).to.not.be.undefined
   })
 
   it('should deploy a shop if an old deploy is pending', async () => {
@@ -206,29 +221,23 @@ describe('Shops', () => {
       `UPDATE shop_deployments SET status='Pending', created_at='${anHourAgo}' WHERE id = ${deployment.id};`
     )
 
-    const testDomain = 'testsareforchampions.dev'
-    async function mockDeployFn(args) {
-      return {
-        ipfsHash: TEST_HASH_1, // Unique hash.
-        ipfsPinner: TEST_IPFS_API,
-        ipfsGateway: TEST_IPFS_GATEWAY,
-        domain: testDomain,
-        hostname: `${args.subdomain}.${testDomain}`
-      }
-    }
+    const networkConfig = decryptConfig(network.config)
+    const subdomain = 'test'
+    const expectedURL = `https://${subdomain}.${networkConfig.domain}`
     const args = {
-      OutputDir: '/tmp',
-      dataDir: '/tmp/dataDir',
-      network,
+      networkId,
       shop,
-      subdomain: 'test',
-      pinner: undefined,
-      deployFn: mockDeployFn
+      subdomain,
+      dnsProvider: 'testprovider',
+      skipSSLProbe: true,
+      overrides: createOverrides()
     }
-    const { hash, domain } = await deployShop(args)
+    const { success, error, hash, domain } = await deploy(args)
 
+    expect(success).to.be.true
+    expect(error).to.be.false
     expect(hash).to.be.an('string')
-    expect(domain).to.be.equal(testDomain)
+    expect(domain).to.be.equal(expectedURL)
 
     // Check the old deployment status was changed to a failure.
     await deployment.reload()
@@ -249,12 +258,12 @@ describe('Shops', () => {
     expect(newDeployment.ipfsHash).to.equal(hash)
 
     // Check a new deployment_name row was created.
-    const newDeploymentName = await ShopDeploymentName.findOne({
+    const newDomain = await ShopDomain.findOne({
       where: { ipfsHash: hash }
     })
-    expect(newDeploymentName).to.be.an('object')
-    expect(newDeploymentName.hostname).to.equal(
-      `${args.subdomain}.${testDomain}`
+    expect(newDomain).to.be.an('object')
+    expect(newDomain.domain).to.equal(
+      `${args.subdomain}.${networkConfig.domain}`
     )
   })
 
@@ -288,7 +297,7 @@ describe('Shops', () => {
 
     expect(jason.success).to.be.true
     expect(jason.names).to.be.an('array')
-    expect(jason.names).to.have.lengthOf(3)
+    expect(jason.names).to.have.lengthOf(2)
     expect(jason.names[0]).to.be.equal(TEST_UNSTOPPABLE_DOMAIN_1)
   })
 
@@ -298,7 +307,7 @@ describe('Shops', () => {
       name: " Robinette's Shoop-2020 ",
       listingId: '999-001-' + Date.now(),
       authToken: 'token',
-      config: setConfig({}),
+      config: encryptConfig({}),
       sellerId: 1,
       hostname: kebabCase('cool shoop hostname')
     }
@@ -322,7 +331,7 @@ describe('Shops', () => {
       name: undefined,
       listingId: '999-001-' + Date.now(),
       authToken: 'token',
-      config: setConfig({}),
+      config: encryptConfig({}),
       sellerId: 1,
       hostname: kebabCase('cool shoop hostname')
     }

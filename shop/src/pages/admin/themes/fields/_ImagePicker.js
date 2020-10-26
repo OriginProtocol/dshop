@@ -1,9 +1,10 @@
-import React, { useRef, useReducer, useState } from 'react'
+import React, { useRef, useReducer } from 'react'
 import fbt from 'fbt'
 import get from 'lodash/get'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import loadImage from 'utils/loadImage'
+import useProducts from 'utils/useProducts'
 
 const acceptedFileTypes = [
   'image/jpeg',
@@ -16,7 +17,14 @@ function reducer(state, newState) {
   return { ...state, ...newState }
 }
 
-const EditableProps = ({ imageObj, onChange, editableProps }) => {
+const EditableProps = ({
+  imageObj,
+  onChange,
+  editableProps,
+  propLabelPrefix
+}) => {
+  const { products } = useProducts()
+
   return (
     <>
       {editableProps.map((propName) => {
@@ -48,23 +56,14 @@ const EditableProps = ({ imageObj, onChange, editableProps }) => {
                 <label>
                   <fbt desc="admin.themes.bgPos">Position</fbt>
                 </label>
-                <select {...fieldProps}>
-                  <option value="center">
-                    <fbt desc="Center">Center</fbt>
-                  </option>
-                  <option value="bottom">
-                    <fbt desc="Bottom">Bottom</fbt>
-                  </option>
-                  <option value="left">
-                    <fbt desc="Left">Left</fbt>
-                  </option>
-                  <option value="right">
-                    <fbt desc="Right">Right</fbt>
-                  </option>
-                  <option value="top">
-                    <fbt desc="Top">Top</fbt>
-                  </option>
-                </select>
+                <PositionPicker
+                  value={propVal}
+                  className="form-control"
+                  onChange={(v) => {
+                    console.log('onChange', v)
+                    onChange({ ...imageObj, [propName]: v })
+                  }}
+                />
               </div>
             )
           case 'height':
@@ -72,6 +71,21 @@ const EditableProps = ({ imageObj, onChange, editableProps }) => {
           case 'backgroundSize':
             return textInput(
               <fbt desc="admin.themes.bgSize">Background Size</fbt>
+            )
+
+          case 'productLink':
+            return (
+              <div key={propName} className="form-group">
+                <label>{`${propLabelPrefix} Link`}</label>
+                <select {...fieldProps}>
+                  <option value="">Select one</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )
         }
 
@@ -81,7 +95,14 @@ const EditableProps = ({ imageObj, onChange, editableProps }) => {
   )
 }
 
-const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
+const ImagePicker = ({
+  images,
+  onChange,
+  multiple,
+  editableProps,
+  propLabelPrefix,
+  allowPNG
+}) => {
   const { config } = useConfig()
   const { postRaw } = useBackendApi({ authToken: true })
   const [state, setState] = useReducer(reducer, {})
@@ -89,19 +110,16 @@ const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
   const uploadRef = useRef()
   const uniqueId = useRef('upload_' + Date.now())
 
-  const [editProps, setEditProps] = useState(null)
-
   const uploadImages = async (files) => {
     try {
       const formData = new FormData()
 
       for (const file of files) {
+        const imgType = file.type === 'image/png' && allowPNG ? 'png' : 'jpeg'
         const processedFile = await new Promise((resolve) => {
           loadImage(
             file,
-            (img) => {
-              return img.toBlob((blob) => resolve(blob), 'image/jpeg')
-            },
+            (img) => img.toBlob((blob) => resolve(blob), `image/${imgType}`),
             {
               orientation: true,
               maxWidth: 2000,
@@ -110,7 +128,9 @@ const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
             }
           )
         })
-        formData.append('file', processedFile)
+        const ext = imgType === 'png' ? 'png' : 'jpg'
+        const name = (file.name || 'file.jpg').replace(/\.(jpe?g|png)$/i, '')
+        formData.append('file', processedFile, `${name}.${ext}`)
       }
 
       const response = await postRaw(`/themes/upload-images`, {
@@ -137,10 +157,8 @@ const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
       const newState = [...images]
       newState[replaceAtIndex] = newImages[0]
       onChange(newState)
-      setEditProps(replaceAtIndex)
     } else {
       onChange([...images, ...newImages].slice(0, 50))
-      setEditProps(images.length)
     }
     uploadRef.current.value = ''
   }
@@ -153,15 +171,14 @@ const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
             <img src={config.dataSrc + imageObj.url} />
             <div className="label-section">
               <div className="label">{imageObj.name}</div>
-
-              <div
+              {/* <div
                 className="action-icon"
                 onClick={() => {
                   setEditProps(editProps === index ? null : index)
                 }}
               >
                 <img src="/images/edit-icon.svg" />
-              </div>
+              </div> */}
               <div
                 className="action-icon"
                 onClick={() => {
@@ -174,17 +191,16 @@ const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
               </div>
             </div>
             <div className="props-section">
-              {editProps !== index ? null : (
-                <EditableProps
-                  imageObj={imageObj}
-                  onChange={(newObj) => {
-                    const newImages = [...images]
-                    newImages[index] = newObj
-                    onChange(newImages)
-                  }}
-                  editableProps={editableProps}
-                />
-              )}
+              <EditableProps
+                imageObj={imageObj}
+                onChange={(newObj) => {
+                  const newImages = [...images]
+                  newImages[index] = newObj
+                  onChange(newImages)
+                }}
+                editableProps={editableProps}
+                propLabelPrefix={propLabelPrefix}
+              />
             </div>
           </div>
         ))
@@ -207,7 +223,7 @@ const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
         }}
         style={{ display: 'none' }}
       />
-      {!multiple && images.length ? null : (
+      {!multiple || !images.length ? null : (
         <label
           htmlFor={uniqueId.current}
           className="btn btn-outline-primary add-button"
@@ -226,6 +242,74 @@ const ImagePicker = ({ images, onChange, multiple, editableProps }) => {
   )
 }
 
+const PositionPicker = ({ className, value = '', onChange }) => {
+  const selectValue = value.match(/^(center|bottom|left|right|top)$/)
+    ? value
+    : 'custom'
+
+  const customMatch = value.match(/^([0-9]+)% ([0-9]+)%$/)
+  const range = customMatch ? [customMatch[1], customMatch[2]] : ['50', '50']
+
+  return (
+    <>
+      <select
+        value={selectValue}
+        className={className}
+        onChange={(e) => {
+          onChange(e.target.value)
+        }}
+      >
+        <option value="center">
+          <fbt desc="Center">Center</fbt>
+        </option>
+        <option value="bottom">
+          <fbt desc="Bottom">Bottom</fbt>
+        </option>
+        <option value="left">
+          <fbt desc="Left">Left</fbt>
+        </option>
+        <option value="right">
+          <fbt desc="Right">Right</fbt>
+        </option>
+        <option value="top">
+          <fbt desc="Top">Top</fbt>
+        </option>
+        <option value="custom">
+          <fbt desc="Custom">Custom</fbt>
+        </option>
+      </select>
+      {selectValue !== 'custom' ? null : (
+        <>
+          <div className="d-flex align-items-center mt-3">
+            <label className="mb-0 mr-4">X-Axis</label>
+            <input
+              style={{ flex: 1 }}
+              value={customMatch ? customMatch[1] : '50'}
+              onChange={(e) => onChange(`${e.target.value}% ${range[1]}%`)}
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+            />
+          </div>
+          <div className="d-flex align-items-center mt-3">
+            <label className="mb-0 mr-4">Y-Axis</label>
+            <input
+              style={{ flex: 1 }}
+              value={customMatch ? customMatch[2] : '50'}
+              onChange={(e) => onChange(`${range[0]}% ${e.target.value}%`)}
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+            />
+          </div>
+        </>
+      )}
+    </>
+  )
+}
+
 export default ImagePicker
 
 require('react-styl')(`
@@ -236,6 +320,7 @@ require('react-styl')(`
 
     .image-box
       margin: 0.5rem 0
+
       > img
         object-fit: contain
         max-height: 155px
@@ -243,9 +328,12 @@ require('react-styl')(`
         margin-bottom: 0.5rem
       .label-section
         display: flex
+        margin-bottom: 1rem
         align-items: center
         .label
           flex: 1
+          overflow: hidden
+          text-overflow: ellipsis
         .action-icon
           flex: auto 0 0
           padding: 0 0.5rem

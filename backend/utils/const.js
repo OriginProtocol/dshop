@@ -17,6 +17,14 @@ const NETWORK_NAME_TO_ID = {
   mainnet: 1
 }
 
+const NETWORK_ID_TO_NAME = Object.keys(NETWORK_NAME_TO_ID).reduce(
+  (acc, cur) => {
+    acc[NETWORK_NAME_TO_ID[cur]] = cur
+    return acc
+  },
+  {}
+)
+
 const CONTRACTS = {
   999: {
     marketplace: {
@@ -42,6 +50,11 @@ const NODE_ENV = process.env.NODE_ENV
 const IS_PROD = NODE_ENV === 'production'
 const IS_TEST = NODE_ENV === 'test'
 const IS_DEV = NODE_ENV === 'development' || (!IS_PROD && !IS_TEST)
+const PROTOCOL_LABS_GATEWAY = 'https://gateway.ipfs.io'
+const PINATA_API = 'https://api.pinata.cloud'
+const PINATA_GATEWAY = 'https://gateway.pinata.cloud'
+const DEFAULT_BUCKET_PREFIX = `ds-deploy-`
+const DEFAULT_SERVICE_PREFIX = DEFAULT_BUCKET_PREFIX
 
 const {
   SESSION_SECRET = randomstring.generate(),
@@ -51,7 +64,9 @@ const {
   PROVIDER,
   PROVIDER_WS,
   REDIS_URL,
-  IPFS_GATEWAY // IPFS gateway override
+  IPFS_GATEWAY, // IPFS gateway override
+  BUCKET_PREFIX = DEFAULT_BUCKET_PREFIX,
+  SERVICE_PREFIX = DEFAULT_SERVICE_PREFIX
 } = process.env
 
 /**
@@ -86,7 +101,14 @@ module.exports = {
   IPFS_GATEWAY,
   NETWORK,
   NETWORK_ID: NETWORK_NAME_TO_ID[NETWORK] || 999,
+  NETWORK_NAME_TO_ID,
+  NETWORK_ID_TO_NAME,
   PRINTFUL_URL,
   DSHOP_CACHE,
-  THEMES_CACHE
+  THEMES_CACHE,
+  PROTOCOL_LABS_GATEWAY,
+  PINATA_API,
+  PINATA_GATEWAY,
+  BUCKET_PREFIX,
+  SERVICE_PREFIX
 }

@@ -1,10 +1,11 @@
 const dns = require('dns')
 const fetch = require('node-fetch')
 const get = require('lodash/get')
+const every = require('lodash/every')
 const { Resolution } = require('@unstoppabledomains/resolution')
 
 const { Network, ShopDeployment, ShopDomain } = require('../../models')
-const { ShopDomainStatuses } = require('../enums')
+const { ShopDomainStatuses } = require('../../enums')
 const { getLogger } = require('../logger')
 
 const log = getLogger('utils.dns')
@@ -184,8 +185,8 @@ async function hasNS(v, opts = {}) {
   }
 }
 
-async function verifyDNS(domain, hostname, networkId, shop) {
-  log.debug('Trying to verify DNS records of domain', domain, hostname)
+async function verifyDNS(domain, networkId, shop) {
+  log.debug('Trying to verify DNS records of domain', domain)
 
   const deployment = await ShopDeployment.findOne({
     where: {
@@ -194,12 +195,61 @@ async function verifyDNS(domain, hostname, networkId, shop) {
     order: [['created_at', 'DESC']]
   })
 
+  const domains = await ShopDomain.findAll({
+    where: { shopId: shop.id }
+  })
+
+  const ipAddresses = domains
+    ? domains.filter((d) => !!d.ipAddress).map((d) => d.ipAddress)
+    : []
+  const hasIP = ipAddresses ? !!ipAddresses.length : false
+
   // Verify the domain is RFC-valid
   if (!isValidDNSName(domain)) {
     log.debug(`${domain} is not a valid domain`)
     return {
       success: true,
       error: 'Invalid domain'
+    }
+  }
+
+  if (hasIP) {
+    try {
+      const records = await dnsResolve(domain, 'A')
+
+      const valid = every(ipAddresses.map((ip) => records.includes(ip)))
+
+      if (valid) {
+        await ShopDomain.update(
+          {
+            status: ShopDomainStatuses.Success
+          },
+          {
+            where: {
+              domain: domain.toLowerCase(),
+              shopId: shop.id
+            }
+          }
+        )
+      }
+
+      return {
+        success: true,
+        valid
+      }
+    } catch (err) {
+      if (err.message.includes('ENOTFOUND')) {
+        return {
+          success: true,
+          valid: false,
+          error: `Your DNS changes haven't propagated yet.`
+        }
+      }
+
+      log.error(err)
+      return {
+        error: err.message
+      }
     }
   }
 

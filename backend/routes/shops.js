@@ -7,33 +7,38 @@ const https = require('https')
 const http = require('http')
 const mv = require('mv')
 const dayjs = require('dayjs')
+const uuidv4 = require('uuid').v4
 
 const {
   Seller,
   Shop,
   SellerShop,
   Network,
+  ShopDomain,
   ShopDeployment,
-  ShopDeploymentName,
   Order,
   Sequelize
 } = require('../models')
+const { ShopDomainStatuses } = require('../enums')
 const {
   authSellerAndShop,
   authUser,
   authRole,
-  authSuperUser
+  authSuperUser,
+  authShop
 } = require('./_auth')
 const { createSeller } = require('../utils/sellers')
-const { getConfig } = require('../utils/encryptedConfig')
-const { configureShopDNS, deployShop } = require('../utils/deployShop')
+const { decryptConfig } = require('../utils/encryptedConfig')
+const { configureShopDNS } = require('../logic/deploy/dns')
 const { DSHOP_CACHE } = require('../utils/const')
 const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
 const { readProductsFile } = require('../utils/products')
+const { queues } = require('../queues')
 const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
 const { updateShopConfig } = require('../logic/shop/config')
 const { createShop } = require('../logic/shop/create')
+const sellerContactEmail = require('../utils/emails/sellerContact')
 
 const log = getLogger('routes.shops')
 
@@ -156,7 +161,7 @@ module.exports = function (router) {
         return res.json({ success: false, reason: 'no-active-network' })
       }
 
-      const { printful } = getConfig(req.shop.config)
+      const { printful } = decryptConfig(req.shop.config)
       if (!printful) {
         return res.json({ success: false, reason: 'no-printful-api-key' })
       }
@@ -188,8 +193,8 @@ module.exports = function (router) {
       where: { shopId: shop.id },
       include: [
         {
-          model: ShopDeploymentName,
-          as: 'names'
+          model: ShopDomain,
+          as: 'domains'
         }
       ],
       order: [['createdAt', 'desc']]
@@ -206,7 +211,7 @@ module.exports = function (router) {
         'createdAt',
         'updatedAt'
       ),
-      domains: row.dataValues.names.map((nam) => nam.hostname)
+      domains: row.dataValues.domains.map((d) => d.domain)
     }))
 
     res.json({ deployments })
@@ -634,50 +639,39 @@ module.exports = function (router) {
    * Called by super-admin for deploying a shop.
    *
    * TODO:
-   *  - move this under logic/shop/deploy.js
    *  - record activity in AdminLogs
    */
-  router.post('/shops/:shopId/deploy', authSuperUser, async (req, res) => {
-    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+  router.post('/shops/:authToken/deploy', authSuperUser, async (req, res) => {
+    const { authToken } = req.params
+    const shop = await Shop.findOne({ where: { authToken } })
     if (!shop) {
       return res.json({ success: false, reason: 'shop-not-found' })
     }
-    const { networkId } = req.body
+    const dataDir = authToken
+    const { networkId, pinner, dnsProvider } = req.body
+
     const network = await Network.findOne({ where: { networkId } })
     if (!network) {
       return res.json({ success: false, reason: 'no-such-network' })
     }
+    const uuid = uuidv4()
 
-    const dataDir = req.params.shopId
-    const OutputDir = `${DSHOP_CACHE}/${dataDir}`
-
-    try {
-      const deployOpts = {
-        OutputDir,
-        dataDir,
-        network,
+    await queues.deploymentQueue.add(
+      {
+        uuid,
+        networkId: networkId ? networkId : network.networkId,
         subdomain: dataDir,
-        shop,
-        pinner: req.body.pinner,
-        dnsProvider: req.body.dnsProvider
+        shopId: shop.id,
+        pinner,
+        dnsProvider
+      },
+      {
+        jobId: `deployment-${uuid}`,
+        attempts: 1
       }
+    )
 
-      const start = +new Date()
-
-      const { hash, domain } = await deployShop(deployOpts)
-
-      const end = +new Date()
-      const deployTimeSeconds = Math.floor((end - start) / 1000)
-      log.info(
-        `Deploy duration (shop_id: ${req.params.shopId}): ${deployTimeSeconds}s`
-      )
-
-      return res.json({ success: true, hash, domain, gateway: network.ipfs })
-    } catch (e) {
-      log.error(`Shop ${shop.id} deploy failed`)
-      log.error(e)
-      return res.json({ success: false, reason: e.message })
-    }
+    return res.json({ success: true, uuid })
   })
 
   /**
@@ -696,73 +690,68 @@ module.exports = function (router) {
         return res.json({ success: false, reason: 'no-hostname-configured' })
       }
 
+      const { networkId, hostname } = req.body
       let where = { active: true }
       if (req.seller.superuser && req.body.networkId) {
-        where = { networkId: req.body.networkId }
+        where = { networkId }
       }
       const network = await Network.findOne({ where })
       if (!network) {
         return res.json({ success: false, reason: 'no-active-network' })
       }
-      const networkConfig = getConfig(network.config)
 
-      const dataDir = req.shop.authToken
-      const OutputDir = `${DSHOP_CACHE}/${dataDir}`
+      const uuid = uuidv4()
 
-      let pinner, dnsProvider
-
-      // If both an IPFS cluster and Pinata are configured,
-      // we favor pinning on the IPFS cluster.
-      if (network.ipfsApi && networkConfig.ipfsClusterPassword) {
-        pinner = 'ipfs-cluster'
-      } else if (networkConfig.pinataKey) {
-        pinner = 'pinata'
-      }
-      if (!pinner && network.ipfsApi.indexOf('http://localhost') < 0) {
-        return res.json({ success: false, reason: 'no-pinner-configured' })
-      }
-
-      if (networkConfig.gcpCredentials) {
-        dnsProvider = 'gcp'
-      } else if (networkConfig.cloudflareApiKey) {
-        dnsProvider = 'cloudflare'
-      } else if (networkConfig.awsAccessKeyId) {
-        dnsProvider = 'aws'
-      }
-
-      try {
-        const deployOpts = {
-          OutputDir,
-          dataDir,
-          network,
-          subdomain: req.shop.hostname,
-          shop: req.shop,
-          pinner,
-          dnsProvider
+      await queues.deploymentQueue.add(
+        {
+          uuid,
+          networkId: networkId ? networkId : network.networkId,
+          subdomain: hostname ? hostname : req.shop.hostname,
+          shopId: req.shop.id
+        },
+        {
+          jobId: `deployment-${uuid}`,
+          attempts: 1
         }
+      )
 
-        const start = +new Date()
-
-        const { hash, domain } = await deployShop(deployOpts)
-
-        await req.shop.update({
-          hasChanges: false
-        })
-
-        const end = +new Date()
-        const deployTimeSeconds = Math.floor((end - start) / 1000)
-        log.info(
-          `Deploy duration (shop_id: ${req.shop.id}): ${deployTimeSeconds}s`
-        )
-
-        return res.json({ success: true, hash, domain, gateway: network.ipfs })
-      } catch (e) {
-        log.error(`Shop ${req.shop.id} initial deploy failed`)
-        log.error(e)
-        return res.json({ success: false, reason: e.message })
-      }
+      return res.json({ success: true, uuid })
     }
   )
+
+  /**
+   * Used by clients to get the status of a deployment
+   */
+  router.get('/shop/deployment/:uuid', async (req, res) => {
+    const deploymentResult = await ShopDeployment.findOne({
+      where: {
+        uuid: req.params.uuid
+      }
+    })
+
+    if (!deploymentResult) {
+      return res.status(404).json({ success: false })
+    }
+
+    res.json({
+      success: true,
+      deployment: {
+        ...pick(
+          deploymentResult.dataValues,
+          'id',
+          'shopId',
+          'domain',
+          'ipfsPinner',
+          'ipfsGateway',
+          'ipfsHash',
+          'status',
+          'error',
+          'createdAt',
+          'updatedAt'
+        )
+      }
+    })
+  })
 
   router.get(
     '/shop/deployments',
@@ -773,8 +762,8 @@ module.exports = function (router) {
         where: { shopId: req.shop.id },
         include: [
           {
-            model: ShopDeploymentName,
-            as: 'names'
+            model: ShopDomain,
+            as: 'domains'
           }
         ],
         order: [['createdAt', 'desc']]
@@ -792,7 +781,9 @@ module.exports = function (router) {
           'createdAt',
           'updatedAt'
         ),
-        domains: row.dataValues.names.map((nam) => nam.hostname)
+        domains: row.dataValues.domains
+          ? row.dataValues.domains.map((d) => d.domain)
+          : []
       }))
 
       res.json({ success: true, deployments })
@@ -807,28 +798,22 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      const names = await ShopDeploymentName.findAll({
-        include: [
-          {
-            model: ShopDeployment,
-            as: 'shopDeployments',
-            where: {
-              shopId: req.shop.id
-            }
-          }
-        ],
+      const domains = await ShopDomain.findAll({
+        where: {
+          shopId: req.shop.id
+        },
         order: [['createdAt', 'desc']]
       })
 
-      if (!names) {
+      if (!domains) {
         return res.status(404).json({ success: false })
       }
 
       return res.json({
         success: true,
-        names: names.reduce((acc, nam) => {
-          if (!acc.includes(nam.hostname)) {
-            acc.push(nam.hostname)
+        names: domains.reduce((acc, d) => {
+          if (!acc.includes(d.domain)) {
+            acc.push(d.domain)
           }
           return acc
         }, [])
@@ -844,7 +829,7 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      const { ipfsHash, hostnames, dnsProvider } = req.body
+      const { ipAddresses, ipfsHash, hostnames, dnsProvider } = req.body
 
       if (!ipfsHash || !hostnames) {
         return res.status(400).json({ success: false })
@@ -875,20 +860,43 @@ module.exports = function (router) {
           }
 
           const network = await Network.findOne({ where: { active: true } })
+          const networkConfig = decryptConfig(network.config)
           await configureShopDNS({
             network,
+            networkConfig,
             subdomain: hostname,
-            hostname: zone,
+            zone,
             hash: ipfsHash,
-            dnsProvider
+            dnsProvider,
+            ipAddresses
           })
         }
 
-        log.info(`Adding ${fqn} association to ${ipfsHash}`)
-        await ShopDeploymentName.create({
-          ipfsHash,
-          hostname: fqn
-        })
+        log.info(
+          `Adding ${fqn} association to ${
+            ipAddresses ? ipAddresses.join(', ') : ipfsHash
+          }`
+        )
+        if (ipAddresses) {
+          for (const ip of ipAddresses) {
+            await ShopDomain.create({
+              shopId: req.shop.id,
+              status: ShopDomainStatuses.Pending,
+              domain: `${hostname}.${zone}`,
+              ipfsHash,
+              ipAddress: ip,
+              hostname: fqn
+            })
+          }
+        } else {
+          await ShopDomain.create({
+            shopId: req.shop.id,
+            status: ShopDomainStatuses.Pending,
+            domain: `${hostname}.${zone}`,
+            ipfsHash,
+            hostname: fqn
+          })
+        }
       }
 
       await req.shop.update({
@@ -1017,5 +1025,20 @@ module.exports = function (router) {
       orders,
       topProducts
     })
+  })
+
+  router.post('/email-seller', authShop, async (req, res) => {
+    const network = await Network.findOne({ where: { active: true } })
+    const seller = await Seller.findOne({
+      where: { id: req.shop.sellerId }
+    })
+
+    await sellerContactEmail({
+      network,
+      seller,
+      data: req.body
+    })
+
+    res.status(200).send({})
   })
 }

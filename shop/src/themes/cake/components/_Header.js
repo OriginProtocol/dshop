@@ -10,14 +10,12 @@ import useThemeVars from 'utils/useThemeVars'
 import Link from 'components/Link'
 import CartIcon from 'components/icons/Cart'
 import MenuIcon from 'components/icons/Menu'
-import usePalette from '../hoc/usePalette'
 
 const Cart = ({ cart, hideText }) => {
-  const palette = usePalette()
   return (
     <Link
       to="/cart"
-      className={`btn btn-primary nav-link flex items-center text-sm px-6 py-1 bg-${palette.colors.buttonColor}`}
+      className="btn btn-primary nav-link flex items-center text-sm px-6 py-1 bg-button"
     >
       <CartIcon className="w-4 mr-2 fill-current" fill={null} />
       {hideText ? null : 'Cart'}
@@ -36,7 +34,8 @@ const Header = ({ bg }) => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
 
-  const logoUrl = `${config.dataSrc}${get(themeVars, 'header.logo.0.url')}`
+  const relativeLogoPath = get(themeVars, 'header.logo.0.url')
+  const logoUrl = `${config.dataSrc}${relativeLogoPath}`
   const featuredCollectionIds = get(themeVars, 'header.featuredCollections', [])
   const featuredCollections = useMemo(() => {
     return featuredCollectionIds
@@ -62,8 +61,12 @@ const Header = ({ bg }) => {
 
   const content = (
     <div className="container flex flex-row justify-between items-center">
-      <Link to="/">
-        <img style={{ width: 120 }} src={logoUrl} />
+      <Link to="/" className="font-bold">
+        {relativeLogoPath ? (
+          <img style={{ width: 120 }} src={logoUrl} />
+        ) : (
+          config.title
+        )}
       </Link>
       <div className="flex flex-row text-sm items-center">
         <Link
@@ -125,11 +128,15 @@ const Header = ({ bg }) => {
         >
           <div className="flex justify-between items-center">
             <Close />
-            <div className="mx-2">
-              <img
-                src={logoUrl}
-                style={{ maxHeight: '40px', objectFit: 'contain' }}
-              />
+            <div className="mx-2 font-bold text-xl">
+              {relativeLogoPath ? (
+                <img
+                  src={logoUrl}
+                  style={{ maxHeight: '40px', objectFit: 'contain' }}
+                />
+              ) : (
+                config.title
+              )}
             </div>
             <Cart cart={cart} hideText />
           </div>
