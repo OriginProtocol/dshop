@@ -12,12 +12,10 @@
  * node devops/updateBuilds.js /tmp/uibuild/ dshop-ui-staging
  */
 const fs = require('fs').promises
-const { createReadStream } = require('fs')
 const path = require('path')
 const program = require('commander')
 const { Storage } = require('@google-cloud/storage')
 const pinataSDK = require('@pinata/sdk')
-
 
 let TMPD
 const MAX_RECURSION_DEPTH = 5
@@ -27,10 +25,6 @@ const FILE_HASH_PATTERN = /app\.([A-Za-z0-9]+)\.(css|js)/
 
 // Cache
 let STORAGE_CLIENT, BUCKET
-
-function ext(filename) {
-  return filename.split('.').slice(-1)
-}
 
 function stripLeadingHash(s) {
   return s.startsWith('/') ? s.slice(1) : s
@@ -64,7 +58,7 @@ function getBucket(bucketName) {
 async function ls(buildDir) {
   const ds = await fs.stat(buildDir)
   if (!ds.isDirectory()) throw new Error(`${buildDir} is not a directory`)
-  return (await fs.readdir(buildDir)).map(f => path.join(buildDir, f))
+  return (await fs.readdir(buildDir)).map((f) => path.join(buildDir, f))
 }
 
 /**
@@ -74,7 +68,7 @@ async function ls(buildDir) {
  * @param exclude {Array} - hashes to ignore
  * @returns {string} - build hash
  */
-function getNewHash(files, exclude=[]) {
+function getNewHash(files, exclude = []) {
   // Find the first hash in the first matching file
   for (const f of files) {
     const match = f.match(FILE_HASH_PATTERN)
@@ -163,12 +157,15 @@ function loadBuildsJSON(bucketName) {
     const bucket = getBucket(bucketName)
     const buildJSONFile = bucket.file(BUILDS_FILENAME)
 
-    buildJSONFile.createReadStream()
-      .on('error', (err) => { reject(err) })
+    buildJSONFile
+      .createReadStream()
+      .on('error', (err) => {
+        reject(err)
+      })
       .on('data', (data) => {
         buf += data
-       })
-      .on('end', function() {
+      })
+      .on('end', function () {
         resolve(JSON.parse(buf))
       })
   })
@@ -206,10 +203,12 @@ async function uploadNewFiles(bucketName, files, buildDir, depth = 1) {
       process.stdout.write(`Uploading ${file}...\n`)
 
       const key = stripLeadingHash(file.replace(buildDir, ''))
-      promises.push(bucket.upload(file, {
-        gzip: true,
-        destination: key
-      }))
+      promises.push(
+        bucket.upload(file, {
+          gzip: true,
+          destination: key
+        })
+      )
     }
   }
 
@@ -244,7 +243,7 @@ async function updateBuildsJSON(bucketName, buildsJSON, newHash, opts) {
   })
 
   const bucket = getBucket(bucketName)
-  const tmp = opts.tmp || await getTemp()
+  const tmp = opts.tmp || (await getTemp())
   const buildsJSONFile = path.join(tmp, BUILDS_FILENAME)
 
   await fs.writeFile(buildsJSONFile, JSON.stringify(buildsJSON))
@@ -295,8 +294,11 @@ async function updateBuilds(buildDir, bucketName, opts) {
   const buildFiles = await ls(buildDir)
   const files = await loadOldBuilds(bucketName)
   const buildsJSON = await loadBuildsJSON(bucketName)
-  const newHash = getNewHash(buildFiles, buildsJSON.map(x => x.hash))
-  const newFiles = buildFiles.filter(f => {
+  const newHash = getNewHash(
+    buildFiles,
+    buildsJSON.map((x) => x.hash)
+  )
+  const newFiles = buildFiles.filter((f) => {
     const match = f.match(FILE_HASH_PATTERN)
 
     // Not a hashed file
@@ -360,13 +362,12 @@ async function main(argv) {
     .action(async (buildDir, bucketName, opts) => {
       try {
         await updateBuilds(buildDir, bucketName, opts)
-      } catch(err) {
+      } catch (err) {
         process.stderr.write(err.toString())
         process.exit(1)
       }
     })
     .parse(argv)
-
 }
 
 if (require.main === module) {
