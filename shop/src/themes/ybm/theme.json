@@ -16,14 +16,10 @@
           "id": "logo",
           "title": "Logo",
           "type": "media",
-          "allowPNG": true
-        },
-        {
-          "id": "logoHeight",
-          "title": "Logo Height",
-          "type": "range",
-          "min": "50",
-          "max": "250"
+          "allowPNG": true,
+          "props": ["height"],
+          "minHeight": "60",
+          "maxHeight": "150"
         }
       ]
     },

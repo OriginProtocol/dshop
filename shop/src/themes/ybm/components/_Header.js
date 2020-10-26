@@ -26,7 +26,7 @@ const MobileMenu = ({ toggleMobileMenu }) => {
 
   const relativeLogoPath = get(themeVars, 'header.logo.0.url')
   const logoUrl = `${config.dataSrc}${relativeLogoPath}`
-  const logoHeight = Number(get(themeVars, 'header.logoHeight', 100)) - 20
+  const logoHeight = Number(get(themeVars, 'header.logo.0.height', 100)) - 20
 
   return (
     <div
@@ -123,7 +123,7 @@ const MobileLinks = ({ children }) => {
 
   const relativeLogoPath = get(themeVars, 'header.logo.0.url')
   const logoUrl = `${config.dataSrc}${relativeLogoPath}`
-  const logoHeight = Number(get(themeVars, 'header.logoHeight', 120)) - 20
+  const logoHeight = Number(get(themeVars, 'header.logo.0.height', 120)) - 20
 
   function toggleMobileMenu() {
     const body = document.querySelector('body')
@@ -200,7 +200,7 @@ const DesktopLinks = ({ bg }) => {
 
   const relativeLogoPath = get(themeVars, 'header.logo.0.url')
   const logoUrl = `${config.dataSrc}${relativeLogoPath}`
-  const logoHeight = get(themeVars, 'header.logoHeight', 100)
+  const logoHeight = get(themeVars, 'header.logo.0.height', 100)
 
   const svgProps = { height: '18', color: bg ? '#fff' : '#000' }
   return (
