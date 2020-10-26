@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import fbt from 'fbt'
-
-import { get } from '@origin/ipfs'
 import omit from 'lodash/omit'
 
 import useConfig from 'utils/useConfig'
