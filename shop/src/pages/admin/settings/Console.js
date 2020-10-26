@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import fbt from 'fbt'
 
 import { get } from '@origin/ipfs'
@@ -22,11 +22,17 @@ const AdminConsole = () => {
   const [readHash, setReadHash] = useState('')
   const [shopIpfsHash, setShopIpfsHash] = useState('')
   const [printfulError, setPrintfulError] = useState('')
-  const { post } = useBackendApi({ authToken: true })
+  const [diagnostic, setDiagnostic] = useState('')
+  const { get, post } = useBackendApi({ authToken: true })
 
   const [state, setState] = useSetState()
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
+
+  useEffect(async () => {
+    const response = await get('/health/shop')
+    setDiagnostic(response.diagnostic)
+  }, [])
 
   return (
     <>
@@ -270,8 +276,16 @@ const AdminConsole = () => {
         <textarea
           className="form-control"
           readOnly
-          style={{ minHeight: '90vh', fontFamily: 'monospace' }}
+          style={{ minHeight: '32vh', fontFamily: 'monospace' }}
           value={JSON.stringify(config, null, 2)}
+        ></textarea>
+
+        <h4 className="mt-3">Shop Diagnostic</h4>
+        <textarea
+          className="form-control"
+          readOnly
+          style={{ minHeight: '32vh', fontFamily: 'monospace' }}
+          value={JSON.stringify(diagnostic || {}, null, 2)}
         ></textarea>
       </div>
     </>

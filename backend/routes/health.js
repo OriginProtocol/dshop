@@ -1,7 +1,7 @@
 const { Network } = require('../models')
 const { makeOfferQueue } = require('../queues/queues')
 const { getLogger } = require('../utils/logger')
-const { shopDiagnostic } = require('../logic/shop/health')
+const { diagnoseShop } = require('../logic/shop/health')
 const { authSellerAndShop, authRole } = require('./_auth')
 
 const log = getLogger('routes.health')
@@ -42,8 +42,8 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      const diagnostic = await shopDiagnostic(req.shop)
-      res.json(diagnostic)
+      const diagnostic = await diagnoseShop(req.shop)
+      res.json({ success: true, diagnostic })
     }
   )
 }
