@@ -4,7 +4,6 @@ import get from 'lodash/get'
 
 import useCollections from 'utils/useCollections'
 import useSearchQuery from 'utils/useSearchQuery'
-import useConfig from 'utils/useConfig'
 import useThemeVars from 'utils/useThemeVars'
 
 import SortBy from 'components/SortBy'

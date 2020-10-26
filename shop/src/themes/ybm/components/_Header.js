@@ -209,7 +209,7 @@ const DesktopLinks = ({ bg }) => {
         <Link className="hover:opacity-75" to="/products">
           Products
         </Link>
-        <Link className="ml-10" to="/about">
+        <Link className="ml-10 hover:opacity-75" to="/about">
           About
         </Link>
         <Link className="ml-10 hover:opacity-75" to="/contact">
