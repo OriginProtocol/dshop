@@ -16,7 +16,10 @@
           "id": "logo",
           "title": "Logo",
           "type": "media",
-          "allowPNG": true
+          "allowPNG": true,
+          "props": ["height"],
+          "minHeight": "60",
+          "maxHeight": "150"
         }
       ]
     },
@@ -75,6 +78,19 @@
           "id": "number",
           "title": "Number",
           "type": "text"
+        }
+      ]
+    },
+    {
+      "id": "products",
+      "title": "Products",
+      "pageUrl": "/products",
+      "fields": [
+        {
+          "id": "headerText",
+          "title": "Header Text",
+          "type": "text",
+          "multiline": true
         }
       ]
     },

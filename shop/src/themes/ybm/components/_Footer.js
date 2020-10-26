@@ -6,6 +6,7 @@ import fbt, { FbtParam } from 'fbt'
 import useConfig from 'utils/useConfig'
 import useThemeVars from 'utils/useThemeVars'
 
+import CurrencySelect from 'components/CurrencySelect'
 import SocialLink from 'components/SocialLink'
 import Link from 'components/Link'
 
@@ -69,6 +70,7 @@ const Footer = () => {
           <Link className="hover:opacity-75" to="/contact">
             Contact
           </Link>
+          <CurrencySelect className="bg-black" />
         </div>
       </div>
     </div>

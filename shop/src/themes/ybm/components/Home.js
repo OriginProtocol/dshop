@@ -19,7 +19,7 @@ const Home = () => {
     <>
       <Header>
         <div
-          className="text-center mt-24 text-3xl sm:text-5xl leading-tight mx-auto"
+          className="text-center px-4 mt-24 text-3xl sm:text-5xl leading-tight mx-auto"
           style={{ maxWidth: 600 }}
         >
           {get(themeVars, 'home.headerText', config.byline)}

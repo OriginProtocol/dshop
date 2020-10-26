@@ -12,10 +12,9 @@ const MediaField = ({ field, value, onChange }) => {
         <label>{field.title}</label>
         <ImagePicker
           images={value || []}
+          field={field}
           onChange={onChange}
-          multiple={field.multiple}
           editableProps={editableProps}
-          allowPNG={field.allowPNG}
         />
       </div>
     )
@@ -44,10 +43,9 @@ const MediaField = ({ field, value, onChange }) => {
                 newArray[index] = newVal[0]
                 onChange(newArray)
               }}
-              multiple={false}
               editableProps={editableProps}
               propLabelPrefix={`Image ${index + 1}`}
-              allowPNG={field.allowPNG}
+              field={field}
             />
           </div>
         )
