@@ -85,6 +85,9 @@ const THEMES_CACHE = IS_TEST
   ? TEST_THEMES_CACHE
   : process.env.THEMES_CACHE || `${__dirname}/../themes`
 
+// TODO: This is temporary
+const ENABLE_CDN = process.env.ENABLE_CDN === 'true'
+
 module.exports = {
   CONTRACTS,
   ENCRYPTION_KEY,
@@ -109,6 +112,7 @@ module.exports = {
   PROTOCOL_LABS_GATEWAY,
   PINATA_API,
   PINATA_GATEWAY,
+  ENABLE_CDN,
   BUCKET_PREFIX,
   SERVICE_PREFIX
 }
