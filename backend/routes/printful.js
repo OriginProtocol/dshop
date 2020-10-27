@@ -6,11 +6,13 @@ const {
   placeOrder,
   confirmOrder,
   fetchShippingEstimate,
+  fetchTaxRates
+} = require('../logic/printful')
+const {
   processShippedEvent,
   processUpdatedEvent,
-  PrintfulWebhookEvents,
-  fetchTaxRates
-} = require('../utils/printful')
+  PrintfulWebhookEvents
+} = require('../logic/printful/webhook')
 const { getLogger } = require('../utils/logger')
 const log = getLogger('routes.printful')
 

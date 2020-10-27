@@ -11,7 +11,7 @@ const { getShopDataUrl, getShopPublicUrl } = require('../../utils/shop')
 const {
   deregisterPrintfulWebhook,
   registerPrintfulWebhook
-} = require('../../utils/printful')
+} = require('../printful/webhook')
 const paypalUtils = require('../../utils/paypal')
 const stripeUtils = require('../../utils/stripe')
 const { DSHOP_CACHE } = require('../../utils/const')
