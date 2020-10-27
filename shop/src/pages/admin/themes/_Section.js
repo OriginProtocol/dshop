@@ -8,6 +8,7 @@ import ProductsList from './fields/ProductsList'
 import CollectionsList from './fields/CollectionsList'
 import ColorPalettes from './fields/ColorPalettes'
 import Range from './fields/Range'
+import Select from './fields/Select'
 
 const Section = ({ section, state, setState, onDrilldown, isActive }) => {
   return (
@@ -58,6 +59,9 @@ const Section = ({ section, state, setState, onDrilldown, isActive }) => {
 
                 case 'range':
                   return <Range {...props} />
+
+                case 'select':
+                  return <Select {...props} />
 
                 default:
                   return <TextField {...props} />

@@ -4,6 +4,7 @@ import get from 'lodash/get'
 import { useStateValue } from 'data/state'
 import useProduct from 'utils/useProduct'
 import useCollection from 'utils/useCollection'
+import useThemeVars from 'utils/useThemeVars'
 
 import Header from './_Header'
 import Footer from './_Footer'
@@ -20,6 +21,7 @@ const Product = ({ ...props }) => (
 )
 
 const ProductDetail = ({ match }) => {
+  const themeVars = useThemeVars()
   const [addedToCart, setAddedToCart] = useState()
   const [, dispatch] = useStateValue()
   const collectionObj = useCollection(match.params.collection, {
@@ -46,6 +48,14 @@ const ProductDetail = ({ match }) => {
   }
 
   const colLink = collection ? `/collections/${collection.id}` : ''
+
+  const alignLeft = get(themeVars, 'product.textAlign') === 'Left'
+  const align = alignLeft ? '' : 'text-center'
+
+  const galleryLeft = get(themeVars, 'product.galleryPosition') === 'Left'
+  const optionButtons = get(themeVars, 'product.optionStyle') === 'Buttons'
+  const first = galleryLeft ? '' : 'order-2 sm:order-1'
+  const second = galleryLeft ? 'sm:mr-12' : 'order-1 sm:order-2 sm:ml-12'
 
   return (
     <div className="mt-8 sm:mt-24">
@@ -86,14 +96,26 @@ const ProductDetail = ({ match }) => {
         </div>
       </div>
       <div className="sm:container flex flex-col sm:flex-row my-8 sm:my-12">
-        <div className="px-3 sm:px-0 text-center order-2 sm:order-1 flex-1 min-w-0">
+        <div className={`sm:mb-10 flex-1 min-w-0 ${second}`}>
+          <Gallery
+            product={product}
+            active={activeImage}
+            onChange={productObj.setOptionFromImage}
+          />
+        </div>
+        <div className={`px-3 sm:px-0 flex-1 min-w-0 ${first} ${align}`}>
           <div className="text-2xl sm:text-3xl leading-none mt-4">
             {product.title}
           </div>
           <div className="mt-4 text-lg mb-12 font-bold">
             {get(variant, 'priceStr', 'Unavailable')}
           </div>
-          <ProductOptions {...productObj} />
+          {optionButtons ? (
+            <ProductOptionsAlt {...productObj} center={!alignLeft} />
+          ) : (
+            <ProductOptions {...productObj} center={!alignLeft} />
+          )}
+
           {!variant ? (
             <a
               href="#"
@@ -127,13 +149,6 @@ const ProductDetail = ({ match }) => {
             dangerouslySetInnerHTML={{ __html: product.description }}
           />
         </div>
-        <div className="sm:ml-12 sm:mb-10 order-1 sm:order-2 flex-1 min-w-0">
-          <Gallery
-            product={product}
-            active={activeImage}
-            onChange={productObj.setOptionFromImage}
-          />
-        </div>
       </div>
     </div>
   )
@@ -144,15 +159,17 @@ const ProductOptions = ({
   product,
   options,
   setOption,
-  getOptions
+  getOptions,
+  center
 }) => {
   const productOptions = get(product, 'options', [])
   if (variants.length <= 1 || !productOptions.length) {
     return null
   }
+  const justify = center ? ' justify-center' : ''
 
   return (
-    <div className="flex justify-center mb-8">
+    <div className={`flex mb-8 flex-col sm:flex-row${justify}`}>
       {productOptions.map((opt, idx) => (
         <div key={`${product.id}-${idx}`} className="font-2xl">
           <div className="mb-2 text-gray-600">{opt}</div>
@@ -168,6 +185,70 @@ const ProductOptions = ({
             ))}
           </select>
         </div>
+      ))}
+    </div>
+  )
+}
+
+const ProductOptionsAlt = ({
+  variants,
+  product,
+  options,
+  setOption,
+  getOptions,
+  center
+}) => {
+  const productOptions = get(product, 'options', [])
+  if (variants.length <= 1 || !productOptions.length) {
+    return null
+  }
+  const colors = get(product, 'colors', {})
+  const items = center ? ' items-center ' : ''
+
+  return (
+    <div className={`flex flex-col ${items}justify-center mb-4`}>
+      {productOptions.map((opt, idx) => (
+        <React.Fragment key={`${product.id}-${idx}`}>
+          <div className="text-xl text-gray-600">{opt}</div>
+          <div className="flex mt-2 mb-8">
+            <div className="grid grid-flow-col gap-8 text-xl">
+              {getOptions(product, idx).map((item, optIdx) => {
+                const active = options[`option${idx + 1}`] === item
+                if (opt.match(/^colou?r$/i) && colors[item]) {
+                  const border = active ? 'border-black' : 'border-white'
+                  return (
+                    <a
+                      key={optIdx}
+                      className={`rounded-full border p-1 ${border}`}
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        setOption(idx + 1, item)
+                      }}
+                    >
+                      <div
+                        className="rounded-full w-6 h-6"
+                        style={{ backgroundColor: colors[item] }}
+                      />
+                    </a>
+                  )
+                }
+                return (
+                  <a
+                    key={optIdx}
+                    className={active ? 'border-b border-black' : ''}
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setOption(idx + 1, item)
+                    }}
+                    children={item}
+                  />
+                )
+              })}
+            </div>
+          </div>
+        </React.Fragment>
       ))}
     </div>
   )
