@@ -1,3 +1,5 @@
+const { get } = require('lodash')
+
 const { fetch } = require('./api')
 const { Order, Shop } = require('../../models')
 const { DSHOP_CACHE } = require('../../utils/const')
@@ -107,16 +109,15 @@ const checkPrintfulWebhook = async (shopId, shopConfig, networkConfig) => {
   }
 
   // Check the webhook URL is as expected.
-  const webhookUrl = respJson.url
+  log.debug('Webhook data:', respJson)
+  const webhookUrl = get(respJson, 'result.url')
   const expectedWebhookUrl = `${networkConfig.backendUrl}/printful/webhooks/${shopId}/${shopConfig.printfulWebhookSecret}`
 
   if (webhookUrl !== expectedWebhookUrl) {
-    log.error(`Shop ${shopId} - Invalid webhook secret`)
+    log.error(`Shop ${shopId} - Invalid webhook`)
     // Try to find out with a bit more details about the mismatch.
     if (!webhookUrl.endsWith(shopConfig.printfulWebhookSecret)) {
-      throw new Error(
-        "Webhook URL does not use secret stored in the shop's config"
-      )
+      throw new Error('Invalid webhook URL secret')
     }
     throw new Error(`Invalid webhook URL ${webhookUrl}`)
   }

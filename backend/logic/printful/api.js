@@ -37,7 +37,7 @@ async function fetch(apiKey, path, method, body = null) {
     opts.body = JSON.stringify(body)
   }
 
-  log.debug('Calling Printful API', url)
+  log.debug(`Calling Printful API ${method} ${url}`)
   return netFetch(url, opts)
 }
 

@@ -222,17 +222,13 @@ async function checkPrintful(network, shops) {
       log.info(`Shop ${shop.id} - Prinful not configured.`)
       continue
     }
-    const { success, error } = await checkPrintfulWebhook(
-      shop.id,
-      shopConfig,
-      networkConfig
-    )
-    if (success) {
+    try {
+      await checkPrintfulWebhook(shop.id, shopConfig, networkConfig)
       log.info(
         `Shop ${shop.id} - Successfully verified Printful webhook config`
       )
-    } else {
-      log.error(`Shop ${shop.id} - ${error}`)
+    } catch (err) {
+      log.error(`Shop ${shop.id} - ${err.message}`)
     }
   }
 }

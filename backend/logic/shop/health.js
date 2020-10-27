@@ -1,6 +1,7 @@
 const fetch = require('node-fetch')
 const get = require('lodash/get')
 
+const { checkPrintfulWebhook } = require('../printful/webhook')
 const { getLogger } = require('../../utils/logger')
 const { getConfig } = require('../../utils/encryptedConfig')
 const { testPGP } = require('../../utils/pgp')
@@ -319,18 +320,15 @@ async function diagnoseShop(shop) {
 
   // Check Printful configuration.
   if (shopConfig.printful) {
-    if (!shopConfig.printfulWebhookSecret) {
-      diagnostic.printful = {
-        status: 'ERROR',
-        errors: ['Webhook not configured']
-      }
-    } else {
+    try {
+      await checkPrintfulWebhook(shop.id, shopConfig, networkConfig)
       diagnostic.printful = { status: 'OK' }
+    } catch (e) {
+      diagnostic.printful = { status: 'ERROR', errors: [e.message] }
     }
   } else {
     diagnostic.printful = { status: 'Not configured' }
   }
-  // TODO: check printful credentials and webhook.
 
   // Check Email configuration.
   if (shopConfig.email) {
