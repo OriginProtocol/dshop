@@ -83,7 +83,7 @@ const deregisterPrintfulWebhook = async (shopId, shopConfig) => {
  * Check a store's Printful webhook is properly configured.
  * @param shopId
  * @param shopConfig
- * @returns {Promise<void>}
+ * @returns {Promise<string>} URL of the properly configured webhook
  * @throws In case of an error or if the webhook is misconfigured.
  */
 const checkPrintfulWebhook = async (shopId, shopConfig, networkConfig) => {
@@ -108,19 +108,33 @@ const checkPrintfulWebhook = async (shopId, shopConfig, networkConfig) => {
     throw new Error(`Failed getting printful webhook`)
   }
 
-  // Check the webhook URL is as expected.
+  // Check the webhook is registered and the URL is what we expect.
   log.debug('Webhook data:', respJson)
   const webhookUrl = get(respJson, 'result.url')
-  const expectedWebhookUrl = `${networkConfig.backendUrl}/printful/webhooks/${shopId}/${shopConfig.printfulWebhookSecret}`
+  if (!webhookUrl) {
+    throw new Error('No webhook registered')
+  }
 
+  const expectedWebhookUrl = `${networkConfig.backendUrl}/printful/webhooks/${shopId}/${shopConfig.printfulWebhookSecret}`
   if (webhookUrl !== expectedWebhookUrl) {
     log.error(`Shop ${shopId} - Invalid webhook`)
     // Try to find out with a bit more details about the mismatch.
+    if (webhookUrl.indexOf('0.0.0.0:9000') > 0) {
+      throw new Error('Webhook URL points at dev URL')
+    }
+    if (webhookUrl.indexOf('.ogn.app') > 0) {
+      throw new Error('Webhook URL points at an ogn.app subdomain')
+    }
+    if (!webhookUrl.startsWith(networkConfig.backendUrl)) {
+      throw new Error('Webhook URL does not point at Dshop backend')
+    }
     if (!webhookUrl.endsWith(shopConfig.printfulWebhookSecret)) {
       throw new Error('Invalid webhook URL secret')
     }
     throw new Error(`Invalid webhook URL ${webhookUrl}`)
   }
+
+  return webhookUrl
 }
 
 /**

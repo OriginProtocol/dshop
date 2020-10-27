@@ -26,7 +26,11 @@ const { getLogger } = require('../utils/logger')
 const { genPGP, testPGP } = require('../utils/pgp')
 const { getConfig, setConfig, decrypt } = require('../utils/encryptedConfig')
 const { checkStripeConfig } = require('../logic/payments/stripe')
-const { checkPrintfulWebhook } = require('../logic/printful/webhook')
+const {
+  checkPrintfulWebhook,
+  deregisterPrintfulWebhook,
+  registerPrintfulWebhook
+} = require('../logic/printful/webhook')
 const { diagnoseShop } = require('../logic/shop/health')
 
 const log = getLogger('cli')
@@ -217,12 +221,12 @@ async function checkPrintful(network, shops) {
   const networkConfig = getConfig(network.config)
   for (const shop of shops) {
     log.info(`Checking Printful webhook for shop ${shop.id} ${shop.name}`)
-    const shopConfig = getConfig(shop.config)
-    if (!shopConfig.printful) {
-      log.info(`Shop ${shop.id} - Prinful not configured.`)
-      continue
-    }
     try {
+      const shopConfig = getConfig(shop.config)
+      if (!shopConfig.printful) {
+        log.info(`Shop ${shop.id} - Prinful not configured.`)
+        continue
+      }
       await checkPrintfulWebhook(shop.id, shopConfig, networkConfig)
       log.info(
         `Shop ${shop.id} - Successfully verified Printful webhook config`
@@ -231,6 +235,75 @@ async function checkPrintful(network, shops) {
       log.error(`Shop ${shop.id} - ${err.message}`)
     }
   }
+}
+
+async function fixPrintfulWebhook(network, shops) {
+  const networkConfig = getConfig(network.config)
+  let numFixed = 0
+  for (const shop of shops) {
+    log.info(`Fixing Printful webhook for shop ${shop.id} ${shop.name}`)
+    let shopConfig
+    try {
+      shopConfig = getConfig(shop.config)
+    } catch (e) {
+      log.info(`Shop ${shop.id} - Failed reading config. Skipping`)
+      continue
+    }
+    if (!shopConfig.printful) {
+      log.info(`Shop ${shop.id} - Prinful not configured. Skipping`)
+      continue
+    }
+
+    // Check if the webhook is misconfigured
+    try {
+      await checkPrintfulWebhook(shop.id, shopConfig, networkConfig)
+      log.info(
+        `Shop ${shop.id} - Successfully verified Printful webhook config`
+      )
+      continue
+    } catch (err) {
+      log.error(`Shop ${shop.id} - Webhook misconfigured: ${err.message}`)
+      // We only want to fix errors we expect.
+      // For example if the webhook points to a non dshop related URL, we want
+      // to leave it alone since the merchant could be using Printful on another platform.
+      // Another example would be an invalid API key
+      const fixableErrors = [
+        'Webhook URL points at dev URL',
+        'Webhook URL points at an ogn.app subdomain',
+        'No webhook registered',
+        'Invalid webhook URL secret'
+      ]
+      if (!fixableErrors.includes(err.message)) {
+        log.error(
+          `Shop ${shop.id} - Skipping. Non fixable error ${err.message}`
+        )
+        continue
+      }
+    }
+
+    // De-register the webhook
+    log.info(`Shop ${shop.id} - De-registering Printful webhook`)
+    await deregisterPrintfulWebhook(shop.id, shopConfig)
+
+    // Re-register it
+    log.info(`Shop ${shop.id} - Registering Printful webhook`)
+    const printfulWebhookSecret = await registerPrintfulWebhook(
+      shop.id,
+      shopConfig,
+      networkConfig
+    )
+
+    // Save the new secret in the shop's DB config.
+    log.info(
+      `Shop ${shop.id} - Saving printfulWebhookSecret=${printfulWebhookSecret} in shop's config`
+    )
+    shopConfig['printfulWebhookSecret'] = printfulWebhookSecret
+    shop.config = setConfig(shopConfig, shop.config)
+    await shop.save()
+
+    numFixed++
+  }
+  log.info(`Fixed ${numFixed} shops`)
 }
 
 async function checkShopConfig(shops) {
@@ -310,6 +383,8 @@ async function main(config) {
     await checkStripe(network, shops)
   } else if (config.operation === 'checkPrintful') {
     await checkPrintful(network, shops)
+  } else if (config.operation === 'fixPrintfulWebhook') {
+    await fixPrintfulWebhook(network, shops)
   } else if (config.operation === 'checkConfig') {
     await checkShopConfig(shops)
   } else if (config.operation === 'resetPgp') {
