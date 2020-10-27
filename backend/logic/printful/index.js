@@ -125,10 +125,8 @@ const fetchShippingEstimate = async (apiKey, data) => {
       message: 'Service Unavailable'
     }
   }
-  const apiAuth = Buffer.from(apiKey).toString('base64')
 
   const { recipient, items } = data
-
   const query = {
     recipient: {
       address1: recipient.address1,
@@ -191,10 +189,7 @@ const fetchTaxRates = async (apiKey, data) => {
     }
   }
 
-  const apiAuth = Buffer.from(apiKey).toString('base64')
-
   const { recipient } = data
-
   const query = {
     recipient: {
       city: recipient.city,
