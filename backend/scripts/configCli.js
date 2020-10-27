@@ -26,6 +26,7 @@ const { getLogger } = require('../utils/logger')
 const { genPGP, testPGP } = require('../utils/pgp')
 const { getConfig, setConfig, decrypt } = require('../utils/encryptedConfig')
 const { checkStripeConfig } = require('../logic/payments/stripe')
+const { checkPrintfulWebhook } = require('../logic/printful/webhook')
 const { diagnoseShop } = require('../logic/shop/health')
 
 const log = getLogger('cli')
@@ -212,6 +213,30 @@ async function checkStripe(network, shops) {
   }
 }
 
+async function checkPrintful(network, shops) {
+  const networkConfig = getConfig(network.config)
+  for (const shop of shops) {
+    log.info(`Checking Printful webhook for shop ${shop.id} ${shop.name}`)
+    const shopConfig = getConfig(shop.config)
+    if (!shopConfig.printful) {
+      log.info(`Shop ${shop.id} - Prinful not configured.`)
+      continue
+    }
+    const { success, error } = await checkPrintfulWebhook(
+      shop.id,
+      shopConfig,
+      networkConfig
+    )
+    if (success) {
+      log.info(
+        `Shop ${shop.id} - Successfully verified Printful webhook config`
+      )
+    } else {
+      log.error(`Shop ${shop.id} - ${error}`)
+    }
+  }
+}
+
 async function checkShopConfig(shops) {
   for (const shop of shops) {
     try {
@@ -287,6 +312,8 @@ async function main(config) {
     await delKey(shops, config.key, config.value)
   } else if (config.operation === 'checkStripe') {
     await checkStripe(network, shops)
+  } else if (config.operation === 'checkPrintful') {
+    await checkPrintful(network, shops)
   } else if (config.operation === 'checkConfig') {
     await checkShopConfig(shops)
   } else if (config.operation === 'resetPgp') {
