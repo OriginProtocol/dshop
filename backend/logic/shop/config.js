@@ -317,6 +317,8 @@ async function updateShopConfig({ seller, shop, data }) {
   } else if (existingConfig.stripeBackend && data.stripe === false) {
     log.info(`Shop ${shopId} - De-registering Stripe webhook`)
     await stripeUtils.deregisterWebhooks(shop, existingConfig)
+
+    // Reset all the Stripe related fields in the shop's DB config.
     dataOverride.stripeWebhookSecret = ''
     dataOverride.stripeWebhookHost = ''
     dataOverride.stripeBackend = ''
@@ -350,7 +352,12 @@ async function updateShopConfig({ seller, shop, data }) {
     log.info(`Shop ${shopId} - De-registering PayPal webhook`)
 
     await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
-    dataOverride.paypalWebhookId = null
+
+    // Reset all the Paypal related fields in the shop's DB config.
+    dataOverride.paypalClientId = ''
+    dataOverride.paypalClientSecret = ''
+    dataOverride.paypalWebhookHost = ''
+    dataOverride.paypalWebhookId = ''
   }
 
   //
@@ -383,7 +390,11 @@ async function updateShopConfig({ seller, shop, data }) {
   } else if (existingConfig.printful && data.printful === false) {
     log.info(`Shop ${shopId} - De-registering Printful webhook`)
     await deregisterPrintfulWebhook(shopId, existingConfig)
+
+    // Reset all the Printful related fields in the shop's DB config.
+    dataOverride.printful = ''
     dataOverride.printfulWebhookSecret = ''
+    dataOverride.printfulAutoFulfill = false
   }
 
   //
