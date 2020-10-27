@@ -21,6 +21,114 @@ const { AdminLogActions } = require('../../enums')
 
 const log = getLogger('logic.shop.config')
 
+// List of fields stored in the shop's encrypted config in the DB
+const dbConfigBaseKeys = [
+  'dataUrl',
+  'hostname',
+  'pgpPrivateKey',
+  'pgpPrivateKeyPass',
+  'pgpPublicKey',
+  'publicUrl',
+  'supportEmail'
+]
+const dbConfigOptionalKeys = [
+  'awsAccessKey',
+  'awsAccessSecret',
+  'awsRegion',
+  'bigQueryCredentials',
+  'bigQueryTable',
+  'deliveryApi',
+  'email', // Email provider: 'aws', 'sendgrid', 'mailgun'
+  'emailSubject',
+  'listener',
+  'mailgunSmtpLogin',
+  'mailgunSmtpPassword',
+  'mailgunSmtpPort',
+  'mailgunSmtpServer',
+  'offlinePaymentMethods',
+  'password',
+  'paypal',
+  'paypalClientId',
+  'paypalClientSecret',
+  'paypalWebhookHost',
+  'paypalWebhookId',
+  'printful', // Printful API key
+  'printfulAutoFulfill',
+  'printfulWebhookSecret',
+  'processingTime',
+  'sendgridApiKey',
+  'sendgridPassword',
+  'sendgridUsername',
+  'shippingFrom',
+  'stripeBackend',
+  'stripeWebhookSecret',
+  'stripeWebhookHost',
+  'upholdApi',
+  'upholdClient',
+  'upholdSecret',
+  'web3Pk'
+]
+const dbConfigKeys = dbConfigBaseKeys.concat(dbConfigOptionalKeys)
+
+// List of fields stored in the main section of the shop's json config.
+const jsonConfigBaseKeys = ['title', 'networks']
+const jsonConfigOptionalKeys = [
+  'about',
+  'acceptedTokens',
+  'backendAuthToken',
+  'beta',
+  'byline',
+  'cartSummaryNote',
+  'css',
+  'currency',
+  'discountCodes',
+  'emailSubject',
+  'facebook',
+  'favicon',
+  'footer',
+  'fullTitle',
+  'gaCode',
+  'instagram',
+  'logErrors',
+  'logo',
+  'medium',
+  'metaDescription',
+  'notice',
+  'noticeFooter',
+  'offlinePaymentMethods',
+  'paypalClientId',
+  'pgpPublicKey',
+  'shippingApi',
+  'stripe',
+  'stripeKey',
+  'supportEmail',
+  'taxRates',
+  'themeId',
+  'theme',
+  'twitter',
+  'useEscrow',
+  'upholdClient',
+  'youtube'
+]
+const jsonConfigKeys = jsonConfigBaseKeys.concat(jsonConfigOptionalKeys)
+
+// List of fields stored in the networks section of the shop's json config.
+const jsonConfigNetworkBaseKeys = ['backend', 'ipfsApi', 'ipfsGateway']
+const jsonConfigNetworkOptionalKeys = [
+  'acceptedTokens',
+  'arbitrator',
+  'affiliate',
+  'customTokens',
+  'disableCryptoPayments',
+  'listingId',
+  'marketplaceContract',
+  'marketplaceEpoch',
+  'walletAddress'
+]
+const jsonConfigNetworkKeys = jsonConfigNetworkBaseKeys.concat(
+  jsonConfigNetworkOptionalKeys
+)
+
 /**
  * Utility function to move offline payment images (QR code for ex.) from
  * the upload area to the shop's data directory.
@@ -127,46 +235,10 @@ async function updateShopConfig({ seller, shop, data }) {
   const dataOverride = {}
 
   // Pick fields relevant to main section of the shop's config.json.
-  const jsonConfig = pick(
-    data,
-    'currency',
-    'metaDescription',
-    'css',
-    'emailSubject',
-    'cartSummaryNote',
-    'byline',
-    'discountCodes',
-    'stripe',
-    'stripeKey',
-    'title',
-    'fullTitle',
-    'facebook',
-    'twitter',
-    'instagram',
-    'medium',
-    'youtube',
-    'about',
-    'logErrors',
-    'paypalClientId',
-    'offlinePaymentMethods',
-    'supportEmail',
-    'upholdClient',
-    'useEscrow',
-    'shippingApi',
-    'taxRates',
-    'themeId',
-    'theme',
-    'gaCode'
-  )
+  const jsonConfig = pick(data, jsonConfigKeys)
+
   // Pick fields relevant to the network section of the shop's config.json.
-  const jsonNetConfig = pick(
-    data,
-    'acceptedTokens',
-    'customTokens',
-    'listingId',
-    'disableCryptoPayments',
-    'walletAddress'
-  )
+  const jsonNetConfig = pick(data, jsonConfigNetworkKeys)
 
   // Load the existing shop config from the DB.
   const existingConfig = getConfig(shop.config)
@@ -365,47 +437,7 @@ async function updateShopConfig({ seller, shop, data }) {
   log.info(`Shop ${shopId} - Saving config in the DB.`)
   const shopConfigFields = pick(
     { ...existingConfig, ...data, ...dataOverride },
-    'awsAccessKey',
-    'awsAccessSecret',
-    'awsRegion',
-    'bigQueryCredentials',
-    'bigQueryTable',
-    'dataUrl',
-    'deliveryApi',
-    'email',
-    'emailSubject',
-    'hostname',
-    'listener',
-    'mailgunSmtpLogin',
-    'mailgunSmtpPassword',
-    'mailgunSmtpPort',
-    'mailgunSmtpServer',
-    'offlinePaymentMethods',
-    'password',
-    'paypal',
-    'paypalClientId',
-    'paypalClientSecret',
-    'paypalWebhookHost',
-    'paypalWebhookId',
-    'pgpPrivateKey',
-    'pgpPrivateKeyPass',
-    'pgpPublicKey',
-    'printful',
-    'printfulAutoFulfill',
-    'processingTime',
-    'publicUrl',
-    'sendgridApiKey',
-    'sendgridPassword',
-    'sendgridUsername',
-    'shippingFrom',
-    'stripeBackend',
-    'stripeWebhookSecret',
-    'stripeWebhookHost',
-    'supportEmail',
-    'upholdApi',
-    'upholdClient',
-    'upholdSecret',
-    'web3Pk'
+    dbConfigKeys
   )
   // Save the updated shop data in the DB.
   shop.config = setConfig(shopConfigFields, shop.config) // encrypt the config.
@@ -428,5 +460,14 @@ async function updateShopConfig({ seller, shop, data }) {
 }
 
 module.exports = {
+  dbConfigBaseKeys,
+  dbConfigOptionalKeys,
+  dbConfigKeys,
+  jsonConfigBaseKeys,
+  jsonConfigOptionalKeys,
+  jsonConfigKeys,
+  jsonConfigNetworkBaseKeys,
+  jsonConfigNetworkOptionalKeys,
+  jsonConfigNetworkKeys,
   updateShopConfig
 }

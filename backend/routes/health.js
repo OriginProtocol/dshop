@@ -1,6 +1,8 @@
 const { Network } = require('../models')
 const { makeOfferQueue } = require('../queues/queues')
 const { getLogger } = require('../utils/logger')
+const { diagnoseShop } = require('../logic/shop/health')
+const { authSellerAndShop, authRole } = require('./_auth')
 
 const log = getLogger('routes.health')
 
@@ -33,4 +35,15 @@ module.exports = function (router) {
       res.status(500).json({ success: true, health: false })
     }
   })
+
+  // Runs a full-diagnostic on the shop's configuration.
+  router.get(
+    '/health/shop',
+    authSellerAndShop,
+    authRole('admin'),
+    async (req, res) => {
+      const diagnostic = await diagnoseShop(req.shop)
+      res.json({ success: true, diagnostic })
+    }
+  )
 }
