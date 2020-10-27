@@ -16,7 +16,7 @@ const log = getLogger('logic.printful.webhook')
  * @param {number} shopId
  * @param {object} shopConfig
  * @param {string} backendUrl
- * @returns {Promise<string|null>} Webhook's secret
+ * @returns {Promise<string>} Webhook's secret
  * @throws in case of an error
  */
 const registerPrintfulWebhook = async (shopId, shopConfig, backendUrl) => {
@@ -118,7 +118,7 @@ const checkPrintfulWebhook = async (shopId, shopConfig, networkConfig) => {
   const expectedWebhookUrl = `${networkConfig.backendUrl}/printful/webhooks/${shopId}/${shopConfig.printfulWebhookSecret}`
   if (webhookUrl !== expectedWebhookUrl) {
     log.error(`Shop ${shopId} - Invalid webhook`)
-    // Try to find out with a bit more details about the mismatch.
+    // Try to find out more details about the mismatch.
     if (webhookUrl.indexOf('0.0.0.0:9000') > 0) {
       throw new Error('Webhook URL points at dev URL')
     }
