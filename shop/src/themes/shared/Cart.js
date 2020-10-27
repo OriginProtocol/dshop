@@ -41,9 +41,7 @@ const Cart = () => {
         {cart.items.map((item) => (
           <Row
             key={`${item.product}-${item.variant}`}
-            img={item.imageUrl}
-            title={item.title}
-            quantity={item.quantity}
+            item={item}
             price={formatPrice(item.price, currencyOpts)}
             onRemove={() => dispatch({ type: 'removeFromCart', item })}
           />
@@ -64,26 +62,39 @@ const Cart = () => {
   )
 }
 
-const Row = ({ title, quantity, img, price, onRemove }) => (
+const Row = ({ item, price, onRemove }) => (
   <>
     <div className="border-t py-6 dark:border-gray-600">
       <div className="flex items-center font-semibold">
-        <img className="w-8 sm:w-16 mr-5 sm:mr-10" src={img} />
-        {title}
-        <a
-          href="#"
-          className="ml-3"
-          onClick={(e) => {
-            e.preventDefault()
-            onRemove()
-          }}
-        >
-          <CloseIcon />
-        </a>
+        <img className="w-8 sm:w-16 mr-5 sm:mr-10" src={item.imageUrl} />
+        <div>
+          <div className="flex items-center">
+            {item.title}
+            <a
+              href="#"
+              className="ml-3 hover:opacity-50"
+              onClick={(e) => {
+                e.preventDefault()
+                onRemove()
+              }}
+            >
+              <CloseIcon />
+            </a>
+          </div>
+          {!item.options ? null : (
+            <div className="flex text-gray-600 text-sm font-normal">
+              {item.options.map((opt, idx) => (
+                <span key={idx} className="mr-4">
+                  {opt}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
     <div className="border-t py-6 flex items-center justify-center dark:border-gray-600">
-      {quantity}
+      {item.quantity}
     </div>
     <div className="border-t py-6 flex items-center justify-end dark:border-gray-600">
       {price}

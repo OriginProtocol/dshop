@@ -95,6 +95,31 @@
       ]
     },
     {
+      "id": "product",
+      "title": "Product Detail",
+      "pageUrl": "/product",
+      "fields": [
+        {
+          "id": "galleryPosition",
+          "title": "Gallery Position",
+          "type": "select",
+          "options": ["Right", "Left"]
+        },
+        {
+          "id": "textAlign",
+          "title": "Text align",
+          "type": "select",
+          "options": ["Center", "Left"]
+        },
+        {
+          "id": "optionStyle",
+          "title": "Option style",
+          "type": "select",
+          "options": ["Dropdowns", "Buttons"]
+        }
+      ]
+    },
+    {
       "id": "about",
       "title": "About",
       "pageUrl": "/about",
