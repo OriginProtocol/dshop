@@ -74,6 +74,7 @@ const dbConfigKeys = dbConfigBaseKeys.concat(dbConfigOptionalKeys)
 const jsonConfigBaseKeys = ['title', 'networks']
 const jsonConfigOptionalKeys = [
   'about',
+  'about',
   'acceptedTokens',
   'backendAuthToken',
   'beta',
@@ -387,7 +388,7 @@ async function updateShopConfig({ seller, shop, data }) {
     )
 
     dataOverride.printfulWebhookSecret = printfulWebhookSecret
-  } else if (existingConfig.printful && data.printful === false) {
+  } else if (existingConfig.printful && !data.printful) {
     log.info(`Shop ${shopId} - De-registering Printful webhook`)
     await deregisterPrintfulWebhook(shopId, existingConfig)
 
