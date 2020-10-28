@@ -44,8 +44,12 @@ const Products = ({ limit = Infinity, onlyFeatured }) => {
                 paddingTop: '100%'
               }}
             />
-            <div className="mt-6 font-bold">{product.title}</div>
-            <div>{formatPrice(product.price, currencyOpts)}</div>
+            <div className="mt-6 font-bold font-header text-primary hover:text-link">
+              {product.title}
+            </div>
+            <div className="text-primary">
+              {formatPrice(product.price, currencyOpts)}
+            </div>
           </Link>
         )
       })}

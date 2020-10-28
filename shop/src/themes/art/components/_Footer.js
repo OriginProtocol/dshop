@@ -17,15 +17,22 @@ const Footer = () => {
 
       <div className="container pt-16 pb-16 sm:pb-48">
         <div className="flex flex-col sm:flex-row justify-between">
-          <Link to="/" className="text-2xl font-medium leading-none">
+          <Link
+            to="/"
+            className="text-2xl font-medium leading-none font-header text-primary"
+          >
             {config.title}
           </Link>
           <SocialLinks
             className="flex flex-row mt-4 ml-auto sm:mt-0"
-            svg={{ height: 18, className: 'inline-block ml-8', color: '#999' }}
+            svg={{
+              height: 18,
+              className:
+                'inline-block ml-8 text-secondary hover:text-primary fill-current'
+            }}
           />
         </div>
-        <div className="flex flex-col sm:flex-row justify-between mt-8 text-gray-500 text-sm">
+        <div className="flex flex-col sm:flex-row justify-between mt-8 text-secondary text-sm">
           <div className="flex flex-col sm:flex-row pb-8 sm:pb-0">
             <a
               target="_blank"

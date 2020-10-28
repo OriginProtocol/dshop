@@ -18,8 +18,8 @@ module.exports = {
       colors: {
         red: {
           ...defaultTheme.colors.red,
-          100: '#fcf8f8',
-          400: '#d18172'
+          100: 'var(--page-color)',
+          400: 'var(--accent-color)'
         },
         page: 'var(--page-color)',
         footer: 'var(--footer-color)',
@@ -30,7 +30,9 @@ module.exports = {
         accent: 'var(--accent-color)'
       },
       fontFamily: {
+        sans: ['var(--body-font)', ...defaultTheme.fontFamily.sans],
         body: ['var(--body-font)', ...defaultTheme.fontFamily.sans],
+        serif: ['var(--header-font)', ...defaultTheme.fontFamily.serif],
         header: ['var(--header-font)', ...defaultTheme.fontFamily.serif]
       }
     }
