@@ -11,7 +11,7 @@ import Storefront from './components/Storefront'
 
 import Confirmation from '../shared/Confirmation'
 import Checkout from '../shared/checkout/Loader'
-import usePalette from './hoc/usePalette'
+import usePalette from '../shared/hoc/usePalette'
 
 import themeJson from './theme.json'
 
