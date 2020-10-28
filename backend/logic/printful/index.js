@@ -5,7 +5,6 @@ const generatePrintfulOrder = require('@origin/utils/generatePrintfulOrder')
 
 const { fetch } = require('./api')
 const { DSHOP_CACHE } = require('../../utils/const')
-const { PrintfulWebhookEvents } = require('../../utils/enums')
 const sendPrintfulOrderFailedEmail = require('../../utils/emails/printfulOrderFailed')
 const { getLogger } = require('../../utils/logger')
 
@@ -278,6 +277,5 @@ module.exports = {
   confirmOrder,
   fetchShippingEstimate,
   fetchTaxRates,
-  autoFulfillOrder,
-  PrintfulWebhookEvents
+  autoFulfillOrder
 }
