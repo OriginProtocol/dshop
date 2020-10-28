@@ -290,7 +290,7 @@ async function fixPrintfulWebhook(network, shops) {
     const printfulWebhookSecret = await registerPrintfulWebhook(
       shop.id,
       shopConfig,
-      networkConfig
+      networkConfig.backendUrl
     )
 
     // Save the new secret in the shop's DB config.

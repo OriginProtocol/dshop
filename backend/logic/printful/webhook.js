@@ -33,10 +33,11 @@ const registerPrintfulWebhook = async (shopId, shopConfig, backendUrl) => {
   try {
     const resp = await fetch(apiKey, '/webhooks', 'POST', registerData)
     const respJSON = await resp.json()
-    if (!resp.ok) {
-      error = respJSON
+    if (resp.ok) {
+      log.info(`Shop ${shopId} - Registered printful webhook`, webhookURL)
+    } else {
+      error = JSON.stringify(respJSON)
     }
-    log.info(`Shop ${shopId} - Registered printful webhook`, webhookURL)
   } catch (err) {
     error = err.message
   }
@@ -63,10 +64,11 @@ const deregisterPrintfulWebhook = async (shopId, shopConfig) => {
   try {
     const resp = await fetch(apiKey, '/webhooks', 'DELETE')
     const respJSON = await resp.json()
-    if (!resp.ok) {
-      error = respJSON
+    if (resp.ok) {
+      log.info('Shop ${shopId} - De-registered printful webhook')
+    } else {
+      error = JSON.stringify(respJSON)
     }
-    log.info('Shop ${shopId} - De-registered printful webhook')
   } catch (err) {
     error = err.message
   }
