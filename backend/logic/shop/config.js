@@ -11,7 +11,7 @@ const { getShopDataUrl, getShopPublicUrl } = require('../../utils/shop')
 const {
   deregisterPrintfulWebhook,
   registerPrintfulWebhook
-} = require('../../utils/printful')
+} = require('../printful/webhook')
 const paypalUtils = require('../../utils/paypal')
 const stripeUtils = require('../../utils/stripe')
 const { DSHOP_CACHE } = require('../../utils/const')
@@ -73,6 +73,7 @@ const dbConfigKeys = dbConfigBaseKeys.concat(dbConfigOptionalKeys)
 // List of fields stored in the main section of the shop's json config.
 const jsonConfigBaseKeys = ['title', 'networks']
 const jsonConfigOptionalKeys = [
+  'about',
   'about',
   'acceptedTokens',
   'backendAuthToken',
@@ -317,6 +318,8 @@ async function updateShopConfig({ seller, shop, data }) {
   } else if (existingConfig.stripeBackend && data.stripe === false) {
     log.info(`Shop ${shopId} - De-registering Stripe webhook`)
     await stripeUtils.deregisterWebhooks(shop, existingConfig)
+
+    // Reset all the Stripe related fields in the shop's DB config.
     dataOverride.stripeWebhookSecret = ''
     dataOverride.stripeWebhookHost = ''
     dataOverride.stripeBackend = ''
@@ -350,7 +353,12 @@ async function updateShopConfig({ seller, shop, data }) {
     log.info(`Shop ${shopId} - De-registering PayPal webhook`)
 
     await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
-    dataOverride.paypalWebhookId = null
+
+    // Reset all the Paypal related fields in the shop's DB config.
+    dataOverride.paypalClientId = ''
+    dataOverride.paypalClientSecret = ''
+    dataOverride.paypalWebhookHost = ''
+    dataOverride.paypalWebhookId = ''
   }
 
   //
@@ -380,10 +388,14 @@ async function updateShopConfig({ seller, shop, data }) {
     )
 
     dataOverride.printfulWebhookSecret = printfulWebhookSecret
-  } else if (existingConfig.printful && data.printful === false) {
+  } else if (existingConfig.printful && !data.printful) {
     log.info(`Shop ${shopId} - De-registering Printful webhook`)
     await deregisterPrintfulWebhook(shopId, existingConfig)
+
+    // Reset all the Printful related fields in the shop's DB config.
+    dataOverride.printful = ''
     dataOverride.printfulWebhookSecret = ''
+    dataOverride.printfulAutoFulfill = false
   }
 
   //

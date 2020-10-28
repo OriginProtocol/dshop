@@ -188,11 +188,15 @@ const EditFields = () => {
             </button>
           </>
         ) : activeSection ? (
-          <button className="btn btn-link" type="button" onClick={onCancel}>
+          <button
+            className="btn btn-link px-0"
+            type="button"
+            onClick={onCancel}
+          >
             <fbt desc="admin.themes.backToMenu">Back to menu</fbt>
           </button>
         ) : (
-          <Link to="/admin/themes" className="btn btn-link">
+          <Link to="/admin/themes" className="btn btn-link px-0">
             <fbt desc="admin.themes.backToThemes">Back to Themes</fbt>
           </Link>
         )}

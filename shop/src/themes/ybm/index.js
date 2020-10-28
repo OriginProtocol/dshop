@@ -6,6 +6,7 @@ import './app.css'
 
 import DshopProvider from 'components/DshopProvider'
 import PreviewBanner from 'components/PreviewBanner'
+import ProductRedirect from 'components/ProductRedirect'
 
 import Cart from './components/Cart'
 import Home from './components/Home'
@@ -31,6 +32,7 @@ const Providers = () => {
           <Route path="/contact" component={Contact} />
           <Route path="/products" component={Products} />
           <Route path="/product/:id" component={Product} />
+          <Route path="/product" component={ProductRedirect} />
           <Route
             path="/collections/:collection/product/:id"
             component={Product}

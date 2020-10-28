@@ -1,20 +1,23 @@
 const { authSellerAndShop, authShop } = require('./_auth')
 const encConf = require('../utils/encryptedConfig')
 const { findOrder } = require('../utils/orders')
+const { PrintfulWebhookEvents } = require('../utils/enums')
 const {
   fetchOrder,
   placeOrder,
   confirmOrder,
   fetchShippingEstimate,
-  processShippedEvent,
-  processUpdatedEvent,
-  PrintfulWebhookEvents,
   fetchTaxRates
-} = require('../utils/printful')
-const { getLogger } = require('../utils/logger')
-const log = getLogger('routes.printful')
-
+} = require('../logic/printful')
+const {
+  processShippedEvent,
+  processUpdatedEvent
+} = require('../logic/printful/webhook')
 const { ExternalEvent } = require('../models')
+
+const { getLogger } = require('../utils/logger')
+
+const log = getLogger('routes.printful')
 
 module.exports = function (router) {
   /**

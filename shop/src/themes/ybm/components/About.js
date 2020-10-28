@@ -37,7 +37,7 @@ const About = () => {
                 paddingTop: '128%',
                 backgroundImage: `url(${config.dataSrc}${primaryImage.url})`
               }}
-              className="bg-no-repeat bg-center"
+              className="bg-no-repeat bg-center bg-contain"
             />
           </div>
         )}
