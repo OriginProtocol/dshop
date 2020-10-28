@@ -6,10 +6,7 @@ module.exports = {
       type: Sequelize.STRING
     })
   },
-
-  down: (queryInterface, Sequelize) => {
-    return queryInterface.removeColumn('shop_domains', 'ip_address', { 
-      type: Sequelize.STRING
-    })
+  down: (queryInterface) => {
+    return queryInterface.removeColumn('shop_domains', 'ip_address')
   }
 }

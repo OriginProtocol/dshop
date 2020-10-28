@@ -26,7 +26,11 @@ module.exports = (sequelize, DataTypes) => {
       firstBlock: DataTypes.INTEGER,
       lastBlock: DataTypes.INTEGER,
       // True if the shop has changes that requires to get published.
-      hasChanges: DataTypes.BOOLEAN
+      hasChanges: DataTypes.BOOLEAN,
+      enableCdn: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+      }
     },
     {
       underscored: true,
