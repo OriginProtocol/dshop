@@ -13,8 +13,10 @@ import Confirmation from '../shared/Confirmation'
 import Checkout from '../shared/checkout/Loader'
 import usePalette from './hoc/usePalette'
 
+import themeJson from './theme.json'
+
 const ThemeRoot = () => {
-  usePalette()
+  usePalette(themeJson)
   return (
     <>
       <PreviewBanner

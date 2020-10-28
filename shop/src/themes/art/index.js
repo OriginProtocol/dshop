@@ -10,20 +10,32 @@ import PreviewBanner from 'components/PreviewBanner'
 import Storefront from './components/Storefront'
 import Confirmation from '../shared/Confirmation'
 import Checkout from '../shared/checkout/Loader'
+import usePalette from '../shared/hoc/usePalette'
+
+import themeJson from './theme.json'
+
+const ThemeRoot = () => {
+  usePalette(themeJson)
+  return (
+    <>
+      <PreviewBanner
+        wrapperClassName="bg-black text-white text-sm py-2"
+        className="container flex justify-between"
+      />
+      <Switch>
+        <Route path="/checkout" component={Checkout} />
+        <Route path="/order" component={Confirmation} />
+        <Route component={Storefront} />
+      </Switch>
+    </>
+  )
+}
 
 const Providers = () => {
   return (
     <HashRouter>
       <DshopProvider>
-        <PreviewBanner
-          wrapperClassName="bg-black text-white text-sm py-2"
-          className="container flex justify-between"
-        />
-        <Switch>
-          <Route path="/checkout" component={Checkout} />
-          <Route path="/order" component={Confirmation} />
-          <Route component={Storefront} />
-        </Switch>
+        <ThemeRoot />
       </DshopProvider>
     </HashRouter>
   )

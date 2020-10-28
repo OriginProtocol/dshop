@@ -22,12 +22,22 @@ module.exports = {
         gray: {
           ...defaultTheme.colors.gray,
           100: '#fcfcfc',
-          500: '#999999',
-          900: '#222222'
-        }
+          500: 'var(--secondary-color)',
+          900: 'var(--accent-color)'
+        },
+        page: 'var(--page-color)',
+        footer: 'var(--footer-color)',
+        primary: 'var(--primary-color)',
+        secondary: 'var(--secondary-color)',
+        button: 'var(--button-color)',
+        link: 'var(--link-color)',
+        accent: 'var(--accent-color)'
       },
       fontFamily: {
-        sans: ['"Helvetica Neue"', ...defaultTheme.fontFamily.sans]
+        sans: ['var(--body-font)', ...defaultTheme.fontFamily.sans],
+        body: ['var(--body-font)', ...defaultTheme.fontFamily.sans],
+        serif: ['var(--header-font)', ...defaultTheme.fontFamily.serif],
+        header: ['var(--header-font)', ...defaultTheme.fontFamily.serif]
       }
     }
   }

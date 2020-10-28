@@ -15,9 +15,15 @@ import SocialLinks from 'components/SocialLinks'
 
 const Cart = ({ cart, bg }) => (
   <Link to="/cart" className="nav-link relative hover:opacity-50">
-    <CartIcon className="w-5" fill={bg ? '#fff' : '#000'} />
+    <CartIcon
+      className={`w-5 fill-current ${bg ? 'text-white' : 'text-black'}`}
+      fill={null}
+    />
     {cart.items.length ? (
-      <div className="absolute text-xs" style={{ top: -10, right: -10 }}>
+      <div
+        className={`absolute text-xs ${bg ? 'text-white' : 'text-black'}`}
+        style={{ top: -10, right: -10 }}
+      >
         {cart.items.length}
       </div>
     ) : null}
@@ -30,14 +36,21 @@ const Header = () => {
   const [mobileMenu, showMobileMenu] = useState(false)
   const { config } = useConfig()
   const [{ cart }] = useStateValue()
-  const bg = useRouteMatch({ path: '/', exact: true })
+  const isHome = useRouteMatch({ path: '/', exact: true })
   const about = useRouteMatch('/about')
   const product = useRouteMatch('/product') || useRouteMatch('/products')
   const contact = useRouteMatch('/contact')
 
   const themeVars = useThemeVars()
 
-  const activeClass = ' border-b border-black'
+  const bgImageRelUrl = get(themeVars, 'home.headerImage.0.url')
+
+  const backgroundImage =
+    isHome && bgImageRelUrl && `url(${config.dataSrc}${bgImageRelUrl})`
+
+  const bg = isHome && bgImageRelUrl
+
+  const activeClass = ` border-b ${bg ? 'border-white' : 'border-link'}`
 
   function toggleMobileMenu() {
     const body = document.querySelector('body')
@@ -51,7 +64,10 @@ const Header = () => {
 
   const content = (
     <div className="container flex flex-row justify-between items-center sm:items-baseline">
-      <Link to="/" className="text-2xl">
+      <Link
+        to="/"
+        className={`text-2xl font-header ${bg ? 'text-white' : 'text-black'}`}
+      >
         {config.title}
       </Link>
       <div className="flex flex-row text-sm">
@@ -59,7 +75,7 @@ const Header = () => {
           to="/products"
           className={`hidden md:block mr-12 pb-1 ${
             product ? activeClass : ''
-          } hover:opacity-50`}
+          } hover:opacity-50 ${bg ? 'text-white' : 'text-link'}`}
         >
           {get(collections, '0.title')}
         </Link>
@@ -67,7 +83,7 @@ const Header = () => {
           to="/about"
           className={`hidden md:block mr-12 pb-1 ${
             about ? activeClass : ''
-          } hover:opacity-50`}
+          } hover:opacity-50 ${bg ? 'text-white' : 'text-link'}`}
         >
           About
         </Link>
@@ -75,7 +91,7 @@ const Header = () => {
           to="/contact"
           className={`hidden md:block mr-12 pb-1 ${
             contact ? activeClass : ''
-          } hover:opacity-50`}
+          } hover:opacity-50 ${bg ? 'text-white' : 'text-link'}`}
         >
           Contact
         </Link>
@@ -93,8 +109,9 @@ const Header = () => {
           itemsClassName="hidden md:block mx-3 flex items-center hover:opacity-50"
           svg={{
             height: 18,
-            className: 'inline-block mr-6',
-            color: bg ? '#fff' : '#000'
+            className: `inline-block mr-6 fill-current ${
+              bg ? 'text-white' : 'text-black'
+            }`
           }}
           contentOnly
         />
@@ -108,9 +125,6 @@ const Header = () => {
   const className = bg
     ? 'text-white pt-12 sm:pt-24 pb-64 bg-cover'
     : 'py-12 sm:py-24'
-
-  const backgroundImage =
-    bg && `url(${config.dataSrc}${get(themeVars, 'home.headerImage.0.url')})`
 
   return (
     <>

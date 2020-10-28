@@ -2,7 +2,6 @@ import React from 'react'
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
-import useCollections from 'utils/useCollections'
 import useThemeVars from 'utils/useThemeVars'
 
 import Link from 'components/Link'
@@ -10,7 +9,6 @@ import Link from 'components/Link'
 import Products from './_Products'
 
 const App = () => {
-  const { collections } = useCollections()
   const themeVars = useThemeVars()
 
   return (
@@ -20,14 +18,14 @@ const App = () => {
           <h1 className="text-3xl sm:text-4xl leading-tight mb-4 whitespace-pre-line">
             {get(themeVars, 'home.subheading')}
           </h1>
-          <div className="text-gray-500 text-sm">
+          <div className="text-sm text-secondary">
             {get(themeVars, 'home.tagline')}
           </div>
         </div>
         <Products limit={3} onlyFeatured />
         <div className="my-16 sm:my-24 flex justify-center">
           <Link to="/products" className="btn flex-1 sm:flex-none">
-            {`View ${get(collections, '0.title', 'All Products')}`}
+            View All Products
           </Link>
         </div>
       </div>

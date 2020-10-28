@@ -23,7 +23,7 @@ const Product = ({ match }) => {
           <img src={product.imageUrl} />
         </div>
         <div className="sm:ml-24" style={{ flex: '3' }}>
-          <div className="text-center sm:text-left text-3xl sm:text-4xl font-semibold leading-none">
+          <div className="text-center sm:text-left text-3xl sm:text-4xl font-semibold leading-none text-header">
             {product.title}
           </div>
           <div className="text-center sm:text-left mt-4 text-lg mb-12">
@@ -55,7 +55,7 @@ const Product = ({ match }) => {
           />
         </div>
       </div>
-      <div className="mt-24 mb-10 sm:mb-6 text-3xl sm:text-4xl text-center sm:text-left font-medium">
+      <div className="mt-24 mb-10 sm:mb-6 text-3xl sm:text-4xl text-center sm:text-left font-medium text-header">
         You might also like
       </div>
       <Products limit={3} />
