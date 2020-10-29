@@ -855,7 +855,7 @@ function lastSortedName(names) {
 function incrementName(name, baseName) {
   const strSuffix = trimStart(name.replace(baseName, ''), '-')
   let suffix = 0
-  if (strSuffix) {
+  if (strSuffix && !Number.isNaN(Number(strSuffix))) {
     suffix = Number(strSuffix) + 1
   }
   return `${baseName}-${suffix}`
