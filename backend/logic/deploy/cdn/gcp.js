@@ -870,7 +870,7 @@ function incrementName(name, baseName) {
  */
 function incrementalNameMatch(baseName, name) {
   if (baseName === name) return true
-  const pat = new RegExp(`^${baseName}-([0-9])$`)
+  const pat = new RegExp(`^${baseName}-([0-9]+)$`)
   return !!name.match(pat)
 }
 
