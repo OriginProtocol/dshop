@@ -258,20 +258,19 @@ async function setRecords({
   })
   const existingTXT = get(existingTXTRecords, '[0][0]')
 
+  // Delete all A records with this name
+  if (existingAs && existingAs.length > 0) {
+    for (const arec of existingARecords) {
+      changes.push(await deleteRecord(arec, zoneObj))
+    }
+  }
+
   // If we got an IP address, we're creating an A record
   if (ipAddresses) {
     // Delete the CNAME records with this name
     if (existingCNAME) {
       log.debug(`Will delete CNAME for ${fqSubdomain}`)
       changes.push(await deleteRecord(existingCNAME, zoneObj))
-    }
-
-    // Delete all A records with this name
-    if (existingAs && existingAs.length > 0) {
-      log.debug(`Will delete A records for ${fqSubdomain}`)
-      for (const arec of existingAs) {
-        changes.push(await deleteRecord(arec, zoneObj))
-      }
     }
 
     // Create an A record for each IP we get

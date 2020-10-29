@@ -2,6 +2,80 @@
   "id": "art",
   "name": "Minimal",
   "config": [{
+    "id": "colors",
+    "title": "Colors",
+    "fields": [{
+      "id": "palette",
+      "title": "Color Palette",
+      "type": "color_palettes",
+      "palettes": [
+        {
+          "id": "palette1",
+          "title": "Palette 1",
+          "colors": {
+            "page": "#ffffff",
+            "footer": "#ffffff",
+            "primary": "#000000",
+            "secondary": "#999999",
+            "button": "#000000",
+            "link": "#000000",
+            "accent": "#000000"
+          },
+          "fonts": {
+            "header": "HelveticaNeue",
+            "body": "HelveticaNeue"
+          }
+        },
+        {
+          "id": "palette2",
+          "title": "Palette 2",
+          "colors": {
+            "page": "#ffffff",
+            "footer": "#f8f8f8",
+            "primary": "#000000",
+            "secondary": "#999999",
+            "button": "#eb6834",
+            "link": "#eb6834",
+            "accent": "#000000"
+          },
+          "fonts": {
+            "header": "HelveticaNeue",
+            "body": "HelveticaNeue"
+          }
+        },
+        {
+          "id": "palette3",
+          "title": "Palette 3",
+          "colors": {
+            "page": "#ffffff",
+            "footer": "#f7f8f9",
+            "primary": "#000000",
+            "secondary": "#999999",
+            "button": "#3570aa",
+            "link": "#3570aa",
+            "accent": "#000000"
+          },
+          "fonts": {
+            "header": "HelveticaNeue",
+            "body": "HelveticaNeue"
+          }
+        }
+      ],
+      "colorLabels": {
+        "page": "Page Background Color",
+        "footer": "Footer Background Color",
+        "primary": "Text Color 1",
+        "secondary": "Text Color 2",
+        "button": "Button Color",
+        "link": "Link Color",
+        "accent": "Accent Color"
+      },
+      "fontLabels": {
+        "header": "Header Font",
+        "body": "Body Font"
+      }
+    }]
+  }, {
     "id": "home",
     "title": "Home",
     "pageUrl": "/",

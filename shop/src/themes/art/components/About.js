@@ -13,7 +13,7 @@ const About = () => {
 
   return (
     <div className="container mt-12">
-      <div className="text-4xl leading-none font-medium">About</div>
+      <div className="text-4xl leading-none font-medium text-header">About</div>
       <div className="flex mt-16">
         <div style={{ flex: '3' }}>
           {!aboutText ? null : (

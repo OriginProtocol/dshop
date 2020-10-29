@@ -42,6 +42,23 @@
             "header": "RobotoSlab",
             "body": "HelveticaNeue"
           }
+        },
+        {
+          "id": "palette3",
+          "title": "Palette 3",
+          "colors": {
+            "page": "#f7f6f6",
+            "footer": "#f1efec",
+            "primary": "#000000",
+            "secondary": "#565248",
+            "button": "#9c8c7e",
+            "link": "#9c8c7e",
+            "accent": "#9c8c7e"
+          },
+          "fonts": {
+            "header": "RobotoSlab",
+            "body": "HelveticaNeue"
+          }
         }
       ],
       "colorLabels": {

@@ -250,22 +250,25 @@ async function deploy({
    * Configure the CDN(s) to point at bucket(s)
    */
   let ipAddresses = null
-  log.info(`Configuring CDN...`)
-  try {
-    const responses = await cdnConfig({
-      networkConfig,
-      shop,
-      deployment,
-      domains: [fqdn]
-    })
-    if (responses.length > 0) {
-      ipAddresses = responses.map((r) => r.ipAddress)
+  if (shop.enableCdn) {
+    log.info(`Configuring CDN...`)
+
+    try {
+      const responses = await cdnConfig({
+        networkConfig,
+        shop,
+        deployment,
+        domains: [fqdn]
+      })
+      if (responses.length > 0) {
+        ipAddresses = responses.map((r) => r.ipAddress)
+      }
+    } catch (err) {
+      log.error(`Unknown error configuring CDN.`)
+      log.error(err)
+      await failDeployment(deployment, 'Failed to configure CDN')
+      return error(ERROR_GENERAL)
     }
-  } catch (err) {
-    log.error(`Unknown error configuring CDN.`)
-    log.error(err)
-    await failDeployment(deployment, 'Failed to configure CDN')
-    return error(ERROR_GENERAL)
   }
 
   /**

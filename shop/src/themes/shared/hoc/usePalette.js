@@ -2,13 +2,12 @@ import { useEffect } from 'react'
 import get from 'lodash/get'
 import kebabCase from 'lodash/kebabCase'
 import useThemeVars from 'utils/useThemeVars'
-import themeJson from '../theme.json'
 
 /**
  * Returns an object of classNames to be used
  * with tailwind
  */
-const usePalette = () => {
+const usePalette = (themeJson) => {
   const themeVars = useThemeVars()
   const selectedPaletteId = get(themeVars, 'colors.palette')
 
