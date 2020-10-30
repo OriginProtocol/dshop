@@ -259,11 +259,7 @@ async function diagnoseShop(shop) {
 
   // Check Stripe configuration.
   if (shopConfig.stripeBackend) {
-    const stripeCheck = await checkStripeConfig(
-      shop.id,
-      shopConfig,
-      networkConfig
-    )
+    const stripeCheck = await checkStripeConfig(shop, shopConfig, networkConfig)
     if (stripeCheck.success) {
       diagnostic.stripe = { status: 'OK' }
     } else {
