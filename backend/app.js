@@ -122,7 +122,6 @@ router.get('/', async (req, res) => {
         .readFileSync(`${DSHOP_CACHE}/${authToken}/public/index.html`)
         .toString()
     } catch (e) {
-      // TODO: 404?
       return res.status(404).send('')
     }
   } else {
