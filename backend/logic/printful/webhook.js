@@ -58,7 +58,15 @@ const registerPrintfulWebhook = async (shopId, shopConfig, backendUrl) => {
  * @throws
  */
 const deregisterPrintfulWebhook = async (shopId, shopConfig) => {
+  if (!shopConfig.printfulWebhookSecret) {
+    log.info(`[Shop ${shopId}] No webhook registered`)
+    return
+  }
+
   const apiKey = shopConfig.printful
+  if (!apiKey) {
+    throw new Error('Printful API key not configured.')
+  }
 
   let error
   try {
