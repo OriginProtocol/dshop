@@ -47,7 +47,6 @@ const dbConfigOptionalKeys = [
   'mailgunSmtpServer',
   'offlinePaymentMethods',
   'password',
-  'paypal',
   'paypalClientId',
   'paypalClientSecret',
   'paypalWebhookHost',
@@ -297,13 +296,11 @@ async function updateShopConfig({ seller, shop, data }) {
   // Configure Stripe
   //
   if (data.stripe) {
-    log.info(`Shop ${shopId} - Registering Stripe webhook`)
-
+    log.info(`[Shop ${shopId}] Registering Stripe webhook`)
     const validKeys = validateStripeKeys({
       publishableKey: data.stripeKey,
       secretKey: data.stripeBackend
     })
-
     if (!validKeys) {
       return { success: false, reason: 'Invalid Stripe credentials' }
     }
@@ -315,11 +312,12 @@ async function updateShopConfig({ seller, shop, data }) {
       data.stripeWebhookHost || netConfig.backendUrl
     )
     dataOverride.stripeWebhookSecret = secret
-  } else if (existingConfig.stripeBackend && data.stripe === false) {
-    log.info(`Shop ${shopId} - De-registering Stripe webhook`)
+  } else if (data.disconnectStripe === true) {
+    // De-register any webhook.
     await stripeUtils.deregisterWebhooks(shop, existingConfig)
 
     // Reset all the Stripe related fields in the shop's DB config.
+    log.info(`[Shop ${shopId}] Clearing Stripe fields in the shop's config`)
     dataOverride.stripeWebhookSecret = ''
     dataOverride.stripeWebhookHost = ''
     dataOverride.stripeBackend = ''
@@ -329,7 +327,7 @@ async function updateShopConfig({ seller, shop, data }) {
   // Configure PayPal
   ///
   if (data.paypal) {
-    log.info(`Shop ${shopId} - Registering PayPal webhook`)
+    log.info(`[Shop ${shopId}] Registering PayPal webhook`)
     const client = paypalUtils.getClient(
       netConfig.paypalEnvironment,
       data.paypalClientId,
@@ -349,12 +347,12 @@ async function updateShopConfig({ seller, shop, data }) {
       netConfig
     )
     dataOverride.paypalWebhookId = result.webhookId
-  } else if (existingConfig.paypal && data.paypal === false) {
-    log.info(`Shop ${shopId} - De-registering PayPal webhook`)
-
+  } else if (data.disconnectPaypal === true) {
+    // De-register any webhook.
     await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
 
     // Reset all the Paypal related fields in the shop's DB config.
+    log.info(`[Shop ${shopId}] Clearing PayPal fields in the shop's config`)
     dataOverride.paypalClientId = ''
     dataOverride.paypalClientSecret = ''
     dataOverride.paypalWebhookHost = ''
@@ -380,7 +378,7 @@ async function updateShopConfig({ seller, shop, data }) {
   // Configure Printful
   //
   if (data.printful) {
-    log.info(`Shop ${shopId} - Registering Printful webhook`)
+    log.info(`[Shop ${shopId}] Registering Printful webhook`)
     const printfulWebhookSecret = await registerPrintfulWebhook(
       shopId,
       { ...existingConfig, ...data },
@@ -388,11 +386,12 @@ async function updateShopConfig({ seller, shop, data }) {
     )
 
     dataOverride.printfulWebhookSecret = printfulWebhookSecret
-  } else if (existingConfig.printful && !data.printful) {
-    log.info(`Shop ${shopId} - De-registering Printful webhook`)
+  } else if (data.disconnectPrintful === true) {
+    // De-register any webhook.
     await deregisterPrintfulWebhook(shopId, existingConfig)
 
     // Reset all the Printful related fields in the shop's DB config.
+    log.info(`[Shop ${shopId}] Clearing Printful fields in the shop's config`)
     dataOverride.printful = ''
     dataOverride.printfulWebhookSecret = ''
     dataOverride.printfulAutoFulfill = false
@@ -401,7 +400,7 @@ async function updateShopConfig({ seller, shop, data }) {
   //
   // Update the configs on disk.
   //
-  log.info(`Shop ${shopId} - Saving config on disk.`)
+  log.info(`[Shop ${shopId}] Saving config on disk.`)
 
   // Save config.json on disk.
   if (Object.keys(jsonConfig).length || Object.keys(jsonNetConfig).length) {
@@ -446,7 +445,7 @@ async function updateShopConfig({ seller, shop, data }) {
   //
   // Save the config in the DB.
   //
-  log.info(`Shop ${shopId} - Saving config in the DB.`)
+  log.info(`[Shop ${shopId}] Saving config in the DB.`)
   const shopConfigFields = pick(
     { ...existingConfig, ...data, ...dataOverride },
     dbConfigKeys
@@ -467,7 +466,7 @@ async function updateShopConfig({ seller, shop, data }) {
     createdAt: Date.now()
   })
 
-  log.info(`Shop ${shopId} - config updated. Diff keys: ${diffKeys}`)
+  log.info(`[Shop ${shopId}] config updated. Diff keys: ${diffKeys}`)
   return { success: true }
 }
 
