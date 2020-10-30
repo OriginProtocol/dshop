@@ -73,7 +73,7 @@ const deregisterPrintfulWebhook = async (shopId, shopConfig) => {
     const resp = await fetch(apiKey, '/webhooks', 'DELETE')
     const respJSON = await resp.json()
     if (resp.ok) {
-      log.info('Shop ${shopId} - De-registered printful webhook')
+      log.info(`Shop ${shopId} - De-registered printful webhook`)
     } else {
       error = JSON.stringify(respJSON)
     }

@@ -391,7 +391,7 @@ async function updateShopConfig({ seller, shop, data }) {
     await deregisterPrintfulWebhook(shopId, existingConfig)
 
     // Reset all the Printful related fields in the shop's DB config.
-    log.info(`[Shop ${shopId}] Clearing PayPal fields in the shop's config`)
+    log.info(`[Shop ${shopId}] Clearing Printful fields in the shop's config`)
     dataOverride.printful = ''
     dataOverride.printfulWebhookSecret = ''
     dataOverride.printfulAutoFulfill = false
