@@ -23,11 +23,11 @@ const { getConfig } = require('../../utils/encryptedConfig')
  */
 async function checkStripeConfig(shop, shopConfig, networkConfig) {
   if (!shopConfig.stripeBackend) {
-    log.info(`Shop ${shop.id} - Stripe not configured`)
+    log.info(`[Shop ${shop.id}] Stripe not configured`)
     return { success: true }
   }
 
-  log.info(`Shop ${shop.id} - Checking Stripe config`)
+  log.info(`[Shop ${shop.id}] Checking Stripe config`)
   let success = false
   try {
     success = await webhookValidation(
@@ -36,7 +36,7 @@ async function checkStripeConfig(shop, shopConfig, networkConfig) {
       shopConfig.stripeWebhookHost || networkConfig.backendUrl
     )
   } catch (e) {
-    log.error(`Shop ${shop.id} - Failed checking Stripe webhook config: ${e}`)
+    log.error(`[Shop ${shop.id}] Failed checking Stripe webhook config: ${e}`)
   }
 
   if (success) {
