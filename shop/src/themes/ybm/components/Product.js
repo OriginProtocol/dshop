@@ -5,6 +5,7 @@ import { useStateValue } from 'data/state'
 import useProduct from 'utils/useProduct'
 import useCollection from 'utils/useCollection'
 import useThemeVars from 'utils/useThemeVars'
+import useConfig from 'utils/useConfig'
 
 import Header from './_Header'
 import Footer from './_Footer'
@@ -21,6 +22,7 @@ const Product = ({ ...props }) => (
 )
 
 const ProductDetail = ({ match }) => {
+  const { config } = useConfig()
   const themeVars = useThemeVars()
   const [addedToCart, setAddedToCart] = useState()
   const [, dispatch] = useStateValue()
@@ -46,6 +48,8 @@ const ProductDetail = ({ match }) => {
       </div>
     )
   }
+
+  const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
 
   const colLink = collection ? `/collections/${collection.id}` : ''
 
@@ -116,13 +120,13 @@ const ProductDetail = ({ match }) => {
             <ProductOptions {...productObj} center={!alignLeft} />
           )}
 
-          {!variant ? (
+          {!variant || isOutOfStock ? (
             <a
               href="#"
               onClick={(e) => e.preventDefault()}
               className="btn btn-primary sm:px-16 block sm:inline-block opacity-50"
             >
-              Unavailable
+              {isOutOfStock ? 'Out of stock' : 'Unavailable'}
             </a>
           ) : addedToCart ? (
             <Link

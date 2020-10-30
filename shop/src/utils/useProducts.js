@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import fbt from 'fbt'
 import memoize from 'lodash/memoize'
 import cloneDeep from 'lodash/cloneDeep'
+import _get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import sortProducts from 'utils/sortProducts'
+import fetchProductStock from 'data/fetchProductStock'
 
 const getProducts = memoize((url) => fetch(url).then((r) => r.json()))
 
@@ -16,7 +18,7 @@ function useProducts(opts = {}) {
     dispatch
   ] = useStateValue()
   const { config } = useConfig()
-  const { get } = useBackendApi()
+  const { get } = useBackendApi({ authToken: true })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
 
@@ -31,6 +33,32 @@ function useProducts(opts = {}) {
           products = await get('/affiliate/products')
         } else {
           products = await getProducts(`${config.dataSrc}products.json`)
+        }
+        if (config.inventory) {
+          const { products: stockData } = await fetchProductStock(null, config)
+
+          products = products.map((product) => {
+            const productStockData = stockData.find(
+              (d) => d.productId === product.id
+            )
+
+            if (!productStockData) {
+              return product
+            }
+
+            return {
+              ...product,
+              quantity: productStockData.stockLeft,
+              variants: _get(product, 'variants', []).map((variant) => ({
+                ...variant,
+                quantity: _get(
+                  productStockData.variantsStock,
+                  variant.id,
+                  variant.quantity || 0
+                )
+              }))
+            }
+          })
         }
         if (!isSubscribed) {
           return

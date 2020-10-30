@@ -16,6 +16,7 @@ const Products = ({ limit = Infinity }) => {
       {products.slice(0, limit).map((product) => {
         const relPath =
           product.imageUrl || `${config.backend}/images/default-image.svg`
+        const isOutOfStock = config.inventory && Number(product.quantity) <= 0
         return (
           <Link key={product.id} to={`/product/${product.id}`}>
             <div
@@ -28,7 +29,12 @@ const Products = ({ limit = Infinity }) => {
               }}
             />
             <div className="mt-6 font-bold">{product.title}</div>
-            <div>{formatPrice(product.price, currencyOpts)}</div>
+            <div className="flex">
+              {formatPrice(product.price, currencyOpts)}
+              {!isOutOfStock ? null : (
+                <div className="text-red-500 ml-2">Out of stock</div>
+              )}
+            </div>
           </Link>
         )
       })}

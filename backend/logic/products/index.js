@@ -8,12 +8,13 @@ const groupBy = require('lodash/groupBy')
 const kebabCase = require('lodash/kebabCase')
 const { execFile } = require('child_process')
 
-const { getLogger } = require('../utils/logger')
+const { getLogger } = require('../../utils/logger')
+const { DSHOP_CACHE } = require('../../utils/const')
+const { decryptConfig } = require('../../utils/encryptedConfig')
+const { addToCollections } = require('../../utils/collections')
+const { Product } = require('../../models')
 
-const { DSHOP_CACHE } = require('./const')
-
-const { addToCollections } = require('./collections')
-const log = getLogger('utils.products')
+const log = getLogger('logic.products')
 
 // Fields that go into product's data.json file
 const validProductFields = [
@@ -300,7 +301,7 @@ async function upsertProduct(shop, productData) {
   if (!product.variants || !product.variants.length) {
     product.variants = [
       {
-        ...pick(product, ['title', 'price', 'image', 'sku']),
+        ...pick(product, ['title', 'price', 'image', 'sku', 'quantity']),
         id: 0,
         name: product.title,
         options: [],
@@ -318,6 +319,46 @@ async function upsertProduct(shop, productData) {
 
   if (productData.collections) {
     addToCollections(shop, productData.id, productData.collections)
+  }
+
+  const shopConfig = decryptConfig(shop.config)
+
+  if (shopConfig.inventory) {
+    // Add to products model
+    const variantsStock = variants.reduce(
+      (stockData, variant) => ({
+        ...stockData,
+        [variant.id]: Number(variant.quantity) || 0
+      }),
+      {}
+    )
+    const stockLeft = variants.length
+      ? variants.reduce((sum, v) => sum + (Number(v.quantity) || 0), 0)
+      : Number(productData.quantity) || 0
+
+    const updatedStockData = {
+      productId: newProductId,
+      shopId: shop.id,
+      stockLeft,
+      variantsStock
+    }
+
+    let existingDbItem
+
+    if (productData.id) {
+      existingDbItem = await Product.findOne({
+        where: {
+          productId: productData.id,
+          shopId: shop.id
+        }
+      })
+    }
+
+    if (existingDbItem) {
+      await existingDbItem.update(updatedStockData)
+    } else {
+      await Product.create(updatedStockData)
+    }
   }
 
   return {
@@ -357,6 +398,13 @@ async function deleteProduct(shop, productId) {
 
   writeProductsFile(shop, updatedProducts)
   await removeProductData(shop, productId)
+
+  await Product.destroy({
+    where: {
+      productId: productId,
+      shopId: shop.id
+    }
+  })
 
   return {
     status: 200,

@@ -4,7 +4,7 @@ const get = require('lodash/get')
 
 const { OrderPaymentStatuses, OrderPaymentTypes } = require('../../enums')
 const { Sentry } = require('../../sentry')
-const { Order } = require('../../models')
+const { Order, Product } = require('../../models')
 const sendNewOrderEmail = require('../../utils/emails/newOrder')
 const discordWebhook = require('../../utils/discordWebhook')
 const { autoFulfillOrder } = require('../printful')
@@ -193,6 +193,30 @@ async function processNewOrder({
   // Create the order in the DB.
   const order = await Order.create(orderObj)
   log.info(`Saved order ${order.fqId} to DB.`)
+
+  if (shopConfig.inventory) {
+    const cartItems = get(data, 'items', [])
+    const dbProducts = await Product.findOne({
+      shopId: shop.id,
+      productId: cartItems.map((item) => item.product)
+    })
+
+    for (const product of dbProducts) {
+      const item = cartItems.find((item) => item.product === product.productId)
+      const variantId = get(item, 'variant')
+
+      if (variantId) {
+        product.update({
+          stockLeft: product.stockLeft - item.quantity,
+          variantsStock: {
+            ...product.variantsStock,
+            [variantId]: product.variantsStock[variantId] - item.quantity
+          }
+        })
+      }
+    }
+    log.info(`Updated inventory.`)
+  }
 
   // Note: we only fulfill the order if the payment status is 'Paid'.
   // If the payment is still pending, the order will get fulfilled
