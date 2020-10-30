@@ -85,9 +85,11 @@ module.exports = function (router) {
     )
 
     if (!web3Pk || !valid) {
-      log.error(
-        `[Shop ${req.shop.id}] Failed to make payment on Stripe, invalid/missing credentials`
-      )
+      const error = `[Shop ${req.shop.id}] Failed to make payment on Stripe: `
+      const reason = !web3Pk
+        ? 'Missing web3pk'
+        : 'Invalid webhook configuration'
+      log.error(error + reason)
       return res.status(400).send({
         success: false,
         message: 'CC payments unavailable'
@@ -120,7 +122,7 @@ module.exports = function (router) {
       json = JSON.parse(bodyText)
 
       /**
-       * Probably not a payment created by Dshop or one we can't do aything
+       * Probably not a payment created by Dshop or one we can't do anything
        * with. We should fail gracefully here so we can coexist with other
        * payment software on the same Stripe account/key.  Otherwise, it will
        * appear to be errors to Stripe and they will alert the user.

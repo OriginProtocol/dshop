@@ -9,47 +9,34 @@ const { OrderPaymentTypes } = require('../../enums')
 
 const log = getLogger('utils.stripe')
 
+const { webhookValidation } = require('../../utils/stripe')
 const { IS_TEST } = require('../../utils/const')
 const { getConfig } = require('../../utils/encryptedConfig')
 
 /**
  * Check whether a shop is properly configured for Stripe or not.
  *
- * @param {number} shopId
+ * @param {models.Shop} shop
  * @param {object} shopConfig: shop's DB config
  * @param {object} networkConfig: network's config
  * @returns {Promise<{success: false, error: string}|{success: true}>}
  */
-async function checkStripeConfig(shopId, shopConfig, networkConfig) {
-  const validWebhookUrl = `${networkConfig.backendUrl}/webhook`
+async function checkStripeConfig(shop, shopConfig, networkConfig) {
+  if (!shopConfig.stripeBackend) {
+    log.info(`Shop ${shop.id} - Stripe not configured`)
+    return { success: true }
+  }
 
-  log.info(`Shop ${shopId} - Checking Stripe config`)
+  log.info(`Shop ${shop.id} - Checking Stripe config`)
   let success = false
   try {
-    if (!shopConfig.stripeBackend) {
-      log.info(`Shop ${shopId} - Stripe not configured`)
-      return { success: true }
-    }
-    const stripe = Stripe(shopConfig.stripeBackend)
-    const response = await stripe.webhookEndpoints.list()
-    const webhooks = response.data
-
-    for (const webhook of webhooks) {
-      if (webhook.url === validWebhookUrl) {
-        log.info(
-          `Shop ${shopId} - Webhook properly configured. Pointing to`,
-          webhook.url
-        )
-        success = true
-        break
-      } else {
-        log.warn(
-          `Shop ${shopId} - Webhook id ${webhook.id} points to non-Dshop or invalid URL ${webhook.url}`
-        )
-      }
-    }
+    success = await webhookValidation(
+      shop,
+      shopConfig,
+      shopConfig.stripeWebhookHost || networkConfig.backendUrl
+    )
   } catch (e) {
-    log.error(`Shop ${shopId} - Failed checking Stripe webhook config: ${e}`)
+    log.error(`Shop ${shop.id} - Failed checking Stripe webhook config: ${e}`)
   }
 
   if (success) {
