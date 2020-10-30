@@ -129,6 +129,30 @@ async function getBucket(bucketName) {
 }
 
 /**
+ * Upload a file to destination in bucket
+ *
+ * @param bucket {object} Bucket instance
+ * @param file {string} full path to filename
+ * @param destination {string} destination name in bucket
+ * @param attempt {number} Number of attempts that have so far (internal)
+ * @returns {object} UploadResponse object
+ */
+async function uploadFile(bucket, file, destination, attempt = 0) {
+  try {
+    return await bucket.upload(file, {
+      destination,
+      public: true
+    })
+  } catch (err) {
+    if (err && err.code === 502 && attempt < 3) {
+      return await uploadFile(bucket, file, destination, attempt + 1)
+    }
+
+    throw err
+  }
+}
+
+/**
  * Recursively upload all files in updir to bucket
  *
  * @param bucket {Object} instance of Bucket
@@ -140,10 +164,7 @@ async function uploadDirectory(bucket, updir) {
   for (const file of files) {
     const destination = trimStart(file.replace(updir, ''), '/')
     log.debug(`Uploading ${file} to gs://${bucket.name}/${destination}...`)
-    await bucket.upload(file, {
-      destination,
-      public: true
-    })
+    await uploadFile(bucket, file, destination)
   }
 }
 

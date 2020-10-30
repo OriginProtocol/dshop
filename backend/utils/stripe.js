@@ -77,7 +77,7 @@ async function deregisterWebhooks(shop, config) {
   const { stripeBackend, stripeWebhookSecret } = config
 
   if (!stripeBackend || !stripeWebhookSecret) {
-    log.debug(`[Shop ${shop.id}] Missing params, skipping deregistering`)
+    log.debug(`[Shop ${shop.id}] No webhook registered`)
     return
   }
 
@@ -107,7 +107,9 @@ async function deregisterWebhooks(shop, config) {
       }
     }
 
-    log.debug(`${endpointsToDelete.length} webhooks deregisterd`)
+    log.info(
+      `[Shop ${shop.id}] ${endpointsToDelete.length} webhooks deregisterd`
+    )
   } catch (err) {
     log.error(`[Shop ${shop.id}] Failed to deregister webhooks`, err)
     return { success: false }
