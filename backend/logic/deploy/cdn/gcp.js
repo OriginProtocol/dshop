@@ -524,13 +524,13 @@ async function getHttpsProxy(client, name) {
  * Get a targetHttpsProxies with name
  *
  * @param client {object} REST client with Oauth
- * @param name {string} name of the targetHttpsProxy we're looking for
+ * @param base {string} base name of the targetHttpsProxy we're looking for
  * @returns {object} of a targetHttpsProxy if in response
  */
-async function getHttpsProxies(client, beginning) {
-  return await findStartsWith({
+async function getHttpsProxies(client, base) {
+  return await findIncrementalNames({
     client,
-    beginning,
+    base,
     url: google.endpoint(projectId, 'targetHttpsProxies')
   })
 }
@@ -637,14 +637,13 @@ async function getSSLCertificate(client, name) {
  * Get a sslCertificate with name
  *
  * @param client {object} REST client with Oauth
- * @param beginning {string} beginning of the name of the sslCertificate
- *    we're looking for
+ * @param base {string} base name of the sslCertificate we're looking for
  * @returns {object} of a sslCertificate if in response
  */
-async function getSSLCertificates(client, beginning) {
-  return await findStartsWith({
+async function getSSLCertificates(client, base) {
+  return await findIncrementalNames({
     client,
-    beginning,
+    base,
     url: google.endpoint(projectId, 'sslCertificates')
   })
 }
@@ -730,12 +729,12 @@ async function find({ client, url, name }) {
  * @param args {object}
  * @param args.client {GoogleAuth} client
  * @param args.url {string} object endpoint we're POSTing to
- * @param args.beginning {string} The unique object name to look for
+ * @param args.base {string} The base object name to look for
  * @returns {object} REST object, if found
  */
-async function findStartsWith({ client, url, beginning }) {
+async function findIncrementalNames({ client, url, base }) {
   const { items } = await get({ client, url })
-  return items.filter((i) => i.name.startsWith(beginning))
+  return items.filter((i) => incrementalNameMatch(base, i.name))
 }
 
 /**
@@ -855,10 +854,24 @@ function lastSortedName(names) {
 function incrementName(name, baseName) {
   const strSuffix = trimStart(name.replace(baseName, ''), '-')
   let suffix = 0
-  if (strSuffix) {
+  if (strSuffix && !Number.isNaN(Number(strSuffix))) {
     suffix = Number(strSuffix) + 1
   }
   return `${baseName}-${suffix}`
+}
+
+/**
+ * Check if a name matches the expected incremental pattern.  For example:
+ * origin-1, origin-2, ... origin-12
+ *
+ * @param baseName {string} The expected base name, minus the incremental bit
+ * @param name {string} The name to check against
+ * @returns {boolean} if it's a match
+ */
+function incrementalNameMatch(baseName, name) {
+  if (baseName === name) return true
+  const pat = new RegExp(`^${baseName}-([0-9]+)$`)
+  return !!name.match(pat)
 }
 
 module.exports = { isAvailable, configure, configureCDN }

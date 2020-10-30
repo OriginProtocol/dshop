@@ -58,14 +58,22 @@ const registerPrintfulWebhook = async (shopId, shopConfig, backendUrl) => {
  * @throws
  */
 const deregisterPrintfulWebhook = async (shopId, shopConfig) => {
+  if (!shopConfig.printfulWebhookSecret) {
+    log.info(`[Shop ${shopId}] No webhook registered`)
+    return
+  }
+
   const apiKey = shopConfig.printful
+  if (!apiKey) {
+    throw new Error('Printful API key not configured.')
+  }
 
   let error
   try {
     const resp = await fetch(apiKey, '/webhooks', 'DELETE')
     const respJSON = await resp.json()
     if (resp.ok) {
-      log.info('Shop ${shopId} - De-registered printful webhook')
+      log.info(`Shop ${shopId} - De-registered printful webhook`)
     } else {
       error = JSON.stringify(respJSON)
     }

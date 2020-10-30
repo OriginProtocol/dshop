@@ -138,6 +138,14 @@ const deregisterWebhook = async (shopId, shopConfig, netConfig) => {
   }
 
   const { paypalClientId, paypalClientSecret, paypalWebhookId } = shopConfig
+  if (!paypalWebhookId) {
+    log.info(`[Shop ${shopId}] No PayPal webhook configured.`)
+    return true
+  }
+  if (!paypalClientId || !paypalClientSecret) {
+    log.error(`[Shop ${shopId}] Invalid PayPal configuration.`)
+    return false
+  }
 
   try {
     const paypalEnv = netConfig.paypalEnvironment
@@ -146,9 +154,7 @@ const deregisterWebhook = async (shopId, shopConfig, netConfig) => {
     const request = new WebhookDeleteRequest(paypalWebhookId)
     await client.execute(request)
 
-    log.debug(
-      `[Shop ${shopId}] Deregistered paypal webhook, ${paypalWebhookId}`
-    )
+    log.info(`[Shop ${shopId}] Deregistered paypal webhook, ${paypalWebhookId}`)
     return true
   } catch (err) {
     log.error(
