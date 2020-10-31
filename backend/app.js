@@ -72,6 +72,7 @@ app.use((req, res, next) => {
   return jsonBodyParser(req, res, next)
 })
 
+app.use(serveStatic(`${__dirname}/dist`, { index: false }))
 app.use('/theme', serveStatic(`${__dirname}/themes`, { index: false }))
 
 // Use express-promise-router which allows middleware to return promises.
