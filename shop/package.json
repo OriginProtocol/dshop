@@ -144,7 +144,7 @@
     "ipfs-deploy": "8.0.1",
     "mini-css-extract-plugin": "1.2.1",
     "mocha": "8.2.0",
-    "node-sass": "4.14.1",
+    "node-sass": "5.0.0",
     "react-router-dom": "5.2.0",
     "sass-loader": "10.0.4",
     "style-loader": "2.0.0",
