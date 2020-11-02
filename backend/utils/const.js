@@ -1,3 +1,4 @@
+const path = require('path')
 require('dotenv').config()
 const randomstring = require('randomstring')
 
@@ -77,9 +78,9 @@ const {
 const DATA_URL = null
 const PRINTFUL_URL = 'https://api.printful.com'
 
-const DSHOP_CACHE = IS_TEST
-  ? TEST_DSHOP_CACHE
-  : process.env.DSHOP_CACHE || `${__dirname}/../data`
+const DSHOP_CACHE = path.resolve(
+  IS_TEST ? TEST_DSHOP_CACHE : process.env.DSHOP_CACHE || `${__dirname}/../data`
+)
 
 const THEMES_CACHE = IS_TEST
   ? TEST_THEMES_CACHE

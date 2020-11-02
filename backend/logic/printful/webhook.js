@@ -108,7 +108,7 @@ const checkPrintfulWebhook = async (shopId, shopConfig, networkConfig) => {
     const resp = await fetch(apiKey, '/webhooks', 'GET')
     respJson = await resp.json()
     if (!resp.ok) {
-      error = respJson
+      error = JSON.stringify(respJson)
     }
   } catch (err) {
     error = err.message
