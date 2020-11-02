@@ -40,7 +40,7 @@ const dbConfigOptionalKeys = [
   'deliveryApi',
   'email', // Email provider: 'aws', 'sendgrid', 'mailgun'
   'emailSubject',
-  'inventory',
+  'inventory', // Inventory management switch
   'listener',
   'mailgunSmtpLogin',
   'mailgunSmtpPassword',

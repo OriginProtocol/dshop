@@ -190,10 +190,6 @@ async function processNewOrder({
     orderObj.data.error = error
   }
 
-  // Create the order in the DB.
-  const order = await Order.create(orderObj)
-  log.info(`Saved order ${order.fqId} to DB.`)
-
   if (shopConfig.inventory) {
     const cartItems = get(data, 'items', [])
     const dbProducts = await Product.findAll({
@@ -203,22 +199,74 @@ async function processNewOrder({
       }
     })
 
+    const allValidProducts = cartItems.every(
+      (item) =>
+        !!dbProducts.find((product) => product.productId === item.product)
+    )
+
+    if (!allValidProducts) {
+      log.error(`[Shop ${shop.id}] Invalid product ID`, cartItems)
+      orderObj.data.error = 'Some products in your cart are unavailable'
+      // Note: Not throwing here because it could
+      // cause if the order isn't created on Dshop
+      // it'd be hard to refund in case of Stripe
+      // and other payment methods
+      continue
+    }
+
     for (const product of dbProducts) {
       const item = cartItems.find((item) => item.product === product.productId)
       const variantId = get(item, 'variant')
 
-      if (variantId) {
-        product.update({
-          stockLeft: product.stockLeft - item.quantity,
-          variantsStock: {
-            ...product.variantsStock,
-            [variantId]: product.variantsStock[variantId] - item.quantity
-          }
-        })
+      if (variantId == null) {
+        log.error(
+          `[Shop ${shop.id}] Invalid variant ID`,
+          product.productId,
+          variantId
+        )
+        orderObj.data.error = 'Some products in your cart are unavailable'
+        // Note: Not throwing here because it could
+        // cause if the order isn't created on Dshop
+        // it'd be hard to refund in case of Stripe
+        // and other payment methods
+        continue
       }
+
+      const variantStock = product.variantsStock[variantId] - item.quantity
+      const productStock = product.stockLeft - item.quantity
+
+      if (productStock < 0 || variantStock < 0) {
+        log.error(
+          `[Shop ${shop.id}] Product has insufficient stock`,
+          product.productId,
+          variantId
+        )
+        orderObj.data.error = 'Some products in your cart are out of stock'
+        // Note: Not throwing here because it could
+        // cause if the order isn't created on Dshop
+        // it'd be hard to refund in case of Stripe
+        // and other payment methods
+        continue
+      }
+
+      log.debug(
+        `Updating stock of product ${product.productId} to ${productStock} and variant ${variantId} to ${variantStock}`
+      )
+
+      product.update({
+        stockLeft: productStock,
+        variantsStock: {
+          ...product.variantsStock,
+          [variantId]: variantStock
+        }
+      })
     }
     log.info(`Updated inventory.`)
   }
+
+  // Create the order in the DB.
+  const order = await Order.create(orderObj)
+  log.info(`Saved order ${order.fqId} to DB.`)
 
   // Note: we only fulfill the order if the payment status is 'Paid'.
   // If the payment is still pending, the order will get fulfilled
@@ -319,6 +367,8 @@ async function updatePaymentStatus(order, newState, shop) {
     }
   }
 
+  const shopConfig = getConfig(shop.config)
+
   let refundError = get(order, 'data.refundError')
   if (newState === OrderPaymentStatuses.Refunded) {
     // Initiate a refund in case of Stripe and PayPal
@@ -331,7 +381,6 @@ async function updatePaymentStatus(order, newState, shop) {
         break
     }
   } else if (newState === OrderPaymentStatuses.Paid) {
-    const shopConfig = getConfig(shop.config)
     if (shopConfig.printful && shopConfig.printfulAutoFulfill) {
       await autoFulfillOrder(order, shopConfig, shop)
     }
