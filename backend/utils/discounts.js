@@ -1,6 +1,7 @@
-const get = require('lodash/get')
-const pick = require('lodash/pick')
+const { get, pick } = require('lodash')
+
 const { Sequelize, Discount, Order } = require('../models')
+
 /**
  * Finds and returns an active and valid discount with the given code
  * @param {String} code
@@ -96,7 +97,6 @@ const checkIfUserHasAvailedDiscount = async (
 
 const markDiscountAsUsed = async (discountCode, shop) => {
   const { discount, error } = await validateDiscount(discountCode, shop)
-
   if (error) {
     throw new Error('Invalid discount')
   }
@@ -108,35 +108,29 @@ const markDiscountAsUsed = async (discountCode, shop) => {
 
 /**
  * Validate discount applied on an order.
+ * If the discount is valid, increment the DB counter tracking its number of uses.
+ *
+ * IMPORTANT: Keep this function's total calculation
+ * in sync with the calculation in shop/src/data/state.js
+ *
  * @param {Models.Order} orderObj
- * @returns {{ valid, error }}
+ * @returns {{ valid: true}|{ error: string }}
  */
-const validateDiscountOnOrder = async (
-  orderObj,
-  args = { markIfValid: false }
-) => {
-  const { markIfValid } = args
-  // IMPORTANT: Keep this function's total calculation
-  // in sync with the calculation in shop/src/data/state.js
+const validateDiscountOnOrder = async (orderObj) => {
   const cart = get(orderObj, 'data')
-  const appliedDiscount = get(cart, 'discount')
-  const appliedDiscountObj = get(cart, 'discountObj')
-
   if (!cart) {
-    return {
-      error: 'Invalid order: No cart'
-    }
+    return { error: 'Invalid order: No cart' }
   }
 
-  if (
-    !Number(appliedDiscount) === 0 ||
-    get(cart, 'discountObj.value', 0) === 0
-  ) {
-    // Doesn't have any discounts applied,
-    // skip any validation
-    return {
-      valid: true
-    }
+  const appliedDiscount = Number(get(cart, 'discount'))
+  if (isNaN(appliedDiscount)) {
+    return { error: 'Invalid discount calculation' }
+  }
+
+  const appliedDiscountObj = get(cart, 'discountObj')
+  if (get(cart, 'discountObj.value', 0) === 0) {
+    // Doesn't have any discounts applied, skip any validation
+    return { valid: true }
   }
 
   // Fetch discount from DB
@@ -149,30 +143,22 @@ const validateDiscountOnOrder = async (
     // TODO: What if the discount was valid when user placed an order
     // but the seller updated the discount value before the transaction
     // got mined??
-    return {
-      error: `Discount error: ${error}`
-    }
+    return { error: `Discount error: ${error}` }
   }
 
   if (discountObj.value !== appliedDiscountObj.value) {
-    return {
-      error: 'Discount error: Discount value mismatch'
-    }
+    return { error: 'Discount error: Discount value mismatch' }
   }
 
   if (discountObj.discountType !== appliedDiscountObj.discountType) {
-    return {
-      error: 'Discount error: Discount type mismatch'
-    }
+    return { error: 'Discount error: Discount type mismatch' }
   }
 
   const userEmail = get(cart, 'userInfo.email', '')
   if (
     await checkIfUserHasAvailedDiscount(discountObj, userEmail, orderObj.shopId)
   ) {
-    return {
-      error: 'Discount error: Already availed the discount'
-    }
+    return { error: 'Discount error: Already availed the discount' }
   }
 
   // Calculate cart total and subtotal with the discount from DB
@@ -195,18 +181,20 @@ const validateDiscountOnOrder = async (
 
   const donation = get(cart, 'donation', 0)
 
-  const calculatedTotal = subTotal + shipping - discount + donation + totalTaxes
+  // Note: By calling Math.max, we don't let the amount go negative in case a
+  // discount larger than the total is applied.
+  const calculatedTotal = Math.max(
+    0,
+    subTotal + shipping - discount + donation + totalTaxes
+  )
 
   if (cart.total !== calculatedTotal) {
     // Something has gone wrong
-    return {
-      error: `Discount error: Cart value mismatch`
-    }
+    return { error: `Discount error: Cart value mismatch` }
   }
 
-  if (markIfValid) {
-    await markDiscountAsUsed(appliedDiscountObj.code, { id: orderObj.shopId })
-  }
+  // Increment the DB counter tracking the discount's number of uses.
+  await markDiscountAsUsed(appliedDiscountObj.code, { id: orderObj.shopId })
 
   return { valid: true }
 }

@@ -183,9 +183,7 @@ async function processNewOrder({
   // Validate any discount applied to the order.
   // TODO: in case the discount fails validation, consider rejecting the order
   //       and setting its status to "Invalid".
-  const { valid, error } = await validateDiscountOnOrder(orderObj, {
-    markIfValid: true
-  })
+  const { valid, error } = await validateDiscountOnOrder(orderObj)
   if (!valid) {
     orderObj.data.error = error
   }
