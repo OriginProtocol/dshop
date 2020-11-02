@@ -190,78 +190,19 @@ async function processNewOrder({
     orderObj.data.error = error
   }
 
-  if (shopConfig.inventory) {
-    const cartItems = get(data, 'items', [])
-    const dbProducts = await Product.findAll({
-      where: {
-        shopId: shop.id,
-        productId: cartItems.map((item) => item.product)
-      }
-    })
+  // Note: Not throwing here because it could
+  // cause if the order isn't created on Dshop
+  // it'd be hard to refund in case of Stripe
+  // and other payment methods
+  const { error: inventoryError } = await updateInventoryData(
+    shop,
+    shopConfig,
+    data
+  )
 
-    const allValidProducts = cartItems.every(
-      (item) =>
-        !!dbProducts.find((product) => product.productId === item.product)
-    )
-
-    if (!allValidProducts) {
-      log.error(`[Shop ${shop.id}] Invalid product ID`, cartItems)
-      orderObj.data.error = 'Some products in your cart are unavailable'
-      // Note: Not throwing here because it could
-      // cause if the order isn't created on Dshop
-      // it'd be hard to refund in case of Stripe
-      // and other payment methods
-      continue
-    }
-
-    for (const product of dbProducts) {
-      const item = cartItems.find((item) => item.product === product.productId)
-      const variantId = get(item, 'variant')
-
-      if (variantId == null) {
-        log.error(
-          `[Shop ${shop.id}] Invalid variant ID`,
-          product.productId,
-          variantId
-        )
-        orderObj.data.error = 'Some products in your cart are unavailable'
-        // Note: Not throwing here because it could
-        // cause if the order isn't created on Dshop
-        // it'd be hard to refund in case of Stripe
-        // and other payment methods
-        continue
-      }
-
-      const variantStock = product.variantsStock[variantId] - item.quantity
-      const productStock = product.stockLeft - item.quantity
-
-      if (productStock < 0 || variantStock < 0) {
-        log.error(
-          `[Shop ${shop.id}] Product has insufficient stock`,
-          product.productId,
-          variantId
-        )
-        orderObj.data.error = 'Some products in your cart are out of stock'
-        // Note: Not throwing here because it could
-        // cause if the order isn't created on Dshop
-        // it'd be hard to refund in case of Stripe
-        // and other payment methods
-        continue
-      }
-
-      log.debug(
-        `Updating stock of product ${product.productId} to ${productStock} and variant ${variantId} to ${variantStock}`
-      )
-
-      product.update({
-        stockLeft: productStock,
-        variantsStock: {
-          ...product.variantsStock,
-          [variantId]: variantStock
-        }
-      })
-    }
-    log.info(`Updated inventory.`)
+  orderObj.data.inventoryError = inventoryError
+  if (!orderObj.data.error) {
+    orderObj.data.error = inventoryError
   }
 
   // Create the order in the DB.
@@ -386,11 +327,32 @@ async function updatePaymentStatus(order, newState, shop) {
     }
   }
 
+  const shouldUpdateInventory =
+    shopConfig.inventory &&
+    !order.data.inventoryError &&
+    [
+      OrderPaymentStatuses.Refunded,
+      OrderPaymentStatuses.Rejected,
+      OrderPaymentStatuses.Paid
+    ].includes(newState)
+
+  let inventoryError
+  if (shouldUpdateInventory) {
+    const { error } = await updateInventoryData(
+      shop,
+      shopConfig,
+      order.data,
+      newState !== OrderPaymentStatuses.Paid
+    )
+    inventoryError = error
+  }
+
   await order.update({
     paymentStatus: newState,
     data: {
       ...order.data,
-      refundError
+      refundError,
+      inventoryError
     }
   })
 
@@ -446,6 +408,102 @@ async function processDeferredPayment(paymentCode, paymentType, shop, event) {
   }
 
   return false
+}
+
+/**
+ * Updates the availability of the products after a new order
+ * or an order cancelation
+ *
+ * @param {model.Shop} shop
+ * @param {Object} shopConfig Shop's decrypted config
+ * @param {Object} cartData Cart data
+ * @param {Boolean} increment Adds to the quantity instead of decreasing, to be used when cancelling/rejecting
+ *
+ * @returns {{
+ *  success,
+ *  error
+ * }}
+ */
+async function updateInventoryData(
+  shop,
+  shopConfig,
+  cartData,
+  increment = false
+) {
+  if (!shopConfig.inventory) {
+    return
+  }
+
+  const quantModifier = increment ? 1 : -1
+
+  const cartItems = get(cartData, 'items', [])
+  const dbProducts = await Product.findAll({
+    where: {
+      shopId: shop.id,
+      productId: cartItems.map((item) => item.product)
+    }
+  })
+
+  const allValidProducts = cartItems.every(
+    (item) => !!dbProducts.find((product) => product.productId === item.product)
+  )
+
+  if (!allValidProducts) {
+    log.error(`[Shop ${shop.id}] Invalid product ID`, cartItems)
+    return {
+      error: 'Some products in your cart are unavailable'
+    }
+  }
+
+  for (const product of dbProducts) {
+    const item = cartItems.find((item) => item.product === product.productId)
+    const variantId = get(item, 'variant')
+
+    if (variantId == null) {
+      log.error(
+        `[Shop ${shop.id}] Invalid variant ID`,
+        product.productId,
+        variantId
+      )
+      return {
+        error: 'Some products in your cart are unavailable'
+      }
+    }
+
+    const quant = quantModifier * item.quantity
+
+    const variantStock = product.variantsStock[variantId] + quant
+    const productStock = product.stockLeft + quant
+
+    if (!increment && (productStock < 0 || variantStock < 0)) {
+      log.error(
+        `[Shop ${shop.id}] Product has insufficient stock`,
+        product.productId,
+        variantId
+      )
+      return {
+        error: 'Some products in your cart are out of stock'
+      }
+    }
+
+    log.debug(
+      `Updating stock of product ${product.productId} to ${productStock} and variant ${variantId} to ${variantStock}`
+    )
+
+    await product.update({
+      stockLeft: productStock,
+      variantsStock: {
+        ...product.variantsStock,
+        [variantId]: variantStock
+      }
+    })
+  }
+
+  log.info(`Updated inventory.`)
+
+  return {
+    success: true
+  }
 }
 
 module.exports = {
