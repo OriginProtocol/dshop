@@ -363,12 +363,14 @@ const reducer = (state, action) => {
   newState.cart.currency = get(newState, 'config.currency', 'USD')
   newState.cart.discount = discount
   newState.cart.totalTaxes = Math.ceil(taxRate * newState.cart.subTotal)
-  newState.cart.total = Math.max(0,
+  newState.cart.total = Math.max(
+    0,
     newState.cart.subTotal +
-    shipping -
-    discount +
-    donation +
-    newState.cart.totalTaxes)
+      shipping -
+      discount +
+      donation +
+      newState.cart.totalTaxes
+  )
 
   const activeShop = get(newState, 'config.activeShop')
   if (activeShop) {
