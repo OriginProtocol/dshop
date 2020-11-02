@@ -9,7 +9,6 @@ import fetchProduct from 'data/fetchProduct'
 import { useStateValue } from 'data/state'
 import formatPrice from 'utils/formatPrice'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
-import useBackendApi from 'utils/useBackendApi'
 import fetchProductStock from 'data/fetchProductStock'
 
 const reducer = (state, newState) => ({ ...state, ...newState })

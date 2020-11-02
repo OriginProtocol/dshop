@@ -456,47 +456,51 @@ async function updateInventoryData(
   }
 
   for (const product of dbProducts) {
-    const item = cartItems.find((item) => item.product === product.productId)
-    const variantId = get(item, 'variant')
-
-    if (variantId == null) {
-      log.error(
-        `[Shop ${shop.id}] Invalid variant ID`,
-        product.productId,
-        variantId
-      )
-      return {
-        error: 'Some products in your cart are unavailable'
-      }
-    }
-
-    const quant = quantModifier * item.quantity
-
-    const variantStock = product.variantsStock[variantId] + quant
-    const productStock = product.stockLeft + quant
-
-    if (!increment && (productStock < 0 || variantStock < 0)) {
-      log.error(
-        `[Shop ${shop.id}] Product has insufficient stock`,
-        product.productId,
-        variantId
-      )
-      return {
-        error: 'Some products in your cart are out of stock'
-      }
-    }
-
-    log.debug(
-      `Updating stock of product ${product.productId} to ${productStock} and variant ${variantId} to ${variantStock}`
+    const allItems = cartItems.filter(
+      (item) => item.product === product.productId
     )
+    for (const item of allItems) {
+      const variantId = get(item, 'variant')
 
-    await product.update({
-      stockLeft: productStock,
-      variantsStock: {
-        ...product.variantsStock,
-        [variantId]: variantStock
+      if (variantId == null) {
+        log.error(
+          `[Shop ${shop.id}] Invalid variant ID`,
+          product.productId,
+          variantId
+        )
+        return {
+          error: 'Some products in your cart are unavailable'
+        }
       }
-    })
+
+      const quant = quantModifier * item.quantity
+
+      const variantStock = product.variantsStock[variantId] + quant
+      const productStock = product.stockLeft + quant
+
+      if (!increment && (productStock < 0 || variantStock < 0)) {
+        log.error(
+          `[Shop ${shop.id}] Product has insufficient stock`,
+          product.productId,
+          variantId
+        )
+        return {
+          error: 'Some products in your cart are out of stock'
+        }
+      }
+
+      log.debug(
+        `Updating stock of product ${product.productId} to ${productStock} and variant ${variantId} to ${variantStock}`
+      )
+
+      await product.update({
+        stockLeft: productStock,
+        variantsStock: {
+          ...product.variantsStock,
+          [variantId]: variantStock
+        }
+      })
+    }
   }
 
   log.info(`Updated inventory.`)
