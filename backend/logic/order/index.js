@@ -196,9 +196,11 @@ async function processNewOrder({
 
   if (shopConfig.inventory) {
     const cartItems = get(data, 'items', [])
-    const dbProducts = await Product.findOne({
-      shopId: shop.id,
-      productId: cartItems.map((item) => item.product)
+    const dbProducts = await Product.findAll({
+      where: {
+        shopId: shop.id,
+        productId: cartItems.map((item) => item.product)
+      }
     })
 
     for (const product of dbProducts) {
