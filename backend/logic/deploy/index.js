@@ -302,7 +302,6 @@ async function deploy({
     log.info(`Configuring DNS...`)
     try {
       await dnsConfig({
-        network,
         networkConfig,
         subdomain,
         zone,
