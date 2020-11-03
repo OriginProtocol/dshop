@@ -20,6 +20,12 @@ const PaymentStatusText = ({ status }) => {
     case PaymentStates.Pending:
       classList.push('pending')
       labelText = fbt('Pending', 'Pending')
+      break
+
+    case PaymentStates.Rejected:
+      classList.push('rejected')
+      labelText = fbt('Rejected', 'Rejected')
+      break
   }
 
   return <div className={classList.join(' ')}>{labelText}</div>

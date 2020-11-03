@@ -8,7 +8,8 @@
     color: var(--button-color);
     border-color: var(--button-color);
   }
-  .btn:hover {
+
+  .btn:not(:disabled):hover {
     @apply text-white;
     background-color: var(--button-color);
   }
@@ -18,7 +19,7 @@
     background-color: var(--button-color);
   }
 
-  .btn-primary:hover {
+  .btn-primary:not(:disabled):hover {
     @apply bg-white;
     color: var(--button-color);
   }

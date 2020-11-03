@@ -4,7 +4,7 @@ const get = require('lodash/get')
 
 const { OrderPaymentStatuses, OrderPaymentTypes } = require('../../enums')
 const { Sentry } = require('../../sentry')
-const { Order } = require('../../models')
+const { Order, Product } = require('../../models')
 const sendNewOrderEmail = require('../../utils/emails/newOrder')
 const discordWebhook = require('../../utils/discordWebhook')
 const { autoFulfillOrder } = require('../printful')
@@ -180,6 +180,8 @@ async function processNewOrder({
     orderObj.commissionPending = Math.floor(data.subTotal / 200)
   }
 
+  orderObj.data.error = []
+
   // Validate any discount applied to the order.
   // TODO: in case the discount fails validation, consider rejecting the order
   //       and setting its status to "Invalid".
@@ -187,7 +189,21 @@ async function processNewOrder({
     markIfValid: true
   })
   if (!valid) {
-    orderObj.data.error = error
+    orderObj.data.error.push(error)
+  }
+
+  // Note: Not throwing here because it could cause an issue
+  // if the order isn't created on Dshop. It'd be hard to
+  // refund in case of Stripe and other payment methods
+  const { error: inventoryError } = await updateInventoryData(
+    shop,
+    shopConfig,
+    data
+  )
+
+  orderObj.data.inventoryError = inventoryError
+  if (!inventoryError) {
+    orderObj.data.error.push(inventoryError)
   }
 
   // Create the order in the DB.
@@ -293,6 +309,8 @@ async function updatePaymentStatus(order, newState, shop) {
     }
   }
 
+  const shopConfig = getConfig(shop.config)
+
   let refundError = get(order, 'data.refundError')
   if (newState === OrderPaymentStatuses.Refunded) {
     // Initiate a refund in case of Stripe and PayPal
@@ -305,17 +323,37 @@ async function updatePaymentStatus(order, newState, shop) {
         break
     }
   } else if (newState === OrderPaymentStatuses.Paid) {
-    const shopConfig = getConfig(shop.config)
     if (shopConfig.printful && shopConfig.printfulAutoFulfill) {
       await autoFulfillOrder(order, shopConfig, shop)
     }
+  }
+
+  const shouldUpdateInventory =
+    shopConfig.inventory &&
+    !order.data.inventoryError &&
+    [
+      OrderPaymentStatuses.Refunded,
+      OrderPaymentStatuses.Rejected,
+      OrderPaymentStatuses.Paid
+    ].includes(newState)
+
+  let inventoryError
+  if (shouldUpdateInventory) {
+    const { error } = await updateInventoryData(
+      shop,
+      shopConfig,
+      order.data,
+      newState !== OrderPaymentStatuses.Paid
+    )
+    inventoryError = error
   }
 
   await order.update({
     paymentStatus: newState,
     data: {
       ...order.data,
-      refundError
+      refundError,
+      inventoryError
     }
   })
 
@@ -371,6 +409,106 @@ async function processDeferredPayment(paymentCode, paymentType, shop, event) {
   }
 
   return false
+}
+
+/**
+ * Updates the availability of the products after a new order
+ * or an order cancelation
+ *
+ * @param {model.Shop} shop
+ * @param {Object} shopConfig Shop's decrypted config
+ * @param {Object} cartData Cart data
+ * @param {Boolean} increment Adds to the quantity instead of decreasing, to be used when cancelling/rejecting
+ *
+ * @returns {{
+ *  success,
+ *  error
+ * }}
+ */
+async function updateInventoryData(
+  shop,
+  shopConfig,
+  cartData,
+  increment = false
+) {
+  if (!shopConfig.inventory) {
+    return
+  }
+
+  const quantModifier = increment ? 1 : -1
+
+  const cartItems = get(cartData, 'items', [])
+  const dbProducts = await Product.findAll({
+    where: {
+      shopId: shop.id,
+      productId: cartItems.map((item) => item.product)
+    }
+  })
+
+  const allValidProducts = cartItems.every(
+    (item) => !!dbProducts.find((product) => product.productId === item.product)
+  )
+
+  if (!allValidProducts) {
+    log.error(`[Shop ${shop.id}] Invalid product ID`, cartItems)
+    return {
+      error: 'Some products in this order are unavailable'
+    }
+  }
+
+  for (const product of dbProducts) {
+    const allItems = cartItems.filter(
+      (item) => item.product === product.productId
+    )
+    for (const item of allItems) {
+      const variantId = get(item, 'variant')
+
+      if (variantId == null) {
+        log.error(
+          `[Shop ${shop.id}] Invalid variant ID`,
+          product.productId,
+          variantId
+        )
+        return {
+          error: 'Some products in this order are unavailable'
+        }
+      }
+
+      const quant = quantModifier * item.quantity
+
+      const variantStock = product.variantsStock[variantId] + quant
+      const productStock = product.stockLeft + quant
+
+      if (!increment && (productStock < 0 || variantStock < 0)) {
+        log.error(
+          `[Shop ${shop.id}] Product has insufficient stock`,
+          product.productId,
+          variantId
+        )
+        return {
+          error: 'Some products in this order are out of stock'
+        }
+      }
+
+      log.debug(
+        `Updating stock of product ${product.productId} to ${productStock} and variant ${variantId} to ${variantStock}`
+      )
+
+      await product.update({
+        stockLeft: productStock,
+        variantsStock: {
+          ...product.variantsStock,
+          [variantId]: variantStock
+        }
+      })
+    }
+  }
+
+  log.info(`Updated inventory.`)
+
+  return {
+    success: true
+  }
 }
 
 module.exports = {

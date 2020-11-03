@@ -12,7 +12,13 @@ function reducer(state, newState) {
   return { ...state, ...newState }
 }
 
-const configFields = ['css', 'metaDescription', 'logErrors', 'gaCode']
+const configFields = [
+  'css',
+  'metaDescription',
+  'logErrors',
+  'gaCode',
+  'inventory'
+]
 
 const AdvancedSettings = () => {
   const { config } = useConfig()
@@ -164,6 +170,27 @@ const AdvancedSettings = () => {
             </div>
 
             <input {...input('gaCode')} />
+          </div>
+
+          <label>
+            <fbt desc="admin.settings.advanced.errorReporting">
+              Inventory Management
+            </fbt>
+          </label>
+          <div className="form-check mb-3">
+            <label className="form-check-label">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                checked={state.inventory}
+                onChange={(e) =>
+                  setState({ inventory: e.target.checked, hasChanges: true })
+                }
+              />
+              <fbt desc="admin.settings.advanced.inventoryManagement">
+                Enable Inventory Management
+              </fbt>
+            </label>
           </div>
         </div>
       </div>

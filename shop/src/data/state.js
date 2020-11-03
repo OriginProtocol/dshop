@@ -110,7 +110,7 @@ const reducer = (state, action) => {
       title: action.product.title,
       product: action.product.id,
       options: action.variant.options,
-      quantity: action.product.quantity || 1,
+      quantity: action.quantity || 1,
       variant: action.variant.id,
       price: action.variant.price,
       imageUrl: action.variant.imageUrl,
@@ -126,7 +126,10 @@ const reducer = (state, action) => {
     if (existingIdx >= 0) {
       const quantity = get(newState, `cart.items[${existingIdx}].quantity`)
       let newQuantity = quantity + 1
-      if (maxQuantity && newQuantity > maxQuantity) {
+      if (
+        (maxQuantity && newQuantity > maxQuantity) ||
+        newQuantity > action.variant.quantity
+      ) {
         newQuantity = maxQuantity
       }
       newState = set(

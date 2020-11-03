@@ -3,6 +3,7 @@ import React from 'react'
 import fbt from 'fbt'
 
 import formatPrice from 'utils/formatPrice'
+import useConfig from 'utils/useConfig'
 import SelectVariantImage from './_SelectVariantImage'
 
 const EditVariants = ({
@@ -13,6 +14,7 @@ const EditVariants = ({
   disabled,
   currency
 }) => {
+  const { config } = useConfig()
   if (!options || !variants) return null
 
   return (
@@ -31,6 +33,11 @@ const EditVariants = ({
           <th>
             <fbt desc="SKU">SKU</fbt>
           </th>
+          {!config.inventory ? null : (
+            <th>
+              <fbt desc="AvailableStock">Available Stock</fbt>
+            </th>
+          )}
           <th>
             <fbt desc="Image">Image</fbt>
           </th>
@@ -100,6 +107,25 @@ const EditVariants = ({
                   />
                 </div>
               </td>
+              {!config.inventory ? null : (
+                <td>
+                  <div className="form-group m-0">
+                    <input
+                      value={variant.quantity}
+                      className="form-control"
+                      type="number"
+                      min="0"
+                      step="1"
+                      disabled={!variant.available || disabled}
+                      onChange={(e) => {
+                        const updatedVariants = [...variants]
+                        updatedVariants[index].quantity = e.target.value
+                        onChange(updatedVariants)
+                      }}
+                    />
+                  </div>
+                </td>
+              )}
               <td>
                 <SelectVariantImage
                   selection={variantImage}
