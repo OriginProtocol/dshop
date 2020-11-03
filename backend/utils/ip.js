@@ -2,6 +2,7 @@
  * IP address utilities
  */
 const fetch = require('node-fetch')
+const memoize = require('lodash/memoize')
 const { getLogger } = require('./logger')
 const { IS_DEV, EXTERNAL_IP, EXTERNAL_IP_SERVICE_URL } = require('./const')
 
@@ -12,7 +13,7 @@ const log = getLogger('utils.ip')
  *
  * @returns {string} IP address
  */
-async function getMyIP() {
+async function _getMyIP() {
   if (typeof EXTERNAL_IP !== 'undefined') {
     log.debug(`Using preconfigured IP address for shop host (${EXTERNAL_IP})`)
     return EXTERNAL_IP
@@ -39,5 +40,5 @@ async function resolveIP() {
 }
 
 module.exports = {
-  getMyIP
+  getMyIP: memoize(_getMyIP)
 }
