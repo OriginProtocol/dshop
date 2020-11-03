@@ -180,6 +180,8 @@ async function processNewOrder({
     orderObj.commissionPending = Math.floor(data.subTotal / 200)
   }
 
+  orderObj.data.error = []
+
   // Validate any discount applied to the order.
   // TODO: in case the discount fails validation, consider rejecting the order
   //       and setting its status to "Invalid".
@@ -187,13 +189,12 @@ async function processNewOrder({
     markIfValid: true
   })
   if (!valid) {
-    orderObj.data.error = error
+    orderObj.data.error.push(error)
   }
 
-  // Note: Not throwing here because it could
-  // cause if the order isn't created on Dshop
-  // it'd be hard to refund in case of Stripe
-  // and other payment methods
+  // Note: Not throwing here because it could cause an issue
+  // if the order isn't created on Dshop. It'd be hard to
+  // refund in case of Stripe and other payment methods
   const { error: inventoryError } = await updateInventoryData(
     shop,
     shopConfig,
@@ -201,8 +202,8 @@ async function processNewOrder({
   )
 
   orderObj.data.inventoryError = inventoryError
-  if (!orderObj.data.error) {
-    orderObj.data.error = inventoryError
+  if (!inventoryError) {
+    orderObj.data.error.push(inventoryError)
   }
 
   // Create the order in the DB.
@@ -451,7 +452,7 @@ async function updateInventoryData(
   if (!allValidProducts) {
     log.error(`[Shop ${shop.id}] Invalid product ID`, cartItems)
     return {
-      error: 'Some products in your cart are unavailable'
+      error: 'Some products in this order are unavailable'
     }
   }
 
@@ -469,7 +470,7 @@ async function updateInventoryData(
           variantId
         )
         return {
-          error: 'Some products in your cart are unavailable'
+          error: 'Some products in this order are unavailable'
         }
       }
 
@@ -485,7 +486,7 @@ async function updateInventoryData(
           variantId
         )
         return {
-          error: 'Some products in your cart are out of stock'
+          error: 'Some products in this order are out of stock'
         }
       }
 

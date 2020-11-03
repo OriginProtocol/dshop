@@ -19,6 +19,10 @@ module.exports = {
         updated_at: Sequelize.DATE
       })
       await queryInterface.addIndex(tableName, ['shop_id'])
+      await queryInterface.addConstraint(tableName, ['shop_id', 'product_id'], {
+        type: 'unique',
+        name: 'shop_product_composite_index'
+      })
     })
   },
   down: queryInterface => {

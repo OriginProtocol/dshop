@@ -74,7 +74,7 @@ module.exports = function (router) {
 
     res.status(200).send({
       success: true,
-      products
+      products: products.map((p) => p.get({ plain: true }))
     })
   })
 
@@ -99,7 +99,9 @@ module.exports = function (router) {
 
     res.status(200).send({
       success: true,
-      product
+      product: product.get({
+        plain: true
+      })
     })
   })
 }
