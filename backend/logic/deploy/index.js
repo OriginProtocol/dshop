@@ -23,6 +23,7 @@ const { queues } = require('../../queues')
 const { ShopDomainStatuses } = require('../../enums')
 const { decryptConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
+const { getMyIP } = require('../../utils/ip')
 const { assert } = require('../../utils/validators')
 const { DSHOP_CACHE } = require('../../utils/const')
 
@@ -376,10 +377,10 @@ async function deploy({
         })
       }
     } else {
-      // IPFS deployment
+      // Hosted by backend
       await queues.autosslQueue.add({
         url: `https://${fqdn}/`,
-        host: ipfsGateway
+        host: await getMyIP()
       })
     }
   }
