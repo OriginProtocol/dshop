@@ -11,6 +11,7 @@ const kebabCase = require('lodash/kebabCase')
 
 const { getConfig } = require('./utils/encryptedConfig')
 const { sequelize, Network } = require('./models')
+const hostCache = require('./utils/hostCache')
 const { getLogger } = require('./utils/logger')
 const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
 const { Sentry, sentryEventPrefix } = require('./sentry')
@@ -114,18 +115,29 @@ async function getNetworkName() {
 
 router.get('/', async (req, res) => {
   let html
-  try {
-    html = fs.readFileSync(`${__dirname}/dist/index.html`).toString()
-  } catch (e) {
-    return res.send('')
+  const authToken = await hostCache(req.hostname)
+
+  if (authToken) {
+    try {
+      html = fs
+        .readFileSync(`${DSHOP_CACHE}/${authToken}/public/index.html`)
+        .toString()
+    } catch (e) {
+      return res.status(404).send('')
+    }
+  } else {
+    try {
+      html = fs.readFileSync(`${__dirname}/dist/index.html`).toString()
+    } catch (e) {
+      return res.send('')
+    }
+
+    const NETWORK = await getNetworkName()
+    html = html
+      .replace('DATA_DIR', '')
+      .replace('TITLE', 'Origin Dshop')
+      .replace(/NETWORK/g, NETWORK)
   }
-
-  const NETWORK = await getNetworkName()
-  html = html
-    .replace('DATA_DIR', '')
-    .replace('TITLE', 'Origin Dshop')
-    .replace(/NETWORK/g, NETWORK)
-
   res.send(html)
 })
 
@@ -155,13 +167,28 @@ router.get('/theme/:theme', async (req, res) => {
 })
 
 router.get('*', async (req, res, next) => {
+  const authToken = await hostCache(req.hostname)
   const split = req.path.split('/')
-  if (split.length <= 2) {
+
+  if (!authToken && split.length <= 2) {
     return next()
   }
-  const dataDir = decodeURIComponent(split[1])
-  const dir = `${DSHOP_CACHE}/${dataDir}/data`
-  req.url = split.slice(2).join('/')
+
+  /**
+   * We're making some decisions on what source we're serving from here.
+   *
+   * 1) If the authToken was included in the URL, it's a data dir access.
+   * 2) If it's a known deployed hostname, we want to serve the assembled shop.
+   * 3) If all else failed, it's the admin
+   */
+  const partInUrl = decodeURIComponent(split[1])
+  const dataDir = authToken ? authToken : decodeURIComponent(split[1])
+  const isNamedDataAccess =
+    partInUrl === authToken || (!!partInUrl && !authToken)
+  const dir = `${DSHOP_CACHE}/${dataDir}${
+    isNamedDataAccess ? '/data' : '/public'
+  }`
+  req.url = isNamedDataAccess ? split.slice(2).join('/') : req.path
 
   // When serving config.json from backend, override active network settings.
   // This prevents problems when, eg, the backend specified in config.json does

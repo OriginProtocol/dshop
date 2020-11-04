@@ -11,7 +11,7 @@ const removeErrorKeys = (obj) => {
 }
 
 const isEmptyRateObj = (rateObj) => {
-  return rateObj.rate === 0 && !rateObj.country
+  return !rateObj.rate && !rateObj.country
 }
 
 export default (state) => {

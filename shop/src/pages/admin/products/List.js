@@ -6,6 +6,7 @@ import get from 'lodash/get'
 import useProducts from 'utils/useProducts'
 import usePaginate from 'utils/usePaginate'
 import useShopConfig from 'utils/useShopConfig'
+import useConfig from 'utils/useConfig'
 import useSearchQuery from 'utils/useSearchQuery'
 
 import ProductImage from 'components/ProductImage'
@@ -26,6 +27,7 @@ const AdminProducts = () => {
   const opts = useSearchQuery()
 
   const { shopConfig } = useShopConfig()
+  const { config } = useConfig()
   const location = useLocation()
   const history = useHistory()
 
@@ -114,6 +116,12 @@ const AdminProducts = () => {
               <th onClick={sortByColumnCallback('price')}>
                 <fbt desc="Price">Price</fbt> {getSortIcon('price')}
               </th>
+              {!config.inventory ? null : (
+                <th onClick={sortByColumnCallback('quantity')}>
+                  <fbt desc="StockLeft">Stock Left</fbt>{' '}
+                  {getSortIcon('quantity')}
+                </th>
+              )}
               <th>
                 <fbt desc="Collections">Collections</fbt>
               </th>
@@ -146,6 +154,7 @@ const AdminProducts = () => {
                     <Price amount={product.price} />
                   </div>
                 </td>
+                {!config.inventory ? null : <td>{product.quantity}</td>}
                 <td>{getCollections(product)}</td>
                 <td>
                   {product.externalId ? null : (

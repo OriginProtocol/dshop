@@ -12,8 +12,6 @@ import Discount from './_Discount'
 export const OrderSummary = ({ cart, discount = true }) => {
   const currencyOpts = useCurrencyOpts()
 
-  console.log(cart)
-
   return (
     <>
       <div

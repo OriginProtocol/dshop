@@ -1,3 +1,4 @@
+const path = require('path')
 require('dotenv').config()
 const randomstring = require('randomstring')
 
@@ -66,7 +67,8 @@ const {
   REDIS_URL,
   IPFS_GATEWAY, // IPFS gateway override
   BUCKET_PREFIX = DEFAULT_BUCKET_PREFIX,
-  SERVICE_PREFIX = DEFAULT_SERVICE_PREFIX
+  SERVICE_PREFIX = DEFAULT_SERVICE_PREFIX,
+  EXTERNAL_IP
 } = process.env
 
 /**
@@ -77,9 +79,12 @@ const {
 const DATA_URL = null
 const PRINTFUL_URL = 'https://api.printful.com'
 
-const DSHOP_CACHE = IS_TEST
-  ? TEST_DSHOP_CACHE
-  : process.env.DSHOP_CACHE || `${__dirname}/../data`
+// Service that returns a plaintext IP for a GET request
+const EXTERNAL_IP_SERVICE_URL = 'https://api.ipify.org'
+
+const DSHOP_CACHE = path.resolve(
+  IS_TEST ? TEST_DSHOP_CACHE : process.env.DSHOP_CACHE || `${__dirname}/../data`
+)
 
 const THEMES_CACHE = IS_TEST
   ? TEST_THEMES_CACHE
@@ -110,5 +115,7 @@ module.exports = {
   PINATA_API,
   PINATA_GATEWAY,
   BUCKET_PREFIX,
-  SERVICE_PREFIX
+  SERVICE_PREFIX,
+  EXTERNAL_IP,
+  EXTERNAL_IP_SERVICE_URL
 }

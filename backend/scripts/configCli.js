@@ -205,7 +205,7 @@ async function checkStripe(network, shops) {
     log.info(`Checking Stripe config for shop ${shop.id} ${shop.name}`)
     const shopConfig = getConfig(shop.config)
     const { success, error } = await checkStripeConfig(
-      shop.id,
+      shop,
       shopConfig,
       networkConfig
     )

@@ -1,7 +1,8 @@
 const some = require('lodash/some')
 const { configureCDN } = require('../logic/deploy/cdn')
 const { getLogger } = require('../utils/logger')
-const { dnsResolve, hasNS, verifyDNS } = require('../utils/dns')
+const { getMyIP } = require('../utils/ip')
+const { hasNS, verifyDNS } = require('../utils/dns')
 const { decryptConfig } = require('../utils/encryptedConfig')
 const { Network, ShopDeployment, ShopDomain } = require('../models')
 const { ShopDomainStatuses } = require('../enums')
@@ -51,12 +52,14 @@ module.exports = function (router) {
         })
         const domains = dres.map((d) => d.domain)
 
-        await configureCDN({
-          networkConfig,
-          shop: req.shop,
-          deployment: deployments[0],
-          domains
-        })
+        if (req.shop.enableCdn) {
+          await configureCDN({
+            networkConfig,
+            shop: req.shop,
+            deployment: deployments[0],
+            domains
+          })
+        }
       }
 
       res.json({ success: true, domain })
@@ -107,6 +110,8 @@ module.exports = function (router) {
       error = 'Invalid network'
     }
 
+    const networkConfig = decryptConfig(network.config)
+
     /**
      * A bit of guesswork being done here, but if previous domains have IPs
      * associated, this new one probably should as well.
@@ -116,16 +121,16 @@ module.exports = function (router) {
       const ips = domains.filter((d) => !!d.ipAddress).map((d) => d.ipAddress)
       rrtype = 'A'
       rvalue = ips[0]
-    } else {
-      const ipfsURL = network ? new URL(network.ipfs) : null
+    } else if (network) {
+      const url = new URL(networkConfig.backendUrl)
 
       // A gateway with an unusual port won't work for this
-      if (network && !['', '443', '80'].includes(ipfsURL.port)) {
+      if (network && !['', '443', '80'].includes(url.port)) {
         log.warn(
-          `Invalid IPFS gateway(${network.ipfs}). Cannot use as AutoSSL gateway`
+          `Invalid domain target(${url.host}). Probably not an AutoSSL gateway`
         )
         success = false
-        error = 'Cannot use this IPFS gateway for DNS configuration'
+        error = 'Cannot use this target for DNS configuration'
       }
 
       // If success so far...
@@ -134,12 +139,11 @@ module.exports = function (router) {
           isApex = await hasNS(domain)
 
           if (isApex) {
-            const ips = await dnsResolve(ipfsURL.hostname, 'A')
             rrtype = 'A'
-            rvalue = ips.join(',')
+            rvalue = await getMyIP()
           } else {
             rrtype = 'CNAME'
-            rvalue = `${ipfsURL.hostname}.` // Trailing dot is DNS root terminator
+            rvalue = `${url.hostname}.` // Trailing dot is DNS root terminator
           }
         } catch (err) {
           log.error('Error checking DNS: ', err)

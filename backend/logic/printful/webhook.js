@@ -5,7 +5,7 @@ const { Order, Shop } = require('../../models')
 const { DSHOP_CACHE } = require('../../utils/const')
 const { PrintfulWebhookEvents } = require('../../utils/enums')
 const sendNewOrderEmail = require('../../utils/emails/newOrder')
-const encConf = require('../../utils/encryptedConfig')
+const { decryptConfig } = require('../../utils/encryptedConfig')
 const { printfulSyncQueue } = require('../../queues/queues')
 const { getLogger } = require('../../utils/logger')
 
@@ -108,7 +108,7 @@ const checkPrintfulWebhook = async (shopId, shopConfig, networkConfig) => {
     const resp = await fetch(apiKey, '/webhooks', 'GET')
     respJson = await resp.json()
     if (!resp.ok) {
-      error = respJson
+      error = JSON.stringify(respJson)
     }
   } catch (err) {
     error = err.message
@@ -205,7 +205,8 @@ const processUpdatedEvent = async (event, shopId) => {
 
   const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
 
-  const apiKey = await encConf.get(shopId, 'printful')
+  const shopConfig = decryptConfig(shop.config)
+  const apiKey = get(shopConfig, 'printful')
 
   log.debug(
     `Shop ${shopId} - Product ${id} updated. Started to sync all products...`

@@ -3,10 +3,11 @@ import React, { useState } from 'react'
 import { useStateValue } from 'data/state'
 import useProduct from 'utils/useProduct'
 import useIsMobile from 'utils/useIsMobile'
-
+import useConfig from 'utils/useConfig'
 import Link from 'components/Link'
 
 const Product = ({ match }) => {
+  const { config } = useConfig()
   const isMobile = useIsMobile()
   const [addedToCart, setAddedToCart] = useState()
   const [, dispatch] = useStateValue()
@@ -15,6 +16,8 @@ const Product = ({ match }) => {
   if (loading || !product) {
     return null
   }
+
+  const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
 
   const Images = () =>
     product.imageUrls.map((image, idx) => <img key={idx} src={image} />)
@@ -33,12 +36,14 @@ const Product = ({ match }) => {
           href="#"
           onClick={(e) => {
             e.preventDefault()
+            if (isOutOfStock) return
             dispatch({ type: 'addToCart', product, variant })
             setAddedToCart(true)
           }}
-          className={btnCls}
+          className={`${btnCls} ${isOutOfStock ? 'opacity-50' : ''}`}
+          disabled={isOutOfStock}
         >
-          Add to Cart
+          {isOutOfStock ? 'Out of stock' : 'Add to Cart'}
         </a>
       )}
     </>

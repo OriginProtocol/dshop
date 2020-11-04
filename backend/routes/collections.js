@@ -2,11 +2,11 @@ const fetch = require('node-fetch')
 const fs = require('fs')
 const writeFileSync = require('write-file-atomic').sync
 const path = require('path')
-const pick = require('lodash/pick')
+const { get, pick } = require('lodash')
 
 const { authSellerAndShop, authRole } = require('./_auth')
 const { DSHOP_CACHE } = require('../utils/const')
-const encConf = require('../utils/encryptedConfig')
+const { decryptConfig } = require('../utils/encryptedConfig')
 const { findShopByHostname } = require('../utils/shop')
 
 module.exports = function (router) {
@@ -77,7 +77,7 @@ module.exports = function (router) {
     '(/collections/:collection)?/products/:product',
     findShopByHostname,
     async (req, res) => {
-      if (!res.shop) {
+      if (!req.shop) {
         return res.send('')
       }
       let html
@@ -87,7 +87,8 @@ module.exports = function (router) {
         return res.send('')
       }
 
-      const dataUrl = await encConf.get(req.shop.id, 'dataUrl')
+      const shopConfig = decryptConfig(req.shop.config)
+      const dataUrl = get(shopConfig, 'dataUrl')
 
       const url = `${dataUrl}${req.params.product}/data.json`
       const dataRaw = await fetch(url)

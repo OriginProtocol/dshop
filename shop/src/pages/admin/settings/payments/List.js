@@ -96,10 +96,13 @@ const PaymentSettings = () => {
       upholdApi,
       upholdClient,
       upholdSecret,
-      paypal
+      paypalClientId,
+      paypalClientSecret
     } = shopConfig
-    const stripeEnabled = !!stripeBackend
-    const upholdEnabled = !!upholdApi && !!upholdClient && !!upholdSecret
+    const stripeEnabled = Boolean(stripeBackend)
+    const upholdEnabled =
+      Boolean(upholdApi) && Boolean(upholdClient) && Boolean(upholdSecret)
+    const paypalEnabled = Boolean(paypalClientSecret) && Boolean(paypalClientId)
 
     return [
       {
@@ -121,7 +124,7 @@ const PaymentSettings = () => {
       {
         id: 'paypal',
         title: 'PayPal',
-        description: paypal ? (
+        description: paypalEnabled ? (
           <fbt desc="admin.settings.payments.paypalEnabledDesc">
             Your PayPal account has been connected
           </fbt>
@@ -132,7 +135,7 @@ const PaymentSettings = () => {
           </fbt>
         ),
         icon: <Icons.PayPal />,
-        enabled: paypal
+        enabled: paypalEnabled
       },
       {
         id: 'uphold',
