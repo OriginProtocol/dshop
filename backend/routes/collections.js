@@ -6,9 +6,8 @@ const { get, pick } = require('lodash')
 
 const { authSellerAndShop, authRole } = require('./_auth')
 const { DSHOP_CACHE } = require('../utils/const')
-const encConf = require('../utils/encryptedConfig')
-const { findShopByHostname } = require('../utils/shop')
 const { decryptConfig } = require('../utils/encryptedConfig')
+const { findShopByHostname } = require('../utils/shop')
 
 module.exports = function (router) {
   router.put(
