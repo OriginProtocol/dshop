@@ -1,0 +1,82 @@
+[
+  {
+    "name": "aws-files",
+    "description": "S3 bucket deployments",
+    "supported": true,
+    "type": "files",
+    "depends": null,
+    "requiresConfig": ["awsAccessKey", "awsAccessSecret"]
+  },
+  {
+    "name": "ipfs-cluster",
+    "description": "IPFS Cluster Files pinning",
+    "supported": true,
+    "type": "files",
+    "depends": null,
+    "requiresConfig": ["ipfsApi", "ipfsClusterUser", "ipfsClusterPassword"]
+  },
+  {
+    "name": "ipfs-pinata",
+    "description": "Pinata IPFS pinning",
+    "supported": true,
+    "type": "files",
+    "depends": null,
+    "requiresConfig": ["pinataKey", "pinataSecret"]
+  },
+  {
+    "name": "gcp-files",
+    "description": "GCS bucket deployments",
+    "supported": true,
+    "type": "files",
+    "depends": null,
+    "requiresConfig": ["gcpCredentials"]
+  },
+  {
+    "name": "aws-cdn",
+    "description": "AWS Cloudfront deployments",
+    "supported": false,
+    "type": "cdn",
+    "depends": ["aws-files", "aws-dns"],
+    "requiresConfig": ["awsAccessKey", "awsAccessSecret"]
+  },
+  {
+    "name": "gcp-cdn",
+    "description": "Cloud CDN deployments",
+    "supported": true,
+    "type": "cdn",
+    "depends": ["gcp-files", "gcp-dns"],
+    "requiresConfig": ["gcpCredentials"]
+  },
+  {
+    "name": "aws-dns",
+    "description": "Route53 configuration for node domain",
+    "supported": true,
+    "type": "dns",
+    "depends": null,
+    "requiresConfig": ["awsAccessKey", "awsAccessSecret"]
+  },
+  {
+    "name": "gcp-dns",
+    "description": "Cloud DNS configuration for node domain",
+    "supported": true,
+    "type": "dns",
+    "depends": null,
+    "requiresConfig": ["gcpCredentials"]
+  },
+  {
+    "name": "aws-email",
+    "description": "AWS SES for E-mail notifications",
+    "supported": true,
+    "type": "email",
+    "depends": null,
+    "requiresConfig": ["awsAccessKey", "awsAccessSecret"]
+  },
+  {
+    "name": "sendgrid-email",
+    "description": "Sendgrid for E-mail notifications",
+    "supported": true,
+    "type": "email",
+    "depends": null,
+    "requiresConfig": ["sendgridApiKey", "sendgridUsername", "sendgridPassword"]
+  }
+]
