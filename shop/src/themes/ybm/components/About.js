@@ -1,5 +1,6 @@
 import React from 'react'
 import get from 'lodash/get'
+import * as Slimdown from 'slimdown-js'
 
 import useConfig from 'utils/useConfig'
 import useThemeVars from 'utils/useThemeVars'
@@ -11,8 +12,8 @@ const About = () => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
 
-  const aboutText = get(themeVars, 'about.aboutText')
-  const aboutDescription = get(themeVars, 'about.description')
+  const aboutText = Slimdown.render(get(themeVars, 'about.aboutText', ''))
+  const aboutDesc = Slimdown.render(get(themeVars, 'about.description', ''))
   const header = get(themeVars, 'about.headerImage.0', {})
   const primaryImage = get(themeVars, 'about.primaryImage.0', {})
   const aboutImages = get(themeVars, 'about.aboutImages', [])
@@ -45,15 +46,16 @@ const About = () => {
           {!aboutText ? null : (
             <div
               className="text-lg sm:text-xl p-4 py-8 sm:p-12 whitespace-pre-line font-light"
-              children={aboutText}
+              dangerouslySetInnerHTML={{ __html: aboutText }}
             />
           )}
         </div>
       </div>
       <div className="bg-orange-100 pb-20">
-        <div className="container text-gray-600 text-center py-12 sm:py-24 text-lg sm:text-2xl leading-tight font-light">
-          {aboutDescription}
-        </div>
+        <div
+          className="container text-gray-600 text-center py-12 sm:py-24 text-lg sm:text-2xl leading-tight font-light"
+          dangerouslySetInnerHTML={{ __html: aboutDesc }}
+        />
         <div className="sm:container">
           <div className="flex gap-4 sm:gap-10">
             <div className="flex-1 flex flex-col gap-4 sm:gap-10">

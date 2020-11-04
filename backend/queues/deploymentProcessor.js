@@ -38,7 +38,8 @@ const processor = async (job) => {
     subdomain,
     shop,
     pinner,
-    dnsProvider
+    dnsProvider,
+    skipSSLProve: true
   })
 
   log(90, 'Deployment run completed')
