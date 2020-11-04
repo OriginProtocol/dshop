@@ -19,7 +19,7 @@ const {
   Order,
   Sequelize
 } = require('../models')
-const { ShopDomainStatuses } = require('../enums')
+const { ShopDomainStatuses } = require('../utils/enums')
 const {
   authSellerAndShop,
   authUser,

@@ -18,7 +18,7 @@ const {
   TransactionTypes,
   TransactionStatuses,
   OrderPaymentTypes
-} = require('../enums')
+} = require('../utils/enums')
 const { ListingID, OfferID } = require('../utils/id')
 
 describe('Offers', () => {

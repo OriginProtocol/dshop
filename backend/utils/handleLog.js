@@ -5,7 +5,7 @@ const Web3 = require('web3')
 
 const set = require('lodash/set')
 
-const { OrderPaymentStatuses } = require('../enums')
+const { OrderPaymentStatuses } = require('./enums')
 const { getText, getIPFSGateway } = require('./_ipfs')
 const abi = require('./_abi')
 const { upsertEvent, getEventObj } = require('./events')

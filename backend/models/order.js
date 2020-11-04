@@ -4,7 +4,7 @@ const {
   OrderPaymentStatuses,
   OrderOfferStatuses,
   OrderPaymentTypes
-} = require('../enums')
+} = require('../utils/enums')
 
 module.exports = (sequelize, DataTypes) => {
   const isPostgres = sequelize.options.dialect === 'postgres'

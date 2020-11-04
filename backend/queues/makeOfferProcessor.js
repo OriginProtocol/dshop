@@ -17,7 +17,7 @@ const encConf = require('../utils/encryptedConfig')
 const { getLogger } = require('../utils/logger')
 const { IS_TEST, IS_DEV } = require('../utils/const')
 const { Sentry } = require('../sentry')
-const { TransactionTypes, TransactionStatuses } = require('../enums')
+const { TransactionTypes, TransactionStatuses } = require('../utils/enums')
 const { processNewOrder } = require('../logic/order')
 
 const log = getLogger('offerProcessor')

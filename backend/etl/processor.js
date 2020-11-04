@@ -10,7 +10,7 @@ const {
   Shop,
   ShopDeployment
 } = require('../models')
-const { EtlJobStatuses, ShopDeploymentStatuses } = require('../enums')
+const { EtlJobStatuses, ShopDeploymentStatuses } = require('../utils/enums')
 const { getConfig } = require('../utils/encryptedConfig')
 const { getShopDataUrl } = require('../utils/shop')
 const { DSHOP_CACHE } = require('../utils/const')

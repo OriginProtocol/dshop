@@ -1,7 +1,7 @@
 const chai = require('chai')
 const expect = chai.expect
 
-const { OrderPaymentStatuses } = require('../enums')
+const { OrderPaymentStatuses } = require('../utils/enums')
 const { Order } = require('../models')
 const { processDShopEvent, handleLog } = require('../utils/handleLog')
 

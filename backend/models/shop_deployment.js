@@ -1,4 +1,4 @@
-const { ShopDeploymentStatuses } = require('../enums')
+const { ShopDeploymentStatuses } = require('../utils/enums')
 
 module.exports = (sequelize, DataTypes) => {
   const ShopDeployment = sequelize.define(

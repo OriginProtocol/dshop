@@ -1,9 +1,11 @@
 /**
  * Functionality for deployment records in the database
  */
-const { ShopDeploymentStatuses } = require('../../enums')
 const { ShopDeployment, ShopDomain } = require('../../models')
-const { ShopDomainStatuses } = require('../../enums')
+const {
+  ShopDomainStatuses,
+  ShopDeploymentStatuses
+} = require('../../utils/enums')
 const { assert } = require('../../utils/validators')
 const { getLogger } = require('../../utils/logger')
 

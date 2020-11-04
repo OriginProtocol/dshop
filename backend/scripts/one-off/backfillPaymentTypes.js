@@ -3,7 +3,7 @@
 const get = require('lodash/get')
 
 const { Order } = require('../../models')
-const { OrderPaymentTypes } = require('../../enums')
+const { OrderPaymentTypes } = require('../../utils/enums')
 
 const { getLogger } = require('../../utils/logger')
 const log = getLogger('cli')

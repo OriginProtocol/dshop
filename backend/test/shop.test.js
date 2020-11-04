@@ -6,7 +6,7 @@ const kebabCase = require('lodash/kebabCase')
 const { createShopInDB } = require('../logic/shop/create')
 const deploy = require('../logic/deploy')
 const { decryptConfig, encryptConfig } = require('../utils/encryptedConfig')
-const { AdminLogActions, ShopDeploymentStatuses } = require('../enums')
+const { AdminLogActions, ShopDeploymentStatuses } = require('../utils/enums')
 
 const {
   AdminLog,

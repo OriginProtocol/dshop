@@ -20,7 +20,7 @@
  */
 const { Network } = require('../../models')
 const { queues } = require('../../queues')
-const { ShopDomainStatuses } = require('../../enums')
+const { ShopDomainStatuses } = require('../../utils/enums')
 const { decryptConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
 const { getMyIP } = require('../../utils/ip')

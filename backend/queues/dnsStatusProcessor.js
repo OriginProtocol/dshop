@@ -1,7 +1,7 @@
 const { getLogger } = require('../utils/logger')
 const { Sentry } = require('../sentry')
 const { ShopDomain, Shop } = require('../models')
-const { ShopDomainStatuses } = require('../enums')
+const { ShopDomainStatuses } = require('../utils/enums')
 const { verifyDNS } = require('../utils/dns/index')
 
 const queues = require('./queues')

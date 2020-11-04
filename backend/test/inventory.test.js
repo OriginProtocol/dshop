@@ -10,7 +10,7 @@ const {
   apiRequest
 } = require('./utils')
 const { Order, Product } = require('../models')
-const { OrderPaymentStatuses, OrderPaymentTypes } = require('../enums')
+const { OrderPaymentStatuses, OrderPaymentTypes } = require('../utils/enums')
 
 describe('Inventory', () => {
   let network, shop

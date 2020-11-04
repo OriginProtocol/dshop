@@ -3,7 +3,7 @@ const { Network, Shop, Transaction } = require('../models')
 const queues = require('./queues')
 const { getLogger } = require('../utils/logger')
 const { IS_TEST } = require('../utils/const')
-const { TransactionStatuses } = require('../enums')
+const { TransactionStatuses } = require('../utils/enums')
 
 const log = getLogger('listingCreatedProcessor')
 

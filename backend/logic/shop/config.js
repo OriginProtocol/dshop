@@ -17,7 +17,7 @@ const stripeUtils = require('../../utils/stripe')
 const { DSHOP_CACHE } = require('../../utils/const')
 const { getConfig, setConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
-const { AdminLogActions } = require('../../enums')
+const { AdminLogActions } = require('../../utils/enums')
 
 const log = getLogger('logic.shop.config')
 

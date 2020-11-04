@@ -5,7 +5,7 @@ const every = require('lodash/every')
 const { Resolution } = require('@unstoppabledomains/resolution')
 
 const { Network, ShopDeployment, ShopDomain } = require('../../models')
-const { ShopDomainStatuses } = require('../../enums')
+const { ShopDomainStatuses } = require('../enums')
 const { getLogger } = require('../logger')
 
 const log = getLogger('utils.dns')
