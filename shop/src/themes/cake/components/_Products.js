@@ -60,8 +60,13 @@ const Products = ({ offset = 0, limit = Infinity, onlyFeatured, cols = 3 }) => {
       {productsToRender.slice(offset, offset + limit).map((product) => {
         const relPath =
           product.imageUrl || `${config.backend}/images/default-image.svg`
+        const isOutOfStock = config.inventory && Number(product.quantity) <= 0
         return (
-          <Link key={product.id} to={`/product/${product.id}`}>
+          <Link
+            key={product.id}
+            to={`/product/${product.id}`}
+            className={`${isOutOfStock ? 'opacity-50' : ''}`}
+          >
             <div
               className="w-full bg-cover bg-center bg-no-repeat"
               style={{
@@ -72,7 +77,12 @@ const Products = ({ offset = 0, limit = Infinity, onlyFeatured, cols = 3 }) => {
               }}
             />
             <div className="mt-6 font-bold font-header">{product.title}</div>
-            <div>{formatPrice(product.price, currencyOpts)}</div>
+            <div className="flex">
+              {formatPrice(product.price, currencyOpts)}
+              {!isOutOfStock ? null : (
+                <div className="text-red-500 ml-2">Out of stock</div>
+              )}
+            </div>
           </Link>
         )
       })}

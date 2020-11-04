@@ -204,8 +204,9 @@ async function getOrCreateTestNetwork(opts = {}) {
  * @param {models.Network} network
  * @param {string} sellerPk
  * @param {string} pgpPrivateKeyPass
- * @param {string}pgpPublicKey
- * @param {string}pgpPrivateKey
+ * @param {string} pgpPublicKey
+ * @param {string} pgpPrivateKey
+ * @param {Boolean} inventory
  * @returns {Promise<*>}
  */
 async function createTestShop({
@@ -213,7 +214,8 @@ async function createTestShop({
   sellerPk,
   pgpPrivateKeyPass,
   pgpPublicKey,
-  pgpPrivateKey
+  pgpPrivateKey,
+  inventory
 }) {
   // Create a listing on the blockchain for the shop.
   const listing = {
@@ -240,7 +242,8 @@ async function createTestShop({
       pgpPublicKey,
       pgpPrivateKey,
       pgpPrivateKeyPass,
-      web3Pk: sellerPk
+      web3Pk: sellerPk,
+      inventory
     })
   })
   if (!shop) {

@@ -10,7 +10,6 @@ const log = getLogger('logic.deploy.dns')
  * provided)
  *
  * @param args {object}
- * @param args.network {object} - Network model instance
  * @param args.networkConfig {object} - Decrypted network config
  * @param args.subdomain {string} - Hostname to configure (e.g. 'host' of 'host.example.com')
  * @param args.zone {string} - DNS Zone we're configuring
@@ -19,7 +18,6 @@ const log = getLogger('logic.deploy.dns')
  * @param args.ipAddresses {string} - The IP address if configuring an A record (optional)
  */
 async function configureShopDNS({
-  network,
   networkConfig,
   subdomain,
   zone,
@@ -27,15 +25,15 @@ async function configureShopDNS({
   dnsProvider,
   ipAddresses
 }) {
-  const gatewayURL = new URL(network.ipfs)
-  const gatewayHost = gatewayURL.hostname
+  const backendUrl = new URL(networkConfig.backendUrl)
+  const backendHost = backendUrl.hostname
 
   if (dnsProvider === 'cloudflare') {
     if (!networkConfig.cloudflareApiKey) {
       log.warn('Cloudflare DNS Proider selected but no credentials configured!')
     } else {
       await setCloudflareRecords({
-        ipfsGateway: gatewayHost,
+        ipfsGateway: backendHost,
         zone,
         subdomain,
         hash,
@@ -49,7 +47,7 @@ async function configureShopDNS({
       log.warn('GCP DNS Proider selected but no credentials configured!')
     } else {
       await setCloudDNSRecords({
-        ipfsGateway: gatewayHost,
+        ipfsGateway: backendHost,
         zone,
         subdomain,
         hash,
@@ -62,7 +60,7 @@ async function configureShopDNS({
       log.warn('AWS DNS Proider selected but no credentials configured!')
     } else {
       await setRoute53Records({
-        ipfsGateway: gatewayHost,
+        ipfsGateway: backendHost,
         zone,
         subdomain,
         hash,

@@ -62,6 +62,11 @@ module.exports = (sequelize, DataTypes) => {
       as: 'shopDomains',
       onDelete: 'cascade'
     })
+    Shop.hasMany(models.Product, {
+      as: 'products',
+      targetKey: 'shopId',
+      onDelete: 'cascade'
+    })
   }
 
   return Shop

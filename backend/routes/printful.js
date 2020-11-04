@@ -1,5 +1,6 @@
+const get = require('lodash/get')
 const { authSellerAndShop, authShop } = require('./_auth')
-const encConf = require('../utils/encryptedConfig')
+const { decryptConfig } = require('../utils/encryptedConfig')
 const { findOrder } = require('../utils/orders')
 const { PrintfulWebhookEvents } = require('../utils/enums')
 const {
@@ -13,7 +14,7 @@ const {
   processShippedEvent,
   processUpdatedEvent
 } = require('../logic/printful/webhook')
-const { ExternalEvent } = require('../models')
+const { ExternalEvent, Shop } = require('../models')
 
 const { getLogger } = require('../utils/logger')
 
@@ -28,7 +29,8 @@ module.exports = function (router) {
     authSellerAndShop,
     findOrder,
     async (req, res) => {
-      const apiKey = await encConf.get(req.order.shopId, 'printful')
+      const shopConfig = decryptConfig(req.shop.config)
+      const apiKey = get(shopConfig, 'printful')
       const { statusCode, ...resp } = await fetchOrder(
         apiKey,
         req.params.orderId
@@ -42,7 +44,8 @@ module.exports = function (router) {
     '/orders/:orderId/printful/create',
     authSellerAndShop,
     async (req, res) => {
-      const apiKey = await encConf.get(req.shop.id, 'printful')
+      const shopConfig = decryptConfig(req.shop.config)
+      const apiKey = get(shopConfig, 'printful')
       const opts = { draft: req.body.draft }
       const { status, ...resp } = await placeOrder(apiKey, req.body, opts)
 
@@ -55,7 +58,8 @@ module.exports = function (router) {
     authSellerAndShop,
     findOrder,
     async (req, res) => {
-      const apiKey = await encConf.get(req.order.shopId, 'printful')
+      const shopConfig = decryptConfig(req.shop.config)
+      const apiKey = get(shopConfig, 'printful')
       const { status, ...resp } = await confirmOrder(apiKey, req.params.orderId)
 
       return res.status(status || 200).send(resp)
@@ -63,13 +67,15 @@ module.exports = function (router) {
   )
 
   router.post('/shipping', authShop, async (req, res) => {
-    const apiKey = await encConf.get(req.shop.id, 'printful')
+    const shopConfig = decryptConfig(req.shop.config)
+    const apiKey = get(shopConfig, 'printful')
     const result = await fetchShippingEstimate(apiKey, req.body)
     return res.json(result)
   })
 
   router.post('/printful/tax-rates', authShop, async (req, res) => {
-    const apiKey = await encConf.get(req.shop.id, 'printful')
+    const shopConfig = decryptConfig(req.shop.config)
+    const apiKey = get(shopConfig, 'printful')
     const result = await fetchTaxRates(apiKey, req.body)
     return res.json(result)
   })
@@ -79,7 +85,9 @@ module.exports = function (router) {
     const { shopId, secret } = req.params
 
     try {
-      const storedSecret = await encConf.get(shopId, 'printfulWebhookSecret')
+      const shop = await Shop.findOne({ where: { id: shopId } })
+      const shopConfig = decryptConfig(shop.config)
+      const storedSecret = get(shopConfig, 'printfulWebhookSecret')
 
       if (secret !== storedSecret) {
         log.error('Invalid secret, ignoring event', data)

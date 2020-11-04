@@ -40,6 +40,7 @@ const dbConfigOptionalKeys = [
   'deliveryApi',
   'email', // Email provider: 'aws', 'sendgrid', 'mailgun'
   'emailSubject',
+  'inventory', // Inventory management switch
   'listener',
   'mailgunSmtpLogin',
   'mailgunSmtpPassword',
@@ -89,6 +90,7 @@ const jsonConfigOptionalKeys = [
   'fullTitle',
   'gaCode',
   'instagram',
+  'inventory',
   'logErrors',
   'logo',
   'medium',

@@ -8,7 +8,7 @@ import useFlattenedShippingZones from 'utils/useFlattenedShippingZones'
 
 function useShipping() {
   const [{ cart }, dispatch] = useStateValue()
-  const { shippingZones, loading } = useFlattenedShippingZones()
+  const { shippingZones, loading, error } = useFlattenedShippingZones()
 
   const country = get(cart, 'userInfo.country')
   const countryCode = get(Countries, `${country}.code`)
@@ -44,7 +44,8 @@ function useShipping() {
   return {
     unshippableItems,
     zones: filteredShippingZones,
-    loading
+    loading,
+    error
   }
 }
 

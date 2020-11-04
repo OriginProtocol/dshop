@@ -22,7 +22,7 @@ const Picker = ({ className }) => {
   const [{ cart }, dispatch] = useStateValue()
   const currencyOpts = useCurrencyOpts()
 
-  const { unshippableItems, zones, loading } = useShipping()
+  const { unshippableItems, zones, loading, error } = useShipping()
   return (
     <div className={className}>
       {unshippableItems.length ? (
@@ -39,7 +39,7 @@ const Picker = ({ className }) => {
         <fbt desc="checkout.shipping.loadingCosts">
           Loading shipping costs...
         </fbt>
-      ) : !zones.length ? (
+      ) : !zones.length || error ? (
         <fbt desc="checkout.shipping.loadError">
           Sorry, there was an error calculating shipping costs.
         </fbt>
@@ -73,8 +73,8 @@ const Picker = ({ className }) => {
 export const Shipping = () => {
   const history = useHistory()
   const [{ cart }] = useStateValue()
-  const { unshippableItems, zones } = useShipping()
-  const disabled = unshippableItems.length || !zones.length
+  const { unshippableItems, zones, error } = useShipping()
+  const disabled = error || unshippableItems.length || !zones.length
 
   return (
     <>
