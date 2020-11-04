@@ -49,7 +49,8 @@ module.exports = function (router) {
       'maxUses',
       'onePerCustomer',
       'startTime',
-      'endTime'
+      'endTime',
+      'data'
     ])
     const result = await Discount.update(data, {
       where: {

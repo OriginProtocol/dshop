@@ -1,4 +1,8 @@
+const { DiscountTypeEnums } = require('../enums')
+
 module.exports = (sequelize, DataTypes) => {
+  const isPostgres = sequelize.options.dialect === 'postgres'
+
   const Discount = sequelize.define(
     'Discount',
     {
@@ -15,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING
       },
       discountType: {
-        type: DataTypes.ENUM('fixed', 'percentage')
+        type: DataTypes.ENUM(DiscountTypeEnums)
       },
       value: {
         type: DataTypes.INTEGER
@@ -34,6 +38,9 @@ module.exports = (sequelize, DataTypes) => {
       },
       uses: {
         type: DataTypes.INTEGER
+      },
+      data: {
+        type: isPostgres ? DataTypes.JSONB : DataTypes.JSON
       }
     },
     {

@@ -58,7 +58,7 @@ const validateDiscount = async (code, shop) => {
  * @param {Model.Discount} discount
  */
 const getSafeDiscountProps = (discount) => {
-  return pick(discount, ['code', 'value', 'discountType'])
+  return pick(discount, ['code', 'value', 'discountType', 'data'])
 }
 
 /**
