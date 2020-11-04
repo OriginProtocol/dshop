@@ -9,9 +9,9 @@ const sendNewOrderEmail = require('../../utils/emails/newOrder')
 const discordWebhook = require('../../utils/discordWebhook')
 const { autoFulfillOrder } = require('../printful')
 const { decryptShopOfferData } = require('../../utils/offer')
-const { validateDiscountOnOrder } = require('../../utils/discounts')
 const { getLogger } = require('../../utils/logger')
 
+const { validateDiscountOnOrder } = require('../discount')
 const { processStripeRefund } = require('../payments/stripe')
 const { processPayPalRefund } = require('../payments/paypal')
 const { getConfig } = require('../../utils/encryptedConfig')
@@ -179,28 +179,27 @@ async function processNewOrder({
     orderObj.referrer = util.toChecksumAddress(data.referrer)
     orderObj.commissionPending = Math.floor(data.subTotal / 200)
   }
-
   orderObj.data.error = []
 
-  // Validate any discount applied to the order.
-  // TODO: in case the discount fails validation, consider rejecting the order
-  //       and setting its status to "Invalid".
-  const { valid, error } = await validateDiscountOnOrder(orderObj)
-  if (!valid) {
-    orderObj.data.error.push(error)
+  //
+  // Discount and inventory validation steps.
+  //
+  // Note: If there is an error (ex: item out of stock, unavail discount, ...)
+  // we store the error in the order data but we don't throw. The reason
+  // is that order processing is asynchronous. The buyer already exited
+  // checkout successfully. So we record the order with errors in the DB
+  // and letthe merchant decide if they want to refund the buyer.
+  const discountResult = await validateDiscountOnOrder(orderObj)
+  if (!discountResult.valid) {
+    const discountError = discountResult.error
+    orderObj.data.discountError = discountError
+    orderObj.data.error.push(discountError)
   }
 
-  // Note: Not throwing here because it could cause an issue
-  // if the order isn't created on Dshop. It'd be hard to
-  // refund in case of Stripe and other payment methods
-  const { error: inventoryError } = await updateInventoryData(
-    shop,
-    shopConfig,
-    data
-  )
-
-  orderObj.data.inventoryError = inventoryError
-  if (!inventoryError) {
+  const inventoryResult = await updateInventoryData(shop, shopConfig, data)
+  if (!inventoryResult.success) {
+    const inventoryError = inventoryResult.error
+    orderObj.data.inventoryError = inventoryError
     orderObj.data.error.push(inventoryError)
   }
 
@@ -212,7 +211,9 @@ async function processNewOrder({
   // If the payment is still pending, the order will get fulfilled
   // at the time the payment status gets updated to 'Paid' (for ex. when the
   // merchant marks the payment as received for the order via the admin tool.
-  // TODO: move order fulfillment to a queue.
+  // TODO:
+  //  - Move order fulfillment to a queue.
+  //  - Should we still auto-fulfill in case of an error in inventory or discount validation?
   if (
     shopConfig.printful &&
     shopConfig.printfulAutoFulfill &&
@@ -429,8 +430,9 @@ async function updateInventoryData(
   cartData,
   increment = false
 ) {
+  // Nothing to do if inventory management is not enabled for the shop.
   if (!shopConfig.inventory) {
-    return
+    return { success: true }
   }
 
   const quantModifier = increment ? 1 : -1

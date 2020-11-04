@@ -154,8 +154,7 @@ const AdminEditDiscount = () => {
               code: newState.code,
               status: newState.status,
               maxUses: newState.maxUses ? Number(newState.maxUses) : null,
-              onePerCustomer: newState.onePerCustomer ? true : false,
-              excludeShipping: newState.excludeShipping ? true : false
+              onePerCustomer: newState.onePerCustomer ? true : false
             })
           })
           if (raw.ok) {
@@ -268,19 +267,6 @@ const AdminEditDiscount = () => {
           )}
         </div>
         {Feedback('value')}
-      </div>
-      <div className="form-check mb-3">
-        <label className="form-check-label">
-          <input
-            className="form-check-input"
-            type="checkbox"
-            checked={state.excludeShipping ? true : false}
-            onChange={(e) => setState({ excludeShipping: e.target.checked })}
-          />
-          <fbt desc="admin.discounts.edit.excludeShipping">
-            Exclude shipping price from discount
-          </fbt>
-        </label>
       </div>
       <div className="form-group" style={{ maxWidth: '15rem' }}>
         <label>

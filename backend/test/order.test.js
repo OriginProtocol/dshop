@@ -142,7 +142,7 @@ describe('Orders', () => {
     expect(order.paymentCode).to.equal('code123')
     expect(order.total).to.equal('2500')
     expect(order.currency).to.equal('USD')
-    expect(order.data).to.eql({ ...data, tx: event.transactionHash })
+    expect(order.data).to.eql({ ...data, error: [], tx: event.transactionHash })
   })
 
   it('It should update an order on an OfferAccepted event', async () => {

@@ -182,7 +182,7 @@ describe('Offers', () => {
     expect(order.paymentType).to.equal(jobData.paymentType)
     expect(order.total).to.equal(data.total)
     expect(order.currency).to.equal(data.currency)
-    expect(order.data).to.eql(data)
+    expect(order.data).to.eql({ ...data, error: [] })
   })
 
   it('It should make an off-chain offer with offline payment method', async () => {
@@ -224,7 +224,7 @@ describe('Offers', () => {
     expect(order.paymentType).to.equal(jobData.paymentType)
     expect(order.total).to.equal(data.total)
     expect(order.currency).to.equal(data.currency)
-    expect(order.data).to.eql(data)
+    expect(order.data).to.eql({ ...data, error: [] })
 
     const tx = await Transaction.findOne({
       where: {
