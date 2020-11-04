@@ -292,9 +292,37 @@ async function updateNetworkConfig(network, networkConfig) {
  * @param {models.Network} network
  * @param {models.Shop} shop
  * @param {object} key: seller's PGP key
+ * @param {models.Discount} discount: optional discount
  * @returns {Promise<{data: *, ipfsHash: *}>}
  */
-async function createTestEncryptedOfferData(network, shop, key) {
+async function createTestEncryptedOfferData(
+  network,
+  shop,
+  key,
+  discount = null
+) {
+  const subTotalAmount = 2500
+  const shippingAmount = 400
+
+  // Calculate discount amount, if any.
+  let discountAmount = 0
+  if (discount) {
+    if (discount.corruptTestData) {
+      discountAmount = 9999
+    } else if (discount.discountType === 'percentage') {
+      const totalWithShipping = subTotalAmount + shippingAmount
+      discountAmount = Math.round((totalWithShipping * discount.value) / 100)
+    } else if (discount.discountType === 'fixed') {
+      discountAmount = discount.value * 100
+    } else {
+      throw new Error(`Unexpected discount type: ${discount.discountType}`)
+    }
+  }
+  const totalAmount = Math.max(
+    subTotalAmount + shippingAmount - discountAmount,
+    0
+  )
+
   const data = {
     items: [
       {
@@ -307,21 +335,27 @@ async function createTestEncryptedOfferData(network, shop, key) {
       }
     ],
     instructions: '',
-    subTotal: 2500,
-    discount: 0,
+    subTotal: subTotalAmount,
+    discount: discountAmount,
     donation: 0,
-    total: 2500,
+    total: totalAmount,
     currency: 'USD',
     shipping: {
       id: 'STANDARD',
       label: 'Flat Rate',
-      amount: 399
+      amount: shippingAmount
     },
     paymentMethod: {
       id: 'stripe',
       label: 'Credit Card'
     },
-    discountObj: {},
+    discountObj: discount
+      ? {
+          code: discount.code,
+          discountType: discount.discountType,
+          value: discount.value
+        }
+      : {},
     userInfo: {
       firstName: 'The',
       lastName: 'Mandalorian',

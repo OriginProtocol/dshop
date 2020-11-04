@@ -23,6 +23,8 @@ module.exports = (sequelize, DataTypes) => {
       value: {
         type: DataTypes.INTEGER
       },
+      // Max number of times the discount can be used.
+      // undefined or lower or equal to zero means unlimited.
       maxUses: {
         type: DataTypes.INTEGER
       },
@@ -35,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
       endTime: {
         type: DataTypes.DATE
       },
-      // Counter incremented every time the discount is used.
+      // Counter to track the number of times the discount was used.
       uses: {
         type: DataTypes.INTEGER
       }

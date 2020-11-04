@@ -34,7 +34,7 @@ const validateDiscount = async (code, shop) => {
 
   if (discounts.length > 0) {
     const discount = discounts.find((d) => {
-      return Number(d.maxUses) > 0 ? Number(d.uses) < Number(d.maxUses) : true
+      return Number(d.maxUses) > 0 ? d.uses < d.maxUses : true
     })
 
     if (!discount) {
@@ -102,13 +102,19 @@ const validateDiscountOnOrder = async (orderObj) => {
   }
 
   const appliedDiscountObj = get(cart, 'discountObj')
+  const appliedDiscount = Number(get(cart, 'discount'))
   if (get(cart, 'discountObj.value', 0) === 0) {
-    // Doesn't have any discount applied, skip validation.
-    return { valid: true }
+    // No discount object. Ensure there is no discount amount applied.
+    if (isNaN(appliedDiscount)) {
+      // No discount object and no discount amount. Order is valid.
+      return { valid: true }
+    } else {
+      // Inconsistent data: discount amount present but not discount object.
+      return { error: 'Invalid discount in the cart' }
+    }
   }
 
   // There is a discount object in the cart so we expect a discount amount.
-  const appliedDiscount = Number(get(cart, 'discount'))
   if (isNaN(appliedDiscount)) {
     return { error: 'Invalid discount in the cart' }
   }
@@ -147,6 +153,7 @@ const validateDiscountOnOrder = async (orderObj) => {
 
   // Calculate cart total and subtotal with the discount from DB
   // and verify it against the order
+  // IMPORTANT: Keep this total calculation in sync with shop/src/data/state.js
   const subTotal = cart.items.reduce((total, item) => {
     return total + item.quantity * item.price
   }, 0)
