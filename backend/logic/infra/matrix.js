@@ -59,7 +59,7 @@ function setMatrix(matrix) {
  */
 function getElement(key) {
   const matrix = getMatrix()
-  return find(matrix, e => e.name === key)
+  return find(matrix, (e) => e.name === key)
 }
 
 /**
@@ -70,7 +70,9 @@ function getElement(key) {
  * @returns {boolean} - if given element is configured
  */
 function elementIsConfigured(networkConfig, element) {
-  return every(element.requiresConfig.map(k => k in networkConfig))
+  console.log('element.requiresConfig:', element.requiresConfig)
+  console.log('networkConfig:', networkConfig)
+  return every(element.requiresConfig.map((k) => k in networkConfig))
 }
 
 /**
@@ -81,6 +83,7 @@ function elementIsConfigured(networkConfig, element) {
  */
 function isConfigured(networkConfig, key) {
   const element = getElement(key)
+  console.log('element?', element)
   if (!element) return false
   return elementIsConfigured(networkConfig, element)
 }
@@ -95,7 +98,7 @@ function hasRequiredDependencies(selection) {
   for (const key of selection) {
     const el = getElement(key)
     if (!el.depends) continue
-    if (!every(el.depends, dep => selection.includes(dep))) {
+    if (!every(el.depends, (dep) => selection.includes(dep))) {
       return false
     }
   }
@@ -129,8 +132,8 @@ function dependencyErrors(selection) {
  */
 function getAvailableResources({ networkConfig }) {
   const matrix = getMatrix()
-  const keys = matrix.map(x => x.name)
-  return keys.filter(k => isConfigured(networkConfig, k))
+  const keys = matrix.map((x) => x.name)
+  return keys.filter((k) => isConfigured(networkConfig, k))
 }
 
 /**
@@ -144,23 +147,23 @@ function getAvailableResources({ networkConfig }) {
  * @returns {boolean} - if everything validates correction
  */
 function validateSelection({ networkConfig, selection }) {
-  const errors =[]
+  const errors = []
   const matrix = getMatrix()
-  const keys = matrix.map(x => x.name)
+  const keys = matrix.map((x) => x.name)
 
   // Validate keys given
-  if (!every(selection, s => keys.includes(s))) {
-    const invalidKeys = selection.filter(s => !keys.includes(s))
+  if (!every(selection, (s) => keys.includes(s))) {
+    const invalidKeys = selection.filter((s) => !keys.includes(s))
     errors.push(`Invalid selection key(s): ${invalidKeys.join(', ')}`)
 
     // No need to continue validating invalid keys
-    selection = selection.filter(k => !invalidKeys.includes(k))
+    selection = selection.filter((k) => !invalidKeys.includes(k))
   }
 
   // Validate selection dependencies
   if (!hasRequiredDependencies(selection)) {
     const depErrors = dependencyErrors(selection)
-    depErrors.forEach(de => errors.push(de))
+    depErrors.forEach((de) => errors.push(de))
   }
 
   // Validate configuration
@@ -179,6 +182,7 @@ function validateSelection({ networkConfig, selection }) {
 module.exports = {
   getMatrix,
   setMatrix,
+  isConfigured,
   getAvailableResources,
   validateSelection
 }

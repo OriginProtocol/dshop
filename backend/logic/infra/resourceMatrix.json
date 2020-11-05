@@ -5,7 +5,7 @@
     "supported": true,
     "type": "files",
     "depends": null,
-    "requiresConfig": ["awsAccessKey", "awsAccessSecret"]
+    "requiresConfig": ["awsAccessKeyId", "awsSecretAccessKey"]
   },
   {
     "name": "ipfs-cluster",
@@ -37,7 +37,7 @@
     "supported": false,
     "type": "cdn",
     "depends": ["aws-files", "aws-dns"],
-    "requiresConfig": ["awsAccessKey", "awsAccessSecret"]
+    "requiresConfig": ["awsAccessKeyId", "awsSecretAccessKey"]
   },
   {
     "name": "gcp-cdn",
@@ -53,7 +53,7 @@
     "supported": true,
     "type": "dns",
     "depends": null,
-    "requiresConfig": ["awsAccessKey", "awsAccessSecret"]
+    "requiresConfig": ["awsAccessKeyId", "awsSecretAccessKey"]
   },
   {
     "name": "gcp-dns",
@@ -69,7 +69,7 @@
     "supported": true,
     "type": "email",
     "depends": null,
-    "requiresConfig": ["awsAccessKey", "awsAccessSecret"]
+    "requiresConfig": ["awsAccessKeyId", "awsSecretAccessKey"]
   },
   {
     "name": "sendgrid-email",
