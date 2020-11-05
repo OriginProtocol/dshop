@@ -3,13 +3,16 @@ const pick = require('lodash/pick')
 const { Discount } = require('../models')
 const { authShop, authSellerAndShop } = require('./_auth')
 
-const { validateDiscount, getSafeDiscountProps } = require('../utils/discounts')
+const { validateDiscount } = require('../logic/discount')
 
 module.exports = function (router) {
+  /**
+   * Checks that a discount is valid.
+   */
   router.post('/check-discount', authShop, async (req, res) => {
     const r = await validateDiscount(req.body.code, req.shop)
     if (r.discount) {
-      r.discount = getSafeDiscountProps(r.discount)
+      r.discount = pick(r.discount, ['code', 'value', 'discountType'])
     }
     res.json(r)
   })

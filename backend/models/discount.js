@@ -2,6 +2,7 @@ module.exports = (sequelize, DataTypes) => {
   const Discount = sequelize.define(
     'Discount',
     {
+      // Not populated in production.
       networkId: {
         type: DataTypes.INTEGER
       },
@@ -17,9 +18,13 @@ module.exports = (sequelize, DataTypes) => {
       discountType: {
         type: DataTypes.ENUM('fixed', 'percentage')
       },
+      // If discountType is 'fixed', value is in dollar (not cents). Ex: 30 -> $30
+      // If discountType is 'percentage', value is a plain percentage. Ex: 10 -> 10% off
       value: {
         type: DataTypes.INTEGER
       },
+      // Max number of times the discount can be used.
+      // undefined or lower or equal to zero means unlimited.
       maxUses: {
         type: DataTypes.INTEGER
       },
@@ -32,6 +37,7 @@ module.exports = (sequelize, DataTypes) => {
       endTime: {
         type: DataTypes.DATE
       },
+      // Counter to track the number of times the discount was used.
       uses: {
         type: DataTypes.INTEGER
       }
