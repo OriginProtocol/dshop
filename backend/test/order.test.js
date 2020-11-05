@@ -140,7 +140,7 @@ describe('Orders', () => {
     expect(order.createdBlock).to.equal(1)
     expect(order.updatedBlock).to.equal(1)
     expect(order.paymentCode).to.equal('code123')
-    expect(order.total).to.equal('2500')
+    expect(order.total).to.equal('2900')
     expect(order.currency).to.equal('USD')
     expect(order.data).to.eql({ ...data, error: [], tx: event.transactionHash })
   })
