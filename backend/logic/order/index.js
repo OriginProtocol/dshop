@@ -179,7 +179,6 @@ async function processNewOrder({
     orderObj.referrer = util.toChecksumAddress(data.referrer)
     orderObj.commissionPending = Math.floor(data.subTotal / 200)
   }
-  orderObj.data.error = []
 
   //
   // Discount and inventory validation steps.
@@ -188,22 +187,31 @@ async function processNewOrder({
   // we store the error in the order data but we don't throw. The reason
   // is that order processing is asynchronous. The buyer already exited
   // checkout successfully. So we record the order with errors in the DB
-  // and letthe merchant decide if they want to refund the buyer.
+  // and let the merchant decide if they want to refund the buyer.
+  const errorData = { error: [] }
+
   const discountResult = await validateDiscountOnOrder(orderObj)
   if (!discountResult.valid) {
     const discountError = discountResult.error
-    orderObj.data.discountError = discountError
-    orderObj.data.error.push(discountError)
+    errorData.discountError = discountError
+    errorData.error.push(discountError)
   }
 
   const inventoryResult = await updateInventoryData(shop, shopConfig, data)
   if (!inventoryResult.success) {
     const inventoryError = inventoryResult.error
-    orderObj.data.inventoryError = inventoryError
-    orderObj.data.error.push(inventoryError)
+    errorData.inventoryError = inventoryError
+    errorData.error.push(inventoryError)
   }
 
+  // If at least 1 error was found. Add the error data to the order data.
+  if (errorData.error.length > 0) {
+    orderObj.data = { ...orderObj.data, ...errorData }
+  }
+
+  //
   // Create the order in the DB.
+  //
   const order = await Order.create(orderObj)
   log.info(`Saved order ${order.fqId} to DB.`)
 

@@ -103,7 +103,7 @@ describe('Discounts', () => {
       expect(order.paymentType).to.equal(jobData.paymentType)
       expect(order.total).to.equal(data.total)
       expect(order.currency).to.equal(data.currency)
-      expect(order.data).to.eql({ ...data, error: [] })
+      expect(order.data).to.eql(data)
     }
   })
 
