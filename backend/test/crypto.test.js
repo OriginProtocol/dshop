@@ -47,7 +47,7 @@ describe('Crypto Payment', () => {
     let data = {
       fromAddress: buyerWallet.address,
       toAddress: sellerWallet.address,
-      amount: 2500,
+      amount: 2900,
       currency: 'USD'
     }
     let response = await fetch('http://localhost:8357/crypto/payment-code', {

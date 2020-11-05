@@ -101,11 +101,11 @@ const validateDiscountOnOrder = async (orderObj) => {
     return { error: 'Invalid order: No cart' }
   }
 
-  const appliedDiscountObj = get(cart, 'discountObj')
-  const appliedDiscount = Number(get(cart, 'discount'))
-  if (get(cart, 'discountObj.value', 0) === 0) {
-    // No discount object. Ensure there is no discount amount applied.
-    if (isNaN(appliedDiscount)) {
+  const appliedDiscountObj = get(cart, 'discountObj', {})
+  const appliedDiscount = Number(get(cart, 'discount', 0))
+  if (appliedDiscountObj.value === undefined) {
+    // Non-existent or empty discount object. Ensure there is no discount amount applied.
+    if (isNaN(appliedDiscount) || appliedDiscount === 0) {
       // No discount object and no discount amount. Order is valid.
       return { valid: true }
     } else {
