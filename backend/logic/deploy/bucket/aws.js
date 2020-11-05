@@ -46,15 +46,18 @@ async function deploy({ shop, networkConfig, OutputDir }) {
   } else if (state === BucketExistence.DoesNotExist) {
     log.debug(`Creating bucket ${bucketName}...`)
 
-    await cachedClient
-      .createBucket({
-        Bucket: bucketName,
-        ACL: 'public-read',
-        CreateBucketConfiguration: {
-          LocationConstraint: networkConfig.awsRegion
-        }
-      })
-      .promise()
+    const params = {
+      Bucket: bucketName,
+      ACL: 'public-read'
+    }
+
+    if (networkConfig.awsRegion) {
+      params.CreateBucketConfiguration = {
+        LocationConstraint: networkConfig.awsRegion
+      }
+    }
+
+    await cachedClient.createBucket(params).promise()
 
     log.debug('Waiting for bucket to exist...')
 

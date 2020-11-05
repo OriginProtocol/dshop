@@ -59,7 +59,7 @@ function setMatrix(matrix) {
  */
 function getElement(key) {
   const matrix = getMatrix()
-  return find(matrix, (e) => e.name === key)
+  return find(matrix, (e) => e.name === key && e.supported)
 }
 
 /**
