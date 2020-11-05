@@ -47,7 +47,7 @@ following:
 The backend uses redis for queues. While you can skip this, it's highly
 recommended to run a local redis so your testing matches production behavior
 
-    export REDIS_URL=redis://localhost:6379/
+    export REDIS_URL=redis://localhost:6379
 
 ### Install packages
 
@@ -58,17 +58,31 @@ copy various files in the right place.
 
 ### Build the shop bundle, start the stack
 
-This will start all the necessary services for running a local dshop stack:
-IPFS, ganache blockchain, back-end, front-end. It will then open a browser page
-pointing to the super-admin interface at `http://0.0.0.0:9000/#/super-admin`
+This will start all the necessary services for running a local dshop stack: IPFS, ganache blockchain, back-end, front-end. 
 
     cd shop
     yarn run build:dist
     yarn start
+    
+### Configure the Dshop Deployer
 
-### Create a local dshop
+Point your browser to http://localhost:3000 to access the super-admin UI.
 
-Follow the steps on the super-admin UI to create a local dshop.
+When configuring on a local development host, most of the fields are **optional** and can be left empty except the following ones:
+  - ```Ethereum Network```: pick Localhost
+  - ```Root Domain```: use localhost
+  - ```Marketplace Listing ID```: use 999-001-1
+  - ```IPFS Gateway```: use http://localhost:8080
+  - ```IPFS API```: use http://localhost:5002
+  - ```Web3 PK```: this is optional, you can leave empty
+  - ```Backend Public URL```: use http://0.0.0.0:3000
+  - ```Notification Emails```: enter an email address
+  - ```Email Display Name```: choose a name
+  - ```Allow New User Signups```: don't forget to check that box otherwise you won't be able to create a shop
+
+### Create a local Dshop
+
+After having configured the Dshop Deployer, follow the steps on the super-admin UI to create a local dshop.
 
 # Troubleshooting
 
