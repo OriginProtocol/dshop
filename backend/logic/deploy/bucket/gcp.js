@@ -3,6 +3,7 @@ const trimStart = require('lodash/trimStart')
 const { Storage } = require('@google-cloud/storage')
 
 const { NETWORK_ID_TO_NAME, BUCKET_PREFIX } = require('../../../utils/const')
+const { isConfigured } = require('../../infra/matrix')
 const { walkDir } = require('../../../utils/filesystem')
 const { assert } = require('../../../utils/validators')
 const { getLogger } = require('../../../utils/logger')
@@ -19,7 +20,7 @@ let cachedClient = null
  * @returns {bool} - if we can deploy
  */
 function isAvailable({ networkConfig }) {
-  return !!networkConfig.gcpCredentials
+  return isConfigured(networkConfig, 'gcp-files')
 }
 
 /**
@@ -65,6 +66,7 @@ function configure({ networkConfig, credentials }) {
  * Deploy OutputDir to a properly named bucket
  *
  * @param args {Object}
+ * @param args.shop {Object} - Shop model instance
  * @param args.networkConfig {Object} - Decrypted networkConfig object
  * @param args.OutputDir {string} - The directory containing the shop build
  */

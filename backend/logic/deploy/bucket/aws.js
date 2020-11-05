@@ -14,10 +14,23 @@ const log = getLogger('logic.deploy.bucket.aws')
 
 let cachedClient = null
 
+/**
+ * Check if AWS is configured and we can deploy to it
+ *
+ * @param args {Object}
+ * @param args.networkConfig {Object} - Decrypted networkConfig object
+ * @returns {bool} - if we can deploy
+ */
 function isAvailable({ networkConfig }) {
   return isConfigured(networkConfig, 'aws-files')
 }
 
+/**
+ * Configure this singleton for a use
+ *
+ * @param args {Object}
+ * @param args.networkConfig {Object} - Decrypted networkConfig object
+ */
 function configure({ networkConfig }) {
   cachedClient = new S3({
     apiVersion: '2006-03-01',
@@ -27,6 +40,14 @@ function configure({ networkConfig }) {
   })
 }
 
+/**
+ * Deploy OutputDir to an S3 bucket
+ *
+ * @param args {Object}
+ * @param args.shop {Object} - Shop model instance
+ * @param args.networkConfig {Object} - Decrypted networkConfig object
+ * @param args.OutputDir {string} - The directory containing the shop build
+ */
 async function deploy({ shop, networkConfig, OutputDir }) {
   assert(!!networkConfig, 'networkConfig must be provided')
   assert(!!OutputDir, 'OutputDir must be provided')
