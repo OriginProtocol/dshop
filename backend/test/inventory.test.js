@@ -228,7 +228,7 @@ describe('Inventory', () => {
     })
 
     expect(order.data.inventoryError).to.equal(
-      'Some products in your cart are out of stock'
+      'Some products in this order are out of stock'
     )
 
     const product = await Product.findOne({
