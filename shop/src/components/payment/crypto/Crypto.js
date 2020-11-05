@@ -76,6 +76,7 @@ const PayWithCrypto = ({ submit, encryptedData, onChange, loading }) => {
       setTokenPrice(newState.buttonText)
     }
     onChange(newState)
+    dispatch({ type: 'updateActiveToken', token: activeToken.id })
   }, [activeToken.id, token.loading, cryptoSelected])
 
   const label = (

@@ -41,6 +41,12 @@ module.exports = (sequelize, DataTypes) => {
       },
       data: {
         type: isPostgres ? DataTypes.JSONB : DataTypes.JSON
+      },
+      minCartValue: {
+        type: DataTypes.INTEGER
+      },
+      maxDiscountValue: {
+        type: DataTypes.INTEGER
       }
     },
     {

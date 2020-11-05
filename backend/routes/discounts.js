@@ -4,6 +4,7 @@ const { Discount } = require('../models')
 const { authShop, authSellerAndShop } = require('./_auth')
 
 const { validateDiscount, getSafeDiscountProps } = require('../utils/discounts')
+const { DiscountTypeEnums } = require('../enums')
 
 module.exports = function (router) {
   router.post('/check-discount', authShop, async (req, res) => {
@@ -12,6 +13,19 @@ module.exports = function (router) {
       r.discount = getSafeDiscountProps(r.discount)
     }
     res.json(r)
+  })
+
+  router.get('/discounts/payment', authShop, async (req, res) => {
+    const paymentDiscount = await Discount.findOne({
+      where: { shopId: req.shop.id, discountType: DiscountTypeEnums.payment }
+    })
+
+    return res.send({
+      success: true,
+      paymentDiscount: paymentDiscount
+        ? getSafeDiscountProps(paymentDiscount)
+        : null
+    })
   })
 
   router.get('/discounts', authSellerAndShop, async (req, res) => {
@@ -50,7 +64,9 @@ module.exports = function (router) {
       'onePerCustomer',
       'startTime',
       'endTime',
-      'data'
+      'data',
+      'maxDiscountValue',
+      'minCartValue'
     ])
     const result = await Discount.update(data, {
       where: {

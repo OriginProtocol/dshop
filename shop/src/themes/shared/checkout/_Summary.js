@@ -12,6 +12,12 @@ import Discount from './_Discount'
 export const OrderSummary = ({ cart, discount = true }) => {
   const currencyOpts = useCurrencyOpts()
 
+  const discountType = get(cart, 'discountObj.discountType')
+  const discountCode = get(cart, 'discountObj.code', '').toUpperCase()
+  const paymentMethodTitle = get(cart, 'paymentMethod.label')
+  const discountTitle =
+    discountType === 'payment' ? `(${paymentMethodTitle})` : discountCode
+
   return (
     <>
       <div
@@ -68,8 +74,7 @@ export const OrderSummary = ({ cart, discount = true }) => {
       {!cart.discount ? null : (
         <div className="flex justify-between mt-4">
           <div>
-            <fbt desc="Discount">Discount</fbt>{' '}
-            {get(cart, 'discountObj.code', '').toUpperCase()}
+            <fbt desc="Discount">Discount</fbt> {discountTitle}
           </div>
           <div>{formatPrice(cart.discount, currencyOpts)}</div>
         </div>

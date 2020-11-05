@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
+import usePaymentDiscount from 'utils/usePaymentDiscount'
 
 function useDiscount() {
   const { config } = useConfig()
@@ -10,7 +11,16 @@ function useDiscount() {
   const [code, setCode] = useState('')
   const [{ cart }, dispatch] = useStateValue()
 
+  const discountObj = get(cart, 'discountObj')
   const activeCode = get(cart, 'discountObj.code', '').toUpperCase()
+  const { paymentDiscount } = usePaymentDiscount()
+
+  useEffect(() => {
+    // Default to payment discount, if none is present
+    if (!discountObj || (!discountObj.discountType && paymentDiscount)) {
+      dispatch({ type: 'setDiscount', discount: paymentDiscount })
+    }
+  }, [discountObj, paymentDiscount])
 
   function check() {
     if (!code) {

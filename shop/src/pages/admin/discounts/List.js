@@ -54,7 +54,7 @@ const ManualDiscounts = () => {
   const { data: _discounts = [], loading, reload } = useRest('/discounts')
 
   const discounts = useMemo(() => {
-    return _discounts.filter(d => d.discountType !== 'payment')
+    return _discounts.filter((d) => d.discountType !== 'payment')
   }, [_discounts])
 
   return (
@@ -65,10 +65,12 @@ const ManualDiscounts = () => {
         <>
           <h3 className="admin-title">
             <fbt desc="Discounts">Discounts</fbt>
-            {!discounts.length  ? null : (
+            {!discounts.length ? null : (
               <div className="actions">
                 <Link to="/admin/discounts/new" className="btn btn-primary">
-                  <fbt desc="admin.discounts.createDiscount">Create Manual Discount</fbt>
+                  <fbt desc="admin.discounts.createDiscount">
+                    Create Manual Discount
+                  </fbt>
                 </Link>
               </div>
             )}

@@ -74,7 +74,10 @@ const Admin = () => {
         <div className="main-content-container">
           <PublishChanges />
           <Switch>
-            <Route path="/admin/discounts/auto" component={PaymentSpecificDiscounts} />
+            <Route
+              path="/admin/discounts/auto"
+              component={PaymentSpecificDiscounts}
+            />
             <Route path="/admin/discounts/:id" component={EditDiscount} />
             <Route path="/admin/discounts" component={Discounts} />
             <Route path="/admin/products/:id" component={EditProduct} />

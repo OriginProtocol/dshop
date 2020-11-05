@@ -231,6 +231,8 @@ const reducer = (state, action) => {
     newState = set(newState, `cart.shipping`, zone)
   } else if (action.type === 'updatePaymentMethod') {
     newState = set(newState, `cart.paymentMethod`, action.method)
+  } else if (action.type === 'updateActiveToken') {
+    newState = set(newState, `cart.paymentMethod.token`, action.token)
   } else if (action.type === 'orderComplete') {
     newState = set(newState, 'cart', cloneDeep(defaultState.cart))
   } else if (action.type === 'setAuth') {
@@ -337,7 +339,7 @@ const reducer = (state, action) => {
   }
 
   // IMPORTANT: Keep this function's total calculation in sync with the calculation
-  // in backend/utils/disocunts.js#validateDiscountOnOrder() function
+  // in backend/utils/discounts.js#validateDiscountOnOrder() function
 
   newState.cart.subTotal = newState.cart.items.reduce((total, item) => {
     return total + item.quantity * item.price
@@ -350,14 +352,41 @@ const reducer = (state, action) => {
   const taxRate = parseFloat(get(newState, 'cart.taxRate', 0))
 
   const discountObj = get(newState, 'cart.discountObj', {})
-  const discountCode = get(newState, 'cart.discountObj.code')
+  const { minCartValue, maxDiscountValue, discountType } = get(
+    newState,
+    'cart.discountObj',
+    {}
+  )
+
   let discount = 0
-  if (discountCode) {
-    if (discountObj.discountType === 'percentage') {
-      const totalWithShipping = newState.cart.subTotal + shipping
-      discount = Math.round((totalWithShipping * discountObj.value) / 100)
-    } else if (discountObj.discountType === 'fixed') {
-      discount = discountObj.value * 100
+
+  if (!minCartValue || newState.cart.subTotal > minCartValue) {
+    // Calculate discounts only if minCartValue constraint is met
+
+    if (discountType) {
+      if (discountType === 'percentage') {
+        const totalWithShipping = newState.cart.subTotal + shipping
+        discount = Math.round((totalWithShipping * discountObj.value) / 100)
+      } else if (discountType === 'fixed') {
+        discount = discountObj.value * 100
+      } else if (discountType === 'payment') {
+        const activePaymentMethod = get(newState, 'cart.paymentMethod.id')
+        let isValidPayment = discountObj.data[activePaymentMethod]
+
+        if (activePaymentMethod === 'crypto') {
+          const token = get(newState, 'cart.paymentMethod.token')
+          isValidPayment = get(discountObj, `data.crypto`, {})[token]
+        }
+
+        if (isValidPayment) {
+          const totalWithShipping = newState.cart.subTotal + shipping
+          discount = Math.round((totalWithShipping * discountObj.value) / 100)
+        }
+      }
+    }
+
+    if (maxDiscountValue) {
+      discount = Math.min(maxDiscountValue, discount)
     }
   }
 
