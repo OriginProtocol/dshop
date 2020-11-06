@@ -262,8 +262,8 @@ describe('Discounts', () => {
       }
 
       if (scenario.error) {
-        ;(expectedData.discountError = scenario.error),
-          (expectedData.error = [scenario.error])
+        expectedData.discountError = scenario.error
+        expectedData.error = [scenario.error]
       }
 
       expect(order).to.be.an('object')

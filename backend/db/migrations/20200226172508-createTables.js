@@ -1,4 +1,4 @@
-const { DiscountTypeEnums } = require("../../enums")
+const { DiscountTypeEnums } = require('../../enums')
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
