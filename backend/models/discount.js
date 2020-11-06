@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
       discountType: {
         type: DataTypes.ENUM(DiscountTypeEnums)
       },
-      // If discountType is 'fixed', value is in dollar (not cents). Ex: 30 -> $30
+      // If discountType is 'fixed' or 'payment', value is in dollar (not cents). Ex: 30 -> $30
       // If discountType is 'percentage', value is a plain percentage. Ex: 10 -> 10% off
       value: {
         type: DataTypes.INTEGER
