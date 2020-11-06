@@ -134,7 +134,8 @@ const PaymentSpecificDiscounts = () => {
           ),
           crypto: state.crypto,
           summary: state.summary
-        }
+        },
+        startTime: Date.now()
       }
 
       const url = `/discounts${state.id ? `/${state.id}` : ''}`

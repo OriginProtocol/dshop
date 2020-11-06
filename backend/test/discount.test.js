@@ -15,7 +15,13 @@ const { Discount } = require('../models')
 const { OrderPaymentStatuses, OrderPaymentTypes } = require('../enums')
 
 describe('Discounts', () => {
-  let network, shop, key, job, fixedDiscount, percentageDiscount
+  let network,
+    shop,
+    key,
+    job,
+    fixedDiscount,
+    percentageDiscount,
+    paymentDiscount
 
   before(async () => {
     // Note: Enable the marketplace contract initially.
@@ -61,7 +67,27 @@ describe('Discounts', () => {
       maxUses: null,
       onePerCustomer: false,
       startTime: Date.now(),
-      endTime: null
+      endTime: null,
+      minCartValue: 100,
+      maxDiscountValue: 1000
+    })
+    paymentDiscount = await Discount.create({
+      shopId: shop.id,
+      status: 'active',
+      code: '',
+      discountType: 'payment',
+      value: 10, // 10% off
+      maxUses: null,
+      onePerCustomer: false,
+      startTime: Date.now(),
+      endTime: null,
+      data: {
+        stripe: true,
+        crypto: {
+          OGN: true,
+          OUSD: true
+        }
+      }
     })
   })
 
@@ -167,6 +193,96 @@ describe('Discounts', () => {
         discountError: scenario.error,
         error: [scenario.error]
       })
+    }
+  })
+
+  it.only('Order with a payment-specific discount', async () => {
+    const scenarios = [
+      {
+        discount: paymentDiscount,
+        paymentMethod: {
+          id: 'stripe',
+          label: 'Credit Card'
+        },
+        paymentType: OrderPaymentTypes.CreditCard
+      },
+      {
+        discount: paymentDiscount,
+        paymentMethod: {
+          id: 'crypto',
+          label: 'Crypto',
+          token: 'OGN'
+        },
+        paymentType: OrderPaymentTypes.CryptoCurrency
+      },
+      {
+        discount: paymentDiscount,
+        paymentMethod: {
+          id: 'crypto',
+          label: 'Crypto',
+          token: 'OUSD'
+        },
+        paymentType: OrderPaymentTypes.CryptoCurrency
+      },
+      {
+        discount: paymentDiscount,
+        paymentMethod: {
+          id: 'paypal',
+          label: 'PayPal'
+        },
+        error: 'Discount error: Cart value mismatch',
+        paymentType: OrderPaymentTypes.PayPal
+      }
+    ]
+
+    for (const scenario of scenarios) {
+      const { ipfsHash, data } = await createTestEncryptedOfferData(
+        network,
+        shop,
+        key,
+        scenario.discount,
+        scenario.paymentMethod
+      )
+
+      // Create a mock Bull job object.
+      const jobData = {
+        shopId: shop.id,
+        amount: data.total,
+        encryptedDataIpfsHash: ipfsHash,
+        paymentCode: 'testPaymentCode' + Date.now(),
+        paymentType: scenario.paymentType
+      }
+      job = new MockBullJob(jobData)
+
+      // Have the queue process the order.
+      const order = await processor(job)
+
+      const expectedData = {
+        ...data
+      }
+
+      if (scenario.error) {
+        ;(expectedData.discountError = scenario.error),
+          (expectedData.error = [scenario.error])
+      }
+
+      expect(order).to.be.an('object')
+      expect(order.fqId).to.be.a('string')
+      expect(order.shortId).to.be.a('string')
+      expect(order.networkId).to.equal(999)
+      expect(order.shopId).to.equal(shop.id)
+      expect(order.paymentStatus).to.equal(OrderPaymentStatuses.Paid)
+      expect(order.offerId).to.be.undefined
+      expect(order.offerStatus).to.be.undefined
+      expect(order.createdBlock).to.be.undefined
+      expect(order.updatedBlock).to.be.undefined
+      expect(order.ipfsHash).to.be.a('string')
+      expect(order.encryptedIpfsHash).to.equal(ipfsHash)
+      expect(order.paymentCode).to.equal(jobData.paymentCode)
+      expect(order.paymentType).to.equal(jobData.paymentType)
+      expect(order.total).to.equal(data.total)
+      expect(order.currency).to.equal(data.currency)
+      expect(order.data).to.eql(expectedData)
     }
   })
 })

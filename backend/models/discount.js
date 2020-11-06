@@ -48,11 +48,11 @@ module.exports = (sequelize, DataTypes) => {
       data: {
         type: isPostgres ? DataTypes.JSONB : DataTypes.JSON
       },
-      // The minimum cart value (subTotal) needed to avail the discount in cents
+      // The minimum cart value (subTotal) needed to avail the discount in dollar
       minCartValue: {
         type: DataTypes.INTEGER
       },
-      // The maximum discount amount in cents (only for `percentage` discount types).
+      // The maximum discount amount in dollar (only for `percentage` discount types).
       maxDiscountValue: {
         type: DataTypes.INTEGER
       }

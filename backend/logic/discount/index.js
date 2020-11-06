@@ -1,4 +1,5 @@
 const { get } = require('lodash')
+const { DiscountTypeEnums } = require('../../enums')
 
 const { Sequelize, Discount, Order } = require('../../models')
 
@@ -28,7 +29,8 @@ const validateDiscount = async (code, shop) => {
           { [Sequelize.Op.gt]: Date.now() },
           { [Sequelize.Op.eq]: null }
         ]
-      }
+      },
+      discountType: !code ? DiscountTypeEnums.payment : undefined
     }
   })
 
