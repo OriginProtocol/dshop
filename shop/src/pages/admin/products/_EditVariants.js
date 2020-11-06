@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import fbt from 'fbt'
+import get from 'lodash/get'
 
 import formatPrice from 'utils/formatPrice'
 import useConfig from 'utils/useConfig'
@@ -15,6 +16,43 @@ const EditVariants = ({
   currency
 }) => {
   const { config } = useConfig()
+  useEffect(() => {
+    if (!media || !variants) return
+
+    const mediaPaths = media.map((m) => m.path)
+
+    let hasChange = false
+
+    const newVariants = [...variants]
+
+    for (let idx = 0; idx < variants.length; idx++) {
+      const variant = variants[idx]
+
+      if (mediaPaths.includes(variant.image)) {
+        continue
+      }
+
+      // Variant image has been removed
+      // Make the first product image as variant image
+
+      if (!media.length && !variant.image) {
+        // It's already reset, ignore
+        continue
+      }
+
+      hasChange = true
+
+      newVariants[idx] = {
+        ...variant,
+        image: get(media, '0.path')
+      }
+    }
+
+    if (hasChange) {
+      onChange(newVariants)
+    }
+  }, [media, variants])
+
   if (!options || !variants) return null
 
   return (
@@ -135,7 +173,6 @@ const EditVariants = ({
                     updatedVariants[index].image = selectedMedia.path
                     onChange(updatedVariants)
                   }}
-                  disabled={disabled}
                 />
               </td>
             </tr>
