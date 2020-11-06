@@ -25,7 +25,13 @@ const { decryptConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
 const { getMyIP } = require('../../utils/ip')
 const { assert } = require('../../utils/validators')
-const { DSHOP_CACHE } = require('../../utils/const')
+const {
+  validateSelection,
+  canUseResource,
+  canUseResourceType,
+  isConfigured
+} = require('../infra/matrix')
+const { DSHOP_CACHE, DEFAULT_INFRA_RESOURCES } = require('../../utils/const')
 
 const {
   deploymentLock,
@@ -47,10 +53,12 @@ const ERROR_DEBUG = 999 // do not use
 const ERROR_GENERAL = 1000
 const ERROR_INVALID_NETWORK = 1001
 const ERROR_DEPLOYMENT_PENDING = 1002
+const ERROR_INVALID_RESOURCES = 1003
 const DEPLOY_ERRORS = {
   [ERROR_DEBUG]: 'DEBUG BREAK',
   [ERROR_GENERAL]: 'Unknown error',
   [ERROR_INVALID_NETWORK]: 'Given network is not valid or not configured',
+  [ERROR_INVALID_RESOURCES]: 'Given infra resources are not able to be used',
   [ERROR_DEPLOYMENT_PENDING]:
     'The shop is already being published. Try again in a few minutes.'
 }
@@ -61,15 +69,16 @@ const DEPLOY_ERRORS = {
  * @param error {number} - An error ID
  * @returns {object} - deploy() response
  */
-function error(errorId) {
+function error(errorId, message = null) {
   return {
     success: false,
     error: true,
     id: errorId,
-    message:
-      errorId in DEPLOY_ERRORS
-        ? DEPLOY_ERRORS[errorId]
-        : DEPLOY_ERRORS[ERROR_GENERAL]
+    message: message
+      ? message
+      : errorId in DEPLOY_ERRORS
+      ? DEPLOY_ERRORS[errorId]
+      : DEPLOY_ERRORS[ERROR_GENERAL]
   }
 }
 
@@ -113,8 +122,7 @@ async function deploy({
   networkId,
   shop,
   subdomain,
-  dnsProvider,
-  pinner,
+  resouceSelection,
   uuid,
   skipSSLProbe = false,
   overrides = {}
@@ -122,6 +130,10 @@ async function deploy({
   assert(!!networkId, 'networkId must be provided to deploy()')
   assert(!!shop, 'shop must be provided to deploy()')
   assert(!!subdomain, 'subdomain must be provided to deploy()')
+  assert(
+    !!resouceSelection && resouceSelection instanceof Array,
+    'resourceSelection must be an Array'
+  )
 
   /**
    * We have the ability to override functions within deployment for unit
@@ -166,16 +178,38 @@ async function deploy({
   const dataDir = shop.authToken
   const OutputDir = `${DSHOP_CACHE}/${dataDir}`
 
-  let deployment, ipfsHash, ipfsPinner, ipfsGateway
-
-  if (!dnsProvider) {
-    if (networkConfig.gcpCredentials) {
-      dnsProvider = 'gcp'
-    } else if (networkConfig.cloudflareApiKey) {
-      dnsProvider = 'cloudflare'
-    } else if (networkConfig.awsAccessKeyId) {
-      dnsProvider = 'aws'
+  // Make sure the selected infra resources are a valid and configured combination
+  if (resouceSelection) {
+    const selectionValidation = validateSelection({
+      networkConfig,
+      selection: resouceSelection
+    })
+    if (!selectionValidation.success) {
+      log.error('The infra resource selection is invalid!')
+      return error(
+        ERROR_INVALID_RESOURCES,
+        selectionValidation.errors.join(', ')
+      )
     }
+  } else {
+    if (!networkConfig.defaultResourceSelection) {
+      throw new Error(
+        'Unable to figure out which infra resources to deploy with!'
+      )
+    }
+    // TODO: Remove these defaults eventually
+    resouceSelection =
+      networkConfig.defaultResourceSelection || DEFAULT_INFRA_RESOURCES
+  }
+
+  let deployment, ipfsHash, ipfsPinner, ipfsGateway, dnsProvider
+
+  if (isConfigured(networkConfig, 'gcp-dns')) {
+    dnsProvider = 'gcp'
+  } else if (isConfigured(networkConfig, 'cloudflare-dns')) {
+    dnsProvider = 'cloudflare'
+  } else if (isConfigured(networkConfig, 'aws-dns')) {
+    dnsProvider = 'aws'
   }
 
   /**
@@ -225,33 +259,53 @@ async function deploy({
   let bucketUrls = []
   let bucketHttpUrls = []
   log.info(`Deploying to bucket...`)
-  try {
-    const responses = await bucketDeploy({
+  if (
+    canUseResource({
       networkConfig,
-      shop,
-      OutputDir,
-      dataDir
+      selection: resouceSelection,
+      key: 'gcp-files'
+    }) ||
+    canUseResource({
+      networkConfig,
+      selection: resouceSelection,
+      key: 'aws-files'
     })
-    if (responses.length > 0) {
-      bucketUrls = responses.map((r) => r.url)
-      bucketHttpUrls = responses.map((r) => r.httpUrl)
-      await deployment.update({
-        bucketUrls: bucketUrls.join(','),
-        bucketHttpUrls: bucketHttpUrls.join(',')
+  ) {
+    try {
+      const responses = await bucketDeploy({
+        networkConfig,
+        shop,
+        OutputDir,
+        dataDir
       })
+      if (responses.length > 0) {
+        bucketUrls = responses.map((r) => r.url)
+        bucketHttpUrls = responses.map((r) => r.httpUrl)
+        await deployment.update({
+          bucketUrls: bucketUrls.join(','),
+          bucketHttpUrls: bucketHttpUrls.join(',')
+        })
+      }
+    } catch (err) {
+      log.error(`Unknown error deploying to bucket.`)
+      log.error(err)
+      await failDeployment(deployment, 'Failed to deploy to bucket')
+      return error(ERROR_GENERAL)
     }
-  } catch (err) {
-    log.error(`Unknown error deploying to bucket.`)
-    log.error(err)
-    await failDeployment(deployment, 'Failed to deploy to bucket')
-    return error(ERROR_GENERAL)
   }
 
   /**
    * Configure the CDN(s) to point at bucket(s)
    */
   let ipAddresses = null
-  if (shop.enableCdn) {
+  if (
+    shop.enableCdn &&
+    canUseResourceType({
+      networkConfig,
+      selection: resouceSelection,
+      type: 'cdn'
+    })
+  ) {
     log.info(`Configuring CDN...`)
 
     try {
@@ -276,30 +330,52 @@ async function deploy({
    * Deploy the shop to IPFS
    */
   log.info(`Deploying shop to IPFS...`)
-  try {
-    const ipfsRes = await ipfsDeploy({
-      shop,
-      network,
+  if (
+    canUseResource({
       networkConfig,
-      OutputDir,
-      dataDir,
-      pinner
+      selection: resouceSelection,
+      key: 'ipfs-cluster'
+    }) ||
+    canUseResource({
+      networkConfig,
+      selection: resouceSelection,
+      key: 'ipfs-pinata'
     })
-    ipfsHash = ipfsRes.ipfsHash
-    ipfsPinner = ipfsRes.ipfsPinner
-    ipfsGateway = ipfsRes.ipfsGateway
-  } catch (err) {
-    log.error(`Unknown error deploying to IPFS`)
-    log.error(err)
-    await failDeployment(deployment, 'Failed to deploy to IPFS')
-    return error(ERROR_GENERAL)
+  ) {
+    try {
+      const ipfsRes = await ipfsDeploy({
+        shop,
+        network,
+        networkConfig,
+        OutputDir,
+        dataDir,
+        pinner: resouceSelection.includes('ipfs-cluster')
+          ? 'ipfs-cluster'
+          : 'ipfs-pinata'
+      })
+      ipfsHash = ipfsRes.ipfsHash
+      ipfsPinner = ipfsRes.ipfsPinner
+      ipfsGateway = ipfsRes.ipfsGateway
+    } catch (err) {
+      log.error(`Unknown error deploying to IPFS`)
+      log.error(err)
+      await failDeployment(deployment, 'Failed to deploy to IPFS')
+      return error(ERROR_GENERAL)
+    }
   }
 
   /**
    * Configure DNS by pointing it at either the configured CDN (if available) or
    * to the IPFS gateway.
    */
-  if (subdomain) {
+  if (
+    canUseResourceType({
+      networkConfig,
+      selection: resouceSelection,
+      type: 'dns'
+    }) &&
+    subdomain
+  ) {
     log.info(`Configuring DNS...`)
     try {
       await dnsConfig({

@@ -1,6 +1,7 @@
 const setCloudflareRecords = require('../../utils/dns/cloudflare')
 const setCloudDNSRecords = require('../../utils/dns/clouddns')
 const setRoute53Records = require('../../utils/dns/route53')
+const { isConfigured } = require('../infra/matrix')
 const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('logic.deploy.dns')
@@ -29,8 +30,8 @@ async function configureShopDNS({
   const backendHost = backendUrl.hostname
 
   if (dnsProvider === 'cloudflare') {
-    if (!networkConfig.cloudflareApiKey) {
-      log.warn('Cloudflare DNS Proider selected but no credentials configured!')
+    if (!isConfigured(networkConfig, 'cloudflare-dns')) {
+      log.warn('Cloudflare DNS Proider selected but not available!')
     } else {
       await setCloudflareRecords({
         ipfsGateway: backendHost,
@@ -43,8 +44,8 @@ async function configureShopDNS({
       })
     }
   } else if (dnsProvider === 'gcp') {
-    if (!networkConfig.gcpCredentials) {
-      log.warn('GCP DNS Proider selected but no credentials configured!')
+    if (!isConfigured(networkConfig, 'gcp-dns')) {
+      log.warn('GCP DNS Proider selected but not available!')
     } else {
       await setCloudDNSRecords({
         ipfsGateway: backendHost,
@@ -56,8 +57,8 @@ async function configureShopDNS({
       })
     }
   } else if (dnsProvider === 'aws') {
-    if (!networkConfig.awsAccessKeyId || !networkConfig.awsSecretAccessKey) {
-      log.warn('AWS DNS Proider selected but no credentials configured!')
+    if (!isConfigured(networkConfig, 'aws-dns')) {
+      log.warn('AWS DNS Proider selected but not available!')
     } else {
       await setRoute53Records({
         ipfsGateway: backendHost,

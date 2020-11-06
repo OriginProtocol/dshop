@@ -20,6 +20,7 @@ const trimStart = require('lodash/trimStart')
 
 const { NETWORK_ID_TO_NAME, SERVICE_PREFIX } = require('../../../utils/const')
 const google = require('../../../utils/google')
+const { isConfigured } = require('../../infra/matrix')
 const { allIn } = require('../../../utils/array')
 const { assert } = require('../../../utils/validators')
 const { getLogger } = require('../../../utils/logger')
@@ -46,7 +47,7 @@ async function sleep(timeout = 1000) {
  * @returns {bool} - if we can deploy
  */
 function isAvailable({ networkConfig }) {
-  return !!networkConfig.gcpCredentials
+  return isConfigured(networkConfig, 'gcp-cdn')
 }
 
 /**

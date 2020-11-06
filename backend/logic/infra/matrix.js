@@ -17,8 +17,7 @@
  *     s = supported
  *     n = not applicable
  */
-const every = require('lodash/every')
-const find = require('lodash/find')
+const { uniq, every, find } = require('lodash')
 
 const defaultSpec = require('./resourceMatrix.json')
 
@@ -63,6 +62,36 @@ function getElement(key) {
 }
 
 /**
+ * Return all supported and ready to use types
+ *
+ * @returns {Array<string>} string resource types
+ */
+function getSupportedTypes(networkConfig) {
+  const matrix = getMatrix()
+  return uniq(
+    matrix
+      .filter((e) => {
+        if (e.supported && isConfigured({ networkConfig, key: e.name })) {
+          return e
+        }
+      })
+      .map((e) => e.type)
+  )
+}
+
+/**
+ * Return all types in given resource selection
+ *
+ * @returns {Array<string>} string resource types
+ */
+function getSelectedTypes(selection) {
+  const matrix = getMatrix()
+  return uniq(
+    matrix.filter((e) => selection.includes(e.name)).map((e) => e.type)
+  )
+}
+
+/**
  * Check if a given element is properly configured
  *
  * @param networkConfig {object} - Decrypted network configuration
@@ -103,6 +132,30 @@ function hasRequiredDependencies(selection) {
     }
   }
   return true
+}
+
+/**
+ * Check if there's a supported resource of type selected and configured
+ *
+ * @param selection {Array<string>} - Array of resource matrix keys
+ * @returns {boolean} - if all required deps are in selection
+ */
+function canUseResourceType({ networkConfig, selection, type }) {
+  const types = getSupportedTypes(networkConfig)
+  const selectedTypes = getSelectedTypes(selection)
+  return types.includes(type) && selectedTypes.includes(type)
+}
+
+/**
+ * Check if there's a supported resource selected and configured
+ *
+ * @param selection {Array<string>} - Array of resource matrix keys
+ * @returns {boolean} - if all required deps are in selection
+ */
+function canUseResource({ networkConfig, selection, key }) {
+  if (!selection.includes(key)) return false
+  const keys = getAvailableResources({ networkConfig })
+  return keys.includes(key)
 }
 
 /**
@@ -183,6 +236,8 @@ module.exports = {
   getMatrix,
   setMatrix,
   isConfigured,
+  canUseResource,
+  canUseResourceType,
   getAvailableResources,
   validateSelection
 }

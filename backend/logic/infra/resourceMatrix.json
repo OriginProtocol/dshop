@@ -64,6 +64,14 @@
     "requiresConfig": ["gcpCredentials"]
   },
   {
+    "name": "cloudflare-dns",
+    "description": "Cloudflare DNS configuration for node domain",
+    "supported": true,
+    "type": "dns",
+    "depends": null,
+    "requiresConfig": ["cloudflareApiKey"]
+  },
+  {
     "name": "aws-email",
     "description": "AWS SES for E-mail notifications",
     "supported": true,
