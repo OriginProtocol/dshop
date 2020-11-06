@@ -122,7 +122,7 @@ async function deploy({
   networkId,
   shop,
   subdomain,
-  resouceSelection,
+  resourceSelection,
   uuid,
   skipSSLProbe = false,
   overrides = {}
@@ -130,10 +130,12 @@ async function deploy({
   assert(!!networkId, 'networkId must be provided to deploy()')
   assert(!!shop, 'shop must be provided to deploy()')
   assert(!!subdomain, 'subdomain must be provided to deploy()')
+  /* TODO: For now we're falling back to a default but want node admins to set
+  this explicitly at some point.
   assert(
-    !!resouceSelection && resouceSelection instanceof Array,
+    !!resourceSelection && resourceSelection instanceof Array,
     'resourceSelection must be an Array'
-  )
+  )*/
 
   /**
    * We have the ability to override functions within deployment for unit
@@ -179,10 +181,10 @@ async function deploy({
   const OutputDir = `${DSHOP_CACHE}/${dataDir}`
 
   // Make sure the selected infra resources are a valid and configured combination
-  if (resouceSelection) {
+  if (resourceSelection) {
     const selectionValidation = validateSelection({
       networkConfig,
-      selection: resouceSelection
+      selection: resourceSelection
     })
     if (!selectionValidation.success) {
       log.error('The infra resource selection is invalid!')
@@ -192,13 +194,21 @@ async function deploy({
       )
     }
   } else {
+    /** Using DEFAULT_INFRA_RESOURCES for now
     if (!networkConfig.defaultResourceSelection) {
       throw new Error(
         'Unable to figure out which infra resources to deploy with!'
       )
-    }
+    }*/
     // TODO: Remove these defaults eventually
-    resouceSelection =
+    if (!networkConfig.defaultResourceSelection) {
+      log.warn(
+        `Falling back to default infra resources: ${DEFAULT_INFRA_RESOURCES.join(
+          ', '
+        )}`
+      )
+    }
+    resourceSelection =
       networkConfig.defaultResourceSelection || DEFAULT_INFRA_RESOURCES
   }
 
@@ -262,12 +272,12 @@ async function deploy({
   if (
     canUseResource({
       networkConfig,
-      selection: resouceSelection,
+      selection: resourceSelection,
       key: 'gcp-files'
     }) ||
     canUseResource({
       networkConfig,
-      selection: resouceSelection,
+      selection: resourceSelection,
       key: 'aws-files'
     })
   ) {
@@ -276,7 +286,8 @@ async function deploy({
         networkConfig,
         shop,
         OutputDir,
-        dataDir
+        dataDir,
+        resourceSelection
       })
       if (responses.length > 0) {
         bucketUrls = responses.map((r) => r.url)
@@ -302,7 +313,7 @@ async function deploy({
     shop.enableCdn &&
     canUseResourceType({
       networkConfig,
-      selection: resouceSelection,
+      selection: resourceSelection,
       type: 'cdn'
     })
   ) {
@@ -313,7 +324,8 @@ async function deploy({
         networkConfig,
         shop,
         deployment,
-        domains: [fqdn]
+        domains: [fqdn],
+        resourceSelection
       })
       if (responses.length > 0) {
         ipAddresses = responses.map((r) => r.ipAddress)
@@ -333,12 +345,12 @@ async function deploy({
   if (
     canUseResource({
       networkConfig,
-      selection: resouceSelection,
+      selection: resourceSelection,
       key: 'ipfs-cluster'
     }) ||
     canUseResource({
       networkConfig,
-      selection: resouceSelection,
+      selection: resourceSelection,
       key: 'ipfs-pinata'
     })
   ) {
@@ -349,9 +361,7 @@ async function deploy({
         networkConfig,
         OutputDir,
         dataDir,
-        pinner: resouceSelection.includes('ipfs-cluster')
-          ? 'ipfs-cluster'
-          : 'ipfs-pinata'
+        resourceSelection
       })
       ipfsHash = ipfsRes.ipfsHash
       ipfsPinner = ipfsRes.ipfsPinner
@@ -371,7 +381,7 @@ async function deploy({
   if (
     canUseResourceType({
       networkConfig,
-      selection: resouceSelection,
+      selection: resourceSelection,
       type: 'dns'
     }) &&
     subdomain
@@ -383,7 +393,7 @@ async function deploy({
         subdomain,
         zone,
         hash: ipfsHash,
-        dnsProvider,
+        resourceSelection,
         ipAddresses
       })
     } catch (err) {

@@ -99,8 +99,6 @@ function getSelectedTypes(selection) {
  * @returns {boolean} - if given element is configured
  */
 function elementIsConfigured(networkConfig, element) {
-  console.log('element.requiresConfig:', element.requiresConfig)
-  console.log('networkConfig:', networkConfig)
   return every(element.requiresConfig.map((k) => k in networkConfig))
 }
 
@@ -112,7 +110,6 @@ function elementIsConfigured(networkConfig, element) {
  */
 function isConfigured(networkConfig, key) {
   const element = getElement(key)
-  console.log('element?', element)
   if (!element) return false
   return elementIsConfigured(networkConfig, element)
 }

@@ -32,7 +32,13 @@ const log = getLogger('logic.deploy.bucket')
  * @param args.dataDir <string> - The dataDir the shop configuration is in
  * @returns {Array} of response objects from each available module
  */
-async function deployToBucket({ networkConfig, shop, OutputDir, dataDir }) {
+async function deployToBucket({
+  networkConfig,
+  resourceSelection,
+  shop,
+  OutputDir,
+  dataDir
+}) {
   const responses = []
   const modules = await getModules(__dirname)
 
@@ -40,7 +46,7 @@ async function deployToBucket({ networkConfig, shop, OutputDir, dataDir }) {
     const mod = loadModule(__dirname, modName)
 
     // Check if it's usable for deployment
-    if (mod.isAvailable({ networkConfig })) {
+    if (mod.isAvailable({ networkConfig, resourceSelection })) {
       await mod.configure({ networkConfig })
       responses.push(
         await mod.deploy({ networkConfig, shop, OutputDir, dataDir })

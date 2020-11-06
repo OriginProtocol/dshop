@@ -21,8 +21,11 @@ let cachedClient = null
  * @param args.networkConfig {Object} - Decrypted networkConfig object
  * @returns {bool} - if we can deploy
  */
-function isAvailable({ networkConfig }) {
-  return isConfigured(networkConfig, 'aws-files')
+function isAvailable({ networkConfig, resourceSelection }) {
+  return (
+    resourceSelection.includes('aws-files') &&
+    isConfigured(networkConfig, 'aws-files')
+  )
 }
 
 /**

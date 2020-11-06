@@ -46,8 +46,11 @@ async function sleep(timeout = 1000) {
  * @param args.networkConfig {Object} - Decrypted networkConfig object
  * @returns {bool} - if we can deploy
  */
-function isAvailable({ networkConfig }) {
-  return isConfigured(networkConfig, 'gcp-cdn')
+function isAvailable({ networkConfig, resourceSelection }) {
+  return (
+    resourceSelection.includes('gcp-cdn') &&
+    isConfigured(networkConfig, 'gcp-cdn')
+  )
 }
 
 /**

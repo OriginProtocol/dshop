@@ -19,8 +19,11 @@ let cachedClient = null
  * @param args.networkConfig {Object} - Decrypted networkConfig object
  * @returns {bool} - if we can deploy
  */
-function isAvailable({ networkConfig }) {
-  return isConfigured(networkConfig, 'gcp-files')
+function isAvailable({ networkConfig, resourceSelection }) {
+  return (
+    resourceSelection.includes('gcp-files') &&
+    isConfigured(networkConfig, 'gcp-files')
+  )
 }
 
 /**

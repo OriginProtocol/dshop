@@ -23,13 +23,13 @@ async function configureShopDNS({
   subdomain,
   zone,
   hash,
-  dnsProvider,
+  resourceSelection,
   ipAddresses
 }) {
   const backendUrl = new URL(networkConfig.backendUrl)
   const backendHost = backendUrl.hostname
 
-  if (dnsProvider === 'cloudflare') {
+  if (resourceSelection.includes('cloudflare-dns')) {
     if (!isConfigured(networkConfig, 'cloudflare-dns')) {
       log.warn('Cloudflare DNS Proider selected but not available!')
     } else {
@@ -43,7 +43,7 @@ async function configureShopDNS({
         ipAddresses
       })
     }
-  } else if (dnsProvider === 'gcp') {
+  } else if (resourceSelection.includes('gcp-dns')) {
     if (!isConfigured(networkConfig, 'gcp-dns')) {
       log.warn('GCP DNS Proider selected but not available!')
     } else {
@@ -56,7 +56,7 @@ async function configureShopDNS({
         ipAddresses
       })
     }
-  } else if (dnsProvider === 'aws') {
+  } else if (resourceSelection.includes('aws-dns')) {
     if (!isConfigured(networkConfig, 'aws-dns')) {
       log.warn('AWS DNS Proider selected but not available!')
     } else {
