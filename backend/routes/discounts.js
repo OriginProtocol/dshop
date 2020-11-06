@@ -3,14 +3,31 @@ const pick = require('lodash/pick')
 const { Discount } = require('../models')
 const { authShop, authSellerAndShop } = require('./_auth')
 
-const { validateDiscount, getSafeDiscountProps } = require('../utils/discounts')
+const { validateDiscount } = require('../logic/discount')
 const { DiscountTypeEnums } = require('../enums')
 
+const safeDiscountProps = [
+  'status',
+  'code',
+  'discountType',
+  'value',
+  'maxUses',
+  'onePerCustomer',
+  'startTime',
+  'endTime',
+  'data',
+  'maxDiscountValue',
+  'minCartValue'
+]
+
 module.exports = function (router) {
+  /**
+   * Checks that a discount is valid.
+   */
   router.post('/check-discount', authShop, async (req, res) => {
     const r = await validateDiscount(req.body.code, req.shop)
     if (r.discount) {
-      r.discount = getSafeDiscountProps(r.discount)
+      r.discount = pick(r.discount, ['code', 'value', 'discountType'])
     }
     res.json(r)
   })
@@ -23,7 +40,7 @@ module.exports = function (router) {
     return res.send({
       success: true,
       paymentDiscount: paymentDiscount
-        ? getSafeDiscountProps(paymentDiscount)
+        ? pick(paymentDiscount, safeDiscountProps)
         : null
     })
   })
@@ -55,19 +72,7 @@ module.exports = function (router) {
   })
 
   router.put('/discounts/:id', authSellerAndShop, async (req, res) => {
-    const data = pick(req.body, [
-      'status',
-      'code',
-      'discountType',
-      'value',
-      'maxUses',
-      'onePerCustomer',
-      'startTime',
-      'endTime',
-      'data',
-      'maxDiscountValue',
-      'minCartValue'
-    ])
+    const data = pick(req.body, safeDiscountProps)
     const result = await Discount.update(data, {
       where: {
         id: req.params.id,

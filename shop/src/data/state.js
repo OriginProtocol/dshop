@@ -339,7 +339,7 @@ const reducer = (state, action) => {
   }
 
   // IMPORTANT: Keep this function's total calculation in sync with the calculation
-  // in backend/utils/discounts.js#validateDiscountOnOrder() function
+  // in backend/logic/discount/index.js#validateDiscountOnOrder() function
 
   newState.cart.subTotal = newState.cart.items.reduce((total, item) => {
     return total + item.quantity * item.price
@@ -395,12 +395,14 @@ const reducer = (state, action) => {
   newState.cart.currency = get(newState, 'config.currency', 'USD')
   newState.cart.discount = discount
   newState.cart.totalTaxes = Math.ceil(taxRate * newState.cart.subTotal)
-  newState.cart.total =
+  newState.cart.total = Math.max(
+    0,
     newState.cart.subTotal +
-    shipping -
-    discount +
-    donation +
-    newState.cart.totalTaxes
+      shipping -
+      discount +
+      donation +
+      newState.cart.totalTaxes
+  )
 
   const activeShop = get(newState, 'config.activeShop')
   if (activeShop) {
