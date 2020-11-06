@@ -11,27 +11,32 @@ const { Sequelize, Discount, Order } = require('../../models')
  * @returns {{error: string}|{discount: models.Discount}}
  */
 const validateDiscount = async (code, shop) => {
-  const discounts = await Discount.findAll({
-    where: {
-      [Sequelize.Op.and]: [
-        { status: 'active' },
-        Sequelize.where(
-          Sequelize.fn('lower', Sequelize.col('code')),
-          Sequelize.fn('lower', code)
-        )
-      ],
-      shopId: shop.id,
-      startTime: {
-        [Sequelize.Op.lte]: Date.now()
-      },
-      endTime: {
-        [Sequelize.Op.or]: [
-          { [Sequelize.Op.gt]: Date.now() },
-          { [Sequelize.Op.eq]: null }
-        ]
-      },
-      discountType: !code ? DiscountTypeEnums.payment : undefined
+  const where = {
+    [Sequelize.Op.and]: [
+      { status: 'active' },
+      Sequelize.where(
+        Sequelize.fn('lower', Sequelize.col('code')),
+        Sequelize.fn('lower', code)
+      )
+    ],
+    shopId: shop.id,
+    startTime: {
+      [Sequelize.Op.lte]: Date.now()
+    },
+    endTime: {
+      [Sequelize.Op.or]: [
+        { [Sequelize.Op.gt]: Date.now() },
+        { [Sequelize.Op.eq]: null }
+      ]
     }
+  }
+
+  if (!code) {
+    where.discountType = DiscountTypeEnums.payment
+  }
+
+  const discounts = await Discount.findAll({
+    where
   })
 
   if (discounts.length > 0) {
