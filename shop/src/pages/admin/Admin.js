@@ -30,6 +30,7 @@ import Nav from './_Nav'
 import StoreSelector from './StoreSelector'
 import Themes from './themes/List'
 import CustomizeTheme from './themes/Customize'
+import PaymentSpecificDiscounts from './discounts/PaymentSpecific'
 
 const Admin = () => {
   usePGP()
@@ -73,6 +74,10 @@ const Admin = () => {
         <div className="main-content-container">
           <PublishChanges />
           <Switch>
+            <Route
+              path="/admin/discounts/auto"
+              component={PaymentSpecificDiscounts}
+            />
             <Route path="/admin/discounts/:id" component={EditDiscount} />
             <Route path="/admin/discounts" component={Discounts} />
             <Route path="/admin/products/:id" component={EditProduct} />

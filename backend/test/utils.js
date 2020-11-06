@@ -291,15 +291,17 @@ async function updateNetworkConfig(network, networkConfig) {
  * Creates encrypted data for an offer
  * @param {models.Network} network
  * @param {models.Shop} shop
- * @param {object} key: seller's PGP key
+ * @param {Object} key: seller's PGP key
  * @param {models.Discount} discount: optional discount
+ * @param {Object} paymentMethod: optional payment method override
  * @returns {Promise<{data: *, ipfsHash: *}>}
  */
 async function createTestEncryptedOfferData(
   network,
   shop,
   key,
-  discount = null
+  discount = null,
+  paymentMethod = null
 ) {
   const subTotalAmount = 2500
   const shippingAmount = 400
@@ -309,7 +311,7 @@ async function createTestEncryptedOfferData(
   if (discount) {
     if (discount.corruptTestData) {
       discountAmount = 9999
-    } else if (discount.discountType === 'percentage') {
+    } else if (['percentage', 'payment'].includes(discount.discountType)) {
       const totalWithShipping = subTotalAmount + shippingAmount
       discountAmount = Math.round((totalWithShipping * discount.value) / 100)
     } else if (discount.discountType === 'fixed') {
@@ -345,7 +347,7 @@ async function createTestEncryptedOfferData(
       label: 'Flat Rate',
       amount: shippingAmount
     },
-    paymentMethod: {
+    paymentMethod: paymentMethod || {
       id: 'stripe',
       label: 'Credit Card'
     },

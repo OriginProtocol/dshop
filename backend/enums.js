@@ -49,6 +49,8 @@ const ShopDomainStatuses = new Enum('Pending', 'Success', 'Failure')
 
 const EtlJobStatuses = new Enum('Running', 'Success', 'Failure')
 
+const DiscountTypeEnums = new Enum('fixed', 'percentage', 'payment')
+
 module.exports = {
   AdminLogActions,
   EtlJobStatuses,
@@ -58,5 +60,6 @@ module.exports = {
   ShopDeploymentStatuses,
   ShopDomainStatuses,
   TransactionStatuses,
-  TransactionTypes
+  TransactionTypes,
+  DiscountTypeEnums
 }

@@ -1,4 +1,8 @@
+const { DiscountTypeEnums } = require('../enums')
+
 module.exports = (sequelize, DataTypes) => {
+  const isPostgres = sequelize.options.dialect === 'postgres'
+
   const Discount = sequelize.define(
     'Discount',
     {
@@ -16,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING
       },
       discountType: {
-        type: DataTypes.ENUM('fixed', 'percentage')
+        type: DataTypes.ENUM(DiscountTypeEnums)
       },
       // If discountType is 'fixed', value is in dollar (not cents). Ex: 30 -> $30
       // If discountType is 'percentage', value is a plain percentage. Ex: 10 -> 10% off
@@ -39,6 +43,17 @@ module.exports = (sequelize, DataTypes) => {
       },
       // Counter to track the number of times the discount was used.
       uses: {
+        type: DataTypes.INTEGER
+      },
+      data: {
+        type: isPostgres ? DataTypes.JSONB : DataTypes.JSON
+      },
+      // The minimum cart value (subTotal) needed to avail the discount in dollar
+      minCartValue: {
+        type: DataTypes.INTEGER
+      },
+      // The maximum discount amount in dollar (only for `percentage` discount types).
+      maxDiscountValue: {
         type: DataTypes.INTEGER
       }
     },

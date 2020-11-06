@@ -6,6 +6,7 @@ import useProduct from 'utils/useProduct'
 import useCollection from 'utils/useCollection'
 import useThemeVars from 'utils/useThemeVars'
 import useConfig from 'utils/useConfig'
+import usePaymentDiscount from 'utils/usePaymentDiscount'
 
 import Header from './_Header'
 import Footer from './_Footer'
@@ -34,6 +35,8 @@ const ProductDetail = ({ match }) => {
   const { collection, previousProduct, nextProduct } = collectionObj
   const productObj = useProduct(match.params.id)
   const { product, variant, loading, activeImage } = productObj
+
+  const { paymentDiscount } = usePaymentDiscount()
 
   if (loading) {
     return <div className="min-h-screen" />
@@ -111,9 +114,14 @@ const ProductDetail = ({ match }) => {
           <div className="text-2xl sm:text-3xl leading-none mt-4">
             {product.title}
           </div>
-          <div className="mt-4 text-lg mb-12 font-bold">
+          <div className="mt-4 text-lg mb-6 font-bold">
             {get(variant, 'priceStr', 'Unavailable')}
           </div>
+          {!paymentDiscount || !paymentDiscount.data ? null : (
+            <div className="border-t border-b border-gray-200 py-2 text-center">
+              {paymentDiscount.data.summary}
+            </div>
+          )}
           {optionButtons ? (
             <ProductOptionsAlt {...productObj} center={!alignLeft} />
           ) : (
@@ -173,7 +181,7 @@ const ProductOptions = ({
   const justify = center ? ' justify-center' : ''
 
   return (
-    <div className={`flex mb-8 flex-col sm:flex-row${justify}`}>
+    <div className={`flex mb-8 flex-col sm:flex-row mt-6${justify}`}>
       {productOptions.map((opt, idx) => (
         <div key={`${product.id}-${idx}`} className="font-2xl">
           <div className="mb-2 text-gray-600">{opt}</div>
@@ -210,7 +218,7 @@ const ProductOptionsAlt = ({
   const items = center ? ' items-center ' : ''
 
   return (
-    <div className={`flex flex-col ${items}justify-center mb-4`}>
+    <div className={`flex flex-col ${items}justify-center mt-6 mb-4`}>
       {productOptions.map((opt, idx) => (
         <React.Fragment key={`${product.id}-${idx}`}>
           <div className="text-xl text-gray-600">{opt}</div>

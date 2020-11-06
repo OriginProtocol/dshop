@@ -1,4 +1,5 @@
 const { get } = require('lodash')
+const { DiscountTypeEnums } = require('../../enums')
 
 const { Sequelize, Discount, Order } = require('../../models')
 
@@ -28,7 +29,8 @@ const validateDiscount = async (code, shop) => {
           { [Sequelize.Op.gt]: Date.now() },
           { [Sequelize.Op.eq]: null }
         ]
-      }
+      },
+      discountType: !code ? DiscountTypeEnums.payment : undefined
     }
   })
 
@@ -161,13 +163,40 @@ const validateDiscountOnOrder = async (orderObj) => {
   const shipping = get(cart, 'shipping.amount', 0)
   const taxRate = parseFloat(get(cart, 'taxRate', 0))
   const totalTaxes = Math.ceil(taxRate * subTotal)
+  const { minCartValue, maxDiscountValue, discountType } = get(
+    cart,
+    'discountObj',
+    {}
+  )
 
   let discount = 0
-  if (discountObj.discountType === 'percentage') {
-    const totalWithShipping = subTotal + shipping
-    discount = Math.round((totalWithShipping * discountObj.value) / 100)
-  } else if (discountObj.discountType === 'fixed') {
-    discount = discountObj.value * 100
+
+  if (!minCartValue || subTotal > minCartValue) {
+    // Calculate discounts only if minCartValue constraint is met
+
+    if (discountType === 'percentage') {
+      const totalWithShipping = subTotal + shipping
+      discount = Math.round((totalWithShipping * discountObj.value) / 100)
+    } else if (discountType === 'fixed') {
+      discount = discountObj.value * 100
+    } else if (discountType === 'payment') {
+      const activePaymentMethod = get(cart, 'paymentMethod.id')
+      let isValidPayment = discountObj.data[activePaymentMethod]
+
+      if (activePaymentMethod === 'crypto') {
+        const token = get(cart, 'paymentMethod.token')
+        isValidPayment = get(discountObj, `data.crypto`, {})[token]
+      }
+
+      if (isValidPayment) {
+        const totalWithShipping = cart.subTotal + shipping
+        discount = Math.round((totalWithShipping * discountObj.value) / 100)
+      }
+    }
+
+    if (maxDiscountValue) {
+      discount = Math.min(maxDiscountValue, discount)
+    }
   }
 
   const donation = get(cart, 'donation', 0)
