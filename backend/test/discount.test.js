@@ -196,7 +196,7 @@ describe('Discounts', () => {
     }
   })
 
-  it.only('Order with a payment-specific discount', async () => {
+  it('Order with a payment-specific discount', async () => {
     const scenarios = [
       {
         discount: paymentDiscount,
