@@ -1,3 +1,5 @@
+const { DiscountTypeEnums } = require('../../enums')
+
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.transaction(() => {
@@ -121,7 +123,7 @@ module.exports = {
           },
           code: Sequelize.STRING,
           discount_type: {
-            type: Sequelize.ENUM('fixed', 'percentage')
+            type: Sequelize.ENUM(DiscountTypeEnums)
           },
           value: Sequelize.INTEGER,
           max_uses: Sequelize.INTEGER,

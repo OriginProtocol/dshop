@@ -154,7 +154,14 @@ const AdminEditDiscount = () => {
               code: newState.code,
               status: newState.status,
               maxUses: newState.maxUses ? Number(newState.maxUses) : null,
-              onePerCustomer: newState.onePerCustomer ? true : false
+              onePerCustomer: newState.onePerCustomer ? true : false,
+              excludeShipping: newState.excludeShipping ? true : false,
+              maxDiscountValue: newState.maxDiscountValue
+                ? Number(newState.maxDiscountValue)
+                : null,
+              minCartValue: newState.minCartValue
+                ? Number(newState.minCartValue)
+                : null
             })
           })
           if (raw.ok) {
@@ -342,6 +349,47 @@ const AdminEditDiscount = () => {
           </div>
         </div>
       )}
+
+      <div className="form-group" style={{ maxWidth: '15rem' }}>
+        <label>
+          <fbt desc="admin.discounts.edit.minCartValue">Min. Cart Value</fbt>
+        </label>
+        <div className="input-group">
+          <div className="input-group-prepend">
+            <span className="input-group-text">
+              {formatPrice(0, {
+                symbolOnly: true,
+                currency: config.currency
+              })}
+            </span>
+          </div>
+          <input type="number" {...input('minCartValue')} />
+        </div>
+        {Feedback('minCartValue')}
+      </div>
+
+      {state.discountType !== 'percentage' ? null : (
+        <div className="form-group" style={{ maxWidth: '15rem' }}>
+          <label>
+            <fbt desc="admin.discounts.edit.maxDiscountValue">
+              Max. Discount Value
+            </fbt>
+          </label>
+          <div className="input-group">
+            <div className="input-group-prepend">
+              <span className="input-group-text">
+                {formatPrice(0, {
+                  symbolOnly: true,
+                  currency: config.currency
+                })}
+              </span>
+            </div>
+            <input type="number" {...input('maxDiscountValue')} />
+          </div>
+          {Feedback('maxDiscountValue')}
+        </div>
+      )}
+
       <div className="footer-actions">{actions}</div>
     </form>
   )

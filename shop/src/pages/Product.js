@@ -19,6 +19,7 @@ import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 import fetchProduct from 'data/fetchProduct'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
+import usePaymentDiscount from 'utils/usePaymentDiscount'
 
 function getOptions(product, offset) {
   const options = new Set(
@@ -76,6 +77,8 @@ const Product = ({ history, location, match }) => {
   const { products } = useProducts()
   const currencyOpts = useCurrencyOpts()
   const opts = queryString.parse(location.search)
+
+  const { paymentDiscount } = usePaymentDiscount()
 
   useEffect(() => {
     async function setData(data) {
@@ -271,6 +274,11 @@ const Product = ({ history, location, match }) => {
               </span>
             ) : null}
           </div>
+          {!paymentDiscount || !paymentDiscount.data ? null : (
+            <div className="payment-discount">
+              {paymentDiscount.data.summary}
+            </div>
+          )}
           {!productOptions ||
           (productData.variants || []).length <= 1 ? null : (
             <div
@@ -390,6 +398,13 @@ require('react-styl')(`
         margin-right: 0.5rem
     .description
       white-space: pre-line
+    .payment-discount
+      text-align: center
+      padding: 10px
+      margin: 10px 0 1rem 0
+      border-top: solid 1px #dddddd
+      border-bottom: solid 1px #dddddd
+      font-size: 1.125rem
   @media (max-width: 767.98px)
     .product-detail
       h3,.price,.actions

@@ -4,6 +4,21 @@ const { Discount } = require('../models')
 const { authShop, authSellerAndShop } = require('./_auth')
 
 const { validateDiscount } = require('../logic/discount')
+const { DiscountTypeEnums } = require('../enums')
+
+const safeDiscountProps = [
+  'status',
+  'code',
+  'discountType',
+  'value',
+  'maxUses',
+  'onePerCustomer',
+  'startTime',
+  'endTime',
+  'data',
+  'maxDiscountValue',
+  'minCartValue'
+]
 
 module.exports = function (router) {
   /**
@@ -15,6 +30,19 @@ module.exports = function (router) {
       r.discount = pick(r.discount, ['code', 'value', 'discountType'])
     }
     res.json(r)
+  })
+
+  router.get('/discounts/payment', authShop, async (req, res) => {
+    const paymentDiscount = await Discount.findOne({
+      where: { shopId: req.shop.id, discountType: DiscountTypeEnums.payment }
+    })
+
+    return res.send({
+      success: true,
+      paymentDiscount: paymentDiscount
+        ? pick(paymentDiscount, safeDiscountProps)
+        : null
+    })
   })
 
   router.get('/discounts', authSellerAndShop, async (req, res) => {
@@ -44,16 +72,7 @@ module.exports = function (router) {
   })
 
   router.put('/discounts/:id', authSellerAndShop, async (req, res) => {
-    const data = pick(req.body, [
-      'status',
-      'code',
-      'discountType',
-      'value',
-      'maxUses',
-      'onePerCustomer',
-      'startTime',
-      'endTime'
-    ])
+    const data = pick(req.body, safeDiscountProps)
     const result = await Discount.update(data, {
       where: {
         id: req.params.id,
