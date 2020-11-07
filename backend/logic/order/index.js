@@ -23,6 +23,8 @@ const {
 
 const log = getLogger('logic.order')
 
+const { IS_TEST } = require('../../utils/const')
+
 /**
  * Returns a new order id. Returns its full-qualified and short form.
  * Format: <networkId>-<contractVersion>-<listingId>-<shopID>-<randomId>.
@@ -98,6 +100,17 @@ function getPaymentType(offerData) {
  * @returns {Promise<{error: string}|{valid: true}>}
  */
 async function validateOfferData(shop, networkConfig, order) {
+  let readProductsFile = readProductsFileFromWeb
+  let readProductData = readProductDataFromWeb
+  if (IS_TEST) {
+    const {
+      mockReadProductsFileFromWeb,
+      mockReadProductDataFromWeb
+    } = require('../../test/utils')
+    readProductsFile = mockReadProductsFileFromWeb
+    readProductData = mockReadProductDataFromWeb
+  }
+
   // Get the cart data from the order
   const cart = order.data
   if (!cart) {
@@ -109,10 +122,10 @@ async function validateOfferData(shop, networkConfig, order) {
   }
 
   // Check the products in the cart exist and the correctness of their price.
-  // We fetch the product data from the published shop since that is what the
+  // We fetch the data from the published shop since that is what the
   // checkout page uses (as opposed to from the disk which could have changes
   // that haven't been published yet by the merchant).
-  const products = await readProductsFileFromWeb(shop, networkConfig)
+  const products = await readProductsFile(shop, networkConfig)
   let subTotal = 0
   for (const item of items) {
     // Find the item in the catalog of products.
@@ -120,11 +133,12 @@ async function validateOfferData(shop, networkConfig, order) {
     if (!product) {
       return { error: `Invalid order: Unknown product ${item.product} in cart` }
     }
+
     // If the item has a variant, fetch the product file to get the variant price.
     // Otherwise use the price from the product catalog.
     let productPrice
     if (item.variant) {
-      const productData = await readProductDataFromWeb(
+      const productData = await readProductData(
         shop,
         networkConfig,
         item.product
@@ -137,10 +151,12 @@ async function validateOfferData(shop, networkConfig, order) {
       if (!variant) {
         return { error: `Invalid order: Unknown variant ${item.variant}` }
       }
-      productPrice = productData
+      productPrice = productData.price
     } else {
       productPrice = product.price
     }
+
+    // Check the item's price in the cart matches with the price from the shop.
     if (productPrice !== item.price) {
       return {
         error: `Incorrect price ${item.price} for product ${item.product}`
@@ -151,7 +167,7 @@ async function validateOfferData(shop, networkConfig, order) {
 
   // Check the subtotal.
   if (subTotal !== cart.subTotal) {
-    return { error: 'Invalid order: Subtotal ' }
+    return { error: 'Invalid order: Subtotal' }
   }
 
   return { valid: true }

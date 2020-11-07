@@ -13,7 +13,7 @@ const { getLogger } = require('../../utils/logger')
 const { DSHOP_CACHE } = require('../../utils/const')
 const { decryptConfig } = require('../../utils/encryptedConfig')
 const { addToCollections } = require('../../utils/collections')
-const { getShopDataUrl } = require('../utils/shop')
+const { getShopDataUrl } = require('../../utils/shop')
 const { Product } = require('../../models')
 
 const log = getLogger('logic.products')
@@ -119,7 +119,7 @@ async function readProductsFileFromWeb(shop, networkConfig) {
  * @param {Model.shop} shop
  * @param {object} networkConfig: network's config
  * @param {string} productId: unique product id
- * @returns {Promise<*>}
+ * @returns {Promise<object>}
  */
 async function readProductDataFromWeb(shop, networkConfig, productId) {
   const url = getShopDataUrl(shop, networkConfig) + `${productId}/data.json`
