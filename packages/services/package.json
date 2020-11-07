@@ -24,7 +24,7 @@
     "memdown": "^5.1.0"
   },
   "devDependencies": {
-    "eslint": "7.12.1",
+    "eslint": "7.13.0",
     "prettier": "2.1.2"
   },
   "prettier": {
