@@ -27,7 +27,13 @@ module.exports = function (router) {
   router.post('/check-discount', authShop, async (req, res) => {
     const r = await validateDiscount(req.body.code, req.shop)
     if (r.discount) {
-      r.discount = pick(r.discount, ['code', 'value', 'discountType'])
+      r.discount = pick(r.discount, [
+        'code',
+        'value',
+        'discountType',
+        'maxDiscountValue',
+        'minCartValue'
+      ])
     }
     res.json(r)
   })

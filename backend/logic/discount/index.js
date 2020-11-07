@@ -32,6 +32,7 @@ const validateDiscount = async (code, shop) => {
   }
 
   if (!code) {
+    // Discounts of type 'payment' won't have a code
     where.discountType = DiscountTypeEnums.payment
   }
 
@@ -168,19 +169,15 @@ const validateDiscountOnOrder = async (orderObj) => {
   const shipping = get(cart, 'shipping.amount', 0)
   const taxRate = parseFloat(get(cart, 'taxRate', 0))
   const totalTaxes = Math.ceil(taxRate * subTotal)
-  const { minCartValue, maxDiscountValue, discountType } = get(
-    cart,
-    'discountObj',
-    {}
-  )
+  const { minCartValue, maxDiscountValue, discountType } = discountObj
 
   let discount = 0
 
-  if (!minCartValue || subTotal > minCartValue) {
+  const totalWithShipping = subTotal + shipping
+  if (!minCartValue || totalWithShipping > minCartValue * 100) {
     // Calculate discounts only if minCartValue constraint is met
 
     if (discountType === 'percentage') {
-      const totalWithShipping = subTotal + shipping
       discount = Math.round((totalWithShipping * discountObj.value) / 100)
     } else if (discountType === 'fixed') {
       discount = discountObj.value * 100
@@ -199,8 +196,8 @@ const validateDiscountOnOrder = async (orderObj) => {
       }
     }
 
-    if (maxDiscountValue) {
-      discount = Math.min(maxDiscountValue, discount)
+    if (maxDiscountValue && ['percentage', 'payment'].includes(discountType)) {
+      discount = Math.min(maxDiscountValue * 100, discount)
     }
   }
 
