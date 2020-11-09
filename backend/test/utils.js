@@ -351,13 +351,7 @@ async function createTestEncryptedOfferData(
       id: 'stripe',
       label: 'Credit Card'
     },
-    discountObj: discount
-      ? {
-          code: discount.code,
-          discountType: discount.discountType,
-          value: discount.value
-        }
-      : {},
+    discountObj: discount ? discount : {},
     userInfo: {
       firstName: 'The',
       lastName: 'Mandalorian',

@@ -26,7 +26,7 @@ const Domains = ({ config, state }) => {
   }, [reload.domains])
 
   const systemDomain = `${_get(admin, 'network.domain')}`
-  const domain = `${state.hostname}.${_get(admin, 'network.domain')}`
+  const domain = `https://${state.hostname}.${_get(admin, 'network.domain')}`
 
   return (
     <div className="form-group mt-4 mb-2 custom-domains">
@@ -97,7 +97,7 @@ const Domains = ({ config, state }) => {
                   <td>
                     <a
                       onClick={(e) => e.preventDefault()}
-                      href={domain}
+                      href={`https://${domain.domain}`}
                       target="_blank"
                       rel="noreferrer"
                       children={domain.domain}
