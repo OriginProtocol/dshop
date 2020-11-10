@@ -16,8 +16,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import { generateVariants } from 'utils/generateVariants'
 
 import fetchProduct from 'data/fetchProduct'
-// import { Countries } from '@origin/utils/Countries'
-// import ProcessingTimes from '@origin/utils/ProcessingTimes'
+import fetchProductStock from 'data/fetchProductStock'
 
 import Link from 'components/Link'
 import Redirect from 'components/Redirect'
@@ -34,7 +33,7 @@ const removeErrorKeys = (obj) => {
   }
 }
 
-function validate(state, { hasOptions }) {
+function validate(state, { hasOptions, inventory }) {
   const newState = {}
   let validVariants = true
   let validCustomProcTime = true
@@ -75,6 +74,16 @@ function validate(state, { hasOptions }) {
         }
       }
 
+      if (
+        inventory &&
+        (Number.isNaN(Number(variant.quantity)) || Number(variant.quantity) < 0)
+      ) {
+        out.quantityError = fbt(
+          'Invalid Quantity',
+          'admin.products.quantityError'
+        )
+      }
+
       return out
     })
 
@@ -92,13 +101,6 @@ function validate(state, { hasOptions }) {
     }
   }
 
-  // if (!state.dispatchOrigin) {
-  //   newState.dispatchOriginError = 'Select a dispatch origin'
-  // }
-
-  // if (!state.processingTime) {
-  //   newState.processingTimeError = 'Select a processing time'
-  // } else
   if (state.processingTime === 'custom') {
     newState.processingTimeOpts = {
       ...removeErrorKeys(state.processingTimeOpts)
@@ -160,18 +162,6 @@ const EditProduct = () => {
     setFormState({ ...newState, hasChanges: true })
   })
   const Feedback = formFeedback(formState)
-
-  // const procTimeState = get(formState, 'processingTimeOpts', {})
-
-  // const customProcTimeInput = formInput(procTimeState, (newState) => {
-  //   setFormState({
-  //     processingTimeOpts: {
-  //       ...formState.processingTimeOpts,
-  //       ...newState
-  //     }
-  //   })
-  // })
-  // const customProcTimeFeedback = formFeedback(procTimeState)
 
   const title = isNewProduct
     ? fbt('Add product', 'admin.products.addProduct')
@@ -270,7 +260,10 @@ const EditProduct = () => {
 
     setSubmitError(null)
 
-    const { valid, newState } = validate(formState, { hasOptions })
+    const { valid, newState } = validate(formState, {
+      hasOptions,
+      inventory: config.inventory
+    })
     setFormState({ ...newState, hasChanges: false })
 
     if (!valid) {
@@ -316,6 +309,7 @@ const EditProduct = () => {
 
       // Clear memoize cache for existing product
       fetchProduct.cache.delete(`${config.dataSrc}-${product.id}`)
+      fetchProductStock.cache.clear()
 
       dispatch({
         type: 'toast',
@@ -482,10 +476,9 @@ const EditProduct = () => {
                 <ImagePicker
                   images={media}
                   onChange={(media) => {
-                    setFormState({ hasChanges: true })
+                    setFormState({ hasChanges: true, imagesUpdated: true })
                     setMedia(media)
                   }}
-                  disabled={externallyManaged}
                 />
               </div>
 
@@ -526,11 +519,21 @@ const EditProduct = () => {
                     />
                     {Feedback('sku')}
                   </div>
-                  {/* <div className="form-group">
-                    <label>Quantity</label>
-                    <input type="number" {...input('quantity')} />
-                    {Feedback('quantity')}
-                  </div> */}
+                  {!config.inventory ? null : (
+                    <div className="form-group">
+                      <label>
+                        <fbt desc="AvailableStock">Available Stock</fbt>
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        {...input('quantity')}
+                        disabled={hasOptions}
+                      />
+                      {Feedback('quantity')}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -647,147 +650,15 @@ const EditProduct = () => {
                   media={media}
                   disabled={externallyManaged}
                   onChange={(variants) => {
-                    setFormState({ variants, hasChanges: true })
+                    setFormState({
+                      variants,
+                      hasChanges: true,
+                      imagesUpdated: externallyManaged ? true : undefined
+                    })
                   }}
                 />
               </>
             )}
-
-            {/* <div>
-              <label>Shipping</label>
-              <div className="form-check">
-                <input
-                  checked={formState.shipInternational ? true : false}
-                  onChange={(e) =>
-                    setFormState({ shipInternational: e.target.checked })
-                  }
-                  id="shippingCheckbox"
-                  type="checkbox"
-                  className="form-check-input"
-                />
-                <label className="form-check-label" htmlFor="shippingCheckbox">
-                  Products ship internationally
-                </label>
-                {Feedback('shipping')}
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col-md-6">
-                <div className="form-group">
-                  <label>Dispatch Origin</label>
-                  <select {...input('dispatchOrigin')}>
-                    <option>Please choose one...</option>
-                    {Object.keys(Countries).map((country) => (
-                      <option key={country} value={country}>
-                        {country}
-                      </option>
-                    ))}
-                  </select>
-                  {Feedback('dispatchOrigin')}
-                </div>
-
-                <div className="form-group">
-                  <label>Processing Time</label>
-                  <select {...input('processingTime')}>
-                    <option>Please choose one...</option>
-                    {ProcessingTimes.map((t) => (
-                      <option key={t.value} value={t.value}>
-                        {t.label}
-                      </option>
-                    ))}
-                  </select>
-                  {Feedback('processingTime')}
-                </div>
-
-                {formState.processingTime !== 'custom' ? null : (
-                  <div className="row">
-                    <div className="col-6">
-                      <div className="form-group">
-                        <select {...customProcTimeInput('fromVal')}>
-                          <option>From...</option>
-                          {new Array(10).fill(0).map((_, index) => (
-                            <option key={index} value={index + 1}>
-                              {index + 1}
-                            </option>
-                          ))}
-                        </select>
-                        {customProcTimeFeedback('fromVal')}
-                      </div>
-                    </div>
-
-                    <div className="col-6">
-                      <div className="form-group">
-                        <select {...customProcTimeInput('toVal')}>
-                          <option>To...</option>
-                          {new Array(10).fill(0).map((_, index) => (
-                            <option key={index} value={index + 1}>
-                              {index + 1}
-                            </option>
-                          ))}
-                        </select>
-                        {customProcTimeFeedback('toVal')}
-                      </div>
-                    </div>
-
-                    <div className="col-6">
-                      <div className="form-check">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          checked={
-                            get(procTimeState, 'interval', 'days') === 'days'
-                          }
-                          onChange={(e) => {
-                            setFormState({
-                              processingTimeOpts: {
-                                ...procTimeState,
-                                interval: e.target.value
-                              }
-                            })
-                          }}
-                          value="days"
-                          id="procTimeDays"
-                        />
-                        <label
-                          htmlFor="procTimeDays"
-                          className="form-check-label"
-                        >
-                          Business days
-                        </label>
-                      </div>
-                    </div>
-                    <div className="col-6">
-                      <div className="form-check">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          checked={
-                            get(procTimeState, 'interval', 'days') === 'weeks'
-                          }
-                          onChange={(e) => {
-                            setFormState({
-                              processingTimeOpts: {
-                                ...procTimeState,
-                                interval: e.target.value
-                              }
-                            })
-                          }}
-                          value="weeks"
-                          id="procTimeWeeks"
-                        />
-                        <label
-                          htmlFor="procTimeWeeks"
-                          className="form-check-label"
-                        >
-                          Weeks
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div> */}
           </div>
           <div className="col-md-3">
             <LinkCollections

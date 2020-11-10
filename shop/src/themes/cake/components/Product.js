@@ -4,7 +4,8 @@ import { useStateValue } from 'data/state'
 import useProduct from 'utils/useProduct'
 import useCollections from 'utils/useCollections'
 import useCollection from 'utils/useCollection'
-
+import useConfig from 'utils/useConfig'
+import usePaymentDiscount from 'utils/usePaymentDiscount'
 import Link from 'components/Link'
 import Caret from 'components/icons/Caret'
 
@@ -23,6 +24,7 @@ const RightCaret = () => (
 )
 
 const Product = ({ match }) => {
+  const { config } = useConfig()
   const [addedToCart, setAddedToCart] = useState()
   const [, dispatch] = useStateValue()
   const productId = match.params.id
@@ -40,9 +42,12 @@ const Product = ({ match }) => {
     activeCollectionId
   )
 
+  const { paymentDiscount } = usePaymentDiscount()
+
   if (loading) {
     return null
   }
+  const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
 
   return (
     <>
@@ -80,11 +85,16 @@ const Product = ({ match }) => {
             <div className="text-center sm:text-left text-3xl sm:text-4xl font-semibold leading-none font-header">
               {product.title}
             </div>
-            <div className="text-center sm:text-left mt-4 text-lg mb-12">
+            <div className="text-center sm:text-left mt-4 text-lg mb-6">
               {variant.priceStr}
             </div>
+            {!paymentDiscount || !paymentDiscount.data ? null : (
+              <div className="border-t border-b border-gray-200 py-2 text-center">
+                {paymentDiscount.data.summary}
+              </div>
+            )}
             <div
-              className="mb-24 whitespace-pre-line text-sm sm:text-base"
+              className="mt-6 mb-24 whitespace-pre-line text-sm sm:text-base"
               dangerouslySetInnerHTML={{ __html: product.description }}
             />
             {addedToCart ? (
@@ -97,9 +107,12 @@ const Product = ({ match }) => {
                   dispatch({ type: 'addToCart', product, variant })
                   setAddedToCart(true)
                 }}
-                className="btn btn-primary sm:px-32 bg-button"
+                className={`btn btn-primary sm:px-32 bg-button ${
+                  isOutOfStock ? 'opacity-50' : ''
+                }`}
+                disabled={isOutOfStock}
               >
-                Add to Cart
+                {isOutOfStock ? 'Out of stock' : 'Add to Cart'}
               </button>
             )}
           </div>

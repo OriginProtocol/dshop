@@ -3,27 +3,38 @@ import React, { useState } from 'react'
 import { useStateValue } from 'data/state'
 import useProduct from 'utils/useProduct'
 import useIsMobile from 'utils/useIsMobile'
-
+import useConfig from 'utils/useConfig'
+import usePaymentDiscount from 'utils/usePaymentDiscount'
 import Link from 'components/Link'
 
 const Product = ({ match }) => {
+  const { config } = useConfig()
   const isMobile = useIsMobile()
   const [addedToCart, setAddedToCart] = useState()
   const [, dispatch] = useStateValue()
   const { product, variant, loading } = useProduct(match.params.id)
 
+  const { paymentDiscount } = usePaymentDiscount()
+
   if (loading || !product) {
     return null
   }
 
+  const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
+
   const Images = () =>
     product.imageUrls.map((image, idx) => <img key={idx} src={image} />)
 
-  const btnCls = 'btn sm:px-12 text-xl block text-center sm:inline'
+  const btnCls = 'btn sm:px-12 text-xl block text-center sm:inline mt-4'
   const Details = () => (
     <>
       <div className="text-4xl sm:text-5xl leading-none">{product.title}</div>
-      <div className="mt-4 text-4xl font-bold mb-8">{variant.priceStr}</div>
+      <div className="mt-4 text-4xl font-bold mb-4">{variant.priceStr}</div>
+      {!paymentDiscount || !paymentDiscount.data ? null : (
+        <div className="border-t border-b border-gray-200 py-2 text-center">
+          {paymentDiscount.data.summary}
+        </div>
+      )}
       {addedToCart ? (
         <Link to="/cart" className={btnCls}>
           View Cart
@@ -33,12 +44,14 @@ const Product = ({ match }) => {
           href="#"
           onClick={(e) => {
             e.preventDefault()
+            if (isOutOfStock) return
             dispatch({ type: 'addToCart', product, variant })
             setAddedToCart(true)
           }}
-          className={btnCls}
+          className={`${btnCls} ${isOutOfStock ? 'opacity-50' : ''}`}
+          disabled={isOutOfStock}
         >
-          Add to Cart
+          {isOutOfStock ? 'Out of stock' : 'Add to Cart'}
         </a>
       )}
     </>

@@ -109,7 +109,7 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
         )
         existingData = JSON.parse(existingDataRaw)
       } catch (e) {
-        console.log(`Error reading existing data for ${handle}`)
+        log.warn(`Error reading existing data for ${handle}`)
       }
     } else {
       handle = syncProduct.sync_product.name
@@ -128,9 +128,13 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
 
     const colors = [],
       sizes = [],
-      images = get(customImages, `[${handle}].images`, []),
+      images =
+        existingData && existingData.images
+          ? existingData.images
+          : get(customImages, `[${handle}].images`, []),
       variantImages = {},
       printfulSyncIds = {}
+
     syncProduct.sync_variants.forEach((syncVariant, idx) => {
       const vId = get(syncVariant, 'product.variant_id')
       if (!vId) {
@@ -152,7 +156,13 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
         sizes.push(size)
       }
       const img = syncVariant.files.find((f) => f.type === 'preview')
-      if (img) {
+
+      const existingVariantData =
+        !existingData || !existingData.imagesUpdated
+          ? null
+          : existingData.variants.find((v) => v.id === vId)
+
+      if (img && !existingVariantData) {
         if (allImages[img.preview_url] === undefined) {
           const splitImg = img.preview_url.split('/')
           const file = splitImg[splitImg.length - 1].replace('_preview', '')
@@ -168,6 +178,15 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
           images.push(fileWithExt)
         }
         variantImages[idx] = allImages[img.preview_url]
+      } else if (existingVariantData && existingVariantData.image) {
+        if (
+          !allImages[existingVariantData.image] &&
+          !existingData.images.includes(existingVariantData.image)
+        ) {
+          allImages[existingVariantData.image] = existingVariantData.image
+          images.push(existingVariantData.image)
+        }
+        variantImages[idx] = existingVariantData.image
       }
     })
 
@@ -229,6 +248,7 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
       title: syncProduct.sync_product.name,
       description,
       printfulDesc,
+      imagesUpdated: existingData.imagesUpdated,
       price: Number(syncProduct.sync_variants[0].retail_price.replace('.', '')),
       available: true,
       options,

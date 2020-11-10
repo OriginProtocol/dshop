@@ -1,4 +1,5 @@
 const path = require('path')
+const fetch = require('node-fetch')
 const fs = require('fs')
 const mv = require('mv')
 const sharp = require('sharp')
@@ -8,12 +9,14 @@ const groupBy = require('lodash/groupBy')
 const kebabCase = require('lodash/kebabCase')
 const { execFile } = require('child_process')
 
-const { getLogger } = require('../utils/logger')
+const { getLogger } = require('../../utils/logger')
+const { DSHOP_CACHE } = require('../../utils/const')
+const { decryptConfig } = require('../../utils/encryptedConfig')
+const { addToCollections } = require('../../utils/collections')
+const { getShopDataUrl } = require('../../utils/shop')
+const { Product } = require('../../models')
 
-const { DSHOP_CACHE } = require('./const')
-
-const { addToCollections } = require('./collections')
-const log = getLogger('utils.products')
+const log = getLogger('logic.products')
 
 // Fields that go into product's data.json file
 const validProductFields = [
@@ -21,7 +24,6 @@ const validProductFields = [
   'title',
   'description',
   'externalId',
-  'printfulDesc',
   'price',
   'image',
   'images',
@@ -32,7 +34,12 @@ const validProductFields = [
   'availableOptions',
   'dispatchOrigin',
   'processingTime',
-  'shipInternational'
+  'shipInternational',
+
+  // Fields to keep track of changes made
+  // to description and images
+  'printfulDesc',
+  'imagesUpdated'
 ]
 
 // Fields that go into `products.json` file
@@ -82,7 +89,7 @@ function getUniqueID(title, shop) {
 }
 
 /**
- * Reads shop's products.json file and returns its content
+ * Reads shop's products.json file from disk and returns its content
  *
  * @param {Model.Shop} shop
  *
@@ -94,6 +101,35 @@ function readProductsFile(shop) {
   const fileData = fs.readFileSync(productsPath)
 
   return JSON.parse(fileData)
+}
+
+/**
+ * Reads shop's products.json file from the web and returns its content
+ *
+ * @param {Model.shop} shop
+ * @param {object} networkConfig: network's config
+ * @returns {Promise<object>}
+ */
+async function readProductsFileFromWeb(shop, networkConfig) {
+  const url = getShopDataUrl(shop, networkConfig) + 'products.json'
+  const res = await fetch(url)
+  const json = await res.json()
+  return json
+}
+
+/**
+ * Read a product's data file from the web and returns its content.
+ *
+ * @param {Model.shop} shop
+ * @param {object} networkConfig: network's config
+ * @param {string} productId: unique product id
+ * @returns {Promise<object>}
+ */
+async function readProductDataFromWeb(shop, networkConfig, productId) {
+  const url = getShopDataUrl(shop, networkConfig) + `${productId}/data.json`
+  const res = await fetch(url)
+  const json = await res.json()
+  return json
 }
 
 /**
@@ -300,7 +336,7 @@ async function upsertProduct(shop, productData) {
   if (!product.variants || !product.variants.length) {
     product.variants = [
       {
-        ...pick(product, ['title', 'price', 'image', 'sku']),
+        ...pick(product, ['title', 'price', 'image', 'sku', 'quantity']),
         id: 0,
         name: product.title,
         options: [],
@@ -318,6 +354,46 @@ async function upsertProduct(shop, productData) {
 
   if (productData.collections) {
     addToCollections(shop, productData.id, productData.collections)
+  }
+
+  const shopConfig = decryptConfig(shop.config)
+
+  if (shopConfig.inventory) {
+    // Add to products model
+    const variantsStock = variants.reduce(
+      (stockData, variant) => ({
+        ...stockData,
+        [variant.id]: Number(variant.quantity) || 0
+      }),
+      {}
+    )
+    const stockLeft = variants.length
+      ? variants.reduce((sum, v) => sum + (Number(v.quantity) || 0), 0)
+      : Number(productData.quantity) || 0
+
+    const updatedStockData = {
+      productId: newProductId,
+      shopId: shop.id,
+      stockLeft,
+      variantsStock
+    }
+
+    let existingDbItem
+
+    if (productData.id) {
+      existingDbItem = await Product.findOne({
+        where: {
+          productId: productData.id,
+          shopId: shop.id
+        }
+      })
+    }
+
+    if (existingDbItem) {
+      await existingDbItem.update(updatedStockData)
+    } else {
+      await Product.create(updatedStockData)
+    }
   }
 
   return {
@@ -358,6 +434,13 @@ async function deleteProduct(shop, productId) {
   writeProductsFile(shop, updatedProducts)
   await removeProductData(shop, productId)
 
+  await Product.destroy({
+    where: {
+      productId: productId,
+      shopId: shop.id
+    }
+  })
+
   return {
     status: 200,
     error: null,
@@ -365,4 +448,10 @@ async function deleteProduct(shop, productId) {
   }
 }
 
-module.exports = { upsertProduct, deleteProduct, readProductsFile }
+module.exports = {
+  deleteProduct,
+  readProductsFile,
+  readProductsFileFromWeb,
+  readProductDataFromWeb,
+  upsertProduct
+}

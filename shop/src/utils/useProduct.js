@@ -1,7 +1,7 @@
 import { useEffect, useReducer } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import queryString from 'query-string'
-import get from 'lodash/get'
+import _get from 'lodash/get'
 import pick from 'lodash/pick'
 import isEqual from 'lodash/isEqual'
 
@@ -9,11 +9,12 @@ import fetchProduct from 'data/fetchProduct'
 import { useStateValue } from 'data/state'
 import formatPrice from 'utils/formatPrice'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
+import fetchProductStock from 'data/fetchProductStock'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
 
 function getImageForVariant(product, variant) {
-  if (product && get(variant, 'image')) {
+  if (product && _get(variant, 'image')) {
     const variantImage = product.images.findIndex(
       (i) => variant.image.indexOf(i) >= 0
     )
@@ -37,7 +38,7 @@ function getOptions(product, offset) {
 function findCheapestVariant(variants, productPrice) {
   if (variants.length <= 1) return variants[0]
 
-  let minPrice = get(variants, '0.price', productPrice)
+  let minPrice = _get(variants, '0.price', productPrice)
   let foundVariant
 
   for (const variant of variants) {
@@ -81,7 +82,7 @@ function useProduct(id) {
         )
       }
 
-      const variants = get(data, 'variants', [])
+      const variants = _get(data, 'variants', [])
       if (!variants.length) {
         variants.push({
           ...pick(data, ['title', 'price', 'image', 'sku', 'imageUrl']),
@@ -116,16 +117,36 @@ function useProduct(id) {
       if (imageForVariant !== undefined) {
         newState.activeImage = imageForVariant
       }
+
+      if (config.inventory) {
+        const { success, product: stockData } = await fetchProductStock(
+          data.id,
+          config
+        )
+
+        if (success) {
+          newState.product.quantity = stockData.stockLeft
+          newState.product.variants = variants.map((variant) => ({
+            ...variant,
+            quantity: _get(
+              stockData.variantsStock,
+              variant.id,
+              variant.quantity || 0
+            )
+          }))
+        }
+      }
+
       setState(newState)
     }
     setState({ loading: true })
     fetchProduct(config.dataSrc, id).then(setData)
   }, [id])
 
-  const variants = get(state.product, 'variants', []).map((variant) => {
+  const variants = _get(state.product, 'variants', []).map((variant) => {
     return {
       ...variant,
-      priceStr: formatPrice(get(variant, 'price', 0), currencyOpts)
+      priceStr: formatPrice(_get(variant, 'price', 0), currencyOpts)
     }
   })
   const variant = variants.find((v) =>
