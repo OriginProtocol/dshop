@@ -5,7 +5,7 @@ const {
   setMatrix,
   getAvailableResources,
   validateSelection
-} = require('../logic/infra/matrix')
+} = require('../matrix')
 
 const testMatrix1 = require('./fixtures/matrix1.json')
 
@@ -26,7 +26,7 @@ describe('Infra matrix config', () => {
       smtpPassword: 'passw0rd'
     }
 
-    // Using the above config, it should return resources that are propertly
+    // Using the above config, it should return resources that are properly
     // configured and ready for use
     const resources = getAvailableResources({ networkConfig })
 
@@ -141,6 +141,6 @@ describe('Infra matrix config', () => {
     expect(validation.success).to.be.false
     expect(validation.errors).to.have.lengthOf(1)
     expect(validation.errors[0]).to.be.a('string')
-    expect(validation.errors[0]).to.include('he-dns')
+    expect(validation.errors[0]).to.include('Hurricane')
   })
 })

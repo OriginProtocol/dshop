@@ -177,7 +177,7 @@ function dependencyErrors(selection) {
 /**
  * Returns infra resources that are configured and available for use
  *
- * @returns {Array<string>} - array of resource IDs
+ * @returns {Array<string|object>} - array of resource IDs or resource objects
  */
 function getAvailableResources({ networkConfig, fullObjects = false }) {
   const matrix = getMatrix()

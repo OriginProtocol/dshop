@@ -12,13 +12,16 @@
   "scripts": {
     "lint": "eslint . && npm run prettier:check",
     "prettier": "prettier --write *.js \"**/*.js\"",
-    "prettier:check": "prettier -c *.js \"**/*.js\""
+    "prettier:check": "prettier -c *.js \"**/*.js\"",
+    "test": "NODE_ENV=test mocha --timeout 10000 --exit"
   },
   "dependencies": {
     "lodash": "^4.17.20"
   },
   "devDependencies": {
+    "chai": "4.2.0",
     "eslint": "7.12.1",
+    "mocha": "8.2.0",
     "prettier": "2.1.2"
   },
   "prettier": {
