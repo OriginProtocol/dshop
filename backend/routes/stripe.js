@@ -213,6 +213,9 @@ module.exports = function (router) {
     externalPayment.paymentCode = get(event, 'data.object.metadata.paymentCode')
     externalPayment.amount = get(event, 'data.object.amount')
     externalPayment.currency = get(event, 'data.object.currency')
+    // Franck 10/30/2020: This seems broken. There is no row in production that
+    // have the fee column populated. I can't find any reference to a "fee"
+    // field in the Stripe documentation for events.
     externalPayment.fee =
       get(event, 'data.object.fee') ||
       get(event, 'data.object.charges.data[0].fee')

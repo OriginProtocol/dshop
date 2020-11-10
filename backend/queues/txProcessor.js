@@ -2,13 +2,13 @@ const ethers = require('ethers')
 const { Network, Shop, Transaction } = require('../models')
 const queues = require('./queues')
 const { getLogger } = require('../utils/logger')
-const { IS_TEST } = require('../utils/const')
+const { IS_TEST, IS_DEV } = require('../utils/const')
 const { TransactionStatuses } = require('../utils/enums')
 
 const log = getLogger('listingCreatedProcessor')
 
 // Wait for 2 blocks confirmation before considering a tx mined.
-const NUM_BLOCKS_CONFIRMATION = IS_TEST ? 0 : 2
+const NUM_BLOCKS_CONFIRMATION = IS_TEST || IS_DEV ? 0 : 2
 
 /**
  * Function to start the queue processing.

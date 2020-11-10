@@ -4,19 +4,26 @@ const get = require('lodash/get')
 
 const { Sentry } = require('../../sentry')
 const { Order, Product } = require('../../models')
+
 const sendNewOrderEmail = require('../../utils/emails/newOrder')
 const discordWebhook = require('../../utils/discordWebhook')
 const { autoFulfillOrder } = require('../printful')
 const { OrderPaymentStatuses, OrderPaymentTypes } = require('../../utils/enums')
 const { decryptShopOfferData } = require('../../utils/offer')
-const { validateDiscountOnOrder } = require('../../utils/discounts')
 const { getLogger } = require('../../utils/logger')
-
-const { processStripeRefund } = require('../payments/stripe')
-const { processPayPalRefund } = require('../payments/paypal')
 const { getConfig } = require('../../utils/encryptedConfig')
 
+const { validateDiscountOnOrder } = require('../discount')
+const { processStripeRefund } = require('../payments/stripe')
+const { processPayPalRefund } = require('../payments/paypal')
+const {
+  readProductsFileFromWeb,
+  readProductDataFromWeb
+} = require('../products')
+
 const log = getLogger('logic.order')
+
+const { IS_TEST } = require('../../utils/const')
 
 /**
  * Returns a new order id. Returns its full-qualified and short form.
@@ -82,6 +89,88 @@ function getPaymentType(offerData) {
       paymentType = OrderPaymentTypes.Offline
   }
   return paymentType
+}
+
+/**
+ * Checks an offer is valid by comparing data from the cart to the shop's data.
+ *
+ * @param {Model.shop} shop
+ * @param {object} networkConfig
+ * @param {object} order
+ * @returns {Promise<{error: string}|{valid: true}>}
+ */
+async function validateOfferData(shop, networkConfig, order) {
+  let readProductsFile = readProductsFileFromWeb
+  let readProductData = readProductDataFromWeb
+  if (IS_TEST) {
+    const {
+      mockReadProductsFileFromWeb,
+      mockReadProductDataFromWeb
+    } = require('../../test/utils')
+    readProductsFile = mockReadProductsFileFromWeb
+    readProductData = mockReadProductDataFromWeb
+  }
+
+  // Get the cart data from the order
+  const cart = order.data
+  if (!cart) {
+    return { error: 'Invalid order: No cart' }
+  }
+  const items = cart.items
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return { error: 'Invalid order: No item in cart' }
+  }
+
+  // Check the products in the cart exist and the correctness of their price.
+  // We fetch the data from the published shop since that is what the
+  // checkout page uses (as opposed to from the disk which could have changes
+  // that haven't been published yet by the merchant).
+  const products = await readProductsFile(shop, networkConfig)
+  let subTotal = 0
+  for (const item of items) {
+    // Find the item in the catalog of products.
+    const product = products.find((p) => p.id === item.product)
+    if (!product) {
+      return { error: `Invalid order: Unknown product ${item.product} in cart` }
+    }
+
+    // If the item has a variant, fetch the product file to get the variant price.
+    // Otherwise use the price from the product catalog.
+    let productPrice
+    if (item.variant) {
+      const productData = await readProductData(
+        shop,
+        networkConfig,
+        item.product
+      )
+      const variants = productData.variants
+      if (!variants || !Array.isArray(variants) || variants.length === 0) {
+        return { error: `Invalid order: Unknown variant ${item.variant}` }
+      }
+      const variant = variants.find((v) => v.id === item.variant)
+      if (!variant) {
+        return { error: `Invalid order: Unknown variant ${item.variant}` }
+      }
+      productPrice = productData.price
+    } else {
+      productPrice = product.price
+    }
+
+    // Check the item's price in the cart matches with the price from the shop.
+    if (productPrice !== item.price) {
+      return {
+        error: `Incorrect price ${item.price} for product ${item.product}`
+      }
+    }
+    subTotal += item.quantity * item.price
+  }
+
+  // Check the subtotal.
+  if (subTotal !== cart.subTotal) {
+    return { error: 'Invalid order: Subtotal' }
+  }
+
+  return { valid: true }
 }
 
 /**
@@ -180,33 +269,45 @@ async function processNewOrder({
     orderObj.commissionPending = Math.floor(data.subTotal / 200)
   }
 
-  orderObj.data.error = []
+  //
+  // Validation steps.
+  //
+  // Note: If there is an error (ex: item out of stock, unavail discount, ...)
+  // we store the error in the order data but we don't throw. The reason
+  // is that order processing is asynchronous. The buyer already exited
+  // checkout successfully. So we record the order with errors in the DB
+  // and let the merchant decide if they want to refund the buyer.
+  const errorData = { error: [] }
 
-  // Validate any discount applied to the order.
-  // TODO: in case the discount fails validation, consider rejecting the order
-  //       and setting its status to "Invalid".
-  const { valid, error } = await validateDiscountOnOrder(orderObj, {
-    markIfValid: true
-  })
-  if (!valid) {
-    orderObj.data.error.push(error)
+  const offerResult = await validateOfferData(shop, networkConfig, orderObj)
+  if (!offerResult.valid) {
+    const offerError = offerResult.error
+    errorData.offerError = offerError
+    errorData.error.push(offerError)
   }
 
-  // Note: Not throwing here because it could cause an issue
-  // if the order isn't created on Dshop. It'd be hard to
-  // refund in case of Stripe and other payment methods
-  const { error: inventoryError } = await updateInventoryData(
-    shop,
-    shopConfig,
-    data
-  )
-
-  orderObj.data.inventoryError = inventoryError
-  if (!inventoryError) {
-    orderObj.data.error.push(inventoryError)
+  const discountResult = await validateDiscountOnOrder(orderObj)
+  if (!discountResult.valid) {
+    const discountError = discountResult.error
+    errorData.discountError = discountError
+    errorData.error.push(discountError)
   }
 
+  const inventoryResult = await updateInventoryData(shop, shopConfig, data)
+  if (!inventoryResult.success) {
+    const inventoryError = inventoryResult.error
+    errorData.inventoryError = inventoryError
+    errorData.error.push(inventoryError)
+  }
+
+  // If at least 1 error was found, add the error data to the order data.
+  if (errorData.error.length > 0) {
+    orderObj.data = { ...orderObj.data, ...errorData }
+  }
+
+  //
   // Create the order in the DB.
+  //
   const order = await Order.create(orderObj)
   log.info(`Saved order ${order.fqId} to DB.`)
 
@@ -214,7 +315,9 @@ async function processNewOrder({
   // If the payment is still pending, the order will get fulfilled
   // at the time the payment status gets updated to 'Paid' (for ex. when the
   // merchant marks the payment as received for the order via the admin tool.
-  // TODO: move order fulfillment to a queue.
+  // TODO:
+  //  - Move order fulfillment to a queue.
+  //  - Should we still auto-fulfill in case of an error in inventory or discount validation?
   if (
     shopConfig.printful &&
     shopConfig.printfulAutoFulfill &&
@@ -431,8 +534,9 @@ async function updateInventoryData(
   cartData,
   increment = false
 ) {
+  // Nothing to do if inventory management is not enabled for the shop.
   if (!shopConfig.inventory) {
-    return
+    return { success: true }
   }
 
   const quantModifier = increment ? 1 : -1

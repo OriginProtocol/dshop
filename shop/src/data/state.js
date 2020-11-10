@@ -9,6 +9,8 @@ import isEqual from 'lodash/isEqual'
 
 import { Countries } from '@origin/utils/Countries'
 
+import calculateCartTotal from '@origin/utils/calculateCartTotal'
+
 import 'utils/setLocale'
 import fbTrack from './fbTrack'
 
@@ -231,6 +233,8 @@ const reducer = (state, action) => {
     newState = set(newState, `cart.shipping`, zone)
   } else if (action.type === 'updatePaymentMethod') {
     newState = set(newState, `cart.paymentMethod`, action.method)
+  } else if (action.type === 'updateActiveToken') {
+    newState = set(newState, `cart.paymentMethod.token`, action.token)
   } else if (action.type === 'orderComplete') {
     newState = set(newState, 'cart', cloneDeep(defaultState.cart))
   } else if (action.type === 'setAuth') {
@@ -336,42 +340,15 @@ const reducer = (state, action) => {
     newState = set(newState, 'themes', action.themes)
   }
 
-  // IMPORTANT: Keep this function's total calculation in sync with the calculation
-  // in backend/utils/disocunts.js#validateDiscountOnOrder() function
-
-  newState.cart.subTotal = newState.cart.items.reduce((total, item) => {
-    return total + item.quantity * item.price
-  }, 0)
-
   newState.preferredCurrency =
     newState.preferredCurrency || get(newState, 'config.currency', 'USD')
-
-  const shipping = get(newState, 'cart.shipping.amount', 0)
-  const taxRate = parseFloat(get(newState, 'cart.taxRate', 0))
-
-  const discountObj = get(newState, 'cart.discountObj', {})
-  const discountCode = get(newState, 'cart.discountObj.code')
-  let discount = 0
-  if (discountCode) {
-    if (discountObj.discountType === 'percentage') {
-      const totalWithShipping = newState.cart.subTotal + shipping
-      discount = Math.round((totalWithShipping * discountObj.value) / 100)
-    } else if (discountObj.discountType === 'fixed') {
-      discount = discountObj.value * 100
-    }
-  }
-
-  const donation = get(newState, 'cart.donation', 0)
-
   newState.cart.currency = get(newState, 'config.currency', 'USD')
-  newState.cart.discount = discount
-  newState.cart.totalTaxes = Math.ceil(taxRate * newState.cart.subTotal)
-  newState.cart.total =
-    newState.cart.subTotal +
-    shipping -
-    discount +
-    donation +
-    newState.cart.totalTaxes
+
+  const cartComputedValues = calculateCartTotal(newState.cart)
+  newState.cart.subTotal = cartComputedValues.subTotal
+  newState.cart.discount = cartComputedValues.discount
+  newState.cart.totalTaxes = cartComputedValues.totalTaxes
+  newState.cart.total = cartComputedValues.total
 
   const activeShop = get(newState, 'config.activeShop')
   if (activeShop) {

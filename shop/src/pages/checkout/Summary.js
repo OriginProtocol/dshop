@@ -51,6 +51,11 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
 
   if (!cart || !cart.items) return null
   const donateTo = get(config, 'donations.name')
+  const discountType = get(cart, 'discountObj.discountType')
+  const discountCode = get(cart, 'discountObj.code', '').toUpperCase()
+  const paymentMethodTitle = get(cart, 'paymentMethod.label')
+  const discountTitle =
+    discountType === 'payment' ? `(${paymentMethodTitle})` : discountCode
 
   return (
     <>
@@ -149,8 +154,7 @@ const OrderSummary = ({ cart, discountForm = false, donationForm = false }) => {
           {!cart.discount ? null : (
             <div>
               <div>
-                <fbt desc="Discount">Discount</fbt>{' '}
-                {get(cart, 'discountObj.code', '').toUpperCase()}
+                <fbt desc="Discount">Discount</fbt> {discountTitle}
               </div>
               <div>
                 <b>{formatPrice(cart.discount, currencyOpts)}</b>

@@ -49,6 +49,8 @@ const ShopDomainStatuses = new Enum('Pending', 'Success', 'Failure')
 
 const EtlJobStatuses = new Enum('Running', 'Success', 'Failure')
 
+const DiscountTypeEnums = new Enum('fixed', 'percentage', 'payment')
+
 // Not a DB enum
 const BucketExistence = new Enum('Exists', 'DoesNotExist', 'PermissionDenied')
 
@@ -79,5 +81,6 @@ module.exports = {
   TransactionTypes,
   PrintfulWebhookEvents,
   ExternalServices,
-  BucketExistence
+  BucketExistence,
+  DiscountTypeEnums
 }
