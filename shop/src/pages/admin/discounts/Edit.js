@@ -283,7 +283,9 @@ const AdminEditDiscount = () => {
             checked={state.excludeShipping ? true : false}
             onChange={(e) => setState({ excludeShipping: e.target.checked })}
           />
-          <fbt desc="admin.discounts.edit.excludeShipping">Exclude Shipping Fees</fbt>
+          <fbt desc="admin.discounts.edit.excludeShipping">
+            Exclude Shipping Fees
+          </fbt>
         </label>
       </div>
       <div className="form-group" style={{ maxWidth: '15rem' }}>

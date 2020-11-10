@@ -27,11 +27,17 @@ const calculateCartTotal = (cart) => {
   const taxRate = parseFloat(get(cart, 'taxRate', 0))
 
   const discountObj = get(cart, 'discountObj', {})
-  const { minCartValue, maxDiscountValue, discountType, excludeShipping } = discountObj
+  const {
+    minCartValue,
+    maxDiscountValue,
+    discountType,
+    excludeShipping
+  } = discountObj
 
   let discount = 0
 
-  const preDiscountTotal = get(cart, 'subTotal', 0) + (excludeShipping ? 0 : shipping)
+  const preDiscountTotal =
+    get(cart, 'subTotal', 0) + (excludeShipping ? 0 : shipping)
   if (!minCartValue || preDiscountTotal > minCartValue * 100) {
     // Calculate discounts only if minCartValue constraint is met
 
@@ -67,7 +73,7 @@ const calculateCartTotal = (cart) => {
     0,
     subTotal + shipping - discount + donation + totalTaxes
   )
-  
+
   return {
     total,
     subTotal,
