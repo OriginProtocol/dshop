@@ -25,8 +25,6 @@ describe('Discounts', () => {
     paymentDiscount
 
   before(async () => {
-    // Note: Enable the marketplace contract initially.
-    // Then later in this test suite it gets disabled.
     network = await getOrCreateTestNetwork()
 
     // Use account 1 as the merchant's.
@@ -104,7 +102,7 @@ describe('Discounts', () => {
         network,
         shop,
         key,
-        discount
+        { discount }
       )
 
       // Create a mock Bull job object.
@@ -162,7 +160,7 @@ describe('Discounts', () => {
         network,
         shop,
         key,
-        scenario.discount
+        { discount: scenario.discount }
       )
 
       // Create a mock Bull job object.
@@ -267,8 +265,7 @@ describe('Discounts', () => {
         network,
         shop,
         key,
-        scenario.discount,
-        scenario.paymentMethod
+        { discount: scenario.discount, paymentMethod: scenario.paymentMethod }
       )
 
       // Create a mock Bull job object.
