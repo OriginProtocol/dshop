@@ -33,7 +33,7 @@ async function hostCache(host) {
   }
 
   if (typeof hostnames[host] === 'undefined') {
-    log.debug('Cache miss')
+    log.debug(`Cache miss (${host})`)
 
     if (!nodeDomain) {
       const network = await Network.findOne({
@@ -41,6 +41,7 @@ async function hostCache(host) {
       })
       if (network && network.domain) {
         nodeDomain = network.domain
+        log.debug(`Set nodeDomain: ${nodeDomain}`)
       }
     }
 
@@ -55,10 +56,9 @@ async function hostCache(host) {
         })
 
         if (shop) {
+          log.debug(`${host} is ${shop.authToken}`)
           hostnames[host] = shop.authToken
         }
-
-        lastLookup[host] = now
       }
 
       // We don't want to poke the DB too often for static file requests
@@ -69,14 +69,15 @@ async function hostCache(host) {
         })
 
         if (shopDom) {
+          log.debug(`${host} is ${shopDom.shop.authToken}`)
           hostnames[host] = shopDom.shop.authToken
         }
-
-        lastLookup[host] = now
       }
+
+      lastLookup[host] = now
     }
   } else {
-    log.debug('Cache hit')
+    log.debug(`Cache hit (${host})`)
   }
 
   return hostnames[host]
