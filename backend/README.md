@@ -81,7 +81,11 @@ Add new migration:
     rsync -rv --exclude=.git --exclude=.gitignore --exclude=/db/dshop.db --exclude=/node_modules --exclude=/data --delete backend/ DESTINATION
 
 ## Running unit tests
+To run the full test suite:
     yarn run test
+
+To run a specific group of tests:
+    yarn run test -- -g "Discounts"
 
 Optionnally, if you are going to run tests several times in a row (typically during development), you can speed up the test setup phase by starting the services in a separate terminal and leave them up and running.
 
