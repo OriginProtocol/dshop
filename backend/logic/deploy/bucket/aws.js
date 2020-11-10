@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const { trimStart, trimEnd } = require('lodash')
 const S3 = require('aws-sdk/clients/s3')
-const { isConfigured } = require('@origin/infra-validator')
+const { isConfigured } = require('@origin/dshop-validation/matrix')
 
 const { walkDir } = require('../../../utils/filesystem')
 const { assert } = require('../../../utils/validators')

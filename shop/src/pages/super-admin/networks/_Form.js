@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { validateSelection } from '@origin/infra-validator'
+import { validateSelection } from '@origin/dshop-validation/matrix'
 
 import useSetState from 'utils/useSetState'
 import { Networks } from 'data/Networks'

@@ -3,7 +3,7 @@ const pick = require('lodash/pick')
 const {
   getAvailableResources,
   getSupportedResources
-} = require('@origin/infra-validator')
+} = require('@origin/dshop-validation/matrix')
 
 const { Network } = require('../models')
 const { decryptConfig, encryptConfig } = require('../utils/encryptedConfig')

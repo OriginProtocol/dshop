@@ -23,7 +23,7 @@ const {
   canUseResource,
   canUseResourceType,
   isConfigured
-} = require('@origin/infra-validator')
+} = require('@origin/dshop-validation/matrix')
 
 const { Network } = require('../../models')
 const { queues } = require('../../queues')

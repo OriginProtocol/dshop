@@ -1,7 +1,7 @@
 const path = require('path')
 const trimStart = require('lodash/trimStart')
 const { Storage } = require('@google-cloud/storage')
-const { isConfigured } = require('@origin/infra-validator')
+const { isConfigured } = require('@origin/dshop-validation/matrix')
 
 const { NETWORK_ID_TO_NAME, BUCKET_PREFIX } = require('../../../utils/const')
 const { walkDir } = require('../../../utils/filesystem')

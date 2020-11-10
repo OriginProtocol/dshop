@@ -1,6 +1,6 @@
 const deploy = require('ipfs-deploy')
 const ipfsClient = require('ipfs-http-client')
-const { isConfigured } = require('@origin/infra-validator')
+const { isConfigured } = require('@origin/dshop-validation/matrix')
 
 const prime = require('../../utils/primeIpfs')
 const { urlToMultiaddr } = require('../../utils/multiaddr')
