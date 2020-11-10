@@ -17,10 +17,10 @@
  */
 const _find = require('lodash/find')
 const trimStart = require('lodash/trimStart')
+const { isConfigured } = require('@origin/infra-validator')
 
 const { NETWORK_ID_TO_NAME, SERVICE_PREFIX } = require('../../../utils/const')
 const google = require('../../../utils/google')
-const { isConfigured } = require('../../infra/matrix')
 const { allIn } = require('../../../utils/array')
 const { assert } = require('../../../utils/validators')
 const { getLogger } = require('../../../utils/logger')

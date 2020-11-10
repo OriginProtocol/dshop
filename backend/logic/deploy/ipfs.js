@@ -1,5 +1,6 @@
 const deploy = require('ipfs-deploy')
 const ipfsClient = require('ipfs-http-client')
+const { isConfigured } = require('@origin/infra-validator')
 
 const prime = require('../../utils/primeIpfs')
 const { urlToMultiaddr } = require('../../utils/multiaddr')
@@ -9,7 +10,6 @@ const {
   PINATA_GATEWAY
 } = require('../../utils/const')
 const { getLogger } = require('../../utils/logger')
-const { isConfigured } = require('../infra/matrix')
 
 const log = getLogger('logic.deploy.ipfs')
 

@@ -18,6 +18,13 @@
  * 5) Configure DNS to point at either the CDN (if available) or the IPFS
  *    gateway
  */
+const {
+  validateSelection,
+  canUseResource,
+  canUseResourceType,
+  isConfigured
+} = require('@origin/infra-validator')
+
 const { Network } = require('../../models')
 const { queues } = require('../../queues')
 const { ShopDomainStatuses } = require('../../utils/enums')
@@ -25,12 +32,6 @@ const { decryptConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
 const { getMyIP } = require('../../utils/ip')
 const { assert } = require('../../utils/validators')
-const {
-  validateSelection,
-  canUseResource,
-  canUseResourceType,
-  isConfigured
-} = require('../infra/matrix')
 const { DSHOP_CACHE, DEFAULT_INFRA_RESOURCES } = require('../../utils/const')
 
 const {

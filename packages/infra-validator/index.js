@@ -53,12 +53,12 @@ function setMatrix(matrix) {
 /**
  * Check if a given element is properly configured
  *
- * @param key {string} - Name of an element to return
+ * @param id {string} - ID of an element to return
  * @returns {object} - service element from a matrix
  */
-function getElement(key) {
+function getElement(id) {
   const matrix = getMatrix()
-  return find(matrix, (e) => e.name === key && e.supported)
+  return find(matrix, (e) => e.id === id && e.supported)
 }
 
 /**
@@ -71,7 +71,7 @@ function getSupportedTypes(networkConfig) {
   return uniq(
     matrix
       .filter((e) => {
-        if (e.supported && isConfigured({ networkConfig, key: e.name })) {
+        if (e.supported && isConfigured({ networkConfig, id: e.id })) {
           return e
         }
       })
@@ -87,7 +87,7 @@ function getSupportedTypes(networkConfig) {
 function getSelectedTypes(selection) {
   const matrix = getMatrix()
   return uniq(
-    matrix.filter((e) => selection.includes(e.name)).map((e) => e.type)
+    matrix.filter((e) => selection.includes(e.id)).map((e) => e.type)
   )
 }
 
@@ -99,17 +99,17 @@ function getSelectedTypes(selection) {
  * @returns {boolean} - if given element is configured
  */
 function elementIsConfigured(networkConfig, element) {
-  return every(element.requiresConfig.map((k) => k in networkConfig))
+  return every(element.requiresConfig.map((k) => !!networkConfig[k]))
 }
 
 /**
- * Check if a service is properly configured by name
+ * Check if a service is properly configured by id
  *
- * @param selection {Array<string>} - Array of resource matrix keys
+ * @param selection {Array<string>} - Array of resource matrix IDs
  * @returns {boolean} - if the service element appears to be configured
  */
-function isConfigured(networkConfig, key) {
-  const element = getElement(key)
+function isConfigured(networkConfig, id) {
+  const element = getElement(id)
   if (!element) return false
   return elementIsConfigured(networkConfig, element)
 }
@@ -117,12 +117,12 @@ function isConfigured(networkConfig, key) {
 /**
  * Figure out which dependencies are missing for which services
  *
- * @param selection {Array<string>} - Array of resource matrix keys
+ * @param selection {Array<string>} - Array of resource matrix IDs
  * @returns {boolean} - if all required deps are in selection
  */
 function hasRequiredDependencies(selection) {
-  for (const key of selection) {
-    const el = getElement(key)
+  for (const id of selection) {
+    const el = getElement(id)
     if (!el.depends) continue
     if (!every(el.depends, (dep) => selection.includes(dep))) {
       return false
@@ -134,7 +134,7 @@ function hasRequiredDependencies(selection) {
 /**
  * Check if there's a supported resource of type selected and configured
  *
- * @param selection {Array<string>} - Array of resource matrix keys
+ * @param selection {Array<string>} - Array of resource matrix IDs
  * @returns {boolean} - if all required deps are in selection
  */
 function canUseResourceType({ networkConfig, selection, type }) {
@@ -146,29 +146,30 @@ function canUseResourceType({ networkConfig, selection, type }) {
 /**
  * Check if there's a supported resource selected and configured
  *
- * @param selection {Array<string>} - Array of resource matrix keys
+ * @param selection {Array<string>} - Array of resource matrix IDs
  * @returns {boolean} - if all required deps are in selection
  */
-function canUseResource({ networkConfig, selection, key }) {
-  if (!selection.includes(key)) return false
-  const keys = getAvailableResources({ networkConfig })
-  return keys.includes(key)
+function canUseResource({ networkConfig, selection, id }) {
+  if (!selection.includes(id)) return false
+  const ids = getAvailableResources({ networkConfig })
+  return ids.includes(id)
 }
 
 /**
  * Figure out which dependencies are missing for which services
  *
- * @param selection {Array<string>} - Array of resource matrix keys
+ * @param selection {Array<string>} - Array of resource matrix IDs
  * @returns {Array<string>} - error strings
  */
 function dependencyErrors(selection) {
   const errors = []
-  for (const key of selection) {
-    const el = getElement(key)
+  for (const id of selection) {
+    const el = getElement(id)
     if (!el.depends) continue
     for (const dep of el.depends) {
       if (!selection.includes(dep)) {
-        errors.push(`${el.name} requires ${dep}`)
+        const depEl = getElement(dep)
+        errors.push(`${el.name} requires ${depEl.name}`)
       }
     }
   }
@@ -178,12 +179,27 @@ function dependencyErrors(selection) {
 /**
  * Returns infra resources that are configured and available for use
  *
- * @returns {Array<string>} - array of resource keys
+ * @returns {Array<string>} - array of resource IDs
  */
-function getAvailableResources({ networkConfig }) {
+function getAvailableResources({ networkConfig, fullObjects = false }) {
   const matrix = getMatrix()
-  const keys = matrix.map((x) => x.name)
-  return keys.filter((k) => isConfigured(networkConfig, k))
+
+  if (fullObjects) {
+    return matrix.filter((r) => isConfigured(networkConfig, r.id))
+  }
+
+  const ids = matrix.map((x) => x.id)
+  return ids.filter((k) => isConfigured(networkConfig, k))
+}
+
+/**
+ * Returns infra resources that are configured and available for use
+ *
+ * @returns {Array<string>} - array of resource IDs
+ */
+function getSupportedResources() {
+  const matrix = getMatrix()
+  return matrix.filter((r) => r.supported)
 }
 
 /**
@@ -193,20 +209,20 @@ function getAvailableResources({ networkConfig }) {
  *
  * @param args {object}
  * @param args.networkConfig {object} - Decrypted network configuration
- * @param args.selection {Array<string>} - Array of resource matrix keys
+ * @param args.selection {Array<string>} - Array of resource matrix IDs
  * @returns {boolean} - if everything validates correction
  */
 function validateSelection({ networkConfig, selection }) {
   const errors = []
   const matrix = getMatrix()
-  const keys = matrix.map((x) => x.name)
+  const ids = matrix.map((x) => x.id)
 
-  // Validate keys given
-  if (!every(selection, (s) => keys.includes(s))) {
-    const invalidKeys = selection.filter((s) => !keys.includes(s))
-    errors.push(`Invalid selection key(s): ${invalidKeys.join(', ')}`)
+  // Validate IDs given
+  if (!every(selection, (s) => ids.includes(s))) {
+    const invalidKeys = selection.filter((s) => !ids.includes(s))
+    errors.push(`Invalid selection ID(s): ${invalidKeys.join(', ')}`)
 
-    // No need to continue validating invalid keys
+    // No need to continue validating invalid IDs
     selection = selection.filter((k) => !invalidKeys.includes(k))
   }
 
@@ -217,14 +233,14 @@ function validateSelection({ networkConfig, selection }) {
   }
 
   // Validate configuration
-  for (const key of selection) {
-    if (!isConfigured(networkConfig, key)) {
-      errors.push(`${key} is not configured`)
+  for (const id of selection) {
+    if (!isConfigured(networkConfig, id)) {
+      errors.push(`${id} is not configured`)
     }
   }
 
   return {
-    success: errors.length > 0,
+    success: errors.length < 1,
     errors
   }
 }
@@ -236,5 +252,6 @@ module.exports = {
   canUseResource,
   canUseResourceType,
   getAvailableResources,
+  getSupportedResources,
   validateSelection
 }

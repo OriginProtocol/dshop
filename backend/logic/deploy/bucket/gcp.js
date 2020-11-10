@@ -1,9 +1,9 @@
 const path = require('path')
 const trimStart = require('lodash/trimStart')
 const { Storage } = require('@google-cloud/storage')
+const { isConfigured } = require('@origin/infra-validator')
 
 const { NETWORK_ID_TO_NAME, BUCKET_PREFIX } = require('../../../utils/const')
-const { isConfigured } = require('../../infra/matrix')
 const { walkDir } = require('../../../utils/filesystem')
 const { assert } = require('../../../utils/validators')
 const { getLogger } = require('../../../utils/logger')

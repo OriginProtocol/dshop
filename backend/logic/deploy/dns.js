@@ -1,7 +1,8 @@
+const { isConfigured } = require('@origin/infra-validator')
+
 const setCloudflareRecords = require('../../utils/dns/cloudflare')
 const setCloudDNSRecords = require('../../utils/dns/clouddns')
 const setRoute53Records = require('../../utils/dns/route53')
-const { isConfigured } = require('../infra/matrix')
 const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('logic.deploy.dns')
