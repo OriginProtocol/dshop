@@ -59,11 +59,6 @@ const About = () => {
                   <a href="https://github.com/OriginProtocol/dshop">GitHub</a>
                 </FbtParam>.
               </fbt>
-              This site was built by{' '}
-              <a href="https://www.originprotocol.com">Origin Protocol</a>,
-              whose mission it is to bring about decentralized, peer to peer
-              marketplaces. It is 100% open source and available on{' '}
-              <a href="https://github.com/OriginProtocol/dshop">GitHub</a>.
             </div>
             <div className="question">
               <fbt desc="about.howToDeploy">

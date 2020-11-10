@@ -476,10 +476,9 @@ const EditProduct = () => {
                 <ImagePicker
                   images={media}
                   onChange={(media) => {
-                    setFormState({ hasChanges: true })
+                    setFormState({ hasChanges: true, imagesUpdated: true })
                     setMedia(media)
                   }}
-                  disabled={externallyManaged}
                 />
               </div>
 
@@ -651,7 +650,11 @@ const EditProduct = () => {
                   media={media}
                   disabled={externallyManaged}
                   onChange={(variants) => {
-                    setFormState({ variants, hasChanges: true })
+                    setFormState({
+                      variants,
+                      hasChanges: true,
+                      imagesUpdated: externallyManaged ? true : undefined
+                    })
                   }}
                 />
               </>

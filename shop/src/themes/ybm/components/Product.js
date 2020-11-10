@@ -118,7 +118,7 @@ const ProductDetail = ({ match }) => {
             {get(variant, 'priceStr', 'Unavailable')}
           </div>
           {!paymentDiscount || !paymentDiscount.data ? null : (
-            <div className="border-t border-b border-gray-200 py-2 text-center">
+            <div className="border-t border-b border-gray-200 py-2 text-center mb-3">
               {paymentDiscount.data.summary}
             </div>
           )}
@@ -181,7 +181,7 @@ const ProductOptions = ({
   const justify = center ? ' justify-center' : ''
 
   return (
-    <div className={`flex mb-8 flex-col sm:flex-row mt-6${justify}`}>
+    <div className={`flex mb-8 flex-col sm:flex-row mt-3${justify}`}>
       {productOptions.map((opt, idx) => (
         <div key={`${product.id}-${idx}`} className="font-2xl">
           <div className="mb-2 text-gray-600">{opt}</div>
@@ -218,7 +218,7 @@ const ProductOptionsAlt = ({
   const items = center ? ' items-center ' : ''
 
   return (
-    <div className={`flex flex-col ${items}justify-center mt-6 mb-4`}>
+    <div className={`flex flex-col ${items}justify-center mt-3 mb-4`}>
       {productOptions.map((opt, idx) => (
         <React.Fragment key={`${product.id}-${idx}`}>
           <div className="text-xl text-gray-600">{opt}</div>

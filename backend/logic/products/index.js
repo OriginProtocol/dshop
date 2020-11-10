@@ -1,4 +1,5 @@
 const path = require('path')
+const fetch = require('node-fetch')
 const fs = require('fs')
 const mv = require('mv')
 const sharp = require('sharp')
@@ -12,6 +13,7 @@ const { getLogger } = require('../../utils/logger')
 const { DSHOP_CACHE } = require('../../utils/const')
 const { decryptConfig } = require('../../utils/encryptedConfig')
 const { addToCollections } = require('../../utils/collections')
+const { getShopDataUrl } = require('../../utils/shop')
 const { Product } = require('../../models')
 
 const log = getLogger('logic.products')
@@ -22,7 +24,6 @@ const validProductFields = [
   'title',
   'description',
   'externalId',
-  'printfulDesc',
   'price',
   'image',
   'images',
@@ -33,7 +34,12 @@ const validProductFields = [
   'availableOptions',
   'dispatchOrigin',
   'processingTime',
-  'shipInternational'
+  'shipInternational',
+
+  // Fields to keep track of changes made
+  // to description and images
+  'printfulDesc',
+  'imagesUpdated'
 ]
 
 // Fields that go into `products.json` file
@@ -83,7 +89,7 @@ function getUniqueID(title, shop) {
 }
 
 /**
- * Reads shop's products.json file and returns its content
+ * Reads shop's products.json file from disk and returns its content
  *
  * @param {Model.Shop} shop
  *
@@ -95,6 +101,35 @@ function readProductsFile(shop) {
   const fileData = fs.readFileSync(productsPath)
 
   return JSON.parse(fileData)
+}
+
+/**
+ * Reads shop's products.json file from the web and returns its content
+ *
+ * @param {Model.shop} shop
+ * @param {object} networkConfig: network's config
+ * @returns {Promise<object>}
+ */
+async function readProductsFileFromWeb(shop, networkConfig) {
+  const url = getShopDataUrl(shop, networkConfig) + 'products.json'
+  const res = await fetch(url)
+  const json = await res.json()
+  return json
+}
+
+/**
+ * Read a product's data file from the web and returns its content.
+ *
+ * @param {Model.shop} shop
+ * @param {object} networkConfig: network's config
+ * @param {string} productId: unique product id
+ * @returns {Promise<object>}
+ */
+async function readProductDataFromWeb(shop, networkConfig, productId) {
+  const url = getShopDataUrl(shop, networkConfig) + `${productId}/data.json`
+  const res = await fetch(url)
+  const json = await res.json()
+  return json
 }
 
 /**
@@ -413,4 +448,10 @@ async function deleteProduct(shop, productId) {
   }
 }
 
-module.exports = { upsertProduct, deleteProduct, readProductsFile }
+module.exports = {
+  deleteProduct,
+  readProductsFile,
+  readProductsFileFromWeb,
+  readProductDataFromWeb,
+  upsertProduct
+}

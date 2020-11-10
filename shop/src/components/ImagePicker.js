@@ -73,7 +73,7 @@ const PreviewImages = (props) => {
     }
 
     return (
-      <div key={image.src} {...eventProps}>
+      <div key={image.src + idx} {...eventProps}>
         <div
           className="img"
           style={{ backgroundImage: `url(${backend}${image.src})` }}
@@ -97,7 +97,9 @@ const PreviewImages = (props) => {
               title={fbt('Remove', 'Remove')}
               onClick={(e) => {
                 e.preventDefault()
-                onChange(images.filter((i, offset) => idx !== offset))
+                const newImages = [...images]
+                newImages.splice(idx, 1)
+                onChange(newImages)
               }}
               children={<>&times;</>}
             />
