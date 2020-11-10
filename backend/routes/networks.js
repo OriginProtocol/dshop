@@ -146,18 +146,22 @@ module.exports = function (router) {
   })
 
   // Return infra resources that are supported and configured for the network
-  router.get('/networks/:netId/infra/resources', authSuperUser, async (req, res) => {
-    const where = { networkId: req.params.netId }
-    const network = await Network.findOne({ where })
-    if (!network) {
-      return res.json({ success: false, reason: 'no-network' })
+  router.get(
+    '/networks/:netId/infra/resources',
+    authSuperUser,
+    async (req, res) => {
+      const where = { networkId: req.params.netId }
+      const network = await Network.findOne({ where })
+      if (!network) {
+        return res.json({ success: false, reason: 'no-network' })
+      }
+
+      const networkConfig = decryptConfig(network.config)
+
+      res.json({
+        success: true,
+        resources: getAvailableResources({ networkConfig, fullObjects: true })
+      })
     }
-
-    const networkConfig = decryptConfig(network.config)
-
-    res.json({
-      success: true,
-      resources: getAvailableResources({ networkConfig, fullObjects: true })
-    })
-  })
+  )
 }

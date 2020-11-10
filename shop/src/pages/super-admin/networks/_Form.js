@@ -158,7 +158,7 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
 
   if (network && !!network.defaultResourceSelection && !network.infra) {
     network.infra = {}
-    network.defaultResourceSelection.map(resource => {
+    network.defaultResourceSelection.map((resource) => {
       network.infra[resource] = true
     })
   }
@@ -169,17 +169,10 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
   const { get } = useBackendApi()
 
   useEffect(() => {
-    get('/networks/infra/resources')
-      .then((res) => {
-        if (res.resources) {
-          const sortedREsources = res.resources.sort((a, b) => {
-            if (a.type !== b.type) {
-              return a.type < b.type ? -1 : 1
-            }
-            return a.name < b.name ? -1 : 1
-          })
-
-          setResources(res.resources.reduce((acc, cur) => {
+    get('/networks/infra/resources').then((res) => {
+      if (res.resources) {
+        setResources(
+          res.resources.reduce((acc, cur) => {
             if (typeof acc[cur.type] === 'undefined') {
               acc[cur.type] = []
             }
@@ -188,9 +181,10 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
               return a.name < b.name ? -1 : 1
             })
             return acc
-          }, {}))
-        }
-      })
+          }, {})
+        )
+      }
+    })
   }, [])
 
   useEffect(() => {
@@ -247,7 +241,9 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
 
   const updateResources = (stateUpdate) => {
     const newState = { ...state, ...stateUpdate }
-    const selection = Object.keys(newState.infra).filter(k => newState.infra[k])
+    const selection = Object.keys(newState.infra).filter(
+      (k) => newState.infra[k]
+    )
     const validRes = validateSelection({ networkConfig: newState, selection })
 
     if (!validRes.success) {
@@ -280,7 +276,9 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
             return m
           }, {})
 
-        network.defaultResourceSelection = Object.keys(newState.infra).filter(k => newState.infra[k])
+        network.defaultResourceSelection = Object.keys(newState.infra).filter(
+          (k) => newState.infra[k]
+        )
 
         onSave(network)
       }}
@@ -475,36 +473,43 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           <h3 className="row">Cloud Resources</h3>
           {!state.infraErrors
             ? null
-            : (
-              state.infraErrors.map((err, idx) => <div key={idx} className="alert alert-danger">{err}</div>)
-            )
-          }
-          {Object.keys(resources).map(resourceType => (
+            : state.infraErrors.map((err, idx) => (
+                <div key={idx} className="alert alert-danger">
+                  {err}
+                </div>
+              ))}
+          {Object.keys(resources).map((resourceType) => (
             <div key={resourceType}>
               <h4 className="row">{ResourceTypeNames[resourceType]}</h4>
               <div className="row">
-                {!resources[resourceType] ? null : resources[resourceType].map(resource => (
-                  <div key={resource.id} className="col-sm form-group pl-0">
-                    <label htmlFor={`${resource.id}-check`} className="m-0">
-                      <input
-                        id={`${resource.id}-check`}
-                        type="checkbox"
-                        className="mr-2"
-                        checked={state.infra && state.infra[resource.id] ? true : false}
-                        onChange={(e) => {
-                          const stateUpdate = {
-                            infra: {
-                              ...state.infra,
-                              [resource.id]: e.target.checked
+                {!resources[resourceType]
+                  ? null
+                  : resources[resourceType].map((resource) => (
+                      <div key={resource.id} className="col-sm form-group pl-0">
+                        <label htmlFor={`${resource.id}-check`} className="m-0">
+                          <input
+                            id={`${resource.id}-check`}
+                            type="checkbox"
+                            className="mr-2"
+                            checked={
+                              state.infra && state.infra[resource.id]
+                                ? true
+                                : false
                             }
-                          }
-                          updateResources(stateUpdate)
-                        }}
-                      />
-                      {resource.name}
-                    </label>
-                  </div>
-                ))}
+                            onChange={(e) => {
+                              const stateUpdate = {
+                                infra: {
+                                  ...state.infra,
+                                  [resource.id]: e.target.checked
+                                }
+                              }
+                              updateResources(stateUpdate)
+                            }}
+                          />
+                          {resource.name}
+                        </label>
+                      </div>
+                    ))}
               </div>
             </div>
           ))}

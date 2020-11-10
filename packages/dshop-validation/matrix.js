@@ -86,9 +86,7 @@ function getSupportedTypes(networkConfig) {
  */
 function getSelectedTypes(selection) {
   const matrix = getMatrix()
-  return uniq(
-    matrix.filter((e) => selection.includes(e.id)).map((e) => e.type)
-  )
+  return uniq(matrix.filter((e) => selection.includes(e.id)).map((e) => e.type))
 }
 
 /**
