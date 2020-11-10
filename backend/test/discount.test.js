@@ -1,6 +1,7 @@
 const chai = require('chai')
 chai.use(require('chai-string'))
 const expect = chai.expect
+const { pick } = require('lodash')
 
 const {
   getTestWallet,
@@ -54,7 +55,8 @@ describe('Discounts', () => {
       maxUses: null,
       onePerCustomer: false,
       startTime: Date.now(),
-      endTime: null
+      endTime: null,
+      data: null
     })
     percentageDiscount = await Discount.create({
       shopId: shop.id,
@@ -67,7 +69,8 @@ describe('Discounts', () => {
       startTime: Date.now(),
       endTime: null,
       minCartValue: 100,
-      maxDiscountValue: 1000
+      maxDiscountValue: 1000,
+      data: null
     })
     paymentDiscount = await Discount.create({
       shopId: shop.id,
@@ -90,7 +93,11 @@ describe('Discounts', () => {
   })
 
   it('Order with a fixed or percentage discount', async () => {
-    for (const discount of [fixedDiscount, percentageDiscount]) {
+    const discounts = [
+      pick(fixedDiscount, ['code', 'discountType', 'value', 'data']),
+      pick(percentageDiscount, ['code', 'discountType', 'value', 'data'])
+    ]
+    for (const discount of discounts) {
       const { ipfsHash, data } = await createTestEncryptedOfferData(
         network,
         shop,
@@ -141,7 +148,7 @@ describe('Discounts', () => {
       // Discount that creates inconsistent cart data.
       {
         discount: {
-          ...fixedDiscount.get({ plain: true }),
+          ...pick(fixedDiscount, ['code', 'discountType', 'value', 'data']),
           corruptTestData: true
         },
         error: 'Discount error: Cart value mismatch'
@@ -197,7 +204,12 @@ describe('Discounts', () => {
   it('Order with a payment-specific discount', async () => {
     const scenarios = [
       {
-        discount: paymentDiscount,
+        discount: pick(paymentDiscount, [
+          'code',
+          'discountType',
+          'value',
+          'data'
+        ]),
         paymentMethod: {
           id: 'stripe',
           label: 'Credit Card'
@@ -205,7 +217,12 @@ describe('Discounts', () => {
         paymentType: OrderPaymentTypes.CreditCard
       },
       {
-        discount: paymentDiscount,
+        discount: pick(paymentDiscount, [
+          'code',
+          'discountType',
+          'value',
+          'data'
+        ]),
         paymentMethod: {
           id: 'crypto',
           label: 'Crypto',
@@ -214,7 +231,12 @@ describe('Discounts', () => {
         paymentType: OrderPaymentTypes.CryptoCurrency
       },
       {
-        discount: paymentDiscount,
+        discount: pick(paymentDiscount, [
+          'code',
+          'discountType',
+          'value',
+          'data'
+        ]),
         paymentMethod: {
           id: 'crypto',
           label: 'Crypto',
@@ -223,7 +245,12 @@ describe('Discounts', () => {
         paymentType: OrderPaymentTypes.CryptoCurrency
       },
       {
-        discount: paymentDiscount,
+        discount: pick(paymentDiscount, [
+          'code',
+          'discountType',
+          'value',
+          'data'
+        ]),
         paymentMethod: {
           id: 'paypal',
           label: 'PayPal'
