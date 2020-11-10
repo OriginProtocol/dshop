@@ -350,13 +350,7 @@ async function createTestEncryptedOfferData(network, shop, key, opts = {}) {
       id: 'stripe',
       label: 'Credit Card'
     },
-    discountObj: opts.discount
-      ? {
-          code: opts.discount.code,
-          discountType: opts.discount.discountType,
-          value: opts.discount.value
-        }
-      : {},
+    discountObj: opts.discount || {},
     userInfo: {
       firstName: 'The',
       lastName: 'Mandalorian',

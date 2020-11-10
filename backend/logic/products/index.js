@@ -24,7 +24,6 @@ const validProductFields = [
   'title',
   'description',
   'externalId',
-  'printfulDesc',
   'price',
   'image',
   'images',
@@ -35,7 +34,12 @@ const validProductFields = [
   'availableOptions',
   'dispatchOrigin',
   'processingTime',
-  'shipInternational'
+  'shipInternational',
+
+  // Fields to keep track of changes made
+  // to description and images
+  'printfulDesc',
+  'imagesUpdated'
 ]
 
 // Fields that go into `products.json` file

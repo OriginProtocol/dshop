@@ -7,6 +7,7 @@
   },
   "main": "index.js",
   "scripts": {
+    "start": "nodemon index.js",
     "clean": "rm db/dshop.db; rm -rf data/*; npm run migrate",
     "heroku-postbuild": "npm run migrate",
     "lint": "eslint . && npm run prettier:check",
@@ -80,8 +81,9 @@
   "devDependencies": {
     "chai": "4.2.0",
     "chai-string": "1.5.0",
-    "eslint": "7.12.1",
+    "eslint": "7.13.0",
     "mocha": "8.2.1",
+    "nodemon": "^2.0.6",
     "prettier": "2.1.2"
   },
   "eslintIgnore": [

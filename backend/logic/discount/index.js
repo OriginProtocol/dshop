@@ -1,4 +1,5 @@
 const { get } = require('lodash')
+const calculateCartTotal = require('@origin/utils/calculateCartTotal')
 const { DiscountTypeEnums } = require('../../enums')
 
 const { Sequelize, Discount, Order } = require('../../models')
@@ -32,6 +33,7 @@ const validateDiscount = async (code, shop) => {
   }
 
   if (!code) {
+    // Discounts of type 'payment' won't have a code
     where.discountType = DiscountTypeEnums.payment
   }
 
@@ -158,62 +160,9 @@ const validateDiscountOnOrder = async (orderObj) => {
     return { error: 'Discount error: Already availed the discount' }
   }
 
-  // Calculate cart total and subtotal with the discount from DB
-  // and verify it against the order
-  // IMPORTANT: Keep this total calculation in sync with shop/src/data/state.js
-  const subTotal = cart.items.reduce((total, item) => {
-    return total + item.quantity * item.price
-  }, 0)
+  const cartComputedValues = calculateCartTotal(cart)
 
-  const shipping = get(cart, 'shipping.amount', 0)
-  const taxRate = parseFloat(get(cart, 'taxRate', 0))
-  const totalTaxes = Math.ceil(taxRate * subTotal)
-  const { minCartValue, maxDiscountValue, discountType } = get(
-    cart,
-    'discountObj',
-    {}
-  )
-
-  let discount = 0
-
-  if (!minCartValue || subTotal > minCartValue) {
-    // Calculate discounts only if minCartValue constraint is met
-
-    if (discountType === 'percentage') {
-      const totalWithShipping = subTotal + shipping
-      discount = Math.round((totalWithShipping * discountObj.value) / 100)
-    } else if (discountType === 'fixed') {
-      discount = discountObj.value * 100
-    } else if (discountType === 'payment') {
-      const activePaymentMethod = get(cart, 'paymentMethod.id')
-      let isValidPayment = discountObj.data[activePaymentMethod]
-
-      if (activePaymentMethod === 'crypto') {
-        const token = get(cart, 'paymentMethod.token')
-        isValidPayment = get(discountObj, `data.crypto`, {})[token]
-      }
-
-      if (isValidPayment) {
-        const totalWithShipping = cart.subTotal + shipping
-        discount = Math.round((totalWithShipping * discountObj.value) / 100)
-      }
-    }
-
-    if (maxDiscountValue) {
-      discount = Math.min(maxDiscountValue, discount)
-    }
-  }
-
-  const donation = get(cart, 'donation', 0)
-
-  // Note: By calling Math.max, we don't let the amount go negative in case a
-  // discount larger than the total is applied.
-  const calculatedTotal = Math.max(
-    0,
-    subTotal + shipping - discount + donation + totalTaxes
-  )
-
-  if (cart.total !== calculatedTotal) {
+  if (cart.total !== cartComputedValues.total) {
     // Something has gone wrong
     return { error: `Discount error: Cart value mismatch` }
   }

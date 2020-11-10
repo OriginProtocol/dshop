@@ -9,6 +9,8 @@ import isEqual from 'lodash/isEqual'
 
 import { Countries } from '@origin/utils/Countries'
 
+import calculateCartTotal from '@origin/utils/calculateCartTotal'
+
 import 'utils/setLocale'
 import fbTrack from './fbTrack'
 
@@ -338,71 +340,15 @@ const reducer = (state, action) => {
     newState = set(newState, 'themes', action.themes)
   }
 
-  // IMPORTANT: Keep this function's total calculation in sync with the calculation
-  // in backend/logic/discount/index.js#validateDiscountOnOrder() function
-
-  newState.cart.subTotal = newState.cart.items.reduce((total, item) => {
-    return total + item.quantity * item.price
-  }, 0)
-
   newState.preferredCurrency =
     newState.preferredCurrency || get(newState, 'config.currency', 'USD')
-
-  const shipping = get(newState, 'cart.shipping.amount', 0)
-  const taxRate = parseFloat(get(newState, 'cart.taxRate', 0))
-
-  const discountObj = get(newState, 'cart.discountObj', {})
-  const { minCartValue, maxDiscountValue, discountType } = get(
-    newState,
-    'cart.discountObj',
-    {}
-  )
-
-  let discount = 0
-
-  if (!minCartValue || newState.cart.subTotal > minCartValue) {
-    // Calculate discounts only if minCartValue constraint is met
-
-    if (discountType) {
-      if (discountType === 'percentage') {
-        const totalWithShipping = newState.cart.subTotal + shipping
-        discount = Math.round((totalWithShipping * discountObj.value) / 100)
-      } else if (discountType === 'fixed') {
-        discount = discountObj.value * 100
-      } else if (discountType === 'payment') {
-        const activePaymentMethod = get(newState, 'cart.paymentMethod.id')
-        let isValidPayment = discountObj.data[activePaymentMethod]
-
-        if (activePaymentMethod === 'crypto') {
-          const token = get(newState, 'cart.paymentMethod.token')
-          isValidPayment = get(discountObj, `data.crypto`, {})[token]
-        }
-
-        if (isValidPayment) {
-          const totalWithShipping = newState.cart.subTotal + shipping
-          discount = Math.round((totalWithShipping * discountObj.value) / 100)
-        }
-      }
-    }
-
-    if (maxDiscountValue) {
-      discount = Math.min(maxDiscountValue, discount)
-    }
-  }
-
-  const donation = get(newState, 'cart.donation', 0)
-
   newState.cart.currency = get(newState, 'config.currency', 'USD')
-  newState.cart.discount = discount
-  newState.cart.totalTaxes = Math.ceil(taxRate * newState.cart.subTotal)
-  newState.cart.total = Math.max(
-    0,
-    newState.cart.subTotal +
-      shipping -
-      discount +
-      donation +
-      newState.cart.totalTaxes
-  )
+
+  const cartComputedValues = calculateCartTotal(newState.cart)
+  newState.cart.subTotal = cartComputedValues.subTotal
+  newState.cart.discount = cartComputedValues.discount
+  newState.cart.totalTaxes = cartComputedValues.totalTaxes
+  newState.cart.total = cartComputedValues.total
 
   const activeShop = get(newState, 'config.activeShop')
   if (activeShop) {
