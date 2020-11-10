@@ -197,6 +197,22 @@ const PaymentSpecificDiscounts = () => {
             {actions}
           </h3>
           <DiscountTabs />
+
+          <div className="mt-3 desc">
+            <fbt desc="admin.discounts.paymentDesc">
+              Automatic discounts are applied automatically at checkout. You can
+              create a percentage discount that will apply when customers use a
+              payment method of your choice to checkout.
+            </fbt>
+          </div>
+          <div className="mt-2 desc">
+            <fbt desc="admin.discounts.paymentDecs2">
+              Only one discount can be active at any given time. If you have
+              both manual and automatic discounts set up, your customer can
+              decide which one to apply during checkout
+            </fbt>
+          </div>
+
           <label className="font-weight-bold my-3">
             <fbt desc="admin.discounts.paymentType">Payment Type</fbt>
           </label>
@@ -279,4 +295,7 @@ const PaymentSpecificDiscounts = () => {
 export default PaymentSpecificDiscounts
 
 require('react-styl')(`
+  .admin-title ~ .desc
+    font-size: 1rem
+    color: #8293a4
 `)
