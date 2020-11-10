@@ -3,8 +3,8 @@
 module.exports = {
   up: (queryInterface) => {
     return queryInterface.sequelize.transaction(async () => {
-      await queryInterface.addIndex('shops', ['hostname'])
-      await queryInterface.addIndex('shops', ['auth_token'])
+      await queryInterface.addIndex('shops', ['hostname'], { unique: true })
+      await queryInterface.addIndex('shops', ['auth_token'], { unique: true })
     })
   },
 
