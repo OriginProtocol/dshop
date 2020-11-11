@@ -7,8 +7,10 @@ const {
   EtlShop,
   Network,
   Order,
+  Sequelize,
   Shop,
-  ShopDeployment
+  ShopDeployment,
+  ShopDomain
 } = require('../models')
 const { EtlJobStatuses, ShopDeploymentStatuses } = require('../enums')
 const { getConfig } = require('../utils/encryptedConfig')
@@ -82,7 +84,7 @@ class EtlJobProcessor {
   }
 
   _crypto(shop) {
-    return Boolean(shop.listingId)
+    return Boolean(shop.walletAddress)
   }
 
   _stripe(shop) {
@@ -130,10 +132,62 @@ class EtlJobProcessor {
     return Boolean(published)
   }
 
-  _customDomain(shop) {
-    // TODO(franck): figure out how to extract this information.
-    log.warn(`Shop ${shop.id}: custom domain extraction not implemented yet.`)
-    return null
+  // Check if the most recent publish (if any) used a custom domain.
+  async _customDomain(shop) {
+    const custom = await ShopDomain.findOne({
+      where: { shopId: shop.id },
+      order: [['id', 'desc']]
+    })
+    return custom ? custom.domain.indexOf('ogn.app') > 0 : false
+  }
+
+  // Determine if a shop has been active since the last time the etl_shop job ran.
+  // A shop is deemed active if it meets at least one of these criteria:
+  //  - had a config change
+  //  - had a deploy
+  //  - had a sale
+  //  - had a collection or product added or deleted
+  // TODO: would be good to detect if a collection/product was edited and count that
+  //  towards a shop activity. But it is hard given the lack of historical data because
+  //  collections and products are stored on disk rather than in the DB.
+  async _active(shop, data, prevData) {
+    // Check if the shop had a config change either to the core configs stored in the DB
+    // or to discounts and shipping settings.
+    if (shop.updatedAt >= prevData.createdAt) {
+      return true
+    }
+    if (
+      data.numShippings !== prevData.numShippings ||
+      data.numDiscounts !== prevData.numDiscounts
+    ) {
+      return true
+    }
+
+    // Check if the shop was deployed.
+    const published = await ShopDeployment.findOne({
+      where: {
+        shopId: shop.id,
+        createdAt: { [Sequelize.Op.gte]: prevData.createdAt }
+      }
+    })
+    if (published) {
+      return true
+    }
+
+    // Check if the shop had an order.
+    if (data.numOrders !== prevData.numOrders) {
+      return true
+    }
+
+    // Check if the shop has a different number of products or collections.
+    if (
+      data.numProducts !== prevData.numProducts ||
+      data.numCollections !== prevData.numCollections
+    ) {
+      return true
+    }
+
+    return false
   }
 
   /**
@@ -142,6 +196,11 @@ class EtlJobProcessor {
    * @returns {Promise<void>}
    */
   async processShop(shop) {
+    const prevData = await EtlShop.findOne({
+      where: { shopId: shop.id },
+      order: [['id', 'desc']]
+    })
+
     const data = {}
     data.shopId = shop.id
     data.numProducts = await this._countNumProducts(shop)
@@ -160,6 +219,7 @@ class EtlJobProcessor {
     data.mailgun = this._mailgun(shop)
     data.published = shop.published
     data.customDomain = this._customDomain(shop)
+    data.active = await this._active(shop, data, prevData)
     return data
   }
 
