@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       mailgun: DataTypes.BOOLEAN, // True if Mailgun email activated.
       published: DataTypes.BOOLEAN, // True if the shop go published successfully at least once.
       customDomain: DataTypes.BOOLEAN, // True if the most recent publish used a custom domain.
-      active: DataTypes.BOOLEAN // True if there was some activity on the shop that day.
+      active: DataTypes.BOOLEAN // True if there was some activity on the shop since the previous run of the etl pipeline.
     },
     {
       underscored: true,
