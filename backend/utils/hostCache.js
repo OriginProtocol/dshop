@@ -4,6 +4,7 @@
  */
 
 const { Network, Shop, ShopDomain } = require('../models')
+const { decryptConfig } = require('../utils/encryptedConfig')
 const { getLogger } = require('../utils/logger')
 
 const log = getLogger('utils.hostCache')
@@ -39,8 +40,9 @@ async function hostCache(host) {
       const network = await Network.findOne({
         where: { active: true }
       })
-      if (network && network.domain) {
-        nodeDomain = network.domain
+      if (network) {
+        const networkConfig = decryptConfig(network.config)
+        nodeDomain = networkConfig.domain
         log.debug(`Set nodeDomain: ${nodeDomain}`)
       }
     }
@@ -50,10 +52,7 @@ async function hostCache(host) {
       if (nodeDomain && host.endsWith(nodeDomain)) {
         const hostname = host.replace(`.${nodeDomain}`, '')
 
-        const shop = await Shop.findOne({
-          where: { hostname },
-          include: 'shop'
-        })
+        const shop = await Shop.findOne({ where: { hostname } })
 
         if (shop) {
           log.debug(`${host} is ${shop.authToken}`)
