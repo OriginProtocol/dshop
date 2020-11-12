@@ -71,12 +71,13 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
   }
   let productsOut = existingProducts.filter((p) => p.keep)
   const downloadImages = []
-  const allImages = {}
   const printfulIds = {}
 
   const productCollectionMap = new Map()
 
   for (const row of products) {
+    const allImages = {}
+
     const shouldSkipUpdate = !updatedIds ? false : !updatedIds.includes(row.id)
 
     const syncProductRaw = fs.readFileSync(
