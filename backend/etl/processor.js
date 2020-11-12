@@ -167,7 +167,7 @@ class EtlJobProcessor {
     const published = await ShopDeployment.findOne({
       where: {
         shopId: shop.id,
-        createdAt: { [Sequelize.Op.gte]: prevData.createdAt }
+        createdAt: { [Sequelize.Op.gt]: prevData.createdAt }
       }
     })
     if (published) {
