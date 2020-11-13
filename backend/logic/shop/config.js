@@ -340,7 +340,7 @@ async function updateShopConfig({ seller, shop, data }) {
       return { success: false, reason: 'Invalid PayPal credentials' }
     }
 
-    if (existingConfig.paypal && existingConfig.paypalWebhookId) {
+    if (existingConfig.paypalWebhookId) {
       await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
     }
     const result = await paypalUtils.registerWebhooks(
