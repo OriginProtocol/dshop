@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
