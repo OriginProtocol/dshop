@@ -218,7 +218,7 @@ class EtlJobProcessor {
     data.aws = this._aws(shop)
     data.mailgun = this._mailgun(shop)
     data.published = shop.published
-    data.customDomain = this._customDomain(shop)
+    data.customDomain = await this._customDomain(shop)
     data.active = await this._active(shop, data, prevData)
     return data
   }
