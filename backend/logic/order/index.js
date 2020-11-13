@@ -151,7 +151,7 @@ async function validateOfferData(shop, networkConfig, order) {
       if (!variant) {
         return { error: `Invalid order: Unknown variant ${item.variant}` }
       }
-      productPrice = productData.price
+      productPrice = variant.price
     } else {
       productPrice = product.price
     }

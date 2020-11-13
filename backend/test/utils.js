@@ -399,7 +399,7 @@ async function mockReadProductDataFromWeb() {
     externalId: 194464746,
     title: 'Mandalorian mask',
     description: 'Put it on and never take it off.',
-    price: 2500,
+    price: 2000,
     available: true,
     options: ['Color', 'Size'],
     variants: [
