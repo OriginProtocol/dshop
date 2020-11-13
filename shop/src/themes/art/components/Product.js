@@ -1,4 +1,6 @@
-import React, { useState } from 'react'
+import React from 'react'
+
+import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 import useProduct from 'utils/useProduct'
@@ -8,12 +10,14 @@ import usePaymentDiscount from 'utils/usePaymentDiscount'
 import Link from 'components/Link'
 
 import Products from './_Products'
+import ProductOptions from '../../shared/ProductOptions'
+import Gallery from '../../shared/Gallery'
 
 const Product = ({ match }) => {
   const { config } = useConfig()
-  const [addedToCart, setAddedToCart] = useState()
-  const [, dispatch] = useStateValue()
-  const { product, variant, loading } = useProduct(match.params.id)
+  const [{ cart }, dispatch] = useStateValue()
+  const productObj = useProduct(match.params.id)
+  const { product, variant, loading, activeImage } = productObj
 
   const { paymentDiscount } = usePaymentDiscount()
 
@@ -21,27 +25,42 @@ const Product = ({ match }) => {
     return null
   }
 
+  const addedToCart = Boolean(
+    get(cart, 'items', []).find(
+      (item) =>
+        item.product === match.params.id &&
+        String(item.variant) === String(variant.id)
+    )
+  )
   const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
-  const relPath =
-    product.imageUrl || `${config.backend}/images/default-image.svg`
+
   return (
     <div className="container mt-8 sm:mt-16">
       <div className="flex flex-col sm:flex-row">
         <div className="mb-10" style={{ flex: '2' }}>
-          <img src={relPath} />
+          <Gallery
+            product={product}
+            active={activeImage}
+            onChange={productObj.setOptionFromImage}
+          />
         </div>
         <div className="sm:ml-24" style={{ flex: '3' }}>
           <div className="text-center sm:text-left text-3xl sm:text-4xl font-semibold leading-none text-header">
             {product.title}
           </div>
           <div className="text-center sm:text-left mt-4 text-lg mb-6">
-            {variant.priceStr}
+            {get(variant, 'priceStr', 'Unavailable')}
           </div>
           {!paymentDiscount || !paymentDiscount.data ? null : (
             <div className="border-t border-b border-gray-200 py-2 text-center">
               {paymentDiscount.data.summary}
             </div>
           )}
+          <ProductOptions
+            {...productObj}
+            labelClassName="my-2 font-bold"
+            className="border border-gray-200 bg-gray-100"
+          />
           {addedToCart ? (
             <Link
               to="/cart"
@@ -56,7 +75,6 @@ const Product = ({ match }) => {
                 e.preventDefault()
                 if (isOutOfStock) return
                 dispatch({ type: 'addToCart', product, variant })
-                setAddedToCart(true)
               }}
               className={`btn btn-primary sm:px-32 block sm:inline-block mt-6 ${
                 isOutOfStock ? 'opacity-50' : ''
