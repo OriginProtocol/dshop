@@ -116,7 +116,7 @@ const ChoosePayment = () => {
   )
 
   useEffect(() => {
-    if (paymentMethods.length === 1 || paymentMethod == undefined) {
+    if (paymentMethods.length === 1 || paymentMethod === undefined) {
       dispatch({ type: 'updatePaymentMethod', method: paymentMethods[0] })
     }
   }, [paymentMethods.length, paymentMethod])
