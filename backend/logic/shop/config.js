@@ -50,7 +50,7 @@ const dbConfigOptionalKeys = [
   'password',
   'paypalClientId',
   'paypalClientSecret',
-  'paypalWebhookHost',
+  'paypalWebhookHost', // Only used in dev environments. Host we register with paypal for webhook calls.
   'paypalWebhookId',
   'printful', // Printful API key
   'printfulAutoFulfill',

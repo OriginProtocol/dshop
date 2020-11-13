@@ -1,5 +1,5 @@
 const fetch = require('node-fetch')
-const get = require('lodash/get')
+const { get, pick } = require('lodash')
 
 const { checkPrintfulWebhook } = require('../printful/webhook')
 const { getLogger } = require('../../utils/logger')
@@ -270,17 +270,32 @@ async function diagnoseShop(shop) {
   }
 
   // Check PayPal configuration.
-  if (shopConfig.paypal) {
-    const client = paypalUtils.getClient(
-      networkConfig.paypalEnvironment,
-      shopConfig.paypalClientId,
-      shopConfig.paypalClientSecret
-    )
-    const valid = await paypalUtils.validateCredentials(client)
-    if (valid) {
-      diagnostic.paypal = { status: 'OK' }
+  const paypalKeys = ['paypalClientId', 'paypalClientSecret', 'paypalWebhookId']
+  const paypalConfig = pick(shopConfig, paypalKeys)
+  const paypalEnabled = Object.keys(paypalConfig).length > 0
+  if (paypalEnabled) {
+    // Check all expected configs are present.
+    const errors = []
+    for (const key of paypalKeys) {
+      if (!paypalConfig[key]) {
+        errors.push(`Missing config ${key}`)
+      }
+    }
+    if (errors.length > 0) {
+      diagnostic.paypal = { status: 'ERROR', errors }
     } else {
-      diagnostic.paypal = { status: 'ERROR', errors: ['Invalid credentials'] }
+      // Check the credentials by making a call to PayPal
+      const client = paypalUtils.getClient(
+        networkConfig.paypalEnvironment,
+        shopConfig.paypalClientId,
+        shopConfig.paypalClientSecret
+      )
+      const valid = await paypalUtils.validateCredentials(client)
+      if (valid) {
+        diagnostic.paypal = { status: 'OK' }
+      } else {
+        diagnostic.paypal = { status: 'ERROR', errors: ['Invalid credentials'] }
+      }
     }
   } else {
     diagnostic.paypal = { status: 'Not configured' }

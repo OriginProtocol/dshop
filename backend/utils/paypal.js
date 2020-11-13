@@ -106,6 +106,8 @@ const registerWebhooks = async (shopId, shopConfig, netConfig) => {
 
     let webhookUrl = `${netConfig.backendUrl}/paypal/webhooks/${shopId}`
 
+    // In dev environments, if the config includes paypalWebhookHost,
+    // favor that vs the network's backendUrl
     if (!IS_PROD && paypalWebhookHost) {
       webhookUrl = `${paypalWebhookHost}/paypal/webhooks/${shopId}`
     }
