@@ -27,7 +27,15 @@ const CartItem = ({ item }) => {
     variant = product
   }
 
-  const maxQuantity = product.maxQuantity || 10
+  let maxQuantity = 10
+  if (!Number.isNaN(variant.quantity)) {
+    maxQuantity = Number(variant.quantity)
+  } else if (!Number.isNaN(product.maxQuantity)) {
+    maxQuantity = Number(product.maxQuantity)
+  }
+
+  maxQuantity = Math.min(10, maxQuantity)
+
   const quantities = Array.from(Array(maxQuantity)).map((i, idx) => idx + 1)
 
   return (

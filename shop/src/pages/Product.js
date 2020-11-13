@@ -66,12 +66,11 @@ const Product = ({ history, location, match }) => {
     loading: true,
     options: {},
     activeImage: 0,
-    addedToCart: false,
     productData: undefined
   })
-  const { options, activeImage, addedToCart, productData } = state
+  const { options, activeImage, productData } = state
 
-  const [{ collections }, dispatch] = useStateValue()
+  const [{ collections, cart }, dispatch] = useStateValue()
   const isMobile = useIsMobile()
   const { config } = useConfig()
   const { products } = useProducts()
@@ -79,6 +78,14 @@ const Product = ({ history, location, match }) => {
   const opts = queryString.parse(location.search)
 
   const { paymentDiscount } = usePaymentDiscount()
+
+  const addedToCart = Boolean(
+    get(cart, 'items', []).find(
+      (item) =>
+        item.product === match.params.id &&
+        String(item.variant) === opts.variant
+    )
+  )
 
   useEffect(() => {
     async function setData(data) {
@@ -106,7 +113,6 @@ const Product = ({ history, location, match }) => {
       const newState = {
         productData: data,
         activeImage: 0,
-        addedToCart: false,
         loading: false,
         options: pick(variant, 'option1', 'option2', 'option3')
       }
