@@ -367,6 +367,8 @@
   "ueYozlMVfmBA+g3WXZuJcw==": "Failed to update automatic discounts",
   "57uBLYlLp/7NDy3d9YQurw==": "Saving",
   "HjBlaTOzuWhrPJAJ4Nl+aA==": "Update",
+  "NZoE3mci/fUvWesjjeCFhA==": "Automatic discounts are applied automatically at checkout. You can create a percentage discount that will apply when customers use a payment method of your choice to checkout.",
+  "sJEkNXnw1uf3lmz7obstDg==": "Only one discount can be active at any given time. If you have both manual and automatic discounts set up, your customer can decide which one to apply during checkout",
   "ehm4wus4hEvS+Ib3FAQJgQ==": "Payment Type",
   "AgINY/+XKZ0Ia6IN+nhV/w==": "Discount Value",
   "7xVZwscVLtVicz8Y9nfVPQ==": "Summary Note",
