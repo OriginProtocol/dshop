@@ -272,7 +272,7 @@ async function diagnoseShop(shop) {
   // Check PayPal configuration.
   const paypalKeys = ['paypalClientId', 'paypalClientSecret', 'paypalWebhookId']
   const paypalConfig = pick(shopConfig, paypalKeys)
-  const paypalEnabled = Object.keys(paypalConfig).length > 0
+  const paypalEnabled = Object.values(paypalConfig).filter(Boolean).length > 0
   if (paypalEnabled) {
     // Check all expected configs are present.
     const errors = []

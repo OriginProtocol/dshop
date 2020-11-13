@@ -26,6 +26,7 @@ const { Network, Shop, AdminLog } = require('../models')
 const { getLogger } = require('../utils/logger')
 const { genPGP, testPGP } = require('../utils/pgp')
 const { getConfig, setConfig, decrypt } = require('../utils/encryptedConfig')
+const paypalUtils = require('../utils/paypal')
 const { checkStripeConfig } = require('../logic/payments/stripe')
 const {
   checkPrintfulWebhook,
@@ -240,6 +241,54 @@ async function checkPrintful(network, shops) {
   }
 }
 
+async function checkPayPal(network, shops) {
+  const networkConfig = getConfig(network.config)
+  for (const shop of shops) {
+    log.info(`Checking PayPal config for shop ${shop.id} ${shop.name}`)
+    const errors = []
+    try {
+      const shopConfig = getConfig(shop.config)
+      const paypalKeys = [
+        'paypalClientId',
+        'paypalClientSecret',
+        'paypalWebhookId'
+      ]
+      const paypalConfig = pick(shopConfig, paypalKeys)
+      const paypalEnabled =
+        Object.values(paypalConfig).filter(Boolean).length > 0
+      if (!paypalEnabled) {
+        log.info('PayPal not configured')
+        continue
+      }
+      // Check all expected configs are present.
+      for (const key of paypalKeys) {
+        if (!paypalConfig[key]) {
+          errors.push(`Missing config ${key}`)
+        }
+      }
+      if (errors.length === 0) {
+        // Check the credentials by making a call to PayPal
+        const client = paypalUtils.getClient(
+          networkConfig.paypalEnvironment,
+          shopConfig.paypalClientId,
+          shopConfig.paypalClientSecret
+        )
+        const valid = await paypalUtils.validateCredentials(client)
+        if (!valid) {
+          errors.push('Invalid credentials')
+        }
+      }
+    } catch (err) {
+      errors.push(err.message)
+    }
+    if (errors.length > 0) {
+      log.error('ERROR:', errors)
+    } else {
+      log.info('OK')
+    }
+  }
+}
+
 async function fixPrintfulWebhook(network, shops) {
   const networkConfig = getConfig(network.config)
   let numFixed = 0
@@ -428,6 +477,8 @@ async function main(config) {
     await checkStripe(network, shops)
   } else if (config.operation === 'checkPrintful') {
     await checkPrintful(network, shops)
+  } else if (config.operation === 'checkPayPal') {
+    await checkPayPal(network, shops)
   } else if (config.operation === 'fixPrintfulWebhook') {
     await fixPrintfulWebhook(network, shops)
   } else if (config.operation === 'checkConfig') {
