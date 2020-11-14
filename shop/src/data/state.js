@@ -13,6 +13,7 @@ import calculateCartTotal from '@origin/utils/calculateCartTotal'
 
 import 'utils/setLocale'
 import fbTrack from './fbTrack'
+import getMaxQuantity from '../utils/getMaxQuantity'
 
 const defaultState = {
   products: [],
@@ -108,12 +109,11 @@ const reducer = (state, action) => {
 
   fbTrack(state, action)
   if (action.type === 'addToCart') {
-    let maxQuantity = Infinity
-    if (!Number.isNaN(action.variant.quantity)) {
-      maxQuantity = Number(action.variant.quantity)
-    } else if (!Number.isNaN(action.product.maxQuantity)) {
-      maxQuantity = Number(action.product.maxQuantity)
-    }
+    const maxQuantity = getMaxQuantity(
+      action.product,
+      action.variant,
+      state.config
+    )
 
     const item = {
       title: action.product.title,

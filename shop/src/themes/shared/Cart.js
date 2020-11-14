@@ -8,6 +8,7 @@ import formatPrice from 'utils/formatPrice'
 
 import Link from 'components/Link'
 import CloseIcon from 'components/icons/Close'
+import getMaxQuantity from '../../utils/getMaxQuantity'
 
 const EmptyCart = () => (
   <div className="flex flex-col items-center mt-12 mb-32">
@@ -80,14 +81,7 @@ const Row = ({ item, price, onRemove }) => {
     variant = product
   }
 
-  let maxQuantity = 10
-  if (!Number.isNaN(variant.quantity)) {
-    maxQuantity = Number(variant.quantity)
-  } else if (!Number.isNaN(product.maxQuantity)) {
-    maxQuantity = Number(product.maxQuantity)
-  }
-
-  maxQuantity = Math.min(10, maxQuantity)
+  const maxQuantity = getMaxQuantity(product, variant, config)
 
   const quantities = Array.from(Array(maxQuantity)).map((i, idx) => idx + 1)
 

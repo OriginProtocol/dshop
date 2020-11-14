@@ -9,6 +9,7 @@ import { useStateValue } from 'data/state'
 
 import formatPrice from 'utils/formatPrice'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
+import getMaxQuantity from '../../utils/getMaxQuantity'
 
 const CartItem = ({ item }) => {
   const { config } = useConfig()
@@ -27,14 +28,7 @@ const CartItem = ({ item }) => {
     variant = product
   }
 
-  let maxQuantity = 10
-  if (!Number.isNaN(variant.quantity)) {
-    maxQuantity = Number(variant.quantity)
-  } else if (!Number.isNaN(product.maxQuantity)) {
-    maxQuantity = Number(product.maxQuantity)
-  }
-
-  maxQuantity = Math.min(10, maxQuantity)
+  const maxQuantity = getMaxQuantity(product, variant, config)
 
   const quantities = Array.from(Array(maxQuantity)).map((i, idx) => idx + 1)
 
