@@ -248,11 +248,9 @@ const AdminOrdersCSV = ({ orders }) => {
             let value = get(order, field, '')
             if (filter === 'number') {
               value = (value / 100).toFixed(2)
-            }
-            else if (filter === 'product') {
+            } else if (filter === 'product') {
               value = value.map((i) => i.product).join(',')
-            }
-            else if (filter === 'quantity') {
+            } else if (filter === 'quantity') {
               value = value.map((i) => i.quantity).join(',')
             }
             return '"' + value + '"'
