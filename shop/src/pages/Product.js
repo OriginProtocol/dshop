@@ -79,14 +79,6 @@ const Product = ({ history, location, match }) => {
 
   const { paymentDiscount } = usePaymentDiscount()
 
-  const addedToCart = Boolean(
-    get(cart, 'items', []).find(
-      (item) =>
-        item.product === match.params.id &&
-        String(item.variant) === opts.variant
-    )
-  )
-
   useEffect(() => {
     async function setData(data) {
       if (!data) {
@@ -241,6 +233,16 @@ const Product = ({ history, location, match }) => {
     }
   }
 
+  const addedToCart = Boolean(
+    get(cart, 'items', []).find(
+      (item) =>
+        item.product === match.params.id &&
+        String(item.variant) === String(opts.variant)
+    )
+  )
+
+  const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
+
   return (
     <div className="product-detail">
       {!collection ? null : (
@@ -320,7 +322,7 @@ const Product = ({ history, location, match }) => {
                   </Link>
                 )}
               </>
-            ) : variant ? (
+            ) : variant && !isOutOfStock ? (
               <button
                 onClick={() => {
                   if (config.isAffiliate) {
