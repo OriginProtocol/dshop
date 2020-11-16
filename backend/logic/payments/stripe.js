@@ -5,7 +5,7 @@ const Stripe = require('stripe')
 const { getLogger } = require('../../utils/logger')
 const { ExternalPayment, Order, Sequelize } = require('../../models')
 const { Sentry } = require('../../sentry')
-const { OrderPaymentTypes } = require('../../enums')
+const { OrderPaymentTypes } = require('../../utils/enums')
 
 const log = getLogger('utils.stripe')
 

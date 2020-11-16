@@ -17,7 +17,7 @@ const usePalette = (themeJson) => {
       .fields.find((field) => field.type === 'color_palettes')
 
     const palettes = get(paletteField, 'palettes', [])
-    const paletteId = selectedPaletteId || get(palettes, 'palettes.0.id')
+    const paletteId = selectedPaletteId || get(palettes, '0.id')
 
     const selectedPalette = palettes.find((p) => p.id === paletteId)
 

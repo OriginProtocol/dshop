@@ -6,7 +6,7 @@ const { authShop } = require('./_auth')
 const { Network } = require('../models')
 const { getConfig } = require('../utils/encryptedConfig')
 const makeOffer = require('./_makeOffer')
-const { OrderPaymentTypes } = require('../enums')
+const { OrderPaymentTypes } = require('../utils/enums')
 
 module.exports = function (router) {
   /**

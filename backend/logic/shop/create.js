@@ -17,7 +17,7 @@ const { getLogger } = require('../../utils/logger')
 const configs = require('../../config/baseConfig')
 const { AdminLog, Shop, SellerShop, Network } = require('../../models')
 const printfulSyncProcessor = require('../../queues/printfulSyncProcessor')
-const { AdminLogActions } = require('../../enums')
+const { AdminLogActions } = require('../../utils/enums')
 
 const log = getLogger('logic.shop.create')
 

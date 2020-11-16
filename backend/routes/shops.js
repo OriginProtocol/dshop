@@ -19,7 +19,7 @@ const {
   Order,
   Sequelize
 } = require('../models')
-const { ShopDomainStatuses } = require('../enums')
+const { ShopDomainStatuses } = require('../utils/enums')
 const {
   authSellerAndShop,
   authUser,
@@ -648,7 +648,27 @@ module.exports = function (router) {
       return res.json({ success: false, reason: 'shop-not-found' })
     }
     const dataDir = authToken
-    const { networkId, pinner, dnsProvider } = req.body
+    const { networkId } = req.body
+    let resourceSelection = req.body.resourceSelection
+
+    // Backwards compat. Depreciate eventually
+    if (!resourceSelection) {
+      resourceSelection = []
+
+      // IPFS Pinner
+      if (req.body.pinner === 'pinata') {
+        resourceSelection.push('ipfs-pinata')
+      } else if (req.body.pinner === 'ipfs-cluster') {
+        resourceSelection.push('ipfs-cluster')
+      }
+
+      // DNS Provider
+      if (req.body.dnsProvider === 'cloudflare') {
+        resourceSelection.push('cloudflare-dns')
+      } else if (req.body.pinner === 'gcp') {
+        resourceSelection.push('gcp-dns')
+      }
+    }
 
     const network = await Network.findOne({ where: { networkId } })
     if (!network) {
@@ -662,8 +682,7 @@ module.exports = function (router) {
         networkId: networkId ? networkId : network.networkId,
         subdomain: dataDir,
         shopId: shop.id,
-        pinner,
-        dnsProvider
+        resourceSelection
       },
       {
         jobId: `deployment-${uuid}`,

@@ -90,6 +90,14 @@ const THEMES_CACHE = IS_TEST
   ? TEST_THEMES_CACHE
   : process.env.THEMES_CACHE || `${__dirname}/../themes`
 
+const DEFAULT_INFRA_RESOURCES = [
+  'gcp-files',
+  'gcp-dns',
+  'ipfs-pinata',
+  'gcp-cdn',
+  'sendgrid-email'
+]
+
 module.exports = {
   CONTRACTS,
   ENCRYPTION_KEY,
@@ -117,5 +125,6 @@ module.exports = {
   BUCKET_PREFIX,
   SERVICE_PREFIX,
   EXTERNAL_IP,
-  EXTERNAL_IP_SERVICE_URL
+  EXTERNAL_IP_SERVICE_URL,
+  DEFAULT_INFRA_RESOURCES
 }

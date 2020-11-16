@@ -19,12 +19,14 @@
 //  - check a shop's config
 //  node configCli.js --networkId=1 --allShops --operation=checkConfig
 //
+const { get, pick } = require('lodash')
 const program = require('commander')
 
-const { Network, Shop } = require('../models')
+const { Network, Shop, AdminLog } = require('../models')
 const { getLogger } = require('../utils/logger')
 const { genPGP, testPGP } = require('../utils/pgp')
 const { getConfig, setConfig, decrypt } = require('../utils/encryptedConfig')
+const paypalUtils = require('../utils/paypal')
 const { checkStripeConfig } = require('../logic/payments/stripe')
 const {
   checkPrintfulWebhook,
@@ -32,6 +34,7 @@ const {
   registerPrintfulWebhook
 } = require('../logic/printful/webhook')
 const { diagnoseShop } = require('../logic/shop/health')
+const { AdminLogActions } = require('../enums')
 
 const log = getLogger('cli')
 
@@ -46,6 +49,7 @@ program
   .option('-a, --allShops', 'Apply the operation to all shops')
   .option('-k, --key <name>', 'Shop config key')
   .option('-v, --value <name>', 'Shop config value')
+  .option('-l, --logId <id>', 'Log Id')
 
 if (!process.argv.slice(2).length) {
   program.outputHelp()
@@ -237,6 +241,54 @@ async function checkPrintful(network, shops) {
   }
 }
 
+async function checkPayPal(network, shops) {
+  const networkConfig = getConfig(network.config)
+  for (const shop of shops) {
+    log.info(`Checking PayPal config for shop ${shop.id} ${shop.name}`)
+    const errors = []
+    try {
+      const shopConfig = getConfig(shop.config)
+      const paypalKeys = [
+        'paypalClientId',
+        'paypalClientSecret',
+        'paypalWebhookId'
+      ]
+      const paypalConfig = pick(shopConfig, paypalKeys)
+      const paypalEnabled =
+        Object.values(paypalConfig).filter(Boolean).length > 0
+      if (!paypalEnabled) {
+        log.info('PayPal not configured')
+        continue
+      }
+      // Check all expected configs are present.
+      for (const key of paypalKeys) {
+        if (!paypalConfig[key]) {
+          errors.push(`Missing config ${key}`)
+        }
+      }
+      if (errors.length === 0) {
+        // Check the credentials by making a call to PayPal
+        const client = paypalUtils.getClient(
+          networkConfig.paypalEnvironment,
+          shopConfig.paypalClientId,
+          shopConfig.paypalClientSecret
+        )
+        const valid = await paypalUtils.validateCredentials(client)
+        if (!valid) {
+          errors.push('Invalid credentials')
+        }
+      }
+    } catch (err) {
+      errors.push(err.message)
+    }
+    if (errors.length > 0) {
+      log.error('ERROR:', errors)
+    } else {
+      log.info('OK')
+    }
+  }
+}
+
 async function fixPrintfulWebhook(network, shops) {
   const networkConfig = getConfig(network.config)
   let numFixed = 0
@@ -328,6 +380,48 @@ async function diagnose(shops) {
   }
 }
 
+async function adminLogs(shops) {
+  for (const shop of shops) {
+    const logs = await AdminLog.findAll({
+      where: { shopId: shop.id },
+      order: [['id', 'asc']]
+    })
+    for (const log of logs) {
+      // Trim the data display for shop config actions since it is large.
+      let data = log.data
+      if (log.action === AdminLogActions.ShopConfigUpdated) {
+        data = pick(data, ['diffKeys'])
+      }
+      const date = log.createdAt.toLocaleString()
+      console.log(
+        `${log.id}\t${log.sellerId}\t${date}\t${log.action}\t${JSON.stringify(
+          data
+        )}`
+      )
+    }
+  }
+}
+
+async function adminLog(logId) {
+  const log = await AdminLog.findOne({ where: { id: logId } })
+  if (!log) {
+    console.log('ERROR: no row in admin_logs table with id', logId)
+    return
+  }
+  if (log.action === AdminLogActions.ShopConfigUpdated) {
+    const oldConfigRaw = get(log, 'data.oldShop.config')
+    if (!oldConfigRaw) {
+      console.log('ERROR: missing key data.oldShop.config')
+      return
+    }
+
+    const oldConfig = getConfig(oldConfigRaw)
+    console.log('Old config:', JSON.stringify(oldConfig, null, 2))
+  } else {
+    console.log('Log:', JSON.stringify(log.get({ plain: true })))
+  }
+}
+
 async function _getNetwork(config) {
   const network = await Network.findOne({
     where: { networkId: config.networkId, active: true }
@@ -383,6 +477,8 @@ async function main(config) {
     await checkStripe(network, shops)
   } else if (config.operation === 'checkPrintful') {
     await checkPrintful(network, shops)
+  } else if (config.operation === 'checkPayPal') {
+    await checkPayPal(network, shops)
   } else if (config.operation === 'fixPrintfulWebhook') {
     await fixPrintfulWebhook(network, shops)
   } else if (config.operation === 'checkConfig') {
@@ -393,6 +489,10 @@ async function main(config) {
     await checkPgp(shops)
   } else if (config.operation === 'diagnose') {
     await diagnose(shops)
+  } else if (config.operation === 'logs') {
+    await adminLogs(shops)
+  } else if (config.operation === 'log') {
+    await adminLog(config.logId)
   } else {
     throw new Error(`Unsupported operation ${config.operation}`)
   }

@@ -1,6 +1,6 @@
 const tableName = 'admin_logs'
 
-const { AdminLogActions } = require('../../enums')
+const { AdminLogActions } = require('../../utils/enums')
 
 module.exports = {
   up: (queryInterface, Sequelize) => {

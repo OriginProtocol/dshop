@@ -1,4 +1,4 @@
-const { EtlJobStatuses } = require('../enums')
+const { EtlJobStatuses } = require('../utils/enums')
 
 module.exports = (sequelize, DataTypes) => {
   const EtlJob = sequelize.define(

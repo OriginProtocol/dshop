@@ -12,7 +12,7 @@ const {
   generatePgpKey
 } = require('./utils')
 const { PaymentSession, Transaction } = require('../models')
-const { TransactionTypes, TransactionStatuses } = require('../enums')
+const { TransactionTypes, TransactionStatuses } = require('../utils/enums')
 
 describe('Crypto Payment', () => {
   let network, shop, sellerPgpKey, sellerWallet, buyerWallet

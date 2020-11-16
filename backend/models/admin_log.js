@@ -1,6 +1,6 @@
 // An append-only table for recording shop admins activity.
 
-const { AdminLogActions } = require('../enums')
+const { AdminLogActions } = require('../utils/enums')
 
 module.exports = (sequelize, DataTypes) => {
   const isPostgres = sequelize.options.dialect === 'postgres'

@@ -5,7 +5,7 @@ const { getMyIP } = require('../utils/ip')
 const { hasNS, verifyDNS } = require('../utils/dns')
 const { decryptConfig } = require('../utils/encryptedConfig')
 const { Network, ShopDeployment, ShopDomain } = require('../models')
-const { ShopDomainStatuses } = require('../enums')
+const { ShopDomainStatuses } = require('../utils/enums')
 
 const { authSellerAndShop, authRole } = require('./_auth')
 

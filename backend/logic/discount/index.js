@@ -1,6 +1,6 @@
 const { get } = require('lodash')
 const calculateCartTotal = require('@origin/utils/calculateCartTotal')
-const { DiscountTypeEnums } = require('../../enums')
+const { DiscountTypeEnums } = require('../../utils/enums')
 
 const { Sequelize, Discount, Order } = require('../../models')
 
