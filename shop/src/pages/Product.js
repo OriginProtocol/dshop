@@ -66,12 +66,11 @@ const Product = ({ history, location, match }) => {
     loading: true,
     options: {},
     activeImage: 0,
-    addedToCart: false,
     productData: undefined
   })
-  const { options, activeImage, addedToCart, productData } = state
+  const { options, activeImage, productData } = state
 
-  const [{ collections }, dispatch] = useStateValue()
+  const [{ collections, cart }, dispatch] = useStateValue()
   const isMobile = useIsMobile()
   const { config } = useConfig()
   const { products } = useProducts()
@@ -106,7 +105,6 @@ const Product = ({ history, location, match }) => {
       const newState = {
         productData: data,
         activeImage: 0,
-        addedToCart: false,
         loading: false,
         options: pick(variant, 'option1', 'option2', 'option3')
       }
@@ -235,6 +233,16 @@ const Product = ({ history, location, match }) => {
     }
   }
 
+  const addedToCart = Boolean(
+    get(cart, 'items', []).find(
+      (item) =>
+        item.product === match.params.id &&
+        String(item.variant) === String(opts.variant)
+    )
+  )
+
+  const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
+
   return (
     <div className="product-detail">
       {!collection ? null : (
@@ -314,7 +322,7 @@ const Product = ({ history, location, match }) => {
                   </Link>
                 )}
               </>
-            ) : variant ? (
+            ) : variant && !isOutOfStock ? (
               <button
                 onClick={() => {
                   if (config.isAffiliate) {

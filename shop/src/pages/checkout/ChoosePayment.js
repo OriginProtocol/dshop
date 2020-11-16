@@ -116,10 +116,12 @@ const ChoosePayment = () => {
   )
 
   useEffect(() => {
-    if (paymentMethods.length === 1) {
+    const shouldSelectFirstOptions =
+      paymentMethods.length >= 1 && paymentMethod === undefined
+    if (shouldSelectFirstOptions) {
       dispatch({ type: 'updatePaymentMethod', method: paymentMethods[0] })
     }
-  }, [paymentMethods.length])
+  }, [paymentMethods.length, paymentMethod])
 
   const isOfflinePayment = !!get(cart, 'paymentMethod.instructions', false)
 

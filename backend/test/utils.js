@@ -309,7 +309,8 @@ async function createTestEncryptedOfferData(network, shop, key, opts = {}) {
     if (opts.discount.corruptTestData) {
       discountAmount = 9999
     } else if (['percentage', 'payment'].includes(opts.discount.discountType)) {
-      const totalWithShipping = subTotalAmount + shippingAmount
+      const totalWithShipping =
+        subTotalAmount + (opts.discount.excludeShipping ? 0 : shippingAmount)
       discountAmount = Math.round(
         (totalWithShipping * opts.discount.value) / 100
       )
@@ -398,7 +399,7 @@ async function mockReadProductDataFromWeb() {
     externalId: 194464746,
     title: 'Mandalorian mask',
     description: 'Put it on and never take it off.',
-    price: 2500,
+    price: 2000,
     available: true,
     options: ['Color', 'Size'],
     variants: [

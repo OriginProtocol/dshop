@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
@@ -13,6 +13,7 @@ import Footer from './_Footer'
 import Gallery from '../../shared/Gallery'
 
 import Link from 'components/Link'
+import ProductOptions from '../../shared/ProductOptions'
 
 const Product = ({ ...props }) => (
   <>
@@ -25,8 +26,7 @@ const Product = ({ ...props }) => (
 const ProductDetail = ({ match }) => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
-  const [addedToCart, setAddedToCart] = useState()
-  const [, dispatch] = useStateValue()
+  const [{ cart }, dispatch] = useStateValue()
   const collectionObj = useCollection(match.params.collection, {
     product: match.params.id,
     includeAll: 'All Products'
@@ -52,6 +52,13 @@ const ProductDetail = ({ match }) => {
     )
   }
 
+  const addedToCart = Boolean(
+    get(cart, 'items', []).find(
+      (item) =>
+        item.product === match.params.id &&
+        String(item.variant) === String(variant.id)
+    )
+  )
   const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
 
   const colLink = collection ? `/collections/${collection.id}` : ''
@@ -122,10 +129,16 @@ const ProductDetail = ({ match }) => {
               {paymentDiscount.data.summary}
             </div>
           )}
+
           {optionButtons ? (
             <ProductOptionsAlt {...productObj} center={!alignLeft} />
           ) : (
-            <ProductOptions {...productObj} center={!alignLeft} />
+            <ProductOptions
+              {...productObj}
+              center={!alignLeft}
+              labelClassName="mb-2 text-gray-600"
+              className="border border-black bg-orange-100"
+            />
           )}
 
           {!variant || isOutOfStock ? (
@@ -149,7 +162,6 @@ const ProductDetail = ({ match }) => {
               onClick={(e) => {
                 e.preventDefault()
                 dispatch({ type: 'addToCart', product, variant })
-                setAddedToCart(true)
               }}
               className="btn btn-primary sm:px-16 block sm:inline-block"
             >
@@ -162,42 +174,6 @@ const ProductDetail = ({ match }) => {
           />
         </div>
       </div>
-    </div>
-  )
-}
-
-const ProductOptions = ({
-  variants,
-  product,
-  options,
-  setOption,
-  getOptions,
-  center
-}) => {
-  const productOptions = get(product, 'options', [])
-  if (variants.length <= 1 || !productOptions.length) {
-    return null
-  }
-  const justify = center ? ' justify-center' : ''
-
-  return (
-    <div className={`flex mb-8 flex-col sm:flex-row mt-3${justify}`}>
-      {productOptions.map((opt, idx) => (
-        <div key={`${product.id}-${idx}`} className="font-2xl">
-          <div className="mb-2 text-gray-600">{opt}</div>
-          <select
-            className={`border p-3 border-black bg-orange-100${
-              idx > 0 ? ' ml-4' : ''
-            }`}
-            value={options[`option${idx + 1}`] || ''}
-            onChange={(e) => setOption(idx + 1, e.target.value)}
-          >
-            {getOptions(product, idx).map((item, idx) => (
-              <option key={idx}>{item}</option>
-            ))}
-          </select>
-        </div>
-      ))}
     </div>
   )
 }

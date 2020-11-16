@@ -66,12 +66,12 @@ async function createDeployment(
 }
 
 /**
- * Get a ShopDeploymentName associated with an IPFS hash
+ * Get a ShopDomain associated with an IPFS hash
  *
  * @param where {object} - Args to use for WHERE clause
  * @param where.ipfsHash {string} - An IPFS hash
  * @param where.ipAddress {string} - An IP address
- * @returns {ShopDeploymentName} - ShopDeploymentName instance
+ * @returns {ShopDomain} - ShopDomain instance
  */
 async function getShopDomain(where) {
   return await ShopDomain.findAll({
@@ -84,7 +84,7 @@ async function getShopDomain(where) {
  *
  * @param hostname {string} - A hostname that to associate with..
  * @param ipfsHash {string} - An IPFS hash
- * @returns {ShopDeploymentName} - ShopDeploymentName instance
+ * @returns {ShopDomain} - ShopDomain instance
  */
 async function createShopDomain({
   shopId,

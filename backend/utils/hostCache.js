@@ -3,12 +3,14 @@
  * assets.
  */
 
-const { ShopDomain } = require('../models')
+const { Network, Shop, ShopDomain } = require('../models')
+const { decryptConfig } = require('../utils/encryptedConfig')
 const { getLogger } = require('../utils/logger')
 
 const log = getLogger('utils.hostCache')
 let lastLookupCleanup = 0
 let lastLookup = {}
+let nodeDomain = null
 const hostnames = {}
 
 const LOOKUP_LIMIT = 3000 // 3 seconds
@@ -32,23 +34,49 @@ async function hostCache(host) {
   }
 
   if (typeof hostnames[host] === 'undefined') {
-    log.debug('Cache miss')
+    log.debug(`Cache miss (${host})`)
 
-    // We don't want to poke the DB too often for static file requests
-    if (!lastLookup[host] || now - lastLookup[host] > LOOKUP_LIMIT) {
-      const shopDom = await ShopDomain.findOne({
-        where: { domain: host },
-        include: 'shop'
+    if (!nodeDomain) {
+      const network = await Network.findOne({
+        where: { active: true }
       })
+      if (network) {
+        const networkConfig = decryptConfig(network.config)
+        nodeDomain = networkConfig.domain
+        log.debug(`Set nodeDomain: ${nodeDomain}`)
+      }
+    }
 
-      if (shopDom) {
-        hostnames[host] = shopDom.shop.authToken
+    if (!lastLookup[host] || now - lastLookup[host] > LOOKUP_LIMIT) {
+      // First check if this is a default shop domain
+      if (nodeDomain && host.endsWith(nodeDomain)) {
+        const hostname = host.replace(`.${nodeDomain}`, '')
+
+        const shop = await Shop.findOne({ where: { hostname } })
+
+        if (shop) {
+          log.debug(`${host} is ${shop.authToken}`)
+          hostnames[host] = shop.authToken
+        }
+      }
+
+      // We don't want to poke the DB too often for static file requests
+      else {
+        const shopDom = await ShopDomain.findOne({
+          where: { domain: host },
+          include: 'shop'
+        })
+
+        if (shopDom) {
+          log.debug(`${host} is ${shopDom.shop.authToken}`)
+          hostnames[host] = shopDom.shop.authToken
+        }
       }
 
       lastLookup[host] = now
     }
   } else {
-    log.debug('Cache hit')
+    log.debug(`Cache hit (${host})`)
   }
 
   return hostnames[host]

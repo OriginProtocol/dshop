@@ -27,17 +27,23 @@ const calculateCartTotal = (cart) => {
   const taxRate = parseFloat(get(cart, 'taxRate', 0))
 
   const discountObj = get(cart, 'discountObj', {})
-  const { minCartValue, maxDiscountValue, discountType } = discountObj
+  const {
+    minCartValue,
+    maxDiscountValue,
+    discountType,
+    excludeShipping
+  } = discountObj
 
   let discount = 0
 
-  const totalWithShipping = get(cart, 'subTotal', 0) + shipping
-  if (!minCartValue || totalWithShipping > minCartValue * 100) {
+  const preDiscountTotal =
+    get(cart, 'subTotal', 0) + (excludeShipping ? 0 : shipping)
+  if (!minCartValue || preDiscountTotal > minCartValue * 100) {
     // Calculate discounts only if minCartValue constraint is met
 
     if (discountType) {
       if (discountType === 'percentage') {
-        discount = Math.round((totalWithShipping * discountObj.value) / 100)
+        discount = Math.round((preDiscountTotal * discountObj.value) / 100)
       } else if (discountType === 'fixed') {
         discount = discountObj.value * 100
       } else if (discountType === 'payment') {
@@ -50,7 +56,7 @@ const calculateCartTotal = (cart) => {
         }
 
         if (isValidPayment) {
-          discount = Math.round((totalWithShipping * discountObj.value) / 100)
+          discount = Math.round((preDiscountTotal * discountObj.value) / 100)
         }
       }
     }

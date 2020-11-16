@@ -82,10 +82,14 @@ Add new migration:
 
 ## Running unit tests
 To run the full test suite:
+
     yarn run test
 
-To run a specific group of tests:
+To run a specific test or group of tests:
+
     yarn run test -- -g "Discounts"
+
+To run a single test, you can change it's function definition from it('blah blah...') to it.only('blah blah...') then run `yarn run test`
 
 Optionnally, if you are going to run tests several times in a row (typically during development), you can speed up the test setup phase by starting the services in a separate terminal and leave them up and running.
 
