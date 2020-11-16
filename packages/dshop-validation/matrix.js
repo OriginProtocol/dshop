@@ -71,7 +71,7 @@ function getSupportedTypes(networkConfig) {
   return uniq(
     matrix
       .filter((e) => {
-        if (e.supported && isConfigured({ networkConfig, id: e.id })) {
+        if (e.supported && isConfigured(networkConfig, e.id)) {
           return e
         }
       })
