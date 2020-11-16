@@ -351,12 +351,12 @@ async function deploy({
     canUseResource({
       networkConfig,
       selection: resourceSelection,
-      key: 'ipfs-cluster'
+      id: 'ipfs-cluster'
     }) ||
     canUseResource({
       networkConfig,
       selection: resourceSelection,
-      key: 'ipfs-pinata'
+      id: 'ipfs-pinata'
     })
   ) {
     try {
