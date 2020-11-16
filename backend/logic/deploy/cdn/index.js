@@ -40,7 +40,7 @@ async function configureCDN({
       await mod.configure({ networkConfig })
       responses.push(await mod.configureCDN({ shop, deployment, domains }))
     } else {
-      log.debug(`${modName} bucket deployer is not available or configured`)
+      log.debug(`${modName} CDN deployer is not available or configured`)
     }
   }
 

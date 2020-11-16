@@ -1,4 +1,4 @@
-const { isConfigured } = require('@origin/dshop-validation')
+const { isConfigured } = require('@origin/dshop-validation/matrix')
 
 const setCloudflareRecords = require('../../utils/dns/cloudflare')
 const setCloudDNSRecords = require('../../utils/dns/clouddns')
