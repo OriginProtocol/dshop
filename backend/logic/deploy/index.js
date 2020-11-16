@@ -213,6 +213,8 @@ async function deploy({
       networkConfig.defaultResourceSelection || DEFAULT_INFRA_RESOURCES
   }
 
+  log.debug(`Infra resource selection: ${resourceSelection.join(', ')}`)
+
   let deployment, ipfsHash, ipfsPinner, ipfsGateway, dnsProvider
 
   if (isConfigured(networkConfig, 'gcp-dns')) {
@@ -274,12 +276,12 @@ async function deploy({
     canUseResource({
       networkConfig,
       selection: resourceSelection,
-      key: 'gcp-files'
+      id: 'gcp-files'
     }) ||
     canUseResource({
       networkConfig,
       selection: resourceSelection,
-      key: 'aws-files'
+      id: 'aws-files'
     })
   ) {
     try {
@@ -304,6 +306,8 @@ async function deploy({
       await failDeployment(deployment, 'Failed to deploy to bucket')
       return error(ERROR_GENERAL)
     }
+  } else {
+    log.debug(`Bucket deployment either not selected or not configured`)
   }
 
   /**
