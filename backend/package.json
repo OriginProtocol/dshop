@@ -25,6 +25,7 @@
     "@google-cloud/compute": "^2.2.0",
     "@google-cloud/dns": "^2.0.2",
     "@google-cloud/storage": "^5.3.0",
+    "@origin/dshop-validation": "^0.1.0",
     "@origin/ipfs": "^0.1.0",
     "@origin/utils": "^0.1.0",
     "@paypal/checkout-server-sdk": "^1.0.2",

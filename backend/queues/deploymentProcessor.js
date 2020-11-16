@@ -20,7 +20,7 @@ const processor = async (job) => {
 
   log(10, 'Starting deploy job.')
 
-  const { networkId, subdomain, shopId, pinner, dnsProvider, uuid } = job.data
+  const { networkId, subdomain, shopId, resourceSelection, uuid } = job.data
 
   log(15, 'Loading job details...')
 
@@ -37,8 +37,7 @@ const processor = async (job) => {
     networkId: networkId ? networkId : network.networkId,
     subdomain,
     shop,
-    pinner,
-    dnsProvider
+    resourceSelection
   })
 
   log(90, 'Deployment run completed')

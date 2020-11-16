@@ -18,7 +18,7 @@ const {
   jsonConfigNetworkBaseKeys,
   jsonConfigNetworkOptionalKeys
 } = require('./config')
-const { ShopDeploymentStatuses } = require('../../enums')
+const { ShopDeploymentStatuses } = require('../../utils/enums')
 
 const log = getLogger('logic.shop.health')
 

@@ -40,6 +40,7 @@
     "@babel/preset-react": "^7.12.1",
     "@babel/register": "^7.12.1",
     "@origin/contracts": "^0.8.6",
+    "@origin/dshop-validation": "^0.1.0",
     "@origin/ipfs": "^0.1.0",
     "@origin/services": "^0.1.0",
     "@origin/utils": "^0.1.0",

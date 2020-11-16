@@ -17,7 +17,7 @@ const {
 } = require('../utils/paypal')
 
 const makeOffer = require('./_makeOffer')
-const { OrderPaymentTypes, OrderPaymentStatuses } = require('../enums')
+const { OrderPaymentTypes, OrderPaymentStatuses } = require('../utils/enums')
 const { findShop } = require('../utils/shop')
 const { processDeferredPayment } = require('../logic/order')
 

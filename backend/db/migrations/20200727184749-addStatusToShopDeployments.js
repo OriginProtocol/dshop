@@ -1,6 +1,6 @@
 'use strict'
 
-const { ShopDeploymentStatuses } = require('../../enums')
+const { ShopDeploymentStatuses } = require('../../utils/enums')
 
 module.exports = {
   up: (queryInterface, Sequelize) => {

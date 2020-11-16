@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { validateSelection } from '@origin/dshop-validation/matrix'
 
 import useSetState from 'utils/useSetState'
 import { Networks } from 'data/Networks'
@@ -6,6 +7,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import PasswordField from 'components/admin/PasswordField'
 
 import useEmailAppsList from 'utils/useEmailAppsList'
+import useBackendApi from 'utils/useBackendApi'
 import ProcessorsList from 'components/settings/ProcessorsList'
 
 import AWSModal from '../../admin/settings/apps/AWSModal'
@@ -40,6 +42,13 @@ const Defaults = {
   }
 }
 
+const ResourceTypeNames = {
+  dns: 'Domain Name Service',
+  cdn: 'Content Distribution Network',
+  email: 'E-mail',
+  files: 'Shop Build Storage'
+}
+
 const _defaultShopConfigJSON = {
   web3Pk: '',
   stripeBackend: '',
@@ -62,7 +71,8 @@ const _defaultShopConfigJSON = {
   bigQueryTable: '',
   googleAnalytics: '',
   notificationEmail: '',
-  notificationEmailDisplayName: ''
+  notificationEmailDisplayName: '',
+  defaultResourceSelection: []
 }
 
 const defaultShopConfig = JSON.stringify(_defaultShopConfigJSON, null, 2)
@@ -92,9 +102,12 @@ function initialState() {
     paypalEnvironment: 'prod',
     notificationEmail: '',
     notificationEmailDisplayName: '',
+    defaultResourceSelection: [],
     awsAccessKeyId: '',
     awsSecretAccessKey: '',
     backendUrl,
+    infra: {},
+    infraErrors: [],
     ...Defaults[networkId]
   }
 }
@@ -142,9 +155,37 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
   if (network && !network.fallbackShopConfig) {
     network.fallbackShopConfig = _defaultShopConfigJSON
   }
+
+  if (network && !!network.defaultResourceSelection && !network.infra) {
+    network.infra = {}
+    network.defaultResourceSelection.map((resource) => {
+      network.infra[resource] = true
+    })
+  }
   const [state, setState] = useSetState(network || initialState())
+  const [resources, setResources] = useState([])
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
+  const { get } = useBackendApi()
+
+  useEffect(() => {
+    get('/networks/infra/resources').then((res) => {
+      if (res.resources) {
+        setResources(
+          res.resources.reduce((acc, cur) => {
+            if (typeof acc[cur.type] === 'undefined') {
+              acc[cur.type] = []
+            }
+            acc[cur.type].push(cur)
+            acc[cur.type].sort((a, b) => {
+              return a.name < b.name ? -1 : 1
+            })
+            return acc
+          }, {})
+        )
+      }
+    })
+  }, [])
 
   useEffect(() => {
     if (!network && Defaults[state.networkId]) {
@@ -198,6 +239,22 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
     }))
   }, [emailAppsList])
 
+  const updateResources = (stateUpdate) => {
+    const newState = { ...state, ...stateUpdate }
+    const selection = Object.keys(newState.infra).filter(
+      (k) => newState.infra[k]
+    )
+    const validRes = validateSelection({ networkConfig: newState, selection })
+
+    if (!validRes.success) {
+      setState({ ...stateUpdate, infraErrors: validRes.errors })
+      return false
+    }
+
+    setState({ ...stateUpdate, infraErrors: [] })
+    return true
+  }
+
   return (
     <form
       className={`sign-up${className ? ' ' + className : ''}`}
@@ -218,6 +275,10 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
             m[o] = state[o]
             return m
           }, {})
+
+        network.defaultResourceSelection = Object.keys(newState.infra).filter(
+          (k) => newState.infra[k]
+        )
 
         onSave(network)
       }}
@@ -406,6 +467,54 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           />
         )}
       </div>
+
+      {!resources ? null : (
+        <div className="container">
+          <h3 className="row">Cloud Resources</h3>
+          {!state.infraErrors
+            ? null
+            : state.infraErrors.map((err, idx) => (
+                <div key={idx} className="alert alert-danger">
+                  {err}
+                </div>
+              ))}
+          {Object.keys(resources).map((resourceType) => (
+            <div key={resourceType}>
+              <h4 className="row">{ResourceTypeNames[resourceType]}</h4>
+              <div className="row">
+                {!resources[resourceType]
+                  ? null
+                  : resources[resourceType].map((resource) => (
+                      <div key={resource.id} className="col-sm form-group pl-0">
+                        <label htmlFor={`${resource.id}-check`} className="m-0">
+                          <input
+                            id={`${resource.id}-check`}
+                            type="checkbox"
+                            className="mr-2"
+                            checked={
+                              state.infra && state.infra[resource.id]
+                                ? true
+                                : false
+                            }
+                            onChange={(e) => {
+                              const stateUpdate = {
+                                infra: {
+                                  ...state.infra,
+                                  [resource.id]: e.target.checked
+                                }
+                              }
+                              updateResources(stateUpdate)
+                            }}
+                          />
+                          {resource.name}
+                        </label>
+                      </div>
+                    ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="mb-2 justify-content-center d-flex advanced-settings-link">
         <a

@@ -4,7 +4,7 @@ const { Discount } = require('../models')
 const { authShop, authSellerAndShop } = require('./_auth')
 
 const { validateDiscount } = require('../logic/discount')
-const { DiscountTypeEnums } = require('../enums')
+const { DiscountTypeEnums } = require('../utils/enums')
 
 const safeDiscountProps = [
   'status',

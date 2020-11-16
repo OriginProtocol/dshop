@@ -1,4 +1,4 @@
-const { DiscountTypeEnums } = require('../enums')
+const { DiscountTypeEnums } = require('../utils/enums')
 
 module.exports = (sequelize, DataTypes) => {
   const isPostgres = sequelize.options.dialect === 'postgres'

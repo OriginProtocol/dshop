@@ -17,6 +17,7 @@
  */
 const _find = require('lodash/find')
 const trimStart = require('lodash/trimStart')
+const { isConfigured } = require('@origin/dshop-validation/matrix')
 
 const { NETWORK_ID_TO_NAME, SERVICE_PREFIX } = require('../../../utils/const')
 const google = require('../../../utils/google')
@@ -45,8 +46,11 @@ async function sleep(timeout = 1000) {
  * @param args.networkConfig {Object} - Decrypted networkConfig object
  * @returns {bool} - if we can deploy
  */
-function isAvailable({ networkConfig }) {
-  return !!networkConfig.gcpCredentials
+function isAvailable({ networkConfig, resourceSelection }) {
+  return (
+    resourceSelection.includes('gcp-cdn') &&
+    isConfigured(networkConfig, 'gcp-cdn')
+  )
 }
 
 /**
