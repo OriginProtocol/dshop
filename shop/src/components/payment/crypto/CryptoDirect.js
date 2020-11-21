@@ -81,7 +81,23 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
           onChange({ disabled: false, loading: false, buttonText: tokenPrice })
         })
     }
+
+    async function getWalletBalance() {
+      const balanceInWei = await wallet.signer.getBalance() //returns the balance in wei, with type 'BigNumber'
+      const balanceInEther = balanceInWei.div(ethers.BigNumber.from(10).pow(18)) //converts units from wei to Ether. Return type: 'BigNumber'
+      if (balanceInEther.isZero()) {
+        console.log("Warning: The ETH balance in the buyer's wallet is 0")
+      } else {
+        console.log(
+          "The buyer's wallet has " + balanceInEther.toString() + ' ETH.'
+        )
+      }
+    } //https://docs.ethers.io/v5/api/utils/bignumber/
+
     if (cryptoSelected && submit && wallet.signer) {
+      getWalletBalance().catch((err) => {
+        console.error(err)
+      })
       makeOffer()
     }
   }, [submit, wallet.signer])
