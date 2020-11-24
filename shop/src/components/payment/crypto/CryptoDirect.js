@@ -18,6 +18,7 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
   const [{ cart }, dispatch] = useStateValue()
   const [activeToken, setActiveToken] = useState({})
   const [tokenPrice, setTokenPrice] = useState('')
+  const [walletBalance, setWalletBalance] = useState({inWei: ethers.BigNumber.from(0)}) //create an object called walletBalance, and set its initial value to 0 Wei
   const token = useToken(activeToken, cart.total)
   const { toTokenPrice } = usePrice(config.currency)
   const wallet = useWallet({ needSigner: true })
@@ -81,23 +82,7 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
           onChange({ disabled: false, loading: false, buttonText: tokenPrice })
         })
     }
-
-    async function getWalletBalance() {
-      const balanceInWei = await wallet.signer.getBalance() //returns the balance in wei, with type 'BigNumber'
-      const balanceInEther = balanceInWei.div(ethers.BigNumber.from(10).pow(18)) //converts units from wei to Ether. Return type: 'BigNumber'
-      if (balanceInEther.isZero()) {
-        console.log("Warning: The ETH balance in the buyer's wallet is 0")
-      } else {
-        console.log(
-          "The buyer's wallet has " + balanceInEther.toString() + ' ETH.'
-        )
-      }
-    } //https://docs.ethers.io/v5/api/utils/bignumber/
-
     if (cryptoSelected && submit && wallet.signer) {
-      getWalletBalance().catch((err) => {
-        console.error(err)
-      })
       makeOffer()
     }
   }, [submit, wallet.signer])
@@ -109,14 +94,37 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
   const acceptedTokens = config.acceptedTokens
 
   useEffect(() => {
+    async function queryWalletBalance() {
+      console.log("Ran queryWalletBalance()")
+      return await wallet.signer.getBalance() //returns the balance in wei. Return type: 'BigNumber'. 
+    }
+
+    onChange(queryWalletBalance()
+              .then(res => setWalletBalance(
+                            {
+                            inWei: res, //walletBalance.inWei is set to the output of queryWalletBalance()
+                            inEther: res.div(ethers.BigNumber.from(10).pow(18)), //unit conversion [https://docs.ethers.io/v5/api/utils/bignumber/]
+                            isZero: res.isZero() //boolean to check whether balance is zero
+                            } //Reference: https://www.geeksforgeeks.org/reactjs-usestate-hook/
+                          )
+              )
+              .then(console.log("Wallet Balance in Wei: " + walletBalance.inWei + "\nWallet Balance in Ether: " + walletBalance.inEther + "\nWallet Balance Zero? " + walletBalance.isZero))
+              .catch(err => console.log(err))
+            )
+    
+  }, [activeToken.id, cryptoSelected]) //https://dmitripavlutin.com/react-useeffect-explanation/
+
+  useEffect(() => {
     const newState = {
       submit: 0,
       disabled:
         wallet.status !== 'enabled' ||
         !activeToken.id ||
         !token.hasBalance ||
-        token.loading
+        token.loading ||
+        walletBalance.isZero
     }
+
     if (activeToken.id) {
       newState.buttonText = `Pay ${toTokenPrice(
         cart.total,
@@ -124,6 +132,7 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
       )} ${activeToken.name}`
       setTokenPrice(newState.buttonText)
     }
+
     onChange(newState)
     dispatch({ type: 'updateActiveToken', token: activeToken.id })
   }, [activeToken.id, token.loading, cryptoSelected])
@@ -163,7 +172,7 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
 
   if (!wallet.ready) {
     return <WalletNotReady {...{ wallet, label, config }} />
-  }
+  } 
 
   return (
     <>
