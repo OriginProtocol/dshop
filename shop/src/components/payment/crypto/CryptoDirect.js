@@ -18,7 +18,9 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
   const [{ cart }, dispatch] = useStateValue()
   const [activeToken, setActiveToken] = useState({})
   const [tokenPrice, setTokenPrice] = useState('')
-  const [walletBalance, setWalletBalance] = useState({inWei: ethers.BigNumber.from(0)}) //create an object called walletBalance, and set its initial value to 0 Wei
+  const [walletBalance, setWalletBalance] = useState({
+    isZero: false
+  }) //create an object called walletBalance, assuming for now that the buyer has some ETH in it already. Credit: https://www.geeksforgeeks.org/reactjs-usestate-hook/
   const token = useToken(activeToken, cart.total)
   const { toTokenPrice } = usePrice(config.currency)
   const wallet = useWallet({ needSigner: true })
@@ -95,24 +97,22 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
 
   useEffect(() => {
     async function queryWalletBalance() {
-      console.log("Ran queryWalletBalance()")
-      return await wallet.signer.getBalance() //returns the balance in wei. Return type: 'BigNumber'. 
-    }
+      return await wallet.signer.getBalance()
+    } //returns a promise that, if resolved, will give the balance of the wallet in wei (BigNumber)
 
-    onChange(queryWalletBalance()
-              .then(res => setWalletBalance(
-                            {
-                            inWei: res, //walletBalance.inWei is set to the output of queryWalletBalance()
-                            inEther: res.div(ethers.BigNumber.from(10).pow(18)), //unit conversion [https://docs.ethers.io/v5/api/utils/bignumber/]
-                            isZero: res.isZero() //boolean to check whether balance is zero
-                            } //Reference: https://www.geeksforgeeks.org/reactjs-usestate-hook/
-                          )
-              )
-              .then(console.log("Wallet Balance in Wei: " + walletBalance.inWei + "\nWallet Balance in Ether: " + walletBalance.inEther + "\nWallet Balance Zero? " + walletBalance.isZero))
-              .catch(err => console.log(err))
-            )
-    
-  }, [activeToken.id, cryptoSelected]) //https://dmitripavlutin.com/react-useeffect-explanation/
+    onChange(
+      queryWalletBalance()
+        .then((res) =>
+          setWalletBalance({
+            isZero: res.isZero() //boolean to check whether balance is zero. Reference: https://docs.ethers.io/v5/api/utils/bignumber/
+          })
+        )
+        .catch((err) => console.log('Failed to query wallet balance.\n' + err))
+    )
+  }, [wallet.address, activeToken.id, cryptoSelected])
+  // The 'useEffect' hook above verifies that the buyer's wallet has a positive ETH balance,
+  // and runs every time they change their connected crypto account, the payment token of choice, or the 'Cryptocurrency' payment option.
+  // Credit: https://dmitripavlutin.com/react-useeffect-explanation/
 
   useEffect(() => {
     const newState = {
@@ -172,7 +172,7 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
 
   if (!wallet.ready) {
     return <WalletNotReady {...{ wallet, label, config }} />
-  } 
+  }
 
   return (
     <>
@@ -195,7 +195,18 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
           ) : !token.hasBalance ? (
             <div className="alert alert-danger">
               <fbt desc="checkout.payment.crypto.insufficientBalance">
-                Insufficient balance
+                Insufficient
+                <fbt:param name="activeToken">{activeToken.name}</fbt:param>
+                balance
+              </fbt>
+            </div>
+          ) : null}
+
+          {!activeToken.id || token.loading ? null : walletBalance.isZero ? (
+            <div className="alert alert-danger">
+              <fbt desc="checkout.payment.crypto.ethBalanceZero">
+                You will need some ETH to pay for gas fees. Please deposit some
+                Ether and refresh the page to continue.
               </fbt>
             </div>
           ) : null}
