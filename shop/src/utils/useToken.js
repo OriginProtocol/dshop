@@ -66,7 +66,8 @@ function useToken(activeToken = {}, totalUsd) {
             signer || provider
           )
           const balance = await contract.balanceOf(walletAddress)
-          const balanceNum = ethers.utils.formatUnits(balance, 'ether')
+          const decimals = await contract.decimals()
+          const balanceNum = ethers.utils.formatUnits(balance, decimals)
           const balanceUSD = Math.floor(
             (Number(balanceNum) / exchangeRate) * 100
           )
@@ -77,7 +78,7 @@ function useToken(activeToken = {}, totalUsd) {
               walletAddress,
               marketplace.address
             )
-            const allowanceNum = ethers.utils.formatUnits(allowance, 'ether')
+            const allowanceNum = ethers.utils.formatUnits(allowance, decimals)
             const allowanceUSD = Math.ceil(
               (Number(allowanceNum) / exchangeRate) * 100
             )
