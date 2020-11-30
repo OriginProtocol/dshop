@@ -51,8 +51,14 @@ async function downloadProductData({
     )
   }
 
+  let index = 1
   for (const id of ids) {
     await getProduct({ PrintfulURL, apiAuth, OutputDir, id })
+    if (index % 75 === 0) {
+      // Wait out rate limit
+      await new Promise((r) => setTimeout(r, 60000))
+    }
+    index++
   }
 
   return ids
