@@ -237,7 +237,7 @@ const Product = ({ history, location, match }) => {
     get(cart, 'items', []).find(
       (item) =>
         item.product === match.params.id &&
-        String(item.variant) === String(opts.variant)
+        (opts.variant ? String(item.variant) === String(opts.variant) : true)
     )
   )
 
