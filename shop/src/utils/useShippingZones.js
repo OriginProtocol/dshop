@@ -33,7 +33,7 @@ function useShippingZones() {
       setLoading(true)
       let zones = []
       try {
-        let hasError = false
+        const hasError = false
         if (config.shippingApi) {
           const raw = await fetch(`${config.backend}/shipping`, {
             method: 'POST',
@@ -52,10 +52,12 @@ function useShippingZones() {
           const json = await raw.json()
           if (json.success !== false) {
             zones = json
-          } else {
-            hasError = true
-            setError(true)
           }
+          // Disabled to allow shipping fallback
+          // else {
+          //   hasError = true
+          //   setError(true)
+          // }
         }
 
         if (!hasError && !zones.length) {
