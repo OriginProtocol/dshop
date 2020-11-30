@@ -1,7 +1,11 @@
 // A utility script for shop configs.
 //
-// Note: easiest is to run the script from local after having setup
+// Note:
+//  - The easiest is to run the script from local after having setup
 // a SQL proxy to prod and the ENCRYPTION_KEY env var.
+//  - When setting a config value with special chars, prefix the string
+//  with $ and use single quote so the shell does not double escape the special chars.
+//  For ex: --value=$'-----BEGIN PGP\n\n...'
 //
 // Examples:
 //  - dump network and shop config
