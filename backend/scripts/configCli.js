@@ -23,6 +23,7 @@ const { get, pick } = require('lodash')
 const program = require('commander')
 
 const { Network, Shop, AdminLog } = require('../models')
+const { AdminLogActions } = require('../utils/enums')
 const { getLogger } = require('../utils/logger')
 const { genPGP, testPGP } = require('../utils/pgp')
 const { getConfig, setConfig, decrypt } = require('../utils/encryptedConfig')
@@ -34,7 +35,6 @@ const {
   registerPrintfulWebhook
 } = require('../logic/printful/webhook')
 const { diagnoseShop } = require('../logic/shop/health')
-const { AdminLogActions } = require('../enums')
 
 const log = getLogger('cli')
 
@@ -75,7 +75,7 @@ async function dump(network, shops) {
     log.info('Shop Id:', shop.id)
     log.info('Shop Name:', shop.name)
     log.info('Shop Config:')
-    log.info(shopConfig)
+    console.log(JSON.stringify(shopConfig, null, 2))
   }
 }
 
