@@ -2,7 +2,7 @@ const fs = require('fs')
 const sharp = require('sharp')
 const uniq = require('lodash/uniq')
 
-const { getLogger } = require('../../utils/logger')
+const { getLogger } = require('../../../utils/logger')
 
 const log = getLogger('utils.printfu.resizePrintfulMockups')
 

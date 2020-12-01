@@ -1,8 +1,10 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import fbt, { FbtParam } from 'fbt'
+import get from 'lodash/get'
 
 import useBackendApi from 'utils/useBackendApi'
 import useProducts from 'utils/useProducts'
+import useShopConfig from 'utils/useShopConfig'
 import { useStateValue } from 'data/state'
 import ConfirmationModal from 'components/ConfirmationModal'
 import ProductImage from 'components/ProductImage'
@@ -14,6 +16,32 @@ const AdminPrintfulSync = ({ buttonText, buttonClass, className = '' }) => {
 
   const { products, loading } = useProducts()
 
+  const { shopConfig } = useShopConfig()
+  const printfulSyncing = get(shopConfig, 'printfulSyncing')
+
+  useEffect(() => {
+    let interval, done
+
+    // Polls shopConfig every 5 seconds to see if 
+    // syncing has completed
+
+    if (printfulSyncing) {
+      interval = setInterval(() => {
+        if (!done) {
+          dispatch({ type: 'reload', target: ['shopConfig'] })
+        }
+      }, 5000)
+    } else if (printfulSyncing === false) {
+      // Reload products, if syncing has completed
+      dispatch({ type: 'reload', target: ['products'] })
+    }
+
+    return () => {
+      done = true
+      clearInterval(interval)
+    }
+  }, [printfulSyncing])
+
   if (loading) {
     return (
       <button
@@ -21,6 +49,17 @@ const AdminPrintfulSync = ({ buttonText, buttonClass, className = '' }) => {
         className={`${buttonClass || 'btn btn-outline-primary'} ${className}`}
       >
         <fbt desc="Loading">Loading</fbt>...
+      </button>
+    )
+  }
+
+  if (printfulSyncing) {
+    return (
+      <button
+        disabled
+        className={`${buttonClass || 'btn btn-outline-primary'} ${className}`}
+      >
+        <fbt desc="Syncing">Syncing</fbt>...
       </button>
     )
   }
@@ -35,7 +74,7 @@ const AdminPrintfulSync = ({ buttonText, buttonClass, className = '' }) => {
         'Are you sure you want to sync with Printful?',
         'admin.settings.apps.printful.confirmSync'
       )}
-      confirmedText={fbt('Synced OK', 'admin.settings.apps.printful.synced')}
+      confirmedText={fbt('Your products are being synced. It usually takes a few minutes before it is complete.', 'admin.settings.apps.printful.synced')}
       loadingText={`${fbt('Syncing', 'Syncing')}...`}
       onConfirm={() =>
         post(`/shop/sync-printful`, {
@@ -43,7 +82,7 @@ const AdminPrintfulSync = ({ buttonText, buttonClass, className = '' }) => {
         })
       }
       onSuccess={async () => {
-        dispatch({ type: 'reload', target: 'products' })
+        dispatch({ type: 'reload', target: ['shopConfig'] })
       }}
     >
       {!internalProducts.length ? null : (

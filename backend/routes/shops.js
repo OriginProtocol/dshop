@@ -35,7 +35,7 @@ const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
 const { readProductsFile } = require('../logic/products')
 const { queues } = require('../queues')
-const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
+const { printfulSyncQueue } = require('../queues/queues')
 const { updateShopConfig } = require('../logic/shop/config')
 const { createShop } = require('../logic/shop/create')
 const sellerContactEmail = require('../utils/emails/sellerContact')
@@ -167,17 +167,15 @@ module.exports = function (router) {
       }
 
       const OutputDir = `${DSHOP_CACHE}/${req.shop.authToken}`
-
-      await printfulSyncProcessor.processor({
-        data: {
+      await printfulSyncQueue.add(
+        {
           OutputDir,
           apiKey: printful,
           shopId: req.shop.id,
           refreshImages: req.body.refreshImages ? true : false
         },
-        log: (data) => log.debug(data),
-        progress: () => {}
-      })
+        { attempts: 1 }
+      )
 
       res.json({ success: true })
     }

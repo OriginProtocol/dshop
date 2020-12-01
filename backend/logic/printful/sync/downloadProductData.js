@@ -2,14 +2,21 @@ const fs = require('fs')
 
 const difference = require('lodash/difference')
 
-const getProducts = require('./getProducts')
-const getProduct = require('./getProduct')
-const getProductIds = require('./getProductIds')
+const getProducts = require('../../../scripts/printful/getProducts')
+const getProduct = require('../../../scripts/printful/getProduct')
+const getProductIds = require('../../../scripts/printful/getProductIds')
+
+const { getLogger } = require('../../../utils/logger')
+
+const log = getLogger('logic.printful.downloadPrintfulMockups')
 
 const PrintfulURL = 'https://api.printful.com'
 
 /**
- * Downloads product data from Printful
+ * Downloads product data from Printful.
+ * Sleeps for 60s every 75 products fetched since Printful has
+ * a rate-limit of 120 rpm (using 75 instead of 120 to take into
+ * account the multiple calls made before this functions).
  *
  * @param {String} OutputDir data directory of the shop
  * @param {String} printfulApi API key of printful store
@@ -46,7 +53,7 @@ async function downloadProductData({
     // Append `forceRefetchIds` and then do deduplicate
     ids = Array.from(new Set([...ids, ...(forceRefetchIds || [])]))
 
-    console.log(
+    log.debug(
       `Will be refetching only ${ids.length} out of ${overallLength} products`
     )
   }
@@ -56,6 +63,7 @@ async function downloadProductData({
     await getProduct({ PrintfulURL, apiAuth, OutputDir, id })
     if (index % 75 === 0) {
       // Wait out rate limit
+      log.info('Sleeping for 60s to avoid hitting rate-limits...')
       await new Promise((r) => setTimeout(r, 60000))
     }
     index++
