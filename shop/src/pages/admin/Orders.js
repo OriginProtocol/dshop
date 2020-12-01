@@ -221,6 +221,7 @@ const fields = `
   Total,data.total,number
   Donation,data.donation,number
   Item IDs,data.items,product
+  Quantity,data.items,quantity
   First Name,data.userInfo.firstName
   Last Name,data.userInfo.lastName
   Email,data.userInfo.email
@@ -247,9 +248,10 @@ const AdminOrdersCSV = ({ orders }) => {
             let value = get(order, field, '')
             if (filter === 'number') {
               value = (value / 100).toFixed(2)
-            }
-            if (filter === 'product') {
+            } else if (filter === 'product') {
               value = value.map((i) => i.product).join(',')
+            } else if (filter === 'quantity') {
+              value = value.map((i) => i.quantity).join(',')
             }
             return '"' + value + '"'
           })
