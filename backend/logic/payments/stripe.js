@@ -72,7 +72,7 @@ async function checkStripePayments(shopId, shopConfig) {
 
   // Load the last 30 days shop's orders paid with Stripe and get their encrypted IPFS hashes.
   // Get the unique paymentCode for each of the orders.
-  const startOfDay = dayjs().endOf('day')
+  const startOfDay = dayjs()
   const thirtyDaysAgo = startOfDay.subtract(30, 'days')
   const orders = await Order.findAll({
     where: {
