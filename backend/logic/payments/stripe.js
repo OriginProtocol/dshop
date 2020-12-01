@@ -26,8 +26,16 @@ async function checkStripeConfig(shop, shopConfig, networkConfig) {
     log.info(`[Shop ${shop.id}] Stripe not configured`)
     return { success: true }
   }
-
   log.info(`[Shop ${shop.id}] Checking Stripe config`)
+
+  // Check the secret key prefix to make sure
+  if (!shopConfig.stripeBackend.startsWith('sk_live_')) {
+    const error = shopConfig.stripeBackend.startsWith('sk_test_')
+      ? 'Test API key'
+      : 'Invalid API key'
+    return { success: false, error }
+  }
+
   let success = false
   try {
     success = await webhookValidation(
