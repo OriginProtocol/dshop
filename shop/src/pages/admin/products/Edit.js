@@ -611,15 +611,22 @@ const EditProduct = () => {
                         setFormState(updatedState)
                       }}
                       onRemove={() => {
-                        const options = [...formState.options]
-                        const availableOptions = [...formState.availableOptions]
-                        options.splice(index, 1)
-                        availableOptions.splice(index, 1)
-                        setFormState({
-                          options,
-                          availableOptions,
-                          hasChanges: true
+                        const optionsContainer = [...formState.options]
+                        const availableOptionsContainer = [
+                          ...formState.availableOptions
+                        ]
+                        optionsContainer.splice(index, 1)
+                        availableOptionsContainer.splice(index, 1)
+                        const updatedState = {
+                          options: optionsContainer,
+                          availableOptions: availableOptionsContainer,
+                          hasChanges: true,
+                          imagesUpdated: externallyManaged ? true : undefined
+                        }
+                        updatedState.variants = generateVariants({
+                          ...updatedState
                         })
+                        setFormState(updatedState) // TODO: inspect the impact of/evaluate the need for, inserting the EditVariants component after this operation
                       }}
                       disabled={externallyManaged}
                     />
