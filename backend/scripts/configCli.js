@@ -1,7 +1,11 @@
 // A utility script for shop configs.
 //
-// Note: easiest is to run the script from local after having setup
+// Note:
+//  - The easiest is to run the script from local after having setup
 // a SQL proxy to prod and the ENCRYPTION_KEY env var.
+//  - When setting a config value with special chars, prefix the string
+//  with $ and use single quote so the shell does not double escape the special chars.
+//  For ex: --value=$'-----BEGIN PGP\n\n...'
 //
 // Examples:
 //  - dump network and shop config
@@ -23,6 +27,7 @@ const { get, pick } = require('lodash')
 const program = require('commander')
 
 const { Network, Shop, AdminLog } = require('../models')
+const { AdminLogActions } = require('../utils/enums')
 const { getLogger } = require('../utils/logger')
 const { genPGP, testPGP } = require('../utils/pgp')
 const { getConfig, setConfig, decrypt } = require('../utils/encryptedConfig')
@@ -34,7 +39,6 @@ const {
   registerPrintfulWebhook
 } = require('../logic/printful/webhook')
 const { diagnoseShop } = require('../logic/shop/health')
-const { AdminLogActions } = require('../enums')
 
 const log = getLogger('cli')
 
@@ -75,7 +79,7 @@ async function dump(network, shops) {
     log.info('Shop Id:', shop.id)
     log.info('Shop Name:', shop.name)
     log.info('Shop Config:')
-    log.info(shopConfig)
+    console.log(JSON.stringify(shopConfig, null, 2))
   }
 }
 

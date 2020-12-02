@@ -60,7 +60,7 @@ const dbConfigOptionalKeys = [
   'sendgridPassword',
   'sendgridUsername',
   'shippingFrom',
-  'stripeBackend',
+  'stripeBackend', // Stripe API key
   'stripeWebhookSecret',
   'stripeWebhookHost',
   'upholdApi',
