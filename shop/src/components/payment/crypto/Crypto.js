@@ -24,6 +24,8 @@ const waitForAllowance = ({ wallet, marketplace, amount, token }) => {
             address,
             marketplace.address
           )
+          // TODO: formatUnits returns string, Evaluate doing
+          // parseFloat before the comparison
           const allowanceEth = ethers.utils.formatUnits(allowance, decimals)
           if (allowanceEth >= amount) {
             resolve()
