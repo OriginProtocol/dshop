@@ -22,7 +22,7 @@ const AdminPrintfulSync = ({ buttonText, buttonClass, className = '' }) => {
   useEffect(() => {
     let interval, done
 
-    // Polls shopConfig every 5 seconds to see if 
+    // Polls shopConfig every 5 seconds to see if
     // syncing has completed
 
     if (printfulSyncing) {
@@ -74,7 +74,10 @@ const AdminPrintfulSync = ({ buttonText, buttonClass, className = '' }) => {
         'Are you sure you want to sync with Printful?',
         'admin.settings.apps.printful.confirmSync'
       )}
-      confirmedText={fbt('Your products are being synced. It usually takes a few minutes before it is complete.', 'admin.settings.apps.printful.synced')}
+      confirmedText={fbt(
+        'Your products are being synced. It usually takes a few minutes before it is complete.',
+        'admin.settings.apps.printful.synced'
+      )}
       loadingText={`${fbt('Syncing', 'Syncing')}...`}
       onConfirm={() =>
         post(`/shop/sync-printful`, {
