@@ -227,6 +227,88 @@ async function getRecord(client, zoneObj, DNSName, type) {
 }
 
 /**
+ * Try and resolve the known zone by the given name
+ *
+ * @param args {object}
+ * @param args.credentials {object} credentials - The JSON Google service
+ *  account credentials
+ * @param args.DNSName {string} name of DNS zone
+ * @returns {boolean} if a zone exists
+ */
+async function resolveZone({ credentials, DNSName }) {
+  const client = getClient(credentials)
+  const nameParts = DNSName.split('.')
+  let zone = null
+  while (nameParts.length >= 2) {
+    zone = await getZone(client, nameParts.join('.'))
+    if (zone) return zone
+    // Knock one of the front
+    nameParts.shift()
+  }
+  return null
+}
+
+/**
+ * Check if a zone exists on Route53 and we know about it
+ *
+ * Ref: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Route53.html#listResourceRecordSets-property
+ *
+ * @param args {object}
+ * @param args.credentials {object} credentials - The JSON Google service
+ *  account credentials
+ * @param args.DNSName {string} name of DNS zone
+ * @returns {boolean} if a zone exists
+ */
+async function addRecord({ credentials, zone, type, name, value }) {
+  const client = getClient(credentials)
+
+  // Lookup and verify zone
+  const zoneObj = await getZone(client, zone)
+  if (!zoneObj) {
+    log.error(`Zone ${zone} not found.`)
+    return
+  }
+
+  const existingA = await getRecord(client, zoneObj, name, 'A')
+  const existingCNAME = await getRecord(client, zoneObj, name, 'CNAME')
+  const existingTXT = await getRecord(client, zoneObj, name, 'TXT')
+  const changes = []
+
+  // Delete conflicting records if they exist
+  if (existingA) {
+    changes.push(deleteA(name, existingA.value))
+  }
+  if (existingCNAME) {
+    changes.push(deleteCNAME(name, [existingCNAME.value]))
+  }
+  if (existingTXT) {
+    changes.push(deleteTXT(name, existingTXT))
+  }
+
+  if (type === 'A') {
+    changes.push(await addA(name, [value]))
+  } else if (type === 'CNAME') {
+    changes.push(await addCNAME(name, [value]))
+  } else if (type === 'TXT') {
+    changes.push(await addTXT(name, [value]))
+  } else {
+    throw new Error(`Record type ${type} is not supported`)
+  }
+
+  // Create the atomic change batch
+  const params = {
+    ChangeBatch: {
+      Changes: changes,
+      Comment: `Automated change for ${zone} by Dshop backend ${+new Date()}`
+    },
+    HostedZoneId: zoneObj.Id
+  }
+
+  // Execute the change batch
+  await client.changeResourceRecordSets(params).promise()
+}
+
+/**
  * Set the necessary DNS records for a shop to a subdomain controlled by
  * Route53.
  *
@@ -247,6 +329,7 @@ async function setRecords({
   subdomain,
   ipfsGateway,
   hash,
+  cname,
   ipAddresses
 }) {
   const client = getClient(credentials)
@@ -261,7 +344,7 @@ async function setRecords({
   // Look for existing record
   const record = append(`${subdomain}.${zone}`, '.')
   const txtRecord = append(`_dnslink.${record}`, '.')
-  const txtRecordValue = `"dnslink=/ipfs/${hash}"`
+  const txtRecordValue = hash ? `"dnslink=/ipfs/${hash}"` : null
   const existingA = await getRecord(client, zoneObj, record, 'A')
   const existingCNAME = await getRecord(client, zoneObj, record, 'CNAME')
   const existingTXT = await getRecord(client, zoneObj, txtRecord, 'TXT')
@@ -272,7 +355,12 @@ async function setRecords({
     changes.push(deleteA(record, ipAddresses))
   }
   if (existingCNAME && ipfsGateway) {
-    changes.push(deleteCNAME(record, [append(ipfsGateway, '.')]))
+    changes.push(
+      deleteCNAME(
+        record,
+        existingCNAME.ResourceRecords.map((rr) => rr.Value)
+      )
+    )
   }
   if (existingTXT) {
     changes.push(deleteTXT(txtRecord, existingTXT.ResourceRecords))
@@ -282,11 +370,15 @@ async function setRecords({
   if (ipAddresses) {
     changes.push(addA(record, ipAddresses))
   } else if (ipfsGateway) {
-    changes.push(addCNAME(record, [append(ipfsGateway, '.')]))
+    // Use given CNAME, otherwise assume IPFS gateway is serving
+    changes.push(addCNAME(record, [append(cname ? cname : ipfsGateway, '.')]))
   } else {
     throw new Error('Unable to create an A or CNAME record. Lacking info!')
   }
-  changes.push(addTXT(txtRecord, [txtRecordValue]))
+
+  if (txtRecordValue) {
+    changes.push(addTXT(txtRecord, [txtRecordValue]))
+  }
 
   // Create the atomic change batch
   const params = {
@@ -301,4 +393,4 @@ async function setRecords({
   await client.changeResourceRecordSets(params).promise()
 }
 
-module.exports = setRecords
+module.exports = { setRecords, resolveZone, addRecord }

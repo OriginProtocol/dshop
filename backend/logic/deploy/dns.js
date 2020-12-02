@@ -1,8 +1,10 @@
 const { isConfigured } = require('@origin/dshop-validation/matrix')
 
-const setCloudflareRecords = require('../../utils/dns/cloudflare')
-const setCloudDNSRecords = require('../../utils/dns/clouddns')
-const setRoute53Records = require('../../utils/dns/route53')
+const {
+  setRecords: setCloudflareRecords
+} = require('../../utils/dns/cloudflare')
+const { setRecords: setCloudDNSRecords } = require('../../utils/dns/clouddns')
+const { setRecords: setRoute53Records } = require('../../utils/dns/route53')
 const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('logic.deploy.dns')
@@ -25,7 +27,8 @@ async function configureShopDNS({
   zone,
   hash,
   resourceSelection,
-  ipAddresses
+  ipAddresses,
+  cname
 }) {
   const backendUrl = new URL(networkConfig.backendUrl)
   const backendHost = backendUrl.hostname
@@ -41,6 +44,7 @@ async function configureShopDNS({
         hash,
         email: networkConfig.cloudflareEmail,
         key: networkConfig.cloudflareApiKey,
+        cname,
         ipAddresses
       })
     }
@@ -54,6 +58,7 @@ async function configureShopDNS({
         subdomain,
         hash,
         credentials: networkConfig.gcpCredentials,
+        cname,
         ipAddresses
       })
     }
@@ -70,6 +75,7 @@ async function configureShopDNS({
           accessKeyId: networkConfig.awsAccessKeyId,
           secretAccessKey: networkConfig.awsSecretAccessKey
         },
+        cname,
         ipAddresses
       })
     }
