@@ -137,8 +137,10 @@ async function configureCDN({ shop, deployment, domains }) {
       } else {
         throw new Error(`Domain ${dvo.DomainName} is not controlled by Route53`)
       }
+    } else if (status === 'ISSUED') {
+      log.debug(`Cert already issued for ${dvo.DomainName}`)
     } else {
-      log.warn(`Unknown domain verification status: ${status}`)
+      log.warn(`Unhandled domain verification status: ${status}`)
     }
   }
 
