@@ -1,4 +1,4 @@
-name: Backend Tests
+name: Backend
 
 on:
   push:
@@ -40,6 +40,10 @@ jobs:
 
       - name: Install dependencies
         run: yarn
+
+      - name: Build frontend distribution for backend
+        run: yarn run build:dist
+        working-directory: ./shop
 
       - name: Set LOG_LEVEL
         run: echo "LOG_LEVEL=ERROR" >> $GITHUB_ENV
