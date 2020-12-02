@@ -399,21 +399,10 @@ async function createDistribution({
       Id: bucketName,
       DomainName: bucketWebsiteUrl.hostname,
       //CustomHeaders: [], // TOOD: CSP or CORS?
-      /*S3OriginConfig: {
-      OriginAccessIdentity: '' // Intentionally empty for public
-    }*/
       CustomOriginConfig: {
         HTTPPort: '80',
         HTTPSPort: '443', // required, but unused
         OriginProtocolPolicy: 'http-only'
-        /*OriginKeepaliveTimeout: 'NUMBER_VALUE',
-      OriginReadTimeout: 'NUMBER_VALUE',
-      OriginSslProtocols: {
-        Items: [
-          SSLv3 | TLSv1 | TLSv1.1 | TLSv1.2,
-        ],
-        Quantity: 'NUMBER_VALUE'
-      }*/
       }
     }
   ]
