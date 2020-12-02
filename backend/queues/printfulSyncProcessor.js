@@ -26,7 +26,7 @@ const attachToQueue = () => {
   }
 
   queue.on('completed', (job) => {
-    updateSyncStatus(job, false, false)
+    updateSyncStatus(job, false, true)
   })
   queue.on('failed', (job) => {
     updateSyncStatus(job, false)
