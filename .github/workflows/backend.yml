@@ -1,10 +1,16 @@
-name: Lint
+name: Backend Tests
 
 on:
   push:
     branches:
       - master
+    paths-ignore:
+      - "shop/**"
   pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - "shop/**"
 
 jobs:
   lint:
@@ -38,8 +44,6 @@ jobs:
       - name: Set LOG_LEVEL
         run: echo "LOG_LEVEL=ERROR" >> $GITHUB_ENV
 
-      - name: Change directory to backend
-        run: cd backend
-
       - name: Run backend tests
         run: yarn run test
+        working-directory: ./backend
