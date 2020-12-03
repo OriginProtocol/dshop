@@ -102,8 +102,12 @@ async function configureCDN({ shop, deployment, domains }) {
   let acmCertificateArn
   let cert = await getCertificate(domains[0])
   if (cert) {
+    log.debug('Found Certificate')
+
     acmCertificateArn = cert.CertificateArn
   } else {
+    log.debug('Creating Certificate')
+
     acmCertificateArn = await createCertificate({ requestId, domains })
     cert = await getCertificateByARN(acmCertificateArn)
   }
@@ -127,6 +131,8 @@ async function configureCDN({ shop, deployment, domains }) {
       })
 
       if (zoneRecord) {
+        log.debug(`Creating DNS validation record ${rr.Name}`)
+
         await route53.addRecord({
           credentials: awsCredentials,
           zone: zoneRecord.Name,
@@ -137,17 +143,17 @@ async function configureCDN({ shop, deployment, domains }) {
       } else {
         throw new Error(`Domain ${dvo.DomainName} is not controlled by Route53`)
       }
-    } else if (status === 'ISSUED') {
+    } else if (status === 'ISSUED' || status === 'SUCCESS') {
       log.debug(`Cert already issued for ${dvo.DomainName}`)
     } else {
       log.warn(`Unhandled domain verification status: ${status}`)
     }
   }
 
-  log.debug('Checking for BucketWebsite')
-
   let bucketWeb = await getBucketWebsite({ bucketName })
-  if (!bucketWeb) {
+  if (bucketWeb) {
+    log.debug('Found BucketWebsite')
+  } else {
     log.debug('Creating BucketWebsite')
 
     bucketWeb = await createBucketWebsite({ bucketName })
@@ -155,20 +161,18 @@ async function configureCDN({ shop, deployment, domains }) {
 
   bucketWeb = await getBucketWebsite({ bucketName })
 
-  log.debug('Checking for CachePolicy')
-
   let cachePolicy = await getDefaultCachePolicy()
-  if (!cachePolicy) {
+  if (cachePolicy) {
+    log.debug('Found CachePolicy')
+  } else {
     log.debug('Creating CachePolicy')
 
     cachePolicy = await createCachePolicy()
   }
 
-  log.debug('Checking for Distribution')
-
   let dist = await getDistribution(domains[0])
   if (dist) {
-    log.debug('Creating Invalidation')
+    log.debug('Distribution Found, Creating Invalidation')
 
     await createInvalidation({
       shop,
@@ -187,6 +191,8 @@ async function configureCDN({ shop, deployment, domains }) {
       cachePolicyId: cachePolicy.CachePolicy.Id
     })
   }
+
+  log.debug(`Cloudfront distribution at https://${dist.DomainName}`)
 
   return {
     cname: dist.DomainName
