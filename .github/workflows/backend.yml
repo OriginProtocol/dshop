@@ -42,7 +42,7 @@ jobs:
         run: yarn
 
       - name: Build frontend distribution for backend
-        run: yarn run build:dist
+        run: yarn run build:distmin
         working-directory: ./shop
 
       - name: Set LOG_LEVEL
