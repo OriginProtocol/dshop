@@ -279,12 +279,6 @@ const reducer = (state, action) => {
     if (['products', 'collections'].indexOf(action.target)) {
       newState = set(newState, 'hasChanges', true)
     }
-  } else if (action.type === 'hasChanges') {
-    newState = set(
-      newState,
-      'hasChanges',
-      action.value === false ? false : true
-    )
   } else if (action.type === 'setAdminLocation') {
     newState = set(newState, 'adminLocation', action.location)
   } else if (action.type === 'setStorefrontLocation') {
