@@ -144,26 +144,40 @@ async function configureCDN({ shop, deployment, domains }) {
     }
   }
 
+  log.debug('Checking for BucketWebsite')
+
   let bucketWeb = await getBucketWebsite({ bucketName })
   if (!bucketWeb) {
+    log.debug('Creating BucketWebsite')
+
     bucketWeb = await createBucketWebsite({ bucketName })
   }
 
   bucketWeb = await getBucketWebsite({ bucketName })
 
+  log.debug('Checking for CachePolicy')
+
   let cachePolicy = await getDefaultCachePolicy()
   if (!cachePolicy) {
+    log.debug('Creating CachePolicy')
+
     cachePolicy = await createCachePolicy()
   }
 
+  log.debug('Checking for Distribution')
+
   let dist = await getDistribution(domains[0])
   if (dist) {
+    log.debug('Creating Invalidation')
+
     await createInvalidation({
       shop,
       requestId,
       distributionId: dist.Id
     })
   } else {
+    log.debug('Creating Distribution')
+
     dist = await createDistribution({
       requestId,
       cnames: domains,
