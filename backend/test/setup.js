@@ -39,7 +39,7 @@ function sequelizeMigrate() {
 }
 
 before(async function () {
-  this.timeout(30000)
+  this.timeout(60000)
 
   // Create a temp directory for sqlite, shop cache, etc...
   console.log(`Using test temp dir at ${TEST_TMP_DIR}`)
