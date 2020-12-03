@@ -347,7 +347,8 @@ module.exports = function (router) {
             'hostname',
             'hasChanges',
             'listingId',
-            'walletAddress'
+            'walletAddress',
+            'printfulSyncing'
           ])
         }
       })

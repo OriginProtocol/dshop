@@ -3,7 +3,7 @@ const sortBy = require('lodash/sortBy')
 const get = require('lodash/get')
 const kebabCase = require('lodash/kebabCase')
 
-const { getLogger } = require('../../utils/logger')
+const { getLogger } = require('../../../utils/logger')
 
 const log = getLogger('utils.printful.writeProductData')
 
