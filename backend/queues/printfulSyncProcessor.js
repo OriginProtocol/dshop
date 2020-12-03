@@ -19,10 +19,13 @@ const attachToQueue = () => {
 
     if (!shopId) return
 
-    await Shop.update(
-      { printfulSyncing: status, hasChanges },
-      { where: { id: shopId } }
-    )
+    const data = { printfulSyncing: status }
+
+    if (hasChanges !== undefined) {
+      data.hasChanges = hasChanges
+    }
+
+    await Shop.update(data, { where: { id: shopId } })
   }
 
   queue.on('completed', (job) => {
