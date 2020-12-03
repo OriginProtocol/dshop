@@ -223,6 +223,8 @@ async function deploy({
     dnsProvider = 'cloudflare'
   } else if (isConfigured(networkConfig, 'aws-dns')) {
     dnsProvider = 'aws'
+  } else if (overrides.configureShopDNS) {
+    dnsProvider = 'override'
   }
 
   /**
@@ -349,9 +351,12 @@ async function deploy({
 
   /**
    * Deploy the shop to IPFS
+   *
+   * NOTE: local dev/test env always deploys to local IPFS
    */
   log.info(`Deploying shop to IPFS...`)
   if (
+    (network.ipfsApi && network.ipfsApi.includes('http://localhost')) ||
     canUseResource({
       networkConfig,
       selection: resourceSelection,
@@ -399,7 +404,7 @@ async function deploy({
     try {
       // Unlikely to occur unless there's multiple CDNs at play
       // but throw a warning anyway
-      if (cnames.length > 1) {
+      if (cnames && cnames.length > 1) {
         log.warn(
           `Multiple CNAMEs are not allowed.  Discarding all but the first. (${cnames.join(
             ', '
