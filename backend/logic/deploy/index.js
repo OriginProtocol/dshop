@@ -223,6 +223,8 @@ async function deploy({
     dnsProvider = 'cloudflare'
   } else if (isConfigured(networkConfig, 'aws-dns')) {
     dnsProvider = 'aws'
+  } else if (overrides.configureShopDNS) {
+    dnsProvider = 'override'
   }
 
   /**
@@ -314,6 +316,7 @@ async function deploy({
    * Configure the CDN(s) to point at bucket(s)
    */
   let ipAddresses = null
+  let cnames = null
   if (
     shop.enableCdn &&
     canUseResourceType({
@@ -333,7 +336,10 @@ async function deploy({
         resourceSelection
       })
       if (responses.length > 0) {
-        ipAddresses = responses.map((r) => r.ipAddress)
+        ipAddresses = responses
+          .filter((r) => r.ipAddress)
+          .map((r) => r.ipAddress)
+        cnames = responses.filter((r) => r.cname).map((r) => r.cname)
       }
     } catch (err) {
       log.error(`Unknown error configuring CDN.`)
@@ -345,9 +351,12 @@ async function deploy({
 
   /**
    * Deploy the shop to IPFS
+   *
+   * NOTE: local dev/test env always deploys to local IPFS
    */
   log.info(`Deploying shop to IPFS...`)
   if (
+    (network.ipfsApi && network.ipfsApi.includes('http://localhost')) ||
     canUseResource({
       networkConfig,
       selection: resourceSelection,
@@ -393,13 +402,24 @@ async function deploy({
   ) {
     log.info(`Configuring DNS...`)
     try {
+      // Unlikely to occur unless there's multiple CDNs at play
+      // but throw a warning anyway
+      if (cnames && cnames.length > 1) {
+        log.warn(
+          `Multiple CNAMEs are not allowed.  Discarding all but the first. (${cnames.join(
+            ', '
+          )})`
+        )
+      }
+
       await dnsConfig({
         networkConfig,
         subdomain,
         zone,
         hash: ipfsHash,
         resourceSelection,
-        ipAddresses
+        cname: cnames && cnames.length > 0 ? cnames[0] : null,
+        ipAddresses: ipAddresses && ipAddresses.length > 0 ? ipAddresses : null
       })
     } catch (err) {
       log.error(`Unknown error configuring DNS`)

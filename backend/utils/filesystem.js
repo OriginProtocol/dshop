@@ -1,6 +1,7 @@
 const fs = require('fs').promises
 const path = require('path')
 
+const { DEFAULT_CONTENT_TYPE } = require('./const')
 const { getLogger } = require('./logger')
 
 const log = getLogger('utils.filesystem')
@@ -35,6 +36,61 @@ function stripExt(fname) {
   const parts = fname.split('.')
   parts.pop()
   return parts.join('.')
+}
+
+/**
+ * Return a filename extension given a filename
+ *
+ * @param fname {string} filename to parse
+ * @returns {string} filename extension
+ */
+function getExt(fname) {
+  if (!fname.includes('.')) {
+    return null
+  }
+  const parts = fname.split('.')
+  return parts.pop()
+}
+
+/**
+ * Guess the HTTP Content-Type of a file by extension
+ *
+ * @param fname {string} filename to check
+ * @returns {string} HTTP Content-Type best guess
+ */
+function guessContentType(fname) {
+  const ext = getExt(fname)
+
+  if (!ext) {
+    return DEFAULT_CONTENT_TYPE
+  }
+
+  switch (ext) {
+    case 'html':
+    case 'htm':
+      return 'text/html'
+    case 'css':
+      return 'text/css'
+    case 'js':
+      return 'text/javascipt'
+    case 'svg':
+      return 'image/svg+xml'
+    case 'png':
+      return 'image/png'
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg'
+    case 'gif':
+      return 'image/gif'
+    case 'woff':
+      return 'font/woff'
+    case 'woff2':
+      return 'font/woff2'
+    case 'json':
+      return 'application/json'
+  }
+
+  return DEFAULT_CONTENT_TYPE
 }
 
 /**
@@ -73,5 +129,7 @@ async function walkDir(dpath, depth = 0) {
 module.exports = {
   isExt,
   stripExt,
+  getExt,
+  guessContentType,
   walkDir
 }
