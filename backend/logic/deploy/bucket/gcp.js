@@ -149,7 +149,7 @@ async function uploadFile(bucket, file, destination, attempt = 0) {
       public: true
     })
   } catch (err) {
-    if (err && err.code === 502 && attempt < 3) {
+    if (err && [502, 503].includes(err.code) && attempt < 3) {
       return await uploadFile(bucket, file, destination, attempt + 1)
     }
 
