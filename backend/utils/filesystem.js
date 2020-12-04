@@ -67,6 +67,7 @@ function guessContentType(fname) {
 
   switch (ext) {
     case 'html':
+    case 'htm':
       return 'text/html'
     case 'css':
       return 'text/css'

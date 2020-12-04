@@ -117,7 +117,7 @@ async function configureCDN({ shop, deployment, domains }) {
     const status = dvo.ValidationStatus
 
     if (status === 'FAILED') {
-      console.log(dvo)
+      log.debug(JSON.stringify(dvo))
       throw new Error('DNS Failed validation and I do not know what to do')
     } else if (status === 'PENDING_VALIDATION') {
       if (dvo.ValidationMethod !== 'DNS') {
