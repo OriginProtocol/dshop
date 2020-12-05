@@ -97,6 +97,9 @@ const DEFAULT_INFRA_RESOURCES = [
   'gcp-cdn',
   'sendgrid-email'
 ]
+const DEFAULT_AWS_REGION = 'us-east-1'
+const DEFAULT_AWS_CACHE_POLICY_NAME = 'dshop-default-cache-policy'
+const DEFAULT_CONTENT_TYPE = 'application/octet-stream'
 
 module.exports = {
   CONTRACTS,
@@ -126,5 +129,8 @@ module.exports = {
   SERVICE_PREFIX,
   EXTERNAL_IP,
   EXTERNAL_IP_SERVICE_URL,
-  DEFAULT_INFRA_RESOURCES
+  DEFAULT_INFRA_RESOURCES,
+  DEFAULT_AWS_REGION,
+  DEFAULT_AWS_CACHE_POLICY_NAME,
+  DEFAULT_CONTENT_TYPE
 }

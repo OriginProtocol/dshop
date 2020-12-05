@@ -39,7 +39,7 @@
     "id": "aws-cdn",
     "name": "AWS Cloudfront",
     "description": "AWS Cloudfront deployments",
-    "supported": false,
+    "supported": true,
     "type": "cdn",
     "depends": ["aws-files", "aws-dns"],
     "requiresConfig": ["awsAccessKeyId", "awsSecretAccessKey"]

@@ -13,8 +13,8 @@ const RateInput = ({ input, Feedback }) => {
         <input
           type="number"
           {...input('rate', false, true)}
-          max="100"
           min="0"
+          step="0.01"
         />
         <div className="input-group-append">
           <span className="input-group-text">%</span>
