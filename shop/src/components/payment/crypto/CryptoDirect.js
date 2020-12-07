@@ -36,7 +36,11 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
       })
 
       const amount = toTokenPrice(cart.total, activeToken.name)
-      const amountWei = ethers.utils.parseUnits(amount, 'ether')
+      const decimals = token.contract
+        ? await token.contract.decimals()
+        : 'ether'
+      const amountWei = ethers.utils.parseUnits(amount, decimals)
+
       const fromAddress = await wallet.signer.getAddress()
 
       const codeResponse = await post('/crypto/payment-code', {
