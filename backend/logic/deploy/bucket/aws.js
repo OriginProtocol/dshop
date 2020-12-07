@@ -4,7 +4,7 @@ const { trimStart, trimEnd } = require('lodash')
 const S3 = require('aws-sdk/clients/s3')
 const { isConfigured } = require('@origin/dshop-validation/matrix')
 
-const { walkDir } = require('../../../utils/filesystem')
+const { guessContentType, walkDir } = require('../../../utils/filesystem')
 const { assert } = require('../../../utils/validators')
 const { BucketExistence } = require('../../../utils/enums')
 const { NETWORK_ID_TO_NAME, BUCKET_PREFIX } = require('../../../utils/const')
@@ -177,13 +177,15 @@ function normalizeBucketName(name) {
 async function uploadFile(bucketName, file, destination, attempt = 0) {
   const s3 = getClient()
   const stream = fs.createReadStream(file)
+  const fname = path.parse(file).base
   try {
     return await s3
       .upload({
         Bucket: bucketName,
         Key: destination,
         ACL: 'public-read',
-        Body: stream
+        Body: stream,
+        ContentType: guessContentType(fname)
       })
       .promise()
   } catch (err) {

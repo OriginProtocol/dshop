@@ -12,8 +12,10 @@ const { defaults } = require('../config')
 const { createShopInDB } = require('../logic/shop/create')
 const { setConfig, getConfig } = require('../utils/encryptedConfig')
 const { createListing, baseListing } = require('../utils/createListing')
+const { getLogger } = require('../utils/logger')
 
 let _cookies = {}
+const log = getLogger('test.utils')
 
 function clearCookies() {
   _cookies = {}
@@ -224,7 +226,7 @@ async function createTestShop({
     shopIpfsHash: 'TestShopHash'
   }
   const listingId = await createListing({ network, pk: sellerPk, listing })
-  console.log('Created listing ID', listingId)
+  log.info('Created listing ID', listingId)
 
   // Create the shop in the DB.
   const { shop } = await createShopInDB({
@@ -497,8 +499,8 @@ class MockBullJob {
     this.id = Date.now() // unique and monotonically increasing job id.
     this.data = data
     this.queue = { name: 'testQueue' }
-    this.log = console.log
-    this.progress = (x) => console.log(`Queue progress: ${x}%`)
+    this.log = log.info
+    this.progress = (x) => log.info(`Queue progress: ${x}%`)
   }
 }
 

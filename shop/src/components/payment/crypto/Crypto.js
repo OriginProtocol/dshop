@@ -17,18 +17,24 @@ import TokenList from './_TokenList'
 const waitForAllowance = ({ wallet, marketplace, amount, token }) => {
   return new Promise((resolve, reject) => {
     wallet.signer.getAddress().then((address) => {
-      function checkAllowance() {
-        token.contract
-          .allowance(address, marketplace.address)
-          .then((allowance) => {
-            const allowanceEth = ethers.utils.formatUnits(allowance, 'ether')
-            if (allowanceEth >= amount) {
-              resolve()
-            } else {
-              setTimeout(checkAllowance, 5000)
-            }
-          })
-          .catch(reject)
+      async function checkAllowance() {
+        try {
+          const decimals = await token.contract.decimals()
+          const allowance = await token.contract.allowance(
+            address,
+            marketplace.address
+          )
+          // TODO: formatUnits returns string, Evaluate doing
+          // parseFloat before the comparison
+          const allowanceEth = ethers.utils.formatUnits(allowance, decimals)
+          if (allowanceEth >= amount) {
+            resolve()
+          } else {
+            setTimeout(checkAllowance, 5000)
+          }
+        } catch (err) {
+          reject(err)
+        }
       }
       checkAllowance()
     })

@@ -1,9 +1,9 @@
 const queues = require('./queues')
 
-const downloadProductData = require('../scripts/printful/downloadProductData')
-const writeProductData = require('../scripts/printful/writeProductData')
-const downloadPrintfulMockups = require('../scripts/printful/downloadPrintfulMockups')
-const resizePrintfulMockups = require('../scripts/printful/resizePrintfulMockups')
+const downloadProductData = require('../logic/printful/sync/downloadProductData')
+const writeProductData = require('../logic/printful/sync/writeProductData')
+const downloadPrintfulMockups = require('../logic/printful/sync/downloadPrintfulMockups')
+const resizePrintfulMockups = require('../logic/printful/sync/resizePrintfulMockups')
 
 const { Shop } = require('../models')
 
@@ -11,6 +11,36 @@ const attachToQueue = () => {
   const queue = queues['printfulSyncQueue']
   queue.process(processor)
   queue.resume() // Start if paused
+
+  const updateSyncStatus = async (job, status, hasChanges) => {
+    if (!job.data) return
+
+    const { shopId } = job.data
+
+    if (!shopId) return
+
+    const data = { printfulSyncing: status }
+
+    if (hasChanges !== undefined) {
+      data.hasChanges = hasChanges
+    }
+
+    await Shop.update(data, { where: { id: shopId } })
+  }
+
+  queue.on('completed', (job) => {
+    updateSyncStatus(job, false, true)
+  })
+  queue.on('failed', (job) => {
+    updateSyncStatus(job, false)
+  })
+
+  queue.on('waiting', (job) => {
+    updateSyncStatus(job, true)
+  })
+  queue.on('active', (job) => {
+    updateSyncStatus(job, true)
+  })
 }
 
 const processor = async (job) => {
@@ -24,13 +54,13 @@ const processor = async (job) => {
   const {
     OutputDir,
     apiKey,
-    shopId,
     smartFetch,
     forceRefetchIds,
     refreshImages
   } = job.data
 
   let taskStartTime = Date.now()
+
   const updatedIds = await downloadProductData({
     OutputDir,
     printfulApi: apiKey,
@@ -61,13 +91,6 @@ const processor = async (job) => {
 
   await resizePrintfulMockups({ OutputDir, force: refreshImages })
   log(90, `Resize mockups, Time Taken: ${(Date.now() - taskStartTime) / 1000}s`)
-
-  if (shopId) {
-    const shop = await Shop.findOne({ where: { id: shopId } })
-    shop.update({
-      hasChanges: true
-    })
-  }
 
   log(
     100,

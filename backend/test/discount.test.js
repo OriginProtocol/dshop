@@ -13,7 +13,7 @@ const {
 } = require('./utils')
 const { processor } = require('../queues/makeOfferProcessor')
 const { Discount } = require('../models')
-const { OrderPaymentStatuses, OrderPaymentTypes } = require('../enums')
+const { OrderPaymentStatuses, OrderPaymentTypes } = require('../utils/enums')
 
 describe('Discounts', () => {
   let network,

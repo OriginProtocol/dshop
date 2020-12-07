@@ -26,8 +26,16 @@ async function checkStripeConfig(shop, shopConfig, networkConfig) {
     log.info(`[Shop ${shop.id}] Stripe not configured`)
     return { success: true }
   }
-
   log.info(`[Shop ${shop.id}] Checking Stripe config`)
+
+  // Check the secret key prefix to make sure
+  if (!shopConfig.stripeBackend.startsWith('sk_live_')) {
+    const error = shopConfig.stripeBackend.startsWith('sk_test_')
+      ? 'Test API key'
+      : 'Invalid API key'
+    return { success: false, error }
+  }
+
   let success = false
   try {
     success = await webhookValidation(
@@ -64,7 +72,7 @@ async function checkStripePayments(shopId, shopConfig) {
 
   // Load the last 30 days shop's orders paid with Stripe and get their encrypted IPFS hashes.
   // Get the unique paymentCode for each of the orders.
-  const startOfDay = dayjs().endOf('day')
+  const startOfDay = dayjs()
   const thirtyDaysAgo = startOfDay.subtract(30, 'days')
   const orders = await Order.findAll({
     where: {
