@@ -101,6 +101,10 @@
       "title": "Header Image",
       "type": "media"
     }, {
+      "id": "featuredTitle",
+      "title": "Featured Content Title",
+      "type": "text"
+    }, {
       "id": "featuredProducts",
       "title": "Featured Products",
       "type": "products_list"
