@@ -6,6 +6,7 @@ const { hasNS, verifyDNS } = require('../utils/dns')
 const { decryptConfig } = require('../utils/encryptedConfig')
 const { Network, ShopDeployment, ShopDomain } = require('../models')
 const { ShopDomainStatuses } = require('../utils/enums')
+const { DEFAULT_INFRA_RESOURCES } = require('../utils/const')
 
 const { authSellerAndShop, authRole } = require('./_auth')
 
@@ -57,7 +58,9 @@ module.exports = function (router) {
             networkConfig,
             shop: req.shop,
             deployment: deployments[0],
-            domains
+            domains,
+            resourceSelection:
+              networkConfig.defaultResourceSelection || DEFAULT_INFRA_RESOURCES
           })
         }
       }
