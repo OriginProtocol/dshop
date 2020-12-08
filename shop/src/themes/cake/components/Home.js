@@ -14,6 +14,7 @@ const App = () => {
     'home.headerImage.0.url'
   )}`
   const headerText = get(themeVars, 'home.headerText')
+  const featuredTitle = get(themeVars, 'home.featuredTitle')
 
   return (
     <>
@@ -37,7 +38,7 @@ const App = () => {
 
       <div className="container mb-20 text-center">
         <h2 className="text-2xl sm:text-5xl leading-tight font-header font-bold mb-20">
-          Featured Desserts
+          {featuredTitle}
         </h2>
         <Products cols={2} limit={2} onlyFeatured />
       </div>
