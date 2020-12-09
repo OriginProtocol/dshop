@@ -50,8 +50,10 @@ const EditOptions = ({
         </div>
         <div>
           <TokenComponent
-            options={formState.options || []}
-            onChangeTokenComponent={(options) => setFormState({ options })}
+            elements={formState.individualOpts || []}
+            onChangeTokenComponent={(newElements) =>
+              setFormState({ individualOpts: newElements })
+            }
             disabled={disabled}
           />
           {Feedback('options')}

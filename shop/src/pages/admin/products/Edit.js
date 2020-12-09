@@ -22,7 +22,7 @@ import Link from 'components/Link'
 import Redirect from 'components/Redirect'
 import ImagePicker from 'components/ImagePicker'
 import DeleteButton from './_Delete'
-import EditOption from './_EditOption'
+import EditOptions from './_EditOption'
 import EditVariants from './_EditVariants'
 
 import LinkCollections from './_LinkCollections'
@@ -567,7 +567,7 @@ const EditProduct = () => {
               <>
                 {(formState.options || []).map((option, index) => {
                   return (
-                    <EditOption
+                    <EditOptions
                       key={index}
                       label={
                         <fbt desc="admin.products.optionTitle">
@@ -584,7 +584,7 @@ const EditProduct = () => {
                       }
                       formState={{
                         title: option,
-                        options: formState.availableOptions[index]
+                        individualOpts: formState.availableOptions[index]
                       }}
                       setFormState={(newState) => {
                         const updatedState = {
@@ -598,9 +598,9 @@ const EditProduct = () => {
                           updatedState.options[index] = newState.title
                         }
 
-                        if (keysToUpdate.includes('options')) {
+                        if (keysToUpdate.includes('individualOpts')) {
                           updatedState.availableOptions[index] =
-                            newState.options
+                            newState.individualOpts
 
                           updatedState.variants = generateVariants({
                             ...formState,

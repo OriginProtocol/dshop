@@ -2,16 +2,8 @@ import React, { useState } from 'react'
 import fbt from 'fbt'
 import Creatable from 'react-select/creatable'
 
-const TokenComponent = ({ options, onChangeTokenComponent, disabled }) => {
+const TokenComponent = ({ elements, onChangeTokenComponent, disabled }) => {
   const [inputValue, setInputValue] = useState('')
-
-  function handleOnChange(valueArray, options) {
-    const transformValueArray = (arr) => (arr ? arr.map((v) => v.value) : [])
-    const newOptions = transformValueArray(valueArray)
-    console.log('Previously, Options were ', options)
-    console.log('New Options are ', newOptions)
-    onChangeTokenComponent(newOptions)
-  }
 
   return (
     <Creatable
@@ -20,7 +12,9 @@ const TokenComponent = ({ options, onChangeTokenComponent, disabled }) => {
       isMulti
       isDisabled={disabled}
       menuIsOpen={false}
-      onChange={(value) => handleOnChange(value, options)}
+      onChange={(value) =>
+        onChangeTokenComponent(value ? value.map((v) => v.value) : [])
+      }
       onInputChange={(inputValue) => setInputValue(inputValue)}
       onKeyDown={(event) => {
         if (!inputValue) return
@@ -29,7 +23,7 @@ const TokenComponent = ({ options, onChangeTokenComponent, disabled }) => {
           case 'Tab':
           case ',':
             setInputValue('')
-            onChangeTokenComponent([...options, inputValue])
+            onChangeTokenComponent([...elements, inputValue])
             event.preventDefault()
         }
       }}
@@ -37,7 +31,7 @@ const TokenComponent = ({ options, onChangeTokenComponent, disabled }) => {
         'Separate options with a comma',
         'admin.products.optionValuesPlaceholder'
       )}
-      value={options.map((label) => ({ label, value: label }))}
+      value={elements.map((label) => ({ label, value: label }))}
     />
   )
 }
