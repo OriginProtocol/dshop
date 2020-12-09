@@ -1,40 +1,9 @@
-import React, { useState } from 'react'
-import CreatableSelect from 'react-select/creatable'
+import React from 'react'
 import fbt from 'fbt'
-
 import { formInput, formFeedback } from 'utils/formHelpers'
+// import useSetState from 'utils/useSetState'
 
-const TokenComponent = ({ options, onChange, disabled }) => {
-  const [inputValue, setInputValue] = useState('')
-
-  return (
-    <CreatableSelect
-      components={{ DropdownIndicator: null }}
-      inputValue={inputValue}
-      isMulti
-      isDisabled={disabled}
-      menuIsOpen={false}
-      onChange={(value) => onChange(value ? value.map((v) => v.value) : [])}
-      onInputChange={(inputValue) => setInputValue(inputValue)}
-      onKeyDown={(event) => {
-        if (!inputValue) return
-        switch (event.key) {
-          case 'Enter':
-          case 'Tab':
-          case ',':
-            setInputValue('')
-            onChange([...options, inputValue])
-            event.preventDefault()
-        }
-      }}
-      placeholder={fbt(
-        'Separate options with a comma',
-        'admin.products.optionValuesPlaceholder'
-      )}
-      value={options.map((label) => ({ label, value: label }))}
-    />
-  )
-}
+import TokenComponent from './_TokenComponent'
 
 const EditOptions = ({
   formState,
@@ -82,7 +51,7 @@ const EditOptions = ({
         <div>
           <TokenComponent
             options={formState.options || []}
-            onChange={(options) => setFormState({ options })}
+            onChangeTokenComponent={(options) => setFormState({ options })}
             disabled={disabled}
           />
           {Feedback('options')}
