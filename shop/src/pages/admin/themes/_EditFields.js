@@ -124,6 +124,8 @@ const EditFields = () => {
       }
     })
 
+    dispatch({ type: 'reload', target: 'shopConfig' })
+
     dispatch({
       type: 'toast',
       message: (
