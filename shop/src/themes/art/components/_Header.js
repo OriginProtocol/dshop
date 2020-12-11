@@ -50,6 +50,13 @@ const Header = () => {
 
   const bg = isHome && bgImageRelUrl
 
+  const homeLogo = get(themeVars, 'home.headerLogo.0.url')
+
+  let logoUrl = isHome && homeLogo ? homeLogo : config.logo
+  if (logoUrl) {
+    logoUrl = `${config.dataSrc}${logoUrl}`
+  }
+
   const activeClass = ` border-b ${bg ? 'border-white' : 'border-link'}`
 
   function toggleMobileMenu() {
@@ -68,7 +75,16 @@ const Header = () => {
         to="/"
         className={`text-2xl font-header ${bg ? 'text-white' : 'text-black'}`}
       >
-        {config.title}
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            style={{
+              height: '32px'
+            }}
+          />
+        ) : (
+          config.title
+        )}
       </Link>
       <div className="flex flex-row text-sm">
         <Link

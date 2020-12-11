@@ -248,6 +248,7 @@ const PaymentSettings = () => {
             type: 'setConfigSimple',
             config: { ...config, ...shopConfig }
           })
+          dispatch({ type: 'reload', target: 'shopConfig' })
           setState({ hasChanges: false })
           setSaving(false)
         } catch (err) {
