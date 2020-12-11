@@ -57,7 +57,8 @@ function useToken(activeToken = {}, totalUsd) {
             hasBalance,
             hasAllowance: true,
             loading: false,
-            error: null
+            error: null,
+            contract: null
           })
         } else if (activeToken.address) {
           const contract = new ethers.Contract(
