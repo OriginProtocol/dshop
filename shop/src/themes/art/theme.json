@@ -82,7 +82,8 @@
     "fields": [{
       "id": "headerLogo",
       "title": "Homepage Logo",
-      "type": "media"
+      "type": "media",
+      "allowPNG": true
     }, {
       "id": "headerImage",
       "title": "Header Image",
