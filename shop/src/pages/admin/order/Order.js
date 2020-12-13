@@ -19,6 +19,7 @@ const AdminOrder = () => {
   const { order, loading } = useAdminOrder(orderId)
   const [{ admin }] = useStateValue()
   const urlPrefix = `/admin/orders/${orderId}`
+  const offerState = get(order, 'offerStatus')
   const prevOrderId = get(order, 'prevOrderId')
   const nextOrderId = get(order, 'nextOrderId')
 
@@ -63,7 +64,10 @@ const AdminOrder = () => {
             </NavLink>
           </li>
         )}
-        {!/^admin$/i.test(admin.role) ? null : (
+        {/*If 'offerState' is undefined, the payment was recorded off-chain. Therefore,
+          if the user does not have an 'admin' role, or if the payment didn't go through the Origin contract, 
+          refrain from loading the 'Contract' tab*/}
+        {!/^admin$/i.test(admin.role) || !offerState ? null : (
           <li className="nav-item">
             <NavLink className="nav-link" to={`${urlPrefix}/contract`}>
               <fbt desc="Contract">Contract</fbt>
