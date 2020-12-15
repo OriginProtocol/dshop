@@ -1,4 +1,4 @@
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import { useEffect, useReducer } from 'react'
 
 import usePrice from 'utils/usePrice'

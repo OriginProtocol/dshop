@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import { get } from '@origin/ipfs'
 import _get from 'lodash/get'
 

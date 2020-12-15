@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useReducer } from 'react'
 import { useHistory } from 'react-router-dom'
 import get from 'lodash/get'
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import useBackendApi from 'utils/useBackendApi'
 import addData from 'data/addData'
 import useConfig from 'utils/useConfig'
