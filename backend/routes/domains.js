@@ -61,7 +61,9 @@ module.exports = function (router) {
           where: { shopId: req.shop.id }
         })
         dres.forEach((d) => {
-          domains.push(d.domain)
+          if (!domains.includes(d.domain)) {
+            domains.push(d.domain)
+          }
         })
 
         if (req.shop.enableCdn) {
