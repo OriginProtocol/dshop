@@ -2,7 +2,7 @@ const chai = require('chai')
 chai.use(require('chai-string'))
 const expect = chai.expect
 const fetch = require('node-fetch')
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 
 const {
   getTestWallet,

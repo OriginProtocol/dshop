@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import get from 'lodash/get'
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import fbt, { FbtParam } from 'fbt'
 import useConfig from 'utils/useConfig'
 import usePrice from 'utils/usePrice'

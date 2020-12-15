@@ -2,7 +2,7 @@
 // on the walletAddress field in the shop's config.json on disk.
 
 const fs = require('fs')
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 
 const { Shop } = require('../../models')
 const { DSHOP_CACHE } = require('../../utils/const')
