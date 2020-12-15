@@ -21,6 +21,7 @@ const {
 } = require('../../../utils/const')
 const route53 = require('../../../utils/dns/route53')
 const { assert } = require('../../../utils/validators')
+const { allIn } = require('../../../utils/array')
 const { getLogger } = require('../../../utils/logger')
 
 const log = getLogger('logic.deploy.cdn.aws')
@@ -101,7 +102,8 @@ async function configureCDN({ shop, deployment, domains }) {
 
   let acmCertificateArn
   let cert = await getCertificate(domains[0])
-  if (cert) {
+
+  if (cert && allIn(cert.SubjectAlternativeNames, domains)) {
     log.debug('Found Certificate')
 
     acmCertificateArn = cert.CertificateArn
@@ -130,7 +132,7 @@ async function configureCDN({ shop, deployment, domains }) {
         DNSName: dvo.DomainName
       })
 
-      if (zoneRecord) {
+      if (zoneRecord && rr) {
         log.debug(`Creating DNS validation record ${rr.Name}`)
 
         await route53.addRecord({

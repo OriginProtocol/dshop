@@ -47,11 +47,22 @@ module.exports = function (router) {
       if (deployments) {
         const network = await Network.findOne({ where: { active: true } })
         const networkConfig = decryptConfig(network.config)
-
+        /**
+         * This is potentially incompatible with deploy(), as that takes
+         * subdomain as a parameter.  I don't think that parameter should ever
+         * be different than the auth token, so in practice they should not
+         * diverge but it can't be guaranteed unless these implementations
+         * are changed to match.
+         *
+         * TODO: Make deploy() match this?
+         */
+        const domains = [`${req.shop.authToken}.${networkConfig.domain}`]
         const dres = await ShopDomain.findAll({
           where: { shopId: req.shop.id }
         })
-        const domains = dres.map((d) => d.domain)
+        dres.forEach((d) => {
+          domains.push(d.domain)
+        })
 
         if (req.shop.enableCdn) {
           await configureCDN({
