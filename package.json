@@ -62,7 +62,8 @@
       "solc",
       "sequelize",
       "sequelize-cli",
-      "ipfs"
+      "ipfs",
+      "tailwindcss"
     ],
     "ignorePaths": [],
     "schedule": "before 11am",
