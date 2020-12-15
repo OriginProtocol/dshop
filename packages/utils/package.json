@@ -19,8 +19,8 @@
     "logplease": "^1.2.15"
   },
   "devDependencies": {
-    "eslint": "7.13.0",
-    "prettier": "2.1.2"
+    "eslint": "7.15.0",
+    "prettier": "2.2.1"
   },
   "prettier": {
     "semi": false,

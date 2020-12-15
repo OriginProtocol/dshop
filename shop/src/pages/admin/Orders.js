@@ -217,6 +217,7 @@ const AdminOrdersTable = ({ orders }) => {
 
 const fields = `
   Order,orderId
+  Date,createdAt,date
   Payment,data.paymentMethod.label
   Total,data.total,number
   Donation,data.donation,number
@@ -250,6 +251,8 @@ const AdminOrdersCSV = ({ orders }) => {
               value = (value / 100).toFixed(2)
             } else if (filter === 'product') {
               value = value.map((i) => i.product).join(',')
+            } else if (filter === 'date') {
+              value = dayjs(value).format('YYYY-MM-DD HH:mm:ss')
             } else if (filter === 'quantity') {
               value = value.map((i) => i.quantity).join(',')
             }

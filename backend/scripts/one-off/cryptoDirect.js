@@ -1,7 +1,7 @@
 // A utility script for backfilling data for the direct crypto launch.
 
 const fs = require('fs')
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 
 const { Event, Shop } = require('../../models')
 const { getConfig, setConfig } = require('../../utils/encryptedConfig')
