@@ -37,7 +37,7 @@
     "bottleneck": "^2.19.5",
     "bs58": "^4.0.1",
     "bull": "^3.18.0",
-    "bull-board": "^0.10.0",
+    "bull-board": "^1.0.0",
     "cids": "^1.0.2",
     "cloudflare": "^2.7.0",
     "commander": "^6.1.0",
