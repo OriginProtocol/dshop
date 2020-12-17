@@ -20,7 +20,7 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
   const [tokenPrice, setTokenPrice] = useState('')
   const [walletBalance, setWalletBalance] = useState({
     isZero: false
-  }) //create an object called walletBalance, assuming for now that the buyer has some ETH in it already. Credit: https://www.geeksforgeeks.org/reactjs-usestate-hook/
+  }) //create an object called walletBalance, assuming for now that the buyer has some ETH in it already.
   const token = useToken(activeToken, cart.total)
   const { toTokenPrice } = usePrice(config.currency)
   const wallet = useWallet({ needSigner: true })
@@ -96,12 +96,9 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
   const acceptedTokens = config.acceptedTokens
 
   useEffect(() => {
-    async function queryWalletBalance() {
-      return await wallet.signer.getBalance()
-    } //returns a promise that, if resolved, will give the balance of the wallet in wei (BigNumber)
-
     onChange(
-      queryWalletBalance()
+      wallet.signer
+        .getBalance() //returns a promise that, if resolved, will give the balance of the wallet in wei (BigNumber)
         .then((res) =>
           setWalletBalance({
             isZero: res.isZero() //boolean to check whether balance is zero. Reference: https://docs.ethers.io/v5/api/utils/bignumber/
@@ -112,7 +109,6 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
   }, [wallet.address, activeToken.id, cryptoSelected])
   // The 'useEffect' hook above verifies that the buyer's wallet has a positive ETH balance,
   // and runs every time they change their connected crypto account, the payment token of choice, or the 'Cryptocurrency' payment option.
-  // Credit: https://dmitripavlutin.com/react-useeffect-explanation/
 
   useEffect(() => {
     const newState = {
