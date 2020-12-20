@@ -215,10 +215,14 @@ const AdminOrdersTable = ({ orders }) => {
   )
 }
 
+// fields evaluates to type: Array<Array<string>>
+// [["Order", "orderId"], ["Date","createdAt", "date"], ..... ["Country", "data.userInfo.country"]]
 const fields = `
   Order,orderId
   Date,createdAt,date
   Payment,data.paymentMethod.label
+  Payment Status,paymentStatus
+  Shipping Method,data.shipping.label
   Total,data.total,number
   Donation,data.donation,number
   Item IDs,data.items,product
@@ -238,7 +242,7 @@ const fields = `
   .map((i) => i.trim().split(','))
 
 const AdminOrdersCSV = ({ orders }) => {
-  const cols = fields.map((f) => f[0]).join(',')
+  const cols = fields.map((f) => f[0]).join(',') //returns a string like so: "Order,Date,Payment....,Country"
   const data = orders
     .slice()
     .reverse()
@@ -250,11 +254,23 @@ const AdminOrdersCSV = ({ orders }) => {
             if (filter === 'number') {
               value = (value / 100).toFixed(2)
             } else if (filter === 'product') {
-              value = value.map((i) => i.product).join(',')
+              value = value
+                .map((item) => {
+                  if (item.options.length) {
+                    return (
+                      item.title +
+                      ' - ' +
+                      item.options.map((opt) => opt).join(' / ')
+                    )
+                  } else {
+                    return item.title
+                  }
+                })
+                .join(', ')
             } else if (filter === 'date') {
               value = dayjs(value).format('YYYY-MM-DD HH:mm:ss')
             } else if (filter === 'quantity') {
-              value = value.map((i) => i.quantity).join(',')
+              value = value.map((i) => i.quantity).join(', ')
             }
             return '"' + value + '"'
           })
