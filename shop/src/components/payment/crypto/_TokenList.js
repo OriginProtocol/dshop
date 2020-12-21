@@ -41,7 +41,7 @@ const TokenList = ({
                   onChange={() => setActiveToken(token)}
                 />
                 <div className={`token-logo${isActive ? ' active' : ''}`}>
-                  <img src={`images/payment/${token.name.toLowerCase()}.svg`} />
+                  <img src={`https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${token.address}/logo.png`} />
                 </div>
                 <div>{token.name}</div>
               </td>
