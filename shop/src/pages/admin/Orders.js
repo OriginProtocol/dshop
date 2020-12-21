@@ -220,12 +220,12 @@ const AdminOrdersTable = ({ orders }) => {
 const fields = `
   Order,orderId
   Date,createdAt,date
-  Payment,data.paymentMethod.label
+  Payment Method,data.paymentMethod.label
   Payment Status,paymentStatus
-  Shipping Method,data.shipping.label
-  Total,data.total,number
+  Payment Total,data.total,number
   Donation,data.donation,number
-  Item IDs,data.items,product
+  Shipping Method,data.shipping.label
+  Items,data.items,product
   Quantity,data.items,quantity
   First Name,data.userInfo.firstName
   Last Name,data.userInfo.lastName
