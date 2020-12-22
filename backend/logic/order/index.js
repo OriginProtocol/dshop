@@ -346,7 +346,7 @@ async function processNewOrder({
   }
   if (!skipDiscord) {
     try {
-      await discordWebhook({
+      await discordWebhook.postNewOrderMessage({
         url: networkConfig.discordWebhook,
         orderId: fqId,
         shopName: shop.name,
