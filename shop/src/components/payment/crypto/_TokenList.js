@@ -3,6 +3,8 @@ import fbt from 'fbt'
 
 import usePrice from 'utils/usePrice'
 
+const Web3Utils = require('web3-utils')
+
 const TokenList = ({
   acceptedTokens,
   activeToken,
@@ -41,7 +43,11 @@ const TokenList = ({
                   onChange={() => setActiveToken(token)}
                 />
                 <div className={`token-logo${isActive ? ' active' : ''}`}>
-                  <img src={`https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${token.address}/logo.png`} />
+                  <img
+                    src={`https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${Web3Utils.toChecksumAddress(
+                      token.address
+                    )}/logo.png`} //Reference: https://developer.trustwallet.com/add_new_asset/for-developers
+                  />
                 </div>
                 <div>{token.name}</div>
               </td>
