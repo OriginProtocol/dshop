@@ -45,7 +45,7 @@ function getPublicUrl(hostname, domain, backendUrl) {
  */
 function getDataUrl(hostname, dataDir, domain, backendUrl) {
   const publicUrl = getPublicUrl(hostname, domain, backendUrl)
-  return `${publicUrl}/${dataDir}/`
+  return `${publicUrl}/${encodeURIComponent(dataDir)}/`
 }
 
 /**
