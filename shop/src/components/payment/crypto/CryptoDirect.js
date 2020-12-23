@@ -18,6 +18,9 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
   const [{ cart }, dispatch] = useStateValue()
   const [activeToken, setActiveToken] = useState({})
   const [tokenPrice, setTokenPrice] = useState('')
+  const [walletBalance, setWalletBalance] = useState({
+    isZero: false
+  }) //create an object called walletBalance, assuming for now that the buyer has some ETH in it already.
   const token = useToken(activeToken, cart.total)
   const { toTokenPrice } = usePrice(config.currency)
   const wallet = useWallet({ needSigner: true })
@@ -97,14 +100,31 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
   const acceptedTokens = config.acceptedTokens
 
   useEffect(() => {
+    onChange(
+      wallet.signer
+        .getBalance() //returns a promise that, if resolved, will give the balance of the wallet in wei (BigNumber)
+        .then((res) =>
+          setWalletBalance({
+            isZero: res.isZero() //boolean to check whether balance is zero. Reference: https://docs.ethers.io/v5/api/utils/bignumber/
+          })
+        )
+        .catch((err) => console.log('Failed to query wallet balance.\n' + err))
+    )
+  }, [wallet.address, activeToken.id, cryptoSelected])
+  // The 'useEffect' hook above verifies that the buyer's wallet has a positive ETH balance,
+  // and runs every time they change their connected crypto account, the payment token of choice, or the 'Cryptocurrency' payment option.
+
+  useEffect(() => {
     const newState = {
       submit: 0,
       disabled:
         wallet.status !== 'enabled' ||
         !activeToken.id ||
         !token.hasBalance ||
-        token.loading
+        token.loading ||
+        walletBalance.isZero
     }
+
     if (activeToken.id) {
       newState.buttonText = `Pay ${toTokenPrice(
         cart.total,
@@ -112,6 +132,7 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
       )} ${activeToken.name}`
       setTokenPrice(newState.buttonText)
     }
+
     onChange(newState)
     dispatch({ type: 'updateActiveToken', token: activeToken.id })
   }, [activeToken.id, token.loading, cryptoSelected])
@@ -174,7 +195,18 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
           ) : !token.hasBalance ? (
             <div className="alert alert-danger">
               <fbt desc="checkout.payment.crypto.insufficientBalance">
-                Insufficient balance
+                Insufficient
+                <fbt:param name="activeToken">{activeToken.name}</fbt:param>
+                balance
+              </fbt>
+            </div>
+          ) : null}
+
+          {!activeToken.id || token.loading ? null : walletBalance.isZero ? (
+            <div className="alert alert-danger">
+              <fbt desc="checkout.payment.crypto.ethBalanceZero">
+                You will need some ETH to pay for gas fees. Please deposit some
+                Ether and refresh the page to continue.
               </fbt>
             </div>
           ) : null}
