@@ -1,3 +1,4 @@
+const discordWebhook = require('../utils/discordWebhook')
 const queues = require('./queues')
 
 /**
@@ -12,6 +13,20 @@ function runProcessors() {
   require('./txProcessor').attachToQueue()
   require('./deploymentProcessor').attachToQueue()
   require('./dnsStatusProcessor').attachToQueue()
+
+  const failureCallback = (job, error) => {
+    discordWebhook.postQueueError({
+      queueName: job.queue.name,
+      errorMessage: error.message,
+      jobId: job.id,
+      attempts: job.attemptsMade,
+      stacktrace: error.trace
+    })
+  }
+
+  for (const queueName in queues) {
+    queues[queueName].on('failed', failureCallback)
+  }
 }
 
 module.exports = {
