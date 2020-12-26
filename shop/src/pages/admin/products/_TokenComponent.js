@@ -12,9 +12,15 @@ const TokenComponent = ({ elements, onChangeTokenComponent, disabled }) => {
       isMulti
       isDisabled={disabled}
       menuIsOpen={false}
-      onChange={(value) =>
-        onChangeTokenComponent(value ? value.map((v) => v.value) : [])
+      value={elements.map((label) => ({ label, value: label }))}
+      onChange={(valueArray) =>
+        onChangeTokenComponent(valueArray ? valueArray.map((v) => v.value) : [])
       }
+      /* 
+          If an element in the Creatable component is removed, update the parent (onChangeTokenComponent) with a modified list of elements.
+          When the last element is removed, valueArray === null (react-select version 3.1.1).
+          Element addition is handled via 'onInputChange' and 'onKeyDown'.
+       */
       onInputChange={(inputValue) => setInputValue(inputValue)}
       onKeyDown={(event) => {
         if (!inputValue) return
@@ -31,7 +37,6 @@ const TokenComponent = ({ elements, onChangeTokenComponent, disabled }) => {
         'Separate options with a comma',
         'admin.products.optionValuesPlaceholder'
       )}
-      value={elements.map((label) => ({ label, value: label }))}
     />
   )
 }
