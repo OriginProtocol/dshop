@@ -97,14 +97,20 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
 
   useEffect(() => {
     onChange(
-      wallet.signer
-        .getBalance() //returns a promise that, if resolved, will give the balance of the wallet in wei (BigNumber)
-        .then((res) =>
-          setWalletBalance({
-            isZero: res.isZero() //boolean to check whether balance is zero. Reference: https://docs.ethers.io/v5/api/utils/bignumber/
-          })
-        )
-        .catch((err) => console.log('Failed to query wallet balance.\n' + err))
+      (() => {
+        if (wallet.signer) {
+          wallet.signer
+            .getBalance() //returns a promise that, if resolved, will give the balance of the wallet in wei (BigNumber)
+            .then((res) =>
+              setWalletBalance({
+                isZero: res.isZero() //boolean to check whether balance is zero. Reference: https://docs.ethers.io/v5/api/utils/bignumber/
+              })
+            )
+            .catch((err) =>
+              console.log('Failed to query wallet balance.\n' + err)
+            )
+        }
+      })()
     )
   }, [wallet.address, activeToken.id, cryptoSelected])
   // The 'useEffect' hook above verifies that the buyer's wallet has a positive ETH balance,
