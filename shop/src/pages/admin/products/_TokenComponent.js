@@ -2,6 +2,11 @@ import React, { useState } from 'react'
 import fbt from 'fbt'
 import Creatable from 'react-select/creatable'
 
+/**
+ * @param (prop) elements: Array<string> The individual elements under a particular _option_
+ * @param (prop) onChangeTokenComponent: function(Array) => undefined [a function which accepts an Array as an argument]
+ * @param (prop) disabled: boolean
+ */
 const TokenComponent = ({ elements, onChangeTokenComponent, disabled }) => {
   const [inputValue, setInputValue] = useState('')
 

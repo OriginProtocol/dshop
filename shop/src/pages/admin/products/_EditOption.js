@@ -1,10 +1,17 @@
 import React from 'react'
 import fbt from 'fbt'
 import { formInput, formFeedback } from 'utils/formHelpers'
-// import useSetState from 'utils/useSetState'
 
 import TokenComponent from './_TokenComponent'
 
+/**
+ * @param (prop) formState: Object
+ * @param (prop) setFormState: async function(Object) => undefined [a function which accepts an Object as an argument; suggested use: set the form's state]
+ * @param (prop) label: undefined
+ * @param (prop) onRemove: function() => undefined [can be used to render the removal of the component]
+ * @param (prop) placeholder: string [optional; can be used to display placeholder text]
+ * @param (prop) disabled: boolean [used to disable the component's input]
+ */
 const EditOptions = ({
   formState,
   setFormState,
