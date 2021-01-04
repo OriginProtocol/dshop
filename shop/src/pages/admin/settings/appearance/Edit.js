@@ -13,6 +13,7 @@ import { useStateValue } from 'data/state'
 import Link from 'components/Link'
 import UploadFile from './_UploadFile'
 import SocialLinks from './social-links/SocialLinks'
+import FormActions from '../FormActions'
 
 function reducer(state, newState) {
   return { ...state, ...newState }
@@ -71,21 +72,6 @@ const AppearanceSettings = () => {
 
     return () => clearTimeout(timeout)
   }, [config && config.about])
-
-  const actions = (
-    <div className="actions">
-      <button type="button" className="btn btn-outline-primary">
-        <fbt desc="Cancel">Cancel</fbt>
-      </button>
-      <button
-        type="submit"
-        className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
-        disabled={saving}
-      >
-        <fbt desc="Update">Update</fbt>
-      </button>
-    </div>
-  )
 
   return (
     <form
@@ -146,7 +132,14 @@ const AppearanceSettings = () => {
         </Link>
         <span className="chevron" />
         <fbt desc="Appearance">Appearance</fbt>
-        {actions}
+        <FormActions
+          hasChanges={state.hasChanges}
+          workInProgress={state.saving}
+          cancelSubmission={() => {
+            setState({ hasChanges: false })
+            dispatch({ type: 'reload', target: 'shopConfig' })
+          }}
+        />
       </h3>
       <div className="row">
         <div className="shop-settings col-md-8 col-lg-9">
@@ -324,7 +317,17 @@ const AppearanceSettings = () => {
           <SocialLinks socialLinks={state} setSocialLinks={setState} />
         </div>
       </div>
-      <div className="footer-actions">{actions}</div>
+      <div className="footer-actions">
+        <FormActions
+          hasChanges={state.hasChanges}
+          workInProgress={state.saving}
+          cancelSubmission={() => {
+            setState({ hasChanges: false })
+            setAboutText('')
+            dispatch({ type: 'reload', target: 'shopConfig' })
+          }}
+        />
+      </div>
     </form>
   )
 }
