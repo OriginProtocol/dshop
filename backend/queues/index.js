@@ -20,7 +20,7 @@ function runProcessors() {
       errorMessage: error.message,
       jobId: job.id,
       attempts: job.attemptsMade,
-      stacktrace: error.trace
+      stackTrace: error.stack
     })
   }
 

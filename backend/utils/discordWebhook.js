@@ -59,7 +59,7 @@ const postQueueError = async ({
   errorMessage,
   jobId,
   attempts,
-  stacktrace
+  stackTrace
 }) => {
   const network = await Network.findOne({ where: { active: true } })
 
@@ -78,7 +78,7 @@ const postQueueError = async ({
           `**Job ID**: ${jobId}`,
           `**Attempts**: ${attempts}`,
           `**Error**: ${errorMessage}`,
-          `**Stack Trace**: \n${stacktrace}`
+          `**Stack Trace**: \n${stackTrace}`
         ].join('\n'),
         color: '16739146'
       }
