@@ -104,4 +104,4 @@ async function get(path, { auth, apiKey }) {
   return await res.json()
 }
 
-module.exports = { post, get }
+module.exports = { post, get, fetch }
