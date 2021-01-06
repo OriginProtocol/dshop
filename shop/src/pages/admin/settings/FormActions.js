@@ -21,9 +21,16 @@ const FormActions = ({ hasChanges, workInProgress, cancelSubmission }) => {
         type="submit"
         className={`btn btn-${hasChanges ? '' : 'outline-'}primary`}
         disabled={workInProgress || !hasChanges}
-      >
-        <fbt desc="Update">Update</fbt>
-      </button>
+        children={
+          workInProgress ? (
+            <>
+              <fbt desc="Updating">Updating</fbt>
+            </>
+          ) : (
+            <fbt desc="Update">Update</fbt>
+          )
+        }
+      />
     </div>
   )
 }

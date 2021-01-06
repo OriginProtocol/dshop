@@ -134,10 +134,10 @@ const AppearanceSettings = () => {
         <fbt desc="Appearance">Appearance</fbt>
         <FormActions
           hasChanges={state.hasChanges}
-          workInProgress={state.saving}
+          workInProgress={saving}
           cancelSubmission={() => {
-            setState({ hasChanges: false })
-            dispatch({ type: 'reload', target: 'shopConfig' })
+            window.location.reload()
+            return
           }}
         />
       </h3>
@@ -288,7 +288,10 @@ const AppearanceSettings = () => {
                   }
                 ]
               }}
-              onChange={(e) => setAboutText(e.editor.getData())}
+              onChange={(e) => {
+                setAboutText(e.editor.getData())
+                setState({ hasChanges: true })
+              }}
             />
           </div>
           {!admin.superuser ? null : (
@@ -320,11 +323,10 @@ const AppearanceSettings = () => {
       <div className="footer-actions">
         <FormActions
           hasChanges={state.hasChanges}
-          workInProgress={state.saving}
+          workInProgress={saving}
           cancelSubmission={() => {
-            setState({ hasChanges: false })
-            setAboutText('')
-            dispatch({ type: 'reload', target: 'shopConfig' })
+            window.location.reload()
+            return
           }}
         />
       </div>

@@ -23,6 +23,7 @@ import OfflinePayments from './OfflinePayments'
 import DisconnectModal from './_DisconnectModal'
 
 import ProcessorsList from 'components/settings/ProcessorsList'
+import FormActions from '../FormActions'
 
 const validate = (state) => {
   const newState = {}
@@ -186,28 +187,6 @@ const PaymentSettings = () => {
       }))
   }, [shopConfig])
 
-  const actions = (
-    <>
-      <button type="button" className="btn btn-outline-primary">
-        <fbt desc="Cancel">Cancel</fbt>
-      </button>
-      <button
-        type="submit"
-        className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
-        disabled={saving}
-        children={
-          saving ? (
-            <>
-              <fbt desc="Updating">Updating</fbt>...
-            </>
-          ) : (
-            <fbt desc="Update">Update</fbt>
-          )
-        }
-      />
-    </>
-  )
-
   function onCloseModal() {
     setShowConnectModal(null)
     refetch()
@@ -263,7 +242,14 @@ const PaymentSettings = () => {
         </Link>
         <span className="chevron" />
         <fbt desc="Payments">Payments</fbt>
-        <div className="actions">{actions}</div>
+        <FormActions
+          hasChanges={state.hasChanges}
+          workInProgress={saving}
+          cancelSubmission={() => {
+            window.location.reload()
+            return
+          }}
+        />
       </h3>
       <div className="shop-settings processors-list">
         <h4>
@@ -355,14 +341,21 @@ const PaymentSettings = () => {
         )}
 
         <OfflinePayments
-          onChange={setState}
+          onChange={(updates) => setState({ ...updates, hasChanges: true })}
           offlinePaymentMethods={state.offlinePaymentMethods}
         />
 
         <CryptoSettings {...{ state, setState, config }} />
       </div>
       <div className="footer-actions">
-        <div className="actions">{actions}</div>
+        <FormActions
+          hasChanges={state.hasChanges}
+          workInProgress={saving}
+          cancelSubmission={() => {
+            window.location.reload()
+            return
+          }}
+        />
       </div>
     </form>
   )

@@ -97,10 +97,10 @@ const GeneralSettings = () => {
         <fbt desc="General">General</fbt>
         <FormActions
           hasChanges={state.hasChanges}
-          workInProgress={state.saving}
+          workInProgress={saving}
           cancelSubmission={() => {
-            setState({ hasChanges: false })
-            dispatch({ type: 'reload', target: 'shopConfig' })
+            window.location.reload()
+            return
           }}
         />
       </h3>
@@ -204,10 +204,10 @@ const GeneralSettings = () => {
       <div className="footer-actions">
         <FormActions
           hasChanges={state.hasChanges}
-          workInProgress={state.saving}
+          workInProgress={saving}
           cancelSubmission={() => {
-            setState({ hasChanges: false })
-            dispatch({ type: 'reload', target: 'shopConfig' })
+            window.location.reload()
+            return
           }}
         />
       </div>
