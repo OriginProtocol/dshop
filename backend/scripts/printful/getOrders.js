@@ -1,4 +1,4 @@
-const { get } = require('./_api')
+const { get } = require('../../logic/printful/api')
 const fs = require('fs')
 const sortBy = require('lodash/sortBy')
 

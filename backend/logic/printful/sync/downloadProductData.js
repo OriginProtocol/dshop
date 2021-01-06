@@ -14,9 +14,6 @@ const PrintfulURL = 'https://api.printful.com'
 
 /**
  * Downloads product data from Printful.
- * Sleeps for 60s every 75 products fetched since Printful has
- * a rate-limit of 120 rpm (using 75 instead of 120 to take into
- * account the multiple calls made before this functions).
  *
  * @param {String} OutputDir data directory of the shop
  * @param {String} printfulApi API key of printful store
@@ -58,15 +55,8 @@ async function downloadProductData({
     )
   }
 
-  let index = 1
   for (const id of ids) {
     await getProduct({ PrintfulURL, apiAuth, OutputDir, id })
-    if (index % 75 === 0) {
-      // Wait out rate limit
-      log.info('Sleeping for 60s to avoid hitting rate-limits...')
-      await new Promise((r) => setTimeout(r, 60000))
-    }
-    index++
   }
 
   return ids
