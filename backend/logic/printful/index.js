@@ -211,7 +211,7 @@ const fetchTaxRates = async (apiKey, data) => {
     apiKey,
     path: `/tax/rates`,
     method: 'POST',
-    query
+    body: query
   })
   const json = await shippingRatesResponse.json()
 
