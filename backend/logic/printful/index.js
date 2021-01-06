@@ -27,7 +27,11 @@ const fetchOrder = async (apiKey, orderId) => {
     }
   }
 
-  const result = await fetch(apiKey, `/orders/@${orderId}`, 'GET')
+  const result = await fetch({
+    apiKey,
+    path: `/orders/@${orderId}`,
+    method: 'GET'
+  })
   const json = (await result.json()) || {}
   if (!result.ok) {
     return {
@@ -60,7 +64,12 @@ const placeOrder = async (apiKey, orderData, opts = {}) => {
   }
 
   const path = `/orders${opts.draft ? '' : '?confirm=true'}`
-  const newOrderResponse = await fetch(apiKey, path, 'POST', orderData)
+  const newOrderResponse = await fetch({
+    apiKey,
+    path,
+    method: 'POST',
+    body: orderData
+  })
   const text = await newOrderResponse.text()
   try {
     const json = JSON.parse(text)
@@ -99,11 +108,11 @@ const confirmOrder = async (apiKey, orderId) => {
     }
   }
 
-  const confirmOrderResponse = await fetch(
+  const confirmOrderResponse = await fetch({
     apiKey,
-    `/orders/@${orderId}/confirm`,
-    'POST'
-  )
+    path: `/orders/@${orderId}/confirm`,
+    method: 'POST'
+  })
   const json = await confirmOrderResponse.json()
   log.debug(json)
 
@@ -146,12 +155,12 @@ const fetchShippingEstimate = async (apiKey, data) => {
     return { success: false }
   }
 
-  const shippingRatesResponse = await fetch(
+  const shippingRatesResponse = await fetch({
     apiKey,
-    `/shipping/rates`,
-    'POST',
-    query
-  )
+    path: `/shipping/rates`,
+    method: 'POST',
+    body: query
+  })
   const json = await shippingRatesResponse.json()
 
   if (json.result && Array.isArray(json.result)) {
@@ -198,7 +207,12 @@ const fetchTaxRates = async (apiKey, data) => {
     }
   }
 
-  const shippingRatesResponse = await fetch(apiKey, `/tax/rates`, 'POST', query)
+  const shippingRatesResponse = await fetch({
+    apiKey,
+    path: `/tax/rates`,
+    method: 'POST',
+    query
+  })
   const json = await shippingRatesResponse.json()
 
   if (json.result && Number.isFinite(json.result.rate)) {
