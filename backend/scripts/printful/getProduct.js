@@ -1,5 +1,5 @@
 const fs = require('fs')
-const { get } = require('./_api')
+const { get } = require('../../logic/printful/api')
 const _get = require('lodash/get')
 
 const getSizeGuide = require('./getSizeGuide')

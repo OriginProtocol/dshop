@@ -1,5 +1,5 @@
 const fs = require('fs')
-const { get } = require('./_api')
+const { get } = require('../../logic/printful/api')
 
 async function getProducts({ apiAuth, OutputDir }) {
   const limit = 100
