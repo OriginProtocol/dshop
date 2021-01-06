@@ -1,11 +1,39 @@
-// Integration with Printful API.
-// See doc at https://www.printful.com/docs
 const netFetch = require('node-fetch')
+const crypto = require('crypto')
 
 const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('logic.printful.api')
-const printfulURL = 'https://api.printful.com'
+const PrintfulURL = 'https://api.printful.com'
+
+const Bottleneck = require('bottleneck')
+
+const rateLimiters = new Map()
+
+/**
+ * Returns the rate-limiter of a printful shop
+ * @param {String} apiKey API key of the printful shop
+ */
+const getLimiter = (apiKey) => {
+  // Hash the apiKey so that the sensitive data
+  // doesn't live in memory
+  const key = crypto.createHash('md5').update(apiKey).digest('hex')
+
+  if (rateLimiters.has(key)) {
+    return rateLimiters.get(key)
+  }
+
+  // Printful has a rate limit of 120 per minute
+  const limiter = new Bottleneck({
+    reservoirIncreaseInterval: 60 * 1000, // 1m
+    reservoirIncreaseAmount: 120,
+    reservoirIncreaseMaximum: 120
+  })
+
+  rateLimiters.set(key, limiter)
+
+  return limiter
+}
 
 /**
  * Makes an API call to printful.
@@ -17,13 +45,15 @@ const printfulURL = 'https://api.printful.com'
  * @returns {Promise<*>}
  * @throws
  */
-async function fetch(apiKey, path, method, body = null) {
-  if (!apiKey) {
+async function fetch({ apiKey, auth, path, method, body }) {
+  if (!apiKey && !auth) {
     throw new Error('Missing Printful API key')
   }
 
-  const apiAuth = Buffer.from(apiKey).toString('base64')
-  const url = printfulURL + path
+  const apiAuth = auth ? auth : Buffer.from(apiKey).toString('base64')
+  const url = PrintfulURL + path
+
+  const limiter = getLimiter(apiAuth)
 
   const opts = {
     headers: {
@@ -33,14 +63,45 @@ async function fetch(apiKey, path, method, body = null) {
     credentials: 'include',
     method
   }
+
   if (body) {
     opts.body = JSON.stringify(body)
   }
 
   log.debug(`Calling Printful API ${method} ${url}`)
-  return netFetch(url, opts)
+  return limiter.schedule(() => netFetch(url, opts))
 }
 
-module.exports = {
-  fetch
+async function post(path, { auth, body }) {
+  const res = await fetch({
+    path,
+    auth,
+    body,
+    method: 'POST'
+  })
+
+  if (!res.ok) {
+    log.error('Printful API error', path)
+    // TODO: Should we throw here?
+  }
+
+  return await res.json()
 }
+
+async function get(path, { auth, apiKey }) {
+  const res = await fetch({
+    path,
+    auth,
+    apiKey,
+    method: 'GET'
+  })
+
+  if (!res.ok) {
+    log.error('Printful API error', path)
+    // TODO: Should we throw here?
+  }
+
+  return await res.json()
+}
+
+module.exports = { post, get }
