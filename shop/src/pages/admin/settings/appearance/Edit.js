@@ -123,6 +123,14 @@ const AppearanceSettings = () => {
         } catch (err) {
           console.error(err)
           setSaving(false)
+          dispatch({
+            type: 'toast',
+            message: fbt(
+              'Failed to save your changes. Try again later.',
+              'admin.settings.appearence.updateError'
+            ),
+            style: 'error'
+          })
         }
       }}
     >

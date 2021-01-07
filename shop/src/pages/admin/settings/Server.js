@@ -156,7 +156,14 @@ const AdminSettings = ({ shop }) => {
             body: JSON.stringify(newState)
           })
           if (raw.ok) {
-            dispatch({ type: 'toast', message: 'Saved OK' })
+            dispatch({
+              type: 'toast',
+              message: (
+                <fbt desc="admin.settings.server.savedMessage">
+                  Settings saved
+                </fbt>
+              )
+            })
             setSaving(false)
           }
         } else {
@@ -169,7 +176,7 @@ const AdminSettings = ({ shop }) => {
           <fbt desc="Settings">Settings</fbt>
         </Link>
         <span className="chevron" />
-        Server
+        <fbt desc="Server">Server</fbt>
         <div className="actions">
           <button type="submit" className="btn btn-primary" disabled={saving}>
             {saving ? 'Saving...' : 'Save'}

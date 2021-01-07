@@ -11,6 +11,7 @@ import { useStateValue } from 'data/state'
 import Link from 'components/Link'
 import ManualTaxes from './_Taxes'
 import taxInputValidation from './_taxInputValidation'
+import FormActions from '../FormActions'
 
 function reducer(state, newState) {
   return { ...state, ...newState }
@@ -33,21 +34,6 @@ const CheckoutSettings = () => {
       ...pick(config, configFields)
     })
   }, [config])
-
-  const actions = (
-    <div className="actions">
-      <button type="button" className="btn btn-outline-primary">
-        <fbt desc="Cancel">Cancel</fbt>
-      </button>
-      <button
-        type="submit"
-        className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
-        disabled={saving}
-      >
-        <fbt desc="Update">Update</fbt>
-      </button>
-    </div>
-  )
 
   return (
     <form
@@ -91,6 +77,7 @@ const CheckoutSettings = () => {
               ...pick(shopConfig, configFields)
             }
           })
+          dispatch({ type: 'reload', target: 'shopConfig' })
           dispatch({
             type: 'toast',
             message: (
@@ -102,6 +89,14 @@ const CheckoutSettings = () => {
         } catch (err) {
           console.error(err)
           setSaving(false)
+          dispatch({
+            type: 'toast',
+            message: fbt(
+              'Failed to save your changes. Try again later.',
+              'admin.settings.checkout.updateError'
+            ),
+            style: 'error'
+          })
         }
       }}
     >
@@ -111,7 +106,14 @@ const CheckoutSettings = () => {
         </Link>
         <span className="chevron" />
         <fbt desc="Checkout">Checkout</fbt>
-        {actions}
+        <FormActions
+          hasChanges={state.hasChanges}
+          workInProgress={saving}
+          cancelSubmission={() => {
+            window.location.reload()
+            return
+          }}
+        />
       </h3>
       <div className="row">
         <div className="shop-settings col-md-8 col-lg-9">
@@ -171,7 +173,10 @@ const CheckoutSettings = () => {
                     type="checkbox"
                     checked={state.discountCodes ? true : false}
                     onChange={(e) =>
-                      setState({ discountCodes: e.target.checked })
+                      setState({
+                        discountCodes: e.target.checked,
+                        hasChanges: true
+                      })
                     }
                   />
                   <fbt desc="admin.settings.checkout.showDiscountCodesOnCheckout">
@@ -195,7 +200,16 @@ const CheckoutSettings = () => {
           </div>
         </div>
       </div>
-      <div className="footer-actions">{actions}</div>
+      <div className="footer-actions">
+        <FormActions
+          hasChanges={state.hasChanges}
+          workInProgress={saving}
+          cancelSubmission={() => {
+            window.location.reload()
+            return
+          }}
+        />
+      </div>
     </form>
   )
 }

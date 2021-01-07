@@ -16,6 +16,7 @@ import { useStateValue } from 'data/state'
 import Link from 'components/Link'
 import ShippingDestination from './_ShippingDestination'
 import PrintfulShippingAlert from './_PrintfulShippingAlert'
+import FormActions from '../FormActions'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
 
@@ -290,19 +291,6 @@ const Shipping = () => {
     }
   }
 
-  const actions = (
-    <div className="actions">
-      <button type="button" className="btn btn-outline-primary">
-        <fbt desc="Cancel">Cancel</fbt>
-      </button>
-      <button
-        type="submit"
-        className={`btn btn${state.hasChanges ? '' : '-outline'}-primary`}
-        children={<fbt desc="Update">Update</fbt>}
-      />
-    </div>
-  )
-
   const printfulEnabled = !!get(shopConfig, 'printful')
 
   if (printfulEnabled) {
@@ -318,7 +306,14 @@ const Shipping = () => {
           </Link>
           <span className="chevron" />
           <fbt desc="Shipping">Shipping</fbt>
-          {actions}
+          <FormActions
+            hasChanges={state.hasChanges}
+            workInProgress={state.saving}
+            cancelSubmission={() => {
+              window.location.reload()
+              return
+            }}
+          />
         </h3>
         {loading ? (
           <>
@@ -433,7 +428,16 @@ const Shipping = () => {
         )}
       </div>
 
-      <div className="footer-actions">{actions}</div>
+      <div className="footer-actions">
+        <FormActions
+          hasChanges={state.hasChanges}
+          workInProgress={state.saving}
+          cancelSubmission={() => {
+            window.location.reload()
+            return
+          }}
+        />
+      </div>
     </form>
   )
 }
