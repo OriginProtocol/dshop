@@ -1,5 +1,6 @@
 const discordWebhook = require('../utils/discordWebhook')
 const queues = require('./queues')
+const get = require('lodash/get')
 
 /**
  * Attaches all backend queue processing functions to their respective queues.
@@ -19,6 +20,7 @@ function runProcessors() {
       queueName: job.queue.name,
       errorMessage: error.message,
       jobId: job.id,
+      shopId: get(job, 'data.shopId', ''),
       attempts: job.attemptsMade,
       stackTrace: error.stack
     })

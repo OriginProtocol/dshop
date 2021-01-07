@@ -58,6 +58,7 @@ const postQueueError = async ({
   queueName,
   errorMessage,
   jobId,
+  shopId,
   attempts,
   stackTrace
 }) => {
@@ -76,6 +77,7 @@ const postQueueError = async ({
         title: `Job failure in ${queueName} queue`,
         description: [
           `**Job ID**: ${jobId}`,
+          `**Shop ID**: ${shopId}`,
           `**Attempts**: ${attempts}`,
           `**Error**: ${errorMessage}`,
           `**Stack Trace**: \n${stackTrace}`
