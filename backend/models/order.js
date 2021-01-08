@@ -1,5 +1,11 @@
 const get = require('lodash/get')
 
+const {
+  OrderPaymentStatuses,
+  OrderOfferStatuses,
+  OrderPaymentTypes
+} = require('../utils/enums')
+
 module.exports = (sequelize, DataTypes) => {
   const isPostgres = sequelize.options.dialect === 'postgres'
 
@@ -9,40 +15,32 @@ module.exports = (sequelize, DataTypes) => {
       shopId: DataTypes.INTEGER,
       // Ethereum network id. 1=Mainnet, 4=Rinkeby, 999=local
       networkId: DataTypes.INTEGER,
-      // Unique order id. Format: <network>-<contract_version>-<listing_id>-<offer_id>. Ex: '1-001-233-19'
-      orderId: {
-        type: DataTypes.STRING,
-        unique: true,
-        primaryKey: true
-      },
+      // Fully qualified order id. Format: <network_id>-<marketplace_version>-<listing_id>-<shop_id>-<randomId>.
+      fqId: DataTypes.STRING,
+      // A short id that can be exposed externally and should be used as a "reference id" by buyers and merchants to refer to an order.
+      shortId: DataTypes.STRING,
+      // Current status of the order.
+      paymentStatus: DataTypes.ENUM(OrderPaymentStatuses),
+      // Type of payment made
+      paymentType: DataTypes.ENUM(OrderPaymentTypes),
+      // Optional. Links an external payment (ex: credit card) to an order. See external_payments.payment_code
+      paymentCode: DataTypes.STRING,
       // IPFS hash for the offer data.
       ipfsHash: DataTypes.STRING,
       // IPFS hash of the encrypted offer data.
       encryptedIpfsHash: DataTypes.STRING,
-      // Block number at which the offer was created.
+      // Blockchain fully-qualified offerId. Only populated for on-chain offers.
+      offerId: DataTypes.STRING,
+      // Marketplace offer status: OfferCreated/Accepted/Finalized/Withdrawn/Disputed. Only populated for on-chain offers.
+      offerStatus: DataTypes.ENUM(OrderOfferStatuses),
+      // Block number at which the offer was created. Only populated for on-chain offers.
       createdBlock: DataTypes.INTEGER,
-      // Block number of the most recent offer update.
+      // Block number of the most recent offer update. Only populated for on-chain offers.
       updatedBlock: DataTypes.INTEGER,
-      // Not used at the moment.
-      status: DataTypes.INTEGER,
-      // 'OfferCreated', 'OfferFinalized', 'OfferWithdrawn' or 'error'
-      statusStr: DataTypes.STRING,
-      // Not populated at the moment.
+      // Currency symbol. For ex.: USD
       currency: DataTypes.STRING,
-      // Not populated at the moment.
-      value: DataTypes.STRING,
-      // Not populated at the moment.
-      commission: DataTypes.STRING,
-      // Not populated at the moment.
-      buyer: DataTypes.STRING,
-      // Not populated at the moment.
-      affiliate: DataTypes.STRING,
-      // Not populated at the moment.
-      arbitrator: DataTypes.STRING,
-      // Not populated at the moment.
-      finalizes: DataTypes.STRING,
-      // Not populated at the moment.
-      notes: DataTypes.TEXT,
+      // Total amount as a fixed-point integer. For ex.: $12.34 => 1234
+      total: DataTypes.STRING,
       // Details about the order: Item bought, Buyer address, phone and email, etc...
       // Note: Postgres supports JSONB while sqlite only supports JSON.
       data: isPostgres ? DataTypes.JSONB : DataTypes.JSON,
@@ -52,16 +50,16 @@ module.exports = (sequelize, DataTypes) => {
       commissionPending: DataTypes.INTEGER,
       // Amount of OGN commission paid to the referrer.
       commissionPaid: DataTypes.INTEGER,
-      // Date at which the offer was recorded on-chain.
-      createdAt: DataTypes.DATE,
-      // Optional. Links an external payment (ex: credit card) to an order. See external_payments.payment_code
-      paymentCode: DataTypes.STRING
+      // Hides the order in frontend
+      archived: DataTypes.BOOLEAN,
+      // Date at which the order was recorded, either on or off-chain.
+      createdAt: DataTypes.DATE
     },
     {
       underscored: true,
-      timestamps: false,
       tableName: 'orders',
       hooks: {
+        // Lower cases the email address of the buyer before storing the order in the DB.
         beforeCreate(order) {
           const userEmail = get(order, 'data.userInfo.email')
           if (userEmail) {

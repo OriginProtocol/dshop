@@ -1,9 +1,29 @@
 import React from 'react'
+import range from 'lodash/range'
 
 import { useHistory, useLocation } from 'react-router-dom'
 import queryString from 'query-string'
 
 import usePaginate from 'utils/usePaginate'
+
+const Item = ({ disabled, onClick, children, active }) => {
+  let className = 'page-item'
+  if (disabled) className += ' disabled'
+  if (active) className += ' active'
+  return (
+    <li className={className}>
+      <a
+        className="page-link"
+        href="#"
+        onClick={(e) => {
+          e.preventDefault()
+          if (onClick) onClick()
+        }}
+        children={children}
+      />
+    </li>
+  )
+}
 
 const Paginate = ({ total, perPage, onChange, page }) => {
   const history = useHistory()
@@ -37,54 +57,70 @@ const Paginate = ({ total, perPage, onChange, page }) => {
     window.scrollTo(0, 0)
   }
 
+  let start = page > 4 ? Math.max(page - 1, 1) : 1
+  let end = page > 4 ? Math.min(page + 2, pages + 1) : 6
+  if (page > pages - 4) {
+    start = pages - 4
+    end = pages + 1
+  }
+
+  let prefix, postfix
+  if (pages > 7) {
+    if (page >= 5) {
+      prefix = (
+        <>
+          <Item onClick={() => handlePage(1)}>{1}</Item>
+          <Item disabled={true}>&hellip;</Item>
+        </>
+      )
+    }
+    if (page < pages - 3) {
+      postfix = (
+        <>
+          <Item disabled={true}>&hellip;</Item>
+          <Item onClick={() => handlePage(pages)}>{pages}</Item>
+        </>
+      )
+    }
+  } else {
+    start = 1
+    end = pages + 1
+  }
+
   return (
-    <ul className="pagination justify-content-center">
-      <li className={`page-item${hasPrevious ? '' : ' disabled'}`}>
-        <a
-          className="page-link"
-          href="#"
-          onClick={(e) => {
-            e.preventDefault()
-            if (hasPrevious) {
-              handlePage(page - 1)
-            }
-          }}
-        >
-          <span aria-hidden="true">&laquo;</span>
-        </a>
-      </li>
-      {[...Array(pages)].map((_, i) => (
-        <li key={i} className={`page-item${page === i + 1 ? ' active' : ''}`}>
-          <a
-            className="page-link"
-            href="#"
-            onClick={(e) => {
-              e.preventDefault()
-              if (page !== i + 1) {
-                handlePage(i + 1)
-              }
-            }}
-          >
-            {i + 1}
-          </a>
-        </li>
-      ))}
-      <li className={`page-item${hasNext ? '' : ' disabled'}`}>
-        <a
-          className="page-link"
-          href="#"
-          onClick={(e) => {
-            e.preventDefault()
-            if (hasNext) {
-              handlePage(page + 1)
-            }
-          }}
-        >
-          <span aria-hidden="true">&raquo;</span>
-        </a>
-      </li>
-    </ul>
+    <div className="d-flex justify-content-center">
+      <ul className="pagination">
+        <Item
+          disabled={!hasPrevious}
+          onClick={page > 1 ? () => handlePage(page - 1) : null}
+          children={<>&laquo;</>}
+        />
+        {prefix}
+        {range(start, end).map((i) => (
+          <Item
+            key={i}
+            active={page === i}
+            onClick={page !== i ? () => handlePage(i) : null}
+            children={i}
+          />
+        ))}
+        {postfix}
+        <Item
+          disabled={!hasNext}
+          onClick={hasNext ? () => handlePage(page + 1) : null}
+          children={<>&raquo;</>}
+        />
+      </ul>
+    </div>
   )
 }
 
 export default Paginate
+
+require('react-styl')(`
+  .pagination
+    display: inline-grid
+    grid-auto-flow: column
+    grid-auto-columns: 1fr
+    text-align: center
+`)

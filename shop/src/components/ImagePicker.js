@@ -73,7 +73,7 @@ const PreviewImages = (props) => {
     }
 
     return (
-      <div key={image.src} {...eventProps}>
+      <div key={image.src + idx} {...eventProps}>
         <div
           className="img"
           style={{ backgroundImage: `url(${backend}${image.src})` }}
@@ -97,7 +97,9 @@ const PreviewImages = (props) => {
               title={fbt('Remove', 'Remove')}
               onClick={(e) => {
                 e.preventDefault()
-                onChange(images.filter((i, offset) => idx !== offset))
+                const newImages = [...images]
+                newImages.splice(idx, 1)
+                onChange(newImages)
               }}
               children={<>&times;</>}
             />
@@ -116,6 +118,8 @@ const ImagePicker = (props) => {
   const { postRaw } = useBackendApi({ authToken: true })
 
   const uploadRef = useRef()
+
+  const uniqueId = useRef('upload_' + Date.now())
 
   useEffect(() => {
     setState({ images: props.images || [] })
@@ -238,10 +242,13 @@ const ImagePicker = (props) => {
           onChange={onChange}
         />
       )}
-      <label htmlFor="upload" className={!hasImages ? 'empty-state' : ''}>
+      <label
+        htmlFor={uniqueId.current}
+        className={!hasImages ? 'empty-state' : ''}
+      >
         {state.open ? null : (
           <input
-            id="upload"
+            id={uniqueId.current}
             type="file"
             accept={acceptedFileTypes.join(',')}
             ref={uploadRef}

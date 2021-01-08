@@ -27,7 +27,7 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
         switch (processor.id) {
           case 'stripe':
             updatedConfig = {
-              stripe: false,
+              disconnectStripe: true,
               stripeKey: '',
               stripeBackend: '',
               stripeWebhookSecret: '',
@@ -48,8 +48,10 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
             break
           case 'printful':
             updatedConfig = {
+              disconnectPrintful: true,
               printful: '',
-              printfulAutoFulfill: false
+              printfulAutoFulfill: false,
+              shippingApi: false
             }
             break
           case 'sendgrid':
@@ -79,7 +81,7 @@ const DisconnectModal = ({ processor, className = '', afterDelete }) => {
             break
           case 'paypal':
             updatedConfig = {
-              paypal: false,
+              disconnectPaypal: true,
               paypalClientId: '',
               paypalClientSecret: ''
             }

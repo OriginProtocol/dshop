@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import fbt from 'fbt'
+import get from 'lodash/get'
 
 import formatPrice from 'utils/formatPrice'
+import useConfig from 'utils/useConfig'
 import SelectVariantImage from './_SelectVariantImage'
 
 const EditVariants = ({
@@ -13,6 +15,44 @@ const EditVariants = ({
   disabled,
   currency
 }) => {
+  const { config } = useConfig()
+  useEffect(() => {
+    if (!media || !variants) return
+
+    const mediaPaths = media.map((m) => m.path)
+
+    let hasChange = false
+
+    const newVariants = [...variants]
+
+    for (let idx = 0; idx < variants.length; idx++) {
+      const variant = variants[idx]
+
+      if (mediaPaths.includes(variant.image)) {
+        continue
+      }
+
+      // Variant image has been removed
+      // Make the first product image as variant image
+
+      if (!media.length && !variant.image) {
+        // It's already reset, ignore
+        continue
+      }
+
+      hasChange = true
+
+      newVariants[idx] = {
+        ...variant,
+        image: get(media, '0.path')
+      }
+    }
+
+    if (hasChange) {
+      onChange(newVariants)
+    }
+  }, [media, variants])
+
   if (!options || !variants) return null
 
   return (
@@ -31,6 +71,11 @@ const EditVariants = ({
           <th>
             <fbt desc="SKU">SKU</fbt>
           </th>
+          {!config.inventory ? null : (
+            <th>
+              <fbt desc="AvailableStock">Available Stock</fbt>
+            </th>
+          )}
           <th>
             <fbt desc="Image">Image</fbt>
           </th>
@@ -74,9 +119,15 @@ const EditVariants = ({
                       onChange={(e) => {
                         const updatedVariants = [...variants]
                         updatedVariants[index].price = e.target.value
+                        updatedVariants[index].priceError = undefined
                         onChange(updatedVariants)
                       }}
                     />
+                    {!variant.priceError ? null : (
+                      <div className="invalid-feedback d-block">
+                        {variant.priceError}
+                      </div>
+                    )}
                   </div>
                 </div>
               </td>
@@ -94,6 +145,25 @@ const EditVariants = ({
                   />
                 </div>
               </td>
+              {!config.inventory ? null : (
+                <td>
+                  <div className="form-group m-0">
+                    <input
+                      value={variant.quantity}
+                      className="form-control"
+                      type="number"
+                      min="0"
+                      step="1"
+                      disabled={!variant.available || disabled}
+                      onChange={(e) => {
+                        const updatedVariants = [...variants]
+                        updatedVariants[index].quantity = e.target.value
+                        onChange(updatedVariants)
+                      }}
+                    />
+                  </div>
+                </td>
+              )}
               <td>
                 <SelectVariantImage
                   selection={variantImage}
@@ -103,7 +173,6 @@ const EditVariants = ({
                     updatedVariants[index].image = selectedMedia.path
                     onChange(updatedVariants)
                   }}
-                  disabled={disabled}
                 />
               </td>
             </tr>

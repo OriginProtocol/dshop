@@ -1,0 +1,127 @@
+{
+  "id": "cake",
+  "name": "Artisan",
+  "config": [{
+    "id": "colors",
+    "title": "Colors",
+    "fields": [{
+      "id": "palette",
+      "title": "Color Palette",
+      "type": "color_palettes",
+      "palettes": [
+        {
+          "id": "palette1",
+          "title": "Rose Clay",
+          "colors": {
+            "page": "#fcf8f8",
+            "footer": "#faf4f4",
+            "primary": "#000000",
+            "secondary": "#514846",
+            "button": "#d18172",
+            "link": "#d18172",
+            "accent": "#d18172"
+          },
+          "fonts": {
+            "header": "Philosopher",
+            "body": "Avenir"
+          }
+        },
+        {
+          "id": "palette2",
+          "title": "Coral Haze",
+          "colors": {
+            "page": "#fcfbf8",
+            "footer": "#f8f6f2",
+            "primary": "#000000",
+            "secondary": "#565248",
+            "button": "#ff785f",
+            "link": "#ff785f",
+            "accent": "#f4c110"
+          },
+          "fonts": {
+            "header": "RobotoSlab",
+            "body": "HelveticaNeue"
+          }
+        },
+        {
+          "id": "palette3",
+          "title": "Palette 3",
+          "colors": {
+            "page": "#f7f6f6",
+            "footer": "#f1efec",
+            "primary": "#000000",
+            "secondary": "#565248",
+            "button": "#9c8c7e",
+            "link": "#9c8c7e",
+            "accent": "#9c8c7e"
+          },
+          "fonts": {
+            "header": "RobotoSlab",
+            "body": "HelveticaNeue"
+          }
+        }
+      ],
+      "colorLabels": {
+        "page": "Page Background Color",
+        "footer": "Footer Background Color",
+        "primary": "Text Color 1",
+        "secondary": "Text Color 2",
+        "button": "Button Color",
+        "link": "Link Color",
+        "accent": "Accent Color"
+      },
+      "fontLabels": {
+        "header": "Header Font",
+        "body": "Body Font"
+      }
+    }]
+  }, {
+    "id": "header",
+    "title": "Header",
+    "fields": [{
+      "id": "logo",
+      "title": "Logo",
+      "type": "media"
+    }, {
+      "id": "featuredCollections",
+      "title": "Primary Menu",
+      "type": "collections_list"
+    }]
+  }, {
+    "id": "home",
+    "title": "Home",
+    "pageUrl": "/",
+    "fields": [{
+      "id": "headerText",
+      "title": "Text above Header Image",
+      "type": "text",
+      "multiline": true
+    }, {
+      "id": "headerImage",
+      "title": "Header Image",
+      "type": "media"
+    }, {
+      "id": "featuredTitle",
+      "title": "Featured Content Title",
+      "type": "text"
+    }, {
+      "id": "featuredProducts",
+      "title": "Featured Products",
+      "type": "products_list"
+    }]
+  }, {
+    "id": "about",
+    "title": "About Page",
+    "pageUrl": "/about",
+    "fields": [{
+      "id": "aboutText",
+      "title": "About Text",
+      "type": "text",
+      "multiline": true
+    }, {
+      "id": "aboutImage",
+      "title": "About Image",
+      "type": "media"
+    }]
+  }]
+}

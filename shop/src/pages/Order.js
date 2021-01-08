@@ -8,11 +8,12 @@ import fbt, { FbtParam } from 'fbt'
 import Link from 'components/Link'
 import CheckCircle from 'components/icons/CheckCircle'
 import PaymentInstructions from 'components/OfflinePaymentInstructions'
-
 import { useStateValue } from 'data/state'
+
 import useConfig from 'utils/useConfig'
 import useOrigin from 'utils/useOrigin'
 import formatAddress from 'utils/formatAddress'
+import usePGP from 'utils/usePGP'
 import Summary from './checkout/Summary'
 
 const OrderDetails = ({ cart }) => {
@@ -145,13 +146,14 @@ const OrderDetails = ({ cart }) => {
 const Order = () => {
   const { config } = useConfig()
   const { getOffer, status } = useOrigin()
+  const [, dispatch] = useStateValue()
   const [cart, setCart] = useState()
   const [error, setError] = useState()
   const [loading, setLoading] = useState()
-  const [, dispatch] = useStateValue()
   const match = useRouteMatch('/order/:tx')
   const location = useLocation()
   const opts = queryString.parse(location.search)
+  const { pgpLoaded } = usePGP()
 
   useEffect(() => {
     async function go() {
@@ -166,11 +168,11 @@ const Order = () => {
       }
       setLoading(false)
     }
-    if (getOffer && !cart && !loading && status !== 'loading') {
+    if (getOffer && !cart && !loading && status !== 'loading' && pgpLoaded) {
       setLoading(true)
       go()
     }
-  }, [match.params.tx, opts.auth, status])
+  }, [match.params.tx, opts.auth, status, pgpLoaded])
 
   useEffect(() => {
     if (!window.orderCss) {

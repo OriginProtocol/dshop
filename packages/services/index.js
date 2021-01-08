@@ -90,7 +90,8 @@ function _updateContractsJsonConfig() {
   // in the JSON file packages/contracts/build/contracts.json
   const contracts = {
     V01_Marketplace: 'Marketplace_V01',
-    OriginToken: 'OGN'
+    OriginToken: 'OGN',
+    MockOUSD: 'OUSD'
   }
 
   // 1. Look for contracts ABIs in truffle's build directory

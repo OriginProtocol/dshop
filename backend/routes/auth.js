@@ -16,6 +16,7 @@ const encConf = require('../utils/encryptedConfig')
 const { DSHOP_CACHE } = require('../utils/const')
 
 const { getLogger } = require('../utils/logger')
+const { decryptConfig } = require('../utils/encryptedConfig')
 const log = getLogger('routes.auth')
 
 const AUTH_FAILURE_MESSAGE = 'Authentication failed'
@@ -346,7 +347,8 @@ module.exports = function (router) {
             'hostname',
             'hasChanges',
             'listingId',
-            'walletAddress'
+            'walletAddress',
+            'printfulSyncing'
           ])
         }
       })
@@ -354,7 +356,8 @@ module.exports = function (router) {
   )
 
   router.get('/password', authShop, async (req, res) => {
-    const password = await encConf.get(req.shop.id, 'password')
+    const shopConfig = decryptConfig(req.shop.config)
+    const password = get(shopConfig, 'password')
     if (!password) {
       return res.json({ success: true })
     } else if (req.session.authedShop === req.shop.id) {
@@ -364,7 +367,8 @@ module.exports = function (router) {
   })
 
   router.post('/password', authShop, async (req, res) => {
-    const password = await encConf.get(req.shop.id, 'password')
+    const shopConfig = decryptConfig(req.shop.config)
+    const password = get(shopConfig, 'password')
     if (req.body.password === password) {
       req.session.authedShop = req.shop.id
       return res.json({ success: true })

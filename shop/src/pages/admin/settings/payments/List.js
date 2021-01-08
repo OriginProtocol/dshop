@@ -1,10 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react'
+import { ethers } from 'ethers'
 import fbt, { FbtParam } from 'fbt'
 import pickBy from 'lodash/pickBy'
 import uniqBy from 'lodash/uniqBy'
-import get from 'lodash/get'
+//import get from 'lodash/get'
 
-import { AllCurrencies } from 'data/Currencies'
 import useShopConfig from 'utils/useShopConfig'
 import useSetState from 'utils/useSetState'
 import useConfig from 'utils/useConfig'
@@ -18,12 +18,39 @@ import Web3Modal from './Web3Modal'
 import StripeModal from './StripeModal'
 import UpholdModal from './UpholdModal'
 import PayPalModal from './PayPalModal'
-import ContractSettings from './ContractSettings'
+import CryptoSettings from './CryptoSettings'
 import OfflinePayments from './OfflinePayments'
 import DisconnectModal from './_DisconnectModal'
-import CreateListing from './_CreateListing'
 
 import ProcessorsList from 'components/settings/ProcessorsList'
+
+const validate = (state) => {
+  const newState = {}
+
+  if (!state.disableCryptoPayments) {
+    if (!state.walletAddress) {
+      newState.walletAddressError = fbt(
+        'Wallet address is required',
+        'admin.settings.payments.List.walletAddressRequired'
+      )
+    } else if (!ethers.utils.isAddress(state.walletAddress)) {
+      newState.walletAddressError = fbt(
+        'Invalid wallet address',
+        'admin.settings.payments.List.invalidWalletAddressError'
+      )
+    }
+  }
+
+  const valid = Object.keys(newState).every((f) => !f.endsWith('Error'))
+
+  return {
+    valid,
+    newState: {
+      ...pickBy(state, (v, k) => !k.endsWith('Error')),
+      ...newState
+    }
+  }
+}
 
 const PaymentSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
@@ -32,7 +59,13 @@ const PaymentSettings = () => {
   const [state, setState] = useSetState()
 
   useEffect(() => {
-    const { listingId, currency, offlinePaymentMethods } = config
+    const {
+      listingId,
+      currency,
+      offlinePaymentMethods,
+      disableCryptoPayments,
+      walletAddress
+    } = config
     const acceptedTokens = config.acceptedTokens || []
     const configCustomTokens = config.customTokens || []
     const customTokens = uniqBy(
@@ -43,8 +76,11 @@ const PaymentSettings = () => {
       acceptedTokens,
       customTokens,
       listingId,
+      useEscrow: config.useEscrow ? true : false, // By default, do not use the marketplace contract for crypto payments.
       currency: currency || 'USD',
-      offlinePaymentMethods
+      offlinePaymentMethods,
+      disableCryptoPayments,
+      walletAddress
     })
   }, [config.activeShop])
 
@@ -60,10 +96,13 @@ const PaymentSettings = () => {
       upholdApi,
       upholdClient,
       upholdSecret,
-      paypal
+      paypalClientId,
+      paypalClientSecret
     } = shopConfig
-    const stripeEnabled = !!stripeBackend
-    const upholdEnabled = !!upholdApi && !!upholdClient && !!upholdSecret
+    const stripeEnabled = Boolean(stripeBackend)
+    const upholdEnabled =
+      Boolean(upholdApi) && Boolean(upholdClient) && Boolean(upholdSecret)
+    const paypalEnabled = Boolean(paypalClientSecret) && Boolean(paypalClientId)
 
     return [
       {
@@ -85,7 +124,7 @@ const PaymentSettings = () => {
       {
         id: 'paypal',
         title: 'PayPal',
-        description: paypal ? (
+        description: paypalEnabled ? (
           <fbt desc="admin.settings.payments.paypalEnabledDesc">
             Your PayPal account has been connected
           </fbt>
@@ -96,7 +135,7 @@ const PaymentSettings = () => {
           </fbt>
         ),
         icon: <Icons.PayPal />,
-        enabled: paypal
+        enabled: paypalEnabled
       },
       {
         id: 'uphold',
@@ -175,7 +214,7 @@ const PaymentSettings = () => {
     refetchConfig()
   }
 
-  const sellerWallet = get(shopConfig, 'walletAddress')
+  //const sellerWallet = get(shopConfig, 'walletAddress')
 
   return (
     <form
@@ -183,6 +222,10 @@ const PaymentSettings = () => {
       onSubmit={async (e) => {
         e.preventDefault()
         if (saving) return
+
+        const { valid, newState } = validate(state)
+        setState(newState)
+        if (!valid) return
 
         setSaving(true)
 
@@ -205,6 +248,7 @@ const PaymentSettings = () => {
             type: 'setConfigSimple',
             config: { ...config, ...shopConfig }
           })
+          dispatch({ type: 'reload', target: 'shopConfig' })
           setState({ hasChanges: false })
           setSaving(false)
         } catch (err) {
@@ -222,39 +266,11 @@ const PaymentSettings = () => {
         <div className="actions">{actions}</div>
       </h3>
       <div className="shop-settings processors-list">
-        <div className="select-currency">
-          <h4>
-            <fbt desc="admin.settings.payments.storeCurrency">
-              Store currency
-            </fbt>
-          </h4>
-          <div>
-            <div className="description">
-              <fbt desc="admin.settings.payments.storeCurrencyDesc">
-                You should review any potential legal and tax considerations
-                involved with selling in a currency that is different from the
-                one associated with the country your store is located in.
-              </fbt>
-            </div>
-            <select
-              className="form-control"
-              value={state.currency}
-              onChange={(e) =>
-                setState({ hasChanges: true, currency: e.target.value })
-              }
-            >
-              {AllCurrencies.map((currency) => (
-                <option key={currency[0]} value={currency[0]}>
-                  {currency[1]}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
         <h4>
           <fbt desc="Integrations">Integrations</fbt>
         </h4>
+        {/*
+        // Disabling listing creation as part of turnin-on off-chain payment for all merchants.
         <div className="processor web3">
           <div className="icon">
             <Icons.Web3 />
@@ -315,6 +331,7 @@ const PaymentSettings = () => {
             )}
           </div>
         </div>
+    */}
         <ProcessorsList processors={Processors} />
 
         {connectModal === 'web3' && <Web3Modal onClose={onCloseModal} />}
@@ -342,7 +359,7 @@ const PaymentSettings = () => {
           offlinePaymentMethods={state.offlinePaymentMethods}
         />
 
-        <ContractSettings {...{ state, setState, config }} />
+        <CryptoSettings {...{ state, setState, config }} />
       </div>
       <div className="footer-actions">
         <div className="actions">{actions}</div>
@@ -352,19 +369,3 @@ const PaymentSettings = () => {
 }
 
 export default PaymentSettings
-
-require('react-styl')(`
-  .shop-settings
-    .select-currency
-      margin-top: 1.5rem
-      padding-bottom: 2.5rem
-      border-bottom: 1px solid #cdd7e0
-      margin-bottom: 2rem
-      line-height: normal
-      > div
-        color: #8293a4
-        max-width: 530px
-        .description
-          font-size: 14px
-          margin-bottom: 1rem
-`)

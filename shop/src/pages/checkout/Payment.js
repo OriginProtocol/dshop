@@ -5,6 +5,7 @@ import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
 import useConfig from 'utils/useConfig'
+import usePGP from 'utils/usePGP'
 import Contact from './_Contact'
 import ShipTo from './_ShipTo'
 import ChoosePayment from './ChoosePayment'
@@ -13,6 +14,7 @@ import BetaWarning from './_BetaWarning'
 const CheckoutPayment = () => {
   const { config } = useConfig()
   const [{ cart }] = useStateValue()
+  usePGP()
 
   return (
     <div className="checkout-shipping">
@@ -56,24 +58,7 @@ const CheckoutPayment = () => {
           </fbt>
         </div>
       </div>
-      {!config.listingId ? (
-        <>
-          <div className="alert alert-danger mt-4">
-            <fbt desc="checkout.payment.notSetup">
-              Sorry, this shop is not set up to accept payment
-            </fbt>
-          </div>
-          <div className="actions">
-            <Link to="/checkout/shipping">
-              &laquo;{' '}
-              <fbt desc="checkout.payment.goback">Return to shipping</fbt>
-            </Link>
-          </div>
-        </>
-      ) : (
-        <ChoosePayment />
-      )}
-
+      <ChoosePayment />
       <BetaWarning />
     </div>
   )

@@ -15,19 +15,19 @@
     ]
   },
   "devDependencies": {
-    "@google-cloud/storage": "5.3.0",
+    "@google-cloud/storage": "5.7.0",
     "@pinata/sdk": "1.1.11",
     "babel-eslint": "10.1.0",
-    "commander": "6.0.0",
-    "eslint": "7.7.0",
-    "eslint-config-standard": "14.1.1",
+    "commander": "6.2.1",
+    "eslint": "7.15.0",
+    "eslint-config-standard": "16.0.2",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-promise": "4.2.1",
-    "eslint-plugin-react": "7.20.6",
-    "eslint-plugin-standard": "4.0.1",
-    "husky": "4.2.5",
-    "mocha": "8.1.1",
-    "prettier": "2.1.0"
+    "eslint-plugin-react": "7.21.5",
+    "eslint-plugin-standard": "4.1.0",
+    "husky": "4.3.6",
+    "mocha": "8.2.1",
+    "prettier": "2.2.1"
   },
   "scripts": {
     "bootstrap": "lerna bootstrap --no-ci --progress",
@@ -59,14 +59,15 @@
     "ignoreDeps": [
       "openzeppelin-solidity",
       "truffle",
-      "truffle-hdwallet-provider",
-      "truffle-privatekey-provider",
       "solc",
       "sequelize",
-      "sequelize-cli"
+      "sequelize-cli",
+      "ipfs",
+      "tailwindcss"
     ],
     "ignorePaths": [],
-    "schedule": "before 2am",
+    "schedule": "before 11am",
     "rebaseStalePrs": false
-  }
+  },
+  "version": "0.0.0"
 }

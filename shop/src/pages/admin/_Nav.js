@@ -15,7 +15,7 @@ import NewShop from './_NewShop'
 import LiveChat from './_LiveChat'
 
 const Nav = ({ newShop, setNewShop, only }) => {
-  const [{ admin, adminLocation }, dispatch] = useStateValue()
+  const [{ admin }] = useStateValue()
   const location = useLocation()
   const history = useHistory()
 
@@ -57,22 +57,10 @@ const Nav = ({ newShop, setNewShop, only }) => {
         </h1>
         {!config.activeShop ? null : (
           <div className="btn-group btn-group-sm mx-auto admin-switcher">
-            <button
-              type="button"
-              className={`btn btn-${isAdmin ? '' : 'outline-'}primary px-4`}
-              onClick={() => {
-                if (isAdmin) return
-                dispatch({ type: 'setStorefrontLocation', location })
-                history.push(adminLocation || '/admin')
-              }}
-            >
-              <fbt desc="Admin">Admin</fbt>
-            </button>
             <SwitchToStorefront
-              className={`btn btn-${isAdmin ? 'outline-' : ''}primary px-4`}
-            >
-              <fbt desc="Storefront">Storefront</fbt>
-            </SwitchToStorefront>
+              className="btn btn-sm btn-outline-primary px-4"
+              children={<fbt desc="Preview Shop">Preview Shop</fbt>}
+            />
           </div>
         )}
         <LiveChat className="ml-auto" />
@@ -93,8 +81,6 @@ require('react-styl')(`
       position: absolute
       left: 50%
       transform: translateX(-50%)
-      display: grid
-      grid-template-columns: 1fr 1fr
     > .fullwidth-container
       display: flex
       align-items: center

@@ -1,38 +1,34 @@
 import { useState, useEffect } from 'react'
+
+import useOrigin from 'utils/useOrigin'
 import { useStateValue } from 'data/state'
-import memoize from 'lodash/memoize'
-import useConfig from 'utils/useConfig'
 
-const getOrder = memoize(
-  async function fetchOrder(admin, orderId, backend, authToken) {
-    return await fetch(`${backend}/orders/${orderId}`, {
-      credentials: 'include',
-      headers: { authorization: `bearer ${encodeURIComponent(authToken)}` }
-    }).then((res) => res.json())
-  },
-  (...args) => args[1]
-)
-
-function useOrder(orderId) {
-  const { config } = useConfig()
-  const [loading, setLoading] = useState(false)
-  const [order, setOrder] = useState()
-  const [{ admin, reload }] = useStateValue()
-  const { backend, backendAuthToken } = config
+function useOrder({ tx, password }) {
+  const { getOffer, status } = useOrigin()
+  const [cart, setCart] = useState()
+  const [error, setError] = useState()
+  const [loading, setLoading] = useState()
+  const [, dispatch] = useStateValue()
 
   useEffect(() => {
-    setLoading(true)
-    const orderKey = `order-${orderId}`
-    if (reload[orderKey]) {
-      getOrder.cache.delete(orderId)
-    }
-    getOrder(admin, orderId, backend, backendAuthToken).then((order) => {
+    async function go() {
+      const result = await getOffer({ tx, password })
+      if (result) {
+        setCart(result.cart)
+        setError(false)
+        dispatch({ type: 'orderComplete' })
+      } else {
+        setError(true)
+      }
       setLoading(false)
-      setOrder(order)
-    })
-  }, [orderId, reload[`order-${orderId}`]])
+    }
+    if (getOffer && !cart && !loading && status !== 'loading') {
+      setLoading(true)
+      go()
+    }
+  }, [tx, password, status])
 
-  return { loading, order }
+  return { order: cart, loading, error }
 }
 
 export default useOrder

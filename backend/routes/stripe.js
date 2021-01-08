@@ -15,6 +15,7 @@ const { getLogger } = require('../utils/logger')
 const makeOffer = require('./_makeOffer')
 
 const stripeWebhookErrorEmail = require('../utils/emails/stripeWebhookError')
+const { OrderPaymentTypes } = require('../utils/enums')
 
 const log = getLogger('routes.stripe')
 
@@ -84,9 +85,11 @@ module.exports = function (router) {
     )
 
     if (!web3Pk || !valid) {
-      log.error(
-        `[Shop ${req.shop.id}] Failed to make payment on Stripe, invalid/missing credentials`
-      )
+      const error = `[Shop ${req.shop.id}] Failed to make payment on Stripe: `
+      const reason = !web3Pk
+        ? 'Missing web3pk'
+        : 'Invalid webhook configuration'
+      log.error(error + reason)
       return res.status(400).send({
         success: false,
         message: 'CC payments unavailable'
@@ -119,7 +122,7 @@ module.exports = function (router) {
       json = JSON.parse(bodyText)
 
       /**
-       * Probably not a payment created by Dshop or one we can't do aything
+       * Probably not a payment created by Dshop or one we can't do anything
        * with. We should fail gracefully here so we can coexist with other
        * payment software on the same Stripe account/key.  Otherwise, it will
        * appear to be errors to Stripe and they will alert the user.
@@ -210,6 +213,9 @@ module.exports = function (router) {
     externalPayment.paymentCode = get(event, 'data.object.metadata.paymentCode')
     externalPayment.amount = get(event, 'data.object.amount')
     externalPayment.currency = get(event, 'data.object.currency')
+    // Franck 10/30/2020: This seems broken. There is no row in production that
+    // have the fee column populated. I can't find any reference to a "fee"
+    // field in the Stripe documentation for events.
     externalPayment.fee =
       get(event, 'data.object.fee') ||
       get(event, 'data.object.charges.data[0].fee')
@@ -233,6 +239,7 @@ module.exports = function (router) {
     req.body.data = get(event, 'data.object.metadata.encryptedData')
     req.amount = externalPayment.amount
     req.paymentCode = externalPayment.paymentCode
+    req.paymentType = OrderPaymentTypes.CreditCard
     next()
   }
 

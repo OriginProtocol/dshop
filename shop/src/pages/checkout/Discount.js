@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import get from 'lodash/get'
 import fbt from 'fbt'
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
+import usePaymentDiscount from 'utils/usePaymentDiscount'
 
 const OrderDiscount = ({ cart }) => {
   const { config } = useConfig()
@@ -10,7 +11,17 @@ const OrderDiscount = ({ cart }) => {
   const [code, setCode] = useState('')
   const [, dispatch] = useStateValue()
   if (!config.discountCodes || !cart || !cart.items) return null
+  const discountObj = get(cart, 'discountObj')
   const existingCode = get(cart, 'discountObj.code', '').toUpperCase()
+
+  const { paymentDiscount } = usePaymentDiscount()
+
+  useEffect(() => {
+    // Default to payment discount, if none is present
+    if (!discountObj || (!discountObj.discountType && paymentDiscount)) {
+      dispatch({ type: 'setDiscount', discount: paymentDiscount })
+    }
+  }, [discountObj, paymentDiscount])
 
   return (
     <form
@@ -91,6 +102,3 @@ const OrderDiscount = ({ cart }) => {
 }
 
 export default OrderDiscount
-
-require('react-styl')(`
-`)

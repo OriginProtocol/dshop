@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useHistory } from 'react-router-dom'
 import dayjs from 'dayjs'
 import fbt, { FbtParam } from 'fbt'
@@ -11,6 +11,7 @@ import NoItems from 'components/NoItems'
 import DeleteDiscount from './_Delete'
 
 import useRest from 'utils/useRest'
+import DiscountTabs from './_Tabs'
 
 function description(discount) {
   // TODO: use config.currency
@@ -48,26 +49,33 @@ function active(discount) {
   )
 }
 
-const AdminDiscounts = () => {
+const ManualDiscounts = () => {
   const history = useHistory()
-  const { data: discounts = [], loading, reload } = useRest('/discounts')
+  const { data: _discounts = [], loading, reload } = useRest('/discounts')
+
+  const discounts = useMemo(() => {
+    return _discounts.filter((d) => d.discountType !== 'payment')
+  }, [_discounts])
 
   return (
     <>
-      <h3 className="admin-title">
-        <fbt desc="Discounts">Discounts</fbt>
-        {!discounts.length ? null : (
-          <div className="actions">
-            <Link to="/admin/discounts/new" className="btn btn-primary">
-              <fbt desc="admin.discounts.createDiscount">Create discount</fbt>
-            </Link>
-          </div>
-        )}
-      </h3>
       {loading ? (
         <Loading />
       ) : (
         <>
+          <h3 className="admin-title">
+            <fbt desc="Discounts">Discounts</fbt>
+            {!discounts.length ? null : (
+              <div className="actions">
+                <Link to="/admin/discounts/new" className="btn btn-primary">
+                  <fbt desc="admin.discounts.createDiscount">
+                    Create Manual Discount
+                  </fbt>
+                </Link>
+              </div>
+            )}
+          </h3>
+          <DiscountTabs />
           {discounts.length ? (
             <table className="table admin-discounts table-hover">
               <thead>
@@ -90,7 +98,8 @@ const AdminDiscounts = () => {
                   <tr
                     key={discount.id}
                     onClick={(e) => {
-                      if (e.target.matches('.action-icon, .action-icon *')) {
+                      if (e.target.matches('.actions *')) {
+                        e.stopPropagation()
                         return
                       }
                       history.push(`/admin/discounts/${discount.id}`)
@@ -156,7 +165,7 @@ const AdminDiscounts = () => {
   )
 }
 
-export default AdminDiscounts
+export default ManualDiscounts
 
 require('react-styl')(`
   .admin-orders

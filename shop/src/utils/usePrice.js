@@ -19,13 +19,14 @@ function usePrice(targetCurrency = 'USD', preferredCurrency = 'USD') {
 
   const { tokenDataProviders } = useTokenDataProviders()
 
-  async function fetchExchangeRates() {
+  async function fetchExchangeRates(abortSignal) {
     let url = `${config.backend}/exchange-rates?target=${targetCurrency}`
     if (preferredCurrency !== targetCurrency) {
       url += `&preferred=${preferredCurrency}`
     }
     let json = await memoFetch(url)
     json.USD = 1
+    json.OUSD = 1
     const acceptedTokens = config.acceptedTokens || []
 
     // Find tokens that don't have rates and look them up by contract address
@@ -33,20 +34,27 @@ function usePrice(targetCurrency = 'USD', preferredCurrency = 'USD') {
       (token) => !json[token.name] && token.address
     )
     if (withoutRates.length) {
-      const rates = await tokenDataProviders.reduce(async (rates, provider) => {
+      let rates = {}
+
+      for (const provider of tokenDataProviders) {
         const filteredTokens = withoutRates.filter((token) =>
           token.apiProvider
             ? token.apiProvider === provider.id
             : provider.id === 'coingecko_symbol'
         )
 
-        if (filteredTokens.length === 0) return rates
+        if (filteredTokens.length === 0) continue
 
         const tokenPrices = await provider.getTokenPrices(filteredTokens)
-        return { ...rates, ...tokenPrices }
-      }, {})
+
+        rates = { ...rates, ...tokenPrices }
+      }
 
       json = { ...json, ...rates }
+    }
+
+    if (abortSignal && abortSignal.aborted) {
+      return
     }
 
     setRates(json)
@@ -54,7 +62,11 @@ function usePrice(targetCurrency = 'USD', preferredCurrency = 'USD') {
 
   useEffect(() => {
     if (!exchangeRates[preferredCurrency]) {
-      fetchExchangeRates()
+      const abortController = new AbortController()
+      fetchExchangeRates(abortController.signal)
+      return () => {
+        abortController.abort()
+      }
     }
   }, [preferredCurrency])
 

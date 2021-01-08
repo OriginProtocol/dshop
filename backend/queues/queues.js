@@ -88,6 +88,20 @@ const all = [
     Object.assign(queueOpts, {
       prefix: '{tx}'
     })
+  ),
+  new Queue(
+    'dns',
+    backendUrl,
+    Object.assign(queueOpts, {
+      prefix: '{dns}'
+    })
+  ),
+  new Queue(
+    'deployment',
+    backendUrl,
+    Object.assign(queueOpts, {
+      prefix: '{deployment}'
+    })
   )
 ]
 

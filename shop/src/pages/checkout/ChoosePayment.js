@@ -11,12 +11,13 @@ import { Countries } from '@origin/utils/Countries'
 
 import Link from 'components/Link'
 
-import PayWithCrypto from './payment-methods/Crypto'
-import PayWithStripe from './payment-methods/Stripe'
-import PayWithUphold from './payment-methods/uphold/Uphold'
-import PayOffline from './payment-methods/OfflinePayment'
-import PayWithPayPal from './payment-methods/PayPal'
-import NoPaymentDue from './payment-methods/NoPaymentDue'
+import PayWithCrypto from 'components/payment/crypto/Crypto'
+import PayWithCryptoDirect from 'components/payment/crypto/CryptoDirect'
+import PayWithStripe from 'components/payment/Stripe'
+import PayWithUphold from 'components/payment/uphold/Uphold'
+import PayOffline from 'components/payment/OfflinePayment'
+import PayWithPayPal from 'components/payment/PayPal'
+import NoPaymentDue from 'components/payment/NoPaymentDue'
 import BillingAddress from './_BillingAddress'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
 
@@ -115,10 +116,12 @@ const ChoosePayment = () => {
   )
 
   useEffect(() => {
-    if (paymentMethods.length === 1) {
+    const shouldSelectFirstOptions =
+      paymentMethods.length >= 1 && paymentMethod === undefined
+    if (shouldSelectFirstOptions) {
       dispatch({ type: 'updatePaymentMethod', method: paymentMethods[0] })
     }
-  }, [paymentMethods.length])
+  }, [paymentMethods.length, paymentMethod])
 
   const isOfflinePayment = !!get(cart, 'paymentMethod.instructions', false)
 
@@ -167,6 +170,8 @@ const ChoosePayment = () => {
     })
   }
 
+  const CryptoCmp = config.useEscrow ? PayWithCrypto : PayWithCryptoDirect
+
   return (
     <form onSubmit={onSubmit}>
       {cart.total === 0 ? (
@@ -177,7 +182,7 @@ const ChoosePayment = () => {
         <>
           <div className="checkout-payment-method">
             {!paymentMethods.find((p) => p.id === 'crypto') ? null : (
-              <PayWithCrypto {...paymentState} onChange={setPaymentState} />
+              <CryptoCmp {...paymentState} onChange={setPaymentState} />
             )}
             {!paymentMethods.find((p) => p.id === 'stripe') ? null : (
               <PayWithStripe {...paymentState} onChange={setPaymentState} />

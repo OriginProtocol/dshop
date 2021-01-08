@@ -4,7 +4,7 @@ import { NavLink, useRouteMatch, Switch, Route } from 'react-router-dom'
 import get from 'lodash/get'
 import fbt from 'fbt'
 
-import useOrder from 'utils/useOrder'
+import useAdminOrder from 'utils/useAdminOrder'
 import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
@@ -16,13 +16,12 @@ import Contract from './Contract'
 const AdminOrder = () => {
   const match = useRouteMatch('/admin/orders/:orderId/:tab?')
   const { orderId, tab } = match.params
-  const { order, loading } = useOrder(orderId)
+  const { order, loading } = useAdminOrder(orderId)
   const [{ admin }] = useStateValue()
   const urlPrefix = `/admin/orders/${orderId}`
-
-  const offerSplit = orderId.split('-')
-  const listingId = offerSplit.slice(0, -1).join('-')
-  const offerId = Number(offerSplit[offerSplit.length - 1])
+  const offerState = get(order, 'offerStatus')
+  const prevOrderId = get(order, 'prevOrderId')
+  const nextOrderId = get(order, 'nextOrderId')
 
   return (
     <>
@@ -33,24 +32,24 @@ const AdminOrder = () => {
         <span className="chevron" />
         {`Order #${orderId}`}
         <div style={{ fontSize: 18 }} className="actions">
-          <Link
-            to={`/admin/orders/${listingId}-${offerId - 1}${
-              tab ? `/${tab}` : ''
-            }`}
-          >
-            &lt; <fbt desc="Older">Older</fbt>
-          </Link>
-          <Link
-            to={`/admin/orders/${listingId}-${offerId + 1}${
-              tab ? `/${tab}` : ''
-            }`}
-          >
-            <fbt desc="Newer">Newer</fbt> &gt;
-          </Link>
+          {prevOrderId ? (
+            <Link to={`/admin/orders/${prevOrderId}${tab ? `/${tab}` : ''}`}>
+              &lt; <fbt desc="Older">Older</fbt>
+            </Link>
+          ) : null}
+          {nextOrderId ? (
+            <Link to={`/admin/orders/${nextOrderId}${tab ? `/${tab}` : ''}`}>
+              <fbt desc="Newer">Newer</fbt> &gt;
+            </Link>
+          ) : null}
         </div>
       </h3>
       {!get(order, 'data.error') ? null : (
-        <div className="alert alert-danger">{order.data.error}</div>
+        <div className="alert alert-danger">
+          {Array.isArray(order.data.error)
+            ? order.data.error.join('\n')
+            : order.data.error}
+        </div>
       )}
       <ul className="nav nav-tabs mt-3 mb-4">
         <li className="nav-item">
@@ -58,14 +57,17 @@ const AdminOrder = () => {
             <fbt desc="Details">Details</fbt>
           </NavLink>
         </li>
-        {admin.role !== 'admin' ? null : (
+        {!/^admin$/i.test(admin.role) ? null : (
           <li className="nav-item">
             <NavLink className="nav-link" to={`${urlPrefix}/printful`}>
               Printful
             </NavLink>
           </li>
         )}
-        {admin.role !== 'admin' ? null : (
+        {/*If 'offerState' is undefined, the payment was recorded off-chain. Therefore,
+          if the user does not have an 'admin' role, or if the payment didn't go through the Origin contract, 
+          refrain from loading the 'Contract' tab*/}
+        {!/^admin$/i.test(admin.role) || !offerState ? null : (
           <li className="nav-item">
             <NavLink className="nav-link" to={`${urlPrefix}/contract`}>
               <fbt desc="Contract">Contract</fbt>

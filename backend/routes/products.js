@@ -1,13 +1,9 @@
-const formidable = require('formidable')
-const fs = require('fs')
-const path = require('path')
+const { authSellerAndShop, authRole, authShop } = require('./_auth')
+const { upsertProduct, deleteProduct } = require('../logic/products')
 
-const { authSellerAndShop, authRole } = require('./_auth')
-const { upsertProduct, deleteProduct } = require('../utils/products')
-const { DSHOP_CACHE } = require('../utils/const')
-const { getLogger } = require('../utils/logger')
+const { Product } = require('../models')
 
-const log = getLogger('routes.products')
+const uploadFiles = require('../logic/shop/upload')
 
 module.exports = function (router) {
   router.post(
@@ -60,45 +56,52 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      try {
-        const dataDir = req.shop.authToken
-        const uploadDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/__tmp`)
-
-        if (!fs.existsSync(uploadDir)) {
-          fs.mkdirSync(uploadDir)
-        }
-
-        const form = formidable({
-          multiples: true,
-          uploadDir,
-          keepExtensions: true
-        })
-
-        form.parse(req, async (err, fields, files) => {
-          if (err) {
-            // next(err)
-            log.error(err)
-            return res.status(500).send({
-              reason: 'Upload failed'
-            })
-          }
-
-          const allFiles = Array.isArray(files.file) ? files.file : [files.file]
-
-          res.status(200).send({
-            success: true,
-            uploadedFiles: allFiles.map((file) => ({
-              path: file.path.replace(uploadDir, `/${dataDir}/__tmp`),
-              name: file.name
-            }))
-          })
-        })
-      } catch (err) {
-        log.error(err)
-        res.status(500).send({
-          reason: 'Some unknown error occured'
-        })
-      }
+      const { status, ...data } = await uploadFiles(req, '/__tmp', true)
+      res.status(status).send(data)
     }
   )
+
+  /**
+   * Returns the stock info of all
+   * products of the shop
+   */
+  router.get('/products/stock', authShop, async (req, res) => {
+    const products = await Product.findAll({
+      where: {
+        shopId: req.shop.id
+      }
+    })
+
+    res.status(200).send({
+      success: true,
+      products: products.map((p) => p.get({ plain: true }))
+    })
+  })
+
+  /**
+   * Returns the stock info of a single product
+   *
+   * @param productId the ID of the product as in products.json
+   */
+  router.get('/products/:productId/stock', authShop, async (req, res) => {
+    const product = await Product.findOne({
+      where: {
+        productId: req.params.productId,
+        shopId: req.shop.id
+      }
+    })
+
+    if (!product) {
+      return res.status(200).send({
+        reason: 'No stock info found for the productId'
+      })
+    }
+
+    res.status(200).send({
+      success: true,
+      product: product.get({
+        plain: true
+      })
+    })
+  })
 }

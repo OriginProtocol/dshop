@@ -1,4 +1,5 @@
 const OriginToken = artifacts.require('./token/OriginToken.sol')
+const MockOUSD = artifacts.require('./token/MockOUSD.sol')
 const assert = require('assert')
 
 // NOTE: this file will only have an effect for local blockchains
@@ -29,26 +30,32 @@ async function transferTokensToTestAccounts(deployer, network) {
   })
 
   const lastAccount = accounts[accounts.length - 1]
-  const token = await OriginToken.deployed()
-  const contractOwner = await token.owner()
-  const decimals = await token.decimals()
+  const ognToken = await OriginToken.deployed()
+  const ousdToken = await MockOUSD.deployed()
 
-  // The last account will receive the bulk of the tokens. This is to give a
-  // more representative UX for the other accounts
-  await token.transfer(
-    lastAccount,
-    await token.balanceOf(accounts[0]),
-    { from: contractOwner }
-  )
+  for (const token of [ognToken, ousdToken]) {
+    const decimals = await token.decimals()
+    const contractOwner = await token.owner()
+    const symbol = await token.symbol()
 
-  // Everyone else gets a fixed number of tokens to test with.
-  const tokensPerAccount = 200
-  for (let i = 0; i < accounts.length - 1; i++) {
+    // The last account will receive the bulk of the tokens. This is to give a
+    // more representative UX for the other accounts
     await token.transfer(
-      accounts[i],
-      tokensPerAccount * 10**decimals,
-      { from: lastAccount }
+      lastAccount,
+      await token.balanceOf(accounts[0]),
+      { from: contractOwner }
     )
-    console.log(`Transfered ${tokensPerAccount * 10**decimals} from ${lastAccount} to ${accounts[i]}`)
+  
+    // Everyone else gets a fixed number of tokens to test with.
+    const tokensPerAccount = 200
+    for (let i = 0; i < accounts.length - 1; i++) {
+      await token.transfer(
+        accounts[i],
+        tokensPerAccount * 10**decimals,
+        { from: lastAccount }
+      )
+      console.log(`Transfered ${tokensPerAccount} ${symbol} from ${lastAccount} to ${accounts[i]}`)
+    }
   }
+
 }

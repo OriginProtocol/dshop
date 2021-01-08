@@ -1,9 +1,14 @@
-const { authSuperUser } = require('./_auth')
-const { Network } = require('../models')
-const { getConfig, setConfig } = require('../utils/encryptedConfig')
-const startListener = require('../listener')
 const omit = require('lodash/omit')
 const pick = require('lodash/pick')
+const {
+  getAvailableResources,
+  getSupportedResources
+} = require('@origin/dshop-validation/matrix')
+
+const { Network } = require('../models')
+const { decryptConfig, encryptConfig } = require('../utils/encryptedConfig')
+const startListener = require('../listener')
+const { authSuperUser } = require('./_auth')
 
 function pickConfig(body) {
   return pick(body, [
@@ -27,11 +32,16 @@ function pickConfig(body) {
     'notificationEmailDisplayName',
     'uiCdn',
     'awsAccessKeyId',
-    'awsSecretAccessKey'
+    'awsSecretAccessKey',
+    'listingId',
+    'defaultResourceSelection'
   ])
 }
 
 module.exports = function (router) {
+  /**
+   * Creates a new network. Called during the deployer's initial setup.
+   */
   router.post('/networks', authSuperUser, async (req, res) => {
     const networkObj = {
       networkId: req.body.networkId,
@@ -41,9 +51,13 @@ module.exports = function (router) {
       ipfsApi: req.body.ipfsApi,
       marketplaceContract: req.body.marketplaceContract,
       marketplaceVersion: req.body.marketplaceVersion,
+      listingId: req.body.listingId,
       publicSignups: req.body.publicSignups ? true : false,
+      // By default we disable the use of the marketplace.
+      // TODO: expose via a flag in the UI.
+      useMarketplace: false,
       active: req.body.active ? true : false,
-      config: setConfig(pickConfig(req.body))
+      config: encryptConfig(pickConfig(req.body))
     }
 
     const existing = await Network.findOne({
@@ -62,6 +76,9 @@ module.exports = function (router) {
     res.json({ success: true })
   })
 
+  /**
+   * Updates an existing network. Called from the super-admin console.
+   */
   router.get('/networks/:netId', authSuperUser, async (req, res) => {
     const where = { networkId: req.params.netId }
     const network = await Network.findOne({ where })
@@ -69,7 +86,7 @@ module.exports = function (router) {
       return res.json({ success: false, reason: 'no-network' })
     }
 
-    const config = getConfig(network.config)
+    const config = decryptConfig(network.config)
     res.json({ ...omit(network.dataValues, 'config'), ...config })
   })
 
@@ -83,9 +100,10 @@ module.exports = function (router) {
     const config = pickConfig(req.body)
     const result = await Network.update(
       {
-        config: setConfig(config, network.dataValues.config),
+        config: encryptConfig(config, network.dataValues.config),
         ipfs: req.body.ipfs,
         ipfsApi: req.body.ipfsApi,
+        listingId: req.body.listingId,
         publicSignups: req.body.publicSignups ? true : false
       },
       { where }
@@ -116,6 +134,34 @@ module.exports = function (router) {
       }
 
       res.json({ success: true })
+    }
+  )
+
+  // Return infra resources marked as supported
+  router.get('/networks/infra/resources', authSuperUser, async (req, res) => {
+    res.json({
+      success: true,
+      resources: getSupportedResources()
+    })
+  })
+
+  // Return infra resources that are supported and configured for the network
+  router.get(
+    '/networks/:netId/infra/resources',
+    authSuperUser,
+    async (req, res) => {
+      const where = { networkId: req.params.netId }
+      const network = await Network.findOne({ where })
+      if (!network) {
+        return res.json({ success: false, reason: 'no-network' })
+      }
+
+      const networkConfig = decryptConfig(network.config)
+
+      res.json({
+        success: true,
+        resources: getAvailableResources({ networkConfig, fullObjects: true })
+      })
     }
   )
 }

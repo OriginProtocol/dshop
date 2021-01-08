@@ -1,0 +1,101 @@
+[
+  {
+    "id": "aws-files",
+    "name": "S3 Buckets",
+    "description": "S3 bucket deployments",
+    "supported": true,
+    "type": "files",
+    "depends": null,
+    "requiresConfig": ["awsAccessKeyId", "awsSecretAccessKey"]
+  },
+  {
+    "id": "ipfs-cluster",
+    "name": "IPFS Cluster",
+    "description": "IPFS Cluster Files pinning",
+    "supported": true,
+    "type": "files",
+    "depends": null,
+    "requiresConfig": ["ipfsApi", "ipfsClusterUser", "ipfsClusterPassword"]
+  },
+  {
+    "id": "ipfs-pinata",
+    "name": "Pinata Pinning (IPFS)",
+    "description": "Pinata IPFS pinning",
+    "supported": true,
+    "type": "files",
+    "depends": null,
+    "requiresConfig": ["pinataKey", "pinataSecret"]
+  },
+  {
+    "id": "gcp-files",
+    "name": "Google Cloud Storage Buckets",
+    "description": "GCS bucket deployments",
+    "supported": true,
+    "type": "files",
+    "depends": null,
+    "requiresConfig": ["gcpCredentials"]
+  },
+  {
+    "id": "aws-cdn",
+    "name": "AWS Cloudfront",
+    "description": "AWS Cloudfront deployments",
+    "supported": true,
+    "type": "cdn",
+    "depends": ["aws-files", "aws-dns"],
+    "requiresConfig": ["awsAccessKeyId", "awsSecretAccessKey"]
+  },
+  {
+    "id": "gcp-cdn",
+    "name": "Google Cloud CDN",
+    "description": "Cloud CDN deployments",
+    "supported": true,
+    "type": "cdn",
+    "depends": ["gcp-files", "gcp-dns"],
+    "requiresConfig": ["gcpCredentials"]
+  },
+  {
+    "id": "aws-dns",
+    "name": "AWS Route53",
+    "description": "Route53 configuration for node domain",
+    "supported": true,
+    "type": "dns",
+    "depends": null,
+    "requiresConfig": ["awsAccessKeyId", "awsSecretAccessKey"]
+  },
+  {
+    "id": "gcp-dns",
+    "name": "Google Cloud DNS",
+    "description": "Cloud DNS configuration for node domain",
+    "supported": true,
+    "type": "dns",
+    "depends": null,
+    "requiresConfig": ["gcpCredentials"]
+  },
+  {
+    "id": "cloudflare-dns",
+    "name": "Cloudflare DNS",
+    "description": "Cloudflare DNS configuration for node domain",
+    "supported": true,
+    "type": "dns",
+    "depends": null,
+    "requiresConfig": ["cloudflareApiKey"]
+  },
+  {
+    "id": "aws-email",
+    "name": "AWS SES",
+    "description": "AWS SES for E-mail notifications",
+    "supported": true,
+    "type": "email",
+    "depends": null,
+    "requiresConfig": ["awsAccessKeyId", "awsSecretAccessKey"]
+  },
+  {
+    "id": "sendgrid-email",
+    "name": "Sendgrid",
+    "description": "Sendgrid for E-mail notifications",
+    "supported": true,
+    "type": "email",
+    "depends": null,
+    "requiresConfig": ["sendgridApiKey", "sendgridUsername", "sendgridPassword"]
+  }
+]

@@ -42,7 +42,7 @@ describe('IPFS Utils', () => {
   // As a workaround, clear the IPTS service data before running it.
   // TODO(franck): dynamically generate random data and figure the
   //  associated hash in order to make this test idempotent.
-  it('should throw a timeout error and succeed on 2nd try', async () => {
+  it('should throw a timeout error and succeed on 2nd try (NOTE: expected to fail if IPFS service was not cleared)', async () => {
     const data3 = { name: 'data3' }
     const expectedData3Hash = 'Qmd78po6SFVtys6yP42M2crED7UjRKKydt5D1tkxnVQZg8'
 

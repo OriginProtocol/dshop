@@ -6,6 +6,7 @@ import get from 'lodash/get'
 import useProducts from 'utils/useProducts'
 import usePaginate from 'utils/usePaginate'
 import useShopConfig from 'utils/useShopConfig'
+import useConfig from 'utils/useConfig'
 import useSearchQuery from 'utils/useSearchQuery'
 
 import ProductImage from 'components/ProductImage'
@@ -26,6 +27,7 @@ const AdminProducts = () => {
   const opts = useSearchQuery()
 
   const { shopConfig } = useShopConfig()
+  const { config } = useConfig()
   const location = useLocation()
   const history = useHistory()
 
@@ -82,7 +84,7 @@ const AdminProducts = () => {
       <Link
         to="/admin/products/new"
         className="btn btn-primary"
-        children="Add Product"
+        children={<fbt desc="admin.products.addProduct">Add Product</fbt>}
       />
     </div>
   )
@@ -92,7 +94,7 @@ const AdminProducts = () => {
       className={`admin-products-page${hasNoProducts ? ' no-products' : ''}`}
     >
       <h3 className="admin-title">
-        Products
+        <fbt desc="Products">Products</fbt>
         {hasNoProducts ? null : (
           <>
             <span className="ml-2">({sortedProducts.length})</span>
@@ -108,13 +110,21 @@ const AdminProducts = () => {
           <thead>
             <tr>
               <th onClick={sortByColumnCallback('title')}>
-                Name {getSortIcon('title')}
+                <fbt desc="Name">Name</fbt> {getSortIcon('title')}
               </th>
               <th onClick={sortByColumnCallback('title')}></th>
               <th onClick={sortByColumnCallback('price')}>
-                Price {getSortIcon('price')}
+                <fbt desc="Price">Price</fbt> {getSortIcon('price')}
               </th>
-              <th>Collections</th>
+              {!config.inventory ? null : (
+                <th onClick={sortByColumnCallback('quantity')}>
+                  <fbt desc="StockLeft">Stock Left</fbt>{' '}
+                  {getSortIcon('quantity')}
+                </th>
+              )}
+              <th>
+                <fbt desc="Collections">Collections</fbt>
+              </th>
               <th></th>
             </tr>
           </thead>
@@ -123,7 +133,8 @@ const AdminProducts = () => {
               <tr
                 key={product.id}
                 onClick={(e) => {
-                  if (e.target.matches('.action-icon, .action-icon *')) {
+                  if (e.target.matches('.actions *')) {
+                    e.stopPropagation()
                     return
                   }
                   history.push({
@@ -143,6 +154,7 @@ const AdminProducts = () => {
                     <Price amount={product.price} />
                   </div>
                 </td>
+                {!config.inventory ? null : <td>{product.quantity}</td>}
                 <td>{getCollections(product)}</td>
                 <td>
                   {product.externalId ? null : (

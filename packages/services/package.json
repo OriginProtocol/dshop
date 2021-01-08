@@ -18,14 +18,14 @@
     "prettier:check": "prettier -c *.js \"**/*.js\""
   },
   "dependencies": {
-    "commander": "^6.0.0",
-    "ganache-core": "2.11.2",
-    "ipfs": "^0.49.0",
+    "commander": "^6.1.0",
+    "ganache-core": "2.13.1",
+    "ipfs": "^0.50.2",
     "memdown": "^5.1.0"
   },
   "devDependencies": {
-    "eslint": "7.7.0",
-    "prettier": "2.1.0"
+    "eslint": "7.15.0",
+    "prettier": "2.2.1"
   },
   "prettier": {
     "semi": false,

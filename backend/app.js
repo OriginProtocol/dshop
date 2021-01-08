@@ -7,20 +7,28 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const serveStatic = require('serve-static')
 const set = require('lodash/set')
+const kebabCase = require('lodash/kebabCase')
 
 const { getConfig } = require('./utils/encryptedConfig')
 const { sequelize, Network } = require('./models')
+const hostCache = require('./utils/hostCache')
 const { getLogger } = require('./utils/logger')
 const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
 const { Sentry, sentryEventPrefix } = require('./sentry')
+const { scheduleDNSVerificationJob } = require('./queues/dnsStatusProcessor')
 
 const log = getLogger('app')
 
 require('./queues').runProcessors()
+scheduleDNSVerificationJob()
 
 const ORIGIN_WHITELIST_ENABLED = false
 const ORIGIN_WHITELIST = []
-const BODYPARSER_EXCLUDES = ['/webhook', '/products/upload-images']
+const BODYPARSER_EXCLUDES = [
+  '/webhook',
+  '/products/upload-images',
+  '/themes/upload-images'
+]
 
 const app = express()
 
@@ -65,6 +73,7 @@ app.use((req, res, next) => {
 })
 
 app.use(serveStatic(`${__dirname}/dist`, { index: false }))
+app.use('/theme', serveStatic(`${__dirname}/themes`, { index: false }))
 
 // Use express-promise-router which allows middleware to return promises.
 const router = Router()
@@ -91,39 +100,95 @@ require('./routes/offline-payment')(router)
 require('./routes/paypal')(router)
 require('./routes/exchange-rates')(router)
 require('./routes/crypto')(router)
+require('./routes/themes')(router)
 
-router.get('/', async (req, res) => {
-  let html
-  try {
-    html = fs.readFileSync(`${__dirname}/dist/index.html`).toString()
-  } catch (e) {
-    return res.send('')
-  }
+async function getNetworkName() {
   const network = await Network.findOne({ where: { active: true } })
-  const NETWORK = !network
+  return !network
     ? 'NETWORK'
     : network.networkId === 1
     ? 'mainnet'
     : network.networkId === 4
     ? 'rinkeby'
     : 'localhost'
+}
 
+router.get('/', async (req, res) => {
+  let html
+  const authToken = await hostCache(req.hostname)
+
+  if (authToken) {
+    try {
+      html = fs
+        .readFileSync(`${DSHOP_CACHE}/${authToken}/public/index.html`)
+        .toString()
+    } catch (e) {
+      return res.status(404).send('')
+    }
+  } else {
+    try {
+      html = fs.readFileSync(`${__dirname}/dist/index.html`).toString()
+    } catch (e) {
+      return res.send('')
+    }
+
+    const NETWORK = await getNetworkName()
+    html = html
+      .replace('DATA_DIR', '')
+      .replace('TITLE', 'Origin Dshop')
+      .replace(/NETWORK/g, NETWORK)
+  }
+  res.send(html)
+})
+
+router.get('/theme/:theme', async (req, res) => {
+  const theme = req.params.theme
+  if (theme !== kebabCase(theme)) {
+    return res.send('Invalid theme')
+  }
+
+  const themeIndex = `${__dirname}/themes/${theme}/index.html`
+
+  let html
+  try {
+    html = fs.readFileSync(themeIndex).toString()
+  } catch (e) {
+    return res.send('')
+  }
+
+  const NETWORK = await getNetworkName()
   html = html
-    .replace('DATA_DIR', '')
+    .replace('DATA_DIR', `/${req.query.shop}`)
     .replace('TITLE', 'Origin Dshop')
     .replace(/NETWORK/g, NETWORK)
+    .replace('ENABLE_LIVE_PREVIEW', 'TRUE')
 
   res.send(html)
 })
 
 router.get('*', async (req, res, next) => {
+  const authToken = await hostCache(req.hostname)
   const split = req.path.split('/')
-  if (split.length <= 2) {
+
+  if (!authToken && split.length <= 2) {
     return next()
   }
-  const dataDir = decodeURIComponent(split[1])
-  const dir = `${DSHOP_CACHE}/${dataDir}/data`
-  req.url = split.slice(2).join('/')
+
+  /**
+   * We're making some decisions on what source we're serving from here.
+   *
+   * 1) If the authToken was included in the URL, it's a data dir access.
+   * 2) If it's a known deployed hostname, we want to serve the assembled shop.
+   * 3) If all else failed, it's the admin
+   */
+  const partInUrl = decodeURIComponent(split[1])
+  const dataDir = authToken ? authToken : decodeURIComponent(split[1])
+  const isNamedDataAccess =
+    partInUrl === authToken || (!!partInUrl && !authToken)
+  const dir = `${DSHOP_CACHE}/${dataDir}${
+    isNamedDataAccess ? '/data' : '/public'
+  }`
+  req.url = isNamedDataAccess ? split.slice(2).join('/') : req.path
 
   // When serving config.json from backend, override active network settings.
   // This prevents problems when, eg, the backend specified in config.json does

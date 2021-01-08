@@ -6,7 +6,6 @@ import useConfig from 'utils/useConfig'
 
 import Bars from 'components/icons/Bars.js'
 import Link from 'components/Link'
-import AdminNav from 'pages/admin/_Nav'
 
 import Nav from './_Nav'
 import Notice from './_Notice'
@@ -119,7 +118,6 @@ const Main = () => {
   return (
     <>
       <div className="app-wrap">
-        <AdminNav only={() => localStorage.isAdmin} />
         <Notice />
         <Nav />
         <div className="container">

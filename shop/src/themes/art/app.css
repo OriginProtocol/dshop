@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn {
+    @apply border bg-white px-4 py-3 font-medium text-lg transition-all duration-300 ease-in-out text-center inline-block;
+    color: var(--button-color);
+    border-color: var(--button-color);
+  }
+
+  .btn:not(:disabled):hover {
+    @apply text-white;
+    background-color: var(--button-color);
+  }
+
+  .btn-primary {
+    @apply text-white;
+    background-color: var(--button-color);
+  }
+
+  .btn-primary:not(:disabled):hover {
+    @apply bg-white;
+    color: var(--button-color);
+  }
+
+  .btn-link, a {
+    color: var(--link-color);
+  }
+}
+
+body {
+  background-color: var(--page-color);
+  font-family: var(--body-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--header-font);
+}
+
+@media (min-width: 640px) {
+  .container,
+  .sm\:container {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}

@@ -77,7 +77,7 @@ async function deregisterWebhooks(shop, config) {
   const { stripeBackend, stripeWebhookSecret } = config
 
   if (!stripeBackend || !stripeWebhookSecret) {
-    log.debug(`[Shop ${shop.id}] Missing params, skipping deregistering`)
+    log.debug(`[Shop ${shop.id}] No webhook registered`)
     return
   }
 
@@ -107,7 +107,9 @@ async function deregisterWebhooks(shop, config) {
       }
     }
 
-    log.debug(`${endpointsToDelete.length} webhooks deregisterd`)
+    log.info(
+      `[Shop ${shop.id}] ${endpointsToDelete.length} webhooks deregisterd`
+    )
   } catch (err) {
     log.error(`[Shop ${shop.id}] Failed to deregister webhooks`, err)
     return { success: false }
@@ -191,8 +193,8 @@ async function registerWebhooks(shop, newConfig, oldConfig, backendUrl) {
 /**
  * Validates shop's webhook, if it exists
  * @param {Model.Shop} shop
- * @param {Model.Shop.config} config encrypted shop config
- * @param {String} backendUrl webhook host to use
+ * @param {Object} config: Shop's config
+ * @param {String} backendUrl: webhook host to use
  *
  * @returns {Boolean} true, if webhook exists and is configured correctly
  */
@@ -203,7 +205,6 @@ async function webhookValidation(shop, config, backendUrl) {
   if (!stripeBackend) return false
 
   let valid = false
-
   try {
     const stripe = Stripe(stripeBackend)
     const webhookEndpoints = await stripe.webhookEndpoints.list({
@@ -215,6 +216,9 @@ async function webhookValidation(shop, config, backendUrl) {
     )
 
     if (!existingWebhook) {
+      log.debug(
+        `[Shop ${shop.id}] No webhook with metadata.dshopStore matching authToken found`
+      )
       return valid
     }
 

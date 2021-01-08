@@ -1,4 +1,4 @@
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import fbt from 'fbt'
 
 import { NetworksByIdStr } from 'data/Networks'
@@ -18,6 +18,12 @@ const contracts = networks[activeNetwork.idStr] || {}
 
 // TODO: change `name` to `symbol` and `displayName` to `name`
 export default [
+  {
+    id: 'token-OUSD',
+    name: 'OUSD',
+    address: contracts.OUSD,
+    displayName: fbt('Origin Dollar', 'tokens.OUSD')
+  },
   {
     id: 'token-OGN',
     name: 'OGN',

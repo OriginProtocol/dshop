@@ -9,7 +9,7 @@ import fbt from 'fbt'
 import Loading from 'components/Loading'
 import Link from 'components/Link'
 import GalleryScroll from 'components/GalleryScroll'
-import Gallery from 'components/Gallery'
+import Gallery from 'components/GalleryOld'
 import SimilarProducts from 'components/SimilarProducts'
 import SizeGuide from './product/SizeGuide'
 import formatPrice from 'utils/formatPrice'
@@ -19,6 +19,7 @@ import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 import fetchProduct from 'data/fetchProduct'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
+import usePaymentDiscount from 'utils/usePaymentDiscount'
 
 function getOptions(product, offset) {
   const options = new Set(
@@ -65,17 +66,18 @@ const Product = ({ history, location, match }) => {
     loading: true,
     options: {},
     activeImage: 0,
-    addedToCart: false,
     productData: undefined
   })
-  const { options, activeImage, addedToCart, productData } = state
+  const { options, activeImage, productData } = state
 
-  const [{ collections }, dispatch] = useStateValue()
+  const [{ collections, cart }, dispatch] = useStateValue()
   const isMobile = useIsMobile()
   const { config } = useConfig()
   const { products } = useProducts()
   const currencyOpts = useCurrencyOpts()
   const opts = queryString.parse(location.search)
+
+  const { paymentDiscount } = usePaymentDiscount()
 
   useEffect(() => {
     async function setData(data) {
@@ -103,7 +105,6 @@ const Product = ({ history, location, match }) => {
       const newState = {
         productData: data,
         activeImage: 0,
-        addedToCart: false,
         loading: false,
         options: pick(variant, 'option1', 'option2', 'option3')
       }
@@ -129,20 +130,7 @@ const Product = ({ history, location, match }) => {
 
   function addToCart(product, variant) {
     setState({ addedToCart: true })
-    dispatch({
-      type: 'addToCart',
-      item: {
-        title: product.title,
-        product: product.id,
-        quantity: 1,
-        variant: variant.id,
-        price: variant.price,
-        externalProductId: product.externalId,
-        externalVariantId: variant.externalId,
-        restrictShippingTo: product.restrictShippingTo,
-        maxQuantity: product.maxQuantity
-      }
-    })
+    dispatch({ type: 'addToCart', product, variant })
   }
 
   if (state.loading) {
@@ -245,6 +233,16 @@ const Product = ({ history, location, match }) => {
     }
   }
 
+  const addedToCart = Boolean(
+    get(cart, 'items', []).find(
+      (item) =>
+        item.product === match.params.id &&
+        (opts.variant ? String(item.variant) === String(opts.variant) : true)
+    )
+  )
+
+  const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
+
   return (
     <div className="product-detail">
       {!collection ? null : (
@@ -284,6 +282,11 @@ const Product = ({ history, location, match }) => {
               </span>
             ) : null}
           </div>
+          {!paymentDiscount || !paymentDiscount.data ? null : (
+            <div className="payment-discount">
+              {paymentDiscount.data.summary}
+            </div>
+          )}
           {!productOptions ||
           (productData.variants || []).length <= 1 ? null : (
             <div
@@ -319,7 +322,7 @@ const Product = ({ history, location, match }) => {
                   </Link>
                 )}
               </>
-            ) : variant ? (
+            ) : variant && !isOutOfStock ? (
               <button
                 onClick={() => {
                   if (config.isAffiliate) {
@@ -403,6 +406,13 @@ require('react-styl')(`
         margin-right: 0.5rem
     .description
       white-space: pre-line
+    .payment-discount
+      text-align: center
+      padding: 10px
+      margin: 10px 0 1rem 0
+      border-top: solid 1px #dddddd
+      border-bottom: solid 1px #dddddd
+      font-size: 1.125rem
   @media (max-width: 767.98px)
     .product-detail
       h3,.price,.actions

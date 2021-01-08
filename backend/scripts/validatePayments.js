@@ -25,12 +25,12 @@ const stripeRaw = require('stripe')
 require('dotenv').config()
 const program = require('commander')
 
-const { Shop, Order, Network } = require('../models')
+const { Shop, Network } = require('../models')
+const { checkStripePayments } = require('../logic/payments/stripe')
 const encConf = require('../utils/encryptedConfig')
-
 const { getWebhookData } = require('../utils/stripe')
-
 const { getLogger } = require('../utils/logger')
+
 const log = getLogger('script')
 
 program
@@ -70,65 +70,6 @@ async function _getShop() {
   return shop
 }
 
-// Load the Stripe payment in the last 30 days for a shop and
-// check there is an associated order for each of them in the DB.
-async function validateShopPayments(shop) {
-  const stripeKey = await encConf.get(shop.id, 'stripeBackend')
-  if (!stripeKey) {
-    log.info('No stripe key configured')
-    return
-  }
-
-  const orders = await Order.findAll({ where: { shopId: shop.id } })
-  const encryptedHashes = orders
-    .map((o) => o.encryptedIpfsHash)
-    .filter((i) => i)
-  log.info(`Found ${encryptedHashes.length} orders with encrypted hashes`)
-
-  const stripe = stripeRaw(stripeKey)
-
-  let after
-
-  do {
-    await new Promise((resolve) => {
-      const eventArgs = {
-        limit: 100,
-        type: 'payment_intent.succeeded',
-        starting_after: after
-      }
-      log.debug(`Fetching events after ${after}`)
-
-      stripe.events.list(eventArgs, function (err, events) {
-        if (!events) {
-          return
-        }
-        if (!events.data) {
-          log.warning('Events object with no data:', events)
-          return
-        }
-        log.debug(
-          `Found ${events.data.length} completed Stripe payments for key (may be shared with multiple dshops)`
-        )
-        events.data.forEach((item) => {
-          const { shopId, encryptedData } = item.data.object.metadata
-          if (Number(shopId) !== shop.id) {
-            /* Ignore */
-            // Note: the same Stripe key can be shared across multiple shops
-            // which explains why we may be getting events for other shops.
-          } else if (encryptedHashes.indexOf(encryptedData) < 0) {
-            log.error(`Event id: ${item.id}`)
-            log.error(`Event metadata: ${get(item, 'data.object.metadata')}`)
-          } else {
-            log.info(`Found hash ${encryptedData} OK`)
-          }
-        })
-        after = events.data.length >= 100 ? events.data[99].id : null
-        resolve()
-      })
-    })
-  } while (after)
-}
-
 // Validate payments for a shop or all shops.
 async function validatePayments() {
   let shops
@@ -141,7 +82,8 @@ async function validatePayments() {
     log.info('=========================================')
     log.info(`Shop ${shop.name} id=${shop.id}`)
     try {
-      await validateShopPayments(shop)
+      const shopConfig = encConf.getConfig(shop.config)
+      await checkStripePayments(shop.id, shopConfig)
     } catch (e) {
       log.error('Shop validation failed:', e)
     }

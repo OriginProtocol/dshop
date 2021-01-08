@@ -1,3 +1,4 @@
+const path = require('path')
 require('dotenv').config()
 const randomstring = require('randomstring')
 
@@ -9,13 +10,21 @@ try {
   console.log('Is ENVKEY missing?')
 }
 
-const { TEST_DSHOP_CACHE } = require('../test/const')
+const { TEST_DSHOP_CACHE, TEST_THEMES_CACHE } = require('../test/const')
 
 const NETWORK_NAME_TO_ID = {
   localhost: 999,
   rinkeby: 4,
   mainnet: 1
 }
+
+const NETWORK_ID_TO_NAME = Object.keys(NETWORK_NAME_TO_ID).reduce(
+  (acc, cur) => {
+    acc[NETWORK_NAME_TO_ID[cur]] = cur
+    return acc
+  },
+  {}
+)
 
 const CONTRACTS = {
   999: {
@@ -42,6 +51,11 @@ const NODE_ENV = process.env.NODE_ENV
 const IS_PROD = NODE_ENV === 'production'
 const IS_TEST = NODE_ENV === 'test'
 const IS_DEV = NODE_ENV === 'development' || (!IS_PROD && !IS_TEST)
+const PROTOCOL_LABS_GATEWAY = 'https://gateway.ipfs.io'
+const PINATA_API = 'https://api.pinata.cloud'
+const PINATA_GATEWAY = 'https://gateway.pinata.cloud'
+const DEFAULT_BUCKET_PREFIX = `ds-deploy-`
+const DEFAULT_SERVICE_PREFIX = DEFAULT_BUCKET_PREFIX
 
 const {
   SESSION_SECRET = randomstring.generate(),
@@ -51,7 +65,10 @@ const {
   PROVIDER,
   PROVIDER_WS,
   REDIS_URL,
-  IPFS_GATEWAY // IPFS gateway override
+  IPFS_GATEWAY, // IPFS gateway override
+  BUCKET_PREFIX = DEFAULT_BUCKET_PREFIX,
+  SERVICE_PREFIX = DEFAULT_SERVICE_PREFIX,
+  EXTERNAL_IP
 } = process.env
 
 /**
@@ -62,9 +79,27 @@ const {
 const DATA_URL = null
 const PRINTFUL_URL = 'https://api.printful.com'
 
-const DSHOP_CACHE = IS_TEST
-  ? TEST_DSHOP_CACHE
-  : process.env.DSHOP_CACHE || `${__dirname}/../data`
+// Service that returns a plaintext IP for a GET request
+const EXTERNAL_IP_SERVICE_URL = 'https://api.ipify.org'
+
+const DSHOP_CACHE = path.resolve(
+  IS_TEST ? TEST_DSHOP_CACHE : process.env.DSHOP_CACHE || `${__dirname}/../data`
+)
+
+const THEMES_CACHE = IS_TEST
+  ? TEST_THEMES_CACHE
+  : process.env.THEMES_CACHE || `${__dirname}/../themes`
+
+const DEFAULT_INFRA_RESOURCES = [
+  'gcp-files',
+  'gcp-dns',
+  'ipfs-pinata',
+  'gcp-cdn',
+  'sendgrid-email'
+]
+const DEFAULT_AWS_REGION = 'us-east-1'
+const DEFAULT_AWS_CACHE_POLICY_NAME = 'dshop-default-cache-policy'
+const DEFAULT_CONTENT_TYPE = 'application/octet-stream'
 
 module.exports = {
   CONTRACTS,
@@ -82,6 +117,20 @@ module.exports = {
   IPFS_GATEWAY,
   NETWORK,
   NETWORK_ID: NETWORK_NAME_TO_ID[NETWORK] || 999,
+  NETWORK_NAME_TO_ID,
+  NETWORK_ID_TO_NAME,
   PRINTFUL_URL,
-  DSHOP_CACHE
+  DSHOP_CACHE,
+  THEMES_CACHE,
+  PROTOCOL_LABS_GATEWAY,
+  PINATA_API,
+  PINATA_GATEWAY,
+  BUCKET_PREFIX,
+  SERVICE_PREFIX,
+  EXTERNAL_IP,
+  EXTERNAL_IP_SERVICE_URL,
+  DEFAULT_INFRA_RESOURCES,
+  DEFAULT_AWS_REGION,
+  DEFAULT_AWS_CACHE_POLICY_NAME,
+  DEFAULT_CONTENT_TYPE
 }

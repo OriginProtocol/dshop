@@ -7,7 +7,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 dayjs.extend(relativeTime)
 
-import useOrder from 'utils/useOrder'
+import useAdminOrder from 'utils/useAdminOrder'
 import useConfig from 'utils/useConfig'
 import usePrintfulIds from 'utils/usePrintfulIds'
 import usePrintful from 'utils/usePrintful'
@@ -216,7 +216,7 @@ const Printful = () => {
   const [draft, setDraft] = useState(false)
   const match = useRouteMatch('/admin/orders/:orderId/:tab?')
   const { orderId } = match.params
-  const { order, loading } = useOrder(orderId)
+  const { order, loading } = useAdminOrder(orderId)
   const { printfulIds } = usePrintfulIds()
   const { order: printfulOrder, loading: printfulLoading } = usePrintful(
     orderId,

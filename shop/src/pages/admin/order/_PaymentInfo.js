@@ -2,15 +2,58 @@ import React from 'react'
 import { useRouteMatch } from 'react-router-dom'
 import get from 'lodash/get'
 import fbt from 'fbt'
+import dayjs from 'dayjs'
 
+import PaymentStates from 'data/PaymentStates'
 import OfferStates from 'data/OfferStates'
 
 import PaymentActions from './_PaymentActions'
+import OffchainPaymentActions from './_OffchainPaymentActions'
 
-const getStatusText = (orderState, paymentMethod, refundError) => {
+const getStatusText = (
+  paymentState,
+  offerState,
+  paymentMethod,
+  refundError
+) => {
   const isCryptoPayment = paymentMethod.id === 'crypto'
 
-  switch (orderState) {
+  if (!offerState) {
+    // An undefined offerStatus indicates the order was recorded off-chain.
+    // Look at the paymentStatus to determine what text to show to the merchant.
+    switch (paymentState) {
+      case PaymentStates.Paid:
+        return fbt(
+          `A payment was made with ${fbt.param(
+            'paymentMethod',
+            paymentMethod.label
+          )}.`,
+          'admin.order.paymentStatusPaid'
+        )
+      case PaymentStates.Refunded:
+        return fbt(
+          `A payment made with ${fbt.param(
+            'paymentMethod',
+            paymentMethod.label
+          )} was refunded.`,
+          'admin.order.paymentStatusRefunded'
+        )
+
+      case PaymentStates.Pending:
+        return fbt(`A payment is pending`, 'admin.order.paymentStatusPending')
+
+      case PaymentStates.Rejected:
+        return fbt(
+          `A payment was rejected`,
+          'admin.order.paymentStatusRejected'
+        )
+
+      default:
+        return fbt('Payment status unknown', 'admin.order.unknownPaymentStatus')
+    }
+  }
+
+  switch (offerState) {
     case OfferStates.Created:
       return isCryptoPayment
         ? fbt(
@@ -66,10 +109,15 @@ const PaymentInfo = ({ order }) => {
 
   const cart = get(order, 'data')
   const paymentMethod = get(cart, 'paymentMethod', {})
-  const orderState = get(order, 'statusStr')
-  const refundError = !!get(order, 'data.refundError')
+  const paymentState = get(order, 'paymentStatus')
+  const offerState = get(order, 'offerStatus')
+  const refundError = Boolean(get(order, 'data.refundError'))
+  const transactions = get(order, 'transactions', [])
 
-  if (!cart || !offerId)
+  const offchainPaymentTx = transactions.find((t) => t.type === 'Payment')
+  const isOffchainPayment = Boolean(offchainPaymentTx) || !get(order, 'offerId')
+
+  if (!cart || !offerId) {
     return (
       <div>
         <>
@@ -77,19 +125,86 @@ const PaymentInfo = ({ order }) => {
         </>
       </div>
     )
+  }
 
-  if (orderState === OfferStates.Created) {
+  // Direct crypto payment.
+  if (isOffchainPayment) {
+    if (!offchainPaymentTx) {
+      // Offchain non-crypto payments
+      return (
+        <div className="order-payment-info">
+          <div className="status-text">
+            {getStatusText(
+              paymentState,
+              offerState,
+              paymentMethod,
+              refundError
+            )}
+          </div>
+          <div className="status-actions">
+            <OffchainPaymentActions order={order} />
+          </div>
+        </div>
+      )
+    }
+
+    // Offchain crypto payments
+    return (
+      <div className="admin-customer-info">
+        <div>
+          <div>
+            <fbt desc="Date">Date</fbt>
+          </div>
+          <div>
+            {dayjs(offchainPaymentTx.createdAt).format('MMM D, h:mm A')}
+          </div>
+        </div>
+        <div>
+          <div>
+            <fbt desc="From">From</fbt>
+          </div>
+          <div>{offchainPaymentTx.fromAddress}</div>
+        </div>
+        <div>
+          <div>
+            <fbt desc="To">To</fbt>
+          </div>
+          <div>{offchainPaymentTx.toAddress}</div>
+        </div>
+        <div>
+          <div>
+            <fbt desc="Hash">Hash</fbt>
+          </div>
+          <div>{offchainPaymentTx.hash}</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!offerState) {
+    // An undefined offerStatus indicates the order was recorded off-chain
     return (
       <div className="order-payment-info">
         <div className="status-text">
-          {getStatusText(orderState, paymentMethod, refundError)}
+          {getStatusText(paymentState, offerState, paymentMethod, refundError)}
         </div>
         <div className="status-actions">
           <PaymentActions order={order} />
         </div>
       </div>
     )
-  } else if (orderState === OfferStates.Accepted) {
+  } else if (offerState === OfferStates.Created) {
+    return (
+      <div className="order-payment-info">
+        <div className="status-text">
+          {getStatusText(paymentState, offerState, paymentMethod, refundError)}
+        </div>
+        <div className="status-actions">
+          <PaymentActions order={order} />
+        </div>
+      </div>
+    )
+  } else if (offerState === OfferStates.Accepted) {
     return (
       <div className="order-payment-info">
         <div className="status-text">
@@ -111,11 +226,11 @@ const PaymentInfo = ({ order }) => {
   return (
     <div
       className={`order-payment-info${
-        orderState === OfferStates.Finalized ? ' completed' : ''
+        offerState === OfferStates.Finalized ? ' completed' : ''
       }${refundError ? ' error' : ''}`}
     >
       <div className="status-text">
-        {getStatusText(orderState, paymentMethod, refundError)}
+        {getStatusText(paymentState, offerState, paymentMethod, refundError)}
       </div>
     </div>
   )

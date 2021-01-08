@@ -1,5 +1,5 @@
 import { useEffect, useReducer } from 'react'
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
@@ -144,10 +144,15 @@ function useWallet() {
     })
   }
 
+  const networkOk = String(config.netId) === String(state.netId)
+  const ready =
+    state.status === 'enabled' && state.signerStatus === 'enabled' && networkOk
+
   return {
     enable,
     ...state,
-    networkOk: String(config.netId) === String(state.netId)
+    ready,
+    networkOk
   }
 }
 

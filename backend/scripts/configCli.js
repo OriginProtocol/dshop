@@ -1,7 +1,11 @@
 // A utility script for shop configs.
 //
-// Note: easiest is to run the script from local after having setup
+// Note:
+//  - The easiest is to run the script from local after having setup
 // a SQL proxy to prod and the ENCRYPTION_KEY env var.
+//  - When setting a config value with special chars, prefix the string
+//  with $ and use single quote so the shell does not double escape the special chars.
+//  For ex: --value=$'-----BEGIN PGP\n\n...'
 //
 // Examples:
 //  - dump network and shop config
@@ -19,16 +23,24 @@
 //  - check a shop's config
 //  node configCli.js --networkId=1 --allShops --operation=checkConfig
 //
-
-const Stripe = require('stripe')
-
-const { Network, Shop } = require('../models')
-const { getLogger } = require('../utils/logger')
-const log = getLogger('cli')
-
-const { getConfig, setConfig, decrypt } = require('../utils/encryptedConfig')
-
+const { get, pick } = require('lodash')
 const program = require('commander')
+
+const { Network, Shop, AdminLog } = require('../models')
+const { AdminLogActions } = require('../utils/enums')
+const { getLogger } = require('../utils/logger')
+const { genPGP, testPGP } = require('../utils/pgp')
+const { getConfig, setConfig, decrypt } = require('../utils/encryptedConfig')
+const paypalUtils = require('../utils/paypal')
+const { checkStripeConfig } = require('../logic/payments/stripe')
+const {
+  checkPrintfulWebhook,
+  deregisterPrintfulWebhook,
+  registerPrintfulWebhook
+} = require('../logic/printful/webhook')
+const { diagnoseShop } = require('../logic/shop/health')
+
+const log = getLogger('cli')
 
 program
   .requiredOption(
@@ -41,6 +53,7 @@ program
   .option('-a, --allShops', 'Apply the operation to all shops')
   .option('-k, --key <name>', 'Shop config key')
   .option('-v, --value <name>', 'Shop config value')
+  .option('-l, --logId <id>', 'Log Id')
 
 if (!process.argv.slice(2).length) {
   program.outputHelp()
@@ -66,7 +79,7 @@ async function dump(network, shops) {
     log.info('Shop Id:', shop.id)
     log.info('Shop Name:', shop.name)
     log.info('Shop Config:')
-    log.info(shopConfig)
+    console.log(JSON.stringify(shopConfig, null, 2))
   }
 }
 
@@ -103,6 +116,52 @@ async function setKey(shops, key, val) {
   shop.config = setConfig(shopConfig, shop.config)
   await shop.save()
   log.info('Done')
+}
+
+/**
+ * Checks the validity of PGP config.
+ * @param shops
+ * @returns {Promise<void>}
+ */
+async function checkPgp(shops) {
+  for (const shop of shops) {
+    let shopConfig
+    try {
+      shopConfig = getConfig(shop.config)
+    } catch (e) {
+      log.error(`Failed loading shop config ${shop.id} ${shop.name}: ${e}`)
+      continue
+    }
+    try {
+      const { pgpPrivateKeyPass, pgpPublicKey, pgpPrivateKey } = shopConfig
+      testPGP({ pgpPrivateKeyPass, pgpPublicKey, pgpPrivateKey })
+    } catch (e) {
+      log.error(`Invalid PGP key: ${e.message}`)
+      continue
+    }
+    // TODO: check config.json
+
+    log.info(`PGP config OK for shop ${shop.id} ${shop.name}`)
+  }
+}
+
+async function resetPgp(shops) {
+  if (shops.length > 1) {
+    throw new Error('resetPgp operation not supported on more than 1 shop.')
+  }
+  const shop = shops[0]
+
+  const pgpKeys = await genPGP()
+  log.info('Reseting PGP keys for shop to', pgpKeys)
+  let shopConfig = getConfig(shop.config)
+  shopConfig = { ...shopConfig, ...pgpKeys }
+  shop.config = setConfig(shopConfig, shop.config)
+  await shop.save()
+  log.info('Done')
+  // TODO: should also automate updating config.json file on disk.
+  log.info(
+    'IMPORTANT: config.json pgpPublicKey should be updated and the shop re-published'
+  )
 }
 
 async function setRawConfig(shops, val) {
@@ -148,46 +207,159 @@ async function delKey(shops, key) {
   log.info('Done')
 }
 
-async function checkStripeConfig(network, shops) {
+async function checkStripe(network, shops) {
   const networkConfig = getConfig(network.config)
-  const validWebhhokUrls = [
-    `${networkConfig.backendUrl}/webhook`,
-    `https://dshopapi.ogn.app/webhook` // Legacy URL. Still supported.
-  ]
-
   for (const shop of shops) {
     log.info(`Checking Stripe config for shop ${shop.id} ${shop.name}`)
+    const shopConfig = getConfig(shop.config)
+    const { success, error } = await checkStripeConfig(
+      shop,
+      shopConfig,
+      networkConfig
+    )
+    if (success) {
+      log.info(`Shop ${shop.id} - Successfully verified Stripe configuration`)
+    } else {
+      log.error(`Shop ${shop.id} - ${error}`)
+    }
+  }
+}
+
+async function checkPrintful(network, shops) {
+  const networkConfig = getConfig(network.config)
+  for (const shop of shops) {
+    log.info(`Checking Printful webhook for shop ${shop.id} ${shop.name}`)
     try {
       const shopConfig = getConfig(shop.config)
-      if (!shopConfig.stripeBackend) {
-        log.info(
-          `Stripe not configured for shop ${shop.id} ${shop.name} - Skipping.`
+      if (!shopConfig.printful) {
+        log.info(`Shop ${shop.id} - Prinful not configured.`)
+        continue
+      }
+      await checkPrintfulWebhook(shop.id, shopConfig, networkConfig)
+      log.info(
+        `Shop ${shop.id} - Successfully verified Printful webhook config`
+      )
+    } catch (err) {
+      log.error(`Shop ${shop.id} - ${err.message}`)
+    }
+  }
+}
+
+async function checkPayPal(network, shops) {
+  const networkConfig = getConfig(network.config)
+  for (const shop of shops) {
+    log.info(`Checking PayPal config for shop ${shop.id} ${shop.name}`)
+    const errors = []
+    try {
+      const shopConfig = getConfig(shop.config)
+      const paypalKeys = [
+        'paypalClientId',
+        'paypalClientSecret',
+        'paypalWebhookId'
+      ]
+      const paypalConfig = pick(shopConfig, paypalKeys)
+      const paypalEnabled =
+        Object.values(paypalConfig).filter(Boolean).length > 0
+      if (!paypalEnabled) {
+        log.info('PayPal not configured')
+        continue
+      }
+      // Check all expected configs are present.
+      for (const key of paypalKeys) {
+        if (!paypalConfig[key]) {
+          errors.push(`Missing config ${key}`)
+        }
+      }
+      if (errors.length === 0) {
+        // Check the credentials by making a call to PayPal
+        const client = paypalUtils.getClient(
+          networkConfig.paypalEnvironment,
+          shopConfig.paypalClientId,
+          shopConfig.paypalClientSecret
+        )
+        const valid = await paypalUtils.validateCredentials(client)
+        if (!valid) {
+          errors.push('Invalid credentials')
+        }
+      }
+    } catch (err) {
+      errors.push(err.message)
+    }
+    if (errors.length > 0) {
+      log.error('ERROR:', errors)
+    } else {
+      log.info('OK')
+    }
+  }
+}
+
+async function fixPrintfulWebhook(network, shops) {
+  const networkConfig = getConfig(network.config)
+  let numFixed = 0
+  for (const shop of shops) {
+    log.info(`Fixing Printful webhook for shop ${shop.id} ${shop.name}`)
+    let shopConfig
+    try {
+      shopConfig = getConfig(shop.config)
+    } catch (e) {
+      log.info(`Shop ${shop.id} - Failed reading config. Skipping`)
+      continue
+    }
+    if (!shopConfig.printful) {
+      log.info(`Shop ${shop.id} - Prinful not configured. Skipping`)
+      continue
+    }
+
+    // Check if the webhook is misconfigured
+    try {
+      await checkPrintfulWebhook(shop.id, shopConfig, networkConfig)
+      log.info(
+        `Shop ${shop.id} - Successfully verified Printful webhook config`
+      )
+      continue
+    } catch (err) {
+      log.error(`Shop ${shop.id} - Webhook misconfigured: ${err.message}`)
+      // We only want to fix errors we expect.
+      // For example if the webhook points to a non dshop related URL, we want
+      // to leave it alone since the merchant could be using Printful on another platform.
+      // Another example would be an invalid API key
+      const fixableErrors = [
+        'Webhook URL points at dev URL',
+        'Webhook URL points at an ogn.app subdomain',
+        'No webhook registered',
+        'Invalid webhook URL secret'
+      ]
+      if (!fixableErrors.includes(err.message)) {
+        log.error(
+          `Shop ${shop.id} - Skipping. Non fixable error ${err.message}`
         )
         continue
       }
-      const stripe = Stripe(shopConfig.stripeBackend)
-      const response = await stripe.webhookEndpoints.list()
-      const webhooks = response.data
-
-      let success = false
-      for (const webhook of webhooks) {
-        if (validWebhhokUrls.includes(webhook.url)) {
-          log.info('Webhook properly configured. Pointing to', webhook.url)
-          success = true
-          break
-        } else {
-          log.warn(
-            `Webhook id ${webhook.id} points to non-Dshop or invalid URL ${webhook.url}`
-          )
-        }
-      }
-      if (!success) {
-        log.error(`Webhook not properly configured.`)
-      }
-    } catch (e) {
-      log.error(`Failed checking webhook config: ${e}`)
     }
+
+    // De-register the webhook
+    log.info(`Shop ${shop.id} - De-registering Printful webhook`)
+    await deregisterPrintfulWebhook(shop.id, shopConfig)
+
+    // Re-register it
+    log.info(`Shop ${shop.id} - Registering Printful webhook`)
+    const printfulWebhookSecret = await registerPrintfulWebhook(
+      shop.id,
+      shopConfig,
+      networkConfig.backendUrl
+    )
+
+    // Save the new secret in the shop's DB config.
+    log.info(
+      `Shop ${shop.id} - Saving printfulWebhookSecret=${printfulWebhookSecret} in shop's config`
+    )
+    shopConfig['printfulWebhookSecret'] = printfulWebhookSecret
+    shop.config = setConfig(shopConfig, shop.config)
+    await shop.save()
+
+    numFixed++
   }
+  log.info(`Fixed ${numFixed} shops`)
 }
 
 async function checkShopConfig(shops) {
@@ -197,6 +369,60 @@ async function checkShopConfig(shops) {
     } catch (e) {
       log.error(`Failed checking config for shop ${shop.id} ${shop.name}: ${e}`)
     }
+  }
+}
+
+async function diagnose(shops) {
+  for (const shop of shops) {
+    const diagnostic = await diagnoseShop(shop)
+    for (const [key, item] of Object.entries(diagnostic)) {
+      console.log(key.padEnd(24, ' '), item.status)
+      if (item.status === 'ERROR') {
+        console.log(item.errors.map((e) => '  - ' + e).join('\n'))
+      }
+    }
+  }
+}
+
+async function adminLogs(shops) {
+  for (const shop of shops) {
+    const logs = await AdminLog.findAll({
+      where: { shopId: shop.id },
+      order: [['id', 'asc']]
+    })
+    for (const log of logs) {
+      // Trim the data display for shop config actions since it is large.
+      let data = log.data
+      if (log.action === AdminLogActions.ShopConfigUpdated) {
+        data = pick(data, ['diffKeys'])
+      }
+      const date = log.createdAt.toLocaleString()
+      console.log(
+        `${log.id}\t${log.sellerId}\t${date}\t${log.action}\t${JSON.stringify(
+          data
+        )}`
+      )
+    }
+  }
+}
+
+async function adminLog(logId) {
+  const log = await AdminLog.findOne({ where: { id: logId } })
+  if (!log) {
+    console.log('ERROR: no row in admin_logs table with id', logId)
+    return
+  }
+  if (log.action === AdminLogActions.ShopConfigUpdated) {
+    const oldConfigRaw = get(log, 'data.oldShop.config')
+    if (!oldConfigRaw) {
+      console.log('ERROR: missing key data.oldShop.config')
+      return
+    }
+
+    const oldConfig = getConfig(oldConfigRaw)
+    console.log('Old config:', JSON.stringify(oldConfig, null, 2))
+  } else {
+    console.log('Log:', JSON.stringify(log.get({ plain: true })))
   }
 }
 
@@ -251,10 +477,26 @@ async function main(config) {
     await getRawConfig(shops)
   } else if (config.operation === 'del') {
     await delKey(shops, config.key, config.value)
-  } else if (config.operation === 'checkStripeConfig') {
-    await checkStripeConfig(network, shops)
+  } else if (config.operation === 'checkStripe') {
+    await checkStripe(network, shops)
+  } else if (config.operation === 'checkPrintful') {
+    await checkPrintful(network, shops)
+  } else if (config.operation === 'checkPayPal') {
+    await checkPayPal(network, shops)
+  } else if (config.operation === 'fixPrintfulWebhook') {
+    await fixPrintfulWebhook(network, shops)
   } else if (config.operation === 'checkConfig') {
     await checkShopConfig(shops)
+  } else if (config.operation === 'resetPgp') {
+    await resetPgp(shops)
+  } else if (config.operation === 'checkPgp') {
+    await checkPgp(shops)
+  } else if (config.operation === 'diagnose') {
+    await diagnose(shops)
+  } else if (config.operation === 'logs') {
+    await adminLogs(shops)
+  } else if (config.operation === 'log') {
+    await adminLog(config.logId)
   } else {
     throw new Error(`Unsupported operation ${config.operation}`)
   }

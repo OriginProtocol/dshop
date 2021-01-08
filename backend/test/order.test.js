@@ -1,6 +1,7 @@
 const chai = require('chai')
 const expect = chai.expect
 
+const { OrderPaymentStatuses } = require('../utils/enums')
 const { Order } = require('../models')
 const { processDShopEvent, handleLog } = require('../utils/handleLog')
 
@@ -13,7 +14,7 @@ const {
 } = require('./utils')
 
 describe('Orders', () => {
-  let shop, offerIpfsHash, data, offerId
+  let shop, offer, offerIpfsHash, data, offerId
 
   before(async () => {
     const network = await getOrCreateTestNetwork()
@@ -38,6 +39,7 @@ describe('Orders', () => {
 
     // Create an an offer.
     const result = await createTestOffer(network, shop, key)
+    offer = result.offer
     offerIpfsHash = result.ipfsHash
     data = result.data
   })
@@ -106,7 +108,7 @@ describe('Orders', () => {
 
   it('It should insert an order from an event', async () => {
     offerId = Date.now() // Use timestamp in msec as a unique offer id.
-    const fullOfferId = `${shop.listingId}-${offerId}`
+    const fqOfferId = `${shop.listingId}-${offerId}`
 
     // Create a fake OfferCreated blockchain event.
     const event = {
@@ -124,19 +126,23 @@ describe('Orders', () => {
     await processDShopEvent({ event, shop })
 
     // Check the order was inserted with the proper values.
-    const order = await Order.findOne({ where: { orderId: fullOfferId } })
+    const order = await Order.findOne({ where: { offerId: fqOfferId } })
     expect(order).to.be.an('object')
+    expect(order.fqId).to.be.a('string')
+    expect(order.shortId).to.be.a('string')
     expect(order.networkId).to.equal(999)
     expect(order.shopId).to.equal(shop.id)
-    expect(order.statusStr).to.equal('OfferCreated')
+    expect(order.paymentStatus).to.equal(OrderPaymentStatuses.Paid)
+    expect(order.offerId).to.equal(fqOfferId)
+    expect(order.offerStatus).to.equal('OfferCreated')
     expect(order.ipfsHash).to.equal(offerIpfsHash)
+    expect(order.encryptedIpfsHash).to.equal(offer.encryptedData)
     expect(order.createdBlock).to.equal(1)
     expect(order.updatedBlock).to.equal(1)
     expect(order.paymentCode).to.equal('code123')
-    expect(order.data).to.eql({
-      ...data,
-      ...{ offerId: fullOfferId, tx: event.transactionHash }
-    })
+    expect(order.total).to.equal('2900')
+    expect(order.currency).to.equal('USD')
+    expect(order.data).to.eql({ ...data, tx: event.transactionHash })
   })
 
   it('It should update an order on an OfferAccepted event', async () => {
@@ -156,10 +162,11 @@ describe('Orders', () => {
     await processDShopEvent({ event, shop })
 
     // Check the order status and updateBlock were updated.
-    const fullOfferId = `${shop.listingId}-${offerId}`
-    const order = await Order.findOne({ where: { orderId: fullOfferId } })
+    const fqOfferId = `${shop.listingId}-${offerId}`
+    const order = await Order.findOne({ where: { offerId: fqOfferId } })
     expect(order).to.be.an('object')
-    expect(order.statusStr).to.equal('OfferAccepted')
+    expect(order.paymentStatus).to.equal(OrderPaymentStatuses.Paid)
+    expect(order.offerStatus).to.equal('OfferAccepted')
     expect(order.updatedBlock).to.equal(2)
   })
 
@@ -180,10 +187,11 @@ describe('Orders', () => {
     await processDShopEvent({ event, shop })
 
     // Check the order status and updateBlock were updated.
-    const fullOfferId = `${shop.listingId}-${offerId}`
-    const order = await Order.findOne({ where: { orderId: fullOfferId } })
+    const fqOfferId = `${shop.listingId}-${offerId}`
+    const order = await Order.findOne({ where: { offerId: fqOfferId } })
     expect(order).to.be.an('object')
-    expect(order.statusStr).to.equal('OfferWithdrawn')
+    expect(order.paymentStatus).to.equal(OrderPaymentStatuses.Refunded)
+    expect(order.offerStatus).to.equal('OfferWithdrawn')
     expect(order.updatedBlock).to.equal(3)
   })
 

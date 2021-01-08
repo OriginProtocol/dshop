@@ -1,0 +1,47 @@
+[
+  {
+    "id": "filecoin-files",
+    "name": "Filecoin",
+    "description": "Filecoin bucket deployments",
+    "supported": true,
+    "type": "files",
+    "depends": null,
+    "requiresConfig": ["filecoinPrivkey"]
+  },
+  {
+    "id": "he-dns",
+    "name": "Hurricane Electric DNS",
+    "description": "Hurricane Electric DNS for node domain",
+    "supported": true,
+    "type": "dns",
+    "depends": null,
+    "requiresConfig": ["heheUser", "hehePassword"]
+  },
+  {
+    "id": "real-cdn",
+    "name": "Real CDN",
+    "description": "RealCDN acting as filecoin gateway",
+    "supported": true,
+    "type": "cdn",
+    "depends": ["filecoin-files", "he-dns"],
+    "requiresConfig": ["rcdnKey", "rcdnSecret"]
+  },
+  {
+    "id": "imaginary-cdn",
+    "name": "Imaginary CDN",
+    "description": "Imaginary CDN acting as filecoin gateway",
+    "supported": false,
+    "type": "cdn",
+    "depends": ["filecoin-files"],
+    "requiresConfig": ["imaginaryUser", "imaginaryPassword"]
+  },
+  {
+    "id": "smtp-email",
+    "name": "SMTP E-mail",
+    "description": "SMTP E-mail notifications",
+    "supported": true,
+    "type": "email",
+    "depends": null,
+    "requiresConfig": ["smtpHost", "smtpUser", "smtpPassword"]
+  }
+]

@@ -1,14 +1,14 @@
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 const { Network, Shop, Transaction } = require('../models')
 const queues = require('./queues')
 const { getLogger } = require('../utils/logger')
-const { IS_TEST } = require('../utils/const')
-const { TransactionStatuses } = require('../enums')
+const { IS_TEST, IS_DEV } = require('../utils/const')
+const { TransactionStatuses } = require('../utils/enums')
 
 const log = getLogger('listingCreatedProcessor')
 
 // Wait for 2 blocks confirmation before considering a tx mined.
-const NUM_BLOCKS_CONFIRMATION = IS_TEST ? 0 : 2
+const NUM_BLOCKS_CONFIRMATION = IS_TEST || IS_DEV ? 0 : 2
 
 /**
  * Function to start the queue processing.
@@ -45,7 +45,8 @@ async function processor(job) {
     txHash,
     fromAddress,
     encryptedDataIpfsHash,
-    paymentCode
+    paymentCode,
+    paymentType
   } = job.data
   log.info(`txProcessor for job with data: ${JSON.stringify(job.data)}`)
 
@@ -68,9 +69,11 @@ async function processor(job) {
 
   // Load the transaction from the DB.
   const transaction = await Transaction.findOne({
-    networkId: network.networkId,
-    shopId,
-    hash: txHash
+    where: {
+      networkId: network.networkId,
+      shopId,
+      hash: txHash
+    }
   })
   if (!transaction) {
     throw new Error(
@@ -110,7 +113,7 @@ async function processor(job) {
     // Payment was successful.
     // Enqueue a job to record an offer on the marketplace contract.
     const makeOfferQueue = queues['makeOfferQueue']
-    const jobData = { shopId, encryptedDataIpfsHash, paymentCode }
+    const jobData = { shopId, encryptedDataIpfsHash, paymentCode, paymentType }
     const jobOpts = {
       // Up to 6 attempts with exponential backoff with a 60sec initial delay.
       attempts: 6,

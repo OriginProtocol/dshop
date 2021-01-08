@@ -10,7 +10,6 @@ const { getLogger } = require('../logger')
 
 const log = getLogger('utils.dns.route53')
 
-const DEFAULT_TTL = 60 // 1 minute
 const AWS_API_VERSION = '2013-04-01'
 
 /**
@@ -61,6 +60,38 @@ function createChangeRequestRecords(values) {
   return values.map((v) => {
     return { Value: v }
   })
+}
+
+/**
+ * Create a change request record for a A
+ *
+ * @param name {string} the DNS name for the record
+ * @param values {Array} of record values
+ * @returns {object} ResourceRecord change request
+ */
+function addA(name, values) {
+  return createChangeRequest(
+    'CREATE',
+    name,
+    'A',
+    createChangeRequestRecords(values)
+  )
+}
+
+/**
+ * Create a change request record to delete a CNAME
+ *
+ * @param name {string} the DNS name for the record
+ * @param values {Array} of record values
+ * @returns {object} ResourceRecord change request
+ */
+function deleteA(name, values) {
+  return createChangeRequest(
+    'DELETE',
+    name,
+    'A',
+    createChangeRequestRecords(values)
+  )
 }
 
 /**
@@ -196,21 +227,39 @@ async function getRecord(client, zoneObj, DNSName, type) {
 }
 
 /**
- * Set the necessary DNS records for a shop to a subdomain controlled by
- * Route53.
+ * Try and resolve the known zone by the given name
  *
- * Ref: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Route53.html
- *
- * @param {object} args
- * @param {string} args.credentials - The JSON Google service account
- *  credentials
- * @param {string} args.zone - The DNS zone we're adding records to
- * @param {string} args.subdomain - The name of the record we're setting
- * @param {string} args.ipfsGateway - The IPFS gateway to use for DNSLink
- * @param {string} args.hash - The IPFS hash to use for DNSLink
- * @returns {array} of Change
+ * @param args {object}
+ * @param args.credentials {object} credentials - The JSON Google service
+ *  account credentials
+ * @param args.DNSName {string} name of DNS zone
+ * @returns {boolean} if a zone exists
  */
-async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
+async function resolveZone({ credentials, DNSName }) {
+  const client = getClient(credentials)
+  const nameParts = DNSName.split('.')
+  let zone = null
+  while (nameParts.length >= 2) {
+    zone = await getZone(client, nameParts.join('.'))
+    if (zone) return zone
+    // Knock one of the front
+    nameParts.shift()
+  }
+  return null
+}
+
+/**
+ * Check if a zone exists on Route53 and we know about it
+ *
+ * Ref: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Route53.html#listResourceRecordSets-property
+ *
+ * @param args {object}
+ * @param args.credentials {object} credentials - The JSON Google service
+ *  account credentials
+ * @param args.DNSName {string} name of DNS zone
+ * @returns {boolean} if a zone exists
+ */
+async function addRecord({ credentials, zone, type, name, value }) {
   const client = getClient(credentials)
 
   // Lookup and verify zone
@@ -220,25 +269,31 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
     return
   }
 
-  // Look for existing record
-  const record = append(`${subdomain}.${zone}`, '.')
-  const txtRecord = append(`_dnslink.${record}`, '.')
-  const txtRecordValue = `"dnslink=/ipfs/${hash}"`
-  const existingCNAME = await getRecord(client, zoneObj, record, 'CNAME')
-  const existingTXT = await getRecord(client, zoneObj, txtRecord, 'TXT')
+  const existingA = await getRecord(client, zoneObj, name, 'A')
+  const existingCNAME = await getRecord(client, zoneObj, name, 'CNAME')
+  const existingTXT = await getRecord(client, zoneObj, name, 'TXT')
   const changes = []
 
-  // Delete records if they exist
+  // Delete conflicting records if they exist
+  if (existingA) {
+    changes.push(deleteA(name, existingA.value))
+  }
   if (existingCNAME) {
-    changes.push(deleteCNAME(record, [append(ipfsGateway, '.')]))
+    changes.push(deleteCNAME(name, [existingCNAME.value]))
   }
   if (existingTXT) {
-    changes.push(deleteTXT(txtRecord, existingTXT.ResourceRecords))
+    changes.push(deleteTXT(name, existingTXT))
   }
 
-  // Create the new ones
-  changes.push(addCNAME(record, [append(ipfsGateway, '.')]))
-  changes.push(addTXT(txtRecord, [txtRecordValue]))
+  if (type === 'A') {
+    changes.push(await addA(name, [value]))
+  } else if (type === 'CNAME') {
+    changes.push(await addCNAME(name, [value]))
+  } else if (type === 'TXT') {
+    changes.push(await addTXT(name, [value]))
+  } else {
+    throw new Error(`Record type ${type} is not supported`)
+  }
 
   // Create the atomic change batch
   const params = {
@@ -253,4 +308,89 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
   await client.changeResourceRecordSets(params).promise()
 }
 
-module.exports = setRecords
+/**
+ * Set the necessary DNS records for a shop to a subdomain controlled by
+ * Route53.
+ *
+ * Ref: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Route53.html
+ *
+ * @param {object} args
+ * @param {string} args.credentials - The JSON Google service account
+ *  credentials
+ * @param {string} args.zone - The DNS zone we're adding records to
+ * @param {string} args.subdomain - The name of the record we're setting
+ * @param {string} args.ipfsGateway - The IPFS gateway to use for DNSLink
+ * @param {string} args.hash - The IPFS hash to use for DNSLink
+ * @returns {array} of Change
+ */
+async function setRecords({
+  credentials,
+  zone,
+  subdomain,
+  ipfsGateway,
+  hash,
+  cname,
+  ipAddresses
+}) {
+  const client = getClient(credentials)
+
+  // Lookup and verify zone
+  const zoneObj = await getZone(client, zone)
+  if (!zoneObj) {
+    log.error(`Zone ${zone} not found.`)
+    return
+  }
+
+  // Look for existing record
+  const record = append(`${subdomain}.${zone}`, '.')
+  const txtRecord = append(`_dnslink.${record}`, '.')
+  const txtRecordValue = hash ? `"dnslink=/ipfs/${hash}"` : null
+  const existingA = await getRecord(client, zoneObj, record, 'A')
+  const existingCNAME = await getRecord(client, zoneObj, record, 'CNAME')
+  const existingTXT = await getRecord(client, zoneObj, txtRecord, 'TXT')
+  const changes = []
+
+  // Delete records if they exist
+  if (existingA && ipAddresses) {
+    changes.push(deleteA(record, ipAddresses))
+  }
+  if (existingCNAME && ipfsGateway) {
+    changes.push(
+      deleteCNAME(
+        record,
+        existingCNAME.ResourceRecords.map((rr) => rr.Value)
+      )
+    )
+  }
+  if (existingTXT) {
+    changes.push(deleteTXT(txtRecord, existingTXT.ResourceRecords))
+  }
+
+  // Create the new ones
+  if (ipAddresses) {
+    changes.push(addA(record, ipAddresses))
+  } else if (ipfsGateway) {
+    // Use given CNAME, otherwise assume IPFS gateway is serving
+    changes.push(addCNAME(record, [append(cname ? cname : ipfsGateway, '.')]))
+  } else {
+    throw new Error('Unable to create an A or CNAME record. Lacking info!')
+  }
+
+  if (txtRecordValue) {
+    changes.push(addTXT(txtRecord, [txtRecordValue]))
+  }
+
+  // Create the atomic change batch
+  const params = {
+    ChangeBatch: {
+      Changes: changes,
+      Comment: `Automated change for ${zone} by Dshop backend ${+new Date()}`
+    },
+    HostedZoneId: zoneObj.Id
+  }
+
+  // Execute the change batch
+  await client.changeResourceRecordSets(params).promise()
+}
+
+module.exports = { setRecords, resolveZone, addRecord }

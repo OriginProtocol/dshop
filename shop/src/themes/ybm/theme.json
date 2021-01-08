@@ -1,0 +1,166 @@
+{
+  "id": "ybm",
+  "name": "Galleria",
+  "config": [
+    {
+      "id": "header",
+      "title": "Header",
+      "fields": [
+        {
+          "id": "headerImage",
+          "title": "Header Image",
+          "type": "media",
+          "props": ["backgroundPosition"]
+        },
+        {
+          "id": "logo",
+          "title": "Logo",
+          "type": "media",
+          "allowPNG": true,
+          "props": ["height"],
+          "minHeight": "60",
+          "maxHeight": "150"
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "title": "Home",
+      "pageUrl": "/",
+      "fields": [
+        {
+          "id": "headerText",
+          "title": "Header Text",
+          "type": "text",
+          "multiline": true
+        },
+        {
+          "id": "aboutText",
+          "title": "About Text",
+          "type": "text",
+          "multiline": true
+        },
+        {
+          "id": "featuredCollections",
+          "title": "Featured Collections",
+          "type": "collections_list"
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "title": "Contact",
+      "pageUrl": "/contact",
+      "fields": [
+        {
+          "id": "title",
+          "title": "Header Text",
+          "type": "text"
+        },
+        {
+          "id": "description",
+          "title": "Description",
+          "type": "text",
+          "multiline": true
+        },
+        {
+          "id": "headerImage",
+          "title": "Header Image",
+          "type": "media",
+          "props": ["backgroundPosition"]
+        },
+        {
+          "id": "email",
+          "title": "Email",
+          "type": "text"
+        },
+        {
+          "id": "number",
+          "title": "Number",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "id": "products",
+      "title": "Products",
+      "pageUrl": "/products",
+      "fields": [
+        {
+          "id": "headerText",
+          "title": "Header Text",
+          "type": "text",
+          "multiline": true
+        }
+      ]
+    },
+    {
+      "id": "product",
+      "title": "Product Detail",
+      "pageUrl": "/product",
+      "fields": [
+        {
+          "id": "galleryPosition",
+          "title": "Gallery Position",
+          "type": "select",
+          "options": ["Right", "Left"]
+        },
+        {
+          "id": "textAlign",
+          "title": "Text align",
+          "type": "select",
+          "options": ["Center", "Left"]
+        },
+        {
+          "id": "optionStyle",
+          "title": "Option style",
+          "type": "select",
+          "options": ["Dropdowns", "Buttons"]
+        }
+      ]
+    },
+    {
+      "id": "about",
+      "title": "About",
+      "pageUrl": "/about",
+      "fields": [
+        {
+          "id": "headerImage",
+          "title": "Header Image",
+          "type": "media",
+          "props": ["backgroundPosition"]
+        },
+        {
+          "id": "primaryImage",
+          "title": "Primary Image",
+          "type": "media",
+          "description": "Recommended size: 450px x 580px"
+        },
+        {
+          "id": "aboutText",
+          "title": "Primary Image Text",
+          "type": "text",
+          "multiline": true
+        },
+        {
+          "id": "description",
+          "title": "Gallery Text",
+          "type": "text",
+          "multiline": true
+        },
+        {
+          "id": "aboutImages",
+          "title": "Images",
+          "type": "media",
+          "count": 4,
+          "description": [
+            "Recommended size: 450px x 320px",
+            "Recommended size: 450px x 580px",
+            "Recommended size: 450px x 580px",
+            "Recommended size: 450px x 320px"
+          ]
+        }
+      ]
+    }
+  ]
+}

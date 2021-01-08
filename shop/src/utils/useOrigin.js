@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import { get } from '@origin/ipfs'
 import _get from 'lodash/get'
 
 import useWallet from 'utils/useWallet'
 import useConfig from 'utils/useConfig'
+import usePGP from 'utils/usePGP'
 
 const marketplaceAbi = [
   'function makeOffer(uint listingID, bytes32 ipfsHash, uint finalizes, address affiliate, uint256 commission, uint value, address currency, address arbitrator) payable',
@@ -102,6 +103,8 @@ const marketplaceAbi = [
 
 const marketplaceInterface = new ethers.utils.Interface(marketplaceAbi)
 
+// Loads offer data from either the tx hash for the marketplace offer
+// or from the IPFS hash of the encrypted offer data.
 async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
   let encryptedHash, fullOfferId, offer
 
@@ -146,6 +149,8 @@ async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
 
     offer = await marketplace.offers(listingId, offerId)
   } else {
+    // The tx parameter is not a transaction hash but rather the
+    // IPFS hash of the encrypted offer.
     encryptedHash = tx
   }
 
@@ -168,6 +173,7 @@ async function getOfferFromTx({ tx, password, config, provider, marketplace }) {
 }
 
 function useOrigin({ marketplaceAddress } = {}) {
+  usePGP()
   const [loading, setLoading] = useState(true)
   const [marketplace, setMarketplace] = useState()
   const { config } = useConfig()

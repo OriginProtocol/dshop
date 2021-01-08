@@ -23,7 +23,7 @@ const CustomerInfo = ({ order }) => {
   const phone = get(cart, 'userInfo.phone')
 
   return (
-    <div className="customer-info">
+    <div className="admin-customer-info">
       <div>
         <div>
           <fbt desc="Date">Date</fbt>
@@ -83,15 +83,18 @@ const CustomerInfo = ({ order }) => {
 export default CustomerInfo
 
 require('react-styl')(`
-  .admin .customer-info
+  .admin-customer-info
+    display: grid
+    grid-template-columns: auto auto
     > div
-      display: flex
+      display: contents
       > div
-        flex: 1
-        margin-right: 1.5rem
-        padding: 1rem
+        padding: 1rem 1rem 1rem 0
         &:first-child
           font-weight: bold
-      &:nth-child(even)
+          padding-left: 1rem
+        &:nth-child(2)
+          word-break: break-all
+      &:nth-child(even) > div
         background-color: #fafbfc
 `)

@@ -7,6 +7,7 @@ import { useStateValue } from 'data/state'
 import useAuth from 'utils/useAuth'
 import useConfig from 'utils/useConfig'
 import { isLoggedIn } from 'utils/auth'
+import usePGP from 'utils/usePGP'
 
 import Toaster from 'components/Toaster'
 
@@ -27,8 +28,12 @@ import Onboarding from './onboarding/Onboarding'
 import PublishChanges from './_PublishChanges'
 import Nav from './_Nav'
 import StoreSelector from './StoreSelector'
+import Themes from './themes/List'
+import CustomizeTheme from './themes/Customize'
+import PaymentSpecificDiscounts from './discounts/PaymentSpecific'
 
 const Admin = () => {
+  usePGP()
   const { loading, error } = useAuth()
   const [newShop, setNewShop] = useState()
   const { config, setActiveShop } = useConfig()
@@ -69,6 +74,10 @@ const Admin = () => {
         <div className="main-content-container">
           <PublishChanges />
           <Switch>
+            <Route
+              path="/admin/discounts/auto"
+              component={PaymentSpecificDiscounts}
+            />
             <Route path="/admin/discounts/:id" component={EditDiscount} />
             <Route path="/admin/discounts" component={Discounts} />
             <Route path="/admin/products/:id" component={EditProduct} />
@@ -81,6 +90,8 @@ const Admin = () => {
             <Route path="/admin/orders" component={Orders} />
             <Route path="/admin/dashboard" component={Dashboard} />
             <Route path="/admin/onboarding" component={Onboarding} />
+            <Route path="/admin/themes/customize" component={CustomizeTheme} />
+            <Route path="/admin/themes" component={Themes} />
             <Redirect to="/admin/dashboard" />
           </Switch>
         </div>

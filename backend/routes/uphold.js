@@ -8,6 +8,7 @@ const { getLogger } = require('../utils/logger')
 
 const { authShop } = require('./_auth')
 const makeOffer = require('./_makeOffer')
+const { OrderPaymentTypes } = require('../utils/enums')
 
 const log = getLogger('routes.uphold')
 
@@ -222,6 +223,7 @@ module.exports = function (router) {
 
       req.amount = req.body.amount
       req.paymentCode = json.id
+      req.paymentType = OrderPaymentTypes.Uphold
 
       next()
     },

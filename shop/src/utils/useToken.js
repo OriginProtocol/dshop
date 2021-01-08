@@ -1,4 +1,4 @@
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import { useEffect, useReducer } from 'react'
 
 import usePrice from 'utils/usePrice'
@@ -9,6 +9,7 @@ const tokenAbi = [
   'function balanceOf(address owner) view returns (uint256)',
   'function allowance(address owner, address spender) view returns (uint256)',
   'function approve(address spender, uint256 value) returns (bool)',
+  'function transfer(address to, uint256 value) returns (bool)',
   'function decimals() view returns (uint8)',
   'function symbol() view returns (string)'
 ]
@@ -56,7 +57,8 @@ function useToken(activeToken = {}, totalUsd) {
             hasBalance,
             hasAllowance: true,
             loading: false,
-            error: null
+            error: null,
+            contract: null
           })
         } else if (activeToken.address) {
           const contract = new ethers.Contract(
@@ -65,7 +67,8 @@ function useToken(activeToken = {}, totalUsd) {
             signer || provider
           )
           const balance = await contract.balanceOf(walletAddress)
-          const balanceNum = ethers.utils.formatUnits(balance, 'ether')
+          const decimals = await contract.decimals()
+          const balanceNum = ethers.utils.formatUnits(balance, decimals)
           const balanceUSD = Math.floor(
             (Number(balanceNum) / exchangeRate) * 100
           )
@@ -76,7 +79,7 @@ function useToken(activeToken = {}, totalUsd) {
               walletAddress,
               marketplace.address
             )
-            const allowanceNum = ethers.utils.formatUnits(allowance, 'ether')
+            const allowanceNum = ethers.utils.formatUnits(allowance, decimals)
             const allowanceUSD = Math.ceil(
               (Number(allowanceNum) / exchangeRate) * 100
             )

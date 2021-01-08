@@ -1,6 +1,6 @@
 const tableName = 'etl_jobs'
 
-const { EtlJobStatuses } = require('../../enums')
+const { EtlJobStatuses } = require('../../utils/enums')
 
 module.exports = {
   up: (queryInterface, Sequelize) => {

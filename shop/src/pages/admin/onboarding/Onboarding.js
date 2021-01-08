@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React from 'react'
 import fbt from 'fbt'
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
+import useShopConfig from 'utils/useShopConfig'
 import useProducts from 'utils/useProducts'
 
 import { useStateValue } from 'data/state'
@@ -12,14 +13,11 @@ import TaskItem from './_TaskItem'
 import ArticleItem from './_ArticleItem'
 import Banner from './_Banner'
 
-import Web3Modal from 'pages/admin/settings/payments/Web3Modal'
-
 const Onboarding = () => {
   const { config } = useConfig()
   const { products } = useProducts()
+  const { shopConfig } = useShopConfig()
   const [{ admin }] = useStateValue()
-
-  const [showWeb3Modal, setShowModal] = useState(false)
 
   const hasSocialLinks = !!(
     config &&
@@ -30,26 +28,17 @@ const Onboarding = () => {
       config.youtube)
   )
 
-  const web3Enabled = !!get(config, 'listingId')
-
   const taskset = [
     {
-      id: 'setup_web3',
-      completed: web3Enabled,
+      id: 'connect_wallet',
+      completed: get(config, 'walletAddress'),
       icon: <Icons.Wallet />,
       name: fbt('Connect your crypto wallet', 'admin.Onboarding.connectWallet'),
       desc: fbt(
-        'You must connect an Ethereum wallet with at least 0.005 ETH in order to publish changes and receive crypto payments.',
+        'Connect an Ethereum wallet in order to receive crypto payments.',
         'admin.Onboarding.connectWalletDesc'
       ),
-      onClick: () => {
-        if (web3Enabled) {
-          // Skip if already enabled
-          return
-        }
-
-        setShowModal(true)
-      }
+      link: '/admin/settings/payments'
     },
     {
       id: 'verify_email',
@@ -76,7 +65,8 @@ const Onboarding = () => {
     },
     {
       id: 'setup_shipping',
-      completed: get(products, 'length', 0) > 0,
+      completed:
+        get(products, 'length', 0) > 0 || !!get(shopConfig, 'printful'),
       icon: <Icons.Shipping />,
       name: fbt(
         'Set up your shipping options',
@@ -157,10 +147,6 @@ const Onboarding = () => {
             ))}
           </div>
         </div>
-      )}
-
-      {!showWeb3Modal ? null : (
-        <Web3Modal onClose={() => setShowModal(false)} />
       )}
     </div>
   )

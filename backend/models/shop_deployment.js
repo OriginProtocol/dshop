@@ -1,4 +1,4 @@
-const { ShopDeploymentStatuses } = require('../enums')
+const { ShopDeploymentStatuses } = require('../utils/enums')
 
 module.exports = (sequelize, DataTypes) => {
   const ShopDeployment = sequelize.define(
@@ -10,7 +10,10 @@ module.exports = (sequelize, DataTypes) => {
       ipfsPinner: DataTypes.STRING, // URL of the IPFS pinner service used for the deployment.
       ipfsGateway: DataTypes.STRING, // URL of the gateway associated with the pinner used for deployment.
       ipfsHash: DataTypes.STRING, // IPFS hash of the deployment.
-      error: DataTypes.STRING // Optional. Only populated when status is 'Failure'.
+      bucketUrls: DataTypes.STRING, // Native URLs to buckets, comma separated
+      bucketHttpUrls: DataTypes.STRING, // HTTP URLs to buckets, comma separated
+      error: DataTypes.STRING, // Optional. Only populated when status is 'Failure'.
+      uuid: DataTypes.STRING // Optional. A UUID used for reference
     },
     {
       underscored: true,
@@ -23,11 +26,10 @@ module.exports = (sequelize, DataTypes) => {
       as: 'shopDeployments',
       foreignKey: 'shopId'
     })
-    ShopDeployment.hasMany(models.ShopDeploymentName, {
-      as: 'names',
-      foreignKey: 'ipfsHash',
-      sourceKey: 'ipfsHash',
-      onDelete: 'cascade'
+    ShopDeployment.hasMany(models.ShopDomain, {
+      as: 'domains',
+      foreignKey: 'shopId',
+      sourceKey: 'shopId'
     })
   }
 

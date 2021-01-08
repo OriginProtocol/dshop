@@ -12,7 +12,13 @@ function reducer(state, newState) {
   return { ...state, ...newState }
 }
 
-const configFields = ['css', 'metaDescription', 'logErrors']
+const configFields = [
+  'css',
+  'metaDescription',
+  'logErrors',
+  'gaCode',
+  'inventory'
+]
 
 const AdvancedSettings = () => {
   const { config } = useConfig()
@@ -134,7 +140,7 @@ const AdvancedSettings = () => {
               you can opt out below.
             </fbt>
           </div>
-          <div className="form-check">
+          <div className="form-check mb-3">
             <label className="form-check-label">
               <input
                 type="checkbox"
@@ -146,6 +152,43 @@ const AdvancedSettings = () => {
               />
               <fbt desc="admin.settings.advanced.sendErrors">
                 Send error reports to Origin
+              </fbt>
+            </label>
+          </div>
+
+          <div className="form-group">
+            <label className="mb-0">
+              <fbt desc="admin.settings.advanced.googleAnalytics">
+                Google Analytics
+              </fbt>
+            </label>
+            <div className="desc mb-3 mx-0">
+              <fbt desc="admin.settings.advanced.gaDesc">
+                Track visitors to your store and generate reports that will help
+                you with your marketing.
+              </fbt>
+            </div>
+
+            <input {...input('gaCode')} />
+          </div>
+
+          <label>
+            <fbt desc="admin.settings.advanced.errorReporting">
+              Inventory Management
+            </fbt>
+          </label>
+          <div className="form-check mb-3">
+            <label className="form-check-label">
+              <input
+                type="checkbox"
+                className="form-check-input"
+                checked={state.inventory}
+                onChange={(e) =>
+                  setState({ inventory: e.target.checked, hasChanges: true })
+                }
+              />
+              <fbt desc="admin.settings.advanced.inventoryManagement">
+                Enable Inventory Management
               </fbt>
             </label>
           </div>

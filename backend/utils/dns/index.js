@@ -1,5 +1,14 @@
 const dns = require('dns')
 const fetch = require('node-fetch')
+const get = require('lodash/get')
+const every = require('lodash/every')
+const { Resolution } = require('@unstoppabledomains/resolution')
+
+const { Network, ShopDeployment, ShopDomain } = require('../../models')
+const { ShopDomainStatuses } = require('../enums')
+const { getLogger } = require('../logger')
+
+const log = getLogger('utils.dns')
 
 const TLD_LIST_URL = 'https://data.iana.org/TLD/tlds-alpha-by-domain.txt'
 const UNSTOPPABLE_TLDS = ['crypto']
@@ -29,7 +38,7 @@ function isCryptoName(v, tlds = CRYPTO_DOMAINS) {
  * @param v {string} - The string to check
  * @returns {boolean} - if the given name is a crypto domain
  */
-function isUnsoppableName(v) {
+function isUnstoppableName(v) {
   return isCryptoName(v, UNSTOPPABLE_TLDS)
 }
 
@@ -176,13 +185,193 @@ async function hasNS(v, opts = {}) {
   }
 }
 
+async function verifyDNS(domain, networkId, shop) {
+  log.debug('Trying to verify DNS records of domain', domain)
+
+  const deployment = await ShopDeployment.findOne({
+    where: {
+      shopId: shop.id
+    },
+    order: [['created_at', 'DESC']]
+  })
+
+  const domains = await ShopDomain.findAll({
+    where: { shopId: shop.id }
+  })
+
+  const ipAddresses = domains
+    ? domains.filter((d) => !!d.ipAddress).map((d) => d.ipAddress)
+    : []
+  const hasIP = ipAddresses ? !!ipAddresses.length : false
+
+  // Verify the domain is RFC-valid
+  if (!isValidDNSName(domain)) {
+    log.debug(`${domain} is not a valid domain`)
+    return {
+      success: true,
+      error: 'Invalid domain'
+    }
+  }
+
+  if (hasIP) {
+    try {
+      const records = await dnsResolve(domain, 'A')
+
+      const valid = every(ipAddresses.map((ip) => records.includes(ip)))
+
+      if (valid) {
+        await ShopDomain.update(
+          {
+            status: ShopDomainStatuses.Success
+          },
+          {
+            where: {
+              domain: domain.toLowerCase(),
+              shopId: shop.id
+            }
+          }
+        )
+      }
+
+      return {
+        success: true,
+        valid
+      }
+    } catch (err) {
+      if (err.message.includes('ENOTFOUND')) {
+        return {
+          success: true,
+          valid: false,
+          error: `Your DNS changes haven't propagated yet.`
+        }
+      }
+
+      log.error(err)
+      return {
+        error: err.message
+      }
+    }
+  }
+
+  if (isUnstoppableName(domain)) {
+    try {
+      const resolution = new Resolution()
+      const hash = await resolution.ipfsHash(domain)
+
+      const valid = hash === deployment.ipfsHash
+
+      const error = valid ? null : 'IPFS hash is not yet updated.'
+
+      if (valid) {
+        // Update DB if resolved
+        await ShopDomain.update(
+          {
+            status: ShopDomainStatuses.Success
+          },
+          {
+            where: {
+              domain: domain.toLowerCase(),
+              shopId: shop.id
+            }
+          }
+        )
+      }
+
+      return {
+        success: true,
+        valid,
+        error
+      }
+    } catch (err) {
+      log.error('Failed to resolve unstoppable domain', err)
+      return {
+        error: err.message
+      }
+    }
+  }
+
+  try {
+    const network = await Network.findOne({
+      where: { networkId }
+    })
+
+    if (!network) {
+      log.debug(`${networkId} is not a valid network for this node`)
+      return {
+        success: true,
+        error: 'Invalid network ID'
+      }
+    }
+
+    if (!deployment) {
+      log.debug(`${domain} has no deployments`)
+      return {
+        success: true,
+        error:
+          'No deployments found.  You must publish the shop before setting a custom domain.'
+      }
+    }
+
+    const ipfsURL = `${network.ipfsApi}/api/v0/dns?arg=${encodeURIComponent(
+      domain
+    )}`
+
+    log.debug(`Making request to ${ipfsURL}`)
+
+    const r = await fetch(ipfsURL, {
+      method: 'POST'
+    })
+
+    if (r.ok) {
+      const respJson = await r.json()
+
+      const path = get(respJson, 'Path', '')
+      const expectedValue = `/ipfs/${deployment.ipfsHash}`
+
+      if (path === expectedValue) {
+        // Update DB if resolved
+        await ShopDomain.update(
+          {
+            status: ShopDomainStatuses.Success
+          },
+          {
+            where: {
+              domain: domain.toLowerCase(),
+              shopId: shop.id
+            }
+          }
+        )
+
+        return {
+          success: true,
+          valid: true
+        }
+      }
+    } else {
+      log.error(await r.text())
+    }
+
+    return {
+      success: true,
+      valid: false,
+      error: `Your DNS changes haven't propagated yet.`
+    }
+  } catch (err) {
+    log.error('Failed to check DNS of domain', err)
+    return {
+      error: 'Unknown error occured'
+    }
+  }
+}
+
 module.exports = {
   isPublicDNSName,
-  isUnsoppableName,
+  isUnstoppableName,
   isCryptoName,
   isValidDNSName,
   isValidTLD,
   hasNS,
   hasSOA,
-  dnsResolve
+  dnsResolve,
+  verifyDNS
 }

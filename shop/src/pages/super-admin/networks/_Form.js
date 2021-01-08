@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import { validateSelection } from '@origin/dshop-validation/matrix'
 
 import useSetState from 'utils/useSetState'
 import { Networks } from 'data/Networks'
@@ -6,6 +7,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import PasswordField from 'components/admin/PasswordField'
 
 import useEmailAppsList from 'utils/useEmailAppsList'
+import useBackendApi from 'utils/useBackendApi'
 import ProcessorsList from 'components/settings/ProcessorsList'
 
 import AWSModal from '../../admin/settings/apps/AWSModal'
@@ -13,23 +15,23 @@ import MailgunModal from '../../admin/settings/apps/MailgunModal'
 import SendgridModal from '../../admin/settings/apps/SendgridModal'
 
 const Defaults = {
-  '1': {
-    ipfs: 'https://ipfs-prod.ogn.app',
-    ipfsApi: 'https://ipfs.ogn.app',
+  1: {
+    ipfs: 'https://fs-autossl.ogn.app',
+    ipfsApi: 'https://fs.ogn.app',
     marketplaceContract: '0x698Ff47B84837d3971118a369c570172EE7e54c2',
     marketplaceVersion: '001',
     provider: '',
     providerWs: ''
   },
-  '4': {
-    ipfs: 'https://ipfs-prod.ogn.app',
-    ipfsApi: 'https://ipfs.ogn.app',
+  4: {
+    ipfs: 'https://fs-autossl.staging.ogn.app',
+    ipfsApi: 'https://fs.staging.ogn.app',
     marketplaceContract: '0x3D608cCe08819351adA81fC1550841ebc10686fd',
     marketplaceVersion: '001',
     provider: '',
     providerWs: ''
   },
-  '999': {
+  999: {
     ipfs: process.env.IPFS_GATEWAY || 'http://localhost:8080',
     ipfsApi: process.env.IPFS_API || 'http://localhost:5002',
     marketplaceContract: process.env.MARKETPLACE_CONTRACT,
@@ -38,6 +40,13 @@ const Defaults = {
     provider: 'http://localhost:8545',
     providerWs: 'ws://localhost:8545'
   }
+}
+
+const ResourceTypeNames = {
+  dns: 'Domain Name Service',
+  cdn: 'Content Distribution Network',
+  email: 'E-mail',
+  files: 'Shop Build Storage'
 }
 
 const _defaultShopConfigJSON = {
@@ -62,7 +71,8 @@ const _defaultShopConfigJSON = {
   bigQueryTable: '',
   googleAnalytics: '',
   notificationEmail: '',
-  notificationEmailDisplayName: ''
+  notificationEmailDisplayName: '',
+  defaultResourceSelection: []
 }
 
 const defaultShopConfig = JSON.stringify(_defaultShopConfigJSON, null, 2)
@@ -85,15 +95,19 @@ function initialState() {
     defaultShopConfig,
     ipfs: '',
     ipfsApi: '',
+    listingId: '',
     marketplaceContract: '',
     marketplaceVersion: '',
     googleAnalytics: '',
     paypalEnvironment: 'prod',
     notificationEmail: '',
     notificationEmailDisplayName: '',
+    defaultResourceSelection: [],
     awsAccessKeyId: '',
     awsSecretAccessKey: '',
     backendUrl,
+    infra: {},
+    infraErrors: [],
     ...Defaults[networkId]
   }
 }
@@ -101,16 +115,6 @@ function initialState() {
 function validate(state) {
   const newState = {}
 
-  if (!state.provider) {
-    newState.providerError = 'Enter a WS provider'
-  } else if (!state.provider.match(/^https?:\/\//)) {
-    newState.providerError = 'Should start https:// or http://'
-  }
-  if (!state.providerWs) {
-    newState.providerWsError = 'Enter a WS provider'
-  } else if (!state.providerWs.match(/^wss?:\/\//)) {
-    newState.providerWsError = 'Should start wss:// or ws://'
-  }
   if (!state.domain) {
     newState.domainError = 'Enter a root domain'
   }
@@ -131,6 +135,9 @@ function validate(state) {
   } else if (!state.backendUrl.match(/^https?:\/\//)) {
     newState.backendUrlError = 'Should start https:// or http://'
   }
+  if (!state.listingId) {
+    newState.listingIdError = 'Marketplace listing ID required'
+  }
 
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
 
@@ -148,9 +155,37 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
   if (network && !network.fallbackShopConfig) {
     network.fallbackShopConfig = _defaultShopConfigJSON
   }
+
+  if (network && !!network.defaultResourceSelection && !network.infra) {
+    network.infra = {}
+    network.defaultResourceSelection.map((resource) => {
+      network.infra[resource] = true
+    })
+  }
   const [state, setState] = useSetState(network || initialState())
+  const [resources, setResources] = useState([])
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
+  const { get } = useBackendApi()
+
+  useEffect(() => {
+    get('/networks/infra/resources').then((res) => {
+      if (res.resources) {
+        setResources(
+          res.resources.reduce((acc, cur) => {
+            if (typeof acc[cur.type] === 'undefined') {
+              acc[cur.type] = []
+            }
+            acc[cur.type].push(cur)
+            acc[cur.type].sort((a, b) => {
+              return a.name < b.name ? -1 : 1
+            })
+            return acc
+          }, {})
+        )
+      }
+    })
+  }, [])
 
   useEffect(() => {
     if (!network && Defaults[state.networkId]) {
@@ -204,6 +239,22 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
     }))
   }, [emailAppsList])
 
+  const updateResources = (stateUpdate) => {
+    const newState = { ...state, ...stateUpdate }
+    const selection = Object.keys(newState.infra).filter(
+      (k) => newState.infra[k]
+    )
+    const validRes = validateSelection({ networkConfig: newState, selection })
+
+    if (!validRes.success) {
+      setState({ ...stateUpdate, infraErrors: validRes.errors })
+      return false
+    }
+
+    setState({ ...stateUpdate, infraErrors: [] })
+    return true
+  }
+
   return (
     <form
       className={`sign-up${className ? ' ' + className : ''}`}
@@ -224,6 +275,11 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
             m[o] = state[o]
             return m
           }, {})
+
+        newState.infra = newState.infra || {}
+        network.defaultResourceSelection = Object.keys(newState.infra).filter(
+          (k) => newState.infra[k]
+        )
 
         onSave(network)
       }}
@@ -248,20 +304,9 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
       </div>
       <div className="form-row">
         <div className="form-group col-md-6">
-          <label>Provider WebSocket</label>
-          <input
-            {...input('providerWs')}
-            placeholder="eg wss://wss.infura.io/v3/YOUR-PROJECT-ID"
-          />
-          {Feedback('providerWs')}
-        </div>
-        <div className="form-group col-md-6">
-          <label>Provider HTTPS</label>
-          <input
-            {...input('provider')}
-            placeholder="eg https://mainnet.infura.io/v3/YOUR-PROJECT-ID"
-          />
-          {Feedback('provider')}
+          <label>Marketplace Listing ID</label>
+          <input {...input('listingId')} placeholder="eg 1-001-12345" />
+          {Feedback('listingId')}
         </div>
       </div>
       <div className="form-row">
@@ -269,16 +314,13 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           <label>IPFS Gateway</label>
           <input
             {...input('ipfs')}
-            placeholder="eg https://ipfs-prod.ogn.app"
+            placeholder="eg https://fs-autossl.ogn.app'"
           />
           {Feedback('ipfs')}
         </div>
         <div className="form-group col-md-6">
           <label>IPFS API</label>
-          <input
-            {...input('ipfsApi')}
-            placeholder="eg https://ipfs-prod.ogn.app"
-          />
+          <input {...input('ipfsApi')} placeholder="eg https://fs.ogn.app" />
           {Feedback('ipfsApi')}
         </div>
       </div>
@@ -426,6 +468,54 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           />
         )}
       </div>
+
+      {!resources ? null : (
+        <div className="container">
+          <h3 className="row">Cloud Resources</h3>
+          {!state.infraErrors
+            ? null
+            : state.infraErrors.map((err, idx) => (
+                <div key={idx} className="alert alert-danger">
+                  {err}
+                </div>
+              ))}
+          {Object.keys(resources).map((resourceType) => (
+            <div key={resourceType}>
+              <h4 className="row">{ResourceTypeNames[resourceType]}</h4>
+              <div className="row">
+                {!resources[resourceType]
+                  ? null
+                  : resources[resourceType].map((resource) => (
+                      <div key={resource.id} className="col-sm form-group pl-0">
+                        <label htmlFor={`${resource.id}-check`} className="m-0">
+                          <input
+                            id={`${resource.id}-check`}
+                            type="checkbox"
+                            className="mr-2"
+                            checked={
+                              state.infra && state.infra[resource.id]
+                                ? true
+                                : false
+                            }
+                            onChange={(e) => {
+                              const stateUpdate = {
+                                infra: {
+                                  ...state.infra,
+                                  [resource.id]: e.target.checked
+                                }
+                              }
+                              updateResources(stateUpdate)
+                            }}
+                          />
+                          {resource.name}
+                        </label>
+                      </div>
+                    ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="mb-2 justify-content-center d-flex advanced-settings-link">
         <a

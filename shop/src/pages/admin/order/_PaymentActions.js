@@ -18,6 +18,7 @@ import {
 import Web3Transaction from 'components/Web3Transaction'
 
 import OfferStates from 'data/OfferStates'
+import PaymentStates from 'data/PaymentStates'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
 
@@ -31,7 +32,8 @@ const PaymentActions = ({ order }) => {
   const [state, setState] = useReducer(reducer, {})
 
   const cart = get(order, 'data')
-  const orderState = get(order, 'statusStr')
+  const paymentState = get(order, 'paymentStatus')
+  const offerState = get(order, 'offerStatus')
 
   if (!cart || !offerId) return null
 
@@ -39,7 +41,13 @@ const PaymentActions = ({ order }) => {
 
   let actions = null
 
-  if (orderState === OfferStates.Created) {
+  if (!offerState) {
+    // An undefined offerStatus indicates the order was recorded off-chain
+    if (paymentState === PaymentStates.Paid) {
+      // TODO: handle refund by calling a back-end API.
+      actions = null
+    }
+  } else if (offerState === OfferStates.Created) {
     actions = (
       <>
         <button
@@ -94,7 +102,7 @@ const PaymentActions = ({ order }) => {
         />
       </>
     )
-  } else if (orderState === OfferStates.Accepted) {
+  } else if (offerState === OfferStates.Accepted) {
     actions = (
       <>
         <button

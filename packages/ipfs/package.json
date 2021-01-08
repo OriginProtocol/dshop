@@ -15,9 +15,9 @@
   "devDependencies": {
     "@origin/utils": "^0.1.0",
     "bs58": "4.0.1",
-    "cross-fetch": "3.0.5",
-    "eslint": "7.7.0",
-    "prettier": "2.1.0",
+    "cross-fetch": "3.0.6",
+    "eslint": "7.15.0",
+    "prettier": "2.2.1",
     "form-data": "3.0.0"
   },
   "prettier": {

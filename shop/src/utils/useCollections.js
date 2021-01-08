@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import memoize from 'lodash/memoize'
+import get from 'lodash/get'
+import cloneDeep from 'lodash/cloneDeep'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
@@ -11,7 +13,7 @@ const getCollections = memoize(
   (...args) => args.join('-')
 )
 
-function useCollections() {
+function useCollections(opts = {}) {
   const { config } = useConfig()
   const [{ collections, reload }, dispatch] = useStateValue()
   const [loading, setLoading] = useState(true)
@@ -36,9 +38,28 @@ function useCollections() {
     dispatch({ type: 'reload', target: 'collections' })
   }
 
-  const visibleCollections = collections.filter((c) => c.id !== 'home')
+  const { allCollections, visibleCollections } = useMemo(() => {
+    const allCollections = cloneDeep(collections)
+    if (opts.includeAll) {
+      allCollections.unshift({ id: 'all', title: opts.includeAll })
+    }
 
-  return { collections, visibleCollections, loading, reload: reloadCollections }
+    const visibleCollections = allCollections.filter(
+      (c) => c.id !== 'home' && get(c, 'products.length')
+    )
+
+    return {
+      allCollections,
+      visibleCollections
+    }
+  }, [collections])
+
+  return {
+    collections: allCollections,
+    visibleCollections,
+    loading,
+    reload: reloadCollections
+  }
 }
 
 export default useCollections

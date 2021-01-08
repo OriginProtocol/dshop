@@ -34,7 +34,8 @@ const getClient = memoize(_getClient, (a) => {
  *
  * Ref: https://googleapis.dev/nodejs/dns/latest/Zone.html
  *
- * @param {string} name of DNS record
+ * @param client {object} Cloud DNS client
+ * @param DNSName {string} name of DNS record
  * @returns {Zone}
  */
 async function getZone(client, DNSName) {
@@ -50,14 +51,34 @@ async function getZone(client, DNSName) {
 }
 
 /**
+ * add an A record
+ *
+ * Ref: https://googleapis.dev/nodejs/dns/latest/Change.html
+ * Ref: https://googleapis.dev/nodejs/dns/latest/Zone.html
+ *
+ * @param zone {Zone} zone that we're operating on
+ * @param name {string} name of DNS record
+ * @param target {string} target IP address
+ * @returns {Change}
+ */
+async function addA(zone, name, target) {
+  const rec = zone.record('A', {
+    name,
+    data: target,
+    ttl: DEFAULT_TTL
+  })
+  return await zone.addRecords(rec)
+}
+
+/**
  * add a CNAME record
  *
  * Ref: https://googleapis.dev/nodejs/dns/latest/Change.html
  * Ref: https://googleapis.dev/nodejs/dns/latest/Zone.html
  *
- * @param {Zone} zone that we're operating on
- * @param {string} name of DNS record
- * @param {string} target DNS name (e.g. whatever.com)
+ * @param zone {Zone} zone that we're operating on
+ * @param name {string} name of DNS record
+ * @param target {string} target DNS name (e.g. whatever.com)
  * @returns {Change}
  */
 async function addCNAME(zone, name, target) {
@@ -69,6 +90,18 @@ async function addCNAME(zone, name, target) {
   return await zone.addRecords(rec)
 }
 
+/**
+ * update a CNAME record
+ *
+ * Ref: https://googleapis.dev/nodejs/dns/latest/Change.html
+ * Ref: https://googleapis.dev/nodejs/dns/latest/Zone.html
+ *
+ * @param existing {Record} Record that we're replacing
+ * @param zone {Zone} zone that we're operating on
+ * @param name {string} name of DNS record
+ * @param target {string} target IP address
+ * @returns {Change}
+ */
 async function updateCNAME(existing, zone, name, target) {
   const addRec = zone.record('CNAME', {
     name,
@@ -79,14 +112,30 @@ async function updateCNAME(existing, zone, name, target) {
 }
 
 /**
+ * Delete a record
+ *
+ * Ref: https://googleapis.dev/nodejs/dns/latest/Change.html
+ * Ref: https://googleapis.dev/nodejs/dns/latest/Zone.html
+ *
+ * @param existing {Record} Record that we're replacing
+ * @param zone {Zone} zone that we're operating on
+ * @param name {string} name of DNS record
+ * @param target {string} target IP address
+ * @returns {Change}
+ */
+async function deleteRecord(existing, zone) {
+  return await zone.createChange({ delete: existing })
+}
+
+/**
  * add a TXT record
  *
  * Ref: https://googleapis.dev/nodejs/dns/latest/Zone.html
  * Ref: https://googleapis.dev/nodejs/dns/latest/Change.html
  *
- * @param {Zone} zone that we're operating on
- * @param {string} name of DNS record
- * @param {string} value of TXT record
+ * @param zone {Zone} zone that we're operating on
+ * @param name {string} name of DNS record
+ * @param txt {string} value of TXT record
  * @returns {Change}
  */
 async function addTXT(zone, name, txt) {
@@ -98,6 +147,18 @@ async function addTXT(zone, name, txt) {
   return await zone.addRecords(rec)
 }
 
+/**
+ * update a TXT record
+ *
+ * Ref: https://googleapis.dev/nodejs/dns/latest/Zone.html
+ * Ref: https://googleapis.dev/nodejs/dns/latest/Change.html
+ *
+ * @param existing {Record} Record that we're replacing
+ * @param zone {Zone} zone that we're operating on
+ * @param name {string} name of DNS record
+ * @param txt {string} value of TXT record
+ * @returns {Change}
+ */
 async function updateTXT(existing, zone, name, txt) {
   const addRec = zone.record('TXT', {
     name,
@@ -113,15 +174,27 @@ async function updateTXT(existing, zone, name, txt) {
  * Ref: https://googleapis.dev/nodejs/dns/latest/Zone.html
  * Ref: https://googleapis.dev/nodejs/dns/latest/Change.html
  *
- * @param {Zone} zone that we're operating on
- * @param {string} name of DNS record
- * @param {string} IPFS hash to point DNSLink towards
+ * @param zone {Zone} zone that we're operating on
+ * @param name {string} name of DNS record
+ * @param ipfsHash {string} IPFS hash to point DNSLink towards
  * @returns {Change}
  */
 async function addDNSLink(zone, name, ipfsHash) {
   return await addTXT(zone, `_dnslink.${name}`, `dnslink=/ipfs/${ipfsHash}`)
 }
 
+/**
+ * update a DNSLink TXT record
+ *
+ * Ref: https://googleapis.dev/nodejs/dns/latest/Zone.html
+ * Ref: https://googleapis.dev/nodejs/dns/latest/Change.html
+ *
+ * @param existing {Record} Record that we're replacing
+ * @param zone {Zone} zone that we're operating on
+ * @param name {string} name of DNS record
+ * @param ipfsHash {string} IPFS hash to point DNSLink towards
+ * @returns {Change}
+ */
 async function updateDNSLink(existing, zone, name, ipfsHash) {
   return await updateTXT(
     existing,
@@ -146,7 +219,15 @@ async function updateDNSLink(existing, zone, name, ipfsHash) {
  * @param {string} args.hash - The IPFS hash to use for DNSLink
  * @returns {array} of Change
  */
-async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
+async function setRecords({
+  credentials,
+  zone,
+  subdomain,
+  ipfsGateway,
+  hash,
+  cname,
+  ipAddresses
+}) {
   const fqSubdomain = append(`${subdomain}.${zone}`, '.')
   zone = append(zone, '.')
   ipfsGateway = append(ipfsGateway, '.')
@@ -162,6 +243,11 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
   }
 
   const changes = []
+  const existingARecords = await zoneObj.getRecords({
+    name: fqSubdomain,
+    type: 'A'
+  })
+  const existingAs = get(existingARecords, '[0]')
   const existingCNAMERecords = await zoneObj.getRecords({
     name: fqSubdomain,
     type: 'CNAME'
@@ -173,24 +259,60 @@ async function setRecords({ credentials, zone, subdomain, ipfsGateway, hash }) {
   })
   const existingTXT = get(existingTXTRecords, '[0][0]')
 
-  if (existingCNAME) {
-    // Update CNAME record pointing to the IPFS gateway
-    changes.push(
-      await updateCNAME(existingCNAME, zoneObj, fqSubdomain, ipfsGateway)
-    )
-  } else {
-    // Add CNAME record pointing to the IPFS gateway
-    changes.push(await addCNAME(zoneObj, fqSubdomain, ipfsGateway))
+  // Delete all A records with this name
+  if (existingAs && existingAs.length > 0) {
+    for (const arec of existingARecords) {
+      changes.push(await deleteRecord(arec, zoneObj))
+    }
   }
-  if (existingTXT) {
-    // Update the DNSLink record pointing at the IPFS hash
-    changes.push(await updateDNSLink(existingTXT, zoneObj, fqSubdomain, hash))
+
+  // If we got an IP address, we're creating an A record
+  if (ipAddresses) {
+    // Delete the CNAME records with this name
+    if (existingCNAME) {
+      log.debug(`Will delete CNAME for ${fqSubdomain}`)
+      changes.push(await deleteRecord(existingCNAME, zoneObj))
+    }
+
+    // Create an A record for each IP we get
+    for (const ip of ipAddresses) {
+      log.debug(`Creating A record for ${fqSubdomain} ${ip}`)
+      changes.push(await addA(zoneObj, fqSubdomain, ip))
+    }
   } else {
-    // Add the DNSLink record pointing at the IPFS hash
-    changes.push(await addDNSLink(zoneObj, fqSubdomain, hash))
+    if (existingCNAME) {
+      // Update CNAME record pointing to the IPFS gateway
+      log.debug(`Updating CNAME record for ${fqSubdomain}`)
+      changes.push(
+        await updateCNAME(
+          existingCNAME,
+          zoneObj,
+          fqSubdomain,
+          cname ? cname : ipfsGateway
+        )
+      )
+    } else {
+      // Add CNAME record pointing to the IPFS gateway
+      log.debug(`Adding CNAME record for ${fqSubdomain} ${ipfsGateway}`)
+      changes.push(
+        await addCNAME(zoneObj, fqSubdomain, cname ? cname : ipfsGateway)
+      )
+    }
+  }
+
+  if (hash) {
+    if (existingTXT) {
+      // Update the DNSLink record pointing at the IPFS hash
+      log.debug(`Updating TXT record for ${fqSubdomain}`)
+      changes.push(await updateDNSLink(existingTXT, zoneObj, fqSubdomain, hash))
+    } else {
+      // Add the DNSLink record pointing at the IPFS hash
+      log.debug(`Adding TXT record for ${fqSubdomain}`)
+      changes.push(await addDNSLink(zoneObj, fqSubdomain, hash))
+    }
   }
 
   return changes
 }
 
-module.exports = setRecords
+module.exports = { setRecords }

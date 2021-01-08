@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @font-face {
+    font-family: Garamond Pro;
+    font-weight: 400;
+    src: url(fonts/AGaramondPro-Regular.otf);
+  }
+  @font-face {
+    font-family: Garamond Pro;
+    font-weight: 500;
+    src: url(fonts/AGaramondPro-Semibold.otf);
+  }
+  @font-face {
+    font-family: Garamond Pro;
+    font-weight: 600;
+    src: url(fonts/AGaramondPro-Semibold.otf);
+  }
+  @font-face {
+    font-family: Garamond Pro;
+    font-weight: 800;
+    src: url(fonts/AGaramondPro-Bold.otf);
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #000;
+    color: #fff;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply border border-orange-400 px-4 py-3 font-medium text-lg transition-all duration-300 ease-in-out text-orange-400;
+  }
+  .btn:hover {
+    @apply bg-orange-400 text-black;
+  }
+
+  .btn-primary {
+    @apply bg-orange-400 text-black;
+  }
+
+  .btn-primary:hover {
+    @apply bg-black text-orange-400;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}

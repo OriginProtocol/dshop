@@ -1,5 +1,5 @@
 const fetch = require('node-fetch')
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 const openpgp = require('openpgp')
 openpgp.config.show_comment = false
 openpgp.config.show_version = false
@@ -9,11 +9,13 @@ const { getBytes32FromIpfsHash, post: postIpfs } = require('../utils/_ipfs')
 
 const { Network } = require('../models')
 const { defaults } = require('../config')
-const { createShop } = require('../utils/shop')
+const { createShopInDB } = require('../logic/shop/create')
 const { setConfig, getConfig } = require('../utils/encryptedConfig')
 const { createListing, baseListing } = require('../utils/createListing')
+const { getLogger } = require('../utils/logger')
 
 let _cookies = {}
+const log = getLogger('test.utils')
 
 function clearCookies() {
   _cookies = {}
@@ -57,7 +59,7 @@ async function get(url, opts) {
   return await response.json()
 }
 
-async function post(url, body, opts) {
+async function post(url, body, opts, method = 'post') {
   const cookieHeader = setCookies()
   const headers = {
     'Content-Type': 'application/json',
@@ -71,7 +73,7 @@ async function post(url, body, opts) {
   }
 
   const response = await fetch(url, {
-    method: 'post',
+    method: method,
     body: JSON.stringify(body),
     headers
   })
@@ -82,8 +84,8 @@ async function post(url, body, opts) {
 async function apiRequest({ method, endpoint, body, headers }) {
   const url = `${ROOT_BACKEND_URL}${endpoint}`
 
-  if (method === 'POST') {
-    return await post(url, body, { headers })
+  if (/^(post|put)$/i.test(method)) {
+    return await post(url, body, { headers }, method)
   }
 
   if (body) {
@@ -145,7 +147,7 @@ async function addData(data, { pgpPublicKey, ipfsApi }) {
  * Creates or return existing network model
  * @returns {Promise<models.Network>}
  */
-async function getOrCreateTestNetwork(configOverride = {}) {
+async function getOrCreateTestNetwork(opts = {}) {
   const config = defaults['999']
 
   // The default config relies on env variable MARKETPLACE_CONTRACT for
@@ -172,7 +174,9 @@ async function getOrCreateTestNetwork(configOverride = {}) {
     ipfsApi: config.ipfsApi,
     marketplaceContract: ethers.utils.getAddress(config.marketplaceContract), // call getAddress to checksum the address.
     marketplaceVersion: '001',
+    listingId: '999-001-1', // TODO: we may need to create a real listing on the marketplace contract.
     active: true,
+    useMarketplace: opts.useMarketplace ? opts.useMarketplace : false,
     config: setConfig({
       pinataKey: 'pinataKey',
       pinataSecret: 'pinataSecret',
@@ -181,7 +185,7 @@ async function getOrCreateTestNetwork(configOverride = {}) {
       gcpCredentials: 'gcpCredentials',
       domain: 'domain.com',
       deployDir: 'deployDir',
-      ...configOverride
+      ...opts.configOverride
     })
   }
   // Note: For unclear reasons, the migration file 20200317190719-addIpfs.js
@@ -202,8 +206,9 @@ async function getOrCreateTestNetwork(configOverride = {}) {
  * @param {models.Network} network
  * @param {string} sellerPk
  * @param {string} pgpPrivateKeyPass
- * @param {string}pgpPublicKey
- * @param {string}pgpPrivateKey
+ * @param {string} pgpPublicKey
+ * @param {string} pgpPrivateKey
+ * @param {Boolean} inventory
  * @returns {Promise<*>}
  */
 async function createTestShop({
@@ -211,7 +216,8 @@ async function createTestShop({
   sellerPk,
   pgpPrivateKeyPass,
   pgpPublicKey,
-  pgpPrivateKey
+  pgpPrivateKey,
+  inventory
 }) {
   // Create a listing on the blockchain for the shop.
   const listing = {
@@ -220,10 +226,10 @@ async function createTestShop({
     shopIpfsHash: 'TestShopHash'
   }
   const listingId = await createListing({ network, pk: sellerPk, listing })
-  console.log('Created listing ID', listingId)
+  log.info('Created listing ID', listingId)
 
   // Create the shop in the DB.
-  const { shop } = await createShop({
+  const { shop } = await createShopInDB({
     name: 'TestShop' + Date.now(), // Make shop's name unique.
     networkId: network.networkId,
     listingId,
@@ -238,7 +244,8 @@ async function createTestShop({
       pgpPublicKey,
       pgpPrivateKey,
       pgpPrivateKeyPass,
-      web3Pk: sellerPk
+      web3Pk: sellerPk,
+      inventory
     })
   })
   if (!shop) {
@@ -250,9 +257,9 @@ async function createTestShop({
 
 /**
  * Updates test shop's encrypted config
- * @param {Shop} shop
+ * @param {models.Shop} shop
  * @param {Object} shopConfig
- * @returns {Shop}
+ * @returns {models.Shop}
  */
 async function updateShopConfig(shop, shopConfig) {
   await shop.update({
@@ -266,40 +273,87 @@ async function updateShopConfig(shop, shopConfig) {
 }
 
 /**
+ * Updates test shop's encrypted config
+ * @param {models.Network} network
+ * @param {Object} networkConfig
+ * @returns {models.Network}
+ */
+async function updateNetworkConfig(network, networkConfig) {
+  await network.update({
+    config: setConfig({
+      ...getConfig(network.config),
+      ...networkConfig
+    })
+  })
+
+  return network
+}
+
+/**
  * Creates encrypted data for an offer
  * @param {models.Network} network
  * @param {models.Shop} shop
- * @param {object} key: seller's PGP key
+ * @param {Object} key: seller's PGP key
+ * @param {Object} opts: options
+ *  - {models.Discount} discount: discount
+ *  - {Object} paymentMethod: payment method override
+ *  - {boolean} corruptPrice: whether or not to generate a cart with a corrupted item price
  * @returns {Promise<{data: *, ipfsHash: *}>}
  */
-async function createTestEncryptedOfferData(network, shop, key) {
+async function createTestEncryptedOfferData(network, shop, key, opts = {}) {
+  const itemPrice = 2500
+  const subTotalAmount = 2500
+  const shippingAmount = 400
+
+  // Calculate discount amount, if any.
+  let discountAmount = 0
+  if (opts.discount) {
+    if (opts.discount.corruptTestData) {
+      discountAmount = 9999
+    } else if (['percentage', 'payment'].includes(opts.discount.discountType)) {
+      const totalWithShipping =
+        subTotalAmount + (opts.discount.excludeShipping ? 0 : shippingAmount)
+      discountAmount = Math.round(
+        (totalWithShipping * opts.discount.value) / 100
+      )
+    } else if (opts.discount.discountType === 'fixed') {
+      discountAmount = opts.discount.value * 100
+    } else {
+      throw new Error(`Unexpected discount type: ${opts.discount.discountType}`)
+    }
+  }
+  const totalAmount = Math.max(
+    subTotalAmount + shippingAmount - discountAmount,
+    0
+  )
+
   const data = {
     items: [
       {
-        product: 'iron mask',
+        product: 'iron-mask',
         quantity: 1,
-        variant: 0,
-        price: 2500,
+        variant: 1234,
+        price: opts.corruptPrice ? 99999 : itemPrice,
         externalProductId: 165524792,
         externalVariantId: 1811816649
       }
     ],
     instructions: '',
-    subTotal: 2500,
-    discount: 0,
+    subTotal: opts.corruptSubTotal ? 99999 : subTotalAmount,
+    discount: discountAmount,
     donation: 0,
-    total: 2500,
+    total: totalAmount,
     currency: 'USD',
     shipping: {
       id: 'STANDARD',
       label: 'Flat Rate',
-      amount: 399
+      amount: shippingAmount
     },
-    paymentMethod: {
+    paymentMethod: opts.paymentMethod || {
       id: 'stripe',
       label: 'Credit Card'
     },
-    discountObj: {},
+    discountObj: opts.discount || {},
     userInfo: {
       firstName: 'The',
       lastName: 'Mandalorian',
@@ -319,6 +373,64 @@ async function createTestEncryptedOfferData(network, shop, key) {
   })
 
   return { ipfsHash: hash, data }
+}
+
+/**
+ * Returns a shop's mock products.
+ * @returns {Promise<void>}
+ */
+async function mockReadProductsFileFromWeb() {
+  return [
+    {
+      id: 'iron-mask',
+      externalId: 194464746,
+      title: 'Mandalorian mask',
+      price: 25000,
+      image: '46c08ceaf67605b978f128b2b9153ac7.jpg'
+    }
+  ]
+}
+
+/**
+ * Returns a mock product's data.
+ * @returns {Promise<object>}
+ */
+async function mockReadProductDataFromWeb() {
+  return {
+    id: 'iron-mask',
+    externalId: 194464746,
+    title: 'Mandalorian mask',
+    description: 'Put it on and never take it off.',
+    price: 2000,
+    available: true,
+    options: ['Color', 'Size'],
+    variants: [
+      {
+        id: 1234,
+        externalId: 2157871598,
+        title: 'Mandalorian mask - Gold / S',
+        option1: 'Black',
+        option2: 'S',
+        option3: null,
+        available: true,
+        name: 'Mandalorian mask - Black / S',
+        options: ['Gold', 'S'],
+        price: 2500
+      },
+      {
+        id: 9928,
+        externalId: 2157871598,
+        title: 'Mandalorian mask - Silver / M',
+        option1: 'Black',
+        option2: 'S',
+        option3: null,
+        available: true,
+        name: 'Mandalorian mask - Silver / M',
+        options: ['Silver', 'M'],
+        price: 2500
+      }
+    ]
+  }
 }
 
 /**
@@ -357,7 +469,7 @@ async function createTestOffer(network, shop, key) {
   }
   const offerIpfsHash = await postIpfs(network.ipfsApi, offer, true)
 
-  return { ipfsHash: offerIpfsHash, data }
+  return { offer, ipfsHash: offerIpfsHash, data }
 }
 
 /**
@@ -387,8 +499,8 @@ class MockBullJob {
     this.id = Date.now() // unique and monotonically increasing job id.
     this.data = data
     this.queue = { name: 'testQueue' }
-    this.log = console.log
-    this.progress = (x) => console.log(`Queue progress: ${x}%`)
+    this.log = log.info
+    this.progress = (x) => log.info(`Queue progress: ${x}%`)
   }
 }
 
@@ -402,8 +514,11 @@ module.exports = {
   createTestShop,
   createTestOffer,
   createTestEncryptedOfferData,
+  mockReadProductsFileFromWeb,
+  mockReadProductDataFromWeb,
   getTestWallet,
   getOrCreateTestNetwork,
   MockBullJob,
-  updateShopConfig
+  updateShopConfig,
+  updateNetworkConfig
 }
