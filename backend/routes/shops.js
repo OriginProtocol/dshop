@@ -1,4 +1,4 @@
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 const fs = require('fs')
 const { pick, sortBy, get } = require('lodash')
 const { execFile } = require('child_process')

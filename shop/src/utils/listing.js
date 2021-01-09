@@ -1,6 +1,6 @@
 // Misc utilities related to handling marketplace listings.
 
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 
 import { getIpfsHashFromBytes32, post } from '@origin/ipfs'
 

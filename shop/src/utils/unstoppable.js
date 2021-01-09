@@ -1,4 +1,4 @@
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 
 import { isUnstoppableName } from '@origin/utils/dns'
 
