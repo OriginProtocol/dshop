@@ -1,6 +1,6 @@
 import React, { useReducer } from 'react'
 
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import fbt from 'fbt'
 
 import { formInput, formFeedback } from 'utils/formHelpers'

@@ -41,7 +41,6 @@ export const generateVariants = (product) => {
       const comboTitle = `${product.title} - ${optionCombo.join(' / ')}`
 
       return {
-        id: index,
         title: comboTitle,
         name: comboTitle,
         price: product.price,
@@ -59,6 +58,9 @@ export const generateVariants = (product) => {
           }),
           {}
         ),
+
+        //Reset variant ID
+        id: index,
 
         // Set options array
         options: optionCombo

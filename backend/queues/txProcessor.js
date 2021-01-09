@@ -1,4 +1,4 @@
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 const { Network, Shop, Transaction } = require('../models')
 const queues = require('./queues')
 const { getLogger } = require('../utils/logger')

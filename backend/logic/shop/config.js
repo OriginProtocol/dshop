@@ -1,4 +1,4 @@
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 const fs = require('fs')
 const mv = require('mv')
 const path = require('path')

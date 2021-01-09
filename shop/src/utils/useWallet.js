@@ -1,5 +1,5 @@
 import { useEffect, useReducer } from 'react'
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'

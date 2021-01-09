@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 
 import useOrigin from 'utils/useOrigin'
 import IdentityProxyAbi from 'utils/abis/IdentityProxy'

@@ -227,6 +227,9 @@ async function deploy({
     dnsProvider = 'override'
   }
 
+  // Potentially used by CDN and DNS steps
+  const names = await getShopDomain({ shopId: shop.id })
+
   /**
    * Deployment locking.  No concurrent deployments per shop
    *
@@ -327,12 +330,23 @@ async function deploy({
   ) {
     log.info(`Configuring CDN...`)
 
+    /**
+     * Make sure we take into account custom domains, otherwise the SSL cert
+     * will only be configured for one domain
+     */
+    const cdnDomains = [fqdn]
+    names.forEach((d) => {
+      if (!cdnDomains.includes(d.domain)) {
+        cdnDomains.push(d.domain)
+      }
+    })
+
     try {
       const responses = await cdnConfig({
         networkConfig,
         shop,
         deployment,
-        domains: [fqdn],
+        domains: cdnDomains,
         resourceSelection
       })
       if (responses.length > 0) {
@@ -431,7 +445,6 @@ async function deploy({
 
   // Set record of IP/IPFS hash to name relation
   log.info(`Updating shop domain records...`)
-  const names = await getShopDomain({ shopId: shop.id })
   if (names && names.length > 0) {
     for (const dn of names) {
       if (ipAddresses) {
