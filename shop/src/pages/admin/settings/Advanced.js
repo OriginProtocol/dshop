@@ -94,10 +94,6 @@ const AdvancedSettings = () => {
         <FormActions
           hasChanges={state.hasChanges}
           workInProgress={state.saving}
-          cancelSubmission={() => {
-            window.location.reload()
-            return
-          }}
         />
       </h3>
       <div className="mt-4">

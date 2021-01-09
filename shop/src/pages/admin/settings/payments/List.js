@@ -256,14 +256,7 @@ const PaymentSettings = () => {
         </Link>
         <span className="chevron" />
         <fbt desc="Payments">Payments</fbt>
-        <FormActions
-          hasChanges={state.hasChanges}
-          workInProgress={saving}
-          cancelSubmission={() => {
-            window.location.reload()
-            return
-          }}
-        />
+        <FormActions hasChanges={state.hasChanges} workInProgress={saving} />
       </h3>
       <div className="shop-settings processors-list">
         <h4>
@@ -362,14 +355,7 @@ const PaymentSettings = () => {
         <CryptoSettings {...{ state, setState, config }} />
       </div>
       <div className="footer-actions">
-        <FormActions
-          hasChanges={state.hasChanges}
-          workInProgress={saving}
-          cancelSubmission={() => {
-            window.location.reload()
-            return
-          }}
-        />
+        <FormActions hasChanges={state.hasChanges} workInProgress={saving} />
       </div>
     </form>
   )

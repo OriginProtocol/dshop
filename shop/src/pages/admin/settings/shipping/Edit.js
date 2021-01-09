@@ -309,10 +309,6 @@ const Shipping = () => {
           <FormActions
             hasChanges={state.hasChanges}
             workInProgress={state.saving}
-            cancelSubmission={() => {
-              window.location.reload()
-              return
-            }}
           />
         </h3>
         {loading ? (
@@ -432,10 +428,6 @@ const Shipping = () => {
         <FormActions
           hasChanges={state.hasChanges}
           workInProgress={state.saving}
-          cancelSubmission={() => {
-            window.location.reload()
-            return
-          }}
         />
       </div>
     </form>

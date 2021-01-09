@@ -224,10 +224,9 @@ const CryptoSettings = ({ state, setState }) => {
   )
 }
 
-const AdminDeleteCustomToken = ({ className = '', onConfirm }) => {
+const AdminDeleteCustomToken = ({ onConfirm }) => {
   return (
     <ConfirmationModal
-      className={`btn btn-outline-danger ${className}`}
       customEl={
         <a
           href="#remove"
@@ -239,7 +238,6 @@ const AdminDeleteCustomToken = ({ className = '', onConfirm }) => {
           <img className="ml-3" src="images/delete-icon.svg" />
         </a>
       }
-      buttonText={<fbt desc="Delete">Delete</fbt>}
       confirmText={
         <fbt desc="admin.settings.payments.tokenDeleteDesc">
           Are you sure you want to delete this token?

@@ -103,14 +103,7 @@ const GeneralSettings = () => {
         </Link>
         <span className="chevron" />
         <fbt desc="General">General</fbt>
-        <FormActions
-          hasChanges={state.hasChanges}
-          workInProgress={saving}
-          cancelSubmission={() => {
-            window.location.reload()
-            return
-          }}
-        />
+        <FormActions hasChanges={state.hasChanges} workInProgress={saving} />
       </h3>
       <div className="row">
         <div className="shop-settings col-md-8 col-lg-9">
@@ -210,14 +203,7 @@ const GeneralSettings = () => {
         </div>
       </div>
       <div className="footer-actions">
-        <FormActions
-          hasChanges={state.hasChanges}
-          workInProgress={saving}
-          cancelSubmission={() => {
-            window.location.reload()
-            return
-          }}
-        />
+        <FormActions hasChanges={state.hasChanges} workInProgress={saving} />
       </div>
     </form>
   )

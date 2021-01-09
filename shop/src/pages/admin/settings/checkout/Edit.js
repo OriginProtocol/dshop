@@ -106,14 +106,7 @@ const CheckoutSettings = () => {
         </Link>
         <span className="chevron" />
         <fbt desc="Checkout">Checkout</fbt>
-        <FormActions
-          hasChanges={state.hasChanges}
-          workInProgress={saving}
-          cancelSubmission={() => {
-            window.location.reload()
-            return
-          }}
-        />
+        <FormActions hasChanges={state.hasChanges} workInProgress={saving} />
       </h3>
       <div className="row">
         <div className="shop-settings col-md-8 col-lg-9">
@@ -201,14 +194,7 @@ const CheckoutSettings = () => {
         </div>
       </div>
       <div className="footer-actions">
-        <FormActions
-          hasChanges={state.hasChanges}
-          workInProgress={saving}
-          cancelSubmission={() => {
-            window.location.reload()
-            return
-          }}
-        />
+        <FormActions hasChanges={state.hasChanges} workInProgress={saving} />
       </div>
     </form>
   )
