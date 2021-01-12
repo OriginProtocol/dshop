@@ -1,41 +1,17 @@
-import React, { useState } from 'react'
-import CreatableSelect from 'react-select/creatable'
+import React from 'react'
 import fbt from 'fbt'
-
 import { formInput, formFeedback } from 'utils/formHelpers'
 
-const TokenComponent = ({ options, onChange, disabled }) => {
-  const [inputValue, setInputValue] = useState('')
+import TokenComponent from './_TokenComponent'
 
-  return (
-    <CreatableSelect
-      components={{ DropdownIndicator: null }}
-      inputValue={inputValue}
-      isMulti
-      isDisabled={disabled}
-      menuIsOpen={false}
-      onChange={(value) => onChange(value ? value.map((v) => v.value) : [])}
-      onInputChange={(inputValue) => setInputValue(inputValue)}
-      onKeyDown={(event) => {
-        if (!inputValue) return
-        switch (event.key) {
-          case 'Enter':
-          case 'Tab':
-          case ',':
-            setInputValue('')
-            onChange([...options, inputValue])
-            event.preventDefault()
-        }
-      }}
-      placeholder={fbt(
-        'Separate options with a comma',
-        'admin.products.optionValuesPlaceholder'
-      )}
-      value={options.map((label) => ({ label, value: label }))}
-    />
-  )
-}
-
+/**
+ * @param (prop) formState: Object
+ * @param (prop) setFormState: async function(Object) => undefined [a function which accepts an Object as an argument; suggested use: set the form's state]
+ * @param (prop) label: undefined
+ * @param (prop) onRemove: function() => undefined [can be used to render the removal of the component]
+ * @param (prop) placeholder: string [optional; can be used to display placeholder text]
+ * @param (prop) disabled: boolean [used to disable the component's input]
+ */
 const EditOptions = ({
   formState,
   setFormState,
@@ -81,8 +57,10 @@ const EditOptions = ({
         </div>
         <div>
           <TokenComponent
-            options={formState.options || []}
-            onChange={(options) => setFormState({ options })}
+            elements={formState.individualOpts || []}
+            onChangeTokenComponent={(newElements) =>
+              setFormState({ individualOpts: newElements })
+            }
             disabled={disabled}
           />
           {Feedback('options')}

@@ -126,7 +126,9 @@ async function readProductsFileFromWeb(shop, networkConfig) {
  * @returns {Promise<object>}
  */
 async function readProductDataFromWeb(shop, networkConfig, productId) {
-  const url = getShopDataUrl(shop, networkConfig) + `${productId}/data.json`
+  const url =
+    getShopDataUrl(shop, networkConfig) +
+    `${encodeURIComponent(productId)}/data.json`
   const res = await fetch(url)
   const json = await res.json()
   return json
