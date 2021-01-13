@@ -15,7 +15,7 @@
     ]
   },
   "devDependencies": {
-    "@google-cloud/storage": "5.7.1",
+    "@google-cloud/storage": "5.7.2",
     "@pinata/sdk": "1.1.11",
     "babel-eslint": "10.1.0",
     "commander": "6.2.1",
