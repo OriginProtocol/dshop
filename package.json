@@ -63,7 +63,8 @@
       "sequelize",
       "sequelize-cli",
       "ipfs",
-      "tailwindcss"
+      "tailwindcss",
+      "bull-board"
     ],
     "ignorePaths": [],
     "schedule": "before 11am",
