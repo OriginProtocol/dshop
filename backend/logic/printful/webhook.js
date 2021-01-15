@@ -1,12 +1,12 @@
-const { get } = require('lodash')
+const { get, uniq } = require('lodash')
 
 const { fetch } = require('./api')
-const { Order, Shop } = require('../../models')
+const { Order } = require('../../models')
 const { DSHOP_CACHE } = require('../../utils/const')
 const { PrintfulWebhookEvents } = require('../../utils/enums')
 const sendNewOrderEmail = require('../../utils/emails/newOrder')
-const { decryptConfig } = require('../../utils/encryptedConfig')
 const { printfulSyncQueue } = require('../../queues/queues')
+const stockUpdate = require('../printful/sync/stockUpdate')
 const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('logic.printful.webhook')
@@ -16,17 +16,27 @@ const log = getLogger('logic.printful.webhook')
  * @param {number} shopId
  * @param {object} shopConfig
  * @param {string} backendUrl
+ * @param {Array<number>} productIds
  * @returns {Promise<string>} Webhook's secret
  * @throws in case of an error
  */
-const registerPrintfulWebhook = async (shopId, shopConfig, backendUrl) => {
+const registerPrintfulWebhook = async (shopId, shopConfig, backendUrl, productIds = []) => {
   const apiKey = shopConfig.printful
 
   const secret = Math.random().toString(36).substring(2)
   const webhookURL = `${backendUrl}/printful/webhooks/${shopId}/${secret}`
   const registerData = {
     url: webhookURL,
-    types: Object.values(PrintfulWebhookEvents)
+    types: Object.values(PrintfulWebhookEvents).filter(each => each !== PrintfulWebhookEvents.StockUpdated)
+  }
+
+  if(productIds.length > 0){
+      registerData.params = {
+        stock_updated: {
+            product_ids: productIds
+        }
+      }
+      registerData.types = [PrintfulWebhookEvents.StockUpdated]
   }
 
   let error
@@ -164,13 +174,13 @@ const checkPrintfulWebhook = async (shopId, shopConfig, networkConfig) => {
  * Processes a PackageShipped event sent by Printful via webhook.
  * @param event
  * @param shopId
+ * @param shopData
  * @returns {Promise<void>}
  */
-const processShippedEvent = async (event, shopId) => {
+const processShippedEvent = async (event, shopId, shopData) => {
   try {
     const { shipment, order } = event
-
-    const shop = await Shop.findOne({ where: { id: shopId } })
+    const { shop } = shopData
 
     const orderId = order.external_id
     const dbOrder = await Order.findOne({
@@ -207,18 +217,17 @@ const processShippedEvent = async (event, shopId) => {
  * Processes a ProductUpdated event sent by Printful via webhook.
  * @param event
  * @param shopId
+ * @param shopData
  * @returns {Promise<void>}
  */
-const processUpdatedEvent = async (event, shopId) => {
+const processUpdatedEvent = async (event, shopId, shopData) => {
   const {
     sync_product: { id }
   } = event
-
-  const shop = await Shop.findOne({ where: { id: shopId } })
+  const { shop , shopConfig } = shopData
 
   const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
 
-  const shopConfig = decryptConfig(shop.config)
   const apiKey = get(shopConfig, 'printful')
 
   log.debug(
@@ -237,10 +246,34 @@ const processUpdatedEvent = async (event, shopId) => {
   )
 }
 
+/**
+ * Processes a ProductStockUpdated event sent by Printful via webhook.
+ * @param event
+ * @param shopId
+ * @param shopData
+ */
+const processStockUpdatedEvent = async (event, shopId, shopData) => {
+  try {
+    const { product_id } = event
+    const { shop, shopConfig } = shopData
+    const shopInventory = get(shopConfig, 'inventory')
+    if (shopInventory) {
+      const stockOutVariant = get(event, 'variant_stock.out', [])
+      const stockDiscontinuedVariant = get(event, 'variant_stock.discontinued', [])
+
+      await stockUpdate(shop, product_id, uniq([...stockOutVariant, ...stockDiscontinuedVariant]))
+    }
+  } catch (err) {
+    log.error(`Shop ${shopId} - Failed to process stock update event`, err)
+  }
+  return
+}
+
 module.exports = {
   registerPrintfulWebhook,
   deregisterPrintfulWebhook,
   checkPrintfulWebhook,
   processShippedEvent,
-  processUpdatedEvent
+  processUpdatedEvent,
+  processStockUpdatedEvent
 }

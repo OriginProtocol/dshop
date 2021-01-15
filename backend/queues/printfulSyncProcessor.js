@@ -1,11 +1,13 @@
 const queues = require('./queues')
-
+const { IS_PROD } = require('../utils/const')
+const { getConfig, decryptConfig } = require('../utils/encryptedConfig')
+const { registerPrintfulWebhook } = require('../logic/printful/webhook')
 const downloadProductData = require('../logic/printful/sync/downloadProductData')
 const writeProductData = require('../logic/printful/sync/writeProductData')
 const downloadPrintfulMockups = require('../logic/printful/sync/downloadPrintfulMockups')
 const resizePrintfulMockups = require('../logic/printful/sync/resizePrintfulMockups')
 
-const { Shop } = require('../models')
+const { Shop, Network } = require('../models')
 
 const attachToQueue = () => {
   const queue = queues['printfulSyncQueue']
@@ -60,7 +62,7 @@ const processor = async (job) => {
     shopId
   } = job.data
 
-  if (shopId === 1) {
+  if (IS_PROD && shopId === 1) {
     // Skip running the processor for gitcoin
     // since that is one deleted shop
     log(100, 'Skipping sync on shop')
@@ -68,6 +70,12 @@ const processor = async (job) => {
   }
 
   let taskStartTime = Date.now()
+
+  const shop = await Shop.findOne({ where: { id: shopId } })
+  const shopConfig = decryptConfig(shop.config)
+  const network = await Network.findOne({ where: { active: true } })
+  const netConfig = getConfig(network.config)
+  const backendUrl = process.env.BACKEND_TUNNEL || netConfig.backendUrl
 
   const updatedIds = await downloadProductData({
     OutputDir,
@@ -82,6 +90,11 @@ const processor = async (job) => {
     }s`
   )
   taskStartTime = Date.now()
+  
+  if(updatedIds.length > 0){
+    await registerPrintfulWebhook(shopId, shopConfig, backendUrl, updatedIds)
+    log(30, `Add stock updated webhook, Time Taken: ${(Date.now() - taskStartTime) / 1000}s`)
+  }
 
   await writeProductData({ OutputDir, updatedIds })
   log(
