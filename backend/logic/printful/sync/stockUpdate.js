@@ -1,14 +1,8 @@
 const get = require('lodash/get')
-const {
-    decryptConfig
-} = require('../../../utils/encryptedConfig')
+const { decryptConfig } = require('../../../utils/encryptedConfig')
 
-const {
-    Product
-} = require('../../../models')
-const {
-    getLogger
-} = require('../../../utils/logger')
+const { Product } = require('../../../models')
+const { getLogger } = require('../../../utils/logger')
 
 const log = getLogger('utils.printful.writeProductData')
 
@@ -21,46 +15,47 @@ const log = getLogger('utils.printful.writeProductData')
  * @param {Array<Object>} variants
  */
 const stockUpdate = async (shop, productId, variants) => {
-    try {
-        const shopConfig = decryptConfig(shop.config)
-        const shopInventory = get(shopConfig, 'inventory')
-        if (shopInventory) {
-            // Add to products model
-            const variantsStock = variants.reduce(
-                (stockData, variant) => ({
-                    ...stockData,
-                    [variant]: 0
-                }), {}
-            )
+  try {
+    const shopConfig = decryptConfig(shop.config)
+    const shopInventory = get(shopConfig, 'inventory')
+    if (shopInventory) {
+      // Add to products model
+      const variantsStock = variants.reduce(
+        (stockData, variant) => ({
+          ...stockData,
+          [variant]: 0
+        }),
+        {}
+      )
 
-            const updatedStockData = {
-                productId: productId.toString(),
-                shopId: shop.id,
-                stockLeft: 0,
-                variantsStock
-            }
+      const updatedStockData = {
+        productId: productId.toString(),
+        shopId: shop.id,
+        stockLeft: 0,
+        variantsStock
+      }
 
-            let existingDbItem
+      let existingDbItem
 
-            if (productId) {
-                existingDbItem = await Product.findOne({
-                    where: {
-                        productId: productId.toString(),
-                        shopId: shop.id
-                    }
-                })
-            }
+      if (productId) {
+        existingDbItem = await Product.findOne({
+          where: {
+            productId: productId.toString(),
+            shopId: shop.id
+          }
+        })
+      }
 
-            if (existingDbItem) {
-                await existingDbItem.update(updatedStockData)
-            } else {
-                await Product.create(updatedStockData)
-            }
-        }
-    } catch (e) {
-        log.error('Failed to stock update while syncing printful products', e)
+      if (existingDbItem) {
+        await existingDbItem.update(updatedStockData)
+      } else {
+        await Product.create(updatedStockData)
+      }
     }
-    return
+  } catch (e) {
+    log.error('Failed to stock update while syncing printful products', e)
+  }
+  return
 }
 
 module.exports = stockUpdate

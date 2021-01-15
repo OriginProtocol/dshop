@@ -132,13 +132,14 @@ function useProduct(id) {
           newState.product.variants = variants.map((variant) => {
             const variantExternalId = _get(variant, 'externalId')
             return {
-            ...variant,
-            quantity: _get(
-              stockData.variantsStock,
-              variantExternalId || variant.id,
-              !variantExternalId ? variant.quantity || 0 : undefined
-            )
-          }})
+              ...variant,
+              quantity: _get(
+                stockData.variantsStock,
+                variantExternalId || variant.id,
+                !variantExternalId ? variant.quantity || 0 : undefined
+              )
+            }
+          })
         }
       }
 

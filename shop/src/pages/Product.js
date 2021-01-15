@@ -20,12 +20,20 @@ import useCurrencyOpts from 'utils/useCurrencyOpts'
 import usePaymentDiscount from 'utils/usePaymentDiscount'
 
 const Product = ({ history, location, match }) => {
-
   const [{ collections, cart }, dispatch] = useStateValue()
   const isMobile = useIsMobile()
   const { config } = useConfig()
   const productObj = useProduct(match.params.id)
-  const { options, setOption, setState, product: productData, variant, loading, activeImage, getOptions } = productObj
+  const {
+    options,
+    setOption,
+    setState,
+    product: productData,
+    variant,
+    loading,
+    activeImage,
+    getOptions
+  } = productObj
   const currencyOpts = useCurrencyOpts()
   const opts = queryString.parse(location.search)
 
@@ -117,7 +125,7 @@ const Product = ({ history, location, match }) => {
         (opts.variant ? String(item.variant) === String(opts.variant) : true)
     )
   )
-  
+
   const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
 
   return (

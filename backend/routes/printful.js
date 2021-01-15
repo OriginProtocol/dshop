@@ -90,7 +90,7 @@ module.exports = function (router) {
       const shop = await Shop.findOne({ where: { id: shopId } })
       const shopConfig = decryptConfig(shop.config)
       const storedSecret = get(shopConfig, 'printfulWebhookSecret')
-      
+
       if (secret !== storedSecret) {
         log.error('Invalid secret, ignoring event', data)
         return res.status(200).end()

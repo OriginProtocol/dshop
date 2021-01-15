@@ -90,10 +90,15 @@ const processor = async (job) => {
     }s`
   )
   taskStartTime = Date.now()
-  
-  if(updatedIds.length > 0){
+
+  if (updatedIds.length > 0) {
     await registerPrintfulWebhook(shopId, shopConfig, backendUrl, updatedIds)
-    log(30, `Add stock updated webhook, Time Taken: ${(Date.now() - taskStartTime) / 1000}s`)
+    log(
+      30,
+      `Add stock updated webhook, Time Taken: ${
+        (Date.now() - taskStartTime) / 1000
+      }s`
+    )
   }
 
   await writeProductData({ OutputDir, updatedIds })

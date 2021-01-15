@@ -20,23 +20,30 @@ const log = getLogger('logic.printful.webhook')
  * @returns {Promise<string>} Webhook's secret
  * @throws in case of an error
  */
-const registerPrintfulWebhook = async (shopId, shopConfig, backendUrl, productIds = []) => {
+const registerPrintfulWebhook = async (
+  shopId,
+  shopConfig,
+  backendUrl,
+  productIds = []
+) => {
   const apiKey = shopConfig.printful
 
   const secret = Math.random().toString(36).substring(2)
   const webhookURL = `${backendUrl}/printful/webhooks/${shopId}/${secret}`
   const registerData = {
     url: webhookURL,
-    types: Object.values(PrintfulWebhookEvents).filter(each => each !== PrintfulWebhookEvents.StockUpdated)
+    types: Object.values(PrintfulWebhookEvents).filter(
+      (each) => each !== PrintfulWebhookEvents.StockUpdated
+    )
   }
 
-  if(productIds.length > 0){
-      registerData.params = {
-        stock_updated: {
-            product_ids: productIds
-        }
+  if (productIds.length > 0) {
+    registerData.params = {
+      stock_updated: {
+        product_ids: productIds
       }
-      registerData.types = [PrintfulWebhookEvents.StockUpdated]
+    }
+    registerData.types = [PrintfulWebhookEvents.StockUpdated]
   }
 
   let error
@@ -224,7 +231,7 @@ const processUpdatedEvent = async (event, shopId, shopData) => {
   const {
     sync_product: { id }
   } = event
-  const { shop , shopConfig } = shopData
+  const { shop, shopConfig } = shopData
 
   const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
 
@@ -259,9 +266,17 @@ const processStockUpdatedEvent = async (event, shopId, shopData) => {
     const shopInventory = get(shopConfig, 'inventory')
     if (shopInventory) {
       const stockOutVariant = get(event, 'variant_stock.out', [])
-      const stockDiscontinuedVariant = get(event, 'variant_stock.discontinued', [])
+      const stockDiscontinuedVariant = get(
+        event,
+        'variant_stock.discontinued',
+        []
+      )
 
-      await stockUpdate(shop, product_id, uniq([...stockOutVariant, ...stockDiscontinuedVariant]))
+      await stockUpdate(
+        shop,
+        product_id,
+        uniq([...stockOutVariant, ...stockDiscontinuedVariant])
+      )
     }
   } catch (err) {
     log.error(`Shop ${shopId} - Failed to process stock update event`, err)
