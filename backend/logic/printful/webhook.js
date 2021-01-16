@@ -74,8 +74,8 @@ const registerPrintfulWebhook = async (
 
 /**
  * Deregisters a Printful webhook.
- * @param shopId
- * @param shopConfig
+ * @param {Number|String} shopId
+ * @param {Object} shopConfig
  * @returns {Promise<void>}
  * @throws
  */
@@ -117,8 +117,8 @@ const deregisterPrintfulWebhook = async (shopId, shopConfig) => {
 
 /**
  * Check a store's Printful webhook is properly configured.
- * @param shopId
- * @param shopConfig
+ * @param {Number|String} shopId
+ * @param {Object} shopConfig
  * @returns {Promise<string>} URL of the properly configured webhook
  * @throws In case of an error or if the webhook is misconfigured.
  */
@@ -179,9 +179,9 @@ const checkPrintfulWebhook = async (shopId, shopConfig, networkConfig) => {
 
 /**
  * Processes a PackageShipped event sent by Printful via webhook.
- * @param event
- * @param shopId
- * @param shopData
+ * @param {Object} event
+ * @param {Number|String} shopId
+ * @param {Object} shopData
  * @returns {Promise<void>}
  */
 const processShippedEvent = async (event, shopId, shopData) => {
@@ -222,9 +222,9 @@ const processShippedEvent = async (event, shopId, shopData) => {
 
 /**
  * Processes a ProductUpdated event sent by Printful via webhook.
- * @param event
- * @param shopId
- * @param shopData
+ * @param {Object} event
+ * @param {Number|String} shopId
+ * @param {Object} shopData
  * @returns {Promise<void>}
  */
 const processUpdatedEvent = async (event, shopId, shopData) => {
@@ -255,9 +255,9 @@ const processUpdatedEvent = async (event, shopId, shopData) => {
 
 /**
  * Processes a ProductStockUpdated event sent by Printful via webhook.
- * @param event
- * @param shopId
- * @param shopData
+ * @param {Object} event
+ * @param {Number|String} shopId
+ * @param {Object} shopData
  */
 const processStockUpdatedEvent = async (event, shopId, shopData) => {
   try {
