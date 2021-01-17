@@ -2,8 +2,7 @@ import React from 'react'
 import fbt from 'fbt'
 
 import usePrice from 'utils/usePrice'
-
-const Web3Utils = require('web3-utils')
+import SourceTokenImage from './SourceTokenImage'
 
 const TokenList = ({
   acceptedTokens,
@@ -14,6 +13,7 @@ const TokenList = ({
   cart
 }) => {
   const { toTokenPrice, toFiatPrice } = usePrice(config.currency)
+
   return (
     <table>
       <thead>
@@ -43,11 +43,7 @@ const TokenList = ({
                   onChange={() => setActiveToken(token)}
                 />
                 <div className={`token-logo${isActive ? ' active' : ''}`}>
-                  <img
-                    src={`https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${Web3Utils.toChecksumAddress(
-                      token.address
-                    )}/logo.png`} //Reference: https://developer.trustwallet.com/add_new_asset/for-developers
-                  />
+                  <SourceTokenImage address={token.address} />
                 </div>
                 <div>{token.name}</div>
               </td>
