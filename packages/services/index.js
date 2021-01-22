@@ -1,7 +1,7 @@
 const { spawn } = require('child_process')
 const Ganache = require('ganache-core')
 const IPFS = require('ipfs')
-const HttpIPFS = require('ipfs/src/http')
+const HttpIPFS = require('ipfs-http-server/src')
 const fs = require('fs')
 const memdown = require('memdown')
 const net = require('net')
