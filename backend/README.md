@@ -11,7 +11,7 @@ It works by watching the Ethereum blockchain for relevant activity on the Origin
 Marketplace contract. Order data is downloaded from IPFS, decrypted and stored
 in a Postgres database.
 
-- [Test Data](docs/index.md#manual-testing)
+- [Test Data](docs/README.md#manual-testing)
 - [Backend Web API](docs/api.md)
 
 ## Local development
