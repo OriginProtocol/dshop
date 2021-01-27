@@ -1,5 +1,4 @@
 const _get = require('lodash/get')
-const program = require('commander')
 const { decryptConfig } = require('../../../utils/encryptedConfig')
 
 const { get } = require('../api')
@@ -32,7 +31,8 @@ const stockUpdate = async (shop, productId, variants) => {
       const productData = await get(`/store/products/${productId}`, {
         apiKey: apiKey
       })
-      existingVariants = _get(productData, 'result.sync_product.synced', 0) - variants.length
+      existingVariants =
+        _get(productData, 'result.sync_product.synced', 0) - variants.length
       existingVariants = existingVariants < 0 ? 0 : existingVariants
     }
 
