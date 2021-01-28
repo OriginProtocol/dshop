@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from 'react'
+import React from 'react'
 import queryString from 'query-string'
 import pick from 'lodash/pick'
 import get from 'lodash/get'

@@ -30,7 +30,8 @@ const stockUpdate = async (shop, productId, variants) => {
       const productData = await get(`/store/products/${productId}`, {
         apiKey: apiKey
       })
-      existingVariants = _get(productData, 'result.sync_product.synced', 0) - variants.length
+      existingVariants =
+        _get(productData, 'result.sync_product.synced', 0) - variants.length
       existingVariants = existingVariants < 0 ? 0 : existingVariants
     }
 
