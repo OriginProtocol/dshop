@@ -1,5 +1,4 @@
 const _get = require('lodash/get')
-const program = require('commander')
 const { decryptConfig } = require('../../../utils/encryptedConfig')
 
 const { get } = require('../api')
@@ -7,11 +6,10 @@ const { Product } = require('../../../models')
 
 /**
  * Updates discontinued variants and variants that are out of stock to a collection.
- * And creates collection if it doesn't exist
  *
- * @param {Object} shop
- * @param {Number|String} productId
- * @param {Array<Object>} variants
+ * @param {Object} shop: Shop DB object
+ * @param {Number|String} productId: External ID of the product
+ * @param {Array<Object>} variants: List of variants that are out of stock/discontinued
  */
 const stockUpdate = async (shop, productId, variants) => {
   const shopConfig = decryptConfig(shop.config)
