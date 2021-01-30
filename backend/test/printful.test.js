@@ -86,10 +86,11 @@ describe('Printful', () => {
 
     // Since the shop does not have a printful API key we expect a fulfillment error.
     await order.reload()
-    expect(order.data.fulfillError).to.be.a('string')
-    expect(order.data.fulfillError).to.equal('Missing Printful API key')
+    const expectedError = 'Auto-fulfillment error: Missing Printful API key'
+    expect(order.data.autoFulfillError).to.be.a('string')
+    expect(order.data.autoFulfillError).to.equal(expectedError)
     expect(order.data.error).to.be.an('array')
     expect(order.data.error.length).to.equal(1)
-    expect(order.data.error[0]).to.equal('Missing Printful API key')
+    expect(order.data.error[0]).to.equal(expectedError)
   })
 })

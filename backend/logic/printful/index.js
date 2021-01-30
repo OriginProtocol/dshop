@@ -242,14 +242,15 @@ const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
 
     try {
       // Notify the merchant of the fulfillment failure by email.
-      const message = error.message
-      await sendPrintfulOrderFailedEmail(shop.id, orderObj, { message })
+      const reason = error.message
+      await sendPrintfulOrderFailedEmail(shop.id, orderObj, { reason })
 
       // Store the fulfillment error in the order's metadata.
+      const message = 'Auto-fulfillment error: ' + reason
       const errorData = {
         // Add a new fullfillError field.
-        fulfillError: message,
-        // Add to the possibly already existing error field which stores the list of errors.
+        autoFulfillError: message,
+        // Add the error to the list of errors.
         error: [...get(orderObj, 'data.error', []), message]
       }
       const data = { ...orderObj.data, ...errorData }
