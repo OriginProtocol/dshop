@@ -6,13 +6,12 @@ const {
   getTestWallet,
   createTestShop,
   getOrCreateTestNetwork,
-  generatePgpKey,
+  generatePgpKey
 } = require('./utils')
 const { Order, Product } = require('../models')
 const encConf = require('../utils/encryptedConfig')
 const { OrderPaymentStatuses, OrderPaymentTypes } = require('../utils/enums')
 const { autoFulfillOrder } = require('../logic/printful')
-
 
 describe('Printful', () => {
   let network, shop, shopConfig
@@ -93,5 +92,4 @@ describe('Printful', () => {
     expect(order.data.error.length).to.equal(1)
     expect(order.data.error[0]).to.equal('Missing Printful API key')
   })
-
 })
