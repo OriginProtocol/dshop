@@ -29,7 +29,7 @@
     "@origin/ipfs": "^0.1.0",
     "@origin/utils": "^0.1.0",
     "@paypal/checkout-server-sdk": "^1.0.2",
-    "@sentry/node": "^5.30.0",
+    "@sentry/node": "^6.0.0",
     "@unstoppabledomains/resolution": "^1.16.1",
     "aws-sdk": "^2.826.0",
     "bcrypt": "^5.0.0",
