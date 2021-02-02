@@ -89,7 +89,7 @@ const placeOrder = async (apiKey, orderData, opts = {}) => {
   } catch (e) {
     log.error('Error parsing Printful response')
     log.error(text)
-    return { success: false }
+    return { success: false, message: 'Error parsing Printful API response' }
   }
 }
 
@@ -235,19 +235,31 @@ const fetchTaxRates = async (apiKey, data) => {
  * @returns {Promise<void>}
  */
 const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
-  const sendFailureEmail = async (message) => {
-    try {
-      const data = {
-        message: message || 'An unknown error occured'
-      }
+  const shopId = shop.id
 
-      await sendPrintfulOrderFailedEmail(shop.id, orderObj, data)
+  const handleError = async (error) => {
+    log.error(`Shop ${shopId} - Failed to auto-fulfill order`, error)
+
+    try {
+      // Notify the merchant of the fulfillment failure by email.
+      const reason = error.message
+      await sendPrintfulOrderFailedEmail(shop.id, orderObj, { reason })
+
+      // Store the fulfillment error in the order's metadata.
+      const message = 'Auto-fulfillment error: ' + reason
+      const errorData = {
+        // Add a new fullfillError field.
+        autoFulfillError: message,
+        // Add the error to the list of errors.
+        error: [...get(orderObj, 'data.error', []), message]
+      }
+      const data = { ...orderObj.data, ...errorData }
+      await orderObj.update({ data })
     } catch (err) {
-      log.error('Failed to send email', err)
+      log.error('autoFulfillOrder error handler failure', err)
     }
   }
 
-  const shopId = shop.id
   try {
     log.info(
       `Shop ${shopId} - Trying to auto fulfill order ${orderObj.id} on printful...`
@@ -255,7 +267,7 @@ const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
 
     const apiKey = shopConfig.printful
     if (!apiKey) {
-      return
+      return handleError(new Error('Missing Printful API key'))
     }
 
     // TODO: Should this be a configurable variable on admin?
@@ -274,14 +286,12 @@ const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
     })
 
     if (!success) {
-      log.error(`Shop ${shopId} - Failed to auto-fulfill order`, message)
-      await sendFailureEmail(message)
-    } else {
-      log.info(`Shop ${shopId} - Order created on printful`)
+      return handleError(new Error(message))
     }
+
+    log.info(`Shop ${shopId} - Order created on printful`)
   } catch (err) {
-    log.error(`Shop ${shopId} - Failed to auto-fulfill order`, err)
-    await sendFailureEmail()
+    return handleError(err)
   }
 }
 
