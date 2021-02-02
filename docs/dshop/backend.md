@@ -16,3 +16,7 @@ The backend consists of:
 
 The backend can be hosted by any individual or third party provider.
 
+## Deployment Guides
+
+- [Google Cloud Platform (GCP)](deployment/gcp.md)
+- [Amazon Web Services (AWS)](deployment/aws.md)

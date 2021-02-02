@@ -27,7 +27,11 @@ const fetchOrder = async (apiKey, orderId) => {
     }
   }
 
-  const result = await fetch(apiKey, `/orders/@${orderId}`, 'GET')
+  const result = await fetch({
+    apiKey,
+    path: `/orders/@${orderId}`,
+    method: 'GET'
+  })
   const json = (await result.json()) || {}
   if (!result.ok) {
     return {
@@ -60,7 +64,12 @@ const placeOrder = async (apiKey, orderData, opts = {}) => {
   }
 
   const path = `/orders${opts.draft ? '' : '?confirm=true'}`
-  const newOrderResponse = await fetch(apiKey, path, 'POST', orderData)
+  const newOrderResponse = await fetch({
+    apiKey,
+    path,
+    method: 'POST',
+    body: orderData
+  })
   const text = await newOrderResponse.text()
   try {
     const json = JSON.parse(text)
@@ -80,7 +89,7 @@ const placeOrder = async (apiKey, orderData, opts = {}) => {
   } catch (e) {
     log.error('Error parsing Printful response')
     log.error(text)
-    return { success: false }
+    return { success: false, message: 'Error parsing Printful API response' }
   }
 }
 
@@ -99,11 +108,11 @@ const confirmOrder = async (apiKey, orderId) => {
     }
   }
 
-  const confirmOrderResponse = await fetch(
+  const confirmOrderResponse = await fetch({
     apiKey,
-    `/orders/@${orderId}/confirm`,
-    'POST'
-  )
+    path: `/orders/@${orderId}/confirm`,
+    method: 'POST'
+  })
   const json = await confirmOrderResponse.json()
   log.debug(json)
 
@@ -146,12 +155,12 @@ const fetchShippingEstimate = async (apiKey, data) => {
     return { success: false }
   }
 
-  const shippingRatesResponse = await fetch(
+  const shippingRatesResponse = await fetch({
     apiKey,
-    `/shipping/rates`,
-    'POST',
-    query
-  )
+    path: `/shipping/rates`,
+    method: 'POST',
+    body: query
+  })
   const json = await shippingRatesResponse.json()
 
   if (json.result && Array.isArray(json.result)) {
@@ -198,7 +207,12 @@ const fetchTaxRates = async (apiKey, data) => {
     }
   }
 
-  const shippingRatesResponse = await fetch(apiKey, `/tax/rates`, 'POST', query)
+  const shippingRatesResponse = await fetch({
+    apiKey,
+    path: `/tax/rates`,
+    method: 'POST',
+    body: query
+  })
   const json = await shippingRatesResponse.json()
 
   if (json.result && Number.isFinite(json.result.rate)) {
@@ -221,19 +235,31 @@ const fetchTaxRates = async (apiKey, data) => {
  * @returns {Promise<void>}
  */
 const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
-  const sendFailureEmail = async (message) => {
-    try {
-      const data = {
-        message: message || 'An unknown error occured'
-      }
+  const shopId = shop.id
 
-      await sendPrintfulOrderFailedEmail(shop.id, orderObj, data)
+  const handleError = async (error) => {
+    log.error(`Shop ${shopId} - Failed to auto-fulfill order`, error)
+
+    try {
+      // Notify the merchant of the fulfillment failure by email.
+      const reason = error.message
+      await sendPrintfulOrderFailedEmail(shop.id, orderObj, { reason })
+
+      // Store the fulfillment error in the order's metadata.
+      const message = 'Auto-fulfillment error: ' + reason
+      const errorData = {
+        // Add a new fullfillError field.
+        autoFulfillError: message,
+        // Add the error to the list of errors.
+        error: [...get(orderObj, 'data.error', []), message]
+      }
+      const data = { ...orderObj.data, ...errorData }
+      await orderObj.update({ data })
     } catch (err) {
-      log.error('Failed to send email', err)
+      log.error('autoFulfillOrder error handler failure', err)
     }
   }
 
-  const shopId = shop.id
   try {
     log.info(
       `Shop ${shopId} - Trying to auto fulfill order ${orderObj.id} on printful...`
@@ -241,7 +267,7 @@ const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
 
     const apiKey = shopConfig.printful
     if (!apiKey) {
-      return
+      return handleError(new Error('Missing Printful API key'))
     }
 
     // TODO: Should this be a configurable variable on admin?
@@ -260,14 +286,12 @@ const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
     })
 
     if (!success) {
-      log.error(`Shop ${shopId} - Failed to auto-fulfill order`, message)
-      await sendFailureEmail(message)
-    } else {
-      log.info(`Shop ${shopId} - Order created on printful`)
+      return handleError(new Error(message))
     }
+
+    log.info(`Shop ${shopId} - Order created on printful`)
   } catch (err) {
-    log.error(`Shop ${shopId} - Failed to auto-fulfill order`, err)
-    await sendFailureEmail()
+    return handleError(err)
   }
 }
 

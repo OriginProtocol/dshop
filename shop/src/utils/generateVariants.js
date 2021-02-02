@@ -29,7 +29,7 @@ export const generateVariants = (product) => {
   if (!options.length || !availableOptions.length) return []
 
   // Map existing variants for easy access and carrying over values
-  const existingVairants = (variants || []).reduce((obj, variant) => {
+  const existingVariants = (variants || []).reduce((obj, variant) => {
     return {
       ...obj,
       [variant.options.join('|||')]: variant
@@ -41,7 +41,6 @@ export const generateVariants = (product) => {
       const comboTitle = `${product.title} - ${optionCombo.join(' / ')}`
 
       return {
-        id: index,
         title: comboTitle,
         name: comboTitle,
         price: product.price,
@@ -49,7 +48,7 @@ export const generateVariants = (product) => {
         available: true,
 
         // Default to previous values if it exists
-        ...existingVairants[optionCombo.join('|||')],
+        ...existingVariants[optionCombo.join('|||')],
 
         // Set {option1, option2, ...} values
         ...optionCombo.reduce(
@@ -59,6 +58,9 @@ export const generateVariants = (product) => {
           }),
           {}
         ),
+
+        //Reset variant ID
+        id: index,
 
         // Set options array
         options: optionCombo

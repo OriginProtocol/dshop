@@ -84,11 +84,14 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
       `${OutputDir}/data-printful/sync-product-${row.id}.json`
     )
     const syncProduct = JSON.parse(syncProductRaw)
-    const productId = syncProduct.sync_variants[0].product.product_id
+    const productId = get(syncProduct, 'sync_variants[0].product.product_id')
 
-    const productRaw = fs.readFileSync(
-      `${OutputDir}/data-printful/product-${productId}.json`
-    )
+    const syncFilePath = `${OutputDir}/data-printful/product-${productId}.json`
+
+    if (!productId || !fs.existsSync(syncFilePath)) {
+      continue
+    }
+    const productRaw = fs.readFileSync(syncFilePath)
     const product = JSON.parse(productRaw)
     const externalId = syncProduct.sync_product.id
     if (!product.variants) {
@@ -163,7 +166,7 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
           ? null
           : existingData.variants.find((v) => v.id === vId)
 
-      if (img && !existingVariantData) {
+      if (img && img.preview_url && !existingVariantData) {
         if (allImages[img.preview_url] === undefined) {
           const splitImg = img.preview_url.split('/')
           const file = splitImg[splitImg.length - 1].replace('_preview', '')
