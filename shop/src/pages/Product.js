@@ -241,7 +241,10 @@ const Product = ({ history, location, match }) => {
     )
   )
 
-  const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
+  let isOutOfStock = !get(variant, 'available', true)
+  if (config.inventory && Number(get(variant, 'quantity')) <= 0) {
+    isOutOfStock = true
+  }
 
   return (
     <div className="product-detail">

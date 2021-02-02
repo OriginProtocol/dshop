@@ -4,7 +4,7 @@ const uniq = require('lodash/uniq')
 
 const { getLogger } = require('../../../utils/logger')
 
-const log = getLogger('utils.printfu.resizePrintfulMockups')
+const log = getLogger('utils.printful.resizePrintfulMockups')
 
 async function resizePrintfulMockups({ OutputDir, force }) {
   const filesRaw = fs.readFileSync(`${OutputDir}/printful-images.json`)
