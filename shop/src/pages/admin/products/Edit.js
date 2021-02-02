@@ -666,6 +666,32 @@ const EditProduct = () => {
                 />
               </>
             )}
+
+            <div className="row">
+              <div className="col-md-12">
+                <label>
+                  <fbt desc="NFT">NFT</fbt>
+                </label>
+                <div className="form-check">
+                  <label className="form-check-label">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={formState.nft ? true : false}
+                      onChange={() =>
+                        setFormState({
+                          nft: formState.nft ? false : true,
+                          hasChanges: true
+                        })
+                      }
+                    />
+                    <fbt desc="admin.products.isNFT">
+                      This product has an associated NFT
+                    </fbt>
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="col-md-3">
             <LinkCollections
