@@ -8,6 +8,7 @@ import isEqual from 'lodash/isEqual'
 import fetchProduct from 'data/fetchProduct'
 import { useStateValue } from 'data/state'
 import formatPrice from 'utils/formatPrice'
+import useProducts from 'utils/useProducts'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
 import fetchProductStock from 'data/fetchProductStock'
 
@@ -57,6 +58,7 @@ function useProduct(id) {
   const history = useHistory()
   const opts = queryString.parse(location.search)
   const currencyOpts = useCurrencyOpts()
+  const { products } = useProducts()
   const [state, setState] = useReducer(reducer, {
     loading: true,
     options: {},
@@ -119,29 +121,43 @@ function useProduct(id) {
       }
 
       if (config.inventory) {
+        const externalId = _get(data, 'externalId')
         const { success, product: stockData } = await fetchProductStock(
-          data.id,
+          externalId || data.id,
           config
         )
 
         if (success) {
           newState.product.quantity = stockData.stockLeft
-          newState.product.variants = variants.map((variant) => ({
-            ...variant,
-            quantity: _get(
-              stockData.variantsStock,
-              variant.id,
-              variant.quantity || 0
-            )
-          }))
+          newState.product.variants = variants.map((variant) => {
+            const variantExternalId = _get(variant, 'externalId')
+            return {
+              ...variant,
+              quantity: _get(
+                stockData.variantsStock,
+                variantExternalId || variant.id,
+                !variantExternalId ? variant.quantity || 0 : undefined
+              )
+            }
+          })
         }
       }
 
       setState(newState)
     }
-    setState({ loading: true })
-    fetchProduct(config.dataSrc, id).then(setData)
-  }, [id])
+    if (config.isAffiliate) {
+      if (products.length) {
+        const product = products.find((p) => p.id === id)
+        const url = `${config.ipfsGateway}${product.data}/data.json`
+        fetch(url)
+          .then((res) => res.json())
+          .then((json) => setData({ ...product, ...json }))
+      }
+    } else {
+      setState({ loading: true })
+      fetchProduct(config.dataSrc, id, config.inventory).then(setData)
+    }
+  }, [id, products.length])
 
   const variants = _get(state.product, 'variants', []).map((variant) => {
     return {
@@ -203,6 +219,7 @@ function useProduct(id) {
 
   return {
     ...state,
+    setState,
     setOption,
     setOptionFromImage,
     getOptions,

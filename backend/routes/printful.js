@@ -12,7 +12,8 @@ const {
 } = require('../logic/printful')
 const {
   processShippedEvent,
-  processUpdatedEvent
+  processUpdatedEvent,
+  processStockUpdatedEvent
 } = require('../logic/printful/webhook')
 const { ExternalEvent, Shop } = require('../models')
 
@@ -83,6 +84,7 @@ module.exports = function (router) {
   router.post('/printful/webhooks/:shopId/:secret', async (req, res) => {
     const { type, data } = req.body
     const { shopId, secret } = req.params
+    const shopData = {}
 
     try {
       const shop = await Shop.findOne({ where: { id: shopId } })
@@ -93,6 +95,8 @@ module.exports = function (router) {
         log.error('Invalid secret, ignoring event', data)
         return res.status(200).end()
       }
+      shopData.shop = shop
+      shopData.shopConfig = shopConfig
     } catch (err) {
       log.error('Failed to validate secret on request', shopId, err)
       return res.status(500).end()
@@ -108,11 +112,15 @@ module.exports = function (router) {
 
       switch (type) {
         case PrintfulWebhookEvents.PackageShipped:
-          await processShippedEvent(data, shopId)
+          await processShippedEvent(data, shopId, shopData)
           break
 
         case PrintfulWebhookEvents.ProductUpdated:
-          await processUpdatedEvent(data, shopId)
+          await processUpdatedEvent(data, shopId, shopData)
+          break
+
+        case PrintfulWebhookEvents.StockUpdated:
+          await processStockUpdatedEvent(data, shopId, shopData)
           break
       }
     } catch (err) {

@@ -1,7 +1,6 @@
-import React, { useEffect, useReducer } from 'react'
+import React from 'react'
 import queryString from 'query-string'
 import pick from 'lodash/pick'
-import isEqual from 'lodash/isEqual'
 import get from 'lodash/get'
 import dayjs from 'dayjs'
 import fbt from 'fbt'
@@ -14,126 +13,38 @@ import SimilarProducts from 'components/SimilarProducts'
 import SizeGuide from './product/SizeGuide'
 import formatPrice from 'utils/formatPrice'
 import useIsMobile from 'utils/useIsMobile'
-import useProducts from 'utils/useProducts'
+import useProduct from 'utils/useProduct'
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
-import fetchProduct from 'data/fetchProduct'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
 import usePaymentDiscount from 'utils/usePaymentDiscount'
 
-function getOptions(product, offset) {
-  const options = new Set(
-    product.variants.map((variant) => variant.options[offset])
-  )
-  return Array.from(options)
-}
-
-const reducer = (state, newState) => ({ ...state, ...newState })
-
-function getImageForVariant(productData, variant) {
-  if (productData && get(variant, 'image')) {
-    const variantImage = productData.images.findIndex(
-      (i) => variant.image.indexOf(i) >= 0
-    )
-    return variantImage > 0 ? variantImage : 0
-  }
-}
-
-/**
- * Finds and returns the variant that has the cheapest price
- *
- * @param {Array<Object>} variants
- * @returns {Object}
- */
-function findCheapestVariant(variants, productPrice) {
-  if (variants.length <= 1) return variants[0]
-
-  let minPrice = get(variants, '0.price', productPrice)
-  let foundVariant
-
-  for (const variant of variants) {
-    if (variant.price < minPrice) {
-      minPrice = variant.price
-      foundVariant = variant
-    }
-  }
-
-  return foundVariant ? foundVariant : variants[0]
-}
-
 const Product = ({ history, location, match }) => {
-  const [state, setState] = useReducer(reducer, {
-    loading: true,
-    options: {},
-    activeImage: 0,
-    productData: undefined
-  })
-  const { options, activeImage, productData } = state
-
   const [{ collections, cart }, dispatch] = useStateValue()
   const isMobile = useIsMobile()
   const { config } = useConfig()
-  const { products } = useProducts()
+  const productObj = useProduct(match.params.id)
+  const {
+    options,
+    setOption,
+    setState,
+    product: productData,
+    variant,
+    loading,
+    activeImage,
+    getOptions
+  } = productObj
   const currencyOpts = useCurrencyOpts()
   const opts = queryString.parse(location.search)
 
   const { paymentDiscount } = usePaymentDiscount()
-
-  useEffect(() => {
-    async function setData(data) {
-      if (!data) {
-        setState({ loading: false, productData: undefined })
-        return
-      }
-      const variants = get(data, 'variants', [])
-      if (!variants.length) {
-        variants.push({
-          ...pick(data, ['title', 'price', 'image', 'sku']),
-          id: 0,
-          name: data.title,
-          options: [],
-          option1: null,
-          option2: null,
-          option3: null,
-          available: true
-        })
-      }
-
-      const variant =
-        variants.find((v) => String(v.id) === opts.variant) ||
-        findCheapestVariant(variants, data.price)
-      const newState = {
-        productData: data,
-        activeImage: 0,
-        loading: false,
-        options: pick(variant, 'option1', 'option2', 'option3')
-      }
-      const imageForVariant = getImageForVariant(data, variant)
-      if (imageForVariant !== undefined) {
-        newState.activeImage = imageForVariant
-      }
-      setState(newState)
-    }
-    if (config.isAffiliate) {
-      if (products.length) {
-        const product = products.find((p) => p.id === match.params.id)
-        const url = `${config.ipfsGateway}${product.data}/data.json`
-        fetch(url)
-          .then((res) => res.json())
-          .then((json) => setData({ ...product, ...json }))
-      }
-    } else {
-      setState({ loading: true })
-      fetchProduct(config.dataSrc, match.params.id).then(setData)
-    }
-  }, [match.params.id, products.length])
 
   function addToCart(product, variant) {
     setState({ addedToCart: true })
     dispatch({ type: 'addToCart', product, variant })
   }
 
-  if (state.loading) {
+  if (loading) {
     return (
       <div className="product-detail">
         <Loading />
@@ -152,32 +63,6 @@ const Product = ({ history, location, match }) => {
   const collectionParam = get(match, 'params.collection')
   const collection = collections.find((c) => c.id === collectionParam)
   const urlPrefix = collectionParam ? `/collections/${collectionParam}` : ''
-
-  const variants = get(productData, 'variants', [])
-  const variant = variants.find((v) =>
-    isEqual(options, pick(v, 'option1', 'option2', 'option3'))
-  )
-
-  function setOption(idx, value) {
-    const newOptions = {
-      ...options,
-      [`option${idx}`]: value
-    }
-    const variant = productData.variants.find((v) =>
-      isEqual(newOptions, pick(v, 'option1', 'option2', 'option3'))
-    )
-    const newState = { options: newOptions }
-    const imageForVariant = getImageForVariant(productData, variant)
-    if (imageForVariant !== undefined) {
-      newState.activeImage = imageForVariant
-    }
-    setState(newState)
-    history.replace(
-      `${urlPrefix}/products/${match.params.id}${
-        variant ? `?variant=${variant.id}` : ''
-      }`
-    )
-  }
 
   const productOptions = productData.options || []
   let pics = []

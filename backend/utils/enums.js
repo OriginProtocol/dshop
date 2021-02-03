@@ -65,6 +65,7 @@ const PrintfulWebhookEvents = {
   OrderCanceled: 'order_canceled',
   ProductSynced: 'product_synced',
   ProductUpdated: 'product_updated',
+  StockUpdated: 'stock_updated',
   OrderPutHold: 'order_put_hold',
   OrderRemoveHold: 'order_remove_hold'
 }

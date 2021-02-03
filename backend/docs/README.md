@@ -13,6 +13,7 @@ These are the available environment variables:
 - `SESSION_SECRET` - String used as salt to encrypt session data.  Defaults to random.
 - `REDIS_URL` - Connection string for Redis. If empty, shop will skip queuing and retrying tasks.
 - `DATABASE_URL` - Database connection. If empty will use a local SQLite database.
+- `BACKEND_TUNNEL` - Webhook URL string for Printful testing. If empty, backend URL will be used
 
 ## Single Tenant Configuration
 

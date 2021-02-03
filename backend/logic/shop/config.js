@@ -384,7 +384,7 @@ async function updateShopConfig({ seller, shop, data }) {
     const printfulWebhookSecret = await registerPrintfulWebhook(
       shopId,
       { ...existingConfig, ...data },
-      netConfig.backendUrl
+      process.env.BACKEND_TUNNEL || netConfig.backendUrl
     )
 
     dataOverride.printfulWebhookSecret = printfulWebhookSecret
