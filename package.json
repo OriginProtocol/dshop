@@ -62,9 +62,9 @@
       "solc",
       "sequelize",
       "sequelize-cli",
-      "ipfs",
       "tailwindcss",
-      "bull-board"
+      "bull-board",
+      "sqlite3"
     ],
     "ignorePaths": [],
     "schedule": "before 11am",
