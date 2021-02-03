@@ -40,6 +40,10 @@ export const generateVariants = (product) => {
     (optionCombo, index) => {
       const comboTitle = `${product.title} - ${optionCombo.join(' / ')}`
 
+      const prevValues = {
+        ...existingVariants[optionCombo.join('|||')]
+      }
+
       return {
         title: comboTitle,
         name: comboTitle,
@@ -48,7 +52,7 @@ export const generateVariants = (product) => {
         available: true,
 
         // Default to previous values if it exists
-        ...existingVariants[optionCombo.join('|||')],
+        ...prevValues,
 
         // Set {option1, option2, ...} values
         ...optionCombo.reduce(
@@ -59,8 +63,8 @@ export const generateVariants = (product) => {
           {}
         ),
 
-        //Reset variant ID
-        id: index,
+        // Reset variant ID
+        id: product.externalId ? prevValues.id : index,
 
         // Set options array
         options: optionCombo
