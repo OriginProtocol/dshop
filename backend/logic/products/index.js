@@ -35,6 +35,7 @@ const validProductFields = [
   'dispatchOrigin',
   'processingTime',
   'shipInternational',
+  'nft',
 
   // Fields to keep track of changes made
   // to description and images

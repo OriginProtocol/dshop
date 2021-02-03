@@ -70,6 +70,11 @@ const startIpfs = async () => {
       Discovery: {
         MDNS: { Enabled: false },
         webRTCStar: { Enabled: false }
+      },
+      API: {
+        HTTPHeaders: {
+          'Access-Control-Allow-Origin': ['*']
+        }
       }
     }
   })

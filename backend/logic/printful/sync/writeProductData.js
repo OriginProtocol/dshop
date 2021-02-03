@@ -2,6 +2,7 @@ const fs = require('fs')
 const sortBy = require('lodash/sortBy')
 const get = require('lodash/get')
 const kebabCase = require('lodash/kebabCase')
+const uniq = require('lodash/uniq')
 
 const { getLogger } = require('../../../utils/logger')
 
@@ -69,7 +70,9 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
   } catch (e) {
     /* Ignore */
   }
-  let productsOut = existingProducts.filter((p) => p.keep)
+
+  // Keep non-Printful managed products
+  let productsOut = existingProducts.filter((p) => !p.externalId)
   const downloadImages = []
   const printfulIds = {}
 
@@ -220,6 +223,10 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
         if (sizes.length > 1) {
           options.push(v.size)
         }
+        const availability = get(v, 'availability_status', [])
+        const available = !availability.every(
+          (a) => a.status === 'supplier_out_of_stock'
+        )
         return {
           id,
           externalId: variant.id,
@@ -228,7 +235,7 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
           option2: options[1] || null,
           option3: null,
           image: variantImages[idx],
-          available: true,
+          available,
           name: variant.name,
           options,
           price: Number(variant.retail_price.replace('.', ''))
@@ -256,7 +263,7 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
       price: Number(syncProduct.sync_variants[0].retail_price.replace('.', '')),
       available: true,
       options,
-      images,
+      images: uniq(images),
       image: images[0],
       variants,
       sizeGuide: product.sizeGuide
