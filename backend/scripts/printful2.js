@@ -1,5 +1,7 @@
 /* eslint-disable */
 
+// Run printful operations on local data. Mostly useful for testing.
+
 require('dotenv').config()
 const program = require('commander')
 const fs = require('fs')

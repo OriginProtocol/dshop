@@ -541,6 +541,7 @@ async function updateInventoryData(
 
   const quantModifier = increment ? 1 : -1
 
+  // Ignore cart items that are externally managed
   const cartItems = get(cartData, 'items', []).filter(
     (i) => !i.externalVariantId
   )
