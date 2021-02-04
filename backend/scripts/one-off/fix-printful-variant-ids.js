@@ -23,23 +23,25 @@ if (!process.argv.slice(1).length) {
 
 program.parse(process.argv)
 
+const opts = program.opts()
+
 async function _getShops() {
   let shops
-  if (program.shopId) {
-    const shop = await Shop.findOne({ where: { id: program.shopId } })
+  if (opts.shopId) {
+    const shop = await Shop.findOne({ where: { id: opts.shopId } })
     if (!shop) {
-      throw new Error(`No shop with id ${program.shopId}`)
+      throw new Error(`No shop with id ${opts.shopId}`)
     }
     log.info(`Loaded shop ${shop.name} (${shop.id})`)
     shops = [shop]
-  } else if (program.shopName) {
-    const shop = await Shop.findOne({ where: { name: program.shopName } })
+  } else if (opts.shopName) {
+    const shop = await Shop.findOne({ where: { name: opts.shopName } })
     if (!shop) {
-      throw new Error(`No shop with name ${program.shopName}`)
+      throw new Error(`No shop with name ${opts.shopName}`)
     }
     log.info(`Loaded shop ${shop.name} (${shop.id})`)
     shops = [shop]
-  } else if (program.allShops) {
+  } else if (opts.allShops) {
     shops = await Shop.findAll({ order: [['id', 'asc']] })
     log.info(`Loaded ${shops.length} shops`)
   } else {
@@ -113,7 +115,7 @@ async function fixVariants(shops) {
 
       productData.variants = fixedVariants
 
-      if (program.doIt) {
+      if (opts.doIt) {
         log.info(`Writing to ${productDataFile}...`)
         const raw = JSON.stringify(productData, null, 2)
         fs.writeFileSync(productDataFile, raw)
