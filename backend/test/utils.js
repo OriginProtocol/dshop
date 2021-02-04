@@ -185,6 +185,7 @@ async function getOrCreateTestNetwork(opts = {}) {
       gcpCredentials: 'gcpCredentials',
       domain: 'domain.com',
       deployDir: 'deployDir',
+      fallbackShopConfig: {},
       ...opts.configOverride
     })
   }

@@ -1,7 +1,8 @@
 const { spawn } = require('child_process')
 const Ganache = require('ganache-core')
 const IPFS = require('ipfs')
-const HttpIPFS = require('ipfs/src/http')
+const HttpApi = require('ipfs-http-server')
+const HttpGateway = require('ipfs-http-gateway')
 const fs = require('fs')
 const memdown = require('memdown')
 const net = require('net')
@@ -54,7 +55,7 @@ const startGanache = (opts = {}) =>
 
 const startIpfs = async () => {
   console.log('Start IPFS')
-  const ipfs = await IPFS.create({
+  const node = await IPFS.create({
     repo: `${__dirname}/data/ipfs`,
     preload: {
       enabled: false
@@ -69,13 +70,20 @@ const startIpfs = async () => {
       Discovery: {
         MDNS: { Enabled: false },
         webRTCStar: { Enabled: false }
+      },
+      API: {
+        HTTPHeaders: {
+          'Access-Control-Allow-Origin': ['*']
+        }
       }
     }
   })
-  const httpAPI = new HttpIPFS(ipfs)
-  await httpAPI.start()
+  const httpApi = new HttpApi(node)
+  await httpApi.start()
+  const httpGateway = new HttpGateway(node)
+  await httpGateway.start()
   console.log('Started IPFS')
-  return httpAPI
+  return { node, httpApi, httpGateway }
 }
 
 /**
@@ -196,8 +204,9 @@ module.exports = async function start(opts = {}) {
       await started.ganache.close()
     }
     if (started.ipfs) {
-      await started.ipfs.stop()
-      await started.ipfs._ipfs.stop()
+      await started.ipfs.httpGateway.stop()
+      await started.ipfs.httpApi.stop()
+      await started.ipfs.node.stop()
     }
   }
 
