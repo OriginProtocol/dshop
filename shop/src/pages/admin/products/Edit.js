@@ -49,6 +49,17 @@ function validate(state, { hasOptions, inventory }) {
     )
   }
 
+  if (
+    inventory &&
+    state.limitedEdition &&
+    (Number.isNaN(parseInt(state.quantity)) || parseInt(state.quantity) < 0)
+  ) {
+    newState.quantityError = fbt(
+      'Invalid Quantity',
+      'admin.products.quantityError'
+    )
+  }
+
   if (hasOptions) {
     newState.variants = state.variants.map((variant) => {
       const out = removeErrorKeys(variant)
@@ -76,8 +87,10 @@ function validate(state, { hasOptions, inventory }) {
 
       if (
         inventory &&
+        !state.externalId &&
         (Number.isNaN(Number(variant.quantity)) || Number(variant.quantity) < 0)
       ) {
+        // Skips this validation for printful products
         out.quantityError = fbt(
           'Invalid Quantity',
           'admin.products.quantityError'
@@ -187,6 +200,12 @@ const EditProduct = () => {
         price: (variant.price / 100).toFixed(2)
       })),
       printfulDesc: product.printfulDesc || product.description
+    }
+
+    if (newFormState.externalId) {
+      // Externally managed product
+      // Check if it has limited stock
+      newFormState.limitedEdition = get(newFormState, 'quantity', 0) > 0
     }
 
     let imageArray = product.images
@@ -519,7 +538,42 @@ const EditProduct = () => {
                     />
                     {Feedback('sku')}
                   </div>
-                  {!config.inventory ? null : (
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col-md-6">
+                  {!config.inventory || !externallyManaged ? null : (
+                    <div className="row">
+                      <div className="col-md-12">
+                        <label>
+                          <fbt desc="LimitedEdition">Limited Edition</fbt>
+                        </label>
+                        <div className="form-check">
+                          <label className="form-check-label">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={formState.limitedEdition ? true : false}
+                              onChange={() =>
+                                setFormState({
+                                  limitedEdition: formState.limitedEdition
+                                    ? false
+                                    : true,
+                                  hasChanges: true
+                                })
+                              }
+                            />
+                            <fbt desc="admin.products.limitedEdition">
+                              This is a Limited Edition product
+                            </fbt>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {!config.inventory ||
+                  (externallyManaged && !formState.limitedEdition) ? null : (
                     <div className="form-group">
                       <label>
                         <fbt desc="AvailableStock">Available Stock</fbt>
@@ -529,7 +583,7 @@ const EditProduct = () => {
                         min="0"
                         step="1"
                         {...input('quantity')}
-                        disabled={hasOptions}
+                        disabled={externallyManaged ? false : hasOptions}
                       />
                       {Feedback('quantity')}
                     </div>

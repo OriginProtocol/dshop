@@ -583,6 +583,11 @@ async function updateInventoryData(
 
       const quant = quantModifier * item.quantity
 
+      if (shopConfig.printful && product.stockLeft === -1) {
+        // -1 === Unlimited stock
+        continue
+      }
+
       const productStock = product.stockLeft + quant
       const currentVariantStock = product.variantsStock[variantId]
       const variantStock =

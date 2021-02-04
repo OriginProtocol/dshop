@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 
-import _get from 'lodash/get'
-
 import fetchProduct from 'data/fetchProduct'
 import useConfig from 'utils/useConfig'
 import fetchProductStock from 'data/fetchProductStock'
+import { populateStockData } from './inventoryUtils'
 
 function useAdminProduct(productId) {
   const [product, setProduct] = useState()
@@ -16,7 +15,7 @@ function useAdminProduct(productId) {
     setLoading(true)
     setError(null)
     try {
-      const product = await fetchProduct(config.dataSrc, productId)
+      let product = await fetchProduct(config.dataSrc, productId)
 
       if (config.inventory) {
         const { success, product: stockData } = await fetchProductStock(
@@ -25,15 +24,7 @@ function useAdminProduct(productId) {
         )
 
         if (success) {
-          product.quantity = stockData.stockLeft
-          product.variants = _get(product, 'variants', []).map((variant) => ({
-            ...variant,
-            quantity: _get(
-              stockData.variantsStock,
-              variant.id,
-              variant.quantity || 0
-            )
-          }))
+          product = populateStockData(product, stockData)
         }
       }
 

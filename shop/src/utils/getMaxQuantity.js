@@ -20,6 +20,11 @@ const getMaxQuantity = (product, variant, config) => {
   const varQuantity = get(variant, 'quantity')
   const prodMaxQuantity = get(product, 'maxQuantity')
 
+  if (product.externalId && product.quantity === -1) {
+    // -1 is substitute for unlimited stock
+    return QUANTITY_HARD_LIMIT
+  }
+
   if (varQuantity != null) {
     if (!Number.isNaN(Number(varQuantity))) {
       return Math.min(QUANTITY_HARD_LIMIT, Number(varQuantity))
