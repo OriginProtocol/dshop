@@ -32,6 +32,8 @@ export const generateVariants = (product) => {
   const existingVariants = (variants || []).reduce((obj, variant) => {
     return {
       ...obj,
+      // Using an unconventional separator as a form 
+      // of serialization to keep things simple.
       [variant.options.join('|||')]: variant
     }
   }, {})
