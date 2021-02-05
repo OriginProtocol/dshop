@@ -7,6 +7,7 @@ import useCollection from 'utils/useCollection'
 import useThemeVars from 'utils/useThemeVars'
 import useConfig from 'utils/useConfig'
 import usePaymentDiscount from 'utils/usePaymentDiscount'
+import { isVariantOutOfStock } from 'utils/inventoryUtils'
 
 import Header from './_Header'
 import Footer from './_Footer'
@@ -59,7 +60,7 @@ const ProductDetail = ({ match }) => {
         String(item.variant) === String(variant.id)
     )
   )
-  const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
+  const isOutOfStock = isVariantOutOfStock(config, product, variant)
 
   const colLink = collection ? `/collections/${collection.id}` : ''
 

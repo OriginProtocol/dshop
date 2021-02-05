@@ -16,7 +16,7 @@
     "migration:generate": "npx sequelize migration:generate --config db/config.js --migrations-path db/migrations",
     "prettier": "prettier --write *.js \"**/*.js\"",
     "prettier:check": "prettier -c *.js \"**/*.js\"",
-    "test": "NODE_ENV=test mocha --timeout 10000 --exit --file test/setup"
+    "test": "LOG_LEVEL=NONE NODE_ENV=test mocha --timeout 10000 --exit --file test/setup"
   },
   "author": "Nick Poulden <nick@originprotocol.com>",
   "license": "MIT",

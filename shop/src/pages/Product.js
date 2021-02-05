@@ -17,6 +17,7 @@ import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
 import usePaymentDiscount from 'utils/usePaymentDiscount'
+import { isVariantOutOfStock } from '../utils/inventoryUtils'
 
 function getOptions(product, offset) {
   const options = new Set(
@@ -92,10 +93,7 @@ const Product = ({ location, match }) => {
     )
   )
 
-  let isOutOfStock = !get(variant, 'available', true)
-  if (config.inventory && Number(get(variant, 'quantity')) <= 0) {
-    isOutOfStock = true
-  }
+  const isOutOfStock = isVariantOutOfStock(config, product, variant)
 
   return (
     <div className="product-detail">
