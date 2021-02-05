@@ -1,4 +1,4 @@
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 const fs = require('fs')
 const { pick, sortBy, get } = require('lodash')
 const { execFile } = require('child_process')
@@ -30,7 +30,7 @@ const {
 const { createSeller } = require('../utils/sellers')
 const { decryptConfig } = require('../utils/encryptedConfig')
 const { configureShopDNS } = require('../logic/deploy/dns')
-const { DSHOP_CACHE } = require('../utils/const')
+const { DSHOP_CACHE, DEFAULT_INFRA_RESOURCES } = require('../utils/const')
 const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
 const { readProductsFile } = require('../logic/products')
@@ -885,7 +885,9 @@ module.exports = function (router) {
             zone,
             hash: ipfsHash,
             dnsProvider,
-            ipAddresses
+            ipAddresses,
+            resourceSelection:
+              networkConfig.defaultResourceSelection || DEFAULT_INFRA_RESOURCES
           })
         }
 

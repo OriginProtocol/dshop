@@ -41,7 +41,16 @@ const Mobile = ({ config }) => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 dark:text-white">
       <div className="pt-10 pb-6 px-8">
-        <div className="text-2xl font-medium">{config.title}</div>
+        {config.logo ? (
+          <img
+            src={`${config.dataSrc}${config.logo}`}
+            style={{
+              height: '32px'
+            }}
+          />
+        ) : (
+          <div className="text-2xl font-medium">{config.title}</div>
+        )}
       </div>
 
       <Switch>
@@ -88,7 +97,16 @@ const Desktop = ({ currentStep, config }) => {
     <div className="min-h-screen dark:bg-black dark:text-white bg-gray-100">
       <div className="bg-white dark:bg-gray-900">
         <div className="container pt-16 pb-8">
-          <div className="text-2xl">{config.title}</div>
+          {config.logo ? (
+            <img
+              src={`${config.dataSrc}${config.logo}`}
+              style={{
+                height: '32px'
+              }}
+            />
+          ) : (
+            <div className="text-2xl">{config.title}</div>
+          )}
         </div>
       </div>
       <div className="border-t dark:border-gray-700" />

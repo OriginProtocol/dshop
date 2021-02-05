@@ -346,7 +346,7 @@ async function processNewOrder({
   }
   if (!skipDiscord) {
     try {
-      await discordWebhook({
+      await discordWebhook.postNewOrderMessage({
         url: networkConfig.discordWebhook,
         orderId: fqId,
         shopName: shop.name,
@@ -541,7 +541,10 @@ async function updateInventoryData(
 
   const quantModifier = increment ? 1 : -1
 
-  const cartItems = get(cartData, 'items', [])
+  // Ignore cart items that are externally managed
+  const cartItems = get(cartData, 'items', []).filter(
+    (i) => !i.externalVariantId
+  )
   const dbProducts = await Product.findAll({
     where: {
       shopId: shop.id,
@@ -580,8 +583,12 @@ async function updateInventoryData(
 
       const quant = quantModifier * item.quantity
 
-      const variantStock = product.variantsStock[variantId] + quant
       const productStock = product.stockLeft + quant
+      const currentVariantStock = product.variantsStock[variantId]
+      const variantStock =
+        typeof currentVariantStock === 'number'
+          ? currentVariantStock + quant
+          : productStock
 
       if (!increment && (productStock < 0 || variantStock < 0)) {
         log.error(

@@ -157,7 +157,7 @@ async function createShop({
   log.debug('createShop called')
   shopType = shopType || 'empty'
 
-  if (!isValidStoreName(name)) {
+  if (shopType !== 'local-dir' && !isValidStoreName(name)) {
     return {
       success: false,
       reason: 'invalid',
@@ -166,7 +166,7 @@ async function createShop({
     }
   }
 
-  if (!isValidDataDir(dataDir)) {
+  if (shopType !== 'local-dir' && !isValidDataDir(dataDir)) {
     return {
       success: false,
       reason: 'invalid',

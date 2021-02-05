@@ -1,4 +1,4 @@
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import fbt from 'fbt'
 
 import { NetworksByIdStr } from 'data/Networks'

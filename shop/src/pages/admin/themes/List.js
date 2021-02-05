@@ -31,6 +31,7 @@ const ThemeSettings = () => {
       }
     })
 
+    dispatch({ type: 'reload', target: 'shopConfig' })
     dispatch({
       type: 'toast',
       message: <fbt desc="admin.themes.themeChanged">Theme changed</fbt>

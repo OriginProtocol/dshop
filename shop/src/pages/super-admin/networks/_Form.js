@@ -276,6 +276,7 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
             return m
           }, {})
 
+        newState.infra = newState.infra || {}
         network.defaultResourceSelection = Object.keys(newState.infra).filter(
           (k) => newState.infra[k]
         )

@@ -1,5 +1,5 @@
 const fetch = require('node-fetch')
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 const openpgp = require('openpgp')
 openpgp.config.show_comment = false
 openpgp.config.show_version = false
@@ -185,6 +185,7 @@ async function getOrCreateTestNetwork(opts = {}) {
       gcpCredentials: 'gcpCredentials',
       domain: 'domain.com',
       deployDir: 'deployDir',
+      fallbackShopConfig: {},
       ...opts.configOverride
     })
   }

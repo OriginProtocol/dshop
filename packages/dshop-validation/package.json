@@ -20,9 +20,9 @@
   },
   "devDependencies": {
     "chai": "4.2.0",
-    "eslint": "7.12.1",
-    "mocha": "8.2.0",
-    "prettier": "2.1.2"
+    "eslint": "7.19.0",
+    "mocha": "8.2.1",
+    "prettier": "2.2.1"
   },
   "prettier": {
     "semi": false,

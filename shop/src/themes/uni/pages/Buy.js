@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useReducer } from 'react'
 import { useHistory } from 'react-router-dom'
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 
 import Title from '../components/Title'
 import { usePrices, useContracts, useWeb3Manager } from '../utils'

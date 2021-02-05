@@ -2,6 +2,7 @@ const fs = require('fs')
 const sortBy = require('lodash/sortBy')
 const get = require('lodash/get')
 const kebabCase = require('lodash/kebabCase')
+const uniq = require('lodash/uniq')
 
 const { getLogger } = require('../../../utils/logger')
 
@@ -69,7 +70,9 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
   } catch (e) {
     /* Ignore */
   }
-  let productsOut = existingProducts.filter((p) => p.keep)
+
+  // Keep non-Printful managed products
+  let productsOut = existingProducts.filter((p) => !p.externalId)
   const downloadImages = []
   const printfulIds = {}
 
@@ -84,11 +87,14 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
       `${OutputDir}/data-printful/sync-product-${row.id}.json`
     )
     const syncProduct = JSON.parse(syncProductRaw)
-    const productId = syncProduct.sync_variants[0].product.product_id
+    const productId = get(syncProduct, 'sync_variants[0].product.product_id')
 
-    const productRaw = fs.readFileSync(
-      `${OutputDir}/data-printful/product-${productId}.json`
-    )
+    const syncFilePath = `${OutputDir}/data-printful/product-${productId}.json`
+
+    if (!productId || !fs.existsSync(syncFilePath)) {
+      continue
+    }
+    const productRaw = fs.readFileSync(syncFilePath)
     const product = JSON.parse(productRaw)
     const externalId = syncProduct.sync_product.id
     if (!product.variants) {
@@ -163,7 +169,7 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
           ? null
           : existingData.variants.find((v) => v.id === vId)
 
-      if (img && !existingVariantData) {
+      if (img && img.preview_url && !existingVariantData) {
         if (allImages[img.preview_url] === undefined) {
           const splitImg = img.preview_url.split('/')
           const file = splitImg[splitImg.length - 1].replace('_preview', '')
@@ -217,6 +223,10 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
         if (sizes.length > 1) {
           options.push(v.size)
         }
+        const availability = get(v, 'availability_status', [])
+        const available = !availability.every(
+          (a) => a.status === 'supplier_out_of_stock'
+        )
         return {
           id,
           externalId: variant.id,
@@ -225,7 +235,7 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
           option2: options[1] || null,
           option3: null,
           image: variantImages[idx],
-          available: true,
+          available,
           name: variant.name,
           options,
           price: Number(variant.retail_price.replace('.', ''))
@@ -253,7 +263,7 @@ async function writeProductData({ OutputDir, png, updatedIds }) {
       price: Number(syncProduct.sync_variants[0].retail_price.replace('.', '')),
       available: true,
       options,
-      images,
+      images: uniq(images),
       image: images[0],
       variants,
       sizeGuide: product.sizeGuide

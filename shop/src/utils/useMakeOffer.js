@@ -1,4 +1,4 @@
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import { useEffect } from 'react'
 import { post } from '@origin/ipfs'
 import get from 'lodash/get'
