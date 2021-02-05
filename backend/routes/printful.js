@@ -99,7 +99,7 @@ module.exports = function (router) {
       }
     } catch (err) {
       log.error(
-        `Shop ${shopId} - Failed to validate Pritful secret on request`,
+        `Shop ${shopId} - Failed to validate Printful secret on request`,
         err
       )
       return res.status(500).end()
