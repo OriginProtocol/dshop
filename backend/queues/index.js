@@ -33,7 +33,7 @@ function runProcessors() {
       queueName,
       errorMessage: error.message,
       jobId: job.id,
-      shopId: get(job, 'data.shopId', ''),
+      shopId,
       attempts: job.attemptsMade,
       stackTrace: error.stack
     })
