@@ -205,7 +205,7 @@ const EditProduct = () => {
     if (newFormState.externalId) {
       // Externally managed product
       // Check if it has limited stock
-      newFormState.limitedEdition = get(newFormState, 'quantity', 0) > 0
+      newFormState.limitedEdition = get(newFormState, 'quantity', -1) >= 0
     }
 
     let imageArray = product.images
@@ -322,6 +322,7 @@ const EditProduct = () => {
             : newState.price * 100,
           images: media.map((file) => file.path),
           collections: newState.collections,
+          quantity: formState.limitedEdition ? newState.quantity : -1,
           variants
         })
       })

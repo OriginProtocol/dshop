@@ -7,13 +7,13 @@ import useCollections from 'utils/useCollections'
 import useCollection from 'utils/useCollection'
 import useConfig from 'utils/useConfig'
 import usePaymentDiscount from 'utils/usePaymentDiscount'
+import { isVariantOutOfStock } from 'utils/inventoryUtils'
 import Link from 'components/Link'
 import Caret from 'components/icons/Caret'
 
 import Products from './_Products'
 import ProductOptions from '../../shared/ProductOptions'
 import Gallery from '../../shared/Gallery'
-import { isVariantOutOfStock } from '../../../utils/inventoryUtils'
 
 const RightCaret = () => (
   <div

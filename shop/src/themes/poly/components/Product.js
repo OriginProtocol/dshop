@@ -7,10 +7,10 @@ import useProduct from 'utils/useProduct'
 import useIsMobile from 'utils/useIsMobile'
 import useConfig from 'utils/useConfig'
 import usePaymentDiscount from 'utils/usePaymentDiscount'
+import { isVariantOutOfStock } from 'utils/inventoryUtils'
 import Link from 'components/Link'
 
 import ProductOptions from '../../shared/ProductOptions'
-import { isVariantOutOfStock } from '../../../utils/inventoryUtils'
 
 const Product = ({ match }) => {
   const { config } = useConfig()

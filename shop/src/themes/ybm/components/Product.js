@@ -7,6 +7,7 @@ import useCollection from 'utils/useCollection'
 import useThemeVars from 'utils/useThemeVars'
 import useConfig from 'utils/useConfig'
 import usePaymentDiscount from 'utils/usePaymentDiscount'
+import { isVariantOutOfStock } from 'utils/inventoryUtils'
 
 import Header from './_Header'
 import Footer from './_Footer'
@@ -14,7 +15,6 @@ import Gallery from '../../shared/Gallery'
 
 import Link from 'components/Link'
 import ProductOptions from '../../shared/ProductOptions'
-import { isVariantOutOfStock } from '../../../utils/inventoryUtils'
 
 const Product = ({ ...props }) => (
   <>

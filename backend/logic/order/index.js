@@ -541,10 +541,8 @@ async function updateInventoryData(
 
   const quantModifier = increment ? 1 : -1
 
-  // Ignore cart items that are externally managed
-  const cartItems = get(cartData, 'items', []).filter(
-    (i) => !i.externalVariantId
-  )
+  const cartItems = get(cartData, 'items', [])
+  const nonExternalItems = cartItems.filter((item) => !item.externalVariantId)
   const dbProducts = await Product.findAll({
     where: {
       shopId: shop.id,
@@ -552,7 +550,7 @@ async function updateInventoryData(
     }
   })
 
-  const allValidProducts = cartItems.every(
+  const allValidProducts = nonExternalItems.every(
     (item) => !!dbProducts.find((product) => product.productId === item.product)
   )
 
@@ -582,20 +580,25 @@ async function updateInventoryData(
       }
 
       const quant = quantModifier * item.quantity
-
-      if (shopConfig.printful && product.stockLeft === -1) {
-        // -1 === Unlimited stock
-        continue
-      }
-
       const productStock = product.stockLeft + quant
       const currentVariantStock = product.variantsStock[variantId]
-      const variantStock =
+      let variantStock =
         typeof currentVariantStock === 'number'
           ? currentVariantStock + quant
           : productStock
 
-      if (!increment && (productStock < 0 || variantStock < 0)) {
+      let notEnoughStock = productStock < 0 || variantStock < 0
+      if (item.externalProductId) {
+        if (product.stockLeft === -1) {
+          // -1 === Unlimited stock
+          continue
+        }
+        // For printful items, only look at product stock, not variant stock
+        notEnoughStock = productStock < 0
+        variantStock = 0
+      }
+
+      if (!increment && notEnoughStock) {
         log.error(
           `[Shop ${shop.id}] Product has insufficient stock`,
           product.productId,
