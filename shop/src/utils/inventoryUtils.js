@@ -10,7 +10,7 @@ import getMaxQuantity from './getMaxQuantity'
  * @returns {Object} Product's data populated with inventory fields
  */
 export function populateStockData(product, stockData) {
-  const stockLeft = _get(stockData, 'stockLeft')
+  const stockLeft = _get(stockData, 'stockLeft', product.quantity)
   const variantsStock = _get(stockData, 'variantsStock', {})
 
   return {
@@ -33,5 +33,5 @@ export function populateStockData(product, stockData) {
  * @returns {Boolean}
  */
 export function isVariantOutOfStock(config, product, variant) {
-  return getMaxQuantity(product, variant, config) > 0
+  return getMaxQuantity(product, variant, config) == 0
 }

@@ -14,6 +14,7 @@ import Gallery from '../../shared/Gallery'
 
 import Link from 'components/Link'
 import ProductOptions from '../../shared/ProductOptions'
+import { isVariantOutOfStock } from '../../../utils/inventoryUtils'
 
 const Product = ({ ...props }) => (
   <>
@@ -59,7 +60,7 @@ const ProductDetail = ({ match }) => {
         String(item.variant) === String(variant.id)
     )
   )
-  const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
+  const isOutOfStock = isVariantOutOfStock(config, product, variant)
 
   const colLink = collection ? `/collections/${collection.id}` : ''
 

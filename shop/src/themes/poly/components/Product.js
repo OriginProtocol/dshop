@@ -10,6 +10,7 @@ import usePaymentDiscount from 'utils/usePaymentDiscount'
 import Link from 'components/Link'
 
 import ProductOptions from '../../shared/ProductOptions'
+import { isVariantOutOfStock } from '../../../utils/inventoryUtils'
 
 const Product = ({ match }) => {
   const { config } = useConfig()
@@ -31,7 +32,7 @@ const Product = ({ match }) => {
         String(item.variant) === String(variant.id)
     )
   )
-  const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
+  const isOutOfStock = isVariantOutOfStock(config, product, variant)
 
   const Images = () =>
     product.imageUrls.map((image, idx) => <img key={idx} src={image} />)
