@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
 import fbt, { FbtParam } from 'fbt'
 import get from 'lodash/get'
+import useShopConfig from 'utils/useShopConfig'
 
-const Banner = ({ totalTasks, completedTasks }) => {
+const Banner = ({ totalTasks, completedTasks, shopDomain}) => {
   const [hideBanner, setHideBanner] = useState(
     Boolean(get(localStorage, 'hideOnboardingBanner', false))
   )
@@ -56,6 +57,15 @@ const Banner = ({ totalTasks, completedTasks }) => {
           Need help with your store? Reach out to{' '}
           <a href="mailto:dshop@originprotocol.com">Dshop support &raquo;</a>
         </fbt>
+      </div>
+
+      <div className="desc mt-4">
+        <fbt desc="component.onboarding.Banner.shareStoreUrl">
+          Share the link to your store: 
+        </fbt>
+        <div>
+          {shopDomain}
+        </div>
       </div>
 
       <div

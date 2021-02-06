@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import fbt from 'fbt'
 import get from 'lodash/get'
 
@@ -18,6 +18,11 @@ const Onboarding = () => {
   const { products } = useProducts()
   const { shopConfig } = useShopConfig()
   const [{ admin }] = useStateValue()
+
+  const getDefaultShopDomain = () => {
+    try {return `https://${shopConfig.hostname}.${get(admin, 'network.domain')}`}
+    catch (e) {console.log(e)}
+  }
 
   const hasSocialLinks = !!(
     config &&
@@ -119,6 +124,7 @@ const Onboarding = () => {
       <Banner
         totalTasks={taskset.length}
         completedTasks={taskset.filter((t) => t.completed).length}
+        shopDomain={getDefaultShopDomain()}
       />
 
       <div className="new-shop-tasks">
