@@ -183,13 +183,18 @@ async function sendNewOrderEmail({
     replyTo
   }
 
+  // Determine the type of email being sent.
+  //  - If a tracking info is present it is a shipping confirmation email.
+  //  - Otherwise it is an order confirmation email.
+  const emailType = vars.trackingInfo ? 'shipping' : 'confirmation'
+
   if (!skip) {
     transporter.sendMail(message, (err, msg) => {
       if (err) {
-        log.error('Error sending buyer confirmation email:', err)
+        log.error(`Error sending buyer ${emailType} email:`, err)
       } else {
         log.info(
-          `Buyer confirmation email sent, from ${message.from} to ${message.to}`
+          `Buyer ${emailType} email sent, from ${message.from} to ${message.to}`
         )
         log.debug(msg.envelope)
       }
@@ -198,10 +203,10 @@ async function sendNewOrderEmail({
     if (!vars.skipVendorMail && messageVendor.to) {
       transporter.sendMail(messageVendor, (err, msg) => {
         if (err) {
-          log.error('Error sending merchant confirmation email:', err)
+          log.error(`Error sending merchant ${emailType} email:`, err)
         } else {
           log.info(
-            `Merchant confirmation email sent, from ${messageVendor.from} to ${messageVendor.to}`
+            `Merchant ${emailType} email sent, from ${messageVendor.from} to ${messageVendor.to}`
           )
           log.debug(msg.envelope)
         }
