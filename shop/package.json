@@ -87,7 +87,7 @@
     "tailwindcss": "^1.9.5",
     "typeface-lato": "^1.1.13",
     "typeface-roboto": "^1.1.13",
-    "webpack-subresource-integrity": "^1.5.2",
+    "webpack-subresource-integrity": "^5.0.0-alpha.1",
     "x-ray": "^2.3.4"
   },
   "babel": {
