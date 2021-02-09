@@ -1,4 +1,4 @@
-import React from 'react'
+ximport React from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import fbt from 'fbt'
 
@@ -63,7 +63,7 @@ const Nav = ({ newShop, setNewShop, only }) => {
             />
           </div>
         )}
-        <LiveChat className="ml-auto" />
+        {/*<LiveChat className="ml-auto" />*/}
         <User className="ml-4" />
       </div>
       <NewShop shouldShow={newShop} onClose={() => setNewShop(false)} />
