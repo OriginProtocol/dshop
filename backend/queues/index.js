@@ -22,8 +22,8 @@ function failureCallback(job, error) {
   }
 
   if (
-    discordBlacklistedQueues.includes(queueName) ||
-    discordBlacklistedShopIds.includes(Number(shopId))
+    !discordBlacklistedQueues.includes(queueName) &&
+    !discordBlacklistedShopIds.includes(Number(shopId))
   ) {
     discordWebhook.postQueueError({
       queueName,
