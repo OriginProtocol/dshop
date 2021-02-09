@@ -16,7 +16,7 @@
     "migration:generate": "npx sequelize migration:generate --config db/config.js --migrations-path db/migrations",
     "prettier": "prettier --write *.js \"**/*.js\"",
     "prettier:check": "prettier -c *.js \"**/*.js\"",
-    "test": "NODE_ENV=test mocha --timeout 10000 --exit --file test/setup"
+    "test": "LOG_LEVEL=NONE NODE_ENV=test mocha --timeout 10000 --exit --file test/setup"
   },
   "author": "Nick Poulden <nick@originprotocol.com>",
   "license": "MIT",
@@ -47,7 +47,7 @@
     "dotenv": "^8.2.0",
     "envkey": "^1.2.8",
     "ethereumjs-util": "^7.0.7",
-    "ethers": "5.0.28",
+    "ethers": "5.0.29",
     "express": "^4.17.1",
     "express-promise-router": "4.0.1",
     "express-session": "^1.17.1",
@@ -82,7 +82,7 @@
     "ws": "^7.4.2"
   },
   "devDependencies": {
-    "chai": "4.2.0",
+    "chai": "4.3.0",
     "chai-string": "1.5.0",
     "eslint": "7.19.0",
     "mocha": "8.2.1",

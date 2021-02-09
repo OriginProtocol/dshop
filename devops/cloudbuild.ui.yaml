@@ -81,4 +81,4 @@ steps:
 
         gcloud dns record-sets transaction execute --zone="ogn-app"
 
-timeout: '900s'
+timeout: '1800s'

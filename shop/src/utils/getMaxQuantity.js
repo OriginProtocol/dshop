@@ -14,22 +14,28 @@ const QUANTITY_HARD_LIMIT = 10
  */
 const getMaxQuantity = (product, variant, config) => {
   if (!get(config, 'inventory')) {
-    return QUANTITY_HARD_LIMIT
+    return get(variant, 'available', true) ? QUANTITY_HARD_LIMIT : 0
   }
 
-  const varQuantity = get(variant, 'quantity')
-  const prodMaxQuantity = get(product, 'maxQuantity')
+  const varQuantity = parseInt(get(variant, 'quantity'))
+  const prodQuantity = parseInt(get(product, 'quantity'))
+  const prodMaxQuantity = parseInt(get(product, 'maxQuantity'))
 
-  if (varQuantity != null) {
-    if (!Number.isNaN(Number(varQuantity))) {
-      return Math.min(QUANTITY_HARD_LIMIT, Number(varQuantity))
+  if (product.externalId && !Number.isNaN(prodQuantity)) {
+    // -1 is substitute for unlimited stock
+    if (prodQuantity === -1) {
+      return QUANTITY_HARD_LIMIT
+    } else {
+      return prodQuantity <= 0 ? 0 : Math.min(QUANTITY_HARD_LIMIT, prodQuantity)
     }
   }
 
-  if (prodMaxQuantity != null) {
-    if (!Number.isNaN(Number(prodMaxQuantity))) {
-      return Math.min(QUANTITY_HARD_LIMIT, Number(prodMaxQuantity))
-    }
+  if (!Number.isNaN(varQuantity)) {
+    return Math.min(QUANTITY_HARD_LIMIT, varQuantity)
+  }
+
+  if (!Number.isNaN(prodMaxQuantity)) {
+    return Math.min(QUANTITY_HARD_LIMIT, prodMaxQuantity)
   }
 
   return QUANTITY_HARD_LIMIT
