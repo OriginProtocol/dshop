@@ -1,4 +1,4 @@
-ximport React from 'react'
+import React from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import fbt from 'fbt'
 
