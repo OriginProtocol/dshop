@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, from 'react'
 import fbt from 'fbt'
 import get from 'lodash/get'
 
@@ -20,8 +20,11 @@ const Onboarding = () => {
   const [{ admin }] = useStateValue()
 
   const getDefaultShopDomain = () => {
-    try {return `https://${shopConfig.hostname}.${get(admin, 'network.domain')}`}
-    catch (e) {console.log(e)}
+    try {
+      return `https://${shopConfig.hostname}.${get(admin, 'network.domain')}`
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   const hasSocialLinks = !!(

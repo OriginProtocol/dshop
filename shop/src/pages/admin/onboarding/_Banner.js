@@ -1,17 +1,50 @@
 import React, { useState } from 'react'
 import fbt, { FbtParam } from 'fbt'
 import get from 'lodash/get'
-import useShopConfig from 'utils/useShopConfig'
+import Clipboard from 'components/icons/Clipboard'
+import CheckCircle from 'components/icons/CheckCircle'
 
-const Banner = ({ totalTasks, completedTasks, shopDomain}) => {
+const Banner = ({ totalTasks, completedTasks, shopDomain }) => {
   const [hideBanner, setHideBanner] = useState(
     Boolean(get(localStorage, 'hideOnboardingBanner', false))
   )
+  const [storeLinkCopied, setStoreLinkCopied] = useState(false)
 
   if (hideBanner) return null
 
   const allComplete = totalTasks === completedTasks
   const halfComplete = completedTasks > totalTasks / 2
+
+  const ShareActions = ({ clicked }) => {
+    if (!clicked) {
+      return (
+        <button
+          className="btn btn-outline-light copy-button"
+          onClick={() => {
+            navigator.clipboard
+              .writeText(`${shopDomain}`)
+              .then(() => {
+                setStoreLinkCopied(true)
+                window.setTimeout(() => {
+                  setStoreLinkCopied(false)
+                }, 3000)
+              })
+              .catch((err) => {
+                console.log(err)
+              })
+          }}
+        >
+          <Clipboard />
+        </button>
+      )
+    } else {
+      return (
+        <button className="btn btn-outline-light copied-button active">
+          <CheckCircle />
+        </button>
+      )
+    }
+  }
 
   return (
     <div className="onboarding-banner">
@@ -61,11 +94,12 @@ const Banner = ({ totalTasks, completedTasks, shopDomain}) => {
 
       <div className="desc mt-4">
         <fbt desc="component.onboarding.Banner.shareStoreUrl">
-          Share the link to your store: 
+          Share the link to your store:
         </fbt>
-        <div>
-          {shopDomain}
-        </div>
+        <span className="share-link">
+          {`${shopDomain}`}
+          <ShareActions clicked={storeLinkCopied} />
+        </span>
       </div>
 
       <div
@@ -111,6 +145,31 @@ require('react-styl')(`
         color: #e0efff
         &:hover
           color: #fff
+
+      .share-link
+        font-weight: bold
+        margin-left: 0.2rem
+
+      ShareActions
+        margin-left: 0.2rem
+
+        .bi.bi-clipboard
+          overflow: visible
+          height: 1.6rem
+          width: 1.5rem
+          path
+            stroke: #e0efff
+            stroke-width: 0.5
+          &:hover
+            cursor: pointer
+
+        .icon.icon-check-circle
+          overflow: visible
+          height: 1.6rem
+          fill: #54d693
+          path
+            stroke: #e0efff
+            stroke-width: 4
 
     .dismiss-button
       cursor: pointer
