@@ -15,11 +15,26 @@ const Banner = ({ totalTasks, completedTasks, shopDomain }) => {
   const allComplete = totalTasks === completedTasks
   const halfComplete = completedTasks > totalTasks / 2
 
+  /**
+   * ShareActions: Displays a 'Copy to Clipboard' button on the Banner. If the user clicks on the button, the store link is copied
+   * to the clipboard, and the button turns into a checkmark to indicate success.
+   * @prop clicked: <boolean> should be true if the user clicks the 'Copy to Clipboard' button
+   * 
+   * Button and Tooltip references: 
+   *  https://getbootstrap.com/docs/5.0/components/buttons/
+   *  https://getbootstrap.com/docs/5.0/components/tooltips/
+   *
+   * Clipboard reference:
+   *  https://developer.mozilla.org/en-US/docs/Web/API/Clipboard
+   */
   const ShareActions = ({ clicked }) => {
     if (!clicked) {
       return (
         <button
-          className="btn btn-outline-light copy-button"
+          className="btn btn-outline-light btn-sm copy-button"
+          data-bs-toggle="tooltip"
+          data-bs-placement="right"
+          title="Copy to Clipboard"
           onClick={() => {
             navigator.clipboard
               .writeText(`${shopDomain}`)
@@ -39,9 +54,14 @@ const Banner = ({ totalTasks, completedTasks, shopDomain }) => {
       )
     } else {
       return (
-        <button className="btn btn-outline-light copied-button active">
+        <span
+          tabIndex="0"
+          data-bs-toggle="tooltip"
+          data-bs-placement="right"
+          title="Copied!"
+        >
           <CheckCircle />
-        </button>
+        </span>
       )
     }
   }
@@ -92,15 +112,15 @@ const Banner = ({ totalTasks, completedTasks, shopDomain }) => {
         </fbt>
       </div>
 
-      <div className="desc mt-4">
-        <fbt desc="component.onboarding.Banner.shareStoreUrl">
-          Share the link to your store:
-        </fbt>
-        <span className="share-link">
-          {`${shopDomain}`}
-          <ShareActions clicked={storeLinkCopied} />
-        </span>
-      </div>
+      {halfComplete ? (
+        <div className="desc mt-4">
+          <fbt desc="component.onboarding.Banner.storeUrl">Store URL:</fbt>
+          <span className="share-link">
+            {`${shopDomain}`}
+            <ShareActions clicked={storeLinkCopied} />
+          </span>
+        </div>
+      ) : null}
 
       <div
         className="dismiss-button"
@@ -150,26 +170,26 @@ require('react-styl')(`
         font-weight: bold
         margin-left: 0.2rem
 
-      ShareActions
-        margin-left: 0.2rem
-
+      .copy-button
+        margin-left: 0.3rem
+        padding-top: 0.1rem
+        padding-bottom: 0.4rem
+        padding-left: 0.3rem
+        padding-right: 0.3rem
         .bi.bi-clipboard
           overflow: visible
-          height: 1.6rem
-          width: 1.5rem
           path
             stroke: #e0efff
-            stroke-width: 0.5
-          &:hover
-            cursor: pointer
+            stroke-width: 0.2
 
-        .icon.icon-check-circle
-          overflow: visible
-          height: 1.6rem
-          fill: #54d693
-          path
-            stroke: #e0efff
-            stroke-width: 4
+      .icon.icon-check-circle
+        margin-left: 0.5rem
+        overflow: visible
+        height: 1.5rem
+        fill: #54d693
+        path
+          stroke: #fff
+          stroke-width: 4
 
     .dismiss-button
       cursor: pointer
