@@ -64,7 +64,7 @@ const Nav = ({ newShop, setNewShop, only }) => {
           </div>
         )}
         {/*<LiveChat className="ml-auto" />*/}
-        <User className="ml-4" />
+        <User className="ml-auto" />
       </div>
       <NewShop shouldShow={newShop} onClose={() => setNewShop(false)} />
     </nav>
