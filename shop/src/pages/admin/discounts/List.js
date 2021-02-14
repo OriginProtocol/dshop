@@ -8,7 +8,7 @@ import Link from 'components/Link'
 import Loading from 'components/Loading'
 import NoItems from 'components/NoItems'
 
-import DeleteDiscount from './_Delete'
+import AdminDeleteDiscount from './_Delete'
 
 import useRest from 'utils/useRest'
 import DiscountTabs from './_Tabs'
@@ -134,9 +134,11 @@ const ManualDiscounts = () => {
                           </Link>
                         </div>
 
-                        <DeleteDiscount discount={discount} reload={reload}>
-                          <img src="images/delete-icon.svg" />
-                        </DeleteDiscount>
+                        <AdminDeleteDiscount discount={discount} reload={reload}>
+                          <div className="action-icon">
+                            <img src="images/delete-icon.svg" />
+                          </div>
+                        </AdminDeleteDiscount>
                       </div>
                     </td>
                   </tr>

@@ -11,14 +11,13 @@ import useRedirect from 'utils/useRedirect'
 import { useStateValue } from 'data/state'
 import useSetState from 'utils/useSetState'
 import Link from 'components/Link'
-import DeleteButton from './_Delete'
+import AdminDeleteDiscount from './_Delete'
 import formatPrice from 'utils/formatPrice'
 
 //Tippy is used to create tooltips on React elements
 import Tippy from '@tippyjs/react'
 import { followCursor } from 'tippy.js'
 import 'tippy.js/themes/light-border.css'
-
 
 const times = Array(48)
   .fill(0)
@@ -88,6 +87,7 @@ const AdminEditDiscount = () => {
   const { data: discount } = useRest(`/discounts/${discountId}`, {
     skip: discountId === 'new'
   })
+  console.log('Discount object (response from server/backend): ', discount)
   const [state, setState] = useSetState(defaultValues)
   const [, dispatch] = useStateValue()
   useEffect(() => {
@@ -116,7 +116,7 @@ const AdminEditDiscount = () => {
 
   const actions = (
     <div className="actions">
-      {!discount ? null : <DeleteButton discount={discount} />}
+      {!discount ? null : <AdminDeleteDiscount discount={discount}><button className="btn btn-outline-danger"><fbt desc="Delete">Delete</fbt></button></AdminDeleteDiscount>}
       <button type="submit" className="btn btn-primary">
         <fbt desc="Save">Save</fbt>
       </button>
@@ -129,6 +129,7 @@ const AdminEditDiscount = () => {
       onSubmit={async (e) => {
         e.preventDefault()
         const { valid, newState } = validate(state)
+        console.log("New State (posted to backend): ", newState)
         setState(newState)
         if (valid) {
           let url = `${config.backend}/discounts`
@@ -295,9 +296,9 @@ const AdminEditDiscount = () => {
         content={
           <>
             <p>
-              Leave this box <em>unchecked</em> if you would like customers to
-              pay for the full price of shipping; if <em>checked</em>, shipping
-              charges will be added to the subtotal before applying the
+              Check this box if you would like customers to
+              pay for the full price of shipping; if left <em>unchecked</em>, shipping
+              charges will be added to the subtotal <strong>before</strong> applying the
               discount.
             </p>
             <p>
@@ -305,14 +306,13 @@ const AdminEditDiscount = () => {
               <br />
               Order Subtotal: <strong>$100</strong>
               <br />
-              Shipping: <strong>$10</strong>
-              <br />
-              Taxes: <strong>$10</strong>
+              Shipping: <strong>$15</strong>
               <br />
               Discount: <strong>10%</strong>
               <br />
-              Cart Total with 'Exclude Shipping Fees' <strong>unchecked</strong>
-              : (0.9 x 100) + 10 + 10 = <strong>$110</strong>
+              Cart Total with &#39;Exclude Shipping Fees&#39;{' '}
+              <strong>checked</strong>: (0.9 x 100) + 15  ={' '}
+              <strong>$105</strong>
             </p>
           </>
         }
@@ -340,23 +340,20 @@ const AdminEditDiscount = () => {
         content={
           <>
             <p>
-              Leave this box <em>unchecked</em> if you would like customers to
-              pay the tax amount in full; if <em>checked</em>, taxes will be
-              added to the subtotal before applying the discount.
-            </p>
+              If this box is checked, taxes are left out of the calculation of the total discount. </p>
             <p>
-              Example:
+              Examples:
               <br />
-              Order Subtotal: <strong>$50</strong>
+              Order Subtotal: <strong>$100</strong>
               <br />
-              Shipping: <strong>$7</strong>
-              <br />
-              Taxes: <strong>$5</strong>
+              Taxes: <strong>$15</strong>
               <br />
               Discount: <strong>10%</strong>
               <br />
-              Cart Total with 'Exclude Taxes' <strong>checked</strong>: (0.9 x
-              (50 + 5)) + 7 = <strong>$56.5</strong>
+              Cart Total with &#39;Exclude Taxes&#39; <strong>checked</strong>:
+              (0.9 x 100) + 15 = <strong>$105</strong><br />
+              Cart Total with &#39;Exclude Taxes&#39; <strong>unchecked</strong>:
+              0.9 x (100 + 15) = <strong>$103.5</strong>
             </p>
           </>
         }

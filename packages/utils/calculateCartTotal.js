@@ -2,7 +2,7 @@ const get = require('lodash/get')
 
 /**
  * Accepts cart data and does all the subtotal, taxes,
- * disocunt and total calculations
+ * discount and total calculations
  *
  * @param {Object} cart Cart data object
  *
@@ -25,19 +25,21 @@ const calculateCartTotal = (cart) => {
 
   const shipping = get(cart, 'shipping.amount', 0)
   const taxRate = parseFloat(get(cart, 'taxRate', 0))
+  const totalTaxes = Math.ceil(taxRate * subTotal)
 
   const discountObj = get(cart, 'discountObj', {})
   const {
     minCartValue,
     maxDiscountValue,
     discountType,
-    excludeShipping
+    excludeShipping,
+    excludeTaxes
   } = discountObj
 
   let discount = 0
 
   const preDiscountTotal =
-    get(cart, 'subTotal', 0) + (excludeShipping ? 0 : shipping)
+    get(cart, 'subTotal', 0) + (excludeShipping ? 0 : shipping) + (excludeTaxes ? 0 : totalTaxes)
   if (!minCartValue || preDiscountTotal > minCartValue * 100) {
     // Calculate discounts only if minCartValue constraint is met
 
@@ -68,7 +70,7 @@ const calculateCartTotal = (cart) => {
 
   const donation = get(cart, 'donation', 0)
 
-  const totalTaxes = Math.ceil(taxRate * subTotal)
+
   const total = Math.max(
     0,
     subTotal + shipping - discount + donation + totalTaxes
