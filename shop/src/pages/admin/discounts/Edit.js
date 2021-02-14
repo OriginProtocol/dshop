@@ -116,7 +116,13 @@ const AdminEditDiscount = () => {
 
   const actions = (
     <div className="actions">
-      {!discount ? null : <AdminDeleteDiscount discount={discount}><button className="btn btn-outline-danger"><fbt desc="Delete">Delete</fbt></button></AdminDeleteDiscount>}
+      {!discount ? null : (
+        <AdminDeleteDiscount discount={discount}>
+          <button className="btn btn-outline-danger">
+            <fbt desc="Delete">Delete</fbt>
+          </button>
+        </AdminDeleteDiscount>
+      )}
       <button type="submit" className="btn btn-primary">
         <fbt desc="Save">Save</fbt>
       </button>
@@ -129,7 +135,7 @@ const AdminEditDiscount = () => {
       onSubmit={async (e) => {
         e.preventDefault()
         const { valid, newState } = validate(state)
-        console.log("New State (posted to backend): ", newState)
+        console.log('New State (posted to backend): ', newState)
         setState(newState)
         if (valid) {
           let url = `${config.backend}/discounts`
@@ -296,9 +302,9 @@ const AdminEditDiscount = () => {
         content={
           <>
             <p>
-              Check this box if you would like customers to
-              pay for the full price of shipping; if left <em>unchecked</em>, shipping
-              charges will be added to the subtotal <strong>before</strong> applying the
+              Check this box if you would like customers to pay for the full
+              price of shipping; if left <em>unchecked</em>, shipping charges
+              will be added to the subtotal <strong>before</strong> applying the
               discount.
             </p>
             <p>
@@ -311,8 +317,7 @@ const AdminEditDiscount = () => {
               Discount: <strong>10%</strong>
               <br />
               Cart Total with &#39;Exclude Shipping Fees&#39;{' '}
-              <strong>checked</strong>: (0.9 x 100) + 15  ={' '}
-              <strong>$105</strong>
+              <strong>checked</strong>: (0.9 x 100) + 15 = <strong>$105</strong>
             </p>
           </>
         }
@@ -340,7 +345,9 @@ const AdminEditDiscount = () => {
         content={
           <>
             <p>
-              If this box is checked, taxes are left out of the calculation of the total discount. </p>
+              If this box is checked, taxes are left out of the calculation of
+              the total discount.{' '}
+            </p>
             <p>
               Examples:
               <br />
@@ -351,9 +358,10 @@ const AdminEditDiscount = () => {
               Discount: <strong>10%</strong>
               <br />
               Cart Total with &#39;Exclude Taxes&#39; <strong>checked</strong>:
-              (0.9 x 100) + 15 = <strong>$105</strong><br />
-              Cart Total with &#39;Exclude Taxes&#39; <strong>unchecked</strong>:
-              0.9 x (100 + 15) = <strong>$103.5</strong>
+              (0.9 x 100) + 15 = <strong>$105</strong>
+              <br />
+              Cart Total with &#39;Exclude Taxes&#39; <strong>unchecked</strong>
+              : 0.9 x (100 + 15) = <strong>$103.5</strong>
             </p>
           </>
         }

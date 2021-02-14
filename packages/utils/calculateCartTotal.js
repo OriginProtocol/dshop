@@ -39,7 +39,9 @@ const calculateCartTotal = (cart) => {
   let discount = 0
 
   const preDiscountTotal =
-    get(cart, 'subTotal', 0) + (excludeShipping ? 0 : shipping) + (excludeTaxes ? 0 : totalTaxes)
+    get(cart, 'subTotal', 0) +
+    (excludeShipping ? 0 : shipping) +
+    (excludeTaxes ? 0 : totalTaxes)
   if (!minCartValue || preDiscountTotal > minCartValue * 100) {
     // Calculate discounts only if minCartValue constraint is met
 
@@ -69,7 +71,6 @@ const calculateCartTotal = (cart) => {
   }
 
   const donation = get(cart, 'donation', 0)
-
 
   const total = Math.max(
     0,

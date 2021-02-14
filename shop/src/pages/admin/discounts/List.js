@@ -134,7 +134,10 @@ const ManualDiscounts = () => {
                           </Link>
                         </div>
 
-                        <AdminDeleteDiscount discount={discount} reload={reload}>
+                        <AdminDeleteDiscount
+                          discount={discount}
+                          reload={reload}
+                        >
                           <div className="action-icon">
                             <img src="images/delete-icon.svg" />
                           </div>
