@@ -19,8 +19,8 @@ const Banner = ({ totalTasks, completedTasks, shopDomain }) => {
    * ShareActions: Displays a 'Copy to Clipboard' button on the Banner. If the user clicks on the button, the store link is copied
    * to the clipboard, and the button turns into a checkmark to indicate success.
    * @prop clicked: <boolean> should be true if the user clicks the 'Copy to Clipboard' button
-   * 
-   * Button and Tooltip references: 
+   *
+   * Button and Tooltip references:
    *  https://getbootstrap.com/docs/5.0/components/buttons/
    *  https://getbootstrap.com/docs/5.0/components/tooltips/
    *
