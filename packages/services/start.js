@@ -10,7 +10,10 @@ program
   )
   .option('-x, --ssl-proxy', 'Start SSL proxy')
   .option('-q, --quiet', 'Quiet')
+  .option('-s, --setup', 'Setup test: starts all services then stops them all')
   .parse(process.argv)
+
+const opts = program.opts()
 
 async function setup() {
   const stop = await start({
@@ -30,10 +33,10 @@ if (!process.argv.slice(2).length) {
   setup()
 } else {
   start({
-    ganache: program.ganache,
-    ipfs: program.ipfs,
-    deployContracts: program.deployContracts,
-    sslProxy: program.sslProxy,
-    quiet: program.quiet
+    ganache: opts.ganache,
+    ipfs: opts.ipfs,
+    deployContracts: opts.deployContracts,
+    sslProxy: opts.sslProxy,
+    quiet: opts.quiet
   })
 }

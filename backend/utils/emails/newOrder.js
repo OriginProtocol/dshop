@@ -39,7 +39,9 @@ async function sendNewOrderEmail({
 }) {
   const { transporter, from, replyTo } = await getShopTransport(shop, network)
   if (!transporter) {
-    log.info(`No email transport configured. Skiped sending new order email.`)
+    log.info(
+      `Shop ${shop.id} - No email transport configured. Skipped sending new order email.`
+    )
     return
   }
 
@@ -191,10 +193,13 @@ async function sendNewOrderEmail({
   if (!skip) {
     transporter.sendMail(message, (err, msg) => {
       if (err) {
-        log.error(`Error sending buyer ${emailType} email:`, err)
+        log.error(
+          `Shop ${shop.id} - Error sending buyer ${emailType} email:`,
+          err
+        )
       } else {
         log.info(
-          `Buyer ${emailType} email sent, from ${message.from} to ${message.to}`
+          `Shop ${shop.id} - Buyer ${emailType} email sent, from ${message.from} to ${message.to}`
         )
         log.debug(msg.envelope)
       }
@@ -203,10 +208,13 @@ async function sendNewOrderEmail({
     if (!vars.skipVendorMail && messageVendor.to) {
       transporter.sendMail(messageVendor, (err, msg) => {
         if (err) {
-          log.error(`Error sending merchant ${emailType} email:`, err)
+          log.error(
+            `Shop ${shop.id} - Error sending merchant ${emailType} email:`,
+            err
+          )
         } else {
           log.info(
-            `Merchant ${emailType} email sent, from ${messageVendor.from} to ${messageVendor.to}`
+            `Shop ${shop.id} - Merchant ${emailType} email sent, from ${messageVendor.from} to ${messageVendor.to}`
           )
           log.debug(msg.envelope)
         }
