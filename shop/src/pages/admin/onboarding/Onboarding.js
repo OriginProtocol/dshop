@@ -19,6 +19,14 @@ const Onboarding = () => {
   const { shopConfig } = useShopConfig()
   const [{ admin }] = useStateValue()
 
+  const getDefaultShopDomain = () => {
+    try {
+      return `https://${shopConfig.hostname}.${get(admin, 'network.domain')}`
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   const hasSocialLinks = !!(
     config &&
     (config.facebook ||
@@ -119,6 +127,7 @@ const Onboarding = () => {
       <Banner
         totalTasks={taskset.length}
         completedTasks={taskset.filter((t) => t.completed).length}
+        shopDomain={getDefaultShopDomain()}
       />
 
       <div className="new-shop-tasks">

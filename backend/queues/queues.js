@@ -21,13 +21,18 @@ if (REDIS_URL) {
 }
 
 const all = [
-  new Queue(
-    'makeOffer',
-    backendUrl,
-    Object.assign(queueOpts, {
-      prefix: '{makeOffer}'
-    })
-  ),
+  new Queue('makeOffer', backendUrl, {
+    prefix: '{makeOffer}',
+    defaultJobOptions: {
+      // Up to 6 attempts to process the job, using an exponential backoff
+      // having a 60 sec initial delay.
+      attempts: 6,
+      backoff: {
+        type: 'exponential',
+        delay: 60000
+      }
+    }
+  }),
   new Queue(
     'download',
     backendUrl,
@@ -78,13 +83,18 @@ const all = [
       prefix: '{etl}'
     })
   ),
-  new Queue(
-    'tx',
-    backendUrl,
-    Object.assign(queueOpts, {
-      prefix: '{tx}'
-    })
-  ),
+  new Queue('tx', backendUrl, {
+    prefix: '{tx}',
+    defaultJobOptions: {
+      // Up to 4 attempts to process the job, using an exponential backoff
+      // having a 15 sec initial delay.
+      attempts: 4,
+      backoff: {
+        type: 'exponential',
+        delay: 15000
+      }
+    }
+  }),
   new Queue(
     'dns',
     backendUrl,
