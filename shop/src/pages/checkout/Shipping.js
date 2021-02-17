@@ -151,7 +151,9 @@ const CheckoutShipping = () => {
       {!hasNFTs ? null : (
         <>
           <div className="mt-4 mb-2">
-            <b>NFT delivery</b>
+            <b>
+              <fbt desc="checkout.shipping.nftDelivery">NFT delivery</fbt>
+            </b>
           </div>
           <div className="input-group">
             <input
@@ -181,7 +183,7 @@ const CheckoutShipping = () => {
             )}
           </div>
           <div className="small mt-2 text-muted">
-            <b>Note:</b> NFT will be deliered within 24 hours
+            <b>Note:</b> NFT will be delivered within 24 hours
           </div>
         </>
       )}
