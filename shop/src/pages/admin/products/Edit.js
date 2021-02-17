@@ -323,7 +323,6 @@ const EditProduct = () => {
             : newState.price * 100,
           images: media.map((file) => file.path),
           collections: newState.collections,
-          quantity: formState.limitedEdition ? newState.quantity : -1,
           variants
         })
       })
