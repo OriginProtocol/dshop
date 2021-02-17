@@ -126,6 +126,7 @@ const reducer = (state, action) => {
       externalProductId: action.product.externalId,
       externalVariantId: action.variant.externalId,
       restrictShippingTo: action.product.restrictShippingTo,
+      nft: action.product.nft,
       maxQuantity
     }
     const { product, variant } = item
@@ -197,6 +198,8 @@ const reducer = (state, action) => {
     })
   } else if (action.type === 'setDiscounts') {
     newState = set(newState, `discounts`, action.discounts)
+  } else if (action.type === 'setWallet') {
+    newState = set(newState, `cart.userInfo.wallet`, action.wallet)
   } else if (action.type === 'updateUserInfo') {
     const data = pick(
       action.info,
@@ -210,6 +213,7 @@ const reducer = (state, action) => {
       'province',
       'country',
       'zip',
+      'wallet',
       'billingDifferent',
       'billingFirstName',
       'billingLastName',
