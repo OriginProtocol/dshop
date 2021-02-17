@@ -91,6 +91,6 @@ steps:
           -p="$$PATCH_JSON"
       
 timeout: '3600s'
- options:
+options:
    machineType: 'N1_HIGHCPU_32'
 
