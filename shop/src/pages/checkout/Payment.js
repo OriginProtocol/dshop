@@ -15,6 +15,7 @@ const CheckoutPayment = () => {
   const { config } = useConfig()
   const [{ cart }] = useStateValue()
   usePGP()
+  const hasNFTs = cart.items.some((i) => i.nft)
 
   return (
     <div className="checkout-shipping">
@@ -47,6 +48,19 @@ const CheckoutPayment = () => {
             <fbt desc="Change">Change</fbt>
           </Link>
         </div>
+        {!hasNFTs ? null : (
+          <div className="info-row">
+            <div className="label">
+              <fbt desc="NFTWallet">NFT Wallet</fbt>
+            </div>
+            <div className="value text-break">
+              {get(cart, 'userInfo.wallet')}
+            </div>
+            <Link className="change" to="/checkout/shipping">
+              <fbt desc="Change">Change</fbt>
+            </Link>
+          </div>
+        )}
       </div>
       <div className="mt-4 mb-3">
         <b>
