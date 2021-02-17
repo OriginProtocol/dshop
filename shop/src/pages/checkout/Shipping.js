@@ -11,6 +11,7 @@ import Contact from './_Contact'
 import ShipTo from './_ShipTo'
 import BetaWarning from './_BetaWarning'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
+import { ethers } from 'ethers'
 
 function isActive(zone, cart) {
   return get(cart, 'shipping.id') === zone.id ? 'active' : 'inactive'
@@ -61,7 +62,11 @@ const CheckoutShipping = () => {
     }
   }, [shippingZones.length])
 
-  const disabled = unshippableItems.length || !filteredShippingZones.length
+  const hasNFTs = cart.items.some((i) => i.nft)
+  const notShippable = !filteredShippingZones.length
+  const wallet = get(cart, 'userInfo.wallet', '')
+  const walletInvalid = hasNFTs && !ethers.utils.isAddress(wallet)
+  const disabled = unshippableItems.length || notShippable || walletInvalid
 
   return (
     <div className="checkout-shipping">
@@ -143,6 +148,45 @@ const CheckoutShipping = () => {
           ))
         )}
       </div>
+      {!hasNFTs ? null : (
+        <>
+          <div className="mt-4 mb-2">
+            <b>
+              <fbt desc="checkout.shipping.nftDelivery">NFT delivery</fbt>
+            </b>
+          </div>
+          <div className="input-group">
+            <input
+              className="form-control"
+              type="text"
+              value={get(cart, 'userInfo.wallet', '')}
+              onChange={(e) => {
+                dispatch({ type: 'setWallet', wallet: e.target.value })
+              }}
+              placeholder="Enter Ethereum wallet address..."
+            />
+            {!window.ethereum ? null : (
+              <div className="input-group-append">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={async () => {
+                    const [wallet] = await window.ethereum.enable()
+                    if (wallet) {
+                      dispatch({ type: 'setWallet', wallet })
+                    }
+                  }}
+                >
+                  Connect Wallet
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="small mt-2 text-muted">
+            <b>Note:</b> NFT will be delivered within 24 hours
+          </div>
+        </>
+      )}
       <div className="actions">
         <Link to="/checkout">
           &laquo;{' '}

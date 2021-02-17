@@ -76,6 +76,14 @@ const CustomerInfo = ({ order }) => {
               )}
         </div>
       </div>
+      {!get(userInfo, 'wallet') ? null : (
+        <div>
+          <div>
+            <fbt desc="NFTWallet">NFT Wallet</fbt>
+          </div>
+          <div className="text-break">{get(userInfo, 'wallet')}</div>
+        </div>
+      )}
     </div>
   )
 }
