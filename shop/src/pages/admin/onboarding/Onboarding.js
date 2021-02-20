@@ -115,12 +115,14 @@ const Onboarding = () => {
     {
       title: 'Welcome Packet',
       summary: 'Get up to speed on your Dshop',
-      link: 'https://drive.google.com/file/d/1_O8nylYyNh23O9vSnWmkIniiMOXSz9Ql/view'
+      link:
+        'https://drive.google.com/file/d/1_O8nylYyNh23O9vSnWmkIniiMOXSz9Ql/view'
     },
     {
       title: 'FAQ',
       summary: 'Frequenty Asked Questions',
-      link: 'https://help.originprotocol.com/hc/en-us/categories/360004346733-Dshop'
+      link:
+        'https://help.originprotocol.com/hc/en-us/categories/360004346733-Dshop'
     }
   ]
 
@@ -147,9 +149,7 @@ const Onboarding = () => {
       {!articles.length ? null : (
         <div className="new-shop-tasks mt-5">
           <div className="subtitle">
-            <fbt desc="admin.Onboarding.getUpToSpeed">
-              Browse
-            </fbt>
+            <fbt desc="admin.Onboarding.getUpToSpeed">Browse</fbt>
           </div>
           <div className="tasks-lists">
             {articles.map((article, index) => (
