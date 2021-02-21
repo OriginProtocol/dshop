@@ -87,7 +87,6 @@ const AdminEditDiscount = () => {
   const { data: discount } = useRest(`/discounts/${discountId}`, {
     skip: discountId === 'new'
   })
-  console.log('Discount object (response from server/backend): ', discount)
   const [state, setState] = useSetState(defaultValues)
   const [, dispatch] = useStateValue()
   useEffect(() => {
@@ -135,7 +134,6 @@ const AdminEditDiscount = () => {
       onSubmit={async (e) => {
         e.preventDefault()
         const { valid, newState } = validate(state)
-        console.log('New State (posted to backend): ', newState)
         setState(newState)
         if (valid) {
           let url = `${config.backend}/discounts`

@@ -15,6 +15,8 @@ const get = require('lodash/get')
  *  totalTaxes {Number},
  *  taxRate {Number}
  * }}
+ *
+ * NOTE: total, subTotal, shipping, discount, and totalTaxes are fixed point integers. For ex: $13.89 => 1389
  */
 const calculateCartTotal = (cart) => {
   const cartItems = get(cart, 'items', [])
@@ -25,11 +27,11 @@ const calculateCartTotal = (cart) => {
 
   const shipping = get(cart, 'shipping.amount', 0)
 
-  //The attribute 'taxRate' of the 'cart' object contains the tax rate as a fixed point number with a scaling factor of 1/100
-  //In other words, this number will need to be multiplied by 1/100 to get the actual tax rate (in percentage).
+  //The attribute 'taxRate' of the 'cart' object contains the tax rate as a fixed point number with a "scaling factor" of 1/100
+  //In other words, this number will need to be divided by 100 to get the tax rate in percentage.
   //[Sources: 'dshop/shop/src/pages/admin/settings/checkout/_CountryTaxEntry.js', 'dshop/shop/src/utils/formHelpers.js']
-  const taxRate = parseFloat(get(cart, 'taxRate', 0)) / 100
-  const totalTaxes = Math.ceil((taxRate / 100) * subTotal)
+  const taxRate = parseFloat(get(cart, 'taxRate', 0))
+  const totalTaxes = Math.ceil(((taxRate / 100) * subTotal) / 100)
 
   const discountObj = get(cart, 'discountObj', {})
   const {
@@ -43,15 +45,17 @@ const calculateCartTotal = (cart) => {
   let discount = 0
 
   const preDiscountTotal =
-    get(cart, 'subTotal', 0) +
+    subTotal +
     (excludeShipping ? 0 : shipping) +
     (excludeTaxes ? 0 : totalTaxes)
+
   if (!minCartValue || preDiscountTotal > minCartValue * 100) {
     // Calculate discounts only if minCartValue constraint is met
 
     if (discountType) {
       if (discountType === 'percentage') {
         discount = Math.round((preDiscountTotal * discountObj.value) / 100)
+        console.log(`discount: `, discount)
       } else if (discountType === 'fixed') {
         discount = discountObj.value * 100
       } else if (discountType === 'payment') {
