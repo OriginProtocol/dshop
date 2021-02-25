@@ -30,7 +30,7 @@ const About = () => {
         </div>
       </Header>
       <div className="sm:container sm:my-16 flex flex-col sm:flex-row">
-        {!primaryImage.url ? null : (
+        {!primaryImage || !primaryImage.url ? null : (
           <div className="flex-1 order-2 sm:order-1 bg-cover bg-no-repeat bg-center">
             <div
               style={{
