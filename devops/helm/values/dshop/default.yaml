@@ -1,0 +1,17 @@
+# This is probably not the values file you want to use.  It's used
+# for linting, and maybe as an example of what you need to define
+dshopImage:
+  repository: "experimental/dshop-backend"
+
+issuerImage:
+  repository: "prod/origin-dapp-creator-issuer"
+
+dshopCacheStorageRequestSize: 1T
+dshopIssuerIp: 127.0.0.1
+
+# Secrets
+dshopEncryptionKey: asdf1234
+dshopSessionSecret: asdf1234
+dshopDatabaseURL: postgresql://127.0.0.1:5432/dshop
+dshopSentryDSN: ""
+dshopStorageNFSPath: /dshop_cache

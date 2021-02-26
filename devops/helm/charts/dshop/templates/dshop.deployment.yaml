@@ -1,0 +1,135 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dshop.fullname" . }}
+  labels:
+    {{- include "dshop.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "dshop.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "dshop.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "dshop.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.dshopImage.repository }}:{{ .Values.dshopImage.tag | default .Values.dshopVersion }}"
+          imagePullPolicy: {{ .Values.dshopImage.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /health/status
+              port: http
+            failureThreshold: 10
+            periodSeconds: 7
+          livenessProbe:
+            httpGet:
+              path: /health/status
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 3
+          # Give Kubernetes time to do its thing (race error reduction)
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - sh
+                - -c
+                - "sleep 3"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: "{{ template "dshop.fullname" . }}-shared-cache"
+              mountPath: {{ .Values.sharedCacheDir }}
+          env:
+            - name: ENVIRONMENT
+              value: prod
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "dshop.fullname" . }}
+                  key: ENCRYPTION_KEY
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "dshop.fullname" . }}
+                  key: SESSION_SECRET
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "dshop.fullname" . }}
+                  key: DATABASE_URL
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "dshop.fullname" . }}
+                  key: SENTRY_DSN
+            - name: REDIS_URL
+              value: "redis://{{ template "dshopRedis.fullname" . }}-0.{{ template "dshopRedis.fullname" . }}.{{ default "default" .Release.Namespace }}.svc.cluster.local:6379/0"
+            - name: DSHOP_CACHE
+              value: "{{ .Values.sharedCacheDir }}/{{ .Values.environment }}"
+            - name: LOG_LEVEL
+              value: {{ default "INFO" .Values.logLevel }}
+            - name: EXTERNAL_IP
+              value: {{ .Values.dshopIssuerIp }}
+        - name: cloudsql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.11
+          command: ["/cloud_sql_proxy",
+                    "-instances={{ .Values.dshopDBInstance }}=tcp:5432",
+                    "-credential_file=/secrets/cloudsql/credentials.json"]
+          securityContext:
+            runAsUser: 2  # non-root user
+            allowPrivilegeEscalation: false
+          volumeMounts:
+          - name: dshop-cloudsql-credentials
+            mountPath: /secrets/cloudsql
+            readOnly: true
+          # Don't kill DB connections before the backend process is terminated
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - sh
+                - -c
+                - "sleep 5"
+      volumes:
+        - name: dshop-cloudsql-credentials
+          secret:
+            secretName: dshop-cloudsql-credentials
+        - name: "{{ template "dshop.fullname" . }}-shared-cache"
+          persistentVolumeClaim:
+            claimName: "{{ template "dshopCacheStorage.fullname" . }}"
+            readOnly: false
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
