@@ -14,3 +14,5 @@ dshopStorageNFSPath: /dshop_cache
 # Resolver that needs to also see redis.
 # Likely .10 on the k8s subnet
 issuerNginxResolver: 10.64.0.10
+
+disableQueueProcessors: false
