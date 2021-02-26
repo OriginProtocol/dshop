@@ -93,6 +93,11 @@ spec:
               value: {{ default "INFO" .Values.logLevel }}
             - name: EXTERNAL_IP
               value: {{ .Values.dshopIssuerIp }}
+            {{- if .Values.disableQueueProcessors }}
+            - name: DISABLE_QUEUE_PROCESSSORS
+              value: "true"
+            {{- end }}
+        {{- if .Values.dshopDBInstance }}
         - name: cloudsql-proxy
           image: gcr.io/cloudsql-docker/gce-proxy:1.11
           command: ["/cloud_sql_proxy",
@@ -113,10 +118,13 @@ spec:
                 - sh
                 - -c
                 - "sleep 5"
+        {{- end }}
       volumes:
+        {{- if .Values.dshopDBInstance }}
         - name: dshop-cloudsql-credentials
           secret:
             secretName: dshop-cloudsql-credentials
+        {{- end }}
         - name: "{{ template "dshop.fullname" . }}-shared-cache"
           persistentVolumeClaim:
             claimName: "{{ template "dshopCacheStorage.fullname" . }}"

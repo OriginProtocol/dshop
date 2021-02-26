@@ -15,3 +15,4 @@ dshopSessionSecret: asdf1234
 dshopDatabaseURL: postgresql://127.0.0.1:5432/dshop
 dshopSentryDSN: ""
 dshopStorageNFSPath: /dshop_cache
+disableQueueProcessors: false

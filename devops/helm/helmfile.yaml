@@ -1,3 +1,4 @@
+helmBinary: /home/mike/.local/bin/helm3
 releases:
   - name: "dshop-{{ .Environment.Name }}"
     namespace: default
@@ -30,12 +31,9 @@ environments:
   default:
     values:
       - charts/dshop/values.yaml
-      - dshopVersion: latest
   mainnet:
     values:
       - charts/dshop/values.yaml
-      - dshopVersion: 2021021721071613596036
   rinkeby:
     values:
       - charts/dshop/values.yaml
-      - dshopVersion: 2021021721071613596020
