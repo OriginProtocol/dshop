@@ -25,3 +25,11 @@ To install a Helm release:
 Update helmfile.yaml with your environment configuration, and sync it:
 
     helmfile --environment=rinkeby sync
+
+## Helpful Notes
+
+### Multiple Helm Versions
+
+You may need to run multiple helm versions at once if you're working with multiple clusters with incompatible helm/tiller versions.  If you install another binary (say, `helm3`), you can add this to `hemlfile.yaml` to use your specific version of `helm`:
+
+    helmBinary: /path/to/bin/helm3
