@@ -6,8 +6,10 @@ releases:
       - charts/dshop/values.yaml
       - values/dshop/{{ .Environment.Name }}.yaml
       - environment: "{{ .Environment.Name }}"
+    {{- if ne .Environment.Name "default" }}
     secrets:
       - values/dshop/secrets.{{ .Environment.Name }}.yaml
+    {{- end }}
 
   # This is only one deployment, but the sync will happen
   # for every environment
