@@ -10,6 +10,7 @@ import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import useRest from 'utils/useRest'
 import { formInput, formFeedback } from 'utils/formHelpers'
+import formatPrice from 'utils/formatPrice'
 import DiscountTabs from './_Tabs'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
@@ -135,7 +136,13 @@ const PaymentSpecificDiscounts = () => {
           crypto: state.crypto,
           summary: state.summary
         },
-        startTime: Date.now()
+        startTime: Date.now(),
+        minCartValue: state.minCartValue
+          ? Number(state.minCartValue)
+          : null,
+        maxDiscountValue: state.maxDiscountValue
+          ? Number(state.maxDiscountValue)
+          : null
       }
 
       const url = `/discounts${state.id ? `/${state.id}` : ''}`
@@ -268,6 +275,44 @@ const PaymentSpecificDiscounts = () => {
           </div>
         </div>
         {Feedback('value')}
+      </div>
+
+      <div className="form-group" style={{ maxWidth: '15rem' }}>
+        <label>
+          <fbt desc="admin.discounts.paymentSpecific.minCartValue">Min. Cart Value</fbt>
+        </label>
+        <div className="input-group">
+          <div className="input-group-prepend">
+            <span className="input-group-text">
+              {formatPrice(0, {
+                symbolOnly: true,
+                currency: config.currency
+              })}
+            </span>
+          </div>
+          <input type="number" {...input('minCartValue')} />
+        </div>
+        {Feedback('minCartValue')}
+      </div>
+
+      <div className="form-group" style={{ maxWidth: '15rem' }}>
+        <label>
+          <fbt desc="admin.discounts.paymentSpecific.maxDiscountValue">
+            Max. Discount Value
+          </fbt>
+        </label>
+        <div className="input-group">
+          <div className="input-group-prepend">
+            <span className="input-group-text">
+              {formatPrice(0, {
+                symbolOnly: true,
+                currency: config.currency
+              })}
+            </span>
+          </div>
+          <input type="number" {...input('maxDiscountValue')} />
+        </div>
+        {Feedback('maxDiscountValue')}
       </div>
 
       <div className="form-group" style={{ maxWidth: '350px' }}>
