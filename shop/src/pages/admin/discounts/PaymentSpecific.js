@@ -120,58 +120,99 @@ const PaymentSpecificDiscounts = () => {
 
   const saveData = async () => {
     if (saving) return
-    setSaving(true)
 
-    try {
-      const payload = {
-        discountType: 'payment',
-        value: state.value,
-        code: '',
-        status: 'active',
-        data: {
-          ...pickBy(
-            state,
-            (v, k) => !k.endsWith('Error') && typeof v === 'boolean'
-          ),
-          crypto: state.crypto,
-          summary: state.summary
-        },
-        startTime: Date.now(),
-        minCartValue: state.minCartValue
-          ? Number(state.minCartValue)
-          : null,
-        maxDiscountValue: state.maxDiscountValue
-          ? Number(state.maxDiscountValue)
-          : null
+    // validate form fields with expected value types and ranges before sending data to backend
+    if (
+      state.value &&
+      (state.value < 0 ||
+        state.value > 100 ||
+        Math.trunc(state.value) !== Number(state.value))
+    ) {
+      setState({
+        valueError: fbt(
+          'Invalid discount. Enter a number from 0 to 100, without deicmals.',
+          'admin.discounts.auto.valueError'
+        )
+      })
+      return
+    } else if (
+      state.minCartValue &&
+      (state.minCartValue < 0 ||
+        Math.trunc(state.minCartValue) !== Number(state.minCartValue))
+    ) {
+      setState({
+        minCartValueError: fbt(
+          'Invalid entry. Enter a number greater than or equal to 0, without decimals.',
+          'admin.discounts.auto.minCartValueError'
+        )
+      })
+      return
+    } else if (
+      state.maxDiscountValue &&
+      (state.maxDiscountValue < 0 ||
+        Math.trunc(state.maxDiscountValue) !== Number(state.maxDiscountValue))
+    ) {
+      setState({
+        maxDiscountValueError: fbt(
+          'Invalid entry. Enter a number greater than or equal to 0, without decimals.',
+          'admin.discounts.auto.maxDiscountValueError'
+        )
+      })
+      return
+    } else {
+      setSaving(true)
+
+      try {
+        const payload = {
+          discountType: 'payment',
+          value: state.value,
+          code: '',
+          status: 'active',
+          data: {
+            ...pickBy(
+              state,
+              (v, k) => !k.endsWith('Error') && typeof v === 'boolean'
+            ),
+            crypto: state.crypto,
+            summary: state.summary
+          },
+          startTime: Date.now(),
+          minCartValue: state.minCartValue
+            ? Math.trunc(state.minCartValue)
+            : null,
+          maxDiscountValue: state.maxDiscountValue
+            ? Math.trunc(state.maxDiscountValue)
+            : null
+        }
+
+        const url = `/discounts${state.id ? `/${state.id}` : ''}`
+
+        await post(url, {
+          body: JSON.stringify(payload),
+          method: state.id ? 'PUT' : 'POST'
+        })
+
+        dispatch({
+          type: 'toast',
+          message: fbt(
+            'Your changes have been saved!',
+            'admin.discounts.auto.saved'
+          )
+        })
+      } catch (err) {
+        console.error(err)
+        dispatch({
+          type: 'toast',
+          style: 'error',
+          message: fbt(
+            'Failed to update automatic discounts',
+            'admin.discounts.auto.saveError'
+          )
+        })
       }
 
-      const url = `/discounts${state.id ? `/${state.id}` : ''}`
-
-      await post(url, {
-        body: JSON.stringify(payload),
-        method: state.id ? 'PUT' : 'POST'
-      })
-
-      dispatch({
-        type: 'toast',
-        message: fbt(
-          'Your changes have been saved!',
-          'admin.discounts.auto.saved'
-        )
-      })
-    } catch (err) {
-      console.error(err)
-      dispatch({
-        type: 'toast',
-        style: 'error',
-        message: fbt(
-          'Failed to update automatic discounts',
-          'admin.discounts.auto.saveError'
-        )
-      })
+      setSaving(false)
     }
-
-    setSaving(false)
   }
 
   const actions = (
@@ -220,7 +261,7 @@ const PaymentSpecificDiscounts = () => {
             </fbt>
           </div>
 
-          <label className="font-weight-bold my-3">
+          <label className="font-weight-bold mt-3 mb-0">
             <fbt desc="admin.discounts.paymentType">Payment Type</fbt>
           </label>
           {paymentMethods.map((method) => {
@@ -264,7 +305,7 @@ const PaymentSpecificDiscounts = () => {
         </>
       )}
 
-      <div className="form-group mt-3" style={{ maxWidth: '15rem' }}>
+      <div className="form-group mt-4" style={{ maxWidth: '15rem' }}>
         <label className="font-weight-bold">
           <fbt desc="admin.discounts.auto.discountValue">Discount Value</fbt>
         </label>
@@ -277,9 +318,9 @@ const PaymentSpecificDiscounts = () => {
         {Feedback('value')}
       </div>
 
-      <div className="form-group" style={{ maxWidth: '15rem' }}>
-        <label>
-          <fbt desc="admin.discounts.paymentSpecific.minCartValue">Min. Cart Value</fbt>
+      <div className="form-group mt-3" style={{ maxWidth: '15rem' }}>
+        <label className="font-weight-bold">
+          <fbt desc="admin.discounts.auto.minCartValue">Min. Cart Value</fbt>
         </label>
         <div className="input-group">
           <div className="input-group-prepend">
@@ -295,9 +336,9 @@ const PaymentSpecificDiscounts = () => {
         {Feedback('minCartValue')}
       </div>
 
-      <div className="form-group" style={{ maxWidth: '15rem' }}>
-        <label>
-          <fbt desc="admin.discounts.paymentSpecific.maxDiscountValue">
+      <div className="form-group mt-3" style={{ maxWidth: '15rem' }}>
+        <label className="font-weight-bold">
+          <fbt desc="admin.discounts.auto.maxDiscountValue">
             Max. Discount Value
           </fbt>
         </label>
@@ -315,8 +356,8 @@ const PaymentSpecificDiscounts = () => {
         {Feedback('maxDiscountValue')}
       </div>
 
-      <div className="form-group" style={{ maxWidth: '350px' }}>
-        <label className="font-weight-bold">
+      <div className="form-group mt-3" style={{ maxWidth: '350px' }}>
+        <label className="font-weight-bold mb-0">
           <fbt desc="admin.discounts.auto.summary">Summary Note</fbt>
         </label>
         <div className="desc mt-0 mb-2">
