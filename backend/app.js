@@ -19,7 +19,9 @@ const { scheduleDNSVerificationJob } = require('./queues/dnsStatusProcessor')
 
 const log = getLogger('app')
 
-require('./queues').runProcessors()
+if (typeof process.env.DISABLE_QUEUE_PROCESSSORS === 'undefined') {
+  require('./queues').runProcessors()
+}
 scheduleDNSVerificationJob()
 
 const ORIGIN_WHITELIST_ENABLED = false
