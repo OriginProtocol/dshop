@@ -1,0 +1,79 @@
+---
+################################################################################
+# Cloudbuild file for Origin's dshop0 Kubernetes cluster.
+################################################################################
+substitutions:
+    _IMAGE_NAME: dshop-backend
+
+steps:
+  - id: 'Create unique build tag'
+    name: 'gcr.io/cloud-builders/docker'
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - 'date +%Y%m%d%H%M%s > .tag'
+
+
+  - id: 'Build docker image'
+    name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-f ./devops/Dockerfile',
+      '-t "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)"',
+      '--build-arg SENTRY_DSN=${_SENTRY_DSN}',
+      '--build-arg ENVIRONMENT=${_ENVIRONMENT}',
+      '$(pwd)'
+    ]
+
+  - id: 'Push the image to GCR'
+    name: 'gcr.io/cloud-builders/docker'
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - |
+        docker push \
+          gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)
+
+  - id: 'Tag the image'
+    name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - |
+        gcloud container images add-tag \
+          "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+          "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:latest" \
+          --quiet
+
+        if [[ "$BRANCH_NAME" == "stable" ]]; then
+          gcloud container images add-tag \
+            "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+            "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:mainnet" \
+            --quiet
+        fi
+
+  - id: 'Set explicity version for this deployment'
+    name: "gcr.io/$PROJECT_ID/yq"
+    args: [
+      'yq',
+      '-yi',
+      '.dshopImage.tag=$(cat .tag)',
+      'values/dshop/${_ENVIRONMENT}.yaml'
+    ]
+
+  # Ref: https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/helmfile
+  - id: 'Update the Kubernetes Deployment'
+    name: "gcr.io/$PROJECT_ID/helmfile"
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=us-west1-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=dshop0'
+    args:
+      [
+        "--environment",
+        "${_ENVIRONMENT}",
+        "sync",
+      ]
+
+timeout: '3600s'
+options:
+  machineType: 'N1_HIGHCPU_32'

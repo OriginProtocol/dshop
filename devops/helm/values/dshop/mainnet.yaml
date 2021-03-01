@@ -1,6 +1,6 @@
 dshopImage:
   repository: gcr.io/origin-214503/experimental/dshop-backend
-  tag: "2021022321221614115370"
+  tag: "mainnet"
 
 issuerImage:
   repository: gcr.io/origin-214503/dshop/cert-issuer-ingress
