@@ -13,13 +13,12 @@ steps:
       - '-c'
       - 'date +%Y%m%d%H%M%s > .tag'
 
-
   - id: 'Build docker image'
     name: 'gcr.io/cloud-builders/docker'
     args: [
       'build',
       '-f ./devops/Dockerfile',
-      '-t "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)"',
+      '-t "gcr.io/$PROJECT_ID/${_GCR_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)"',
       '--build-arg SENTRY_DSN=${_SENTRY_DSN}',
       '--build-arg ENVIRONMENT=${_ENVIRONMENT}',
       '$(pwd)'
@@ -32,7 +31,7 @@ steps:
       - '-c'
       - |
         docker push \
-          gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)
+          gcr.io/$PROJECT_ID/${_GCR_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)
 
   - id: 'Tag the image'
     name: 'gcr.io/cloud-builders/gcloud'
@@ -41,14 +40,14 @@ steps:
       - '-c'
       - |
         gcloud container images add-tag \
-          "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
-          "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:latest" \
+          "gcr.io/$PROJECT_ID/${_GCR_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+          "gcr.io/$PROJECT_ID/${_GCR_NAMESPACE}/${_IMAGE_NAME}:latest" \
           --quiet
 
         if [[ "$BRANCH_NAME" == "stable" ]]; then
           gcloud container images add-tag \
-            "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
-            "gcr.io/$PROJECT_ID/${_NAMESPACE}/${_IMAGE_NAME}:mainnet" \
+            "gcr.io/$PROJECT_ID/${_GCR_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+            "gcr.io/$PROJECT_ID/${_GCR_NAMESPACE}/${_IMAGE_NAME}:mainnet" \
             --quiet
         fi
 
