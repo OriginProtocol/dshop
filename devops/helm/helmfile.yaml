@@ -1,4 +1,3 @@
-helmBinary: /home/mike/.local/bin/helm3
 releases:
   - name: "dshop-{{ .Environment.Name }}"
     namespace: default
