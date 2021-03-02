@@ -53,14 +53,15 @@ steps:
             --quiet
         fi
 
-  - id: 'Set explicity version for this deployment'
+  - id: 'Set explicit version for this deployment'
     name: "gcr.io/$PROJECT_ID/yq"
-    args: [
-      'yq',
-      '-yi',
-      '.dshopImage.tag=$(cat .tag)',
-      'values/dshop/${_ENVIRONMENT}.yaml'
-    ]
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - |
+        yq -yi \
+        .dshopImage.tag=$(cat .tag) \
+        values/dshop/${_ENVIRONMENT}.yaml
 
   # Ref: https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/helmfile
   - id: 'Update the Kubernetes Deployment'
