@@ -19,7 +19,7 @@ steps:
     args:
       - '-c'
       - |
-        build \
+        docker build \
           -f ./devops/Dockerfile \
           -t "gcr.io/$PROJECT_ID/${_GCR_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
           --build-arg SENTRY_DSN=${_SENTRY_DSN} \
