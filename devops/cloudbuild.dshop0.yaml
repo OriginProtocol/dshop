@@ -61,7 +61,7 @@ steps:
       - |
         yq -yi \
         .dshopImage.tag=$(cat .tag) \
-        values/dshop/${_ENVIRONMENT}.yaml
+        $(pwd)/devops/helm/values/dshop/${_ENVIRONMENT}.yaml
 
   # Ref: https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/helmfile
   - id: 'Update the Kubernetes Deployment'
