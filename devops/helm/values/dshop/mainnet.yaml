@@ -15,4 +15,4 @@ dshopStorageNFSPath: /dshop_cache
 # Likely .10 on the k8s subnet
 issuerNginxResolver: 10.64.0.10
 
-disableQueueProcessors: false
+disableQueueProcessors: true
