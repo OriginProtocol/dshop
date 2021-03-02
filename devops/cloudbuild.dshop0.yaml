@@ -15,14 +15,16 @@ steps:
 
   - id: 'Build docker image'
     name: 'gcr.io/cloud-builders/docker'
-    args: [
-      'build',
-      '-f ./devops/Dockerfile',
-      '-t "gcr.io/$PROJECT_ID/${_GCR_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)"',
-      '--build-arg SENTRY_DSN=${_SENTRY_DSN}',
-      '--build-arg ENVIRONMENT=${_ENVIRONMENT}',
-      '$(pwd)'
-    ]
+    entrypoint: '/bin/bash'
+    args:
+      - '-c'
+      - |
+      build \
+      -f ./devops/Dockerfile \
+      -t "gcr.io/$PROJECT_ID/${_GCR_NAMESPACE}/${_IMAGE_NAME}:$(cat .tag)" \
+      --build-arg SENTRY_DSN=${_SENTRY_DSN} \
+      --build-arg ENVIRONMENT=${_ENVIRONMENT} \
+      $(pwd)
 
   - id: 'Push the image to GCR'
     name: 'gcr.io/cloud-builders/docker'
