@@ -66,6 +66,7 @@ steps:
   # Ref: https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/helmfile
   - id: 'Update the Kubernetes Deployment'
     name: "gcr.io/$PROJECT_ID/helmfile"
+    dir: devops/helm/
     env:
       - 'CLOUDSDK_COMPUTE_ZONE=us-west1-a'
       - 'CLOUDSDK_CONTAINER_CLUSTER=dshop0'
