@@ -62,7 +62,7 @@ Create the name of the service account to use
 {{- end }}
 
 {{- define "dshopCacheStorage.fullname" -}}
-{{- printf "dshop-cache-storage" -}}
+{{- printf "dshop-cache-storage-%s" .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{- define "dshopRedis.fullname" -}}
