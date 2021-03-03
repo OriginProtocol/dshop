@@ -6,6 +6,8 @@ issuerImage:
   repository: gcr.io/origin-214503/dshop/cert-issuer-ingress
   tag: "20210224172035"
 
+replicaCount: 6
+
 dshopCacheStorageRequestSize: 1T
 dshopIssuerIp: 35.247.127.81
 dshopIssuerReplicas: 2
