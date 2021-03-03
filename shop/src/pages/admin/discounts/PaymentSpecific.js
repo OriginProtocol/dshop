@@ -130,7 +130,7 @@ const PaymentSpecificDiscounts = () => {
     ) {
       setState({
         valueError: fbt(
-          'Invalid discount. Enter a number from 0 to 100, without deicmals.',
+          'Invalid discount. Enter a number from 0 to 100, without decimals.',
           'admin.discounts.auto.valueError'
         )
       })

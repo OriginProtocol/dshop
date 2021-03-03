@@ -309,9 +309,7 @@ async function createTestEncryptedOfferData(network, shop, key, opts = {}) {
   // Calculate discount amount, if any.
   let discountAmount = 0
   if (opts.discount) {
-    if (opts.discount.corruptTestData) {
-      discountAmount = 9999
-    } else if (['percentage', 'payment'].includes(opts.discount.discountType)) {
+    if (['percentage', 'payment'].includes(opts.discount.discountType)) {
       const totalWithShipping =
         subTotalAmount + (opts.discount.excludeShipping ? 0 : shippingAmount)
       discountAmount = Math.round(
