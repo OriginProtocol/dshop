@@ -60,13 +60,12 @@ steps:
       - '-c'
       - |
         yq -yi \
-        .dshopImage.tag=$(cat .tag) \
+        .dshopImage.tag=\"$(cat .tag)\" \
         $(pwd)/devops/helm/values/dshop/${_ENVIRONMENT}.yaml
 
   # Ref: https://github.com/GoogleCloudPlatform/cloud-builders-community/tree/master/helmfile
   - id: 'Update the Kubernetes Deployment'
-    name: "gcr.io/$PROJECT_ID/helmfile@sha256:69ec431b5a201df518e10c9def71fd38a844bdf1df06f5ff3b1226a5a070254b"
-    #name: "gcr.io/$PROJECT_ID/helmfile"
+    name: gcr.io/$PROJECT_ID/helmfile
     dir: devops/helm/
     env:
       - 'CLOUDSDK_COMPUTE_ZONE=us-west1-a'
@@ -74,7 +73,19 @@ steps:
     entrypoint: '/bin/bash'
     args:
       - '-c'
-      - "helmfile --debug --environment ${_ENVIRONMENT} sync"
+      - |
+        CLUSTER=$$(gcloud config get-value container/cluster)
+        PROJECT=$$(gcloud config get-value core/project)
+        ZONE=$$(gcloud config get-value compute/zone)
+
+        gcloud container clusters get-credentials "$${CLUSTER}" \
+          --project "$${PROJECT}" \
+          --zone "$${ZONE}"
+
+        helm repo add prometheus-community \
+          https://prometheus-community.github.io/helm-charts
+
+        helmfile --environment ${_ENVIRONMENT} sync
 
 timeout: '3600s'
 options:
