@@ -13,7 +13,10 @@ releases:
 
   # This is only one deployment, but the sync will happen
   # for every environment
-  # TODO: Disabled because of RBAC deployment issues
+  #
+  # TODO: Disabled because of RBAC deployment issues with
+  # Cloudbuild.
+  #
   # - name: prometheus-operator
   #   namespace: monitoring
   #   chart: prometheus-community/prometheus-operator
