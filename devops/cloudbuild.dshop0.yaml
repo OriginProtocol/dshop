@@ -71,12 +71,10 @@ steps:
     env:
       - 'CLOUDSDK_COMPUTE_ZONE=us-west1-a'
       - 'CLOUDSDK_CONTAINER_CLUSTER=dshop0'
+    entrypoint: '/bin/bash'
     args:
-      [
-        "--environment",
-        "${_ENVIRONMENT}",
-        "sync",
-      ]
+      - '-c'
+      - "helmfile --debug --environment ${_ENVIRONMENT} sync"
 
 timeout: '3600s'
 options:
