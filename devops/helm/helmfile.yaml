@@ -13,13 +13,14 @@ releases:
 
   # This is only one deployment, but the sync will happen
   # for every environment
-  - name: prometheus-operator
-    namespace: monitoring
-    chart: prometheus-community/prometheus-operator
-    values:
-      - values/monitoring/values.yaml
-    secrets:
-      - values/monitoring/secrets.yaml
+  # TODO: Disabled because of RBAC deployment issues
+  # - name: prometheus-operator
+  #   namespace: monitoring
+  #   chart: prometheus-community/prometheus-operator
+  #   values:
+  #     - values/monitoring/values.yaml
+  #   secrets:
+  #     - values/monitoring/secrets.yaml
 missingFileHandler: Error
 # The below values are NOT CHART VALUES, it's weird. They seem to
 # be only values you can use here in this helmfile.  The regular
