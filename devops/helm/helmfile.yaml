@@ -1,0 +1,42 @@
+releases:
+  - name: "dshop-{{ .Environment.Name }}"
+    namespace: default
+    chart: charts/dshop
+    values:
+      - charts/dshop/values.yaml
+      - values/dshop/{{ .Environment.Name }}.yaml
+      - environment: "{{ .Environment.Name }}"
+    {{- if ne .Environment.Name "default" }}
+    secrets:
+      - values/dshop/secrets.{{ .Environment.Name }}.yaml
+    {{- end }}
+
+  # This is only one deployment, but the sync will happen
+  # for every environment
+  #
+  # TODO: Disabled because of RBAC deployment issues with
+  # Cloudbuild.
+  #
+  # - name: prometheus-operator
+  #   namespace: monitoring
+  #   chart: prometheus-community/prometheus-operator
+  #   values:
+  #     - values/monitoring/values.yaml
+  #   secrets:
+  #     - values/monitoring/secrets.yaml
+missingFileHandler: Error
+# The below values are NOT CHART VALUES, it's weird. They seem to
+# be only values you can use here in this helmfile.  The regular
+# chart values are added here just to be accessible and future
+# reference but aren't used currently.
+environments:
+  # default env is only used in linting
+  default:
+    values:
+      - charts/dshop/values.yaml
+  mainnet:
+    values:
+      - charts/dshop/values.yaml
+  rinkeby:
+    values:
+      - charts/dshop/values.yaml

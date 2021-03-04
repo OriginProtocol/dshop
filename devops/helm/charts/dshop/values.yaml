@@ -1,0 +1,91 @@
+replicaCount: 3
+
+dshopImage:
+  repository: ""
+  pullPolicy: IfNotPresent
+  # Defaults to Chart dshopVersion if not overridden here
+  tag: ""
+
+issuerImage:
+  repository: ""
+  pullPolicy: IfNotPresent
+  # Defaults to Chart dshopVersion if not overridden here
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations:
+  app: dshop
+  app.kubernetes.io/component: backend
+  app.kubernetes.io/part-of: dshop-backend-mainnet
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: NodePort
+  port: 3000
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  requests:
+    memory: 1Gi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Root path used for the shared cache (shop deployments, etc)
+sharedCacheDir: /data/dshop-cache
+# Must be set for Cloud SQL connection
+dshopDBInstance: ""
+# Must be reserved and set for each environment
+dshopIssuerIp: ""
+#dshopCacheStorageRequestSize: ""
+#dshopRedisImage: ""
+dshopRedisImageTag: 6.2
+#dshopRedisStorageSize: 10Gi
+
+# The redis DB to use for storing certs for the issuers
+#issuerRedisDB: 1
+issuerNginxResolver: "8.8.8.8"
