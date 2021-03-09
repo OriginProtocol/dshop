@@ -73,8 +73,8 @@ async function getAzureInstanceID() {
     log.error(`GET ${url} returned ${res}`)
     throw new Error(`Failed fetching Azure vmId.`)
   }
-  const password = await res.text()
-  return password
+  const response = await res.json()
+  return response.vmId
 }
 
 module.exports = function (router) {
