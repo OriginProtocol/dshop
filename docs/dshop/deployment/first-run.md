@@ -10,7 +10,7 @@ You configured DNS in the previous steps.  You should now be able to visit the n
 
 Enter the super-admin information on the onboarding page. 
 
-**IMPORTANT**: For GCP, make sure to use the password provided on the console after the deployment was completed.  For AWS, use the intstance ID.
+**IMPORTANT**: For GCP, make sure to use the password provided on the console after the deployment was completed.  For AWS, use the intstance ID.  For Azure, it's the `vmId` of the Virtual Machine.
 
 ![Registration](images/firstrun-registration.png)
 
