@@ -64,9 +64,10 @@ async function getEC2InstanceID() {
  * Gets the Azure vmId
  */
 async function getAzureInstanceID() {
-  const url = 'http://169.254.169.254/metadata/instance/compute?api-version=2020-09-01'
+  const url =
+    'http://169.254.169.254/metadata/instance/compute?api-version=2020-09-01'
   const res = await fetch(url, {
-    headers: { 'Metadata': 'true' }
+    headers: { Metadata: 'true' }
   })
   if (!res.ok) {
     log.error(`GET ${url} returned ${res}`)
