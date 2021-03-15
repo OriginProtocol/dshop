@@ -35,10 +35,10 @@
     "@babel/plugin-transform-runtime": "7.12.15",
     "@babel/preset-env": "7.12.13",
     "@babel/runtime": "7.12.13",
-    "mocha": "8.2.1",
-    "prettier-eslint-cli": "5.0.0",
+    "mocha": "8.3.2",
+    "prettier-eslint-cli": "5.0.1",
     "solc": "0.7.4",
-    "solidity-coverage": "0.7.14",
+    "solidity-coverage": "0.7.16",
     "solium": "1.2.5",
     "web3-provider-engine": "16.0.1"
   },

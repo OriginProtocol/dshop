@@ -19,7 +19,7 @@
     "logplease": "^1.2.15"
   },
   "devDependencies": {
-    "eslint": "7.19.0",
+    "eslint": "7.22.0",
     "prettier": "2.2.1"
   },
   "prettier": {
