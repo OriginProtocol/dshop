@@ -13,11 +13,7 @@ import useSetState from 'utils/useSetState'
 import Link from 'components/Link'
 import AdminDeleteDiscount from './_Delete'
 import formatPrice from 'utils/formatPrice'
-
-//Tippy is used to create tooltips on React elements
-import Tippy from '@tippyjs/react'
-import { followCursor } from 'tippy.js'
-import 'tippy.js/themes/light-border.css'
+import Tooltip from 'components/Tooltip'
 
 const times = Array(48)
   .fill(0)
@@ -287,22 +283,30 @@ const AdminEditDiscount = () => {
         </div>
         {Feedback('value')}
       </div>
-      {/* 
-      API Reference: https://github.com/atomiks/tippyjs-react
-      Wrap 'content' containing HTML in JSX - see https://github.com/atomiks/tippyjs-react/issues/94
-     */}
-      <Tippy
-        theme="light-border"
-        allowHTML={true}
-        plugins={[followCursor]}
-        followCursor="horizontal"
-        arrow={false}
-        content={
+      <Tooltip
+        children={
+          <div className="form-check mb-3">
+            <label className="form-check-label">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={state.excludeShipping ? true : false}
+                onChange={(e) =>
+                  setState({ excludeShipping: e.target.checked })
+                }
+              />
+              <fbt desc="admin.discounts.edit.excludeShipping">
+                Exclude Shipping Fees
+              </fbt>
+            </label>
+          </div>
+        }
+        text={
           <>
             <p>
               Check this box if you would like customers to pay for the full
-              price of shipping; if left <em>unchecked</em>, shipping charges
-              will be added to the subtotal <strong>before</strong> applying the
+              price of shipping; if left unchecked, shipping charges will be
+              added to the subtotal <strong>before</strong> applying the
               discount.
             </p>
             <p>
@@ -310,72 +314,58 @@ const AdminEditDiscount = () => {
               <br />
               Order Subtotal: <strong>$100</strong>
               <br />
-              Shipping: <strong>$15</strong>
+              Shipping: <strong>$20</strong>
               <br />
               Discount: <strong>10%</strong>
               <br />
-              Cart Total with &#39;Exclude Shipping Fees&#39;{' '}
-              <strong>checked</strong>: (0.9 x 100) + 15 = <strong>$105</strong>
+              Cart Total if this box is <strong>checked</strong>: (0.9 x 100) +
+              20 = <strong>$110</strong>
             </p>
           </>
         }
-      >
-        <div className="form-check mb-3">
-          <label className="form-check-label">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              checked={state.excludeShipping ? true : false}
-              onChange={(e) => setState({ excludeShipping: e.target.checked })}
-            />
-            <fbt desc="admin.discounts.edit.excludeShipping">
-              Exclude Shipping Fees
-            </fbt>
-          </label>
-        </div>
-      </Tippy>
-      <Tippy
-        theme="light-border"
-        allowHTML={true}
-        plugins={[followCursor]}
-        followCursor="horizontal"
-        arrow={false}
-        content={
+      />
+      <Tooltip
+        children={
+          <div className="form-check mb-3">
+            <label className="form-check-label">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={state.excludeTaxes ? true : false}
+                onChange={(e) => setState({ excludeTaxes: e.target.checked })}
+              />
+              <fbt desc="admin.discounts.edit.excludeTaxes">Exclude Taxes</fbt>
+            </label>
+          </div>
+        }
+        text={
           <>
             <p>
-              If this box is checked, taxes are left out of the calculation of
-              the total discount.{' '}
+              Check this box if you would like customers to pay the tax amount
+              in full; if left unchecked, taxes will be added to the subtotal{' '}
+              <strong>before</strong> calculating the discount.
             </p>
             <p>
               Examples:
               <br />
-              Order Subtotal: <strong>$100</strong>
+              Order Subtotal*: <strong>$100</strong>
               <br />
-              Taxes: <strong>$15</strong>
+              Tax Rate: <strong>15%</strong>
+              <br />
+              Total Tax: <strong>$15</strong>
               <br />
               Discount: <strong>10%</strong>
               <br />
-              Cart Total with &#39;Exclude Taxes&#39; <strong>checked</strong>:
-              (0.9 x 100) + 15 = <strong>$105</strong>
+              Cart Total if this box is <strong>checked</strong>: (0.9 x 100) +
+              15 = <strong>$105</strong>
               <br />
-              Cart Total with &#39;Exclude Taxes&#39; <strong>unchecked</strong>
-              : 0.9 x (100 + 15) = <strong>$103.5</strong>
+              Cart Total if this box is <strong>unchecked</strong>: 0.9 x (100 +
+              15) = <strong>$103.5</strong>
             </p>
+            <p>*Shipping charges not included</p>
           </>
         }
-      >
-        <div className="form-check mb-3">
-          <label className="form-check-label">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              checked={state.excludeTaxes ? true : false}
-              onChange={(e) => setState({ excludeTaxes: e.target.checked })}
-            />
-            <fbt desc="admin.discounts.edit.excludeTaxes">Exclude Taxes</fbt>
-          </label>
-        </div>
-      </Tippy>
+      />
       <div className="form-group" style={{ maxWidth: '15rem' }}>
         <label>
           <fbt desc="admin.discounts.edit.maxUses">Max Uses</fbt>
