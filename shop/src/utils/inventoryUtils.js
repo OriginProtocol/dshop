@@ -33,5 +33,8 @@ export function populateStockData(product, stockData) {
  * @returns {Boolean}
  */
 export function isVariantOutOfStock(config, product, variant) {
+  if (!_get(variant, 'available', true)) {
+    return true
+  }
   return getMaxQuantity(product, variant, config) == 0
 }
