@@ -111,3 +111,32 @@ If you encounter an error like this MacOS while running `yarn start`:
     [ERROR] dshop.queues.etlProcessor: Job failed: DatabaseError [SequelizeDatabaseError]: relation "shop_domains" does not exist
 
 `cd` into /backend and run `npm run migrate`
+
+
+### Puppeteer package incompatability with Apple M1 Silicon-based Macs
+
+If you encounter [this error](https://github.com/puppeteer/puppeteer/issues/6622) while running `yarn install` on a Mac with an M1 chip:
+
+    error path-to-project/node_modules/puppeteer: Command failed.
+    Exit code: 1
+    Command: node install.js
+    Arguments:
+    Directory: path-to-project/node_modules/puppeteer
+    Output:
+    The chromium binary is not available for arm64:
+    If you are on Ubuntu, you can install with:
+
+     apt-get install chromium-browser
+
+    path-to-project/node_modules/puppeteer/lib/cjs/puppeteer/node/BrowserFetcher.js:112
+                throw new Error();
+                ^
+
+- Install Chromium using the package [chrome-mac.zip](https://commondatastorage.googleapis.com/chromium-browser-snapshots/index.html?prefix=Mac/818858/)
+  - After downloading and unzipping the contents of the file into the Applications folder, open it. MacOS’ security settings blocks the file execution, but one can override it by navigating to System Preferences > Security & Privacy > General, and clicking ‘Open Anyway’.
+
+- Add the following lines to ~/.zshrc:
+    ```
+    export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+    export PUPPETEER_EXECUTABLE_PATH=”/Applications/Chromium.app/Contents/MacOS/Chromium”
+    ```
