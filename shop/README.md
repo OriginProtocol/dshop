@@ -113,9 +113,12 @@ If you encounter an error like this MacOS while running `yarn start`:
 `cd` into /backend and run `npm run migrate`
 
 
-### Puppeteer package incompatability with Apple M1 Silicon-based Macs
+### Troubleshooting issues with Macs based on the Apple M1 chip 
 
-If you encounter [this error](https://github.com/puppeteer/puppeteer/issues/6622) while running `yarn install` on a Mac with an M1 chip:
+Support for new macs that use the arm64 CPU architecture is growing, but limited. Until more support is available for the hardware, one might consider it best to [run the Terminal app using Rosetta 2]. For those that prefer to use the Terminal's default settings:
+
+#### Puppeteer package incompatability
+If you encounter [this error](https://github.com/puppeteer/puppeteer/issues/6622) while running `yarn install`:
 
     error path-to-project/node_modules/puppeteer: Command failed.
     Exit code: 1
@@ -140,3 +143,10 @@ If you encounter [this error](https://github.com/puppeteer/puppeteer/issues/6622
     export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
     export PUPPETEER_EXECUTABLE_PATH=”/Applications/Chromium.app/Contents/MacOS/Chromium”
     ```
+#### Problem with NodeJS version 14.x
+
+If you see an error along the lines of
+    
+    FATAL ERROR: wasm code commit Allocation failed - process out of memory
+
+when running `yarn start`, upgrade NodeJS to [version 15.3.0](https://nodejs.org/en/blog/release/v15.3.0/) or higher.
