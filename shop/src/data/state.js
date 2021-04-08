@@ -13,6 +13,7 @@ import calculateCartTotal from '@origin/utils/calculateCartTotal'
 
 import 'utils/setLocale'
 import fbTrack from './fbTrack'
+import getMaxQuantity from '../utils/getMaxQuantity'
 
 const defaultState = {
   products: [],
@@ -108,6 +109,12 @@ const reducer = (state, action) => {
 
   fbTrack(state, action)
   if (action.type === 'addToCart') {
+    const maxQuantity = getMaxQuantity(
+      action.product,
+      action.variant,
+      state.config
+    )
+
     const item = {
       title: action.product.title,
       product: action.product.id,
@@ -119,21 +126,16 @@ const reducer = (state, action) => {
       externalProductId: action.product.externalId,
       externalVariantId: action.variant.externalId,
       restrictShippingTo: action.product.restrictShippingTo,
-      maxQuantity: action.product.maxQuantity
+      nft: action.product.nft,
+      maxQuantity
     }
-    const { product, variant, maxQuantity } = item
+    const { product, variant } = item
     const existingIdx = state.cart.items.findIndex(
       (i) => i.product === product && i.variant === variant
     )
     if (existingIdx >= 0) {
       const quantity = get(newState, `cart.items[${existingIdx}].quantity`)
-      let newQuantity = quantity + 1
-      if (
-        (maxQuantity && newQuantity > maxQuantity) ||
-        newQuantity > action.variant.quantity
-      ) {
-        newQuantity = maxQuantity
-      }
+      const newQuantity = Math.min(quantity + 1, maxQuantity)
       newState = set(
         newState,
         `cart.items[${existingIdx}].quantity`,
@@ -196,6 +198,8 @@ const reducer = (state, action) => {
     })
   } else if (action.type === 'setDiscounts') {
     newState = set(newState, `discounts`, action.discounts)
+  } else if (action.type === 'setWallet') {
+    newState = set(newState, `cart.userInfo.wallet`, action.wallet)
   } else if (action.type === 'updateUserInfo') {
     const data = pick(
       action.info,
@@ -209,6 +213,7 @@ const reducer = (state, action) => {
       'province',
       'country',
       'zip',
+      'wallet',
       'billingDifferent',
       'billingFirstName',
       'billingLastName',
@@ -278,12 +283,6 @@ const reducer = (state, action) => {
     if (['products', 'collections'].indexOf(action.target)) {
       newState = set(newState, 'hasChanges', true)
     }
-  } else if (action.type === 'hasChanges') {
-    newState = set(
-      newState,
-      'hasChanges',
-      action.value === false ? false : true
-    )
   } else if (action.type === 'setAdminLocation') {
     newState = set(newState, 'adminLocation', action.location)
   } else if (action.type === 'setStorefrontLocation') {

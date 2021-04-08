@@ -1,11 +1,14 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
+import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
+import fetchProduct from 'data/fetchProduct'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
 import formatPrice from 'utils/formatPrice'
 
 import Link from 'components/Link'
 import CloseIcon from 'components/icons/Close'
+import getMaxQuantity from '../../utils/getMaxQuantity'
 
 const EmptyCart = () => (
   <div className="flex flex-col items-center mt-12 mb-32">
@@ -42,7 +45,7 @@ const Cart = () => {
           <Row
             key={`${item.product}-${item.variant}`}
             item={item}
-            price={formatPrice(item.price, currencyOpts)}
+            price={formatPrice(item.price * (item.quantity || 1), currencyOpts)}
             onRemove={() => dispatch({ type: 'removeFromCart', item })}
           />
         ))}
@@ -62,44 +65,81 @@ const Cart = () => {
   )
 }
 
-const Row = ({ item, price, onRemove }) => (
-  <>
-    <div className="border-t py-6 dark:border-gray-600">
-      <div className="flex items-center font-semibold">
-        <img className="w-8 sm:w-16 mr-5 sm:mr-10" src={item.imageUrl} />
-        <div>
-          <div className="flex items-center">
-            {item.title}
-            <a
-              href="#"
-              className="ml-3 hover:opacity-50"
-              onClick={(e) => {
-                e.preventDefault()
-                onRemove()
+const Row = ({ item, price, onRemove }) => {
+  const { config } = useConfig()
+  const [product, setProduct] = useState()
+  const [, dispatch] = useStateValue()
+
+  useEffect(() => {
+    fetchProduct(config.dataSrc, item.product).then(setProduct)
+  }, [item.product])
+
+  if (!product) return null
+
+  let variant = product.variants.find((v) => v.id === item.variant)
+  if (!variant) {
+    variant = product
+  }
+
+  const maxQuantity = getMaxQuantity(product, variant, config)
+
+  const quantities = Array.from(Array(maxQuantity)).map((i, idx) => idx + 1)
+
+  return (
+    <>
+      <div className="border-t py-6 dark:border-gray-600">
+        <div className="flex items-center font-semibold">
+          <img className="w-8 sm:w-16 mr-5 sm:mr-10" src={item.imageUrl} />
+          <div>
+            <div className="flex items-center">
+              {item.title}
+              <a
+                href="#"
+                className="ml-3 hover:opacity-50"
+                onClick={(e) => {
+                  e.preventDefault()
+                  onRemove()
+                }}
+              >
+                <CloseIcon />
+              </a>
+            </div>
+            {!item.options ? null : (
+              <div className="flex text-gray-600 text-sm font-normal">
+                {item.options.map((opt, idx) => (
+                  <span key={idx} className="mr-4">
+                    {opt}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="border-t py-6 flex items-center justify-center dark:border-gray-600">
+        <div className="quantity">
+          {quantities.length === 1 ? (
+            quantities[0]
+          ) : (
+            <select
+              className="form-control"
+              value={item.quantity}
+              onChange={(e) => {
+                const quantity = Number(e.target.value)
+                dispatch({ type: 'updateCartQuantity', item, quantity })
               }}
             >
-              <CloseIcon />
-            </a>
-          </div>
-          {!item.options ? null : (
-            <div className="flex text-gray-600 text-sm font-normal">
-              {item.options.map((opt, idx) => (
-                <span key={idx} className="mr-4">
-                  {opt}
-                </span>
+              {quantities.map((q) => (
+                <option key={q}>{q}</option>
               ))}
-            </div>
+            </select>
           )}
         </div>
       </div>
-    </div>
-    <div className="border-t py-6 flex items-center justify-center dark:border-gray-600">
-      {item.quantity}
-    </div>
-    <div className="border-t py-6 flex items-center justify-end dark:border-gray-600">
-      {price}
-    </div>
-  </>
-)
-
+      <div className="border-t py-6 flex items-center justify-end dark:border-gray-600">
+        {price}
+      </div>
+    </>
+  )
+}
 export default Cart

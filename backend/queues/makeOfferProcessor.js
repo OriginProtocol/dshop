@@ -1,4 +1,4 @@
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 const get = require('lodash/get')
 const {
   marketplaceAbi,
@@ -17,7 +17,7 @@ const encConf = require('../utils/encryptedConfig')
 const { getLogger } = require('../utils/logger')
 const { IS_TEST, IS_DEV } = require('../utils/const')
 const { Sentry } = require('../sentry')
-const { TransactionTypes, TransactionStatuses } = require('../enums')
+const { TransactionTypes, TransactionStatuses } = require('../utils/enums')
 const { processNewOrder } = require('../logic/order')
 
 const log = getLogger('offerProcessor')
@@ -245,8 +245,8 @@ async function _makeOffchainOffer({
     offerIpfsHash,
     paymentType,
     paymentStatus,
-    offerId: null, // on-chain offers do not have a blockchain offer Id.
-    event: null, // on-chain offers do not have a blockchain event.
+    offerId: null, // off-chain offers do not have a blockchain offer Id.
+    event: null, // off-chain offers do not have a blockchain event.
     skipEmail: false,
     skipDiscord: false
   })

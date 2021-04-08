@@ -9,6 +9,7 @@ import { useStateValue } from 'data/state'
 
 import formatPrice from 'utils/formatPrice'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
+import getMaxQuantity from '../../utils/getMaxQuantity'
 
 const CartItem = ({ item }) => {
   const { config } = useConfig()
@@ -27,7 +28,8 @@ const CartItem = ({ item }) => {
     variant = product
   }
 
-  const maxQuantity = product.maxQuantity || 10
+  const maxQuantity = getMaxQuantity(product, variant, config)
+
   const quantities = Array.from(Array(maxQuantity)).map((i, idx) => idx + 1)
 
   return (

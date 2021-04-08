@@ -6,7 +6,6 @@
  *
  * Example REDIS_URL=redis://0.0.0.0:6379
  */
-const { Sentry } = require('../sentry')
 const { REDIS_URL } = require('../utils/const')
 const { getLogger } = require('../utils/logger')
 
@@ -15,9 +14,6 @@ const backendUrl = REDIS_URL ? REDIS_URL : undefined
 const queueOpts = {}
 const log = getLogger('queues.queues')
 
-// Capture in Sentry the failure of any job from these queues.
-const CAPTURE_FAILED_QUEUES = ['autossl', 'etl', 'tx']
-
 if (REDIS_URL) {
   log.info(`Queue init: Using Redis at ${REDIS_URL}`)
 } else {
@@ -25,13 +21,18 @@ if (REDIS_URL) {
 }
 
 const all = [
-  new Queue(
-    'makeOffer',
-    backendUrl,
-    Object.assign(queueOpts, {
-      prefix: '{makeOffer}'
-    })
-  ),
+  new Queue('makeOffer', backendUrl, {
+    prefix: '{makeOffer}',
+    defaultJobOptions: {
+      // Up to 6 attempts to process the job, using an exponential backoff
+      // having a 60 sec initial delay.
+      attempts: 6,
+      backoff: {
+        type: 'exponential',
+        delay: 60000
+      }
+    }
+  }),
   new Queue(
     'download',
     backendUrl,
@@ -82,13 +83,18 @@ const all = [
       prefix: '{etl}'
     })
   ),
-  new Queue(
-    'tx',
-    backendUrl,
-    Object.assign(queueOpts, {
-      prefix: '{tx}'
-    })
-  ),
+  new Queue('tx', backendUrl, {
+    prefix: '{tx}',
+    defaultJobOptions: {
+      // Up to 4 attempts to process the job, using an exponential backoff
+      // having a 15 sec initial delay.
+      attempts: 4,
+      backoff: {
+        type: 'exponential',
+        delay: 15000
+      }
+    }
+  }),
   new Queue(
     'dns',
     backendUrl,
@@ -104,15 +110,6 @@ const all = [
     })
   )
 ]
-
-all.forEach((q) => {
-  if (CAPTURE_FAILED_QUEUES.includes(q.name)) {
-    q.on('failed', function (job, err) {
-      Sentry.captureException(err)
-      log.error(`Job ${job.id} failed with error: ${err.toString()}`)
-    })
-  }
-})
 
 module.exports = {}
 for (const queue of all) {

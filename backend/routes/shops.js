@@ -1,4 +1,4 @@
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 const fs = require('fs')
 const { pick, sortBy, get } = require('lodash')
 const { execFile } = require('child_process')
@@ -19,7 +19,7 @@ const {
   Order,
   Sequelize
 } = require('../models')
-const { ShopDomainStatuses } = require('../enums')
+const { ShopDomainStatuses } = require('../utils/enums')
 const {
   authSellerAndShop,
   authUser,
@@ -30,12 +30,12 @@ const {
 const { createSeller } = require('../utils/sellers')
 const { decryptConfig } = require('../utils/encryptedConfig')
 const { configureShopDNS } = require('../logic/deploy/dns')
-const { DSHOP_CACHE } = require('../utils/const')
+const { DSHOP_CACHE, DEFAULT_INFRA_RESOURCES } = require('../utils/const')
 const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
 const { readProductsFile } = require('../logic/products')
 const { queues } = require('../queues')
-const printfulSyncProcessor = require('../queues/printfulSyncProcessor')
+const { printfulSyncQueue } = require('../queues/queues')
 const { updateShopConfig } = require('../logic/shop/config')
 const { createShop } = require('../logic/shop/create')
 const sellerContactEmail = require('../utils/emails/sellerContact')
@@ -167,17 +167,15 @@ module.exports = function (router) {
       }
 
       const OutputDir = `${DSHOP_CACHE}/${req.shop.authToken}`
-
-      await printfulSyncProcessor.processor({
-        data: {
+      await printfulSyncQueue.add(
+        {
           OutputDir,
           apiKey: printful,
           shopId: req.shop.id,
           refreshImages: req.body.refreshImages ? true : false
         },
-        log: (data) => log.debug(data),
-        progress: () => {}
-      })
+        { attempts: 1 }
+      )
 
       res.json({ success: true })
     }
@@ -648,7 +646,27 @@ module.exports = function (router) {
       return res.json({ success: false, reason: 'shop-not-found' })
     }
     const dataDir = authToken
-    const { networkId, pinner, dnsProvider } = req.body
+    const { networkId } = req.body
+    let resourceSelection = req.body.resourceSelection
+
+    // Backwards compat. Depreciate eventually
+    if (!resourceSelection) {
+      resourceSelection = []
+
+      // IPFS Pinner
+      if (req.body.pinner === 'pinata') {
+        resourceSelection.push('ipfs-pinata')
+      } else if (req.body.pinner === 'ipfs-cluster') {
+        resourceSelection.push('ipfs-cluster')
+      }
+
+      // DNS Provider
+      if (req.body.dnsProvider === 'cloudflare') {
+        resourceSelection.push('cloudflare-dns')
+      } else if (req.body.pinner === 'gcp') {
+        resourceSelection.push('gcp-dns')
+      }
+    }
 
     const network = await Network.findOne({ where: { networkId } })
     if (!network) {
@@ -662,8 +680,7 @@ module.exports = function (router) {
         networkId: networkId ? networkId : network.networkId,
         subdomain: dataDir,
         shopId: shop.id,
-        pinner,
-        dnsProvider
+        resourceSelection
       },
       {
         jobId: `deployment-${uuid}`,
@@ -868,7 +885,9 @@ module.exports = function (router) {
             zone,
             hash: ipfsHash,
             dnsProvider,
-            ipAddresses
+            ipAddresses,
+            resourceSelection:
+              networkConfig.defaultResourceSelection || DEFAULT_INFRA_RESOURCES
           })
         }
 

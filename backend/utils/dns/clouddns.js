@@ -225,6 +225,7 @@ async function setRecords({
   subdomain,
   ipfsGateway,
   hash,
+  cname,
   ipAddresses
 }) {
   const fqSubdomain = append(`${subdomain}.${zone}`, '.')
@@ -283,26 +284,35 @@ async function setRecords({
       // Update CNAME record pointing to the IPFS gateway
       log.debug(`Updating CNAME record for ${fqSubdomain}`)
       changes.push(
-        await updateCNAME(existingCNAME, zoneObj, fqSubdomain, ipfsGateway)
+        await updateCNAME(
+          existingCNAME,
+          zoneObj,
+          fqSubdomain,
+          cname ? cname : ipfsGateway
+        )
       )
     } else {
       // Add CNAME record pointing to the IPFS gateway
       log.debug(`Adding CNAME record for ${fqSubdomain} ${ipfsGateway}`)
-      changes.push(await addCNAME(zoneObj, fqSubdomain, ipfsGateway))
+      changes.push(
+        await addCNAME(zoneObj, fqSubdomain, cname ? cname : ipfsGateway)
+      )
     }
   }
 
-  if (existingTXT) {
-    // Update the DNSLink record pointing at the IPFS hash
-    log.debug(`Updating TXT record for ${fqSubdomain}`)
-    changes.push(await updateDNSLink(existingTXT, zoneObj, fqSubdomain, hash))
-  } else {
-    // Add the DNSLink record pointing at the IPFS hash
-    log.debug(`Adding TXT record for ${fqSubdomain}`)
-    changes.push(await addDNSLink(zoneObj, fqSubdomain, hash))
+  if (hash) {
+    if (existingTXT) {
+      // Update the DNSLink record pointing at the IPFS hash
+      log.debug(`Updating TXT record for ${fqSubdomain}`)
+      changes.push(await updateDNSLink(existingTXT, zoneObj, fqSubdomain, hash))
+    } else {
+      // Add the DNSLink record pointing at the IPFS hash
+      log.debug(`Adding TXT record for ${fqSubdomain}`)
+      changes.push(await addDNSLink(zoneObj, fqSubdomain, hash))
+    }
   }
 
   return changes
 }
 
-module.exports = setRecords
+module.exports = { setRecords }

@@ -38,7 +38,21 @@ class FallbackQueue {
       log: log.info,
       queue: this
     }
-    await this.processor(job)
+    if (this.eventHandlers.active) {
+      this.eventHandlers.active(job)
+    }
+    try {
+      await this.processor(job)
+    } catch (err) {
+      if (this.eventHandlers.failed) {
+        this.eventHandlers.failed(job, err)
+        return
+      }
+      throw err
+    }
+    if (this.eventHandlers.completed) {
+      this.eventHandlers.completed(job)
+    }
     return job
   }
 

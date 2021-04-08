@@ -1,5 +1,5 @@
 import { useEffect, useReducer } from 'react'
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
@@ -109,14 +109,13 @@ function useWallet() {
     const onReload = () => dispatch({ type: 'reload', target: 'provider' })
 
     if (get(window, 'ethereum.on')) {
-      // Using chainIdChanged instead of chainChanged until Brave updates
-      window.ethereum.on('chainIdChanged', onReload)
+      window.ethereum.on('chainChanged', onReload)
       window.ethereum.on('accountsChanged', onReload)
     }
     return function cleanup() {
-      if (get(window, 'ethereum.on')) {
-        window.ethereum.off('chainIdChanged', onReload)
-        window.ethereum.off('accountsChanged', onReload)
+      if (get(window, 'ethereum.removeEventListener')) {
+        window.ethereum.removeEventListener('chainChanged', onReload)
+        window.ethereum.removeEventListener('accountsChanged', onReload)
       }
     }
   }, [window.ethereum])

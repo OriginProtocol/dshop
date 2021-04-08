@@ -22,7 +22,13 @@ const { getLogger } = require('../../../utils/logger')
 
 const log = getLogger('logic.deploy.cdn')
 
-async function configureCDN({ networkConfig, shop, deployment, domains }) {
+async function configureCDN({
+  networkConfig,
+  resourceSelection,
+  shop,
+  deployment,
+  domains
+}) {
   const responses = []
   const modules = await getModules(__dirname)
 
@@ -30,11 +36,11 @@ async function configureCDN({ networkConfig, shop, deployment, domains }) {
     const mod = loadModule(__dirname, modName)
 
     // Check if it's usable for deployment
-    if (mod.isAvailable({ networkConfig })) {
+    if (mod.isAvailable({ networkConfig, resourceSelection })) {
       await mod.configure({ networkConfig })
       responses.push(await mod.configureCDN({ shop, deployment, domains }))
     } else {
-      log.debug(`${modName} bucket deployer is not available or configured`)
+      log.debug(`${modName} CDN deployer is not available or configured`)
     }
   }
 

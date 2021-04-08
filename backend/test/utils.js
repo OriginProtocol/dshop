@@ -1,5 +1,5 @@
 const fetch = require('node-fetch')
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 const openpgp = require('openpgp')
 openpgp.config.show_comment = false
 openpgp.config.show_version = false
@@ -12,8 +12,10 @@ const { defaults } = require('../config')
 const { createShopInDB } = require('../logic/shop/create')
 const { setConfig, getConfig } = require('../utils/encryptedConfig')
 const { createListing, baseListing } = require('../utils/createListing')
+const { getLogger } = require('../utils/logger')
 
 let _cookies = {}
+const log = getLogger('test.utils')
 
 function clearCookies() {
   _cookies = {}
@@ -183,6 +185,7 @@ async function getOrCreateTestNetwork(opts = {}) {
       gcpCredentials: 'gcpCredentials',
       domain: 'domain.com',
       deployDir: 'deployDir',
+      fallbackShopConfig: {},
       ...opts.configOverride
     })
   }
@@ -224,7 +227,7 @@ async function createTestShop({
     shopIpfsHash: 'TestShopHash'
   }
   const listingId = await createListing({ network, pk: sellerPk, listing })
-  console.log('Created listing ID', listingId)
+  log.info('Created listing ID', listingId)
 
   // Create the shop in the DB.
   const { shop } = await createShopInDB({
@@ -309,7 +312,8 @@ async function createTestEncryptedOfferData(network, shop, key, opts = {}) {
     if (opts.discount.corruptTestData) {
       discountAmount = 9999
     } else if (['percentage', 'payment'].includes(opts.discount.discountType)) {
-      const totalWithShipping = subTotalAmount + shippingAmount
+      const totalWithShipping =
+        subTotalAmount + (opts.discount.excludeShipping ? 0 : shippingAmount)
       discountAmount = Math.round(
         (totalWithShipping * opts.discount.value) / 100
       )
@@ -398,7 +402,7 @@ async function mockReadProductDataFromWeb() {
     externalId: 194464746,
     title: 'Mandalorian mask',
     description: 'Put it on and never take it off.',
-    price: 2500,
+    price: 2000,
     available: true,
     options: ['Color', 'Size'],
     variants: [
@@ -496,8 +500,8 @@ class MockBullJob {
     this.id = Date.now() // unique and monotonically increasing job id.
     this.data = data
     this.queue = { name: 'testQueue' }
-    this.log = console.log
-    this.progress = (x) => console.log(`Queue progress: ${x}%`)
+    this.log = log.info
+    this.progress = (x) => log.info(`Queue progress: ${x}%`)
   }
 }
 

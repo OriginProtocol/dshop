@@ -1,9 +1,9 @@
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 const { Network, Shop, Transaction } = require('../models')
 const queues = require('./queues')
 const { getLogger } = require('../utils/logger')
 const { IS_TEST, IS_DEV } = require('../utils/const')
-const { TransactionStatuses } = require('../enums')
+const { TransactionStatuses } = require('../utils/enums')
 
 const log = getLogger('listingCreatedProcessor')
 
@@ -114,15 +114,7 @@ async function processor(job) {
     // Enqueue a job to record an offer on the marketplace contract.
     const makeOfferQueue = queues['makeOfferQueue']
     const jobData = { shopId, encryptedDataIpfsHash, paymentCode, paymentType }
-    const jobOpts = {
-      // Up to 6 attempts with exponential backoff with a 60sec initial delay.
-      attempts: 6,
-      backoff: {
-        type: 'exponential',
-        delay: 60000
-      }
-    }
-    await makeOfferQueue.add(jobData, jobOpts)
+    await makeOfferQueue.add(jobData)
 
     // Update the transaction in the DB.
     await transaction.update({

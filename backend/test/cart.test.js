@@ -11,7 +11,7 @@ const {
   createTestEncryptedOfferData
 } = require('./utils')
 const { processor } = require('../queues/makeOfferProcessor')
-const { OrderPaymentStatuses, OrderPaymentTypes } = require('../enums')
+const { OrderPaymentStatuses, OrderPaymentTypes } = require('../utils/enums')
 
 describe('Cart', () => {
   let network, shop, key, job

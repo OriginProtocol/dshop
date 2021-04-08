@@ -2,7 +2,7 @@ const chai = require('chai')
 chai.use(require('chai-string'))
 const expect = chai.expect
 const fetch = require('node-fetch')
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 
 const {
   getTestWallet,
@@ -12,7 +12,7 @@ const {
   generatePgpKey
 } = require('./utils')
 const { PaymentSession, Transaction } = require('../models')
-const { TransactionTypes, TransactionStatuses } = require('../enums')
+const { TransactionTypes, TransactionStatuses } = require('../utils/enums')
 
 describe('Crypto Payment', () => {
   let network, shop, sellerPgpKey, sellerWallet, buyerWallet

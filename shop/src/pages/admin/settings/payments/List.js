@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react'
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 import fbt, { FbtParam } from 'fbt'
 import pickBy from 'lodash/pickBy'
 import uniqBy from 'lodash/uniqBy'
@@ -248,6 +248,7 @@ const PaymentSettings = () => {
             type: 'setConfigSimple',
             config: { ...config, ...shopConfig }
           })
+          dispatch({ type: 'reload', target: 'shopConfig' })
           setState({ hasChanges: false })
           setSaving(false)
         } catch (err) {

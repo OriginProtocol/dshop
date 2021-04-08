@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import ethers from 'ethers'
+import { ethers } from 'ethers'
 
 import useConfig from 'utils/useConfig'
 import useOrigin from 'utils/useOrigin'

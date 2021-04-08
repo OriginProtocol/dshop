@@ -10,6 +10,7 @@ import { useStateValue } from 'data/state'
 import formatPrice from 'utils/formatPrice'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
 import fetchProductStock from 'data/fetchProductStock'
+import { populateStockData } from './inventoryUtils'
 
 const reducer = (state, newState) => ({ ...state, ...newState })
 
@@ -125,15 +126,7 @@ function useProduct(id) {
         )
 
         if (success) {
-          newState.product.quantity = stockData.stockLeft
-          newState.product.variants = variants.map((variant) => ({
-            ...variant,
-            quantity: _get(
-              stockData.variantsStock,
-              variant.id,
-              variant.quantity || 0
-            )
-          }))
+          newState.product = populateStockData(newState.product, stockData)
         }
       }
 

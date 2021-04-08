@@ -125,6 +125,14 @@ const OrderDetails = ({ cart }) => {
             </h5>
             {get(cart, 'shipping.label')}
           </div>
+          {!get(cart, 'userInfo.wallet') ? null : (
+            <div className="col-md-6 text-break">
+              <h5>
+                <fbt desc="NFTWallet">NFT Wallet</fbt>
+              </h5>
+              {get(cart, 'userInfo.wallet')}
+            </div>
+          )}
         </div>
       </div>
 

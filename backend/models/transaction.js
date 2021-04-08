@@ -1,4 +1,4 @@
-const { TransactionTypes, TransactionStatuses } = require('../enums')
+const { TransactionTypes, TransactionStatuses } = require('../utils/enums')
 
 module.exports = (sequelize, DataTypes) => {
   const Transaction = sequelize.define(

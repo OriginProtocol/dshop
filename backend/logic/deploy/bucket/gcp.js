@@ -1,6 +1,7 @@
 const path = require('path')
 const trimStart = require('lodash/trimStart')
 const { Storage } = require('@google-cloud/storage')
+const { isConfigured } = require('@origin/dshop-validation/matrix')
 
 const { NETWORK_ID_TO_NAME, BUCKET_PREFIX } = require('../../../utils/const')
 const { walkDir } = require('../../../utils/filesystem')
@@ -18,8 +19,11 @@ let cachedClient = null
  * @param args.networkConfig {Object} - Decrypted networkConfig object
  * @returns {bool} - if we can deploy
  */
-function isAvailable({ networkConfig }) {
-  return !!networkConfig.gcpCredentials
+function isAvailable({ networkConfig, resourceSelection }) {
+  return (
+    resourceSelection.includes('gcp-files') &&
+    isConfigured(networkConfig, 'gcp-files')
+  )
 }
 
 /**
@@ -65,6 +69,7 @@ function configure({ networkConfig, credentials }) {
  * Deploy OutputDir to a properly named bucket
  *
  * @param args {Object}
+ * @param args.shop {Object} - Shop model instance
  * @param args.networkConfig {Object} - Decrypted networkConfig object
  * @param args.OutputDir {string} - The directory containing the shop build
  */
@@ -144,7 +149,7 @@ async function uploadFile(bucket, file, destination, attempt = 0) {
       public: true
     })
   } catch (err) {
-    if (err && err.code === 502 && attempt < 3) {
+    if (err && [502, 503].includes(err.code) && attempt < 3) {
       return await uploadFile(bucket, file, destination, attempt + 1)
     }
 

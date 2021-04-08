@@ -22,7 +22,7 @@ import Link from 'components/Link'
 import Redirect from 'components/Redirect'
 import ImagePicker from 'components/ImagePicker'
 import DeleteButton from './_Delete'
-import EditOption from './_EditOption'
+import EditOptions from './_EditOption'
 import EditVariants from './_EditVariants'
 
 import LinkCollections from './_LinkCollections'
@@ -46,6 +46,17 @@ function validate(state, { hasOptions, inventory }) {
     newState.descriptionError = fbt(
       'Description is required',
       'admin.products.descriptionError'
+    )
+  }
+
+  if (
+    inventory &&
+    state.limitedEdition &&
+    (Number.isNaN(parseInt(state.quantity)) || parseInt(state.quantity) < 0)
+  ) {
+    newState.quantityError = fbt(
+      'Invalid Quantity',
+      'admin.products.quantityError'
     )
   }
 
@@ -76,8 +87,10 @@ function validate(state, { hasOptions, inventory }) {
 
       if (
         inventory &&
+        !state.externalId &&
         (Number.isNaN(Number(variant.quantity)) || Number(variant.quantity) < 0)
       ) {
+        // Skips this validation for printful products
         out.quantityError = fbt(
           'Invalid Quantity',
           'admin.products.quantityError'
@@ -138,7 +151,7 @@ function validate(state, { hasOptions, inventory }) {
 const EditProduct = () => {
   const history = useHistory()
   const match = useRouteMatch('/admin/products/:productId')
-  const [{ config }, dispatch] = useStateValue()
+  const [{ admin, config }, dispatch] = useStateValue()
   const { productId } = match.params
   const { post } = useBackendApi({ authToken: true })
 
@@ -152,6 +165,7 @@ const EditProduct = () => {
   })
 
   const [hasOptions, setHasOptions] = useState(false)
+  const [useOriginalImage, setOriginalImage] = useState(false)
 
   const isNewProduct = productId === 'new'
   const externallyManaged = formState.externalId ? true : false
@@ -187,6 +201,12 @@ const EditProduct = () => {
         price: (variant.price / 100).toFixed(2)
       })),
       printfulDesc: product.printfulDesc || product.description
+    }
+
+    if (newFormState.externalId) {
+      // Externally managed product
+      // Check if it has limited stock
+      newFormState.limitedEdition = get(newFormState, 'quantity', -1) >= 0
     }
 
     let imageArray = product.images
@@ -461,19 +481,33 @@ const EditProduct = () => {
               </div>
 
               <div className="media-uploader">
-                <label>
-                  <fbt desc="Photos">Photos</fbt>{' '}
-                  {externallyManaged ? null : (
-                    <span>
-                      (
-                      <fbt desc="admin.products.addManyPhotos">
-                        add as many as you like
-                      </fbt>
-                      )
-                    </span>
+                <div className="d-flex">
+                  <label>
+                    <fbt desc="Photos">Photos</fbt>{' '}
+                    {externallyManaged ? null : (
+                      <span>
+                        (
+                        <fbt desc="admin.products.addManyPhotos">
+                          add as many as you like
+                        </fbt>
+                        )
+                      </span>
+                    )}
+                  </label>
+                  {!admin.superuser ? null : (
+                    <div className="ml-auto d-flex align-items-center">
+                      <input
+                        type="checkbox"
+                        className="mr-1"
+                        checked={useOriginalImage}
+                        onChange={(e) => setOriginalImage(e.target.checked)}
+                      />
+                      Use original
+                    </div>
                   )}
-                </label>
+                </div>
                 <ImagePicker
+                  useOriginal={useOriginalImage}
                   images={media}
                   onChange={(media) => {
                     setFormState({ hasChanges: true, imagesUpdated: true })
@@ -519,7 +553,42 @@ const EditProduct = () => {
                     />
                     {Feedback('sku')}
                   </div>
-                  {!config.inventory ? null : (
+                </div>
+              </div>
+
+              <div className="row">
+                <div className="col-md-6">
+                  {!config.inventory || !externallyManaged ? null : (
+                    <div className="row">
+                      <div className="col-md-12">
+                        <label>
+                          <fbt desc="LimitedEdition">Limited Edition</fbt>
+                        </label>
+                        <div className="form-check">
+                          <label className="form-check-label">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={formState.limitedEdition ? true : false}
+                              onChange={() =>
+                                setFormState({
+                                  limitedEdition: formState.limitedEdition
+                                    ? false
+                                    : true,
+                                  hasChanges: true
+                                })
+                              }
+                            />
+                            <fbt desc="admin.products.limitedEdition">
+                              This is a Limited Edition product
+                            </fbt>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {!config.inventory ||
+                  (externallyManaged && !formState.limitedEdition) ? null : (
                     <div className="form-group">
                       <label>
                         <fbt desc="AvailableStock">Available Stock</fbt>
@@ -529,7 +598,7 @@ const EditProduct = () => {
                         min="0"
                         step="1"
                         {...input('quantity')}
-                        disabled={hasOptions}
+                        disabled={externallyManaged ? false : hasOptions}
                       />
                       {Feedback('quantity')}
                     </div>
@@ -567,7 +636,7 @@ const EditProduct = () => {
               <>
                 {(formState.options || []).map((option, index) => {
                   return (
-                    <EditOption
+                    <EditOptions
                       key={index}
                       label={
                         <fbt desc="admin.products.optionTitle">
@@ -584,7 +653,7 @@ const EditProduct = () => {
                       }
                       formState={{
                         title: option,
-                        options: formState.availableOptions[index]
+                        individualOpts: formState.availableOptions[index]
                       }}
                       setFormState={(newState) => {
                         const updatedState = {
@@ -598,9 +667,9 @@ const EditProduct = () => {
                           updatedState.options[index] = newState.title
                         }
 
-                        if (keysToUpdate.includes('options')) {
+                        if (keysToUpdate.includes('individualOpts')) {
                           updatedState.availableOptions[index] =
-                            newState.options
+                            newState.individualOpts
 
                           updatedState.variants = generateVariants({
                             ...formState,
@@ -611,15 +680,22 @@ const EditProduct = () => {
                         setFormState(updatedState)
                       }}
                       onRemove={() => {
-                        const options = [...formState.options]
-                        const availableOptions = [...formState.availableOptions]
-                        options.splice(index, 1)
-                        availableOptions.splice(index, 1)
-                        setFormState({
-                          options,
-                          availableOptions,
-                          hasChanges: true
+                        const optionsContainer = [...formState.options]
+                        const availableOptionsContainer = [
+                          ...formState.availableOptions
+                        ]
+                        optionsContainer.splice(index, 1)
+                        availableOptionsContainer.splice(index, 1)
+                        const updatedState = {
+                          options: optionsContainer,
+                          availableOptions: availableOptionsContainer,
+                          hasChanges: true,
+                          imagesUpdated: externallyManaged ? true : undefined
+                        }
+                        updatedState.variants = generateVariants({
+                          ...updatedState
                         })
+                        setFormState(updatedState) // TODO: inspect the impact of/evaluate the need for, inserting the EditVariants component after this operation
                       }}
                       disabled={externallyManaged}
                     />
@@ -659,6 +735,32 @@ const EditProduct = () => {
                 />
               </>
             )}
+
+            <div className="row">
+              <div className="col-md-12">
+                <label>
+                  <fbt desc="NFT">NFT</fbt>
+                </label>
+                <div className="form-check">
+                  <label className="form-check-label">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={formState.nft ? true : false}
+                      onChange={() =>
+                        setFormState({
+                          nft: formState.nft ? false : true,
+                          hasChanges: true
+                        })
+                      }
+                    />
+                    <fbt desc="admin.products.isNFT">
+                      This product has an associated NFT
+                    </fbt>
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="col-md-3">
             <LinkCollections

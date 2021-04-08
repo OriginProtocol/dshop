@@ -1,4 +1,4 @@
-const { DiscountTypeEnums } = require('../enums')
+const { DiscountTypeEnums } = require('../utils/enums')
 
 module.exports = (sequelize, DataTypes) => {
   const isPostgres = sequelize.options.dialect === 'postgres'
@@ -33,6 +33,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER
       },
       onePerCustomer: {
+        type: DataTypes.BOOLEAN
+      },
+      excludeShipping: {
         type: DataTypes.BOOLEAN
       },
       startTime: {

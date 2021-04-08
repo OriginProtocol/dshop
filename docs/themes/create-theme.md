@@ -14,7 +14,7 @@ As of now, Themes aren't decoupled from Dshop's repository on GitHub. But they w
 | :--- | :--- | :--- | :--- |
 | id | String | ✅ | A unique identifier of your theme. Usually same as the directory created in Step 1. |
 | name | String | ✅ | The name of your theme as it should appear in Dshop Dashboard |
-| config | Array |  | [Configurable fields](https://app.gitbook.com/@originprotocol/s/dshop/config-fields) of your theme, if any.  |
+| config | Array |  | [Configurable fields](https://app.gitbook.com/@originprotocol/s/dshop/themes/config-fields) of your theme, if any.  |
 
 A `theme.json` file of a theme with a customisable logo should look similar to this:
 

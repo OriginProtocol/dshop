@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import fbt from 'fbt'
 import memoize from 'lodash/memoize'
 import cloneDeep from 'lodash/cloneDeep'
-import _get from 'lodash/get'
 
 import { useStateValue } from 'data/state'
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 import sortProducts from 'utils/sortProducts'
 import fetchProductStock from 'data/fetchProductStock'
+import { populateStockData } from './inventoryUtils'
 
 const getProducts = memoize((url) => fetch(url).then((r) => r.json()))
 
@@ -42,22 +42,7 @@ function useProducts(opts = {}) {
               (d) => d.productId === product.id
             )
 
-            if (!productStockData) {
-              return product
-            }
-
-            return {
-              ...product,
-              quantity: productStockData.stockLeft,
-              variants: _get(product, 'variants', []).map((variant) => ({
-                ...variant,
-                quantity: _get(
-                  productStockData.variantsStock,
-                  variant.id,
-                  variant.quantity || 0
-                )
-              }))
-            }
+            return populateStockData(product, productStockData)
           })
         }
         if (!isSubscribed) {

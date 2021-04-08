@@ -1,7 +1,7 @@
 const fs = require('fs')
 const sharp = require('sharp')
 const https = require('https')
-const { getLogger } = require('../../utils/logger')
+const { getLogger } = require('../../../utils/logger')
 
 const log = getLogger('scripts.printful.downloadPrintfulMockups')
 

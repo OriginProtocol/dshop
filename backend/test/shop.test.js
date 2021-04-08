@@ -6,7 +6,7 @@ const kebabCase = require('lodash/kebabCase')
 const { createShopInDB } = require('../logic/shop/create')
 const deploy = require('../logic/deploy')
 const { decryptConfig, encryptConfig } = require('../utils/encryptedConfig')
-const { AdminLogActions, ShopDeploymentStatuses } = require('../enums')
+const { AdminLogActions, ShopDeploymentStatuses } = require('../utils/enums')
 
 const {
   AdminLog,
@@ -162,7 +162,7 @@ describe('Shops', () => {
       networkId,
       shop,
       subdomain,
-      dnsProvider: 'randomprovi',
+      uuid: 'ab8ba733-4942-4aff-9f72-6c410c443a84',
       skipSSLProbe: true,
       overrides: createOverrides()
     }

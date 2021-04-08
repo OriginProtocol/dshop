@@ -169,9 +169,9 @@ const ImagePicker = (props) => {
     if (typeof replaceAtIndex === 'number') {
       const newState = [...images]
       newState[replaceAtIndex] = newImages[0]
-      onChange(newState)
+      onChange(newState.filter((x) => x))
     } else {
-      onChange([...images, ...newImages].slice(0, 50))
+      onChange([...images, ...newImages].filter((x) => x).slice(0, 50))
     }
     uploadRef.current.value = ''
   }
@@ -197,7 +197,7 @@ const ImagePicker = (props) => {
                 onClick={() => {
                   const newState = [...images]
                   newState.splice(index, 1)
-                  onChange(newState)
+                  onChange(newState.filter((x) => x))
                 }}
               >
                 <img src="/images/delete-icon.svg" />
@@ -209,7 +209,7 @@ const ImagePicker = (props) => {
                 onChange={(newObj) => {
                   const newImages = [...images]
                   newImages[index] = newObj
-                  onChange(newImages)
+                  onChange(newImages.filter((x) => x))
                 }}
                 field={field}
                 editableProps={editableProps}

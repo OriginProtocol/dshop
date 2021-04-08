@@ -1,4 +1,4 @@
-const ethers = require('ethers')
+const { ethers } = require('ethers')
 const fs = require('fs')
 const mv = require('mv')
 const path = require('path')
@@ -17,7 +17,7 @@ const stripeUtils = require('../../utils/stripe')
 const { DSHOP_CACHE } = require('../../utils/const')
 const { getConfig, setConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
-const { AdminLogActions } = require('../../enums')
+const { AdminLogActions } = require('../../utils/enums')
 
 const log = getLogger('logic.shop.config')
 
@@ -50,7 +50,7 @@ const dbConfigOptionalKeys = [
   'password',
   'paypalClientId',
   'paypalClientSecret',
-  'paypalWebhookHost',
+  'paypalWebhookHost', // Only used in dev environments. Host we register with paypal for webhook calls.
   'paypalWebhookId',
   'printful', // Printful API key
   'printfulAutoFulfill',
@@ -60,7 +60,7 @@ const dbConfigOptionalKeys = [
   'sendgridPassword',
   'sendgridUsername',
   'shippingFrom',
-  'stripeBackend',
+  'stripeBackend', // Stripe API key
   'stripeWebhookSecret',
   'stripeWebhookHost',
   'upholdApi',
@@ -340,7 +340,7 @@ async function updateShopConfig({ seller, shop, data }) {
       return { success: false, reason: 'Invalid PayPal credentials' }
     }
 
-    if (existingConfig.paypal && existingConfig.paypalWebhookId) {
+    if (existingConfig.paypalWebhookId) {
       await paypalUtils.deregisterWebhook(shopId, existingConfig, netConfig)
     }
     const result = await paypalUtils.registerWebhooks(

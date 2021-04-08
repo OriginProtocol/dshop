@@ -2,7 +2,7 @@
 // Will get deleted once the migration is done.
 // Only difference with the Order model is that it allows to set the createdAt timestamp.
 
-const { OrderPaymentStatuses, OrderOfferStatuses } = require('../enums')
+const { OrderPaymentStatuses, OrderOfferStatuses } = require('../utils/enums')
 
 module.exports = (sequelize, DataTypes) => {
   const isPostgres = sequelize.options.dialect === 'postgres'

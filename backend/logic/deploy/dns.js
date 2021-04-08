@@ -1,6 +1,10 @@
-const setCloudflareRecords = require('../../utils/dns/cloudflare')
-const setCloudDNSRecords = require('../../utils/dns/clouddns')
-const setRoute53Records = require('../../utils/dns/route53')
+const { isConfigured } = require('@origin/dshop-validation/matrix')
+
+const {
+  setRecords: setCloudflareRecords
+} = require('../../utils/dns/cloudflare')
+const { setRecords: setCloudDNSRecords } = require('../../utils/dns/clouddns')
+const { setRecords: setRoute53Records } = require('../../utils/dns/route53')
 const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('logic.deploy.dns')
@@ -22,15 +26,16 @@ async function configureShopDNS({
   subdomain,
   zone,
   hash,
-  dnsProvider,
-  ipAddresses
+  resourceSelection,
+  ipAddresses,
+  cname
 }) {
   const backendUrl = new URL(networkConfig.backendUrl)
   const backendHost = backendUrl.hostname
 
-  if (dnsProvider === 'cloudflare') {
-    if (!networkConfig.cloudflareApiKey) {
-      log.warn('Cloudflare DNS Proider selected but no credentials configured!')
+  if (resourceSelection.includes('cloudflare-dns')) {
+    if (!isConfigured(networkConfig, 'cloudflare-dns')) {
+      log.warn('Cloudflare DNS Proider selected but not available!')
     } else {
       await setCloudflareRecords({
         ipfsGateway: backendHost,
@@ -39,12 +44,13 @@ async function configureShopDNS({
         hash,
         email: networkConfig.cloudflareEmail,
         key: networkConfig.cloudflareApiKey,
+        cname,
         ipAddresses
       })
     }
-  } else if (dnsProvider === 'gcp') {
-    if (!networkConfig.gcpCredentials) {
-      log.warn('GCP DNS Proider selected but no credentials configured!')
+  } else if (resourceSelection.includes('gcp-dns')) {
+    if (!isConfigured(networkConfig, 'gcp-dns')) {
+      log.warn('GCP DNS Proider selected but not available!')
     } else {
       await setCloudDNSRecords({
         ipfsGateway: backendHost,
@@ -52,12 +58,13 @@ async function configureShopDNS({
         subdomain,
         hash,
         credentials: networkConfig.gcpCredentials,
+        cname,
         ipAddresses
       })
     }
-  } else if (dnsProvider === 'aws') {
-    if (!networkConfig.awsAccessKeyId || !networkConfig.awsSecretAccessKey) {
-      log.warn('AWS DNS Proider selected but no credentials configured!')
+  } else if (resourceSelection.includes('aws-dns')) {
+    if (!isConfigured(networkConfig, 'aws-dns')) {
+      log.warn('AWS DNS Proider selected but not available!')
     } else {
       await setRoute53Records({
         ipfsGateway: backendHost,
@@ -68,6 +75,7 @@ async function configureShopDNS({
           accessKeyId: networkConfig.awsAccessKeyId,
           secretAccessKey: networkConfig.awsSecretAccessKey
         },
+        cname,
         ipAddresses
       })
     }

@@ -80,6 +80,11 @@
     "title": "Home",
     "pageUrl": "/",
     "fields": [{
+      "id": "headerLogo",
+      "title": "Homepage Logo",
+      "type": "media",
+      "allowPNG": true
+    }, {
       "id": "headerImage",
       "title": "Header Image",
       "type": "media"

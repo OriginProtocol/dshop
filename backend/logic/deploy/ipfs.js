@@ -1,5 +1,6 @@
 const deploy = require('ipfs-deploy')
 const ipfsClient = require('ipfs-http-client')
+const { isConfigured } = require('@origin/dshop-validation/matrix')
 
 const prime = require('../../utils/primeIpfs')
 const { urlToMultiaddr } = require('../../utils/multiaddr')
@@ -30,31 +31,20 @@ async function deployToIPFS({
   networkConfig,
   OutputDir,
   dataDir,
-  pinner
+  resourceSelection
 }) {
-  // If both an IPFS cluster and Pinata are configured,
-  // we favor pinning on the IPFS cluster.
-  if (!pinner) {
-    if (network.ipfsApi && networkConfig.ipfsClusterPassword) {
-      pinner = 'ipfs-cluster'
-    } else if (networkConfig.pinataKey) {
-      pinner = 'pinata'
-    }
-  }
-
-  if (!pinner && network.ipfsApi.indexOf('http://localhost') < 0) {
+  if (!resourceSelection && network.ipfsApi.indexOf('http://localhost') < 0) {
     return false
   }
-
-  const ipfsClusterConfigured =
-    network.ipfsApi && networkConfig.ipfsClusterPassword
-  const pinataConfigured = networkConfig.pinataKey && networkConfig.pinataSecret
 
   // Build a list of all configured pinners.
   let ipfsPinner, ipfsGateway
   const remotePinners = []
   const ipfsDeployCredentials = {}
-  if (ipfsClusterConfigured) {
+  if (
+    resourceSelection.includes('ipfs-cluster') &&
+    isConfigured(networkConfig, 'ipfs-cluster')
+  ) {
     const maddr = urlToMultiaddr(network.ipfsApi, {
       translateLocalhostPort: 9094
     })
@@ -67,23 +57,22 @@ async function deployToIPFS({
       password: networkConfig.ipfsClusterPassword
     }
     remotePinners.push('ipfs-cluster')
-    if (pinner === 'ipfs-cluster') {
-      ipfsPinner = maddr
-      ipfsGateway = network.ipfs
-    }
+    ipfsPinner = maddr
+    ipfsGateway = network.ipfs
   }
 
-  if (pinataConfigured) {
+  if (
+    resourceSelection.includes('ipfs-pinata') &&
+    isConfigured(networkConfig, 'ipfs-pinata')
+  ) {
     log.info(`Pinata configured. Adding to the list of pinners.`)
     ipfsDeployCredentials['pinata'] = {
       apiKey: networkConfig.pinataKey,
       secretApiKey: networkConfig.pinataSecret
     }
     remotePinners.push('pinata')
-    if (pinner === 'pinata') {
-      ipfsPinner = PINATA_API
-      ipfsGateway = PINATA_GATEWAY
-    }
+    ipfsPinner = PINATA_API
+    ipfsGateway = PINATA_GATEWAY
   }
 
   // Deploy the shop to all the configured IPFS pinners.

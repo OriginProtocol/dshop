@@ -2,14 +2,18 @@ const fs = require('fs')
 
 const difference = require('lodash/difference')
 
-const getProducts = require('./getProducts')
-const getProduct = require('./getProduct')
-const getProductIds = require('./getProductIds')
+const getProducts = require('../../../scripts/printful/getProducts')
+const getProduct = require('../../../scripts/printful/getProduct')
+const getProductIds = require('../../../scripts/printful/getProductIds')
+
+const { getLogger } = require('../../../utils/logger')
+
+const log = getLogger('logic.printful.downloadPrintfulMockups')
 
 const PrintfulURL = 'https://api.printful.com'
 
 /**
- * Downloads product data from Printful
+ * Downloads product data from Printful.
  *
  * @param {String} OutputDir data directory of the shop
  * @param {String} printfulApi API key of printful store
@@ -46,7 +50,7 @@ async function downloadProductData({
     // Append `forceRefetchIds` and then do deduplicate
     ids = Array.from(new Set([...ids, ...(forceRefetchIds || [])]))
 
-    console.log(
+    log.debug(
       `Will be refetching only ${ids.length} out of ${overallLength} products`
     )
   }

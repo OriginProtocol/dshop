@@ -2,13 +2,13 @@ const randomstring = require('randomstring')
 const util = require('ethereumjs-util')
 const get = require('lodash/get')
 
-const { OrderPaymentStatuses, OrderPaymentTypes } = require('../../enums')
 const { Sentry } = require('../../sentry')
 const { Order, Product } = require('../../models')
 
 const sendNewOrderEmail = require('../../utils/emails/newOrder')
 const discordWebhook = require('../../utils/discordWebhook')
 const { autoFulfillOrder } = require('../printful')
+const { OrderPaymentStatuses, OrderPaymentTypes } = require('../../utils/enums')
 const { decryptShopOfferData } = require('../../utils/offer')
 const { getLogger } = require('../../utils/logger')
 const { getConfig } = require('../../utils/encryptedConfig')
@@ -151,7 +151,7 @@ async function validateOfferData(shop, networkConfig, order) {
       if (!variant) {
         return { error: `Invalid order: Unknown variant ${item.variant}` }
       }
-      productPrice = productData.price
+      productPrice = variant.price
     } else {
       productPrice = product.price
     }
@@ -346,7 +346,7 @@ async function processNewOrder({
   }
   if (!skipDiscord) {
     try {
-      await discordWebhook({
+      await discordWebhook.postNewOrderMessage({
         url: networkConfig.discordWebhook,
         orderId: fqId,
         shopName: shop.name,
@@ -542,6 +542,7 @@ async function updateInventoryData(
   const quantModifier = increment ? 1 : -1
 
   const cartItems = get(cartData, 'items', [])
+  const nonExternalItems = cartItems.filter((item) => !item.externalVariantId)
   const dbProducts = await Product.findAll({
     where: {
       shopId: shop.id,
@@ -549,7 +550,7 @@ async function updateInventoryData(
     }
   })
 
-  const allValidProducts = cartItems.every(
+  const allValidProducts = nonExternalItems.every(
     (item) => !!dbProducts.find((product) => product.productId === item.product)
   )
 
@@ -579,11 +580,25 @@ async function updateInventoryData(
       }
 
       const quant = quantModifier * item.quantity
-
-      const variantStock = product.variantsStock[variantId] + quant
       const productStock = product.stockLeft + quant
+      const currentVariantStock = product.variantsStock[variantId]
+      let variantStock =
+        typeof currentVariantStock === 'number'
+          ? currentVariantStock + quant
+          : productStock
 
-      if (!increment && (productStock < 0 || variantStock < 0)) {
+      let notEnoughStock = productStock < 0 || variantStock < 0
+      if (item.externalProductId) {
+        if (product.stockLeft === -1) {
+          // -1 === Unlimited stock
+          continue
+        }
+        // For printful items, only look at product stock, not variant stock
+        notEnoughStock = productStock < 0
+        variantStock = 0
+      }
+
+      if (!increment && notEnoughStock) {
         log.error(
           `[Shop ${shop.id}] Product has insufficient stock`,
           product.productId,

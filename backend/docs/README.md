@@ -1,4 +1,4 @@
-# Backend Docuemntation
+# Backend Documentation
 
 - [Web API Docs](api.md)
 
