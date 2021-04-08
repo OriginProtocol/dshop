@@ -98,6 +98,7 @@ const jsonConfigOptionalKeys = [
   'notice',
   'noticeFooter',
   'offlinePaymentMethods',
+  'otherMedia',
   'paypalClientId',
   'pgpPublicKey',
   'shippingApi',

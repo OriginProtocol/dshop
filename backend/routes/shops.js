@@ -517,7 +517,8 @@ module.exports = function (router) {
                 'twitter',
                 'instagram',
                 'medium',
-                'youtube'
+                'youtube',
+                'otherMedia'
               ])
             },
             null,
