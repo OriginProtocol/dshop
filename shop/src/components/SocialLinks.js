@@ -8,6 +8,7 @@ import MediumIcon from 'components/icons/Medium'
 import InstagramIcon from 'components/icons/Instagram'
 import FacebookIcon from 'components/icons/Facebook'
 import YouTubeIcon from 'components/icons/YouTube'
+import GlobeIcon from 'components/icons/Globe'
 
 const SocialLinks = ({
   el = 'div',
@@ -17,7 +18,14 @@ const SocialLinks = ({
   contentOnly
 }) => {
   const { config } = useConfig()
-  const social = pick(config, 'twitter', 'medium', 'instagram', 'youtube')
+  const social = pick(
+    config,
+    'twitter',
+    'medium',
+    'instagram',
+    'youtube',
+    'otherMedia'
+  )
   if (!Object.keys(social).length) {
     return null
   }
@@ -70,6 +78,15 @@ const SocialLinks = ({
           title={fbt('Instagram', 'Instagram')}
         >
           <InstagramIcon {...svg} />
+        </a>
+      )}
+      {!config.otherMedia ? null : (
+        <a
+          {...linkProps}
+          href={config.otherMedia}
+          title={fbt('Website', 'Website')}
+        >
+          <GlobeIcon {...svg} />
         </a>
       )}
     </>
