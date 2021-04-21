@@ -263,7 +263,7 @@ const EditProduct = () => {
           .map((c) => c.id)
       })
     }
-  }, [collections.length, productId])
+  }, [collections, productId])
 
   useEffect(() => {
     if (hasOptions && (!formState.options || !formState.options.length)) {
