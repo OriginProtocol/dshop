@@ -11250,10 +11250,14 @@ format-parser@0.0.2:
   resolved "https://registry.yarnpkg.com/format-parser/-/format-parser-0.0.2.tgz#4318822a8a9f1a29a0137253b908719c4f9222a2"
   integrity sha1-QxiCKoqfGimgE3JTuQhxnE+SIqI=
 
-formidable@^1.2.0, formidable@^1.2.2:
+formidable@^1.2.0:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/formidable/-/formidable-1.2.2.tgz#bf69aea2972982675f00865342b982986f6b8dd9"
   integrity sha512-V8gLm+41I/8kguQ4/o1D3RIHRmhYFG4pnNyonvua+40rqcEmT4+V71yaZ3B457xbbgCsCfjSPi65u/W6vK1U5Q==
+
+"formidable@git://github.com/node-formidable/formidable.git#v1.2.3":
+  version "1.2.3"
+  resolved "git://github.com/node-formidable/formidable.git#7e07387c295cbd19f563a99bd91cadd0e18e406b"
 
 forwarded@~0.1.2:
   version "0.1.2"
