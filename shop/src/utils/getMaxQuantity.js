@@ -14,7 +14,9 @@ const QUANTITY_HARD_LIMIT = 10
  */
 const getMaxQuantity = (product, variant, config) => {
   if (!get(config, 'inventory')) {
-    return get(variant, 'available', true) ? QUANTITY_HARD_LIMIT : 0
+    const variantAvailable = get(variant, 'available', true)
+    const productAvailable = get(product, 'available', true)
+    return variantAvailable && productAvailable ? QUANTITY_HARD_LIMIT : 0
   }
 
   const varQuantity = parseInt(get(variant, 'quantity'))
