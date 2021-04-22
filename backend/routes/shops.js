@@ -469,7 +469,7 @@ module.exports = function (router) {
           return res.json({ success: false, reason: 'invalid-filename' })
         }
 
-        const relative = dest.replace(uploadDir, '')
+        const relative = dest.replace(uploadDir, '').replace(/^\//, '')
 
         try {
           await new Promise((resolve, reject) => {
