@@ -269,14 +269,40 @@ const AppearanceSettings = () => {
               </span>
             </label>
             {/* <textarea style={{ minHeight: '20vh' }} {...input('about')} /> */}
+            {/* To customize CKEditor's toolbar, see https://ckeditor.com/docs/ckeditor4/latest/features/toolbar.html*/}
             <CKEditor
               data={aboutText}
               config={{
                 toolbar: [
-                  { name: 'styles', items: ['Format'] },
+                  { name: 'document', items: ['Source'] },
+                  {
+                    name: 'clipboard',
+                    items: [
+                      'Cut',
+                      'Copy',
+                      'Paste',
+                      'PasteText',
+                      '-',
+                      'Undo',
+                      'Redo'
+                    ]
+                  },
+                  { name: 'editing', items: ['Find', 'Replace', 'Scayt'] },
+                  { name: 'forms', items: ['Button', 'ImageButton'] },
+                  '/',
                   {
                     name: 'basicstyles',
-                    items: ['Bold', 'Italic', '-', 'RemoveFormat']
+                    items: [
+                      'Bold',
+                      'Italic',
+                      'Underline',
+                      'Strike',
+                      'Subscript',
+                      'Superscript',
+                      '-',
+                      'CopyFormatting',
+                      'RemoveFormat'
+                    ]
                   },
                   {
                     name: 'paragraph',
@@ -285,14 +311,37 @@ const AppearanceSettings = () => {
                       'BulletedList',
                       '-',
                       'Outdent',
-                      'Indent'
+                      'Indent',
+                      '-',
+                      'Blockquote',
+                      'CreateDiv',
+                      '-',
+                      'JustifyLeft',
+                      'JustifyCenter',
+                      'JustifyRight',
+                      'JustifyBlock',
+                      '-',
+                      'Language'
                     ]
                   },
                   { name: 'links', items: ['Link', 'Unlink'] },
                   {
                     name: 'insert',
-                    items: ['Image', 'Table', 'HorizontalRule']
-                  }
+                    items: [
+                      'Image',
+                      'Table',
+                      'HorizontalRule',
+                      'Smiley',
+                      'SpecialChar'
+                    ]
+                  },
+                  '/',
+                  {
+                    name: 'styles',
+                    items: ['Styles', 'Format', 'Font', 'FontSize']
+                  },
+                  { name: 'colors', items: ['TextColor', 'BGColor'] },
+                  { name: 'tools', items: ['Maximize'] }
                 ]
               }}
               onChange={(e) => setAboutText(e.editor.getData())}
