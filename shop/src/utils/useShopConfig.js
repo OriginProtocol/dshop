@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import memoize from 'lodash/memoize'
 
 import useConfig from 'utils/useConfig'
+import useIsMounted from 'utils/useIsMounted'
 import { useStateValue } from 'data/state'
 
 const getShopConfig = memoize(
@@ -21,6 +22,7 @@ function useShopConfig() {
   const { config } = useConfig()
   const [loading, setLoading] = useState(false)
   const [shopConfig, setShopConfig] = useState()
+  const isMounted = useIsMounted()
 
   async function fetchConfig() {
     setLoading(true)
@@ -29,6 +31,7 @@ function useShopConfig() {
       config.backendAuthToken,
       reload.shopConfig
     )
+    if (!isMounted.current) return
     setLoading(false)
     setShopConfig(shopConfig)
   }
