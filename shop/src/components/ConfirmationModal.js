@@ -95,6 +95,7 @@ const AdminConfirmationModal = ({
             if (onClose) {
               onClose()
             }
+            setState({}, true)
           }}
         >
           <form
