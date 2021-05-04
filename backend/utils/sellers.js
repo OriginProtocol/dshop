@@ -81,9 +81,10 @@ async function createSeller({ name, email, password }, opts) {
     return { status: 400, error: 'Invalid registration' }
   }
   const { superuser, skipEmailVerification } = opts || {} // Superuser creation must be done explicitly
+  email = email.toLowerCase()
 
   const sellerCheck = await Seller.findOne({
-    where: { email: email.toLowerCase() }
+    where: { email }
   })
 
   if (sellerCheck) {
@@ -95,7 +96,7 @@ async function createSeller({ name, email, password }, opts) {
 
   const seller = await Seller.create({
     name,
-    email: email.toLowerCase(),
+    email,
     password: passwordHash,
     superuser: superuser,
     emailVerified: false,

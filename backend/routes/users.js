@@ -73,6 +73,7 @@ module.exports = function (router) {
     }
 
     const fields = pick(req.body, 'name', 'email', 'superuser')
+    fields.email = email // use lower case email
     const passwordPlain = req.body.password
     if (passwordPlain) {
       const salt = await createSalt()
