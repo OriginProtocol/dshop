@@ -7,12 +7,12 @@ const get = require('lodash/get')
  * @param {Object} cart Cart data object
  *
  * @returns {{
- *  total {Number}
- *  subTotal {Number}
- *  shipping {Number}
- *  discount {Number}
- *  donation {Number}
- *  totalTaxes {Number}
+ *  total {Number},
+ *  subTotal {Number},
+ *  shipping {Number},
+ *  discount {Number},
+ *  donation {Number},
+ *  totalTaxes {Number},
  *  taxRate {Number}
  * }}
  */
@@ -25,6 +25,10 @@ const calculateCartTotal = (cart) => {
 
   const shipping = get(cart, 'shipping.amount', 0)
   const taxRate = parseFloat(get(cart, 'taxRate', 0))
+  //The attribute 'taxRate' of the 'cart' object contains the tax rate as a fixed point number with a scaling factor of 1/100
+  //In other words, this number will need to be multiplied by 1/100 to get the tax rate in percentage.
+  //[Sources: 'dshop/shop/src/pages/admin/settings/checkout/_CountryTaxEntry.js', 'dshop/shop/src/utils/formHelpers.js']
+  const totalTaxes = Math.ceil(((taxRate / 100) * subTotal) / 100)
 
   const discountObj = get(cart, 'discountObj', {})
   const {
@@ -68,7 +72,6 @@ const calculateCartTotal = (cart) => {
 
   const donation = get(cart, 'donation', 0)
 
-  const totalTaxes = Math.ceil(taxRate * subTotal)
   const total = Math.max(
     0,
     subTotal + shipping - discount + donation + totalTaxes

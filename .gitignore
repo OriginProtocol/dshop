@@ -92,3 +92,6 @@ devops/github
 *.dec.yaml
 
 dshop_setup
+
+# Other #
+.prettierrc.json
