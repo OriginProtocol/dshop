@@ -134,7 +134,7 @@ export const MobileInformation = () => {
 
   const onSubmit = (e) => {
     e.preventDefault()
-    const { valid, newState } = validate(state, ['email'])
+    const { valid, newState } = validate(state, ['emailError'])
     setState(newState)
     if (!valid) {
       window.scrollTo(0, 0)
