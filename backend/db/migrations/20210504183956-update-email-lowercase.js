@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: (queryInterface) => {
@@ -7,4 +7,4 @@ module.exports = {
   },
 
   down: () => Promise.resolve()
-};
+}
