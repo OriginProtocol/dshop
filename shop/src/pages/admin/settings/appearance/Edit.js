@@ -274,7 +274,6 @@ const AppearanceSettings = () => {
               data={aboutText}
               config={{
                 toolbar: [
-                  { name: 'document', items: ['Sourcedialog'] },
                   {
                     name: 'clipboard',
                     items: [
@@ -324,7 +323,7 @@ const AppearanceSettings = () => {
                       'Language'
                     ]
                   },
-                  { name: 'links', items: ['Link', 'Unlink'] },
+                  { name: 'links', items: ['Link', 'Unlink', 'Anchor'] },
                   {
                     name: 'insert',
                     items: [
@@ -342,11 +341,7 @@ const AppearanceSettings = () => {
                   },
                   { name: 'colors', items: ['TextColor', 'BGColor'] },
                   { name: 'tools', items: ['Maximize'] }
-                ],
-                fullPage: true,
-                allowedContent: true,
-                extraPlugins: 'sourcedialog',
-                removePlugins: 'sourcearea'
+                ]
               }}
               onChange={(e) => setAboutText(e.editor.getData())}
             />
