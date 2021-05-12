@@ -55,7 +55,7 @@ function createOverrides() {
 }
 
 describe('Shops', () => {
-  let network, networkId, shop, deployment, dataDir
+  let network, networkId, shop, deployment, dataDir, subdomain
 
   before(async () => {
     // Note: the migration inserts a network row for network id 999.
@@ -85,6 +85,7 @@ describe('Shops', () => {
     expect(jason.success).to.be.true
 
     shop = await Shop.findOne({ where: { name: shopName } })
+    subdomain = shopName
     expect(shop).to.be.an('object')
     expect(shop.name).to.equal(body.name)
     expect(shop.hostname).to.startsWith(body.dataDir)
@@ -156,7 +157,6 @@ describe('Shops', () => {
 
   it('should deploy a shop', async () => {
     const networkConfig = decryptConfig(network.config)
-    const subdomain = 'test'
     const expectedURL = `https://${subdomain}.${networkConfig.domain}`
     const args = {
       networkId,
@@ -202,7 +202,7 @@ describe('Shops', () => {
     const args = {
       networkId,
       shop,
-      subdomain: 'test',
+      subdomain,
       skipSSLProbe: true,
       overrides: createOverrides()
     }
@@ -222,7 +222,6 @@ describe('Shops', () => {
     )
 
     const networkConfig = decryptConfig(network.config)
-    const subdomain = 'test'
     const expectedURL = `https://${subdomain}.${networkConfig.domain}`
     const args = {
       networkId,

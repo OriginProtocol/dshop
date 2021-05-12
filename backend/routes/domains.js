@@ -2,7 +2,7 @@ const some = require('lodash/some')
 const { configureCDN } = require('../logic/deploy/cdn')
 const { getLogger } = require('../utils/logger')
 const { getMyIP } = require('../utils/ip')
-const { hasNS, verifyDNS } = require('../utils/dns')
+const { hasNS, hasCNAMEOrA, verifyDNS } = require('../utils/dns')
 const { decryptConfig } = require('../utils/encryptedConfig')
 const { Network, ShopDeployment, ShopDomain } = require('../models')
 const { ShopDomainStatuses } = require('../utils/enums')
@@ -30,6 +30,37 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
+      // Authorize user for this DNS name
+      if (await hasCNAMEOrA(req.body.domain)) {
+        const existing = await ShopDomain.findAll({
+          where: { domain: req.body.domain.toLowerCase() }
+        })
+
+        if (existing && existing.length > 0) {
+          if (existing.length > 1) {
+            // Shouldn't happen in an ideal world
+            log.error(
+              'Found more domains of the same name than should be possible'
+            )
+            throw new Error('Too many domains')
+          } else if (existing[0].shopId !== req.shop.id) {
+            // ShopDomain is not for this shop
+            log.warn('Attempt to configure domain used by another shop')
+            res
+              .status(401)
+              .json({ success: false, reason: 'in-use', domain: null })
+            return
+          }
+        } else {
+          // DNS Name exists, but isn't associated with a shop
+          log.warn('Attempt to configure domain already in use')
+          res
+            .status(401)
+            .json({ success: false, reason: 'in-use', domain: null })
+          return
+        }
+      }
+
       const domain = await ShopDomain.create({
         shopId: req.shop.id,
         domain: req.body.domain,
