@@ -61,8 +61,21 @@ function validate(state, { hasOptions, inventory }) {
   }
 
   if (hasOptions) {
+    // If the shop admin checks the box for 'This product has different options', perform 2 seperate checks:
+
+    //1) That an option field is populated with at least one value before saving the form (see issue #806)
+    if (!state.availableOptions.every((individualOpts) => individualOpts.length)) { 
+      newState.optionsError = fbt(
+          'At least one value is required',
+          'admin.products.OptionsError'
+        )
+    }
+
+    //2) That the variants generated have no known issues
     newState.variants = state.variants.map((variant) => {
       const out = removeErrorKeys(variant)
+      
+      
       if (!variant.title || !variant.title.trim().length) {
         out.titleError = fbt(
           'Variant name is required',
@@ -73,7 +86,7 @@ function validate(state, { hasOptions, inventory }) {
       if (!variant.options || !variant.options.length) {
         out.optionsError = fbt(
           'At least one value is required',
-          'admin.products.optionsError'
+          'admin.products.varOptionsError'
         )
       }
 
@@ -93,7 +106,7 @@ function validate(state, { hasOptions, inventory }) {
         // Skips this validation for printful products
         out.quantityError = fbt(
           'Invalid Quantity',
-          'admin.products.quantityError'
+          'admin.products.varQuantityError'
         )
       }
 
@@ -103,6 +116,8 @@ function validate(state, { hasOptions, inventory }) {
     validVariants = newState.variants.every((v) =>
       Object.keys(v).every((f) => f.indexOf('Error') < 0)
     )
+
+    
   } else {
     if (!state.price || state.price < 0) {
       newState.priceError = fbt(
@@ -301,6 +316,7 @@ const EditProduct = () => {
         ),
         style: 'error'
       })
+
       return
     }
 
@@ -653,7 +669,8 @@ const EditProduct = () => {
                       }
                       formState={{
                         title: option,
-                        individualOpts: formState.availableOptions[index]
+                        individualOpts: formState.availableOptions[index],
+                        optionsError: formState.optionsError
                       }}
                       setFormState={(newState) => {
                         const updatedState = {
@@ -701,6 +718,7 @@ const EditProduct = () => {
                     />
                   )
                 })}
+
                 <div className="mb-5">
                   {get(formState, 'options.length') >= 3 ||
                   externallyManaged ? null : (

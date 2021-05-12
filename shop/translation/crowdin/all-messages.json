@@ -495,10 +495,12 @@
   "mkYFuqvuQAyXdnGXTzVEoQ==": "Title is required",
   "BNSwfDJimikJvbLb0KUmug==": "Description is required",
   "0SdCkhdrb86J2AEDYfDYUQ==": "Invalid Quantity",
+  "7A0shD3Hxih0y0P9qynTTw==": "At least one value is required",
   "6f73afCIp43RdOS0nutuXQ==": "Variant name is required",
-  "+5netp5tBNqj0Yf3yLT2/g==": "At least one value is required",
+  "oJl3Ad2HXcYGsGTobkgNVA==": "At least one value is required",
   "ZPQyi8dh4H2tb+T8kQmMZg==": "Price is required",
   "Njao6nj9nuFyJomqXgd0qA==": "Invalid price",
+  "LuzZEYrbHqk4n9ZeUxk+gQ==": "Invalid Quantity",
   "Z3sc0J3HOtVQNFRmZvbalg==": "Select a value",
   "SvLZC+vqrda0Xw1ETzFZcQ==": "Select a value",
   "7sjc6umjOyBbqEXokKLn/A==": "Add product",
@@ -880,6 +882,6 @@
   "ZxOHPcWjsu9+0ENH6gSKiA==": "Terms",
   "qnZnUg0OB7k+75Mg5Tb3ng==": "Powered by Origin Dshop",
   "MTbzIIPfLSiuG9A5leCjiw==": "© Origin Protocol {VAR_YEAR_B64_eWVhcg}",
-  "y1XLjhDfGPVB8olV9Pp0Ow==": "Sorry, there was an error calculating shipping costs.",
-  "EF6JpB5si/Dul6Y8wkH/UA==": "© {VAR_YEAR_B64_eWVhcg} Origin Protocol"
+  "EF6JpB5si/Dul6Y8wkH/UA==": "© {VAR_YEAR_B64_eWVhcg} Origin Protocol",
+  "y1XLjhDfGPVB8olV9Pp0Ow==": "Sorry, there was an error calculating shipping costs."
 }

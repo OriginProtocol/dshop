@@ -63,7 +63,8 @@ const EditOptions = ({
             }
             disabled={disabled}
           />
-          {Feedback('options')}
+
+          {(formState.optionsError && !formState.individualOpts.length) ? Feedback('options') : null}
         </div>
       </div>
     </div>
