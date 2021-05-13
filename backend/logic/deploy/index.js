@@ -237,14 +237,18 @@ async function deploy({
       if (existing && existing.length > 0) {
         if (existing.length > 1) {
           // Shouldn't happen in an ideal world
-          throw new Error('Too many domains')
+          throw new Error(`Found too many domains for name ${fqdn}`)
         } else if (existing[0].shopId !== shop.id) {
           // ShopDomain is not for this shop
-          throw new Error('Domain already in use by another shop')
+          throw new Error(
+            `Domain ${fqdn} already in use by another shop. Attempted by shop #${shop.id}`
+          )
         }
       } else {
         // DNS Name exists, but isn't associated with a shop
-        throw new Error('Domain already in use by another shop')
+        throw new Error(
+          `Domain ${fqdn} already in use by another shop. Attempted by shop #${shop.id}`
+        )
       }
     }
   }
