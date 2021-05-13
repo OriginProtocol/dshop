@@ -1,7 +1,7 @@
 const fs = require('fs').promises
 const path = require('path')
 
-const { DEFAULT_CONTENT_TYPE } = require('./const')
+const { DSHOP_CACHE, DEFAULT_CONTENT_TYPE } = require('./const')
 const { getLogger } = require('./logger')
 
 const log = getLogger('utils.filesystem')
@@ -126,10 +126,33 @@ async function walkDir(dpath, depth = 0) {
   return files
 }
 
+/**
+ * Check if a given absolute path is within the given allowed paths
+ *
+ * @param abs {string} - the absolute path to check
+ * @param acls {Array<string>} - The allowed safe paths
+ */
+function isSafePath(abs, acls = [DSHOP_CACHE]) {
+  if (!acls || !acls.length) {
+    throw new Error('Now FS ACLs given')
+  }
+
+  const p = path.normalize(abs).toString()
+
+  for (const allowed of acls) {
+    if (p.startsWith(allowed)) {
+      return true
+    }
+  }
+
+  return false
+}
+
 module.exports = {
   isExt,
   stripExt,
   getExt,
   guessContentType,
-  walkDir
+  walkDir,
+  isSafePath
 }
