@@ -247,7 +247,7 @@ async function deploy({
       } else {
         // DNS Name exists, but isn't associated with a shop
         throw new Error(
-          `Domain ${fqdn} already in use by another shop. Attempted by shop #${shop.id}`
+          `Domain ${fqdn} already in use. Attempted by shop #${shop.id}`
         )
       }
     }
