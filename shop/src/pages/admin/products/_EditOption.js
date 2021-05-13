@@ -63,7 +63,6 @@ const EditOptions = ({
             }
             disabled={disabled}
           />
-
           {formState.optionsError && !formState.individualOpts.length
             ? Feedback('options')
             : null}
