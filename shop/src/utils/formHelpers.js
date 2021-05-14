@@ -1,4 +1,5 @@
 import React from 'react'
+import get from 'lodash/get'
 
 export const formInput = (state, setState, opts = {}) => (
   field,
@@ -13,7 +14,7 @@ export const formInput = (state, setState, opts = {}) => (
     className += ' is-invalid'
   }
 
-  let value = state[field] || ''
+  let value = get(state, field, '')
   if (inPercent && value !== '') {
     value = parseFloat((value / 100).toFixed(2))
   }

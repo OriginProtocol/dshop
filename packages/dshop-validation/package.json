@@ -19,8 +19,8 @@
     "lodash": "^4.17.20"
   },
   "devDependencies": {
-    "chai": "4.2.0",
-    "eslint": "7.17.0",
+    "chai": "4.3.0",
+    "eslint": "7.19.0",
     "mocha": "8.2.1",
     "prettier": "2.2.1"
   },

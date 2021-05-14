@@ -1,0 +1,18 @@
+dshopImage:
+  repository: gcr.io/origin-214503/dshop/dshop-backend
+  tag: "latest"
+
+issuerImage:
+  repository: gcr.io/origin-214503/dshop/cert-issuer-ingress
+  tag: "20210225114406"
+
+dshopCacheStorageRequestSize: 1T
+dshopIssuerIp: 34.105.16.10
+dshopIssuerReplicas: 2
+dshopStorageNFSPath: /dshop_cache
+
+# Resolver that needs to also see redis.
+# Likely .10 on the k8s subnet
+issuerNginxResolver: 10.64.0.10
+
+disableQueueProcessors: false

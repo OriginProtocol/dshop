@@ -9,16 +9,16 @@ const memoize = require('lodash/memoize')
  * @returns {function}
  */
 function memoizePromise(f, resolver = (k) => k) {
-  const memorizedFunction = memoize(async function (...args) {
+  const memoizedFunction = memoize(async function (...args) {
     try {
       return await f(...args)
     } catch (e) {
       // Function threw an exception. Do not cache the result.
-      memorizedFunction.cache.delete(resolver(...args))
+      memoizedFunction.cache.delete(resolver(...args))
       throw e
     }
   }, resolver)
-  return memorizedFunction
+  return memoizedFunction
 }
 
 module.exports = {

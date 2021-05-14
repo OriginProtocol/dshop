@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ template "dshopCacheStorage.fullname" . }}
+  labels:
+    {{- include "dshop.selectorLabels" . | nindent 8 }}
+spec:
+ capacity:
+   storage: {{ default "50Gi" .Values.dshopCacheStorageRequestSize }}
+ accessModes:
+ - ReadWriteMany
+ nfs:
+   path: {{ .Values.dshopStorageNFSPath }}
+   server: {{ .Values.dshopStorageIP }}

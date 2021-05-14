@@ -60,6 +60,23 @@ async function getEC2InstanceID() {
   return password
 }
 
+/**
+ * Gets the Azure vmId
+ */
+async function getAzureInstanceID() {
+  const url =
+    'http://169.254.169.254/metadata/instance/compute?api-version=2020-09-01'
+  const res = await fetch(url, {
+    headers: { Metadata: 'true' }
+  })
+  if (!res.ok) {
+    log.error(`GET ${url} returned ${res}`)
+    throw new Error(`Failed fetching Azure vmId.`)
+  }
+  const response = await res.json()
+  return response.vmId
+}
+
 module.exports = function (router) {
   router.get('/auth', async (req, res) => {
     const userCount = await Seller.count()
@@ -298,6 +315,30 @@ module.exports = function (router) {
           success: false,
           message:
             'Invalid password. Please use the EC2 instance ID as the password.'
+        })
+      }
+    }
+
+    if (process.env.AZURE_MARKETPLACE_DEPLOYMENT) {
+      /**
+       * In the case of a Azure marketplace deployment, the super-admin password
+       * is the vmId of the Virtual Machine.
+       */
+      let password
+      try {
+        password = await getAzureInstanceID()
+      } catch (e) {
+        return res.status(500).json({
+          success: false,
+          message:
+            'An error occurred while fetching super-admin credentials. Please contact support.'
+        })
+      }
+      if (req.body.password !== password) {
+        return res.status(401).json({
+          success: false,
+          message:
+            'Invalid password. Please use the Azure vmId as the password.'
         })
       }
     }

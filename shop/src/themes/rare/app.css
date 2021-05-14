@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  @font-face {
+    font-family: IBMPlexSans;
+    font-weight: 100;
+    src: url(fonts/IBMPlexSans-Thin.ttf);
+  }
+  @font-face {
+    font-family: IBMPlexSans;
+    font-weight: 200;
+    src: url(fonts/IBMPlexSans-ExtraLight.ttf);
+  }
+  @font-face {
+    font-family: IBMPlexSans;
+    font-weight: 300;
+    src: url(fonts/IBMPlexSans-Light.ttf);
+  }
+  @font-face {
+    font-family: IBMPlexSans;
+    font-weight: 400;
+    src: url(fonts/IBMPlexSans-Regular.ttf);
+  }
+  @font-face {
+    font-family: IBMPlexSans;
+    font-weight: 500;
+    src: url(fonts/IBMPlexSans-Medium.ttf);
+  }
+  @font-face {
+    font-family: IBMPlexSans;
+    font-weight: 600;
+    src: url(fonts/IBMPlexSans-SemiBold.ttf);
+  }
+  @font-face {
+    font-family: IBMPlexSans;
+    font-weight: 700;
+    src: url(fonts/IBMPlexSans-Bold.ttf);
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: #000;
+    color: #fff;
+  }
+}
+
+@layer components {
+  .btn-disabled {
+    @apply w-full text-center text-white font-bold p-3 text-lg border border-white rounded-full opacity-50 select-none;
+  }
+  .btn {
+    @apply w-full text-center text-white font-bold p-3 text-lg border border-white rounded-full transition-all duration-300 ease-in-out;
+  }
+  .btn:not(.disabled):hover {
+    @apply bg-white text-black;
+  }
+
+  .btn-primary {
+    @apply border-0 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 flex items-center justify-center;
+  }
+  .btn-primary.disabled {
+    @apply select-none;
+  }
+
+  .btn-primary:not(.disabled):hover {
+    @apply text-white opacity-75;
+  }
+
+  .btn-sm {
+    @apply py-1 text-sm w-auto px-4;
+  }
+
+  .gradient-border {
+    border: double 1px transparent;
+    border-radius: 25px;
+    background-image: linear-gradient(#000, #000),
+      linear-gradient(to right, #53ff96, #4b9dff, #f644ff);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+.ct-series-a .ct-line {
+  stroke: url(#gradient) !important;
+  stroke-width: 1px !important;
+}

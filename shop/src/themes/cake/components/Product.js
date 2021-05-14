@@ -7,6 +7,7 @@ import useCollections from 'utils/useCollections'
 import useCollection from 'utils/useCollection'
 import useConfig from 'utils/useConfig'
 import usePaymentDiscount from 'utils/usePaymentDiscount'
+import { isVariantOutOfStock } from 'utils/inventoryUtils'
 import Link from 'components/Link'
 import Caret from 'components/icons/Caret'
 
@@ -58,7 +59,7 @@ const Product = ({ match }) => {
         String(item.variant) === String(variant.id)
     )
   )
-  const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
+  const isOutOfStock = isVariantOutOfStock(config, product, variant)
 
   return (
     <>

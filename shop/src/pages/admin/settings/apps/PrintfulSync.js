@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import fbt, { FbtParam } from 'fbt'
+import fbt from 'fbt'
 import get from 'lodash/get'
 
 import useBackendApi from 'utils/useBackendApi'
@@ -7,14 +7,13 @@ import useProducts from 'utils/useProducts'
 import useShopConfig from 'utils/useShopConfig'
 import { useStateValue } from 'data/state'
 import ConfirmationModal from 'components/ConfirmationModal'
-import ProductImage from 'components/ProductImage'
 
 const AdminPrintfulSync = ({ buttonText, buttonClass, className = '' }) => {
   const { post } = useBackendApi({ authToken: true })
   const [{ admin }, dispatch] = useStateValue()
   const [refreshImages, setRefreshImages] = useState(false)
 
-  const { products, loading } = useProducts()
+  const { loading } = useProducts()
 
   const { shopConfig } = useShopConfig()
   const printfulSyncing = get(shopConfig, 'printfulSyncing')
@@ -64,8 +63,6 @@ const AdminPrintfulSync = ({ buttonText, buttonClass, className = '' }) => {
     )
   }
 
-  const internalProducts = products.filter((p) => !p.externalId)
-
   return (
     <ConfirmationModal
       className={`${buttonClass || 'btn btn-outline-primary'} ${className}`}
@@ -88,31 +85,6 @@ const AdminPrintfulSync = ({ buttonText, buttonClass, className = '' }) => {
         dispatch({ type: 'reload', target: ['shopConfig'] })
       }}
     >
-      {!internalProducts.length ? null : (
-        <>
-          <div className="mt-4">
-            <fbt desc="admin.settings.apps.printfulInternalProdcutsWarn">
-              The following{' '}
-              <FbtParam name="count">
-                <strong>{internalProducts.length}</strong>
-              </FbtParam>{' '}
-              products are not synced from Printful{' '}
-              <FbtParam name="linkbreak">
-                <br />
-              </FbtParam>{' '}
-              and will be removed after you do a sync.
-            </fbt>
-          </div>
-          <div className="internal-products-list">
-            {internalProducts.map((product) => (
-              <div key={product.id}>
-                <ProductImage product={product} className="mr-2" />
-                <strong>{product.title}</strong>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
       {!admin.superuser ? null : (
         <div className="form-row mt-3 justify-content-center">
           <label className="m-0">

@@ -72,15 +72,16 @@ const AdminProducts = () => {
     return result.length ? result.join(', ') : null
   }
 
-  const actions = get(shopConfig, 'printful') ? (
+  const actions = (
     <div className="actions">
-      <PrintfulSync
-        buttonClass="btn btn-primary"
-        buttonText={fbt('Sync Printful', 'Sync Printful')}
-      />
-    </div>
-  ) : (
-    <div className="actions">
+      {!get(shopConfig, 'printful') ? null : (
+        <div className="actions">
+          <PrintfulSync
+            buttonClass="btn btn-outline-primary"
+            buttonText={fbt('Sync Printful', 'Sync Printful')}
+          />
+        </div>
+      )}
       <Link
         to="/admin/products/new"
         className="btn btn-primary"

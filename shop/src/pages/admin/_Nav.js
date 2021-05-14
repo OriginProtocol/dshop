@@ -12,7 +12,7 @@ import PreviewBanner from 'components/PreviewBanner'
 import AccountSelector from './_AccountSelector'
 import User from './_User'
 import NewShop from './_NewShop'
-import LiveChat from './_LiveChat'
+//import LiveChat from './_LiveChat'
 
 const Nav = ({ newShop, setNewShop, only }) => {
   const [{ admin }] = useStateValue()
@@ -63,8 +63,8 @@ const Nav = ({ newShop, setNewShop, only }) => {
             />
           </div>
         )}
-        <LiveChat className="ml-auto" />
-        <User className="ml-4" />
+        {/*<LiveChat className="ml-auto" />*/}
+        <User className="ml-auto" />
       </div>
       <NewShop shouldShow={newShop} onClose={() => setNewShop(false)} />
     </nav>

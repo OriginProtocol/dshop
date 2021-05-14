@@ -12,6 +12,7 @@ import Link from 'components/Link'
 import Products from './_Products'
 import ProductOptions from '../../shared/ProductOptions'
 import Gallery from '../../shared/Gallery'
+import { isVariantOutOfStock } from '../../../utils/inventoryUtils'
 
 const Product = ({ match }) => {
   const { config } = useConfig()
@@ -32,7 +33,7 @@ const Product = ({ match }) => {
         String(item.variant) === String(variant.id)
     )
   )
-  const isOutOfStock = config.inventory && Number(variant.quantity) <= 0
+  const isOutOfStock = isVariantOutOfStock(config, product, variant)
 
   return (
     <div className="container mt-8 sm:mt-16">

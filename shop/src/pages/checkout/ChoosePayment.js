@@ -7,6 +7,7 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import formatPrice from 'utils/formatPrice'
 import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
+import fetchProductStock from 'data/fetchProductStock'
 import { Countries } from '@origin/utils/Countries'
 
 import Link from 'components/Link'
@@ -84,6 +85,8 @@ const ChoosePayment = () => {
   const [{ cart, referrer }, dispatch] = useStateValue()
   const currencyOpts = useCurrencyOpts()
 
+  const itemsOutOfStock = cart.items.some((i) => i.outOfStock)
+
   const defaultButtonText = (
     <fbt desc="checkout.payment.amount">
       Pay{' '}
@@ -140,7 +143,7 @@ const ChoosePayment = () => {
 
   const Feedback = formFeedback(formState)
 
-  const disabled = paymentState.disabled || !paymentMethod
+  const disabled = paymentState.disabled || !paymentMethod || itemsOutOfStock
   const hideBillingAddress = paymentMethod !== 'stripe'
 
   function onSubmit(e) {
@@ -161,7 +164,31 @@ const ChoosePayment = () => {
       loading: true,
       buttonText: fbt('Processing...', 'Processing...')
     })
-    addData({ ...cart, referrer }, config).then((encryptedData) => {
+    addData({ ...cart, referrer }, config).then(async (encryptedData) => {
+      if (config.inventory) {
+        const { products: stockData } = await fetchProductStock(null, config)
+        let outOfStockItems = false
+        cart.items.forEach((item) => {
+          const stockItem = stockData.find((s) => s.productId === item.product)
+          if (!stockItem) return
+          const variantStock = get(stockItem, `variantsStock[${item.variant}]`)
+          if (typeof variantStock === 'number' && variantStock > 0) return
+          const productStock = get(stockItem, `stockLeft`)
+          if (typeof productStock === 'number' && variantStock > 0) return
+          if (variantStock === 0 || productStock === 0) {
+            outOfStockItems = true
+            dispatch({ type: 'setCartOutOfStock', item })
+          }
+        })
+        if (outOfStockItems) {
+          setPaymentState({
+            disabled: false,
+            loading: false,
+            buttonText: defaultButtonText
+          })
+          return
+        }
+      }
       setPaymentState({
         loading: false,
         encryptedData,
@@ -174,7 +201,13 @@ const ChoosePayment = () => {
 
   return (
     <form onSubmit={onSubmit}>
-      {cart.total === 0 ? (
+      {itemsOutOfStock ? (
+        <div className="checkout-payment-method">
+          <div className="text-danger p-3">
+            Sorry, some items in your cart are out of stock.
+          </div>
+        </div>
+      ) : cart.total === 0 ? (
         <div className="checkout-payment-method">
           <NoPaymentDue {...paymentState} onChange={setPaymentState} />
         </div>
