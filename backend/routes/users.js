@@ -205,7 +205,7 @@ module.exports = function (router) {
     }
 
     return res.send({
-      success: sent
+      success: !!sent
     })
   })
 }
