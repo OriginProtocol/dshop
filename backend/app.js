@@ -13,7 +13,7 @@ const { getConfig } = require('./utils/encryptedConfig')
 const { sequelize, Network } = require('./models')
 const hostCache = require('./utils/hostCache')
 const { getLogger } = require('./utils/logger')
-const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
+const { IS_PROD, DSHOP_CACHE, SESSION_SECRET } = require('./utils/const')
 const { Sentry, sentryEventPrefix } = require('./sentry')
 const { scheduleDNSVerificationJob } = require('./queues/dnsStatusProcessor')
 
@@ -57,7 +57,8 @@ app.use(
 const sessionStore = new SequelizeStore({ db: sequelize })
 app.use(
   session({
-    secret: 'keyboard cat', // TODO
+    // env var SESSION_SECRET needs to be defined for any multi-instance deployments
+    secret: SESSION_SECRET,
     resave: true,
     saveUninitialized: false,
     cookie: {
