@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react'
 import fetch from 'cross-fetch'
 
 const Web3Utils = require('web3-utils')
@@ -11,32 +10,22 @@ const Web3Utils = require('web3-utils')
  * @ returns <Promise<string>> if 'url' passes the test; <Promise<undefined>> if it fails.
  */
 const CheckForImage = (url) => {
-  return fetch(url)
-    .then((res) => {
-      if (res.status >= 400) {
-        throw new Error(`HTTPS response status code: ${res.status}`)
-      }
+  return fetch(url).then((res) => {
+    const responseType = res.headers.get('content-type')
 
-      const responseType = res.headers.get('content-type')
-
-      const acceptableTypes = ['image/png', 'image/jpeg', 'image/svg+xml']
-      let isAcceptable = false
-      for (const _type of acceptableTypes) {
-        if (_type == responseType) {
-          isAcceptable = true
-          break
-        }
+    const acceptableTypes = ['image/png', 'image/jpeg', 'image/svg+xml']
+    let isAcceptable = false
+    for (const _type of acceptableTypes) {
+      if (_type == responseType) {
+        isAcceptable = true
+        break
       }
+    }
 
-      if (isAcceptable) {
-        return url
-      } else {
-        throw new Error(`The URL may not be returning an image.`)
-      }
-    })
-    .catch((err) =>
-      console.log(`Error fetching token image from ${url}: ${err}`)
-    )
+    if (isAcceptable) {
+      return url
+    }
+  })
 }
 /**
  * @param tokenChecksumAddress: <string>
@@ -54,7 +43,7 @@ const TryTrustWallet = (tokenChecksumAddress) => {
 /**
  * @param tokenChecksumAddress: <string>
  * @returns <Promise<string>> if tokenChecksumAddress has a valid Token Image URL in the Ethereum Lists repository. The string will be the URL for the token image.
- * @returns <Promise<undefined> if errors are encountered. Errors are logged to the console.
+ * @returns <Promise<undefined>> if errors are encountered. Errors are logged to the console.
  */
 const TryEthLists = (tokenChecksumAddress) => {
   const tokenDataUrl = `https://raw.githubusercontent.com/ethereum-lists/tokens/master/tokens/eth/${tokenChecksumAddress}.json`
@@ -62,33 +51,25 @@ const TryEthLists = (tokenChecksumAddress) => {
   // getLogoSource: <Promise<string>> if tokenChecksumAddress has valid data in the EthLists repo [https://github.com/ethereum-lists/tokens#tokens]
   const getLogoSource = fetch(tokenDataUrl)
     .then((response) => {
-      if (response.status >= 400) {
-        throw new Error(`HTTPS response status code: ${response.status}`)
-      }
       return response.json() //token data
     })
     .then((data) => data.logo.src)
 
-  return getLogoSource
-    .then((res) => {
-      //The logo source URL is an optional parameter for token data on EthLists. Check for this possibility.
-      if (res.length) {
-        return CheckForImage(res)
-      } else throw new Error(`Error reading logo URL from ${tokenDataUrl}.`)
-    })
-    .catch((err) =>
-      console.log(
-        `Cannot find token image using EthLists. Details:\nToken data URL: ${tokenDataUrl}\n${err}`
-      )
-    )
+  return getLogoSource.then((res) => {
+    //The logo source URL is an optional parameter for token data on EthLists. Check for this possibility.
+    if (res.length) {
+      return CheckForImage(res)
+    }
+  })
 }
 
 /**
- * @prop address: <string> ERC-20 token address to find an image for
+ * @param address: <string> ERC-20 token address to find an image for
+ * @returns tokenImageUrl: <Promise<string>>
  */
-const SourceTokenImage = ({ address }) => {
+const useTokenImage = (address) => {
   const checksumAddress = Web3Utils.toChecksumAddress(address)
-  const [tokenImageUrl, setTokenImageUrl] = useState('')
+  let tokenImageUrl = ''
 
   // attempts: <Array<Promise>>
   const attempts = [
@@ -97,22 +78,21 @@ const SourceTokenImage = ({ address }) => {
   ]
 
   //Ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled
-  useEffect(() => {
-    Promise.allSettled(attempts)
-      .then((resultArray) => {
-        for (const outcome of resultArray) {
-          if (outcome.status == 'fulfilled' && outcome.value) {
-            setTokenImageUrl(outcome.value)
-            break
-          }
+  return Promise.allSettled(attempts)
+    .then((resultArray) => {
+      for (const outcome of resultArray) {
+        if (outcome.status == 'fulfilled' && outcome.value) {
+          tokenImageUrl = outcome.value
+          break
         }
-      })
-      .catch((err) => {
-        console.log(err)
-      })
-  }, [tokenImageUrl])
-
-  return <img src={tokenImageUrl} />
+      }
+    })
+    .then(() => {
+      return tokenImageUrl
+    })
+    .catch((err) => {
+      console.error(err)
+    })
 }
 
-export default SourceTokenImage
+export default useTokenImage

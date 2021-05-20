@@ -2,10 +2,10 @@ import React from 'react'
 import fbt from 'fbt'
 
 import usePrice from 'utils/usePrice'
-import SourceTokenImage from './SourceTokenImage'
 
 const TokenList = ({
   acceptedTokens,
+  tokenImageUrls,
   activeToken,
   setActiveToken,
   loading,
@@ -30,7 +30,7 @@ const TokenList = ({
         </tr>
       </thead>
       <tbody>
-        {acceptedTokens.map((token) => {
+        {acceptedTokens.map((token, index) => {
           const isActive = activeToken.id === token.id
           return (
             <tr key={token.id} onClick={() => setActiveToken(token)}>
@@ -43,7 +43,7 @@ const TokenList = ({
                   onChange={() => setActiveToken(token)}
                 />
                 <div className={`token-logo${isActive ? ' active' : ''}`}>
-                  <SourceTokenImage address={token.address} />
+                  <img src={tokenImageUrls[index]} />
                 </div>
                 <div>{token.name}</div>
               </td>
