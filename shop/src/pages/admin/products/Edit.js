@@ -329,7 +329,6 @@ const EditProduct = () => {
 
       // Clear memoize cache for existing product
       fetchProduct.cache.delete(`${config.dataSrc}-${product.id}`)
-      fetchProductStock.cache.clear()
 
       dispatch({
         type: 'toast',
