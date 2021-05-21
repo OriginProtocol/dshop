@@ -31,6 +31,7 @@ const { createSeller } = require('../utils/sellers')
 const { decryptConfig } = require('../utils/encryptedConfig')
 const { configureShopDNS } = require('../logic/deploy/dns')
 const { DSHOP_CACHE, DEFAULT_INFRA_RESOURCES } = require('../utils/const')
+const { isSafePath } = require('../utils/filesystem')
 const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
 const { readProductsFile } = require('../logic/products')
@@ -402,6 +403,13 @@ module.exports = function (router) {
         const allFiles = Array.isArray(files.file) ? files.file : [files.file]
         try {
           for (const file of allFiles) {
+            const dest = `${uploadDir}/${file.name}`
+
+            // Verify the given path is safe
+            if (!isSafePath(dest, [uploadDir]) || file.name.includes('..')) {
+              return res.json({ success: false, reason: 'invalid-filename' })
+            }
+
             await new Promise((resolve, reject) => {
               fs.stat(file.path, (err, fstat) => {
                 if (err) return reject(err)
@@ -409,7 +417,7 @@ module.exports = function (router) {
                   return reject(`${file.path} does not exist or is not a file`)
                 }
 
-                mv(file.path, `${uploadDir}/${file.name}`, (err) => {
+                mv(file.path, dest, (err) => {
                   return err ? reject(err) : resolve()
                 })
               })
@@ -454,6 +462,15 @@ module.exports = function (router) {
           return res.json({ success: false, reason: 'too-many-files' })
         }
 
+        const dest = `${uploadDir}/${file.name}`
+
+        // Verify the given path is safe
+        if (!isSafePath(dest, [uploadDir]) || file.name.includes('..')) {
+          return res.json({ success: false, reason: 'invalid-filename' })
+        }
+
+        const relative = dest.replace(uploadDir, '').replace(/^\//, '')
+
         try {
           await new Promise((resolve, reject) => {
             fs.stat(file.path, (err, fstat) => {
@@ -462,7 +479,8 @@ module.exports = function (router) {
                 return reject(`${file.path} does not exist or is not a file`)
               }
 
-              mv(file.path, `${uploadDir}/${file.name}`, (err) => {
+              console.log('MOVING FILE TO: ', dest)
+              mv(file.path, dest, (err) => {
                 return err ? reject(err) : resolve()
               })
             })
@@ -470,7 +488,7 @@ module.exports = function (router) {
 
           const raw = fs.readFileSync(`${uploadDir}/config.json`).toString()
           const config = JSON.parse(raw)
-          config[fields.type] = file.name
+          config[fields.type] = relative
           if (fields.type === 'logo') {
             config.title = ''
           }
@@ -483,7 +501,7 @@ module.exports = function (router) {
             hasChanges: true
           })
 
-          res.json({ success: true, path: file.name })
+          res.json({ success: true, path: relative })
         } catch (e) {
           log.error(e)
           res.json({ success: false })
@@ -645,7 +663,6 @@ module.exports = function (router) {
     if (!shop) {
       return res.json({ success: false, reason: 'shop-not-found' })
     }
-    const dataDir = authToken
     const { networkId } = req.body
     let resourceSelection = req.body.resourceSelection
 
@@ -678,7 +695,7 @@ module.exports = function (router) {
       {
         uuid,
         networkId: networkId ? networkId : network.networkId,
-        subdomain: dataDir,
+        subdomain: shop.hostname,
         shopId: shop.id,
         resourceSelection
       },

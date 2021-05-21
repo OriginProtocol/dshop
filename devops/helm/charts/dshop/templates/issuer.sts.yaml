@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "issuer.fullname" . }}
+  labels:
+    {{- include "dshop.selectorLabels" . | nindent 8 }}
+spec:
+  replicas: {{ default 1 .Values.dshopIssuerReplicas }}
+  selector:
+    matchLabels:
+      app: {{ template "issuer.fullname" . }}
+  serviceName: {{ template "issuer.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "issuer.fullname" . }}
+        chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+        release: "{{ .Release.Name }}"
+    spec:
+      containers:
+      - name: issuer
+        image: "{{ .Values.issuerImage.repository }}:{{ default "latest" .Values.issuerImage.tag }}"
+        imagePullPolicy: {{ .Values.issuerImage.pullPolicy }}
+        ports:
+          - containerPort: 80
+        env:
+          - name: SERVER_ENDPOINT
+            value: "{{ template "dshop.fullname" . }}-balancer.{{ default "default" .Release.Namespace }}.svc.cluster.local:3000"
+          - name: REDIS_HOST
+            value: "{{ template "dshopRedis.fullname" . }}-0.{{ template "dshopRedis.fullname" . }}.{{ default "default" .Release.Namespace }}.svc.cluster.local"
+          - name: REDIS_PORT
+            value: "6379"
+          - name: REDIS_DB
+            value: "{{ default "0" .Values.issuerRedisDB }}"
+          - name: NGINX_RESOLVER_IP
+            value: "{{ .Values.issuerNginxResolver }}"
+        volumeMounts:
+          - name: {{ template "issuer.fullname" . }}-data
+            mountPath: /etc/resty-auto-ssl
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ template "issuer.fullname" . }}-data
+    spec:
+      storageClassName: "standard"
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 8Gi

@@ -4,6 +4,7 @@ import FlexSearch from 'flexsearch'
 import get from 'lodash/get'
 import set from 'lodash/set'
 import pick from 'lodash/pick'
+import omit from 'lodash/omit'
 import cloneDeep from 'lodash/cloneDeep'
 import isEqual from 'lodash/isEqual'
 
@@ -126,6 +127,7 @@ const reducer = (state, action) => {
       externalProductId: action.product.externalId,
       externalVariantId: action.variant.externalId,
       restrictShippingTo: action.product.restrictShippingTo,
+      nft: action.product.nft,
       maxQuantity
     }
     const { product, variant } = item
@@ -164,6 +166,9 @@ const reducer = (state, action) => {
     newState = set(newState, 'shippingZones', [])
     newState = set(newState, 'cart.shipping')
     newState = set(newState, 'cart.taxRate')
+  } else if (action.type === 'setCartOutOfStock') {
+    const x = get(state, 'cart.items').findIndex((i) => isEqual(i, action.item))
+    newState = set(newState, `cart.items[${x}].outOfStock`, true)
   } else if (action.type === 'setProducts') {
     newState = set(newState, `products`, action.products)
     const index = FlexSearch.create()
@@ -197,6 +202,8 @@ const reducer = (state, action) => {
     })
   } else if (action.type === 'setDiscounts') {
     newState = set(newState, `discounts`, action.discounts)
+  } else if (action.type === 'setWallet') {
+    newState = set(newState, `cart.userInfo.wallet`, action.wallet)
   } else if (action.type === 'updateUserInfo') {
     const data = pick(
       action.info,
@@ -210,6 +217,7 @@ const reducer = (state, action) => {
       'province',
       'country',
       'zip',
+      'wallet',
       'billingDifferent',
       'billingFirstName',
       'billingLastName',
@@ -347,7 +355,11 @@ const reducer = (state, action) => {
 
   const activeShop = get(newState, 'config.activeShop')
   if (activeShop) {
-    const storeFields = pick(newState, ['cart', 'affiliate', 'referrer'])
+    const storeFields = cloneDeep(
+      pick(newState, ['cart', 'affiliate', 'referrer'])
+    )
+    const items = newState.cart.items.map((i) => omit(i, 'outOfStock'))
+    set(storeFields, 'cart.items', items)
     localStorage[`${activeShop}CartData`] = JSON.stringify(storeFields)
   }
 

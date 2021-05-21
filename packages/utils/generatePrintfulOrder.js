@@ -1,13 +1,22 @@
 const get = require('lodash/get')
 const { Countries } = require('./Countries')
 
+/**
+ * Generates the data for calling the Printful API to place an order.
+ * For reference, see https://www.printful.com/docs/orders
+ *
+ * @param {models.Order||Object} DB order if called by the backend, or order data returned by the routes/orders/:orderId if called by the front-end.
+ * @param {Object} printfulIds: Data read from the shop's printful-ids.json file.
+ * @param {boolean} draft: If true, the order is created but not yet submitted for fullfilment and can still be edited.
+ * @returns {{}|{retail_costs: {total: string, shipping: string, subtotal: string, discount: string, currency: string, tax: string}, draft: *, recipient: {zip: *, country_code: *, phone: *, address2: *, city: *, state_name: *, address1: *, name: string, country_name: *, state_code: *}, external_id: *, items: *}}
+ */
 function generatePrintfulOrder(order, printfulIds, draft) {
   const data = order.data
   if (!data || !data.userInfo) return {}
 
   const printfulData = {
     draft,
-    external_id: order.orderId,
+    external_id: order.shortId,
     recipient: {
       name: `${data.userInfo.firstName} ${data.userInfo.lastName}`,
       phone: data.userInfo.phone,

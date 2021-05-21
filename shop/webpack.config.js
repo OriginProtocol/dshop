@@ -2,7 +2,7 @@ require('dotenv').config()
 const path = require('path')
 const webpack = require('webpack')
 const fs = require('fs')
-const SriPlugin = require('webpack-subresource-integrity')
+const { SubresourceIntegrityPlugin } = require('webpack-subresource-integrity')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
@@ -194,10 +194,7 @@ const webpackConfig = {
     new webpack.ProvidePlugin({
       process: 'process/browser'
     }),
-    new SriPlugin({
-      hashFuncNames: ['sha256', 'sha384'],
-      enabled: isProduction
-    }),
+    new SubresourceIntegrityPlugin(),
     new HtmlWebpackPlugin({
       template: 'public/template.html',
       inject: false,

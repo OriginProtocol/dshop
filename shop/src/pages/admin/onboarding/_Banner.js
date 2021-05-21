@@ -1,16 +1,70 @@
 import React, { useState } from 'react'
 import fbt, { FbtParam } from 'fbt'
 import get from 'lodash/get'
+import Clipboard from 'components/icons/Clipboard'
+import CheckCircle from 'components/icons/CheckCircle'
 
-const Banner = ({ totalTasks, completedTasks }) => {
+const Banner = ({ totalTasks, completedTasks, shopDomain }) => {
   const [hideBanner, setHideBanner] = useState(
     Boolean(get(localStorage, 'hideOnboardingBanner', false))
   )
+  const [storeLinkCopied, setStoreLinkCopied] = useState(false)
 
   if (hideBanner) return null
 
   const allComplete = totalTasks === completedTasks
   const halfComplete = completedTasks > totalTasks / 2
+
+  /**
+   * ShareActions: Displays a 'Copy to Clipboard' button on the Banner. If the user clicks on the button, the store link is copied
+   * to the clipboard, and the button turns into a checkmark to indicate success.
+   * @prop clicked: <boolean> should be true if the user clicks the 'Copy to Clipboard' button
+   *
+   * Button and Tooltip references:
+   *  https://getbootstrap.com/docs/5.0/components/buttons/
+   *  https://getbootstrap.com/docs/5.0/components/tooltips/
+   *
+   * Clipboard reference:
+   *  https://developer.mozilla.org/en-US/docs/Web/API/Clipboard
+   */
+  const ShareActions = ({ clicked }) => {
+    if (!clicked) {
+      return (
+        <button
+          className="btn btn-outline-light btn-sm copy-button"
+          data-bs-toggle="tooltip"
+          data-bs-placement="right"
+          title="Copy to Clipboard"
+          onClick={() => {
+            navigator.clipboard
+              .writeText(`${shopDomain}`)
+              .then(() => {
+                setStoreLinkCopied(true)
+                window.setTimeout(() => {
+                  setStoreLinkCopied(false)
+                }, 3000)
+              })
+              .catch((err) => {
+                console.log(err)
+              })
+          }}
+        >
+          <Clipboard />
+        </button>
+      )
+    } else {
+      return (
+        <span
+          tabIndex="0"
+          data-bs-toggle="tooltip"
+          data-bs-placement="right"
+          title="Copied!"
+        >
+          <CheckCircle />
+        </span>
+      )
+    }
+  }
 
   return (
     <div className="onboarding-banner">
@@ -58,6 +112,16 @@ const Banner = ({ totalTasks, completedTasks }) => {
         </fbt>
       </div>
 
+      {halfComplete ? (
+        <div className="desc mt-4">
+          <fbt desc="component.onboarding.Banner.storeUrl">Store URL:</fbt>
+          <span className="share-link">
+            {`${shopDomain}`}
+            <ShareActions clicked={storeLinkCopied} />
+          </span>
+        </div>
+      ) : null}
+
       <div
         className="dismiss-button"
         onClick={() => {
@@ -101,6 +165,31 @@ require('react-styl')(`
         color: #e0efff
         &:hover
           color: #fff
+
+      .share-link
+        font-weight: bold
+        margin-left: 0.2rem
+
+      .copy-button
+        margin-left: 0.3rem
+        padding-top: 0.1rem
+        padding-bottom: 0.4rem
+        padding-left: 0.3rem
+        padding-right: 0.3rem
+        .bi.bi-clipboard
+          overflow: visible
+          path
+            stroke: #e0efff
+            stroke-width: 0.2
+
+      .icon.icon-check-circle
+        margin-left: 0.5rem
+        overflow: visible
+        height: 1.5rem
+        fill: #54d693
+        path
+          stroke: #fff
+          stroke-width: 4
 
     .dismiss-button
       cursor: pointer

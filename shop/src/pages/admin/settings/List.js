@@ -100,7 +100,7 @@ const List = () => {
               Publish your shop to make it visible to public
             </fbt>
           }
-          link="/admin/settings/publish"
+          link="/admin/settings/deployments"
         />
         <SettingsListItem
           icon={<Icons.Advanced />}
