@@ -663,7 +663,6 @@ module.exports = function (router) {
     if (!shop) {
       return res.json({ success: false, reason: 'shop-not-found' })
     }
-    const dataDir = authToken
     const { networkId } = req.body
     let resourceSelection = req.body.resourceSelection
 
@@ -696,7 +695,7 @@ module.exports = function (router) {
       {
         uuid,
         networkId: networkId ? networkId : network.networkId,
-        subdomain: dataDir,
+        subdomain: shop.hostname,
         shopId: shop.id,
         resourceSelection
       },

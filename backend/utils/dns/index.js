@@ -109,6 +109,30 @@ function dnsResolve(name, rrtype) {
 }
 
 /**
+ * Check if a given name has a CNAME or A record
+ *
+ * @param name {string} - The DNS name to lookup
+ * @returns {Promise<boolean>} - If a CNAME or A record exists for name
+ */
+async function hasCNAMEOrA(name) {
+  try {
+    await dnsResolve(name, 'A')
+    return true
+  } catch {
+    /* pass */
+  }
+
+  try {
+    await dnsResolve(name, 'CNAME')
+    return true
+  } catch {
+    /* pass */
+  }
+
+  return false
+}
+
+/**
  * Does the given name have SOA records?
  *
  * @param v {string} - The DNS name to check
@@ -372,6 +396,7 @@ module.exports = {
   isValidTLD,
   hasNS,
   hasSOA,
+  hasCNAMEOrA,
   dnsResolve,
   verifyDNS
 }
