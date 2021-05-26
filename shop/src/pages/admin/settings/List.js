@@ -43,6 +43,15 @@ const List = () => {
           link="/admin/settings/appearance"
         />
         <SettingsListItem
+          title={<fbt desc="Legal">Legal</fbt>}
+          desc={
+            <fbt desc="admin.Settings.legalDesc">
+              Detail your shop's policies
+            </fbt>
+          }
+          link="/admin/settings/legal"
+        />
+        <SettingsListItem
           icon={<Icons.Card />}
           title={<fbt desc="Payments">Payments</fbt>}
           desc={

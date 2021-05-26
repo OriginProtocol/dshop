@@ -323,7 +323,7 @@ const AppearanceSettings = () => {
                       'Language'
                     ]
                   },
-                  { name: 'links', items: ['Link', 'Unlink', 'Anchor'] },
+                  { name: 'links', items: ['Link', 'Unlink'] },
                   {
                     name: 'insert',
                     items: [
