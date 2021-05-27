@@ -43,6 +43,7 @@ const List = () => {
           link="/admin/settings/appearance"
         />
         <SettingsListItem
+          icon={<Icons.Legal />}
           title={<fbt desc="Legal">Legal</fbt>}
           desc={
             <fbt desc="admin.Settings.legalDesc">
