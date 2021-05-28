@@ -10,6 +10,7 @@ const currencies = [
   'ETH',
   'DAI',
   'OGN',
+  'BAT',
   // Fiat:
   'KRW',
   'SGD',
