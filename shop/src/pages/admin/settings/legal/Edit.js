@@ -13,14 +13,12 @@ import { useStateValue } from 'data/state'
 import Link from 'components/Link'
 import AdminConfirmationModal from 'components/ConfirmationModal'
 
-function reducer(state, newState) {
-  return { ...state, ...newState }
-}
+// function reducer(state, newState) {
+//   return { ...state, ...newState }
+// }
 
-const configFields = [
-  'about'
-]
-const placeholder = "Sample text"
+const configFields = ['about']
+const placeholder = 'Sample text'
 
 const ABOUT_FILENAME = 'about.html'
 
@@ -28,37 +26,33 @@ const LegalSettings = () => {
   const { config } = useConfig()
   const [{ admin }, dispatch] = useStateValue()
   const { postRaw, post } = useBackendApi({ authToken: true })
-  const [state, setState] = useReducer(reducer, { domain: '' })
+  const [state, setState] = useState({})
   const input = formInput(state, (newState) =>
     setState({ ...newState, hasChanges: true })
   )
   const Feedback = formFeedback(state)
   const [saving, setSaving] = useState(false)
-  const [aboutText, setAboutText] = useState('')
+  const [policies, setPolicies] = useState([
+    ['default policy heading', 'default policy text']
+  ])
 
-  useEffect(() => {
-    setState({
-      ...pick(config, configFields)
-    })
-  }, [config])
+  // useEffect(() => {
+  //   let timeout
+  //   if (config.about) {
+  //     fetch(`${config.dataSrc}${config.about}`)
+  //       .then((res) => {
+  //         if (!res.ok) throw new Error('Failed to fetch')
+  //         return res.text()
+  //       })
+  //       // NOTE: CKEditor takes a few seconds to load
+  //       .then((body) => (timeout = setTimeout(() => setAboutText(body), 2000)))
+  //       .catch((err) => {
+  //         console.error('Failed to load about page', err)
+  //       })
+  //   }
 
-  useEffect(() => {
-    let timeout
-    if (config.about) {
-      fetch(`${config.dataSrc}${config.about}`)
-        .then((res) => {
-          if (!res.ok) throw new Error('Failed to fetch')
-          return res.text()
-        })
-        // NOTE: CKEditor takes a few seconds to load
-        .then((body) => (timeout = setTimeout(() => setAboutText(body), 2000)))
-        .catch((err) => {
-          console.error('Failed to load about page', err)
-        })
-    }
-
-    return () => clearTimeout(timeout)
-  }, [config && config.about])
+  //   return () => clearTimeout(timeout)
+  // }, [config && config.about])
 
   const actions = (
     <div className="actions">
@@ -97,79 +91,76 @@ const LegalSettings = () => {
   )
 
   // Seperating out a component for CKEditor that has 'default' options set on the toolbar. To customize CKEditor's toolbar, see https://ckeditor.com/docs/ckeditor4/latest/features/toolbar.html
-  const Editor = ({data, onChange}) => {
-    return <CKEditor data={data} config={{
-            toolbar: [
-              {
-                name: 'clipboard',
-                items: [
-                  'Cut',
-                  'Copy',
-                  'Paste',
-                  'PasteText',
-                  '-',
-                  'Undo',
-                  'Redo'
-                ]
-              },
-              { name: 'editing', items: ['Find', 'Replace', 'Scayt'] },
-              { name: 'forms', items: ['Button', 'ImageButton'] },
-              '/',
-              {
-                name: 'basicstyles',
-                items: [
-                  'Bold',
-                  'Italic',
-                  'Underline',
-                  'Strike',
-                  'Subscript',
-                  'Superscript',
-                  '-',
-                  'CopyFormatting',
-                  'RemoveFormat'
-                ]
-              },
-              {
-                name: 'paragraph',
-                items: [
-                  'NumberedList',
-                  'BulletedList',
-                  '-',
-                  'Outdent',
-                  'Indent',
-                  '-',
-                  'Blockquote',
-                  'CreateDiv',
-                  '-',
-                  'JustifyLeft',
-                  'JustifyCenter',
-                  'JustifyRight',
-                  'JustifyBlock',
-                  '-',
-                  'Language'
-                ]
-              },
-              { name: 'links', items: ['Link', 'Unlink'] },
-              {
-                name: 'insert',
-                items: [
-                  'Image',
-                  'Table',
-                  'HorizontalRule',
-                  'Smiley',
-                  'SpecialChar'
-                ]
-              },
-              '/',
-              {
-                name: 'styles',
-                items: ['Styles', 'Format', 'Font', 'FontSize']
-              },
-              { name: 'colors', items: ['TextColor', 'BGColor'] },
-              { name: 'tools', items: ['Maximize'] }
-            ]
-          }}
-          onChange={onChange} />
+  const Editor = ({ data, onChange }) => {
+    return (
+      <CKEditor
+        data={data}
+        config={{
+          toolbar: [
+            {
+              name: 'clipboard',
+              items: ['Cut', 'Copy', 'Paste', 'PasteText', '-', 'Undo', 'Redo']
+            },
+            { name: 'editing', items: ['Find', 'Replace', 'Scayt'] },
+            { name: 'forms', items: ['Button', 'ImageButton'] },
+            '/',
+            {
+              name: 'basicstyles',
+              items: [
+                'Bold',
+                'Italic',
+                'Underline',
+                'Strike',
+                'Subscript',
+                'Superscript',
+                '-',
+                'CopyFormatting',
+                'RemoveFormat'
+              ]
+            },
+            {
+              name: 'paragraph',
+              items: [
+                'NumberedList',
+                'BulletedList',
+                '-',
+                'Outdent',
+                'Indent',
+                '-',
+                'Blockquote',
+                'CreateDiv',
+                '-',
+                'JustifyLeft',
+                'JustifyCenter',
+                'JustifyRight',
+                'JustifyBlock',
+                '-',
+                'Language'
+              ]
+            },
+            { name: 'links', items: ['Link', 'Unlink'] },
+            {
+              name: 'insert',
+              items: [
+                'Image',
+                'Table',
+                'HorizontalRule',
+                'Smiley',
+                'SpecialChar'
+              ]
+            },
+            '/',
+            {
+              name: 'styles',
+              items: ['Styles', 'Format', 'Font', 'FontSize']
+            },
+            { name: 'colors', items: ['TextColor', 'BGColor'] },
+            { name: 'tools', items: ['Maximize'] }
+          ]
+        }}
+        onChange={onChange}
+      />
+    )
   }
 
   return (
@@ -227,26 +218,59 @@ const LegalSettings = () => {
       <div className="form-group">
         <label>
           <fbt desc="admin.settings.legal">
-            Add policy-related pages to your store e.g., Terms and Conditions, Privacy Policy, Conditions of Sale, etc.
+            Add policy-related pages to your store
           </fbt>
           <span>
             (
-            <fbt desc="admin.settings.appearance.aboutStoreDesc">
-              visible on the footer of your website
+            <fbt desc="admin.settings.appearance.legalSettingsDesc">
+              links will appear on the footer of your website
             </fbt>
             )
           </span>
         </label>
-        <label>
-          <fbt desc="admin.settings.legal.title0">
-            Title
-          </fbt>
-          <input {...input(placeholder)} />
-        </label>
-        <Editor
-          data={aboutText}
-          onChange={(e) => setAboutText(e.editor.getData())}
-        />
+        {policies.reduce((accumulator, currentVal, index) => {
+          return (
+            <>
+              <div className="form-group">
+                <label>
+                  <fbt desc="admin.settings.legal.title">Title</fbt>
+                </label>
+                <div>
+                  <input
+                    placeholder={
+                      index === 0
+                        ? 'Terms and Conditions'
+                        : index === 1
+                        ? 'Privacy Policy'
+                        : ''
+                    }
+                    name={`title${index}`}
+                    value={currentVal[0]}
+                    onChange={(e) => {
+                      setPolicies((policies) => {
+                        const updatedPolicyTitle = e.target.value
+                        policies[index].splice(0, 1, updatedPolicyTitle)
+                        return policies
+                      })
+                      setState({ hasChanges: true })
+                    }}
+                  />
+                </div>
+                <Editor
+                  data={currentVal[1]}
+                  onChange={(e) => {
+                    setPolicies((policies) => {
+                      const updatedPolicyText = e.editor.getData()
+                      policies[index].splice(1, 1, updatedPolicyText)
+                      return policies
+                    })
+                    setState({ hasChanges: true })
+                  }}
+                />
+              </div>
+            </>
+          )
+        }, '')}
       </div>
       <div className="footer-actions">{actions}</div>
     </form>
