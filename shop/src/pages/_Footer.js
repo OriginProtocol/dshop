@@ -9,6 +9,10 @@ import LocaleSelect from 'components/LocaleSelect'
 const Footer = () => {
   const { config } = useConfig()
   const date = new Date()
+  const policies = [
+    ['Terms and Conditions', 'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.'],
+    ['Privacy Policy', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae sapien pellentesque habitant morbi tristique. Et netus et malesuada fames ac turpis. Vitae sapien pellentesque habitant morbi tristique senectus et netus. Ultrices tincidunt arcu non sodales neque. Orci phasellus egestas tellus rutrum tellus pellentesque eu. Vivamus arcu felis bibendum ut tristique et egestas quis ipsum. In egestas erat imperdiet sed euismod nisi porta lorem mollis. Lectus mauris ultrices eros in cursus turpis massa. Vulputate eu scelerisque felis imperdiet proin. Blandit turpis cursus in hac habitasse platea dictumst quisque.'],
+    ['Return Policy', 'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.']]
   return (
     <div className="footer">
       <div className="container">
@@ -28,28 +32,33 @@ const Footer = () => {
             <FbtParam name="year">{date.getFullYear()}</FbtParam>.
           </fbt>
         </div>
-        <div>
-          <div className="links">
-            <LocaleSelect />
-            <div className="currency-select">
-              <CurrencySelect />
-            </div>
-            {config.terms ? (
-              <Link to="/terms">
-                <fbt desc="TermsAndConditions">Terms &amp; Conditions</fbt>
-              </Link>
-            ) : null}
-            <Link to="/about">
-              <fbt desc="FAQ">FAQ</fbt>
-            </Link>
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              href="https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0"
-            >
-              <fbt desc="footer.aboutLink">About Dshop</fbt>
-            </a>
+        <div className="links">
+          <LocaleSelect />
+          <div className="currency-select">
+            <CurrencySelect />
           </div>
+          <div className="policies">
+            {policies
+              ? policies.map((policy, index) => {
+                  return <Link to={`/policy${index + 1}`}>{policy[0]}</Link>
+                })
+              : null}
+          </div>
+          {config.terms ? (
+            <Link to="/terms">
+              <fbt desc="TermsAndConditions">Terms &amp; Conditions</fbt>
+            </Link>
+          ) : null}
+          <Link to="/about">
+            <fbt desc="FAQ">FAQ</fbt>
+          </Link>
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0"
+          >
+            <fbt desc="footer.aboutLink">About Dshop</fbt>
+          </a>
         </div>
       </div>
     </div>
@@ -85,6 +94,9 @@ require('react-styl')(`
       align-items: baseline
       :not(:last-child)
         margin-right: 2rem
+    .policies
+      display: flex
+      flex-direction: column
 
   .currency-select
     position: relative

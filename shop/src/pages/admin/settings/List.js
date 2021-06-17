@@ -37,7 +37,7 @@ const List = () => {
           title={<fbt desc="Appearance">Appearance</fbt>}
           desc={
             <fbt desc="admin.Settings.appearanceDesc">
-              Manage your shop’s online appearance
+              Manage your shop&apos;s online appearance
             </fbt>
           }
           link="/admin/settings/appearance"
@@ -47,7 +47,7 @@ const List = () => {
           title={<fbt desc="Legal">Legal</fbt>}
           desc={
             <fbt desc="admin.Settings.legalDesc">
-              Detail your shop's policies
+              Detail your shop&apos;s policies
             </fbt>
           }
           link="/admin/settings/legal"

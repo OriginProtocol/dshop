@@ -1,41 +1,42 @@
-import React, { useReducer, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import fbt from 'fbt'
-import pick from 'lodash/pick'
-import pickBy from 'lodash/pickBy'
+import { get, pick, pickBy } from 'lodash'
+
 
 import CKEditor from 'ckeditor4-react'
 
 import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
-import { formInput, formFeedback } from 'utils/formHelpers'
+import { formFeedback } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
 import AdminConfirmationModal from 'components/ConfirmationModal'
+import PlusIcon from 'components/icons/Plus'
 
-// function reducer(state, newState) {
-//   return { ...state, ...newState }
-// }
-
-const configFields = ['about']
-const placeholder = 'Sample text'
-
-const ABOUT_FILENAME = 'about.html'
+//  const ABOUT_FILENAME = 'about.html'
 
 const LegalSettings = () => {
-  const { config } = useConfig()
   const [{ admin }, dispatch] = useStateValue()
   const { postRaw, post } = useBackendApi({ authToken: true })
-  const [state, setState] = useState({})
-  const input = formInput(state, (newState) =>
-    setState({ ...newState, hasChanges: true })
-  )
-  const Feedback = formFeedback(state)
   const [saving, setSaving] = useState(false)
-  const [policies, setPolicies] = useState([
-    ['default policy heading', 'default policy text']
-  ])
 
+  // To do: enforce limit on the length of policy title
+
+  // policies is of type <Array<Array<String, String, boolean>>. The two strings represent the Policy title and contents respectively,
+  // while the boolean is used to indicate whether there is an error associated with the policy 
+  // E.g.:
+  // [
+  //   ['Terms and Conditions', 'Eget egestas purus viverra accumsan in nisl nisi scelerisque.', false],
+  //   ['Privacy Policy', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', false ],
+  //   ['Return Policy', 'Eget egestas purus viverra accumsan.', false]
+  // ]
+  
+  const [policies, setPolicies] = useState([
+    ['Terms and Conditions', 'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.'],
+    ['Privacy Policy', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae sapien pellentesque habitant morbi tristique. Et netus et malesuada fames ac turpis. Vitae sapien pellentesque habitant morbi tristique senectus et netus. Ultrices tincidunt arcu non sodales neque. Orci phasellus egestas tellus rutrum tellus pellentesque eu. Vivamus arcu felis bibendum ut tristique et egestas quis ipsum. In egestas erat imperdiet sed euismod nisi porta lorem mollis. Lectus mauris ultrices eros in cursus turpis massa. Vulputate eu scelerisque felis imperdiet proin. Blandit turpis cursus in hac habitasse platea dictumst quisque.'],
+    ['Return Policy', 'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.']])
+  
   // useEffect(() => {
   //   let timeout
   //   if (config.about) {
@@ -61,7 +62,7 @@ const LegalSettings = () => {
           <button
             type="button"
             className="btn btn-outline-primary"
-            disabled={saving || !state.hasChanges}
+            disabled={saving}
           >
             <fbt desc="Cancel">Cancel</fbt>
           </button>
@@ -77,8 +78,8 @@ const LegalSettings = () => {
       />
       <button
         type="submit"
-        className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
-        disabled={saving || !state.hasChanges}
+        className="btn btn-primary"
+        disabled={saving}
         children={
           saving ? (
             <fbt desc="Updating">Updating</fbt>
@@ -186,12 +187,10 @@ const LegalSettings = () => {
           // })
 
           if (!shopPolicies.success && shopPolicies.field) {
-            setState({ [`${shopPolicies.field}Error`]: shopConfigRes.reason })
+            //setState({ [`${shopPolicies.field}Error`]: shopConfigRes.reason })
             setSaving(false)
             return
           }
-
-          setState({ hasChanges: false })
           setSaving(false)
           dispatch({
             type: 'toast',
@@ -228,50 +227,56 @@ const LegalSettings = () => {
             )
           </span>
         </label>
-        {policies.reduce((accumulator, currentVal, index) => {
-          return (
-            <>
+        {policies.map((policy, index) => {
+          return (<>
               <div className="form-group">
                 <label>
                   <fbt desc="admin.settings.legal.title">Title</fbt>
                 </label>
                 <div>
                   <input
+                    className={`form-control ${policy[2] ? 'is-invalid' : ''}`}
                     placeholder={
                       index === 0
-                        ? 'Terms and Conditions'
+                        ? 'e.g. "Terms and Conditions"'
                         : index === 1
-                        ? 'Privacy Policy'
+                        ? 'e.g. "Privacy Policy"'
                         : ''
                     }
-                    name={`title${index}`}
-                    value={currentVal[0]}
+                    value={get(policy, 0)}
                     onChange={(e) => {
                       setPolicies((policies) => {
                         const updatedPolicyTitle = e.target.value
                         policies[index].splice(0, 1, updatedPolicyTitle)
                         return policies
                       })
-                      setState({ hasChanges: true })
                     }}
                   />
                 </div>
                 <Editor
-                  data={currentVal[1]}
+                  data={policy[1]}
                   onChange={(e) => {
                     setPolicies((policies) => {
                       const updatedPolicyText = e.editor.getData()
                       policies[index].splice(1, 1, updatedPolicyText)
                       return policies
                     })
-                    setState({ hasChanges: true })
                   }}
                 />
               </div>
             </>
           )
-        }, '')}
+        })}
+        <button
+        type="button"
+        onClick={() => setPolicies([...policies, ['', '']])}
+        className="btn btn-outline-primary mt-4"
+      >
+        <PlusIcon size="9" />
+        <span className="ml-2">Add page</span>
+      </button>
       </div>
+
       <div className="footer-actions">{actions}</div>
     </form>
   )
