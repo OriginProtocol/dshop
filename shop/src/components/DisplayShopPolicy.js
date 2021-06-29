@@ -11,8 +11,7 @@ const displayPolicy = ({ heading, text }) => {
           <Link to="/">
             <fbt desc="Home">Home</fbt>
           </Link>
-          <span>{heading}
-          </span>
+          <span>{heading}</span>
         </div>
         <div className="d-flex flex-row justify-content-between align-items-center">
           <h3>{heading}</h3>

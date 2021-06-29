@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import fbt from 'fbt'
-import { get, pick, pickBy } from 'lodash'
-
+import { get /*, pick, pickBy*/ } from 'lodash'
 
 import CKEditor from 'ckeditor4-react'
 
-import useConfig from 'utils/useConfig'
-import useBackendApi from 'utils/useBackendApi'
-import { formFeedback } from 'utils/formHelpers'
-import { useStateValue } from 'data/state'
+// import useConfig from 'utils/useConfig'
+// import useBackendApi from 'utils/useBackendApi'
+// import { formFeedback } from 'utils/formHelpers'
+// import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
 import AdminConfirmationModal from 'components/ConfirmationModal'
@@ -17,26 +16,36 @@ import PlusIcon from 'components/icons/Plus'
 //  const ABOUT_FILENAME = 'about.html'
 
 const LegalSettings = () => {
-  const [{ admin }, dispatch] = useStateValue()
-  const { postRaw, post } = useBackendApi({ authToken: true })
-  const [saving, setSaving] = useState(false)
+  // const [{ admin }, dispatch] = useStateValue()
+  // const { postRaw, post } = useBackendApi({ authToken: true })
+  const [saving /*, setSaving*/] = useState(false)
 
   // To do: enforce limit on the length of policy title
 
   // policies is of type <Array<Array<String, String, boolean>>. The two strings represent the Policy title and contents respectively,
-  // while the boolean is used to indicate whether there is an error associated with the policy 
+  // while the boolean is used to indicate whether there is an error associated with the policy
   // E.g.:
   // [
   //   ['Terms and Conditions', 'Eget egestas purus viverra accumsan in nisl nisi scelerisque.', false],
   //   ['Privacy Policy', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', false ],
   //   ['Return Policy', 'Eget egestas purus viverra accumsan.', false]
   // ]
-  
+
   const [policies, setPolicies] = useState([
-    ['Terms and Conditions', 'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.'],
-    ['Privacy Policy', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae sapien pellentesque habitant morbi tristique. Et netus et malesuada fames ac turpis. Vitae sapien pellentesque habitant morbi tristique senectus et netus. Ultrices tincidunt arcu non sodales neque. Orci phasellus egestas tellus rutrum tellus pellentesque eu. Vivamus arcu felis bibendum ut tristique et egestas quis ipsum. In egestas erat imperdiet sed euismod nisi porta lorem mollis. Lectus mauris ultrices eros in cursus turpis massa. Vulputate eu scelerisque felis imperdiet proin. Blandit turpis cursus in hac habitasse platea dictumst quisque.'],
-    ['Return Policy', 'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.']])
-  
+    [
+      'Terms and Conditions',
+      'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.'
+    ],
+    [
+      'Privacy Policy',
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae sapien pellentesque habitant morbi tristique. Et netus et malesuada fames ac turpis. Vitae sapien pellentesque habitant morbi tristique senectus et netus. Ultrices tincidunt arcu non sodales neque. Orci phasellus egestas tellus rutrum tellus pellentesque eu. Vivamus arcu felis bibendum ut tristique et egestas quis ipsum. In egestas erat imperdiet sed euismod nisi porta lorem mollis. Lectus mauris ultrices eros in cursus turpis massa. Vulputate eu scelerisque felis imperdiet proin. Blandit turpis cursus in hac habitasse platea dictumst quisque.'
+    ],
+    [
+      'Return Policy',
+      'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.'
+    ]
+  ])
+
   // useEffect(() => {
   //   let timeout
   //   if (config.about) {
@@ -167,44 +176,46 @@ const LegalSettings = () => {
   return (
     <form
       autoComplete="off"
-      onSubmit={async (e) => {
-        e.preventDefault()
+      // onSubmit={
+      //   async (e) => {
+      //   e.preventDefault()
 
-        if (saving) return
+      //   if (saving) return
 
-        setSaving(true)
+      //   setSaving(true)
 
-        try {
-          const shopPolicies = pickBy(state, (v, k) => !k.endsWith('Error'))
+      //   try {
+      //     const shopPolicies = pickBy(state, (v, k) => !k.endsWith('Error'))
 
-          // Shop policy pages object
-          shopPolicies.pages = policies
+      //     // Shop policy pages object
+      //     shopPolicies.pages = policies
 
-          // const shopPoliciesRes = //tbd await post('tbd', {
-          //   method: 'PUT',
-          //   body: JSON.stringify(shopPolicies),
-          //   suppressError: true
-          // })
+      //     // const shopPoliciesRes = //tbd await post('tbd', {
+      //     //   method: 'PUT',
+      //     //   body: JSON.stringify(shopPolicies),
+      //     //   suppressError: true
+      //     // })
 
-          if (!shopPolicies.success && shopPolicies.field) {
-            //setState({ [`${shopPolicies.field}Error`]: shopConfigRes.reason })
-            setSaving(false)
-            return
-          }
-          setSaving(false)
-          dispatch({
-            type: 'toast',
-            message: (
-              <fbt desc="admin.settings.appearance.savedMessage">
-                Settings saved
-              </fbt>
-            )
-          })
-        } catch (err) {
-          console.error(err)
-          setSaving(false)
-        }
-      }}
+      //     if (!shopPolicies.success && shopPolicies.field) {
+      //       //setState({ [`${shopPolicies.field}Error`]: shopConfigRes.reason })
+      //       setSaving(false)
+      //       return
+      //     }
+      //     setSaving(false)
+      //     dispatch({
+      //       type: 'toast',
+      //       message: (
+      //         <fbt desc="admin.settings.appearance.savedMessage">
+      //           Settings saved
+      //         </fbt>
+      //       )
+      //     })
+      //   } catch (err) {
+      //     console.error(err)
+      //     setSaving(false)
+      //   }
+      // }
+      // }
     >
       <h3 className="admin-title with-border">
         <Link to="/admin/settings" className="muted">
@@ -228,7 +239,8 @@ const LegalSettings = () => {
           </span>
         </label>
         {policies.map((policy, index) => {
-          return (<>
+          return (
+            <>
               <div className="form-group">
                 <label>
                   <fbt desc="admin.settings.legal.title">Title</fbt>
@@ -268,13 +280,13 @@ const LegalSettings = () => {
           )
         })}
         <button
-        type="button"
-        onClick={() => setPolicies([...policies, ['', '']])}
-        className="btn btn-outline-primary mt-4"
-      >
-        <PlusIcon size="9" />
-        <span className="ml-2">Add page</span>
-      </button>
+          type="button"
+          onClick={() => setPolicies([...policies, ['', '']])}
+          className="btn btn-outline-primary mt-4"
+        >
+          <PlusIcon size="9" />
+          <span className="ml-2">Add page</span>
+        </button>
       </div>
 
       <div className="footer-actions">{actions}</div>
