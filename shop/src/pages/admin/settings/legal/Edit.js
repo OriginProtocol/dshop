@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 import fbt from 'fbt'
-import { get /*, pick, pickBy*/ } from 'lodash'
+import { get /*pick, pickBy*/ } from 'lodash'
 
 import CKEditor from 'ckeditor4-react'
 
 // import useConfig from 'utils/useConfig'
-// import useBackendApi from 'utils/useBackendApi'
+import useBackendApi from 'utils/useBackendApi'
 // import { formFeedback } from 'utils/formHelpers'
-// import { useStateValue } from 'data/state'
+import { useStateValue } from 'data/state'
 
 import Link from 'components/Link'
 import AdminConfirmationModal from 'components/ConfirmationModal'
@@ -16,9 +16,9 @@ import PlusIcon from 'components/icons/Plus'
 //  const ABOUT_FILENAME = 'about.html'
 
 const LegalSettings = () => {
-  // const [{ admin }, dispatch] = useStateValue()
-  // const { postRaw, post } = useBackendApi({ authToken: true })
-  const [saving /*, setSaving*/] = useState(false)
+  const [, /*{ admin }*/ dispatch] = useStateValue()
+  const { /*postRaw, */ post } = useBackendApi({ authToken: true })
+  const [saving, setSaving] = useState(false)
 
   // To do: enforce limit on the length of policy title
 
@@ -176,46 +176,51 @@ const LegalSettings = () => {
   return (
     <form
       autoComplete="off"
-      // onSubmit={
-      //   async (e) => {
-      //   e.preventDefault()
+      onSubmit={async (e) => {
+        e.preventDefault()
 
-      //   if (saving) return
+        if (saving) return
 
-      //   setSaving(true)
+        setSaving(true)
 
-      //   try {
-      //     const shopPolicies = pickBy(state, (v, k) => !k.endsWith('Error'))
+        try {
+          //     const shopPolicies = pickBy(state, (v, k) => !k.endsWith('Error'))
 
-      //     // Shop policy pages object
-      //     shopPolicies.pages = policies
+          //     // Shop policy pages object
+          //     shopPolicies.pages = policies
 
-      //     // const shopPoliciesRes = //tbd await post('tbd', {
-      //     //   method: 'PUT',
-      //     //   body: JSON.stringify(shopPolicies),
-      //     //   suppressError: true
-      //     // })
+          // Make sure that the request body is either a JS Object or Array. Failure to do
+          // so will produce a SyntaxError when the body is parsed by Express' body-parser
+          // module (i.e. backend). Discussion: https://github.com/expressjs/body-parser/issues/309
+          const shopPoliciesRes = await post('/shop/policies', {
+            // method: 'PUT',
+            body: JSON.stringify(['Test Policy']),
+            suppressError: true
+          })
+          shopPoliciesRes
+            ? console.log(`shopPoliciesRes: ${shopPoliciesRes}`)
+            : console.log(`Error fetching shop's policies`)
 
-      //     if (!shopPolicies.success && shopPolicies.field) {
-      //       //setState({ [`${shopPolicies.field}Error`]: shopConfigRes.reason })
-      //       setSaving(false)
-      //       return
-      //     }
-      //     setSaving(false)
-      //     dispatch({
-      //       type: 'toast',
-      //       message: (
-      //         <fbt desc="admin.settings.appearance.savedMessage">
-      //           Settings saved
-      //         </fbt>
-      //       )
-      //     })
-      //   } catch (err) {
-      //     console.error(err)
-      //     setSaving(false)
-      //   }
-      // }
-      // }
+          // Use code below when working on user feedback for the form
+          // if (!shopPolicies.success && shopPolicies.field) {
+          //   //setState({ [`${shopPolicies.field}Error`]: shopConfigRes.reason })
+          //   setSaving(false)
+          //   return
+          // }
+          setSaving(false)
+          dispatch({
+            type: 'toast',
+            message: (
+              <fbt desc="admin.settings.appearance.savedMessage">
+                Settings saved
+              </fbt>
+            )
+          })
+        } catch (err) {
+          console.error(err)
+          setSaving(false)
+        }
+      }}
     >
       <h3 className="admin-title with-border">
         <Link to="/admin/settings" className="muted">

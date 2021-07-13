@@ -2,8 +2,7 @@ module.exports = (sequelize, DataTypes) => {
   const Policies = sequelize.define(
     'Policies',
     {
-      shopId: DataTypes.INTEGER,
-      allPolicies: DataTypes.STRING
+      allPolicies: DataTypes.JSON
     },
     {
       underscored: true,
@@ -11,8 +10,18 @@ module.exports = (sequelize, DataTypes) => {
     }
   )
 
+  // Reference: https://sequelize.org/master/manual/assocs.html
   Policies.associate = function (models) {
-    Policies.belongsTo(models.Shop, { as: 'policies', foreignKey: 'shopId' })
+    Policies.belongsTo(models.Shop, {
+      as: 'shopAdmin',
+      foreignKey: { authToken: DataTypes.STRING },
+      allowNull: false
+    })
+    Policies.belongsTo(models.Shop, {
+      as: 'shopCustomer',
+      foreignKey: { id: DataTypes.INTEGER },
+      allowNull: false
+    })
   }
 
   return Policies
