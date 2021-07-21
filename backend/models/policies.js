@@ -11,16 +11,12 @@ module.exports = (sequelize, DataTypes) => {
   )
 
   // Reference: https://sequelize.org/master/manual/assocs.html
+  // In the Policies model, use a custom name for the foreign key. Additionally, associate the model with the 'auth_token' field of the shop
+  // instead of its primary key.
   Policies.associate = function (models) {
     Policies.belongsTo(models.Shop, {
-      as: 'shopAdmin',
-      foreignKey: { authToken: DataTypes.STRING },
-      allowNull: false
-    })
-    Policies.belongsTo(models.Shop, {
-      as: 'shopCustomer',
-      foreignKey: { id: DataTypes.INTEGER },
-      allowNull: false
+      targetKey: 'authToken',
+      foreignKey: 'authToken'
     })
   }
 

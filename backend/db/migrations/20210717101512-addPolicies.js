@@ -9,10 +9,18 @@ module.exports = {
           autoIncrement: true,
           primaryKey: true
         },
-        authToken: { type: Sequelize.STRING },
-        allPolicies: {
+        all_policies: {
           type: Sequelize.JSON
           // TODO: include 'defaultValue' key?
+        },
+        auth_token: {
+          type: Sequelize.STRING
+        },
+        created_at: {
+          type: Sequelize.DATE
+        },
+        updated_at: {
+          type: Sequelize.DATE
         }
       })
     })
