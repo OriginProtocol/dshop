@@ -9,9 +9,11 @@ module.exports = {
           autoIncrement: true,
           primaryKey: true
         },
+        shop_id: {
+          type: Sequelize.INTEGER
+        },
         all_policies: {
           type: Sequelize.JSON
-          // TODO: include 'defaultValue' key?
         },
         auth_token: {
           type: Sequelize.STRING

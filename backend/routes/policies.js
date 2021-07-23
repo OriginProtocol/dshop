@@ -9,40 +9,48 @@ const log = getLogger('routes.policies')
 
 module.exports = function (router) {
   // Apply the callback 'authShop' to any POST request to the endpoint '/shop/policies'
-  // Use the result to create an instance of the model 'Policies' in the DB
   router.post('/shop/policies', authShop, async (req, res) => {
     log.info(`Request body: `, req.body)
-    res.send(
-      await Policies.create({
-        allPolicies: req.body,
-        authToken: req.shop.authToken
-      })
-    )
-  })
 
-  router.get('/shop/policies', authShop, async (req, res) => {
-    const data = await Policies.findOne({
+    // Use the result to find or create an instance of the model 'Policies' in the DB
+    const [policyEntry, created] = await Policies.findOrCreate({
       where: {
         authToken: req.shop.authToken
+      },
+      defaults: {
+        allPolicies: ['']
       }
     })
-    res.send(data.allPolicies)
+
+    log.info(`policyEntry: `, policyEntry, `created? `, created)
+
+    // If a new entry was created for the shop, check whether the front end supplied data for 'allPolicies'. Depending on the result,
+    // update the entry, or just return
+    if (policyEntry.allPolicies !== req.body) {
+      res.send(
+        await Policies.update(
+          {
+            allPolicies: req.body
+          },
+          {
+            where: {
+              authToken: req.shop.authToken
+            }
+          }
+        )
+      )
+    } else {
+      res.send(JSON.stringify('Nothing to post.'))
+    }
   })
 
-  // Similar logic to a POST request, difference being, an already-existing
-  // instance of the model 'Policies' is updated
-  router.put('/shop/policies', authShop, async (req) => {
-    return await Policies.update(
-      {
-        allPolicies: req.body
-      },
-      {
-        where: {
-          authToken: req.shop.authToken
-        }
-      }
-    )
-  })
+  // router.get('/shop/policies', async (req, res) => {
+  //   const authToken = decodeURIComponent(
+  //     String(req.headers.authorization).split(' ')[1]
+  //   )
+  //   const data = await Policies.findOne()
+  //   res.send(data)
+  // })
 
   router.delete('/shop/policies', authShop, async (req) => {
     return await Policies.destroy({

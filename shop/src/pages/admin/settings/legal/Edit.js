@@ -31,7 +31,8 @@ const LegalSettings = () => {
   //   ['Return Policy', 'Eget egestas purus viverra accumsan.', false]
   // ]
 
-  const [policies, setPolicies] = useState([
+  const [policies, setPolicies] = useState(
+    /*[
     [
       'Terms and Conditions',
       'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.'
@@ -44,7 +45,10 @@ const LegalSettings = () => {
       'Return Policy',
       'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.'
     ]
-  ])
+  ]*/ [
+      ''
+    ]
+  )
 
   // useEffect(() => {
   //   let timeout
@@ -194,7 +198,7 @@ const LegalSettings = () => {
           // module (i.e. backend). Discussion: https://github.com/expressjs/body-parser/issues/309
           const shopPoliciesRes = await post('/shop/policies', {
             // method: 'PUT',
-            body: JSON.stringify(['Test Policy']),
+            body: JSON.stringify(['Test Policy updated']),
             suppressError: true
           })
           shopPoliciesRes
@@ -208,6 +212,12 @@ const LegalSettings = () => {
           //   return
           // }
           setSaving(false)
+          // const newShopPolicies = await post('/shop/policies', {
+          //   method: 'GET',
+          //   suppressError: true
+          // })
+          // console.log('newShopPolicies: ', newShopPolicies)
+
           dispatch({
             type: 'toast',
             message: (
