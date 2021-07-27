@@ -1,10 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import fbt from 'fbt'
 import { get /*pick, pickBy*/ } from 'lodash'
 
 import CKEditor from 'ckeditor4-react'
 
-// import useConfig from 'utils/useConfig'
 import useBackendApi from 'utils/useBackendApi'
 // import { formFeedback } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
@@ -13,11 +12,9 @@ import Link from 'components/Link'
 import AdminConfirmationModal from 'components/ConfirmationModal'
 import PlusIcon from 'components/icons/Plus'
 
-//  const ABOUT_FILENAME = 'about.html'
-
 const LegalSettings = () => {
-  const [, /*{ admin }*/ dispatch] = useStateValue()
-  const { /*postRaw, */ post } = useBackendApi({ authToken: true })
+  const [{ config }, dispatch] = useStateValue()
+  const { post } = useBackendApi({ authToken: true })
   const [saving, setSaving] = useState(false)
 
   // To do: enforce limit on the length of policy title
@@ -46,27 +43,33 @@ const LegalSettings = () => {
       'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.'
     ]
   ]*/ [
-      ''
+      ['', '', false]
     ]
   )
 
-  // useEffect(() => {
-  //   let timeout
-  //   if (config.about) {
-  //     fetch(`${config.dataSrc}${config.about}`)
-  //       .then((res) => {
-  //         if (!res.ok) throw new Error('Failed to fetch')
-  //         return res.text()
-  //       })
-  //       // NOTE: CKEditor takes a few seconds to load
-  //       .then((body) => (timeout = setTimeout(() => setAboutText(body), 2000)))
-  //       .catch((err) => {
-  //         console.error('Failed to load about page', err)
-  //       })
-  //   }
-
-  //   return () => clearTimeout(timeout)
-  // }, [config && config.about])
+  useEffect(() => {
+    let timeout
+    fetch(`shop/policies`, {
+      method: 'GET',
+      headers: {
+        authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
+      }
+    })
+      .then((res) => {
+        console.log('result of GET request:', res)
+        !res.ok ? null : res.text()
+      })
+      // NOTE: CKEditor takes a few seconds to load
+      .then((body) => {
+        if (body) {
+          timeout = setTimeout(() => setPolicies(body), 2000)
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load shop policies', err)
+      })
+    return () => clearTimeout(timeout)
+  }, [policies])
 
   const actions = (
     <div className="actions">
@@ -197,8 +200,7 @@ const LegalSettings = () => {
           // so will produce a SyntaxError when the body is parsed by Express' body-parser
           // module (i.e. backend). Discussion: https://github.com/expressjs/body-parser/issues/309
           const shopPoliciesRes = await post('/shop/policies', {
-            // method: 'PUT',
-            body: JSON.stringify(['Test Policy updated']),
+            body: JSON.stringify(policies),
             suppressError: true
           })
           shopPoliciesRes
@@ -296,7 +298,7 @@ const LegalSettings = () => {
         })}
         <button
           type="button"
-          onClick={() => setPolicies([...policies, ['', '']])}
+          onClick={() => setPolicies([...policies, ['', '', false]])}
           className="btn btn-outline-primary mt-4"
         >
           <PlusIcon size="9" />
