@@ -6,5 +6,5 @@ const url = process.env.DATABASE_URL || sqlite
 module.exports = {
   development: { url, logging: false, define: { underscored: true } },
   test: { url, logging: false, define: { underscored: true } },
-  production: { url, logging: false, define: { underscored: true }, dialectOptions: { ssl: true } }
+  production: { url, logging: false, define: { underscored: true }, dialectOptions: { ssl: { require: true, rejectUnauthorized: false } } }
 }
