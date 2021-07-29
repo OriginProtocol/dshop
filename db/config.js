@@ -7,7 +7,7 @@ module.exports = {
   development: { url, logging: false, define: { underscored: true } },
   test: { url, logging: false, define: { underscored: true } },
   production: {
-    use_env_variable: 'DATABASE_URL',
+    url,
     define: {
       underscored: true
     },

@@ -4,15 +4,13 @@ const fs = require('fs')
 const path = require('path')
 const Sequelize = require('sequelize')
 const basename = path.basename(__filename)
+
+const env = process.env.NODE_ENV || 'development'
+const config = require(`../db/config.js`)[env]
+
 const db = {}
 
-const SqliteURI = `sqlite:${__dirname}/../db/dshop.db`
-const URI = process.env.DATABASE_URL || SqliteURI
-const sequelize = new Sequelize(URI, {
-  logging: false,
-  underscored: true,
-  timestamps: false
-})
+const sequelize = new Sequelize(config.url, config)
 
 const isJs = (file) =>
   file.indexOf('.') !== 0 && file !== basename && file.slice(-3) === '.js'
