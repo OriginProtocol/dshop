@@ -365,13 +365,11 @@ module.exports = function (router) {
    */
   router.post('/shop', authUser, async (req, res) => {
     if (process.env.NEW_SHOP_CREATION_DISABLED) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          reason: 'New shop creation disabled',
-          message: 'New shop creation disabled'
-        })
+      return res.status(400).json({
+        success: false,
+        reason: 'New shop creation disabled',
+        message: 'New shop creation disabled'
+      })
     }
     const args = { ...req.body, seller: req.seller }
     const result = await createShop(args)
