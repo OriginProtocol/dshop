@@ -1,5 +1,8 @@
-const fetch = require('node-fetch')
 const fs = require('fs')
+const puppeteer = require('puppeteer-extra')
+
+const StealthPlugin = require('puppeteer-extra-plugin-stealth')
+puppeteer.use(StealthPlugin())
 
 function getOldData(body) {
   const dataMatch = body.match(/sizeGuideTablePar.data = (.*);/)
@@ -34,8 +37,12 @@ async function getSizeGuide({ OutputDir, productId }) {
 
   try {
     const url = 'https://www.printful.com/custom-products/size-guide'
-    const res = await fetch(`${url}?productId=${productId}`)
-    const body = await res.text()
+    const browser = await puppeteer.launch()
+    const page = await browser.newPage()
+    await page.goto(`${url}?productId=${productId}`)
+    const body = await page.content()
+    await browser.close()
+
     const isOld = body.match(/sizeGuideTablePar.isOldSizeGuide = true;/)
     const { data, productSizes } = isOld ? getOldData(body) : getNewData(body)
 
@@ -54,9 +61,10 @@ async function getSizeGuide({ OutputDir, productId }) {
     const result = { sizes, measurements }
 
     fs.writeFileSync(sizePath, JSON.stringify(result, null, 2))
-
     return result
   } catch (e) {
+    console.log(`Error fetching size guide for product ${productId}`)
+    console.error(e)
     return null
   }
 }

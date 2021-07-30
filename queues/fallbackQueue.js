@@ -1,3 +1,7 @@
+const { getLogger } = require('../utils/logger')
+
+const log = getLogger('queues.fallbackQueue')
+
 /**
  * A fallback "queue" to use when redis is unavailable. It just runs
  * the queue's processing function immediately when you add a job.
@@ -14,6 +18,7 @@ class FallbackQueue {
     this.name = name
     this.processor = undefined
     this.opts = opts
+    this.eventHandlers = {}
   }
 
   /**
@@ -22,16 +27,33 @@ class FallbackQueue {
    * @param {*} data
    */
   async add(data) {
-    console.log(this.name + ' queue using inline queue processor fallback.')
+    log.info(this.name + ' queue using inline queue processor fallback.')
     if (this.processor == undefined) {
       throw new Error('No processor defined for this fake job queue')
     }
     const job = {
+      id: Date.now(),
       data: data,
       progress: () => undefined,
-      log: console.log
+      log: log.info,
+      queue: this
     }
-    await this.processor(job)
+    if (this.eventHandlers.active) {
+      this.eventHandlers.active(job)
+    }
+    try {
+      await this.processor(job)
+    } catch (err) {
+      if (this.eventHandlers.failed) {
+        this.eventHandlers.failed(job, err)
+        return
+      }
+      throw err
+    }
+    if (this.eventHandlers.completed) {
+      this.eventHandlers.completed(job)
+    }
+    return job
   }
 
   /**
@@ -51,6 +73,28 @@ class FallbackQueue {
    * Do nothing stub
    */
   pause() {}
+
+  /**
+   * Fake job counts for health check
+   */
+  getJobCounts() {
+    return {
+      waiting: -1,
+      active: -1,
+      completed: -1,
+      failed: -1,
+      delayed: -1,
+      paused: -1
+    }
+  }
+
+  /**
+   * Event handlers
+   */
+  on(name, cb) {
+    // TODO: implement event triggers?  ref: https://github.com/OptimalBits/bull/blob/712df1db6f132fa8198745be298d2d8befa203b1/lib/queue.js#L328-L331
+    this.eventHandlers[name] = cb
+  }
 }
 
 module.exports = FallbackQueue

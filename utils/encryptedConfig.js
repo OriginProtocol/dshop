@@ -25,13 +25,15 @@ function genIV() {
   return crypto.randomBytes(IV_LENGTH)
 }
 
-function getConfig(config) {
+function decryptConfig(config) {
   if (!config) return {}
   const [iv, configRaw] = config.split(':')
   return decryptJSON(Buffer.from(iv, 'hex'), configRaw)
 }
+// TODO: Depreciate in favor of more informative name
+const getConfig = decryptConfig
 
-function setConfig(newConfig, existingConfig) {
+function encryptConfig(newConfig, existingConfig) {
   let iv = genIV()
   if (existingConfig) {
     iv = Buffer.from(existingConfig.split(':')[0], 'hex')
@@ -39,6 +41,8 @@ function setConfig(newConfig, existingConfig) {
   const config = encryptJSON(iv, newConfig)
   return `${iv.toString('hex')}:${config}`
 }
+// TODO: Depreciate in favor of more informative name
+const setConfig = encryptConfig
 
 /**
  * Get already loaded initialization vector or create one
@@ -68,7 +72,7 @@ function encrypt(iv, str) {
 
   const cypher = crypto.createCipheriv(CYPHER_ALGO, ENCRYPTION_KEY_HASH, iv)
 
-  msg.push(cypher.update(str, 'binary', 'hex'))
+  msg.push(cypher.update(str, 'utf8', 'hex'))
   msg.push(cypher.final('hex'))
 
   return msg.join('')
@@ -97,8 +101,8 @@ function decrypt(iv, enc) {
 
   const decypher = crypto.createDecipheriv('aes256', ENCRYPTION_KEY_HASH, iv)
 
-  msg.push(decypher.update(enc, 'hex', 'binary'))
-  msg.push(decypher.final('binary'))
+  msg.push(decypher.update(enc, 'hex', 'utf8'))
+  msg.push(decypher.final('utf8'))
 
   return msg.join('')
 }
@@ -224,9 +228,6 @@ async function load(shopId, force = false) {
   const [iv, encryptedConf] = record.config.split(':')
   loadedIVs[shopId] = Buffer.from(iv, 'hex')
 
-  //console.log('iv: ', loadedIVs[shopId])
-  //console.log('encryptedConf: ', encryptedConf)
-
   loadedConfigs[shopId] = decryptJSON(loadedIVs[shopId], encryptedConf)
 
   return record
@@ -331,6 +332,7 @@ async function dump(shopId) {
 }
 
 module.exports = {
+  IV_LENGTH,
   encrypt,
   encryptJSON,
   decrypt,
@@ -346,5 +348,7 @@ module.exports = {
   get,
   dump,
   getConfig,
-  setConfig
+  encryptConfig,
+  setConfig,
+  decryptConfig
 }

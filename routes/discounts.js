@@ -1,36 +1,59 @@
-const { Sequelize, Discount } = require('../models')
+const pick = require('lodash/pick')
+
+const { Discount } = require('../models')
 const { authShop, authSellerAndShop } = require('./_auth')
 
-module.exports = function (app) {
-  app.post('/check-discount', authShop, async (req, res) => {
-    const code = req.body.code
-    const discounts = await Discount.findAll({
-      where: {
-        [Sequelize.Op.and]: [
-          { status: 'active' },
-          Sequelize.where(
-            Sequelize.fn('lower', Sequelize.col('code')),
-            Sequelize.fn('lower', code)
-          )
-        ],
-        shopId: req.shop.id
-      }
-    })
+const { validateDiscount } = require('../logic/discount')
+const { DiscountTypeEnums } = require('../utils/enums')
 
-    if (discounts.length > 0) {
-      const discount = discounts[0]
-      res.json({
-        code: discount.code,
-        value: discount.value,
-        discountType: discount.discountType
-      })
-      return
+const safeDiscountProps = [
+  'status',
+  'code',
+  'discountType',
+  'value',
+  'maxUses',
+  'onePerCustomer',
+  'excludeShipping',
+  'startTime',
+  'endTime',
+  'data',
+  'maxDiscountValue',
+  'minCartValue'
+]
+
+module.exports = function (router) {
+  /**
+   * Checks that a discount is valid.
+   */
+  router.post('/check-discount', authShop, async (req, res) => {
+    const r = await validateDiscount(req.body.code, req.shop)
+    if (r.discount) {
+      r.discount = pick(r.discount, [
+        'code',
+        'value',
+        'discountType',
+        'excludeShipping',
+        'maxDiscountValue',
+        'minCartValue'
+      ])
     }
-
-    res.json({})
+    res.json(r)
   })
 
-  app.get('/discounts', authSellerAndShop, async (req, res) => {
+  router.get('/discounts/payment', authShop, async (req, res) => {
+    const paymentDiscount = await Discount.findOne({
+      where: { shopId: req.shop.id, discountType: DiscountTypeEnums.payment }
+    })
+
+    return res.send({
+      success: true,
+      paymentDiscount: paymentDiscount
+        ? pick(paymentDiscount, safeDiscountProps)
+        : null
+    })
+  })
+
+  router.get('/discounts', authSellerAndShop, async (req, res) => {
     const discounts = await Discount.findAll({
       where: { shopId: req.shop.id },
       order: [['createdAt', 'desc']]
@@ -38,7 +61,7 @@ module.exports = function (app) {
     res.json(discounts)
   })
 
-  app.get('/discounts/:id', authSellerAndShop, async (req, res) => {
+  router.get('/discounts/:id', authSellerAndShop, async (req, res) => {
     const discount = await Discount.findOne({
       where: {
         id: req.params.id,
@@ -48,16 +71,17 @@ module.exports = function (app) {
     res.json(discount)
   })
 
-  app.post('/discounts', authSellerAndShop, async (req, res) => {
+  router.post('/discounts', authSellerAndShop, async (req, res) => {
     const discount = await Discount.create({
-      shopId: req.shop.id,
-      ...req.body
+      ...req.body,
+      shopId: req.shop.id
     })
     res.json({ success: true, discount })
   })
 
-  app.put('/discounts/:id', authSellerAndShop, async (req, res) => {
-    const result = await Discount.update(req.body, {
+  router.put('/discounts/:id', authSellerAndShop, async (req, res) => {
+    const data = pick(req.body, safeDiscountProps)
+    const result = await Discount.update(data, {
       where: {
         id: req.params.id,
         shopId: req.shop.id
@@ -78,7 +102,7 @@ module.exports = function (app) {
     res.json({ success: true, discount })
   })
 
-  app.delete('/discounts/:id', authSellerAndShop, async (req, res) => {
+  router.delete('/discounts/:id', authSellerAndShop, async (req, res) => {
     const discount = await Discount.destroy({
       where: {
         id: req.params.id,

@@ -6,8 +6,11 @@ const WebSocket = require('ws')
 const Web3 = require('web3')
 const get = require('lodash/get')
 
-const { Network } = require('./models')
-const { handleLog } = require('./utils/handleLog')
+const { Op, Network } = require('./models')
+const { getLogger } = require('./utils/logger')
+const { eventsQueue } = require('./queues/queues')
+
+const log = getLogger('listener')
 
 const web3 = new Web3()
 
@@ -70,12 +73,12 @@ async function connectWS({ network }) {
   const { networkId, providerWs } = network
   const address = network.marketplaceContract
   const contractVersion = network.marketplaceVersion
-  lastBlock = network.lastBlock
-  console.log(`Connecting to ${providerWs} (netId ${networkId})`)
-  console.log(
+  lastBlock = network.lastBlock ? network.lastBlock : 0
+  log.info(`Connecting to ${providerWs} (netId ${networkId})`)
+  log.info(
     `Watching events on contract version ${contractVersion} at ${address}`
   )
-  console.log(`Last recorded block: ${lastBlock}`)
+  log.info(`Last recorded block: ${lastBlock}`)
 
   // Connect a web socket to the provider.
   ws = new ReconnectingWebSocket(providerWs, [], { WebSocket })
@@ -83,22 +86,22 @@ async function connectWS({ network }) {
   function heartbeat() {
     clearTimeout(pingTimeout)
     pingTimeout = setTimeout(() => {
-      console.log('WS Ping timeout! Reconnecting...')
+      log.warn('WS Ping timeout! Reconnecting...')
       ws.reconnect()
     }, 30000 + 5000)
   }
 
   ws.addEventListener('error', (err) => {
-    console.log('WS error:', err.message)
+    log.error('WS error:', err.message)
   })
   ws.addEventListener('close', function clear() {
-    console.log('WS closed.')
+    log.warn('WS closed.')
   })
   ws.addEventListener('open', function open() {
-    console.log('WS open.')
+    log.debug('WS open.')
     heartbeat()
     ws._ws.on('ping', () => {
-      console.log('WS ping.')
+      log.debug('WS ping.')
       heartbeat()
     })
     ws.send(SubscribeToLogs({ address }))
@@ -112,7 +115,7 @@ async function connectWS({ network }) {
 
     const hash = web3.utils.sha3(raw)
     if (handled[hash]) {
-      console.log('Ignoring repeated ws message')
+      log.warn('Ignoring repeated ws message')
       return
     }
     handled[hash] = true
@@ -124,38 +127,50 @@ async function connectWS({ network }) {
     } else if (data.id === 2) {
       heads = data.result
     } else if (data.id === 3) {
-      console.log(`Got ${data.result.length} unhandled logs`)
+      log.info(`Got ${data.result.length} unhandled logs`)
       for (const result of data.result) {
-        await handleLog({
-          ...result,
-          web3,
+        await eventsQueue.add(
+          {
+            ...result,
+            address,
+            networkId,
+            contractVersion
+          },
+          {
+            attempts: 3,
+            // jobId is used to prevent job duplication
+            jobId: result.transactionHash
+          }
+        )
+      }
+    } else if (get(data, 'params.subscription') === logs) {
+      await eventsQueue.add(
+        {
+          ...data.params.result,
           address,
           networkId,
           contractVersion
-        })
-      }
-    } else if (get(data, 'params.subscription') === logs) {
-      await handleLog({
-        ...data.params.result,
-        web3,
-        address,
-        networkId,
-        contractVersion
-      })
+        },
+        {
+          attempts: 3,
+          // jobId is used to prevent job duplication
+          jobId: data.params.result.transactionHash
+        }
+      )
     } else if (get(data, 'params.subscription') === heads) {
       const number = handleNewHead(data.params.result, networkId)
       const blockDiff = number - lastBlock
       if (blockDiff > 500) {
-        console.log('Too many new blocks. Skip past log fetch.')
+        log.warn('Too many new blocks. Skip past log fetch.')
       } else if (blockDiff > 1) {
-        console.log(
+        log.info(
           `Fetching ${blockDiff} past logs. Range ${lastBlock}-${number}...`
         )
         ws.send(GetPastLogs({ address, fromBlock: lastBlock, toBlock: number }))
       }
       lastBlock = number
     } else {
-      console.log('Unknown message')
+      log.warn('Unknown message')
     }
   })
 }
@@ -164,8 +179,26 @@ const handleNewHead = (head, networkId) => {
   const number = web3.utils.hexToNumber(head.number)
   const timestamp = web3.utils.hexToNumber(head.timestamp)
 
-  Network.upsert({ networkId, lastBlock: number })
-  console.log(`New block ${number} timestamp: ${timestamp}`)
+  Network.update(
+    { lastBlock: number },
+    {
+      where: {
+        networkId,
+        [Op.or]: [
+          {
+            lastBlock: null
+          },
+          {
+            lastBlock: {
+              [Op.lt]: number
+            }
+          }
+        ]
+      }
+    }
+  )
+
+  log.debug(`New block ${number} timestamp: ${timestamp}`)
 
   return number
 }
@@ -173,11 +206,11 @@ const handleNewHead = (head, networkId) => {
 async function start() {
   const network = await Network.findOne({ where: { active: true } })
   if (!network) {
-    console.log('Listener disabled: no active network found.')
+    log.warn('Listener disabled: no active network found.')
     return
   }
 
-  console.log(`Starting listener on network ${network.networkId}.`)
+  log.info(`Starting listener on network ${network.networkId}.`)
   web3.setProvider(network.provider)
 
   connectWS({ network })

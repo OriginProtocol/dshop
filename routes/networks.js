@@ -1,12 +1,48 @@
-const { authSuperUser } = require('./_auth')
-const { Network } = require('../models')
-const { getConfig, setConfig } = require('../utils/encryptedConfig')
-const startListener = require('../listener')
 const omit = require('lodash/omit')
 const pick = require('lodash/pick')
+const {
+  getAvailableResources,
+  getSupportedResources
+} = require('@origin/dshop-validation/matrix')
 
-module.exports = function (app) {
-  app.post('/networks', authSuperUser, async (req, res) => {
+const { Network } = require('../models')
+const { decryptConfig, encryptConfig } = require('../utils/encryptedConfig')
+const startListener = require('../listener')
+const { authSuperUser } = require('./_auth')
+
+function pickConfig(body) {
+  return pick(body, [
+    'pinataKey',
+    'pinataSecret',
+    'ipfsClusterUser',
+    'ipfsClusterPassword',
+    'cloudflareEmail',
+    'cloudflareApiKey',
+    'domain',
+    'deployDir',
+    'discordWebhook',
+    'gcpCredentials',
+    'defaultShopConfig',
+    'web3Pk',
+    'backendUrl',
+    'fallbackShopConfig',
+    'googleAnalytics',
+    'paypalEnvironment',
+    'notificationEmail',
+    'notificationEmailDisplayName',
+    'uiCdn',
+    'awsAccessKeyId',
+    'awsSecretAccessKey',
+    'listingId',
+    'defaultResourceSelection'
+  ])
+}
+
+module.exports = function (router) {
+  /**
+   * Creates a new network. Called during the deployer's initial setup.
+   */
+  router.post('/networks', authSuperUser, async (req, res) => {
     const networkObj = {
       networkId: req.body.networkId,
       provider: req.body.provider,
@@ -15,16 +51,13 @@ module.exports = function (app) {
       ipfsApi: req.body.ipfsApi,
       marketplaceContract: req.body.marketplaceContract,
       marketplaceVersion: req.body.marketplaceVersion,
+      listingId: req.body.listingId,
+      publicSignups: req.body.publicSignups ? true : false,
+      // By default we disable the use of the marketplace.
+      // TODO: expose via a flag in the UI.
+      useMarketplace: false,
       active: req.body.active ? true : false,
-      config: setConfig({
-        pinataKey: req.body.pinataKey,
-        pinataSecret: req.body.pinataSecret,
-        cloudflareEmail: req.body.cloudflareEmail,
-        cloudflareApiKey: req.body.cloudflareApiKey,
-        gcpCredentials: req.body.gcpCredentials,
-        domain: req.body.domain,
-        deployDir: req.body.deployDir
-      })
+      config: encryptConfig(pickConfig(req.body))
     }
 
     const existing = await Network.findOne({
@@ -43,39 +76,35 @@ module.exports = function (app) {
     res.json({ success: true })
   })
 
-  app.get('/networks/:netId', authSuperUser, async (req, res) => {
+  /**
+   * Updates an existing network. Called from the super-admin console.
+   */
+  router.get('/networks/:netId', authSuperUser, async (req, res) => {
     const where = { networkId: req.params.netId }
     const network = await Network.findOne({ where })
     if (!network) {
       return res.json({ success: false, reason: 'no-network' })
     }
 
-    const config = getConfig(network.config)
+    const config = decryptConfig(network.config)
     res.json({ ...omit(network.dataValues, 'config'), ...config })
   })
 
-  app.put('/networks/:netId', authSuperUser, async (req, res) => {
+  router.put('/networks/:netId', authSuperUser, async (req, res) => {
     const where = { networkId: req.params.netId }
     const network = await Network.findOne({ where })
     if (!network) {
       return res.json({ success: false, reason: 'no-network' })
     }
 
-    const config = pick(req.body, [
-      'pinataKey',
-      'pinataSecret',
-      'cloudflareEmail',
-      'cloudflareApiKey',
-      'domain',
-      'deployDir',
-      'discordWebhook'
-    ])
-
+    const config = pickConfig(req.body)
     const result = await Network.update(
       {
-        config: setConfig(config, network.dataValues.config),
+        config: encryptConfig(config, network.dataValues.config),
         ipfs: req.body.ipfs,
-        ipfsApi: req.body.ipfsApi
+        ipfsApi: req.body.ipfsApi,
+        listingId: req.body.listingId,
+        publicSignups: req.body.publicSignups ? true : false
       },
       { where }
     )
@@ -87,20 +116,52 @@ module.exports = function (app) {
     res.json({ success: true })
   })
 
-  app.post('/networks/:netId/make-active', authSuperUser, async (req, res) => {
-    const where = { networkId: req.params.netId }
-    const network = await Network.findOne({ where })
-    if (!network) {
-      return res.json({ success: false, reason: 'no-network' })
+  router.post(
+    '/networks/:netId/make-active',
+    authSuperUser,
+    async (req, res) => {
+      const where = { networkId: req.params.netId }
+      const network = await Network.findOne({ where })
+      if (!network) {
+        return res.json({ success: false, reason: 'no-network' })
+      }
+
+      await Network.update({ active: false }, { where: {} })
+      const result = await Network.update({ active: true }, { where })
+
+      if (!result || result[0] < 1) {
+        return res.json({ success: false })
+      }
+
+      res.json({ success: true })
     }
+  )
 
-    await Network.update({ active: false }, { where: {} })
-    const result = await Network.update({ active: true }, { where })
-
-    if (!result || result[0] < 1) {
-      return res.json({ success: false })
-    }
-
-    res.json({ success: true })
+  // Return infra resources marked as supported
+  router.get('/networks/infra/resources', authSuperUser, async (req, res) => {
+    res.json({
+      success: true,
+      resources: getSupportedResources()
+    })
   })
+
+  // Return infra resources that are supported and configured for the network
+  router.get(
+    '/networks/:netId/infra/resources',
+    authSuperUser,
+    async (req, res) => {
+      const where = { networkId: req.params.netId }
+      const network = await Network.findOne({ where })
+      if (!network) {
+        return res.json({ success: false, reason: 'no-network' })
+      }
+
+      const networkConfig = decryptConfig(network.config)
+
+      res.json({
+        success: true,
+        resources: getAvailableResources({ networkConfig, fullObjects: true })
+      })
+    }
+  )
 }

@@ -6,20 +6,19 @@ const { makeOfferQueue } = require('../queues/queues')
  * req.body.data encrypted IPFS data hash
  */
 async function makeOffer(req, res) {
-  const shop = req.shop
-  const amount = req.amount
-  const encryptedData = req.body.data
+  const encryptedDataIpfsHash = req.body.data
+  const { shop, amount, paymentCode, paymentType, paymentStatus } = req
 
-  await makeOfferQueue.add(
-    {
-      shopId: shop.id,
-      amount: amount,
-      encryptedData: encryptedData
-    },
-    { attempts: 6 }
-  ) // Allow up to six attempts
+  await makeOfferQueue.add({
+    shopId: shop.id,
+    amount,
+    encryptedDataIpfsHash,
+    paymentCode,
+    paymentType,
+    paymentStatus
+  })
 
-  res.sendStatus(200)
+  res.json({ success: true })
 }
 
 module.exports = makeOffer

@@ -1,175 +1,136 @@
 const get = require('lodash/get')
-const fetch = require('node-fetch')
-
 const { authSellerAndShop, authShop } = require('./_auth')
-const encConf = require('../utils/encryptedConfig')
+const { decryptConfig } = require('../utils/encryptedConfig')
 const { findOrder } = require('../utils/orders')
+const { PrintfulWebhookEvents } = require('../utils/enums')
+const {
+  fetchOrder,
+  placeOrder,
+  confirmOrder,
+  fetchShippingEstimate,
+  fetchTaxRates
+} = require('../logic/printful')
+const {
+  processShippedEvent,
+  processUpdatedEvent
+} = require('../logic/printful/webhook')
+const { ExternalEvent, Shop } = require('../models')
 
-const PrintfulURL = 'https://api.printful.com'
+const { getLogger } = require('../utils/logger')
 
-module.exports = function (app) {
-  app.get(
+const log = getLogger('routes.printful')
+
+module.exports = function (router) {
+  /**
+   * Makes an API call to Printful to get details about a specific order.
+   */
+  router.get(
     '/orders/:orderId/printful',
     authSellerAndShop,
     findOrder,
     async (req, res) => {
-      const apiKey = await encConf.get(req.order.shopId, 'printful')
-      if (!apiKey) {
-        return res.status(500).json({
-          success: false,
-          message: 'Missing printful API configuration'
-        })
-      }
-      const apiAuth = Buffer.from(apiKey).toString('base64')
-
-      const result = await fetch(
-        `${PrintfulURL}/orders/@${req.order.orderId}`,
-        {
-          headers: {
-            'content-type': 'application/json',
-            authorization: `Basic ${apiAuth}`
-          }
-        }
+      const shopConfig = decryptConfig(req.shop.config)
+      const apiKey = get(shopConfig, 'printful')
+      const { statusCode, ...resp } = await fetchOrder(
+        apiKey,
+        req.params.orderId
       )
-      const json = await result.json()
-      res.json(get(json, 'result'))
+
+      return res.status(statusCode || 200).send(resp)
     }
   )
 
-  app.post(
+  router.post(
     '/orders/:orderId/printful/create',
     authSellerAndShop,
-    findOrder,
     async (req, res) => {
-      const apiKey = await encConf.get(req.order.shopId, 'printful')
-      if (!apiKey) {
-        return res.status(500).json({
-          success: false,
-          message: 'Missing printful API configuration'
-        })
-      }
-      const apiAuth = Buffer.from(apiKey).toString('base64')
-      const url = `${PrintfulURL}/orders${
-        req.body.draft ? '' : '?confirm=true'
-      }`
+      const shopConfig = decryptConfig(req.shop.config)
+      const apiKey = get(shopConfig, 'printful')
+      const opts = { draft: req.body.draft }
+      const { status, ...resp } = await placeOrder(apiKey, req.body, opts)
 
-      const newOrderResponse = await fetch(url, {
-        headers: {
-          'content-type': 'application/json',
-          authorization: `Basic ${apiAuth}`
-        },
-        credentials: 'include',
-        method: 'POST',
-        body: JSON.stringify(req.body)
-      })
-
-      const json = await newOrderResponse.json()
-
-      console.log(json)
-
-      if (!newOrderResponse.ok) {
-        console.error('Attempt to create Printful order failed!')
-        if (json && json.error) console.error(json.error.message)
-        return res.status(json.code).json({
-          success: false,
-          message: json.error.message
-        })
-      }
-
-      res.json({ success: true })
+      return res.status(status || 200).send(resp)
     }
   )
 
-  app.post(
+  router.post(
     '/orders/:orderId/printful/confirm',
     authSellerAndShop,
     findOrder,
     async (req, res) => {
-      const apiKey = await encConf.get(req.order.shopId, 'printful')
-      if (!apiKey) {
-        return res.status(500).json({
-          success: false,
-          message: 'Missing printful API configuration'
-        })
-      }
-      const apiAuth = Buffer.from(apiKey).toString('base64')
+      const shopConfig = decryptConfig(req.shop.config)
+      const apiKey = get(shopConfig, 'printful')
+      const { status, ...resp } = await confirmOrder(apiKey, req.params.orderId)
 
-      const url = `${PrintfulURL}/orders/@${req.params.orderId}/confirm`
-      const confirmOrderResponse = await fetch(url, {
-        headers: {
-          'content-type': 'application/json',
-          authorization: `Basic ${apiAuth}`
-        },
-        credentials: 'include',
-        method: 'POST'
-      })
-      const json = await confirmOrderResponse.json()
-      console.log(json)
-
-      res.json({ success: true })
+      return res.status(status || 200).send(resp)
     }
   )
 
-  app.post('/shipping', authShop, async (req, res) => {
-    // console.log(req.body)
-    const apiKey = await encConf.get(req.shop.id, 'printful')
-    if (!apiKey) {
-      return res.status(500).json({
-        success: false,
-        message: 'Service Unavailable'
-      })
-    }
-    const apiAuth = Buffer.from(apiKey).toString('base64')
+  router.post('/shipping', authShop, async (req, res) => {
+    const shopConfig = decryptConfig(req.shop.config)
+    const apiKey = get(shopConfig, 'printful')
+    const result = await fetchShippingEstimate(apiKey, req.body)
+    return res.json(result)
+  })
 
-    const { recipient, items } = req.body
+  router.post('/printful/tax-rates', authShop, async (req, res) => {
+    const shopConfig = decryptConfig(req.shop.config)
+    const apiKey = get(shopConfig, 'printful')
+    const result = await fetchTaxRates(apiKey, req.body)
+    return res.json(result)
+  })
 
-    const query = {
-      recipient: {
-        address1: recipient.address1,
-        city: recipient.city,
-        country_code: recipient.countryCode,
-        state_code: recipient.provinceCode,
-        zip: recipient.zip
-      },
-      items: items
-        .map((i) => ({
-          quantity: i.quantity,
-          variant_id: i.variant
-        }))
-        .filter((i) => i.variant_id)
-    }
+  router.post('/printful/webhooks/:shopId/:secret', async (req, res) => {
+    const { type, data } = req.body
+    const { shopId, secret } = req.params
 
-    if (!query.items.length) {
-      return res.json({ success: false })
-    }
+    try {
+      const shop = await Shop.findOne({ where: { id: shopId } })
+      const shopConfig = decryptConfig(shop.config)
+      const storedSecret = get(shopConfig, 'printfulWebhookSecret')
 
-    const shippingRatesResponse = await fetch(`${PrintfulURL}/shipping/rates`, {
-      headers: {
-        'content-type': 'application/json',
-        authorization: `Basic ${apiAuth}`
-      },
-      credentials: 'include',
-      method: 'POST',
-      body: JSON.stringify(query)
-    })
-    const json = await shippingRatesResponse.json()
-    if (json.result) {
-      res.json(
-        json.result.map((rate) => {
-          const [, label] = rate.name.match(/^(.*) \((.*)\)/)
-          const min = rate.minDeliveryDays + 1
-          const max = rate.maxDeliveryDays + 2
-          return {
-            id: rate.id,
-            label,
-            detail: `${min}-${max} business days`,
-            amount: Number(rate.rate) * 100,
-            countries: [recipient.countryCode]
-          }
-        })
+      if (secret !== storedSecret) {
+        log.error(
+          `Shop ${shopId} - Invalid secret, ignoring Printful event`,
+          type,
+          data
+        )
+        return res.status(200).end()
+      }
+    } catch (err) {
+      log.error(
+        `Shop ${shopId} - Failed to validate Printful secret on request`,
+        err
       )
-    } else {
-      res.json({ success: false })
+      return res.status(500).end()
     }
+
+    log.info(`Shop ${shopId} - Processing Printful event ${type}`)
+
+    try {
+      await ExternalEvent.create({
+        shopId,
+        service: 'printful',
+        eventType: type,
+        data: req.body
+      })
+
+      switch (type) {
+        case PrintfulWebhookEvents.PackageShipped:
+          await processShippedEvent(data, shopId)
+          break
+
+        case PrintfulWebhookEvents.ProductUpdated:
+          await processUpdatedEvent(data, shopId)
+          break
+
+        default:
+          log.info(`Shop ${shopId} - Ignored Printful event ${type}`)
+      }
+    } catch (err) {
+      log.error(`Shop ${shopId} - Failed to process Printful event`, err)
+    }
+
+    return res.status(200).end()
   })
 }

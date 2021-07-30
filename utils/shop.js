@@ -1,38 +1,7 @@
+const fs = require('fs')
+
 const { Shop } = require('../models')
-
-async function createShop({ name, listingId, authToken, config, sellerId }) {
-  if (!name) {
-    return { status: 400, error: 'Provide a shop name' }
-  }
-  if (!listingId) {
-    return { status: 400, error: 'Provide a listing ID' }
-  }
-  if (!String(listingId).match(/^[0-9]+-[0-9]+-[0-9]+$/)) {
-    return {
-      status: 400,
-      error: 'Listing ID must be of form xxx-xxx-xxx eg 1-001-123'
-    }
-  }
-  if (!authToken) {
-    return { status: 400, error: 'Provide an auth token' }
-  }
-  if (!sellerId) {
-    return { status: 400, error: 'Provide a seller ID' }
-  }
-
-  const networkId = Number(listingId.split('-')[0])
-
-  const shop = await Shop.create({
-    name,
-    networkId,
-    listingId,
-    authToken,
-    config,
-    sellerId
-  })
-
-  return { shop }
-}
+const { DSHOP_CACHE } = require('./const')
 
 function findShopByHostname(req, res, next) {
   Shop.findOne({ where: { hostname: req.hostname } }).then((shop) => {
@@ -41,4 +10,152 @@ function findShopByHostname(req, res, next) {
   })
 }
 
-module.exports = { createShop, findShopByHostname }
+/**
+ * Middleware to find a shop using `shopId` param
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+const findShop = async (req, res, next) => {
+  const { shopId } = req.params
+  const shop = await Shop.findOne({ where: { id: shopId } })
+  req.shop = shop
+  next()
+}
+
+/**
+ * Get a shop's public URL. To be used before a shop is created.
+ * @param {string} hostname: Shop's hostname.
+ * @param {string} domain: Network domain or localhost on dev environment.
+ * @param {string} backendUrl: Url to the back-end. Only used in dev/test environment.
+ * @returns {string}
+ */
+function getPublicUrl(hostname, domain, backendUrl) {
+  const isLocal = domain === 'localhost'
+  return isLocal ? backendUrl : `https://${hostname}.${domain}`
+}
+
+/**
+ * Get a shop's data URL. To be used before a shop is created.
+ * @param {string} hostname: Shop's hostname.
+ * @param {string} dataDir: Name of the directory where the shop's data is stored.
+ * @param {string} domain: Network domain or localhost on dev environment.
+ * @param {string} backendUrl: Url to the back-end. Only used in dev/test environment.
+ * @returns {string}
+ */
+function getDataUrl(hostname, dataDir, domain, backendUrl) {
+  const publicUrl = getPublicUrl(hostname, domain, backendUrl)
+  return `${publicUrl}/${encodeURIComponent(dataDir)}/`
+}
+
+/**
+ * Get a shop's public URL.
+ * @param {models.Shop} shop
+ * @param {object} networkConfig: Network configuration.
+ * @returns {string}
+ */
+function getShopPublicUrl(shop, networkConfig) {
+  return getPublicUrl(
+    shop.hostname,
+    networkConfig.domain,
+    networkConfig.backendUrl
+  )
+}
+
+/**
+ * Get a shop's data URL.
+ * @param {models.Shop} shop
+ * @param {object} networkConfig: Network configuration.
+ * @returns {string}
+ */
+function getShopDataUrl(shop, networkConfig) {
+  return getDataUrl(
+    shop.hostname,
+    shop.authToken,
+    networkConfig.domain,
+    networkConfig.backendUrl
+  )
+}
+
+async function _tryDataDir(dataDir) {
+  const hasDir = fs.existsSync(`${DSHOP_CACHE}/${dataDir}`)
+  const [authToken, hostname] = [dataDir, dataDir]
+  const existingShopWithAuthToken = await Shop.findOne({ where: { authToken } })
+  const existingShopWithHostname = await Shop.findOne({ where: { hostname } })
+  return !existingShopWithAuthToken && !hasDir && !existingShopWithHostname
+}
+
+/**
+ * Checks a data dir is valid.
+ * Only alphanumeric and hyphen characters are allowed.
+ *
+ * @param {string} dir
+ * @returns {boolean}
+ */
+function isValidDataDir(dir) {
+  return Boolean(dir.match(/^[a-zA-Z0-9-]+$/))
+}
+
+/**
+ * Generates the name of the data directory to use for a new shop
+ * Ensure there is no conflict with any existing shops by adding
+ * a postfix if necessary.
+ *
+ * @param {string} dir: suggested data directory.
+ */
+async function getDataDir(dir) {
+  let dataDir, basename, postfix
+
+  // Check if the data dir passed as argument already includes a postfix.
+  // If it does, extract the postfix number and increment it.
+  const existingPostfix = dir.match(/^(.*)-([0-9]+)$/)
+  if (existingPostfix && existingPostfix.length === 2) {
+    basename = existingPostfix[1]
+    postfix = Number(existingPostfix[2]) + 1
+    dataDir = `${basename}-${postfix}`
+  } else {
+    basename = dir
+    postfix = 0
+    dataDir = dir
+  }
+
+  // If dataDir already exists, try dataDir-1, dataDir-2 etc until it works
+  while (!(await _tryDataDir(dataDir))) {
+    postfix++
+    dataDir = `${basename}-${postfix}`
+  }
+  return dataDir
+}
+
+function getJsonConfigPath(shop) {
+  return `${DSHOP_CACHE}/${shop.authToken}/data/config.json`
+}
+
+function loadJsonConfigFromDisk(shop) {
+  const path = getJsonConfigPath(shop)
+
+  if (!fs.existsSync(path)) {
+    throw new Error(`File ${path} does not exist`)
+  }
+
+  try {
+    const raw = fs.readFileSync(path).toString()
+    const config = JSON.parse(raw)
+    return config
+  } catch (e) {
+    throw new Error(`Failed loading config.json: ${e}`)
+  }
+}
+
+module.exports = {
+  findShop,
+  findShopByHostname,
+  getShopDataUrl,
+  getShopPublicUrl,
+  getDataUrl,
+  getPublicUrl,
+  getDataDir,
+  isValidDataDir,
+  getJsonConfigPath,
+  loadJsonConfigFromDisk
+}

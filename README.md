@@ -11,7 +11,7 @@ It works by watching the Ethereum blockchain for relevant activity on the Origin
 Marketplace contract. Order data is downloaded from IPFS, decrypted and stored
 in a Postgres database.
 
-- [Test Data](docs/index.md#manual-testing)
+- [Test Data](docs/README.md#manual-testing)
 - [Backend Web API](docs/api.md)
 
 ## Local development
@@ -67,15 +67,49 @@ Export key pair in base64 with no newlines:
     gpg --armor --export KEY_ID | base64 -w0
     gpg --armor --export-secret-key KEY_ID | base64 -w0
 
-## Migrations
+## Creating a new table in the database [Work in Progress]
 
-[Sequelize migrations docs](https://sequelize.org/master/manual/migrations.html)
+Reference: https://sequelize.org/master/manual/
 
-Add new migration:
+Checklist:
+- [ ] Determine the names of the columns in your table. Plan to include a `created_at` and an `updated_at` column with type `DATE` to prevent issues with the following steps.
+- [ ] Create a skeleton of the table by [adding a new migration](https://sequelize.org/master/manual/migrations.html):
 
-    npx sequelize migration:generate --name migrationName --migrations-path=./db/migrations
+      npx sequelize migration:generate --name migrationName --migrations-path=./db/migrations
+        
+     By convention, column names are written with snake case (e.g. `my_column`). After making changes to your migration file, you can commit the changes to the database using the command
+  
+      npm run migrate
+    
+- [ ] Navigate to the _models_ folder and [create a new file](https://sequelize.org/master/manual/model-instances.html) with an appropriate name.
+        **Note:** While it is common for column names in migration files to be written in snake case, column names in models are written in lower camel case (e.g. `myColumn`). To correctly instruct Sequelize to associate these columns with their couterparts in the DB, set the `underscored` option to `true` [See more](https://sequelize.org/master/manual/naming-strategies.html)
+        
+- [ ] To be continued...
 
 ## Sync Repos
 
     npm run build:dist
     rsync -rv --exclude=.git --exclude=.gitignore --exclude=/db/dshop.db --exclude=/node_modules --exclude=/data --delete backend/ DESTINATION
+
+## Running unit tests
+To run the full test suite:
+
+    yarn run test
+
+To run a specific test or group of tests:
+
+    yarn run test -- -g "Discounts"
+
+To run a single test, you can change it's function definition from it('blah blah...') to it.only('blah blah...') then run `yarn run test`
+
+Optionally, if you are going to run tests several times in a row (typically during development), you can speed up the test setup phase by starting the services in a separate terminal and leave them up and running.
+
+    cd ../packages/services
+    yarn run start -g -i -d
+
+Then in another window:
+
+    env USE_RUNNING_SERVICES=true yarn run test
+    
+
+    

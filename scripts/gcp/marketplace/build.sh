@@ -9,7 +9,7 @@
 ##
 ## startup_script.sh is executed on VM launch to do the system build.
 ##
-## The final image will be named origin-dshop-YYYYMMDDHHmmSS
+## The final image will be named origin-dshop-<VM image name>-image-YYYYMMDDHHmmSS
 ##
 ## Requirements: gcloud, packer
 ##
@@ -18,9 +18,9 @@
 echo "Writing packer.json..."
 
 BUILD_ID=$(date +%Y%m%d%H%M%S)
-SOURCE_IMAGE="debian-10-buster-v20200413"
+SOURCE_IMAGE="debian-10-buster-v20200618"
 IMAGE_FAMILY="origin-dshop"
-IMAGE_NAME="$IMAGE_FAMILY-$BUILD_ID"
+IMAGE_NAME="$IMAGE_FAMILY-$SOURCE_IMAGE-image-$BUILD_ID"
 PACKER_ZONE="us-west2-b"
 PACKER_USERNAME="packer"
 TMP_DIR="/tmp/dshop-build-$BUILD_ID"
@@ -61,7 +61,8 @@ cat > $PACKER_JSON <<EOF
       "image_name": "$IMAGE_NAME",
       "image_family": "$IMAGE_FAMILY",
       "zone": "$PACKER_ZONE",
-      "startup_script_file":"startup_script.sh"
+      "startup_script_file":"startup_script.sh",
+      "image_licenses": ["projects/originprotocol-public/global/licenses/origin-protocol-dshop"]
     }
   ]
 }

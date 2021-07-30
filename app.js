@@ -1,27 +1,45 @@
-const fetch = require('node-fetch')
 const fs = require('fs')
+const _escape = require('lodash/escape')
 const express = require('express')
 const session = require('express-session')
+const Router = require('express-promise-router')
 const SequelizeStore = require('connect-session-sequelize')(session.Store)
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const serveStatic = require('serve-static')
-const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
-const { findShopByHostname } = require('./utils/shop')
-const { sequelize, Network } = require('./models')
-const encConf = require('./utils/encryptedConfig')
-const app = express()
+const set = require('lodash/set')
+const kebabCase = require('lodash/kebabCase')
 
-require('./queues').runProcessors()
+const { getConfig } = require('./utils/encryptedConfig')
+const { sequelize, Network } = require('./models')
+const hostCache = require('./utils/hostCache')
+const { getLogger } = require('./utils/logger')
+const { IS_PROD, DSHOP_CACHE } = require('./utils/const')
+const { Sentry, sentryEventPrefix } = require('./sentry')
+const { scheduleDNSVerificationJob } = require('./queues/dnsStatusProcessor')
+
+const log = getLogger('app')
+
+if (typeof process.env.DISABLE_QUEUE_PROCESSSORS === 'undefined') {
+  require('./queues').runProcessors()
+}
+scheduleDNSVerificationJob()
 
 const ORIGIN_WHITELIST_ENABLED = false
 const ORIGIN_WHITELIST = []
-const BODYPARSER_EXCLUDES = ['/webhook']
+const BODYPARSER_EXCLUDES = [
+  '/webhook',
+  '/products/upload-images',
+  '/themes/upload-images'
+]
+
+const app = express()
 
 // TODO: Restrict this more? See: https://expressjs.com/en/guide/behind-proxies.html
 app.set('trust proxy', true)
 
-const sessionStore = new SequelizeStore({ db: sequelize })
+// Must be the first middleware.
+app.use(Sentry.Handlers.requestHandler())
 
 app.use(
   cors({
@@ -29,13 +47,15 @@ app.use(
       if (ORIGIN_WHITELIST_ENABLED && !ORIGIN_WHITELIST.includes(origin)) {
         cb(new Error('Not allowed by CORS'))
       }
-      // if (!origin) console.debug('No Origin header provided')
+      // if (!origin) log.debug('No Origin header provided')
       cb(null, origin || '*')
     },
     credentials: true
   })
 )
 
+// Configure sessions.
+const sessionStore = new SequelizeStore({ db: sequelize })
 app.use(
   session({
     secret: 'keyboard cat', // TODO
@@ -55,113 +75,179 @@ app.use((req, res, next) => {
   return jsonBodyParser(req, res, next)
 })
 
-// Error handler (needs 4 arg signature apparently)
-// eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
-  console.trace(err)
-  return res.status(err.status || 500).json({
-    error: {
-      name: err.name,
-      message: err.message,
-      text: err.toString()
-    }
-  })
-})
-
-require('./routes/networks')(app)
-require('./routes/auth')(app)
-require('./routes/users')(app)
-require('./routes/shops')(app)
-require('./routes/affiliate')(app)
-require('./routes/uphold')(app)
-require('./routes/orders')(app)
-require('./routes/printful')(app)
-require('./routes/stripe')(app)
-require('./routes/discounts')(app)
-require('./routes/tx')(app)
-require('./queues/ui')(app)
-
-app.get(
-  '(/collections/:collection)?/products/:product',
-  findShopByHostname,
-  async (req, res) => {
-    if (!res.shop) {
-      return res.send('')
-    }
-    let html
-    try {
-      html = fs.readFileSync(`${__dirname}/public/index.html`).toString()
-    } catch (e) {
-      return res.send('')
-    }
-
-    const dataUrl = await encConf.get(req.shop.id, 'dataUrl')
-
-    const url = `${dataUrl}${req.params.product}/data.json`
-    const dataRaw = await fetch(url)
-
-    if (dataRaw.ok) {
-      const data = await dataRaw.json()
-      let modifiedHtml = html
-      if (data.title) {
-        modifiedHtml = modifiedHtml.replace(
-          /<title>.*<\/title>/,
-          `<title>${data.title}</title>`
-        )
-      }
-      if (data.head) {
-        modifiedHtml = modifiedHtml
-          .replace('</head>', data.head.join('\n') + '\n</head>')
-          .replace('DATA_URL', dataUrl)
-      }
-      res.send(modifiedHtml)
-    } else {
-      res.send(html)
-    }
-  }
-)
-
 app.use(serveStatic(`${__dirname}/dist`, { index: false }))
-app.get('/', async (req, res) => {
-  let html
-  try {
-    html = fs.readFileSync(`${__dirname}/dist/index.html`).toString()
-  } catch (e) {
-    return res.send('')
-  }
+app.use('/theme', serveStatic(`${__dirname}/themes`, { index: false }))
+
+// Use express-promise-router which allows middleware to return promises.
+const router = Router()
+app.use(router)
+
+require('./routes/networks')(router)
+require('./routes/auth')(router)
+require('./routes/users')(router)
+require('./routes/shops')(router)
+require('./routes/affiliate')(router)
+require('./routes/uphold')(router)
+require('./routes/orders')(router)
+require('./routes/printful')(router)
+require('./routes/stripe')(router)
+require('./routes/discounts')(router)
+require('./routes/tx')(router)
+require('./queues/ui')(router)
+require('./routes/products')(router)
+require('./routes/collections')(router)
+require('./routes/domains')(router)
+require('./routes/shipping-zones')(router)
+require('./routes/health')(router)
+require('./routes/offline-payment')(router)
+require('./routes/paypal')(router)
+require('./routes/exchange-rates')(router)
+require('./routes/crypto')(router)
+require('./routes/themes')(router)
+
+async function getNetworkName() {
   const network = await Network.findOne({ where: { active: true } })
-  const NETWORK = !network
+  return !network
     ? 'NETWORK'
     : network.networkId === 1
     ? 'mainnet'
     : network.networkId === 4
     ? 'rinkeby'
     : 'localhost'
+}
 
+router.get('/', async (req, res) => {
+  let html
+  const authToken = await hostCache(req.hostname)
+
+  if (authToken) {
+    try {
+      html = fs
+        .readFileSync(`${DSHOP_CACHE}/${authToken}/public/index.html`)
+        .toString()
+    } catch (e) {
+      return res.status(404).send('')
+    }
+  } else {
+    try {
+      html = fs.readFileSync(`${__dirname}/dist/index.html`).toString()
+    } catch (e) {
+      return res.send('')
+    }
+
+    const NETWORK = await getNetworkName()
+    html = html
+      .replace('DATA_DIR', '')
+      .replace('TITLE', 'Origin Dshop')
+      .replace(/NETWORK/g, NETWORK)
+  }
+  res.send(html)
+})
+
+router.get('/theme/:theme', async (req, res) => {
+  const theme = req.params.theme
+  if (theme !== kebabCase(theme)) {
+    return res.send('Invalid theme')
+  }
+
+  const themeIndex = `${__dirname}/themes/${theme}/index.html`
+
+  let html
+  try {
+    html = fs.readFileSync(themeIndex).toString()
+  } catch (e) {
+    return res.send('')
+  }
+
+  const slug = _escape(req.query.shop)
+
+  const NETWORK = await getNetworkName()
   html = html
-    .replace('DATA_DIR', '')
+    .replace('DATA_DIR', `/${slug}`)
     .replace('TITLE', 'Origin Dshop')
-    .replace('NETWORK', NETWORK)
+    .replace(/NETWORK/g, NETWORK)
+    .replace('ENABLE_LIVE_PREVIEW', 'TRUE')
 
   res.send(html)
 })
 
-app.get('*', (req, res, next) => {
+router.get('*', async (req, res, next) => {
+  const authToken = await hostCache(req.hostname)
   const split = req.path.split('/')
-  if (split.length <= 2) {
+
+  if (!authToken && split.length <= 2) {
     return next()
   }
-  const dataDir = split[1]
-  const dir = `${DSHOP_CACHE}/${dataDir}/data`
-  req.url = split.slice(2).join('/')
+
+  /**
+   * We're making some decisions on what source we're serving from here.
+   *
+   * 1) If the authToken was included in the URL, it's a data dir access.
+   * 2) If it's a known deployed hostname, we want to serve the assembled shop.
+   * 3) If all else failed, it's the admin
+   */
+  const partInUrl = decodeURIComponent(split[1])
+  const dataDir = authToken ? authToken : decodeURIComponent(split[1])
+  const isNamedDataAccess =
+    partInUrl === authToken || (!!partInUrl && !authToken)
+  const dir = `${DSHOP_CACHE}/${dataDir}${
+    isNamedDataAccess ? '/data' : '/public'
+  }`
+  req.url = isNamedDataAccess ? split.slice(2).join('/') : req.path
+
+  // When serving config.json from backend, override active network settings.
+  // This prevents problems when, eg, the backend specified in config.json does
+  // not match the backend being served from.
+  try {
+    if (req.url === 'config.json') {
+      const network = await Network.findOne({ where: { active: true } })
+      const netConfig = getConfig(network.config)
+      const configRaw = fs.readFileSync(`${dir}/${req.url}`).toString()
+      const config = JSON.parse(configRaw)
+      const netId = network.networkId
+      set(config, `networks[${netId}].ipfsGateway`, network.ipfs)
+      set(config, `networks[${netId}].ipfsApi`, network.ipfsApi)
+      set(config, `networks[${netId}].backend`, netConfig.backendUrl)
+      return res.json(config)
+    }
+  } catch (err) {
+    log.error(err)
+  }
+
   serveStatic(dir)(req, res, next)
 })
 
-// app.get('*', (req, res, next) => {
-//   serveStatic(`${__dirname}/public/${req.hostname}`)(req, res, next)
-// })
+// Must come after controllers and before any other error middleware.
+app.use(Sentry.Handlers.errorHandler())
+
+// The custom error handler must be defined last.
+// Note that it does need 4 args signature otherwise it does not get invoked.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  log.error(err)
+  const sentryUrl = `${sentryEventPrefix}/${res.sentry}`
+  log.error('Sentry URL:', sentryUrl)
+  let error
+  if (IS_PROD) {
+    // Send back a generic error message on prod.
+    error = {
+      name: 'Unexpected error',
+      message:
+        'An unexpected error occurred. Our team has been notified. Please try again later.',
+      sentryUrl
+    }
+  } else {
+    // Development environment. Send back error details from the exception.
+    error = {
+      name: err.name,
+      message: err.message,
+      sentryUrl
+    }
+  }
+  return res.status(err.status || 500).json({ error })
+})
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
-  console.log(`\nListening on port ${PORT}\n`)
+  log.info(`\nListening on port ${PORT}\n`)
 })

@@ -37,6 +37,29 @@
     /></noscript>
   <% } %>
 
+  <% if (htmlWebpackPlugin.options.sentryDSN) { %>
+    <script
+      src="https://browser.sentry-cdn.com/5.19.2/bundle.min.js"
+      integrity="sha384-JpEWxJ7oLRn+baXBgcCKEv73uYWsgouzEResgJneOXvTjDZ+1crAXcNAKZoiL96Z"
+      crossorigin="<%= webpackConfig.output.crossOriginLoading %>"></script>
+    <script>
+      <% /* To listen on react */ %>
+      window._sentryLoaded = true
+
+      Sentry.init({
+        dsn: '<%= htmlWebpackPlugin.options.sentryDSN %>',
+        environment: '<%= htmlWebpackPlugin.options.sentryEnvironment %>',
+      })
+    </script>
+  <% } %>
+
+  <script>
+    localStorage.ognNetwork = "NETWORK"
+    window.ognNetwork = "NETWORK"
+
+    window.enableLivePreview = "ENABLE_LIVE_PREVIEW" === "TRUE"
+  </script>
+
   <link rel="data-dir" href="<%= htmlWebpackPlugin.options.dataDir || 'DATA_DIR' %>" />
 
   <link rel="icon" href="FAVICON" />
@@ -56,15 +79,6 @@
     <div class="loading-screen"></div>
   </div>
 </body>
-<script crossorigin src="<%= htmlWebpackPlugin.options.absolute ? '/' : '' %>dist/openpgp.min.js"></script>
-<script>
-  if (typeof window.openpgp !== 'undefined') {
-    openpgp.config.show_comment = false
-    openpgp.config.show_version = false
-    openpgp.initWorker({ path: '<%= htmlWebpackPlugin.options.absolute ? '/' : '' %>dist/openpgp.worker.min.js' })
-  }
-  localStorage.ognNetwork = "NETWORK"
-</script>
 <% _.forEach(htmlWebpackPlugin.files.js, function(file, index) { %>
 <% if (htmlWebpackPlugin.files.jsIntegrity) { %>
 <script src="<%- file %>"

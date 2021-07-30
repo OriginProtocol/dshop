@@ -1,57 +1,58 @@
 require('dotenv').config()
 
 const fetch = require('node-fetch')
-const memoize = require('lodash/memoize')
-const { PROVIDER, NETWORK_ID } = require('./utils/const')
+const { getLogger } = require('./utils/logger')
+
+const log = getLogger('config')
 
 const Defaults = {
-  '999': {
+  999: {
     ipfsGateway: 'http://localhost:8080',
-    ipfsApi: 'http://localhost:5002',
+    ipfsApi: `http://localhost:${process.env.IPFS_API_PORT || 5002}`,
     provider: 'http://localhost:8545',
     providerWs: 'ws://localhost:8545',
     marketplaceContract: process.env.MARKETPLACE_CONTRACT
   },
-  '4': {
-    ipfsGateway: 'https://ipfs.staging.originprotocol.com',
-    ipfsApi: 'https://ipfs.staging.originprotocol.com',
+  4: {
+    ipfsGateway: 'https://fs-autossl.staging.ogn.app',
+    ipfsApi: 'https://fs.staging.ogn.app',
     marketplaceContract: '0x3d608cce08819351ada81fc1550841ebc10686fd',
     fetchPastLogs: true
   },
-  '1': {
-    ipfsGateway: 'https://ipfs.originprotocol.com',
-    ipfsApi: 'https://ipfs.originprotocol.com',
+  1: {
+    ipfsGateway: 'https://fs-autossl.ogn.app',
+    ipfsApi: 'https://fs.ogn.app',
     marketplaceContract: '0x698ff47b84837d3971118a369c570172ee7e54c2',
     fetchPastLogs: true
   }
 }
 
-const getSiteConfig = memoize(async function getSiteConfig(
-  dataURL,
-  netId = NETWORK_ID
-) {
-  let data
-  if (dataURL) {
-    const url = `${dataURL}config.json`
-    console.debug(`Loading config from ${url}`)
-    const dataRaw = await fetch(url)
-    data = await dataRaw.json()
-  } else {
-    console.warn('dataURL not provided')
+/**
+ * Fetches a shop's config.json from the network.
+ *
+ * @param {string} dataURL: The shop's data URL
+ * @param {number} netId: Ethereum network Id (1=Mainnet, 4=Rinkeby, 999=Test, etc..).
+ * @returns {Promise<{object}>}
+ */
+async function getShopConfigJson(dataURL, netId) {
+  const url = `${dataURL}config.json`
+  try {
+    const res = await fetch(url)
+    const data = await res.json()
+    const defaultData = Defaults[netId] || {}
+    const networkData = data ? data.networks[netId] : {}
+    return {
+      ...data,
+      ...defaultData,
+      ...networkData
+    }
+  } catch (e) {
+    log.error(`Error fetching config.json from ${url}`)
+    return null
   }
-  const defaultData = Defaults[netId] || {}
-  const networkData = data ? data.networks[netId] : null || {}
-  const siteConfig = {
-    provider: PROVIDER,
-    ...data,
-    ...defaultData,
-    ...networkData
-  }
-  return siteConfig
-})
+}
 
 module.exports = {
   defaults: Defaults,
-  getSiteConfig,
-  provider: PROVIDER
+  getShopConfigJson
 }

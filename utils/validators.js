@@ -1,3 +1,7 @@
+const { getLogger } = require('../utils/logger')
+
+const log = getLogger('utils.validators')
+
 function assert(cond, message) {
   if (!cond) {
     throw new Error(`Assertion error: ${message}`)
@@ -18,7 +22,7 @@ function validateShop(shop) {
     assert(!shop.config, 'Shop configuration should not exist')
   } catch (err) {
     if (err.message.includes('Assertion')) {
-      console.warn(err.message)
+      log.warn(err.message)
       return false
     }
     throw err
@@ -26,15 +30,7 @@ function validateShop(shop) {
   return true
 }
 
-/**
- * Validate backend config
- */
-function validateConfig(config) {
-  // TODO
-  return !!config
-}
-
 module.exports = {
-  validateShop,
-  validateConfig
+  assert,
+  validateShop
 }
