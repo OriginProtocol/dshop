@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import fbt from 'fbt'
 import { get /*pick, pickBy*/ } from 'lodash'
-
 import CKEditor from 'ckeditor4-react'
-
 import useBackendApi from 'utils/useBackendApi'
 // import { formFeedback } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
-
 import Link from 'components/Link'
 import AdminConfirmationModal from 'components/ConfirmationModal'
 import PlusIcon from 'components/icons/Plus'
@@ -16,8 +13,6 @@ const LegalSettings = () => {
   const [{ config }, dispatch] = useStateValue()
   const { post } = useBackendApi({ authToken: true })
   const [saving, setSaving] = useState(false)
-
-  // To do: enforce limit on the length of policy title
 
   // policies is of type <Array<Array<String, String, boolean>>. The two strings represent the Policy title and contents respectively,
   // while the boolean is used to indicate whether there is an error associated with the policy
@@ -28,24 +23,7 @@ const LegalSettings = () => {
   //   ['Return Policy', 'Eget egestas purus viverra accumsan.', false]
   // ]
 
-  const [policies, setPolicies] = useState(
-    /*[
-    [
-      'Terms and Conditions',
-      'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.'
-    ],
-    [
-      'Privacy Policy',
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae sapien pellentesque habitant morbi tristique. Et netus et malesuada fames ac turpis. Vitae sapien pellentesque habitant morbi tristique senectus et netus. Ultrices tincidunt arcu non sodales neque. Orci phasellus egestas tellus rutrum tellus pellentesque eu. Vivamus arcu felis bibendum ut tristique et egestas quis ipsum. In egestas erat imperdiet sed euismod nisi porta lorem mollis. Lectus mauris ultrices eros in cursus turpis massa. Vulputate eu scelerisque felis imperdiet proin. Blandit turpis cursus in hac habitasse platea dictumst quisque.'
-    ],
-    [
-      'Return Policy',
-      'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.'
-    ]
-  ]*/ [
-      ['', '', false]
-    ]
-  )
+  const [policies, setPolicies] = useState([['', '', false]])
 
   useEffect(() => {
     let timeout
@@ -55,21 +33,24 @@ const LegalSettings = () => {
         authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
       }
     })
-      .then((res) => {
-        console.log('result of GET request:', res)
-        !res.ok ? null : res.text()
-      })
       // NOTE: CKEditor takes a few seconds to load
-      .then((body) => {
-        if (body) {
-          timeout = setTimeout(() => setPolicies(body), 2000)
+      .then((res) => {
+        if (!res.ok) {
+          return null
+        } else {
+          return res.json() //Expected type: <Array<Array<String, String, boolean>>
+        }
+      })
+      .then((result) => {
+        if (result) {
+          timeout = setTimeout(() => setPolicies(result), 2000)
         }
       })
       .catch((err) => {
         console.error('Failed to load shop policies', err)
       })
     return () => clearTimeout(timeout)
-  }, [policies])
+  }, [window.onload])
 
   const actions = (
     <div className="actions">
@@ -191,11 +172,6 @@ const LegalSettings = () => {
         setSaving(true)
 
         try {
-          //     const shopPolicies = pickBy(state, (v, k) => !k.endsWith('Error'))
-
-          //     // Shop policy pages object
-          //     shopPolicies.pages = policies
-
           // Make sure that the request body is either a JS Object or Array. Failure to do
           // so will produce a SyntaxError when the body is parsed by Express' body-parser
           // module (i.e. backend). Discussion: https://github.com/expressjs/body-parser/issues/309
@@ -203,9 +179,7 @@ const LegalSettings = () => {
             body: JSON.stringify(policies),
             suppressError: true
           })
-          shopPoliciesRes
-            ? console.log(`shopPoliciesRes: ${shopPoliciesRes}`)
-            : console.log(`Error fetching shop's policies`)
+          shopPoliciesRes ? null : console.log(`Error posting shop's policies`)
 
           // Use code below when working on user feedback for the form
           // if (!shopPolicies.success && shopPolicies.field) {
@@ -214,11 +188,6 @@ const LegalSettings = () => {
           //   return
           // }
           setSaving(false)
-          // const newShopPolicies = await post('/shop/policies', {
-          //   method: 'GET',
-          //   suppressError: true
-          // })
-          // console.log('newShopPolicies: ', newShopPolicies)
 
           dispatch({
             type: 'toast',
@@ -259,12 +228,14 @@ const LegalSettings = () => {
           return (
             <>
               <div className="form-group">
-                <label>
-                  <fbt desc="admin.settings.legal.title">Title</fbt>
-                </label>
                 <div>
+                  <label>
+                    <fbt desc="admin.settings.legal.title">Title</fbt>
+                  </label>
                   <input
                     className={`form-control ${policy[2] ? 'is-invalid' : ''}`}
+                    type="text"
+                    required
                     placeholder={
                       index === 0
                         ? 'e.g. "Terms and Conditions"'
@@ -277,7 +248,8 @@ const LegalSettings = () => {
                       setPolicies((policies) => {
                         const updatedPolicyTitle = e.target.value
                         policies[index].splice(0, 1, updatedPolicyTitle)
-                        return policies
+                        //console.log(policies)
+                        return [...policies]
                       })
                     }}
                   />
