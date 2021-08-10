@@ -227,32 +227,35 @@ const LegalSettings = () => {
         {policies.map((policy, index) => {
           return (
             <>
+              <br />
               <div className="form-group">
                 <div>
                   <label>
-                    <fbt desc="admin.settings.legal.title">Title</fbt>
+                    <fbt desc="admin.settings.legal.title">Title: </fbt>
+                    <input
+                      className={`form-control ${
+                        policy[2] ? 'is-invalid' : ''
+                      }`}
+                      type="text"
+                      required
+                      placeholder={
+                        index === 0
+                          ? 'e.g. "Terms and Conditions"'
+                          : index === 1
+                          ? 'e.g. "Privacy Policy"'
+                          : ''
+                      }
+                      value={get(policy, 0)}
+                      onChange={(e) => {
+                        setPolicies((policies) => {
+                          const updatedPolicyTitle = e.target.value
+                          policies[index].splice(0, 1, updatedPolicyTitle)
+                          //console.log(policies)
+                          return [...policies]
+                        })
+                      }}
+                    />
                   </label>
-                  <input
-                    className={`form-control ${policy[2] ? 'is-invalid' : ''}`}
-                    type="text"
-                    required
-                    placeholder={
-                      index === 0
-                        ? 'e.g. "Terms and Conditions"'
-                        : index === 1
-                        ? 'e.g. "Privacy Policy"'
-                        : ''
-                    }
-                    value={get(policy, 0)}
-                    onChange={(e) => {
-                      setPolicies((policies) => {
-                        const updatedPolicyTitle = e.target.value
-                        policies[index].splice(0, 1, updatedPolicyTitle)
-                        //console.log(policies)
-                        return [...policies]
-                      })
-                    }}
-                  />
                 </div>
                 <Editor
                   data={policy[1]}
@@ -264,6 +267,22 @@ const LegalSettings = () => {
                     })
                   }}
                 />
+                <div>
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger"
+                    onClick={() => {
+                      setPolicies((policies) => {
+                        policies.splice(index, 1)
+                        return [...policies]
+                      })
+                    }}
+                  >
+                    <fbt desc="admin.settings.legal.removePolicyButton">
+                      Remove
+                    </fbt>
+                  </button>
+                </div>
               </div>
             </>
           )
@@ -272,6 +291,7 @@ const LegalSettings = () => {
           type="button"
           onClick={() => setPolicies([...policies, ['', '', false]])}
           className="btn btn-outline-primary mt-4"
+          s
         >
           <PlusIcon size="9" />
           <span className="ml-2">Add page</span>
@@ -284,3 +304,7 @@ const LegalSettings = () => {
 }
 
 export default LegalSettings
+
+require('react-styl')(`
+
+`)
