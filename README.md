@@ -13,6 +13,7 @@ A decentralized e-commerce store served entirely from IPFS.
 
 - Front-end [README](./shop/README.md)
 - Server [README](./backend/README.md)
+- Security [README](./SECURITY.md)
 
 ## Deploy to Heroku
 
