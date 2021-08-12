@@ -19,4 +19,6 @@ A decentralized e-commerce store served entirely from IPFS.
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/OriginProtocol/dshop/tree/release)
 
-**Note** The `release` branch will be deployed to Heroku
+**Notes**
+ - The `release` branch will be deployed to Heroku
+ - The release branch is far behind master and has some [known issues](https://github.com/OriginProtocol/dshop/issues/987). Help wanted from the community to help fixing this!
