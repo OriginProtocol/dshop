@@ -13,6 +13,7 @@ const LegalSettings = () => {
   const [{ config }, dispatch] = useStateValue()
   const { post } = useBackendApi({ authToken: true })
   const [saving, setSaving] = useState(false)
+  const [state, setState] = useState({ hasChanges: false })
 
   // policies is of type <Array<Array<String, String, boolean>>. The two strings represent the Policy title and contents respectively,
   // while the boolean is used to indicate whether there is an error associated with the policy
@@ -22,7 +23,6 @@ const LegalSettings = () => {
   //   ['Privacy Policy', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', false ],
   //   ['Return Policy', 'Eget egestas purus viverra accumsan.', false]
   // ]
-
   const [policies, setPolicies] = useState([['', '', false]])
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const LegalSettings = () => {
         if (!res.ok) {
           return null
         } else {
-          return res.json() //Expected type: <Array<Array<String, String, boolean>>
+          return res.json() //Expected type: <Array<Array<String, String, boolean>>>
         }
       })
       .then((result) => {
@@ -181,12 +181,7 @@ const LegalSettings = () => {
           })
           shopPoliciesRes ? null : console.log(`Error posting shop's policies`)
 
-          // Use code below when working on user feedback for the form
-          // if (!shopPolicies.success && shopPolicies.field) {
-          //   //setState({ [`${shopPolicies.field}Error`]: shopConfigRes.reason })
-          //   setSaving(false)
-          //   return
-          // }
+          setState({ hasChanges: true })
           setSaving(false)
 
           dispatch({
@@ -200,6 +195,20 @@ const LegalSettings = () => {
         } catch (err) {
           console.error(err)
           setSaving(false)
+        } finally {
+          // Notify the backend that there have been changes to the shop's config. This is done to ensure that the deploy (i.e. 'Publish Changes') button is displayed
+          // to the user
+          const shopConfigRes = await post('/shop/config', {
+            method: 'PUT',
+            body: JSON.stringify({ hasChanges: state.hasChanges }),
+            suppressError: true
+          })
+          if (shopConfigRes) {
+            dispatch({
+              type: 'reload',
+              target: 'shopConfig'
+            })
+          }
         }
       }}
     >
@@ -287,15 +296,17 @@ const LegalSettings = () => {
             </>
           )
         })}
-        <button
-          type="button"
-          onClick={() => setPolicies([...policies, ['', '', false]])}
-          className="btn btn-outline-primary mt-4"
-          s
-        >
-          <PlusIcon size="9" />
-          <span className="ml-2">Add page</span>
-        </button>
+        <div>
+          <button
+            type="button"
+            onClick={() => setPolicies([...policies, ['', '', false]])}
+            className="btn btn-outline-primary mt-4"
+            s
+          >
+            <PlusIcon size="9" />
+            <span className="ml-2">Add page</span>
+          </button>
+        </div>
       </div>
 
       <div className="footer-actions">{actions}</div>

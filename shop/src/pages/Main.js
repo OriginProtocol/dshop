@@ -22,22 +22,18 @@ import Cart from './cart/Cart'
 
 import fbt from 'fbt'
 
-const Content = () => {
+/*
+ * @param pol <Array<Array<String, String, boolean>>. The two strings represent a store's Policy title and contents respectively,
+ *  while the boolean is used to indicate whether there is an error associated with the policy
+ *  E.g.:
+ *  [
+ *    ['Terms and Conditions', 'Eget egestas purus viverra accumsan in nisl nisi scelerisque.', false],
+ *    ['Privacy Policy', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', false ],
+ *    ['Return Policy', 'Eget egestas purus viverra accumsan.', false]
+ *  ]
+ */
+const Content = ({ pol }) => {
   const { config } = useConfig()
-  const policies = [
-    [
-      'Terms and Conditions',
-      'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.'
-    ],
-    [
-      'Privacy Policy',
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vitae sapien pellentesque habitant morbi tristique. Et netus et malesuada fames ac turpis. Vitae sapien pellentesque habitant morbi tristique senectus et netus. Ultrices tincidunt arcu non sodales neque. Orci phasellus egestas tellus rutrum tellus pellentesque eu. Vivamus arcu felis bibendum ut tristique et egestas quis ipsum. In egestas erat imperdiet sed euismod nisi porta lorem mollis. Lectus mauris ultrices eros in cursus turpis massa. Vulputate eu scelerisque felis imperdiet proin. Blandit turpis cursus in hac habitasse platea dictumst quisque.'
-    ],
-    [
-      'Return Policy',
-      'Eget egestas purus viverra accumsan in nisl nisi scelerisque. Nibh praesent tristique magna sit amet purus gravida quis. In nibh mauris cursus mattis molestie. Eget dolor morbi non arcu risus quis. Quam id leo in vitae turpis massa sed elementum. Lectus sit amet est placerat in egestas. Aliquam eleifend mi in nulla posuere sollicitudin aliquam ultrices. Feugiat nibh sed pulvinar proin. Semper quis lectus nulla at volutpat diam. Mattis vulputate enim nulla aliquet. Gravida in fermentum et sollicitudin ac orci phasellus egestas.'
-    ]
-  ]
 
   useEffect(() => {
     if (!window.BroadcastChannel) {
@@ -64,9 +60,9 @@ const Content = () => {
       <Route path="/terms" component={Terms} />
 
       {/* When the end user clicks on a shop policy link (on the footer of the website),
-     they are be directed to a path that matches the pattern of the value
+     they are directed to a path that matches the pattern of the value
      passed to the 'path' prop of the Route component below */}
-      {policies.map((policy, index) => {
+      {pol.map((policy, index) => {
         return (
           <Route key={`${index}`} path={`/policy${index + 1}`}>
             <DisplayPolicy heading={policy[0]} text={policy[1]} />
@@ -108,6 +104,31 @@ const Main = () => {
   const { config } = useConfig()
   const isMobile = useIsMobile()
   const [menu, setMenu] = useState(false)
+  const [policies, setPolicies] = useState([['', '', false]])
+  useEffect(() => {
+    fetch(`shop/policies`, {
+      method: 'GET',
+      headers: {
+        authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
+      }
+    })
+      .then((res) => {
+        if (!res.ok) {
+          return null
+        } else {
+          return res.json() //Expected type: <Array<Array<String, String, boolean>>>
+        }
+      })
+      .then((result) => {
+        if (result) {
+          setPolicies(result)
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load shop policies', err)
+      })
+  }, [window.onload])
+
   if (!config) {
     return (
       <div className="mt-5 text-center">
@@ -115,6 +136,7 @@ const Main = () => {
       </div>
     )
   }
+
   if (isMobile) {
     return (
       <>
@@ -134,10 +156,10 @@ const Main = () => {
             </button>
           </header>
           <MobileMenu open={menu} onClose={() => setMenu(false)} />
-          <Content />
+          <Content pol={policies} />
         </div>
         <Notice footer={true} />
-        <Footer />
+        <Footer policyHeadings={policies.map((p) => p[0])} />
       </>
     )
   }
@@ -160,11 +182,11 @@ const Main = () => {
               <div dangerouslySetInnerHTML={{ __html: config.byline }} />
             )}
           </header>
-          <Content />
+          <Content pol={policies} />
         </div>
         <Notice footer={true} />
       </div>
-      <Footer />
+      <Footer policyHeadings={policies.map((p) => p[0])} />
     </>
   )
 }
