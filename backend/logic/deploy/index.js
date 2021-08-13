@@ -25,13 +25,14 @@ const {
   isConfigured
 } = require('@origin/dshop-validation/matrix')
 
-const { Network } = require('../../models')
+const { Network, ShopDomain } = require('../../models')
 const { queues } = require('../../queues')
 const { ShopDomainStatuses } = require('../../utils/enums')
 const { decryptConfig } = require('../../utils/encryptedConfig')
 const { getLogger } = require('../../utils/logger')
 const { getMyIP } = require('../../utils/ip')
 const { assert } = require('../../utils/validators')
+const { hasCNAMEOrA } = require('../../utils/dns')
 const { DSHOP_CACHE, DEFAULT_INFRA_RESOURCES } = require('../../utils/const')
 
 const {
@@ -225,6 +226,31 @@ async function deploy({
     dnsProvider = 'aws'
   } else if (overrides.configureShopDNS) {
     dnsProvider = 'override'
+  }
+
+  if (dnsProvider) {
+    if (await hasCNAMEOrA(fqdn)) {
+      const existing = await ShopDomain.findAll({
+        where: { domain: fqdn.toLowerCase() }
+      })
+
+      if (existing && existing.length > 0) {
+        if (existing.length > 1) {
+          // Shouldn't happen in an ideal world
+          throw new Error(`Found too many domains for name ${fqdn}`)
+        } else if (existing[0].shopId !== shop.id) {
+          // ShopDomain is not for this shop
+          throw new Error(
+            `Domain ${fqdn} already in use by another shop. Attempted by shop #${shop.id}`
+          )
+        }
+      } else {
+        // DNS Name exists, but isn't associated with a shop
+        throw new Error(
+          `Domain ${fqdn} already in use. Attempted by shop #${shop.id}`
+        )
+      }
+    }
   }
 
   // Potentially used by CDN and DNS steps

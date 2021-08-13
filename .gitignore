@@ -31,10 +31,10 @@ node_modules/
 
 # Deployment #
 ##############
-secrets.yaml
-secrets-dev.yaml
-secrets-staging.yaml
-secrets-prod.yaml
+#secrets.yaml
+#secrets-dev.yaml
+#secrets-staging.yaml
+#secrets-prod.yaml
 secrets-*.env
 github.key
 
@@ -88,7 +88,7 @@ Thumbs.db
 
 # Secrets #
 devops/github
-devops/kubernetes/values/origin/secrets-*.enc.yaml
-devops/kubernetes/values/origin-monitoring/secrets
+*.dec
+*.dec.yaml
 
 dshop_setup

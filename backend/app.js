@@ -1,4 +1,5 @@
 const fs = require('fs')
+const _escape = require('lodash/escape')
 const express = require('express')
 const session = require('express-session')
 const Router = require('express-promise-router')
@@ -19,7 +20,9 @@ const { scheduleDNSVerificationJob } = require('./queues/dnsStatusProcessor')
 
 const log = getLogger('app')
 
-require('./queues').runProcessors()
+if (typeof process.env.DISABLE_QUEUE_PROCESSSORS === 'undefined') {
+  require('./queues').runProcessors()
+}
 scheduleDNSVerificationJob()
 
 const ORIGIN_WHITELIST_ENABLED = false
@@ -156,9 +159,11 @@ router.get('/theme/:theme', async (req, res) => {
     return res.send('')
   }
 
+  const slug = _escape(req.query.shop)
+
   const NETWORK = await getNetworkName()
   html = html
-    .replace('DATA_DIR', `/${req.query.shop}`)
+    .replace('DATA_DIR', `/${slug}`)
     .replace('TITLE', 'Origin Dshop')
     .replace(/NETWORK/g, NETWORK)
     .replace('ENABLE_LIVE_PREVIEW', 'TRUE')

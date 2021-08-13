@@ -90,19 +90,28 @@ module.exports = function (router) {
       const storedSecret = get(shopConfig, 'printfulWebhookSecret')
 
       if (secret !== storedSecret) {
-        log.error('Invalid secret, ignoring event', data)
+        log.error(
+          `Shop ${shopId} - Invalid secret, ignoring Printful event`,
+          type,
+          data
+        )
         return res.status(200).end()
       }
     } catch (err) {
-      log.error('Failed to validate secret on request', shopId, err)
+      log.error(
+        `Shop ${shopId} - Failed to validate Printful secret on request`,
+        err
+      )
       return res.status(500).end()
     }
+
+    log.info(`Shop ${shopId} - Processing Printful event ${type}`)
 
     try {
       await ExternalEvent.create({
         shopId,
         service: 'printful',
-        event_type: type,
+        eventType: type,
         data: req.body
       })
 
@@ -114,9 +123,12 @@ module.exports = function (router) {
         case PrintfulWebhookEvents.ProductUpdated:
           await processUpdatedEvent(data, shopId)
           break
+
+        default:
+          log.info(`Shop ${shopId} - Ignored Printful event ${type}`)
       }
     } catch (err) {
-      log.error('Failed to process event', err)
+      log.error(`Shop ${shopId} - Failed to process Printful event`, err)
     }
 
     return res.status(200).end()

@@ -9,10 +9,10 @@ CODENAME=`grep -Po 'VERSION="[0-9]+ \(\K[^)]+' /etc/os-release`
 #################
 # Server packages
 #################
-curl -sL https://deb.nodesource.com/setup_10.x | bash -
+curl -sL https://deb.nodesource.com/setup_14.x | bash -
 apt update
 apt upgrade -y
-apt-get install -y nodejs build-essential git wget gnupg ca-certificates
+apt-get install -y nodejs build-essential git wget gnupg ca-certificates sqlite3
 npm install -g yarn pm2
 
 ###############

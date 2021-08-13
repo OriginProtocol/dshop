@@ -57,7 +57,7 @@ require('react-styl')(`
         border-width: 1px
         border-image-source: linear-gradient(to bottom, #1384ff, #006ee6)
         border-image-slice: 1
-        background-image: linear-gradient(98deg, #0073ed, #007cff), linear-gradient(to bottom, #1384ff, #006ee6)
+        background-image: linear-gradient(90deg, #00000085, #00000085), linear-gradient(to bottom, #1384ff, #006ee6)
         color: #fff
 
         &:focus
