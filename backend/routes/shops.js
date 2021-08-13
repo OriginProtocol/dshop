@@ -364,6 +364,13 @@ module.exports = function (router) {
    * @returns {Promise<{success: false, reason: string, field:string, message: string}|{success: true, slug: string}>}
    */
   router.post('/shop', authUser, async (req, res) => {
+    if (process.env.NEW_SHOP_CREATION_DISABLED) {
+      return res.status(400).json({
+        success: false,
+        reason: 'New shop creation disabled',
+        message: 'New shop creation disabled'
+      })
+    }
     const args = { ...req.body, seller: req.seller }
     const result = await createShop(args)
     if (!result.success) {
@@ -663,7 +670,6 @@ module.exports = function (router) {
     if (!shop) {
       return res.json({ success: false, reason: 'shop-not-found' })
     }
-    const dataDir = authToken
     const { networkId } = req.body
     let resourceSelection = req.body.resourceSelection
 
@@ -696,7 +702,7 @@ module.exports = function (router) {
       {
         uuid,
         networkId: networkId ? networkId : network.networkId,
-        subdomain: dataDir,
+        subdomain: shop.hostname,
         shopId: shop.id,
         resourceSelection
       },
