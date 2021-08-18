@@ -36,7 +36,7 @@
     "body-parser": "^1.19.0",
     "bottleneck": "^2.19.5",
     "bs58": "^4.0.1",
-    "bull": "^3.20.0",
+    "bull": "^3.20.1",
     "bull-board": "^0.10.0",
     "cids": "^1.1.5",
     "cloudflare": "^2.7.0",
