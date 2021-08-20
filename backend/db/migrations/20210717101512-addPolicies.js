@@ -10,13 +10,11 @@ module.exports = {
           primaryKey: true
         },
         shop_id: {
-          type: Sequelize.INTEGER
+          type: Sequelize.INTEGER,
+          primaryKey: true
         },
         all_policies: {
           type: Sequelize.JSON
-        },
-        auth_token: {
-          type: Sequelize.STRING
         },
         created_at: {
           type: Sequelize.DATE

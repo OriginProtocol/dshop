@@ -2,6 +2,7 @@ module.exports = (sequelize, DataTypes) => {
   const Policies = sequelize.define(
     'Policies',
     {
+      shopId: DataTypes.INTEGER,
       allPolicies: DataTypes.JSON
     },
     {
@@ -11,12 +12,11 @@ module.exports = (sequelize, DataTypes) => {
   )
 
   // Reference: https://sequelize.org/master/manual/assocs.html
-  // In the Policies model, use a custom name for the foreign key. Additionally, associate the model with the 'auth_token' field of the shop
+  // In the Policies model, use a custom name for the foreign key. Additionally, associate the model with the 'shop_id' field of the shop
   // instead of its primary key.
   Policies.associate = function (models) {
     Policies.belongsTo(models.Shop, {
-      targetKey: 'authToken',
-      foreignKey: 'authToken'
+      foreignKey: 'shopId'
     })
   }
 
