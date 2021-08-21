@@ -6,7 +6,6 @@ module.exports = {
       await queryInterface.createTable('policies', {
         id: {
           type: Sequelize.INTEGER,
-          autoIncrement: true,
           primaryKey: true
         },
         shop_id: {
