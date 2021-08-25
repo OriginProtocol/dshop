@@ -2,8 +2,13 @@ module.exports = (sequelize, DataTypes) => {
   const Policies = sequelize.define(
     'Policies',
     {
-      shopId: DataTypes.INTEGER,
-      allPolicies: DataTypes.JSON
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV1,
+        primaryKey: true
+      },
+      shopId: { type: DataTypes.INTEGER, unique: true },
+      allPolicies: { type: DataTypes.JSON }
     },
     {
       underscored: true,

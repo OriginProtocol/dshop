@@ -5,12 +5,12 @@ module.exports = {
     return queryInterface.sequelize.transaction(async () => {
       await queryInterface.createTable('policies', {
         id: {
-          type: Sequelize.INTEGER,
+          type: Sequelize.UUID,
           primaryKey: true
         },
         shop_id: {
           type: Sequelize.INTEGER,
-          primaryKey: true
+          unique: true
         },
         all_policies: {
           type: Sequelize.JSON
