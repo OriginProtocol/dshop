@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Switch, Route } from 'react-router-dom'
 
 import Home from './Home'
@@ -11,7 +11,37 @@ import Cart from '../../shared/Cart'
 import Header from './_Header'
 import Footer from './_Footer'
 
+import DisplayPolicy from 'components/DisplayShopPolicy'
+import useConfig from 'utils/useConfig'
+
 const Storefront = () => {
+  const { config } = useConfig()
+  const [policies, setPolicies] = useState([['', '', false]])
+
+  useEffect(() => {
+    fetch(`/shop/policies`, {
+      method: 'GET',
+      headers: {
+        authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
+      }
+    })
+      .then((res) => {
+        if (!res.ok) {
+          return null
+        } else {
+          return res.json() //Expected type: <Array<Array<String, String, boolean>>>
+        }
+      })
+      .then((result) => {
+        if (result) {
+          setPolicies(result)
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load shop policies', err)
+      })
+  }, [window.onload])
+
   return (
     <>
       <Header />
@@ -22,10 +52,19 @@ const Storefront = () => {
         <Route path="/contact" component={Contact} />
         <Route path="/cart" component={Cart} />
         <Route path="/about" component={About} />
+        {policies.map((policy, index) => {
+          return (
+            <Route key={`${index}`} path={`/policy${index + 1}`}>
+              <div className="container prose">
+                <DisplayPolicy heading={policy[0]} text={policy[1]} />
+              </div>
+            </Route>
+          )
+        })}
         <Route component={Home} />
       </Switch>
 
-      <Footer />
+      <Footer policyHeadings={policies.map((pol) => pol[0])} />
     </>
   )
 }

@@ -6,7 +6,11 @@ import Link from 'components/Link'
 
 import SocialLinks from 'components/SocialLinks'
 
-const Footer = () => {
+/*
+ * @param policyHeadings <Array<string>> Individual elements of this array are displayed on the footer of a store's website, so that the user can click on them
+ * and be routed to the store's policy pages
+ */
+const Footer = ({ policyHeadings }) => {
   const { config } = useConfig()
 
   const date = new Date()
@@ -53,6 +57,17 @@ const Footer = () => {
             <li className="pb-4 sm:mr-10">
               <Link to="/about">About</Link>
             </li>
+            <div className="policies">
+              {policyHeadings
+                ? policyHeadings.map((element, index) => {
+                    return (
+                      <li key={`${index}`} className="pb-4 sm:mr-10">
+                        <Link to={`/policy${index + 1}`}>{element}</Link>
+                      </li>
+                    )
+                  })
+                : null}
+            </div>
             <li className="pb-4">
               <Link to="/contact">Contact</Link>
             </li>
