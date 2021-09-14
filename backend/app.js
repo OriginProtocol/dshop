@@ -29,7 +29,8 @@ const ORIGIN_WHITELIST = []
 const BODYPARSER_EXCLUDES = [
   '/webhook',
   '/products/upload-images',
-  '/themes/upload-images'
+  '/themes/upload-images',
+  '/store/policies'
 ]
 
 const app = express()

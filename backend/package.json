@@ -38,6 +38,7 @@
     "bs58": "^4.0.1",
     "bull": "^3.20.0",
     "bull-board": "^0.10.0",
+    "chai-http": "^4.3.0",
     "cids": "^1.1.5",
     "cloudflare": "^2.7.0",
     "commander": "^7.0.0",
