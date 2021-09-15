@@ -10,7 +10,11 @@ import CurrencySelect from 'components/CurrencySelect'
 import SocialLink from 'components/SocialLink'
 import Link from 'components/Link'
 
-const Footer = () => {
+/*
+ * @param policyHeadings <Array<string>> Individual elements of this array are displayed on the footer of a store's website, so that the user can click on them
+ * and be routed to the store's policy pages
+ */
+const Footer = ({ policyHeadings }) => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
 
@@ -67,6 +71,19 @@ const Footer = () => {
           <Link className="hover:opacity-75" to="/about">
             About
           </Link>
+          <div className="policies">
+          <ul className="flex flex-col sm:flex-row ">
+            {policyHeadings
+              ? policyHeadings.map((element, index) => {
+                  return (
+                    <li key={`${index}`}>
+                      <Link className="hover:opacity-75" to={`/policy${index + 1}`}>{element}</Link>
+                    </li>
+                  )
+                })
+              : null}
+          </ul>
+          </div>
           <Link className="hover:opacity-75" to="/contact">
             Contact
           </Link>

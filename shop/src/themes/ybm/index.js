@@ -7,6 +7,7 @@ import './app.css'
 import DshopProvider from 'components/DshopProvider'
 import PreviewBanner from 'components/PreviewBanner'
 import ProductRedirect from 'components/ProductRedirect'
+import DisplayPolicy from 'components/DisplayShopPolicy'
 
 import Cart from './components/Cart'
 import Home from './components/Home'
@@ -18,6 +19,8 @@ import Confirmation from '../shared/Confirmation'
 import Checkout from '../shared/checkout/Loader'
 
 const Providers = () => {
+
+  
   return (
     <HashRouter>
       <DshopProvider>
