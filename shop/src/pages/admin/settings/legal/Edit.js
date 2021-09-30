@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import fbt from 'fbt'
-import { get /*pick, pickBy*/ } from 'lodash'
+import { get } from 'lodash'
 import CKEditor from 'ckeditor4-react'
 import useBackendApi from 'utils/useBackendApi'
-// import { formFeedback } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
 import Link from 'components/Link'
 import AdminConfirmationModal from 'components/ConfirmationModal'
@@ -13,7 +12,6 @@ const LegalSettings = () => {
   const [{ config }, dispatch] = useStateValue()
   const { post } = useBackendApi({ authToken: true })
   const [saving, setSaving] = useState(false)
-  const [state, setState] = useState({ hasChanges: false })
 
   // policies is of type <Array<Array<String, String, boolean>>. The two strings represent the Policy title and contents respectively,
   // while the boolean is used to indicate whether there is an error associated with the policy
@@ -175,40 +173,39 @@ const LegalSettings = () => {
           // Make sure that the request body is either a JS Object or Array. Failure to do
           // so will produce a SyntaxError when the body is parsed by Express' body-parser
           // module (i.e. backend). Discussion: https://github.com/expressjs/body-parser/issues/309
-          const shopPoliciesRes = await post('/shop/policies', {
-            body: JSON.stringify(policies),
-            suppressError: true
+          await post('/shop/policies', {
+            body: JSON.stringify({
+              allPolicies: policies
+            })
           })
-          shopPoliciesRes ? null : console.log(`Error posting shop's policies`)
 
-          setState({ hasChanges: true })
           setSaving(false)
-
           dispatch({
             type: 'toast',
             message: (
-              <fbt desc="admin.settings.appearance.savedMessage">
+              <fbt desc="admin.settings.policies.savedMessage">
                 Settings saved
               </fbt>
             )
           })
+
+          // Display 'Publish Changes' button to the end user
+          dispatch({
+            type: 'reload',
+            target: 'shopConfig'
+          })
         } catch (err) {
+          dispatch({
+            type: 'toast',
+            message: (
+              <fbt desc="admin.settings.policies.postError">
+                Error posting shop&apos;s policies. Check console for details
+              </fbt>
+            ),
+            style: 'error'
+          })
           console.error(err)
           setSaving(false)
-        } finally {
-          // Notify the backend that there have been changes to the shop's config. This is done to ensure that the deploy (i.e. 'Publish Changes') button is displayed
-          // to the user
-          const shopConfigRes = await post('/shop/config', {
-            method: 'PUT',
-            body: JSON.stringify({ hasChanges: state.hasChanges }),
-            suppressError: true
-          })
-          if (shopConfigRes) {
-            dispatch({
-              type: 'reload',
-              target: 'shopConfig'
-            })
-          }
         }
       }}
     >

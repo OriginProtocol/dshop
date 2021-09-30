@@ -1,12 +1,12 @@
 const chai = require('chai')
-const chaiHttp = require('chai-http')
-chai.use(chaiHttp)
 const expect = chai.expect
 
 const { ROOT_BACKEND_URL } = require('./const')
 const {
+  apiRequest,
   getTestWallet,
   createTestShop,
+  updateShopConfig,
   getOrCreateTestNetwork,
   generatePgpKey
 } = require('./utils')
@@ -27,6 +27,7 @@ describe('Shop policies', () => {
       pgpPublicKey: key.publicKeyArmored,
       pgpPrivateKey: key.privateKeyArmored
     })
+    shop = await updateShopConfig(shop, { publicUrl: ROOT_BACKEND_URL })
   })
 
   // testPolicies1, testPolicies2, testPolicies3 mimic the data supplied by the FE.
@@ -49,74 +50,56 @@ describe('Shop policies', () => {
   const testPolicies3 = []
 
   it('Should post new shop policies', async () => {
-    //If an admin just clicks on the 'Update' button without adding any policy, the server should just return a '200' response
+    // If an admin just clicks on the 'Update' button without adding any policy, the server should just create a default policy entry in the DB.
+    // In this test, the default entry == testPolicies1
 
-    await chai
-      .request(`${ROOT_BACKEND_URL}`)
-      .post('/shop/policies')
-      .set({
+    const query1 = await apiRequest({
+      method: 'post',
+      endpoint: '/shop/policies',
+      body: { allPolicies: testPolicies1 },
+      headers: {
         authorization: `bearer ${shop.authToken}`,
         'Content-Type': 'application/json'
-      })
-      .send(JSON.stringify(testPolicies1))
-      .then((response) => {
-        expect(response).to.have.status(200)
-        expect(response.body.allPolicies).to.eql(testPolicies1)
-      })
-      .catch((err) => {
-        throw err
-      })
+      }
+    })
+    expect(query1.allPolicies).to.eql(testPolicies1)
 
-    //Otherwise, the response should be formatted as a plain object, containing the contents of the created/updated model
-
-    await chai
-      .request(`${ROOT_BACKEND_URL}`)
-      .post('/shop/policies')
-      .set({
+    const query2 = await apiRequest({
+      method: 'post',
+      endpoint: '/shop/policies',
+      body: { allPolicies: testPolicies2 },
+      headers: {
         authorization: `bearer ${shop.authToken}`,
         'Content-Type': 'application/json'
-      })
-      .send(JSON.stringify(testPolicies2))
-      .then((response) => {
-        expect(response).to.have.status(200)
-        expect(response.body.allPolicies).to.eql(testPolicies2)
-      })
-      .catch((err) => {
-        throw err
-      })
+      }
+    })
+    console.log(query2)
+    expect(query2.allPolicies).to.eql(testPolicies2)
 
-    await chai
-      .request(`${ROOT_BACKEND_URL}`)
-      .post('/shop/policies')
-      .set({
+    //This test handles the case where the shop admin deletes all policies [from their UI].
+    const query3 = await apiRequest({
+      method: 'post',
+      endpoint: '/shop/policies',
+      body: { allPolicies: testPolicies3 },
+      headers: {
         authorization: `bearer ${shop.authToken}`,
         'Content-Type': 'application/json'
-      })
-      .send(JSON.stringify(testPolicies3))
-      .then((response) => {
-        expect(response).to.have.status(200)
-        expect(response.body.allPolicies).to.eql(testPolicies3)
-      })
-      .catch((err) => {
-        throw err
-      })
+      }
+    })
+    expect(query3.allPolicies).to.eql(testPolicies3)
   })
 
   it('Should get shop policies', async () => {
-    //The response body should be made up of the 'allPolicies' column of the model 'Policies'.
-    await chai
-      .request(`${ROOT_BACKEND_URL}`)
-      .get('/shop/policies')
-      .set({
+    // In this test, the GET request runs after immediately after the POST request attached to 'query3'.
+    // The assertion statement is written accordingly.
+
+    const query4 = await apiRequest({
+      endpoint: '/shop/policies',
+      headers: {
         authorization: `bearer ${shop.authToken}`,
         'Content-Type': 'application/json'
-      })
-      .then((response) => {
-        expect(response).to.have.status(200)
-        expect(response.body).to.eql(testPolicies3)
-      })
-      .catch((err) => {
-        throw err
-      })
+      }
+    })
+    expect(query4).to.eql(testPolicies3)
   })
 })
