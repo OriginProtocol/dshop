@@ -53,14 +53,11 @@ module.exports = function (router) {
       // Step four: Notify the backend that there have been changes to the shop's config. Then, send a response to the caller of the route.
 
       const shopConfig = decryptConfig(req.shop.config)
-      const updateShopConfig = await fetch(
-        `${shopConfig.publicUrl}/shop/config`,
-        {
-          headers: req.headers,
-          method: 'PUT',
-          body: JSON.stringify({ hasChanges: true })
-        }
-      )
+      await fetch(`${shopConfig.publicUrl}/shop/config`, {
+        headers: req.headers,
+        method: 'PUT',
+        body: JSON.stringify({ hasChanges: true })
+      })
       res.send({ ...req.body.policyInDB, success: true })
     }
   )
