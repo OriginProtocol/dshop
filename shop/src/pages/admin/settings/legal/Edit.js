@@ -188,12 +188,6 @@ const LegalSettings = () => {
               </fbt>
             )
           })
-
-          // Display 'Publish Changes' button to the end user
-          dispatch({
-            type: 'reload',
-            target: 'shopConfig'
-          })
         } catch (err) {
           dispatch({
             type: 'toast',

@@ -27,7 +27,6 @@ describe('Shop policies', () => {
       pgpPublicKey: key.publicKeyArmored,
       pgpPrivateKey: key.privateKeyArmored
     })
-    shop = await updateShopConfig(shop, { publicUrl: ROOT_BACKEND_URL })
   })
 
   // testPolicies1, testPolicies2, testPolicies3 mimic the data supplied by the FE.
@@ -73,7 +72,6 @@ describe('Shop policies', () => {
         'Content-Type': 'application/json'
       }
     })
-    console.log(query2)
     expect(query2.allPolicies).to.eql(testPolicies2)
 
     //This test handles the case where the shop admin deletes all policies [from their UI].
