@@ -1,7 +1,5 @@
-const fetch = require('node-fetch')
 const { Policies } = require('../models')
 const { authShop } = require('./_auth')
-const { decryptConfig } = require('../utils/encryptedConfig')
 
 /*
 Use the [2] lines below to enable logging to the Terminal

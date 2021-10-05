@@ -1,12 +1,10 @@
 const chai = require('chai')
 const expect = chai.expect
 
-const { ROOT_BACKEND_URL } = require('./const')
 const {
   apiRequest,
   getTestWallet,
   createTestShop,
-  updateShopConfig,
   getOrCreateTestNetwork,
   generatePgpKey
 } = require('./utils')
