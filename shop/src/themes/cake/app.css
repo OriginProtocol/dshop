@@ -50,6 +50,19 @@
   .btn-primary:hover {
     @apply bg-white text-red-400;
   }
+
+  .breadcrumbs {
+    @apply mb-6
+  }
+
+  .linkToHome:after {
+    content:  ">";
+    padding:  0 0.25rem;
+    text-decoration:  none;
+  }
+  .policy-text {
+    max-width: 700px;
+  }
 }
 
 body {

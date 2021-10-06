@@ -3,7 +3,7 @@ import fbt from 'fbt'
 
 import Link from 'components/Link'
 
-const displayPolicy = ({ heading, text }) => {
+const DisplayPolicy = ({ heading, text }) => {
   return (
     <>
       <div className="collection">
@@ -24,7 +24,7 @@ const displayPolicy = ({ heading, text }) => {
   )
 }
 
-export default displayPolicy
+export default DisplayPolicy
 
 require('react-styl')(`
   .policy-text

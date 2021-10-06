@@ -36,5 +36,6 @@ module.exports = {
         header: ['var(--header-font)', ...defaultTheme.fontFamily.serif]
       }
     }
-  }
+  },
+  plugins: [require('@tailwindcss/typography')]
 }
