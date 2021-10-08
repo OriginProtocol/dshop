@@ -44,19 +44,6 @@ const Home = () => {
 
   return (
     <>
-      <HashRouter>
-        <Switch>
-          {policies.map((policy, index) => {
-            return (
-              <Route key={`${index}`} path={`/policy${index + 1}`}>
-                <div className="container prose">
-                  <DisplayPolicy heading={policy[0]} text={policy[1]} />
-                </div>
-              </Route>
-            )
-          })}
-        </Switch>
-      </HashRouter>
       <Header>
         <div
           className="text-center px-4 mt-24 text-3xl sm:text-5xl leading-tight mx-auto"

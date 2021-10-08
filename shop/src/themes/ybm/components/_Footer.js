@@ -72,17 +72,22 @@ const Footer = ({ policyHeadings }) => {
             About
           </Link>
           <div className="policies">
-          <ul className="flex flex-col sm:flex-row ">
-            {policyHeadings
-              ? policyHeadings.map((element, index) => {
-                  return (
-                    <li key={`${index}`}>
-                      <Link className="hover:opacity-75" to={`/policy${index + 1}`}>{element}</Link>
-                    </li>
-                  )
-                })
-              : null}
-          </ul>
+            <ul className="grid gap-2 sm:gap-6 grid-flow-row sm:grid-flow-col text-center sm:text-left">
+              {policyHeadings
+                ? policyHeadings.map((element, index) => {
+                    return (
+                      <li key={`${index}`}>
+                        <Link
+                          className="hover:opacity-75"
+                          to={`/policy${index + 1}`}
+                        >
+                          {element}
+                        </Link>
+                      </li>
+                    )
+                  })
+                : null}
+            </ul>
           </div>
           <Link className="hover:opacity-75" to="/contact">
             Contact

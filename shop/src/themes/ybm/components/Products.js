@@ -1,16 +1,18 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouteMatch, useHistory } from 'react-router-dom'
 import get from 'lodash/get'
 
 import useCollections from 'utils/useCollections'
 import useSearchQuery from 'utils/useSearchQuery'
 import useThemeVars from 'utils/useThemeVars'
+import useConfig from 'utils/useConfig'
 
 import SortBy from 'components/SortBy'
 
 import Header from './_Header'
 import Footer from './_Footer'
 import Products from './_Products'
+import { getPolicies } from './Policies'
 
 const AllProducts = () => {
   const history = useHistory()
@@ -19,6 +21,18 @@ const AllProducts = () => {
   const match = useRouteMatch('/collections/:collection')
   const opts = useSearchQuery()
   const collection = get(match, 'params.collection')
+
+  const { config } = useConfig()
+  const [policyHeadings, setHeadings] = useState([''])
+  useEffect(() => {
+    const updatePolicies = async () => {
+      getPolicies(config.backendAuthToken).then(({ policyHeads, policies }) => {
+        setHeadings(policyHeads)
+      })
+    }
+
+    updatePolicies()
+  }, [])
 
   return (
     <>
@@ -46,7 +60,7 @@ const AllProducts = () => {
       <div className="sm:container mb-12">
         <Products collection={collection} sort={opts.sort} />
       </div>
-      <Footer />
+      <Footer policyHeadings={policyHeads} />
     </>
   )
 }

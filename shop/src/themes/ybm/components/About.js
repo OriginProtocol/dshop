@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
@@ -6,6 +6,7 @@ import useThemeVars from 'utils/useThemeVars'
 
 import Header from './_Header'
 import Footer from './_Footer'
+import { getPolicies } from './Policies'
 
 const About = () => {
   const { config } = useConfig()
@@ -17,6 +18,18 @@ const About = () => {
   const primaryImage = get(themeVars, 'about.primaryImage.0', {})
   const aboutImages = get(themeVars, 'about.aboutImages', [])
 
+  const [policyHeadings, setHeadings] = useState([''])
+  useEffect(() => {
+    const updatePolicies = async () => {
+      getPolicies(config.backendAuthToken).then(({ policyHeads, policies }) => {
+        setHeadings(policyHeads)
+      })
+    }
+
+    updatePolicies()
+  }, [])
+
+  console.log(`policyHeads: `, policyHeadings)
   return (
     <>
       <Header
@@ -89,7 +102,7 @@ const About = () => {
           </div>
         </div>
       </div>
-      <Footer />
+      <Footer policyHeadings={policyHeadings} />
     </>
   )
 }

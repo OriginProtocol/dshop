@@ -7,7 +7,6 @@ import './app.css'
 import DshopProvider from 'components/DshopProvider'
 import PreviewBanner from 'components/PreviewBanner'
 import ProductRedirect from 'components/ProductRedirect'
-import DisplayPolicy from 'components/DisplayShopPolicy'
 
 import Cart from './components/Cart'
 import Home from './components/Home'
@@ -15,12 +14,11 @@ import About from './components/About'
 import Contact from './components/Contact'
 import Products from './components/Products'
 import Product from './components/Product'
+import { PolicyPage } from './components/Policies'
 import Confirmation from '../shared/Confirmation'
 import Checkout from '../shared/checkout/Loader'
 
 const Providers = () => {
-
-  
   return (
     <HashRouter>
       <DshopProvider>
@@ -42,6 +40,17 @@ const Providers = () => {
           ></Route>
           <Route path="/collections/:collection" component={Products} />
           <Route path="/cart" component={Cart} />
+          <Route
+            path={[
+              '/policy1',
+              '/policy2',
+              '/policy3',
+              '/policy4',
+              '/policy5',
+              '/policy6'
+            ]}
+            component={PolicyPage}
+          />
           <Route path="/" component={Home} />
         </Switch>
       </DshopProvider>
