@@ -49,10 +49,6 @@
   .align-items-center{
     @apply items-center
   }
-
-  .policy-text {
-    max-width: 700px;
-  }
 }
 
 body {
