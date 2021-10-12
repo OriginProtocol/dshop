@@ -50,7 +50,6 @@ const PolicyPage = () => {
   const [policyHeadings, setHeadings] = useState([''])
   const [policies, setPolicies] = useState([['', '', false]])
 
-  console.log('Loaded PolicyPage component')
   useEffect(() => {
     const updatePolicies = async () => {
       getPolicies(config.backendAuthToken).then(({ policyHeads, policies }) => {

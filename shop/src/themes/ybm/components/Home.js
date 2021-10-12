@@ -1,45 +1,27 @@
 import React, { useState, useEffect } from 'react'
-import { HashRouter, Switch, Route } from 'react-router-dom'
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
-
 import Link from 'components/Link'
-import DisplayPolicy from 'components/DisplayShopPolicy'
-
 import useThemeVars from 'utils/useThemeVars'
 
 import Header from './_Header'
 import Footer from './_Footer'
 import Collections from './_Collections'
+import { getPolicies } from './Policies'
 
 const Home = () => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
-  const [policies, setPolicies] = useState([['', '', false]])
-
+  const [policyHeadings, setHeadings] = useState([''])
   useEffect(() => {
-    fetch(`/shop/policies`, {
-      method: 'GET',
-      headers: {
-        authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
-      }
-    })
-      .then((res) => {
-        if (!res.ok) {
-          return null
-        } else {
-          return res.json() //Expected type: <Array<Array<String, String, boolean>>>
-        }
+    const updatePolicies = async () => {
+      getPolicies(config.backendAuthToken).then((obj) => {
+        setHeadings(obj.policyHeads)
       })
-      .then((result) => {
-        if (result) {
-          setPolicies(result)
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to load shop policies', err)
-      })
+    }
+
+    updatePolicies()
   }, [window.onload])
 
   return (
@@ -70,7 +52,7 @@ const Home = () => {
           View All Products
         </Link>
       </div>
-      <Footer policyHeadings={policies.map((pol) => pol[0])} />
+      <Footer policyHeadings={policyHeadings} />
     </>
   )
 }

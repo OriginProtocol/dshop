@@ -21,15 +21,14 @@ const About = () => {
   const [policyHeadings, setHeadings] = useState([''])
   useEffect(() => {
     const updatePolicies = async () => {
-      getPolicies(config.backendAuthToken).then(({ policyHeads, policies }) => {
-        setHeadings(policyHeads)
+      getPolicies(config.backendAuthToken).then((obj) => {
+        setHeadings(obj.policyHeads)
       })
     }
 
     updatePolicies()
   }, [])
 
-  console.log(`policyHeads: `, policyHeadings)
   return (
     <>
       <Header

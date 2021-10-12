@@ -26,8 +26,8 @@ const AllProducts = () => {
   const [policyHeadings, setHeadings] = useState([''])
   useEffect(() => {
     const updatePolicies = async () => {
-      getPolicies(config.backendAuthToken).then(({ policyHeads, policies }) => {
-        setHeadings(policyHeads)
+      getPolicies(config.backendAuthToken).then((obj) => {
+        setHeadings(obj.policyHeads)
       })
     }
 
@@ -60,7 +60,7 @@ const AllProducts = () => {
       <div className="sm:container mb-12">
         <Products collection={collection} sort={opts.sort} />
       </div>
-      <Footer policyHeadings={policyHeads} />
+      <Footer policyHeadings={policyHeadings} />
     </>
   )
 }
