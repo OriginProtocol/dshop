@@ -15,7 +15,7 @@ const reducer = (state, newState) => {
 }
 
 const AddProducts = ({ children, collection }) => {
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const { products } = useProducts()
   const [, dispatch] = useStateValue()
   const [state, setState] = useReducer(reducer, {

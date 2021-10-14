@@ -14,7 +14,7 @@ const AdminDeleteAsset = ({ file, shop, className = '', onSuccess }) => {
       confirmText="Are you sure you want to delete this asset?"
       confirmedText="Asset deleted"
       onConfirm={() =>
-        post(`/shops/${shop.authToken}/assets`, {
+        post(`/shops/${shop.shopSlug}/assets`, {
           method: 'DELETE',
           body: JSON.stringify({ file })
         })

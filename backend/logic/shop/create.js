@@ -52,7 +52,7 @@ function isValidStoreName(name) {
  * @param {number} networkId: 1=Mainnet, 4=Rinkeby, 999=localhost, etc...
  * @param {string} name: shop name
  * @param {string} listingId: listing ID associated with the shop
- * @param {string} authToken: token
+ * @param {string} shopSlug: shop's identification token
  * @param {string} config: Shop's encrypted configuration
  * @param {number} sellerId: If of the row in the SellerShop table for the shop's owner
  * @param {string} hostname: hostname of the shop URL
@@ -62,7 +62,7 @@ async function createShopInDB({
   networkId,
   name,
   listingId,
-  authToken,
+  shopSlug,
   config,
   sellerId,
   hostname
@@ -88,8 +88,8 @@ async function createShopInDB({
       error: `Listing ID ${listingId} is not on expected Network ID ${networkId}`
     }
   }
-  if (!authToken) {
-    return { error: 'Provide an auth token' }
+  if (!shopSlug) {
+    return { error: 'Provide the shop identifier named shopSlug' }
   }
   if (!sellerId) {
     return { error: 'Provide a seller ID' }
@@ -99,7 +99,7 @@ async function createShopInDB({
     name,
     networkId,
     listingId,
-    authToken,
+    shopSlug,
     config,
     sellerId,
     hostname
@@ -284,7 +284,7 @@ async function createShop({
     listingId: shopListingId,
     hostname,
     name,
-    authToken: dataDir,
+    shopSlug: dataDir,
     config: setConfig(config)
   })
 
@@ -363,7 +363,7 @@ async function createShop({
     ...templateShopJsonConfig,
     title: name,
     fullTitle: name,
-    backendAuthToken: dataDir,
+    backendShopSlug: dataDir,
     supportEmail,
     pgpPublicKey: pgpKeys.pgpPublicKey.replace(/\\r/g, '')
   }

@@ -73,11 +73,11 @@ const AccountSelector = ({ onNewShop, forceTitle, superAdmin }) => {
         {shops.map((shop) => (
           <div
             className={`shop-el${
-              shop.authToken === config.activeShop ? ' selected' : ''
+              shop.shopSlug === config.activeShop ? ' selected' : ''
             }`}
             key={shop.id}
             onClick={() => {
-              setActiveShop(shop.authToken)
+              setActiveShop(shop.shopSlug)
               setShouldClose(shouldClose + 1)
               if (superAdmin) {
                 redirectTo('/admin')

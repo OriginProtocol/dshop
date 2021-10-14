@@ -69,7 +69,7 @@ const AdminUser = () => {
         </thead>
         <tbody>
           {shops.map((sellerShop) => (
-            <tr key={sellerShop.shop.authToken}>
+            <tr key={sellerShop.shop.shopSlug}>
               <td>{sellerShop.shop.name}</td>
               <td>{sellerShop.role}</td>
             </tr>

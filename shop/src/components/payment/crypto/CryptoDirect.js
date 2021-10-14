@@ -21,7 +21,7 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
   const token = useToken(activeToken, cart.total)
   const { toTokenPrice } = usePrice(config.currency)
   const wallet = useWallet({ needSigner: true })
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   const paymentMethods = get(config, 'paymentMethods', [])
   const cryptoSelected = get(cart, 'paymentMethod.id') === 'crypto'

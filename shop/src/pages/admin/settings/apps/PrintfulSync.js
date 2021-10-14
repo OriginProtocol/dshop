@@ -9,7 +9,7 @@ import { useStateValue } from 'data/state'
 import ConfirmationModal from 'components/ConfirmationModal'
 
 const AdminPrintfulSync = ({ buttonText, buttonClass, className = '' }) => {
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const [{ admin }, dispatch] = useStateValue()
   const [refreshImages, setRefreshImages] = useState(false)
 

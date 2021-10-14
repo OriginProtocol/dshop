@@ -23,7 +23,7 @@ const AdminShop = ({ shop }) => {
   })
 
   useEffect(() => {
-    fetch(`/${shop.authToken}/${state.activeFile}`)
+    fetch(`/${shop.shopSlug}/${state.activeFile}`)
       .then((res) => (res.ok ? res.text() : new Promise(() => '')))
       .then((content) => {
         setState({ [state.activeFile]: content, valid: true })
@@ -40,7 +40,7 @@ const AdminShop = ({ shop }) => {
     body.append('file', file, state.activeFile)
 
     let timeout
-    fetch(`/shops/${shop.authToken}/save-files`, {
+    fetch(`/shops/${shop.shopSlug}/save-files`, {
       method: 'POST',
       body
     }).then(() => {

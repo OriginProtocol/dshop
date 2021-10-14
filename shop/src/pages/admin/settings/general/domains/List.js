@@ -19,7 +19,7 @@ const Domains = ({ config, state }) => {
   const [hostnameModal, setHostnameModal] = useState(false)
   const [domainEdit, setDomainEdit] = useState(false)
   const [domains, setDomains] = useState([])
-  const { get } = useBackendApi({ authToken: true })
+  const { get } = useBackendApi({ shopSlug: true })
 
   useEffect(() => {
     get('/shop/domains').then(({ domains }) => setDomains(domains))

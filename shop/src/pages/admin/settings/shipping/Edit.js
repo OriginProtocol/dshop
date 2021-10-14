@@ -173,7 +173,7 @@ const Shipping = () => {
   const [state, setState] = useReducer(reducer, initialState)
   const [, dispatch] = useStateValue()
 
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   const input = formInput(state, (newState) =>
     setState({ ...newState, hasChanges: true })

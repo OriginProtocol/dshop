@@ -45,7 +45,7 @@ module.exports = function (router) {
     }).then((user) => {
       SellerShop.findAll({
         where: { sellerId: user.id },
-        include: { model: Shop, as: 'shop', attributes: ['authToken', 'name'] }
+        include: { model: Shop, as: 'shop', attributes: ['shopSlug', 'name'] }
       }).then((shops) => {
         res.json({
           user,

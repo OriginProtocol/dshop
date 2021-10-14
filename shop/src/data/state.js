@@ -295,7 +295,7 @@ const reducer = (state, action) => {
     const activeShop = get(
       action,
       'config.activeShop',
-      get(action, 'config.backendAuthToken')
+      get(action, 'config.backendShopSlug')
     )
     if (activeShop) {
       localStorage.activeShop = activeShop

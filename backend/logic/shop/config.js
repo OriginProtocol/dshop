@@ -76,7 +76,7 @@ const jsonConfigOptionalKeys = [
   'about',
   'about',
   'acceptedTokens',
-  'backendAuthToken',
+  'backendShopSlug',
   'beta',
   'byline',
   'cartSummaryNote',
@@ -368,7 +368,7 @@ async function updateShopConfig({ seller, shop, data }) {
   if (data.offlinePaymentMethods) {
     jsonConfig.offlinePaymentMethods = await moveOfflinePaymentMethodImages(
       data.offlinePaymentMethods,
-      shop.authToken
+      shop.shopSlug
     )
   }
   // Add offlinePaymentMethods to the data saved in the DB.
@@ -406,7 +406,7 @@ async function updateShopConfig({ seller, shop, data }) {
 
   // Save config.json on disk.
   if (Object.keys(jsonConfig).length || Object.keys(jsonNetConfig).length) {
-    const configFile = `${DSHOP_CACHE}/${shop.authToken}/data/config.json`
+    const configFile = `${DSHOP_CACHE}/${shop.shopSlug}/data/config.json`
 
     if (!fs.existsSync(configFile)) {
       return { success: false, reason: 'Failed loading config.json from disk' }
@@ -433,7 +433,7 @@ async function updateShopConfig({ seller, shop, data }) {
 
   // Save the about file on disk.
   if (data.about) {
-    const dataDir = `${DSHOP_CACHE}/${shop.authToken}/data`
+    const dataDir = `${DSHOP_CACHE}/${shop.shopSlug}/data`
     const aboutFile = `${dataDir}/${data.about}`
 
     try {

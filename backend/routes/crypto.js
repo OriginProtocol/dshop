@@ -71,7 +71,7 @@ module.exports = function (router) {
    * The back-end waits until the payment is confirmed on the blockchain and then
    * processes the order.
    *
-   * The request should include an Authorization token for the shop where the purchase was made.
+   * The request should include a token called 'shopSlug' to identify the shop where the purchase was made.
    * The body of the request is expected to include:
    *   {string} txHash: hash of the tx to watch.
    *   {string} fromAddress: Address sending the transaction.

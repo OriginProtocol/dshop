@@ -14,7 +14,7 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
   const { config } = useConfig()
   const [{ cart }, dispatch] = useStateValue()
 
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   const currencyOpts = useCurrencyOpts()
   const defaultButtonText = (

@@ -33,7 +33,7 @@ const Uphold = ({ submit, encryptedData, onChange, loading }) => {
   const paymentMethods = get(config, 'paymentMethods', [])
   const paymentMethod = get(cart, 'paymentMethod.id')
   const method = paymentMethods.find((o) => o.id === 'uphold')
-  const { get: apiGet, post } = useBackendApi({ authToken: true })
+  const { get: apiGet, post } = useBackendApi({ shopSlug: true })
   const Feedback = formFeedback(formData)
   const currencyOpts = useCurrencyOpts()
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import useBackendApi from './useBackendApi'
 
 const useShop = (shopToken) => {
-  const { get } = useBackendApi({ authToken: true })
+  const { get } = useBackendApi({ shopSlug: true })
 
   const [loading, setLoading] = useState(Boolean(shopToken))
   const [shop, setShop] = useState()

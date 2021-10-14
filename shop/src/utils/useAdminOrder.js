@@ -4,10 +4,10 @@ import memoize from 'lodash/memoize'
 import useConfig from 'utils/useConfig'
 
 const getOrder = memoize(
-  async function fetchOrder(admin, orderId, backend, authToken) {
+  async function fetchOrder(admin, orderId, backend, shopSlug) {
     return await fetch(`${backend}/orders/${orderId}`, {
       credentials: 'include',
-      headers: { authorization: `bearer ${encodeURIComponent(authToken)}` }
+      headers: { authorization: `bearer ${encodeURIComponent(shopSlug)}` }
     }).then((res) => res.json())
   },
   (...args) => args[1]
@@ -18,7 +18,7 @@ function useOrder(orderId) {
   const [loading, setLoading] = useState(false)
   const [order, setOrder] = useState()
   const [{ admin, reload }] = useStateValue()
-  const { backend, backendAuthToken } = config
+  const { backend, backendShopSlug } = config
 
   useEffect(() => {
     setLoading(true)
@@ -26,7 +26,7 @@ function useOrder(orderId) {
     if (reload[orderKey]) {
       getOrder.cache.delete(orderId)
     }
-    getOrder(admin, orderId, backend, backendAuthToken).then((order) => {
+    getOrder(admin, orderId, backend, backendShopSlug).then((order) => {
       setLoading(false)
       setOrder(order)
     })

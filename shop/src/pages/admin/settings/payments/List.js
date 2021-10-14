@@ -86,7 +86,7 @@ const PaymentSettings = () => {
 
   const [connectModal, setShowConnectModal] = useState(false)
   const [saving, setSaving] = useState(false)
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   const Processors = useMemo(() => {
     if (!shopConfig) return []

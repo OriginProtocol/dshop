@@ -14,7 +14,7 @@ module.exports = function (router) {
       const { destinations, shippingFrom, processingTime } = req.body
 
       try {
-        const outDir = path.resolve(`${DSHOP_CACHE}/${req.shop.authToken}/data`)
+        const outDir = path.resolve(`${DSHOP_CACHE}/${req.shop.shopSlug}/data`)
         const shippingPath = `${outDir}/shipping.json`
         fs.writeFileSync(
           shippingPath,

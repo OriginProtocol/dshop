@@ -13,7 +13,7 @@ const AdminDeleteDiscount = ({
   children
 }) => {
   const redirectTo = useRedirect()
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   return (
     <ConfirmationModal

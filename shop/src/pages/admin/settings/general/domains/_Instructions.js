@@ -10,7 +10,7 @@ const DomainInstructions = ({ domain, close, netId, hostname }) => {
   const [domainType, setDomainType] = useState(false)
   const [records, setRecords] = useState(false)
   const [verifyStatus, setVerifyStatus] = useState({})
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const [{ admin, deployments }] = useStateValue()
 
   const [loading, setLoading] = useState(true)

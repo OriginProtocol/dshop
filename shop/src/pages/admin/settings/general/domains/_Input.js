@@ -10,7 +10,7 @@ const DomainInput = ({ next, cancel }) => {
   const [, dispatch] = useStateValue()
   const [domain, setDomain] = useState('')
   const [error, setError] = useState('')
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const domainRef = useAutoFocus()
   const [submitting, setSubmitting] = useState(false)
 

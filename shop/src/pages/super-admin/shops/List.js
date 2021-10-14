@@ -42,7 +42,7 @@ const AdminShops = () => {
             <tr
               key={shop.id}
               onClick={() => {
-                history.push(`/super-admin/shops/${shop.authToken}`)
+                history.push(`/super-admin/shops/${shop.shopSlug}`)
               }}
             >
               <td>{shop.name}</td>

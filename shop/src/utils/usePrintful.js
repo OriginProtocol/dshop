@@ -13,7 +13,7 @@ function usePrintful(orderId, reload) {
       const raw = await fetch(url, {
         credentials: 'include',
         headers: {
-          authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
+          authorization: `bearer ${encodeURIComponent(config.backendShopSlug)}`
         }
       })
       if (raw.ok) {

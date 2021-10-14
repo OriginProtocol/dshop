@@ -12,7 +12,7 @@ const DeployShop = ({ shop }) => {
   const [{ reload }] = useStateValue()
   const [deployments, setDeployments] = useState([])
   useEffect(() => {
-    fetch(`${config.backend}/shops/${shop.authToken}/deployments`, {
+    fetch(`${config.backend}/shops/${shop.shopSlug}/deployments`, {
       credentials: 'include'
     })
       .then((res) => res.json())

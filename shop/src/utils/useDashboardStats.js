@@ -5,7 +5,7 @@ import useBackendApi from 'utils/useBackendApi'
 
 const useDashboardStats = (range, sort) => {
   const [{ dashboardStats, config }, dispatch] = useStateValue()
-  const { get } = useBackendApi({ authToken: true })
+  const { get } = useBackendApi({ shopSlug: true })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
 

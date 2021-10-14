@@ -15,7 +15,7 @@ const AdminShopAssets = ({ shop, onSuccess }) => {
       body.append('file', asset)
     }
 
-    fetch(`/shops/${shop.authToken}/save-files`, { method: 'POST', body }).then(
+    fetch(`/shops/${shop.shopSlug}/save-files`, { method: 'POST', body }).then(
       onSuccess
     )
   }, [state.save])

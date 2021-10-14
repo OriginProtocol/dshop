@@ -6,7 +6,7 @@ import ConfirmationModal from 'components/ConfirmationModal'
 
 const AdminDeleteDomain = ({ domain, className = '', children }) => {
   const [, dispatch] = useStateValue()
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   return (
     <ConfirmationModal

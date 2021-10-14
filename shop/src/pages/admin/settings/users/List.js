@@ -13,7 +13,7 @@ const AdminUsers = () => {
   const [{ admin }, dispatch] = useStateValue()
   const [state, setState] = useSetState({ loading: false, users: [] })
 
-  const { post, get } = useBackendApi({ authToken: true })
+  const { post, get } = useBackendApi({ shopSlug: true })
 
   const loadUsers = async () => {
     const { users } = await get('/shop/users')

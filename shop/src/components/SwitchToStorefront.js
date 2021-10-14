@@ -12,7 +12,7 @@ const SwitchToStorefront = ({ className, children }) => {
 
   let url = window.origin + (storefrontLocation || '/')
   if (config.themeId) {
-    url = `${window.origin}/theme/${config.themeId}?shop=${config.backendAuthToken}`
+    url = `${window.origin}/theme/${config.themeId}?shop=${config.backendShopSlug}`
   }
 
   return (

@@ -272,7 +272,7 @@ const autoFulfillOrder = async (orderObj, shopConfig, shop) => {
 
     // TODO: Should this be a configurable variable on admin?
     const draft = process.env.NODE_ENV === 'development'
-    const printfulIdsFile = `${DSHOP_CACHE}/${shop.authToken}/data/printful-ids.json`
+    const printfulIdsFile = `${DSHOP_CACHE}/${shop.shopSlug}/data/printful-ids.json`
     const printfulIds = JSON.parse(fs.readFileSync(printfulIdsFile))
 
     const printfulOrderData = generatePrintfulOrder(

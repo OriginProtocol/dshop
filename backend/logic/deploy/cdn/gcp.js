@@ -88,7 +88,7 @@ async function configureCDN({ shop, deployment, domains }) {
     shop.networkId in NETWORK_ID_TO_NAME
       ? NETWORK_ID_TO_NAME[shop.networkId]
       : 'localhost'
-  const serviceName = `${SERVICE_PREFIX}${networkName}-${shop.authToken}`
+  const serviceName = `${SERVICE_PREFIX}${networkName}-${shop.shopSlug}`
 
   if (!deployment.bucketUrls) {
     log.warn(`No bucket URLs found in deployment`)
@@ -134,7 +134,7 @@ async function configureCDN({ shop, deployment, domains }) {
     log.info(`Invalidating cache for urlMap ${serviceName}`)
     await invalidateCache(rest, serviceName, [
       '/*',
-      `/${shop.authToken}/*`,
+      `/${shop.shopSlug}/*`,
       `/dist/*`
     ])
   } else {

@@ -18,7 +18,7 @@ function validateShop(shop) {
     assert(typeof shop.name === 'string', 'Shop name should be a string')
     assert(shop.name !== '', 'Shop name missing')
     assert(shop.listingId, 'Shop needs a listing ID')
-    assert(shop.authToken, 'Shop needs an authentication token')
+    assert(shop.shopSlug, 'Shop needs an identifier called shopSlug')
     assert(!shop.config, 'Shop configuration should not exist')
   } catch (err) {
     if (err.message.includes('Assertion')) {

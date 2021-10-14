@@ -179,7 +179,7 @@ async function deploy({
   const networkConfig = decryptConfig(network.config)
   const zone = networkConfig.domain
   const fqdn = `${subdomain}.${zone}`
-  const dataDir = shop.authToken
+  const dataDir = shop.shopSlug
   const OutputDir = `${DSHOP_CACHE}/${dataDir}`
 
   // Make sure the selected infra resources are a valid and configured combination

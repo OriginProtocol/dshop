@@ -55,7 +55,7 @@ const StoreSelector = ({ setActiveShop, newShop, setNewShop }) => {
             {shops.map((shop) => (
               <div
                 key={shop.id}
-                onClick={() => setActiveShop(shop.authToken)}
+                onClick={() => setActiveShop(shop.shopSlug)}
                 children={shop.name}
               />
             ))}

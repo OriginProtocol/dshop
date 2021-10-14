@@ -10,7 +10,7 @@ const ShopAssets = ({ shop }) => {
   const { config } = useConfig()
   const [state, setState] = useSetState({ reload: 1, assets: [] })
   useEffect(() => {
-    fetch(`${config.backend}/shops/${shop.authToken}/assets`, {
+    fetch(`${config.backend}/shops/${shop.shopSlug}/assets`, {
       credentials: 'include'
     })
       .then((res) => res.json())
@@ -44,12 +44,12 @@ const ShopAssets = ({ shop }) => {
               <tr key={idx}>
                 <td>{asset}</td>
                 <td>
-                  <img src={`${config.backend}/${shop.authToken}/${asset}`} />
+                  <img src={`${config.backend}/${shop.shopSlug}/${asset}`} />
                 </td>
                 <td className="text-right">
                   <a
                     className="btn btn-sm btn-outline-primary"
-                    href={`${config.backend}/${shop.authToken}/${asset}`}
+                    href={`${config.backend}/${shop.shopSlug}/${asset}`}
                     target="_blank"
                     rel="noreferrer"
                     children="View"

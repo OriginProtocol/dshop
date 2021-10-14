@@ -39,7 +39,7 @@ const ABOUT_FILENAME = 'about.html'
 const AppearanceSettings = () => {
   const { config } = useConfig()
   const [{ admin }, dispatch] = useStateValue()
-  const { postRaw, post } = useBackendApi({ authToken: true })
+  const { postRaw, post } = useBackendApi({ shopSlug: true })
   const [state, setState] = useReducer(reducer, { domain: '' })
   const input = formInput(state, (newState) =>
     setState({ ...newState, hasChanges: true })
@@ -178,7 +178,7 @@ const AppearanceSettings = () => {
             {state.logo ? (
               <div className="mb-3">
                 <img
-                  src={`${config.backendAuthToken}/${state.logo}`}
+                  src={`${config.backendShopSlug}/${state.logo}`}
                   style={{ maxWidth: '12rem', maxHeight: '3rem' }}
                 />
               </div>
@@ -234,7 +234,7 @@ const AppearanceSettings = () => {
             {state.favicon ? (
               <div className="mb-3">
                 <img
-                  src={`${config.backendAuthToken}/${state.favicon}`}
+                  src={`${config.backendShopSlug}/${state.favicon}`}
                   style={{ maxWidth: 32 }}
                 />
               </div>

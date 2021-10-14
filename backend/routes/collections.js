@@ -18,7 +18,7 @@ module.exports = function (router) {
       const collections = req.body.collections
 
       try {
-        const outDir = path.resolve(`${DSHOP_CACHE}/${req.shop.authToken}/data`)
+        const outDir = path.resolve(`${DSHOP_CACHE}/${req.shop.shopSlug}/data`)
         const collectionsPath = `${outDir}/collections.json`
         writeFileSync(
           collectionsPath,
@@ -42,7 +42,7 @@ module.exports = function (router) {
       const { collectionId } = req.params
 
       try {
-        const outDir = path.resolve(`${DSHOP_CACHE}/${req.shop.authToken}/data`)
+        const outDir = path.resolve(`${DSHOP_CACHE}/${req.shop.shopSlug}/data`)
         const collectionsPath = `${outDir}/collections.json`
         const collections = JSON.parse(fs.readFileSync(collectionsPath)).map(
           (collection) => {

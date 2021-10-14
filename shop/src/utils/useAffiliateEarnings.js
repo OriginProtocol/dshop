@@ -18,7 +18,7 @@ function useAffiliateEarnings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
+          Authorization: `bearer ${encodeURIComponent(config.backendShopSlug)}`
         },
         body: JSON.stringify({ msg: affiliate.msg, sig: affiliate.sig })
       }).then((res) => {

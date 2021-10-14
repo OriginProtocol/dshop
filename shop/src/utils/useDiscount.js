@@ -30,7 +30,7 @@ function useDiscount() {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
+        authorization: `bearer ${encodeURIComponent(config.backendShopSlug)}`
       },
       body: JSON.stringify({ code })
     })

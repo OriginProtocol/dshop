@@ -33,11 +33,11 @@ async function authSellerAndShop(req, res, next) {
     return res.status(401).json({ success: false, message: 'Not logged in' })
   }
 
-  const authToken = decodeURIComponent(
+  const shopSlug = decodeURIComponent(
     String(req.headers.authorization).split(' ')[1]
   )
-  if (!authToken) {
-    return res.status(401).json({ success: false, message: 'No auth token' })
+  if (!shopSlug) {
+    return res.status(401).json({ success: false, message: 'No shop slug' })
   }
 
   req.sellerId = sellerId
@@ -47,7 +47,7 @@ async function authSellerAndShop(req, res, next) {
   }
 
   if (req.seller.superuser) {
-    const shop = await Shop.findOne({ where: { authToken } })
+    const shop = await Shop.findOne({ where: { shopSlug } })
     if (!shop) {
       return res.status(401).json({ success: false, message: 'No such shop' })
     }
@@ -57,7 +57,7 @@ async function authSellerAndShop(req, res, next) {
     next()
   } else {
     const include = { model: Seller, where: { id: sellerId } }
-    const shop = await Shop.findOne({ where: { authToken }, include })
+    const shop = await Shop.findOne({ where: { shopSlug }, include })
     if (!shop) {
       return res.status(401).json({ success: false, message: 'Unauthorized' })
     }
@@ -96,14 +96,14 @@ async function authUser(req, res, next) {
 }
 
 async function authShop(req, res, next) {
-  const authToken = decodeURIComponent(
+  const shopSlug = decodeURIComponent(
     String(req.headers.authorization).split(' ')[1]
   )
-  if (!authToken) {
-    return res.status(401).json({ success: false, message: 'No auth token' })
+  if (!shopSlug) {
+    return res.status(401).json({ success: false, message: 'No shop slug' })
   }
 
-  Shop.findOne({ where: { authToken } }).then((shop) => {
+  Shop.findOne({ where: { shopSlug } }).then((shop) => {
     if (!shop) {
       return res.status(401).json({ success: false, message: 'Shop not found' })
     }

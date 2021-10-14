@@ -57,7 +57,7 @@ List the shops for a seller.
 
 Create a shop with provided configuration.
 
-    curl "${JSON_POST_OPTIONS[@]}" -b $COOKIE_STORAGE -d '{"name": "Test Shop", "listingId": "1-001-0001", "authToken": "token123"}' $API_ROOT/shop
+    curl "${JSON_POST_OPTIONS[@]}" -b $COOKIE_STORAGE -d '{"name": "Test Shop", "listingId": "1-001-0001", "shopSlug": "token123"}' $API_ROOT/shop
 
 ### `DELETE /shop`
 

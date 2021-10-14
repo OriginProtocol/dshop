@@ -25,7 +25,7 @@ const ConnectModal = ({
 
   const [, dispatch] = useStateValue()
 
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   const onConnect = async () => {
     const { valid, newState } = validate()

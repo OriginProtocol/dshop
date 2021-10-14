@@ -216,7 +216,7 @@ const processUpdatedEvent = async (event, shopId) => {
 
   const shop = await Shop.findOne({ where: { id: shopId } })
 
-  const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
+  const OutputDir = `${DSHOP_CACHE}/${shop.shopSlug}`
 
   const shopConfig = decryptConfig(shop.config)
   const apiKey = get(shopConfig, 'printful')

@@ -37,7 +37,7 @@ const Password = () => {
             headers: {
               'content-type': 'application/json',
               authorization: `bearer ${encodeURIComponent(
-                config.backendAuthToken
+                config.backendShopSlug
               )}`
             },
             body: JSON.stringify({ password }),

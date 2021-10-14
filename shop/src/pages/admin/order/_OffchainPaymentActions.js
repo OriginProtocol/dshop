@@ -21,7 +21,7 @@ const OffchainPaymentActions = ({ order }) => {
 
   const [state, setState] = useReducer(reducer, {})
 
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   const paymentState = get(order, 'paymentStatus')
   const paymentType = get(order, 'paymentType')

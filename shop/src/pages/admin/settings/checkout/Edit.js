@@ -21,7 +21,7 @@ const configFields = ['cartSummaryNote', 'discountCodes', 'taxRates']
 const CheckoutSettings = () => {
   const { config } = useConfig()
   const [, dispatch] = useStateValue()
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const [state, setState] = useReducer(reducer, {})
   const input = formInput(state, (newState) =>
     setState({ ...newState, hasChanges: true })

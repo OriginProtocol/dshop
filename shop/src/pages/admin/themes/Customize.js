@@ -15,7 +15,7 @@ const CustomizeTheme = () => {
     return () => (document.body.style.overflow = 'auto')
   }, [])
 
-  const previewUrl = `${window.origin}/theme/${config.themeId}?shop=${config.backendAuthToken}`
+  const previewUrl = `${window.origin}/theme/${config.themeId}?shop=${config.backendShopSlug}`
   return (
     <div className="customize-theme sidebar-layout">
       <div className="sidebar-container d-flex flex-column">

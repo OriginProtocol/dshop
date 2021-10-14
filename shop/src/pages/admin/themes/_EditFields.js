@@ -21,7 +21,7 @@ const EditFields = () => {
   const [hasChanges, setHasChanges] = useState(false)
   const [activeSection, setActiveSection] = useState(false)
 
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   const { activeTheme, activeThemeId } = useActiveTheme()
 

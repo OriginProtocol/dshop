@@ -35,7 +35,7 @@ const PrintfulDetails = ({
             setConfirm(true)
             const headers = new Headers({
               authorization: `bearer ${encodeURIComponent(
-                config.backendAuthToken
+                config.backendShopSlug
               )}`,
               'content-type': 'application/json'
             })
@@ -270,7 +270,7 @@ const Printful = () => {
               {
                 headers: {
                   authorization: `bearer ${encodeURIComponent(
-                    config.backendAuthToken
+                    config.backendShopSlug
                   )}`,
                   'content-type': 'application/json'
                 },

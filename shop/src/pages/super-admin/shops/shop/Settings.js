@@ -6,7 +6,7 @@ const ShopSettings = ({ shop }) => {
   const { config } = useConfig()
   const [, setSettings] = useState({})
   useEffect(() => {
-    fetch(`${config.backend}/shops/${shop.authToken}/settings`, {
+    fetch(`${config.backend}/shops/${shop.shopSlug}/settings`, {
       credentials: 'include'
     })
       .then((res) => res.json())

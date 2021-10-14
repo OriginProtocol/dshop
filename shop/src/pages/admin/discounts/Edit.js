@@ -140,7 +140,7 @@ const AdminEditDiscount = () => {
           const raw = await fetch(url, {
             headers: {
               authorization: `bearer ${encodeURIComponent(
-                config.backendAuthToken
+                config.backendShopSlug
               )}`,
               'content-type': 'application/json'
             },

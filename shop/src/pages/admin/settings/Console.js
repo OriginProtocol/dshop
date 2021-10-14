@@ -21,7 +21,7 @@ const AdminConsole = () => {
   const [shopIpfsHash, setShopIpfsHash] = useState('')
   const [printfulError, setPrintfulError] = useState('')
   const [diagnostic, setDiagnostic] = useState('')
-  const { get, post } = useBackendApi({ authToken: true })
+  const { get, post } = useBackendApi({ shopSlug: true })
 
   const [state, setState] = useSetState()
   const input = formInput(state, (newState) => setState(newState))
@@ -63,7 +63,7 @@ const AdminConsole = () => {
               fetch(`${config.backend}/orders/create`, {
                 headers: {
                   authorization: `bearer ${encodeURIComponent(
-                    config.backendAuthToken
+                    config.backendShopSlug
                   )}`,
                   'content-type': 'application/json'
                 },
@@ -104,7 +104,7 @@ const AdminConsole = () => {
             fetch(`${config.backend}/orders/${orderId}/email`, {
               headers: {
                 authorization: `bearer ${encodeURIComponent(
-                  config.backendAuthToken
+                  config.backendShopSlug
                 )}`,
                 'content-type': 'application/json'
               },
@@ -216,7 +216,7 @@ const AdminConsole = () => {
             fetch(`${config.backend}/shop/sync-printful`, {
               headers: {
                 authorization: `bearer ${encodeURIComponent(
-                  config.backendAuthToken
+                  config.backendShopSlug
                 )}`,
                 'content-type': 'application/json'
               },

@@ -15,7 +15,7 @@ const initialState = {
 const Contact = () => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const contactText = get(themeVars, 'contact.contactText')
   const contactEmail = get(themeVars, 'contact.email', config.supportEmail)
   const contactNumber = get(themeVars, 'contact.number')

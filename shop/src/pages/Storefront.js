@@ -27,7 +27,7 @@ const Storefront = () => {
     fetch(`${config.backend}/password`, {
       headers: {
         'content-type': 'application/json',
-        authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
+        authorization: `bearer ${encodeURIComponent(config.backendShopSlug)}`
       },
       credentials: 'include'
     }).then(async (response) => {

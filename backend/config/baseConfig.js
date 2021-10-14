@@ -4,7 +4,7 @@ const shopConfig = {
   byline: '',
   logo: '',
   css: '',
-  backendAuthToken: '',
+  backendShopSlug: '',
   favicon: 'favicon.png',
 
   supportEmail: 'Store <store@ogn.app>',

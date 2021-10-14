@@ -55,10 +55,10 @@ async function updateWalletAddress(shops) {
   const networkId = program.networkId
 
   for (const shop of shops) {
-    log.info(`Processing Shop ${shop.id} DataDir ${shop.authToken}`)
+    log.info(`Processing Shop ${shop.id} DataDir ${shop.shopSlug}`)
 
     // Read the wallet address from config.json
-    const configFile = `${DSHOP_CACHE}/${shop.authToken}/data/config.json`
+    const configFile = `${DSHOP_CACHE}/${shop.shopSlug}/data/config.json`
     if (!fs.existsSync(configFile)) {
       log.error(`Shop ${shop.id}: file ${configFile} not found`)
       continue

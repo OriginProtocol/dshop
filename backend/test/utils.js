@@ -235,7 +235,7 @@ async function createTestShop({
     networkId: network.networkId,
     listingId,
     sellerId: 1,
-    authToken: 'shopAuthToken' + Date.now(), // Make the token unique.
+    shopSlug: 'shopSlug' + Date.now(), // Make the token unique.
     config: setConfig({
       dataUrl: undefined,
       publicUrl: undefined,

@@ -17,7 +17,7 @@ function reducer(state, newState) {
 
 const AdminCollections = () => {
   const history = useHistory()
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const { collections, loading } = useCollections()
   const [state, setState] = useReducer(reducer, { collections: [] })
   useEffect(() => {

@@ -1,11 +1,11 @@
 async function fetchProductStock(productId, config) {
-  const { backend, backendAuthToken } = config
+  const { backend, backendShopSlug } = config
   return await fetch(
     `${backend}/products${productId ? `/${productId}` : ''}/stock`,
     {
       credentials: 'include',
       headers: {
-        authorization: `bearer ${encodeURIComponent(backendAuthToken)}`
+        authorization: `bearer ${encodeURIComponent(backendShopSlug)}`
       }
     }
   ).then((res) => res.json())

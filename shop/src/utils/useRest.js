@@ -16,7 +16,7 @@ function useRest(url, opts = {}) {
           credentials: 'include',
           headers: {
             authorization: `bearer ${encodeURIComponent(
-              config.backendAuthToken
+              config.backendShopSlug
             )}`
           }
         })

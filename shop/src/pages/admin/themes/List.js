@@ -11,7 +11,7 @@ import useThemes from '../../../utils/useThemes'
 const ThemeSettings = () => {
   const { config } = useConfig()
   const [, dispatch] = useStateValue()
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const { themes, loading } = useThemes()
 
   const activeThemeId = get(config, 'themeId')
@@ -39,7 +39,7 @@ const ThemeSettings = () => {
   }
 
   const previewTheme = async (themeId) => {
-    let url = `${window.origin}/theme/${themeId}?shop=${config.backendAuthToken}`
+    let url = `${window.origin}/theme/${themeId}?shop=${config.backendShopSlug}`
 
     switch (themeId) {
       case 'art':

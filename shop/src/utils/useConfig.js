@@ -29,7 +29,7 @@ function useConfig() {
     fetchConfig(dataSrc, shopSlug, isBackend)
       .then((config) => {
         setError(false)
-        config.activeShop = config.backendAuthToken
+        config.activeShop = config.backendShopSlug
         dispatch({ type: 'setConfig', config })
       })
       .catch(() => {

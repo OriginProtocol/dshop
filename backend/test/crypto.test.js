@@ -52,7 +52,7 @@ describe('Crypto Payment', () => {
     }
     let response = await fetch('http://localhost:8357/crypto/payment-code', {
       headers: {
-        authorization: `Bearer ${shop.authToken}`,
+        authorization: `Bearer ${shop.shopSlug}`,
         'content-type': 'application/json'
       },
       body: JSON.stringify(data),
@@ -103,7 +103,7 @@ describe('Crypto Payment', () => {
     }
     response = await fetch('http://localhost:8357/crypto/payment', {
       headers: {
-        authorization: `Bearer ${shop.authToken}`,
+        authorization: `Bearer ${shop.shopSlug}`,
         'content-type': 'application/json'
       },
       body: JSON.stringify(data),

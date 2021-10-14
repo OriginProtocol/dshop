@@ -104,7 +104,7 @@ module.exports = function (router) {
       statement_descriptor: stripeUtils.normalizeDescriptor(req.shop.name),
       metadata: {
         shopId: req.shop.id,
-        shopStr: req.shop.authToken,
+        shopStr: req.shop.shopSlug,
         listingId: req.shop.listingId,
         encryptedData: req.body.data,
         paymentCode: randomstring.generate()

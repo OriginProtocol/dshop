@@ -36,7 +36,7 @@ const OrderDiscount = ({ cart }) => {
           headers: {
             'content-type': 'application/json',
             authorization: `bearer ${encodeURIComponent(
-              config.backendAuthToken
+              config.backendShopSlug
             )}`
           },
           body: JSON.stringify({ code })

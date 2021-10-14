@@ -130,7 +130,7 @@ async function updateConfigJson(shops) {
       continue
     }
 
-    const configFile = `${DSHOP_CACHE}/${shop.authToken}/data/config.json`
+    const configFile = `${DSHOP_CACHE}/${shop.shopSlug}/data/config.json`
     if (!fs.existsSync(configFile)) {
       log.error(`Shop ${shop.id}: file ${configFile} not found`)
       continue

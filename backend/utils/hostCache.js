@@ -1,5 +1,5 @@
 /**
- * Singleton to keep track of hostname->auth_token for speedy lookups for static
+ * Singleton to keep track of hostname->shop_slug for speedy lookups for static
  * assets.
  */
 
@@ -17,10 +17,10 @@ const LOOKUP_LIMIT = 3000 // 3 seconds
 const LOOKUP_CLEANUP_INTERVAL = 900000 // 15 minutes
 
 /**
- * Resolve a hostname to a shop's auth_token
+ * Resolve a hostname to a shop's shop_slug
  *
  * @param host {string} Value from a Host header
- * @returns {string} auth_token if found
+ * @returns {string} shop_slug if found
  */
 async function hostCache(host) {
   if (!host) return
@@ -55,8 +55,8 @@ async function hostCache(host) {
         const shop = await Shop.findOne({ where: { hostname } })
 
         if (shop) {
-          log.debug(`${host} is ${shop.authToken}`)
-          hostnames[host] = shop.authToken
+          log.debug(`${host} is ${shop.shopSlug}`)
+          hostnames[host] = shop.shopSlug
         }
       }
 
@@ -68,8 +68,8 @@ async function hostCache(host) {
         })
 
         if (shopDom) {
-          log.debug(`${host} is ${shopDom.shop.authToken}`)
-          hostnames[host] = shopDom.shop.authToken
+          log.debug(`${host} is ${shopDom.shop.shopSlug}`)
+          hostnames[host] = shopDom.shop.shopSlug
         }
       }
 

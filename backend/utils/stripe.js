@@ -18,7 +18,7 @@ const getWebhookData = (shop, webhookURL) => {
     enabled_events: ['payment_intent.succeeded'],
     description: 'Origin Dshop payment processor',
     metadata: {
-      dshopStore: shop.authToken
+      dshopStore: shop.shopSlug
     }
   }
 }
@@ -91,7 +91,7 @@ async function deregisterWebhooks(shop, config) {
 
     const endpointsToDelete = webhookEndpoints.data
       .filter(
-        (endpoint) => get(endpoint, 'metadata.dshopStore') === shop.authToken
+        (endpoint) => get(endpoint, 'metadata.dshopStore') === shop.shopSlug
       )
       .map((endpoint) => endpoint.id)
 
@@ -150,7 +150,7 @@ async function registerWebhooks(shop, newConfig, oldConfig, backendUrl) {
       })
 
       existingWebhook = webhookEndpoints.data.find(
-        (endpoint) => get(endpoint, 'metadata.dshopStore') === shop.authToken
+        (endpoint) => get(endpoint, 'metadata.dshopStore') === shop.shopSlug
       )
     }
 
@@ -212,12 +212,12 @@ async function webhookValidation(shop, config, backendUrl) {
     })
 
     const existingWebhook = webhookEndpoints.data.find(
-      (endpoint) => get(endpoint, 'metadata.dshopStore') === shop.authToken
+      (endpoint) => get(endpoint, 'metadata.dshopStore') === shop.shopSlug
     )
 
     if (!existingWebhook) {
       log.debug(
-        `[Shop ${shop.id}] No webhook with metadata.dshopStore matching authToken found`
+        `[Shop ${shop.id}] No webhook with metadata.dshopStore matching shopSlug found`
       )
       return valid
     }

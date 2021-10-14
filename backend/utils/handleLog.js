@@ -235,7 +235,7 @@ async function _processEventListingCreated({ event }) {
   log.info(`Associated shop ${shop.id} with listing Id ${listingId}`)
 
   // Load the shop's config.json from the deploy staging area.
-  const dataDir = shop.authToken
+  const dataDir = shop.shopSlug
   const shopDir = `${DSHOP_CACHE}/${dataDir}`
   const shopConfigPath = `${shopDir}/data/config.json`
   log.debug(`Shop ${shop.id}: Loading config at ${shopConfigPath}`)

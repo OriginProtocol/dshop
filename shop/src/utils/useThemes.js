@@ -7,7 +7,7 @@ function useThemes() {
   const [shouldReload, setReload] = useState(1)
   const [{ themes }, dispatch] = useStateValue()
 
-  const { get } = useBackendApi({ authToken: true })
+  const { get } = useBackendApi({ shopSlug: true })
 
   useEffect(() => {
     const loadThemes = async () => {

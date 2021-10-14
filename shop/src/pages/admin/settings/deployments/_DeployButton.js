@@ -10,7 +10,7 @@ const AdminDeployShop = ({
   buttonText,
   afterDeploy
 }) => {
-  const { get, post } = useBackendApi({ authToken: true })
+  const { get, post } = useBackendApi({ shopSlug: true })
   const [, dispatch] = useStateValue()
 
   return (

@@ -118,12 +118,12 @@ async function getNetworkName() {
 
 router.get('/', async (req, res) => {
   let html
-  const authToken = await hostCache(req.hostname)
+  const shopSlug = await hostCache(req.hostname)
 
-  if (authToken) {
+  if (shopSlug) {
     try {
       html = fs
-        .readFileSync(`${DSHOP_CACHE}/${authToken}/public/index.html`)
+        .readFileSync(`${DSHOP_CACHE}/${shopSlug}/public/index.html`)
         .toString()
     } catch (e) {
       return res.status(404).send('')
@@ -172,24 +172,23 @@ router.get('/theme/:theme', async (req, res) => {
 })
 
 router.get('*', async (req, res, next) => {
-  const authToken = await hostCache(req.hostname)
+  const shopSlug = await hostCache(req.hostname)
   const split = req.path.split('/')
 
-  if (!authToken && split.length <= 2) {
+  if (!shopSlug && split.length <= 2) {
     return next()
   }
 
   /**
    * We're making some decisions on what source we're serving from here.
    *
-   * 1) If the authToken was included in the URL, it's a data dir access.
+   * 1) If the shopSlug was included in the URL, it's a data dir access.
    * 2) If it's a known deployed hostname, we want to serve the assembled shop.
    * 3) If all else failed, it's the admin
    */
   const partInUrl = decodeURIComponent(split[1])
-  const dataDir = authToken ? authToken : decodeURIComponent(split[1])
-  const isNamedDataAccess =
-    partInUrl === authToken || (!!partInUrl && !authToken)
+  const dataDir = shopSlug ? shopSlug : decodeURIComponent(split[1])
+  const isNamedDataAccess = partInUrl === shopSlug || (!!partInUrl && !shopSlug)
   const dir = `${DSHOP_CACHE}/${dataDir}${
     isNamedDataAccess ? '/data' : '/public'
   }`

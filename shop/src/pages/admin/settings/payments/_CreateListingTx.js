@@ -8,7 +8,7 @@ import Web3Transaction from 'components/Web3Transaction'
 
 const CreateListingTx = ({ submit, onReset, onCreated }) => {
   const { marketplace } = useOrigin()
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   return (
     <Web3Transaction

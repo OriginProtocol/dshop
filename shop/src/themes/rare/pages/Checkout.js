@@ -41,7 +41,7 @@ const Checkout = () => {
   const { config } = useConfig()
   const history = useHistory()
   const [reload, setReload] = useState(1)
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const [priceState] = usePrices({ reload, quantity: 1 })
 
   const country = Countries[state.country] || 'United States'

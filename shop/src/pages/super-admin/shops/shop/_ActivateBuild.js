@@ -28,10 +28,10 @@ const ActivateBuild = ({ className = '', shop, ipfsHash }) => {
     if (!state.loaded && !state.loading) {
       setState({ loading: true })
 
-      fetch(`${config.backend}/shops/${shop.authToken}/get-names`, {
+      fetch(`${config.backend}/shops/${shop.shopSlug}/get-names`, {
         headers: {
           'content-type': 'application/json',
-          authorization: `Bearer ${encodeURIComponent(shop.authToken)}`
+          authorization: `Bearer ${encodeURIComponent(shop.shopSlug)}`
         },
         credentials: 'include',
         method: 'GET'
@@ -52,10 +52,10 @@ const ActivateBuild = ({ className = '', shop, ipfsHash }) => {
 
   useEffect(() => {
     if (state.doActivate) {
-      fetch(`${config.backend}/shops/${shop.authToken}/set-names`, {
+      fetch(`${config.backend}/shops/${shop.shopSlug}/set-names`, {
         headers: {
           'content-type': 'application/json',
-          authorization: `Bearer ${encodeURIComponent(shop.authToken)}`
+          authorization: `Bearer ${encodeURIComponent(shop.shopSlug)}`
         },
         credentials: 'include',
         method: 'POST',

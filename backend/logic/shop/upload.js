@@ -24,7 +24,7 @@ const log = getLogger('logic.shop.upload')
  */
 module.exports = async (req, targetPath = '/', useAbsPath) => {
   try {
-    const dataDir = req.shop.authToken
+    const dataDir = req.shop.shopSlug
     const uploadDir = path.resolve(
       path.join(`${DSHOP_CACHE}/${dataDir}/data`, targetPath)
     )

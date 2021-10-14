@@ -42,7 +42,7 @@ const AdminNewShop = ({ shouldShow, onClose = () => {} }) => {
   const [{ admin }, dispatch] = useStateValue()
   const { setActiveShop } = useConfig()
   const [state, setState] = useSetState(defaultState)
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
 

@@ -18,7 +18,7 @@ function useProducts(opts = {}) {
     dispatch
   ] = useStateValue()
   const { config } = useConfig()
-  const { get } = useBackendApi({ authToken: true })
+  const { get } = useBackendApi({ shopSlug: true })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
 

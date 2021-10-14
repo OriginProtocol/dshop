@@ -11,7 +11,7 @@ describe('Shop Utils', () => {
     }
     const shop = {
       hostname: 'foo',
-      authToken: 'bar'
+      shopSlug: 'bar'
     }
     let dataUrl = getShopDataUrl(shop, netConfig)
     expect(dataUrl).to.be.equal('https://foo.ogn.app/bar/')

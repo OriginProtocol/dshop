@@ -117,7 +117,7 @@ const Join = ({
                 headers: {
                   'Content-Type': 'application/json',
                   Authorization: `bearer ${encodeURIComponent(
-                    config.backendAuthToken
+                    config.backendShopSlug
                   )}`
                 },
                 body: JSON.stringify({

@@ -43,11 +43,11 @@ module.exports = function (router) {
     if (!UpholdEndpoints[upholdApi]) {
       return res.json({ authed: false, message: 'Uphold not configured' })
     }
-    const authToken = req.session.upholdAccessToken
-    if (authToken) {
+    const shopSlug = req.session.upholdAccessToken
+    if (shopSlug) {
       const response = await fetch(`${UpholdEndpoints[upholdApi].api}/v0/me`, {
         headers: {
-          Authorization: `Bearer ${authToken}`
+          Authorization: `Bearer ${shopSlug}`
         }
       })
       const json = await response.json()
@@ -139,9 +139,9 @@ module.exports = function (router) {
     if (!UpholdEndpoints[upholdApi]) {
       return res.json({ success: false, message: 'Uphold not configured' })
     }
-    const authToken = req.session.upholdAccessToken
-    // log.debug('Token', authToken)
-    if (!authToken) {
+    const shopSlug = req.session.upholdAccessToken
+    // log.debug('Token', shopSlug)
+    if (!shopSlug) {
       return res.json({ success: false })
     }
     const response = await fetch(
@@ -149,7 +149,7 @@ module.exports = function (router) {
       {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${authToken}`
+          Authorization: `Bearer ${shopSlug}`
         }
       }
     )
@@ -181,10 +181,10 @@ module.exports = function (router) {
         return res.json({ success: false, message: 'Uphold not configured' })
       }
 
-      const authToken = req.session.upholdAccessToken
+      const shopSlug = req.session.upholdAccessToken
 
-      if (!authToken) {
-        return res.json({ success: false, reason: 'Bad auth token' })
+      if (!shopSlug) {
+        return res.json({ success: false, reason: 'Bad shop slug' })
       }
       if (!req.body.amount) {
         return res.json({ success: false, reason: 'No amount' })
@@ -208,7 +208,7 @@ module.exports = function (router) {
       const response = await fetch(`${url}/transactions?commit=true`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${authToken}`,
+          Authorization: `Bearer ${shopSlug}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(body)

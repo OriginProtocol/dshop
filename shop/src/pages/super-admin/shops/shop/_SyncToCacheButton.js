@@ -13,7 +13,7 @@ const AdminSyncToCache = ({ shop, className = '', hash, networkId }) => {
     if (!state.syncShop) {
       return
     }
-    fetch(`${config.backend}/shops/${shop.authToken}/sync-cache`, {
+    fetch(`${config.backend}/shops/${shop.shopSlug}/sync-cache`, {
       headers: {
         'content-type': 'application/json'
       },

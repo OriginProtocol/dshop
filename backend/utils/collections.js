@@ -5,7 +5,7 @@ const { DSHOP_CACHE } = require('./const')
 
 const addToCollections = (shop, productId, collectionIds) => {
   try {
-    const outDir = path.resolve(`${DSHOP_CACHE}/${shop.authToken}/data`)
+    const outDir = path.resolve(`${DSHOP_CACHE}/${shop.shopSlug}/data`)
     const collectionsPath = `${outDir}/collections.json`
     const data = JSON.parse(fs.readFileSync(collectionsPath).toString())
 

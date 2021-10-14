@@ -81,13 +81,13 @@ module.exports = function (router) {
         /**
          * This is potentially incompatible with deploy(), as that takes
          * subdomain as a parameter.  I don't think that parameter should ever
-         * be different than the auth token, so in practice they should not
+         * be different than the shop slug, so in practice they should not
          * diverge but it can't be guaranteed unless these implementations
          * are changed to match.
          *
          * TODO: Make deploy() match this?
          */
-        const domains = [`${req.shop.authToken}.${networkConfig.domain}`]
+        const domains = [`${req.shop.shopSlug}.${networkConfig.domain}`]
         const dres = await ShopDomain.findAll({
           where: { shopId: req.shop.id }
         })

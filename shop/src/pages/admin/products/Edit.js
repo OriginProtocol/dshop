@@ -153,7 +153,7 @@ const EditProduct = () => {
   const match = useRouteMatch('/admin/products/:productId')
   const [{ admin, config }, dispatch] = useStateValue()
   const { productId } = match.params
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   const [submitting, setSubmitting] = useState(false)
   const [, setSubmitError] = useState(null)

@@ -23,7 +23,7 @@ const OfflinePayment = ({
   const isSelected = methodId === selectedMethodId
   const inactive = isSelected ? '' : ' inactive'
 
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   useEffect(() => {
     if (isSelected && !loading && disabled && !submit) {

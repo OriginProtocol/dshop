@@ -29,7 +29,7 @@ const ShowCollection = () => {
   const match = useRouteMatch('/admin/collections/:collectionId')
   const location = useLocation()
   const { collectionId } = match.params
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const collection = collections.find((c) => c.id === collectionId)
   const [state, setState] = useReducer(reducer, {
     products: get(collection, 'products', [])

@@ -12,7 +12,7 @@ const UpholdLogout = ({ upholdAuth, config, reloadAuth, setReloadAuth }) => {
             credentials: 'include',
             headers: {
               authorization: `bearer ${encodeURIComponent(
-                config.backendAuthToken
+                config.backendShopSlug
               )}`
             },
             method: 'POST'

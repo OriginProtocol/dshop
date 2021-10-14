@@ -84,7 +84,7 @@ const StripeModal = ({ onClose, initialConfig }) => {
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
 
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   const verifyCredentials = () => {
     return post('/stripe/check-creds', {

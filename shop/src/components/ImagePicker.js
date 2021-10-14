@@ -115,7 +115,7 @@ const ImagePicker = (props) => {
   const [state, setState] = useReducer(reducer, {})
   const { config } = useConfig()
 
-  const { postRaw } = useBackendApi({ authToken: true })
+  const { postRaw } = useBackendApi({ shopSlug: true })
 
   const uploadRef = useRef()
 

@@ -21,7 +21,7 @@ const AdminDeleteShop = ({ shop, className = '' }) => {
       confirmedText={false}
       onConfirm={() => {
         const body = JSON.stringify({ deleteCache })
-        return post(`/shops/${shop.authToken}`, { method: 'DELETE', body })
+        return post(`/shops/${shop.shopSlug}`, { method: 'DELETE', body })
       }}
       onSuccess={() => {
         redirectTo('/super-admin/shops')

@@ -22,7 +22,7 @@ async function validate(dataDir) {
     return
   }
 
-  const shop = await Shop.findOne({ where: { authToken: dataDir } })
+  const shop = await Shop.findOne({ where: { shopSlug: dataDir } })
   if (!shop) {
     console.log('No shop found')
     return

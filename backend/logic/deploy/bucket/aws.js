@@ -60,7 +60,7 @@ async function deploy({ shop, networkConfig, OutputDir }) {
       ? NETWORK_ID_TO_NAME[shop.networkId]
       : 'localhost'
   const bucketName = normalizeBucketName(
-    `${BUCKET_PREFIX}${networkName}-${shop.authToken}`
+    `${BUCKET_PREFIX}${networkName}-${shop.shopSlug}`
   )
 
   const state = await bucketState(bucketName)

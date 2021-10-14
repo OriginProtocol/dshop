@@ -10,7 +10,7 @@ import ConfirmationModal from 'components/ConfirmationModal'
 const DeleteProduct = ({ product, className = '', children }) => {
   const redirectTo = useRedirect()
   const [, dispatch] = useStateValue()
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   return (
     <ConfirmationModal

@@ -6,7 +6,7 @@ import { useStateValue } from 'data/state'
 const useShopDeployments = () => {
   const [{ reload, deployments }, dispatch] = useStateValue()
   const [loading, setLoading] = useState(true)
-  const { get } = useBackendApi({ authToken: true })
+  const { get } = useBackendApi({ shopSlug: true })
 
   useEffect(() => {
     get('/shop/deployments')

@@ -17,7 +17,7 @@ const EditHostname = ({ onClose }) => {
   const [shouldClose, setShouldClose] = useState()
 
   const { shopConfig } = useShopConfig()
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const [state, setState] = useReducer(reducer, { domain: '' })
   useEffect(() => {
     if (shopConfig) {

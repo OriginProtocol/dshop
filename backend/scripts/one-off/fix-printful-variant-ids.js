@@ -52,9 +52,9 @@ async function _getShops() {
 
 async function fixVariants(shops) {
   for (const shop of shops) {
-    log.info(`Processing Shop ${shop.id} DataDir ${shop.authToken}`)
+    log.info(`Processing Shop ${shop.id} DataDir ${shop.shopSlug}`)
 
-    const SHOP_PREFIX = `${DSHOP_CACHE}/${shop.authToken}/data`
+    const SHOP_PREFIX = `${DSHOP_CACHE}/${shop.shopSlug}/data`
 
     // Read printful-ids.json file
     const printfulIdsFile = `${SHOP_PREFIX}/printful-ids.json`

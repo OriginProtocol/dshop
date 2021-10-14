@@ -152,7 +152,7 @@ module.exports = function (router) {
     if (req.query.active) {
       const shopExists = await Shop.findOne({
         include: user.superuser ? undefined : include,
-        where: { authToken: req.query.active }
+        where: { shopSlug: req.query.active }
       })
       if (shopExists) {
         shopAuthed = true

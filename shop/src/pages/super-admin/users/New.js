@@ -10,7 +10,7 @@ import UserForm from './_Form'
 const AdminNewUser = () => {
   const redirectTo = useRedirect()
 
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   async function onSave(user) {
     const { seller } = await post('/superuser/users', {

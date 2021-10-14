@@ -40,7 +40,7 @@ function useShippingZones() {
             credentials: 'include',
             headers: {
               authorization: `bearer ${encodeURIComponent(
-                config.backendAuthToken
+                config.backendShopSlug
               )}`,
               'Content-Type': 'application/json'
             },

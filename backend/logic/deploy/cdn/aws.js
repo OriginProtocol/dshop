@@ -485,7 +485,7 @@ async function createDistribution({
  * @returns {object} result of createInvalidation request
  */
 async function createInvalidation({ shop, requestId, distributionId }) {
-  const paths = ['/*', `/${shop.authToken}/*`, `/dist/*`]
+  const paths = ['/*', `/${shop.shopSlug}/*`, `/dist/*`]
   const params = {
     DistributionId: distributionId,
     InvalidationBatch: {

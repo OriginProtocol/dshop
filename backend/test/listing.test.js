@@ -9,7 +9,7 @@ const { TEST_DSHOP_CACHE } = require('./const')
 
 // Create a test shop's config.json in the deploy staging area.
 function createTestShopJsonConfig(shop) {
-  const configPath = `${TEST_DSHOP_CACHE}/${shop.authToken}/data`
+  const configPath = `${TEST_DSHOP_CACHE}/${shop.shopSlug}/data`
   fs.mkdirSync(configPath, { recursive: true })
   const shopConfig = {}
   fs.writeFileSync(
@@ -20,7 +20,7 @@ function createTestShopJsonConfig(shop) {
 
 // Reads and returns a test shop config.json.
 function getTestShopJsonConfig(shop) {
-  const configPath = `${TEST_DSHOP_CACHE}/${shop.authToken}/data/config.json`
+  const configPath = `${TEST_DSHOP_CACHE}/${shop.shopSlug}/data/config.json`
   const raw = fs.readFileSync(configPath)
   return JSON.parse(raw.toString())
 }
@@ -37,7 +37,7 @@ describe('Listing', () => {
       name: 'TestShop' + Date.now(),
       networkId: 999,
       walletAddress: sellerWallet.address,
-      authToken: 'testshop'
+      shopSlug: 'testshop'
     })
     createTestShopJsonConfig(shop)
   })
@@ -117,7 +117,7 @@ describe('Listing', () => {
       name: 'NewTestShop' + Date.now(),
       networkId: 999,
       walletAddress: sellerWallet.address,
-      authToken: 'newtestshop'
+      shopSlug: 'newtestshop'
     })
     createTestShopJsonConfig(newShop)
 

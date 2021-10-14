@@ -72,13 +72,22 @@ module.exports = function (router) {
   )
 
   router.get('/shop', authSuperUser, async (req, res) => {
-    res.send({
-      success: true,
-      shop: await Shop.findOne({
+    let shopDetails = await Shop.findOne({
+      where: {
+        shopSlug: req.query.shopToken
+      }
+    }) // returns Promise<Model|null>
+    if (!shopDetails) {
+      shopDetails = await Shop.findOne({
         where: {
-          authToken: req.query.shopToken
+          shopSlug: req.headers.authorization.split(' ')[1]
         }
       })
+    }
+
+    res.send({
+      success: true,
+      shop: shopDetails
     })
   })
 
@@ -88,7 +97,7 @@ module.exports = function (router) {
     const attributes = [
       'id',
       'name',
-      'authToken',
+      'shopSlug',
       'hostname',
       'listingId',
       'createdAt',
@@ -136,7 +145,7 @@ module.exports = function (router) {
     }
 
     shops = shops.map((s) => {
-      const configPath = `${DSHOP_CACHE}/${s.authToken}/data/config.json`
+      const configPath = `${DSHOP_CACHE}/${s.shopSlug}/data/config.json`
       const viewable = fs.existsSync(configPath)
       return { ...s, viewable }
     })
@@ -167,7 +176,7 @@ module.exports = function (router) {
         return res.json({ success: false, reason: 'no-printful-api-key' })
       }
 
-      const OutputDir = `${DSHOP_CACHE}/${req.shop.authToken}`
+      const OutputDir = `${DSHOP_CACHE}/${req.shop.shopSlug}`
       await printfulSyncQueue.add(
         {
           OutputDir,
@@ -183,7 +192,7 @@ module.exports = function (router) {
   )
 
   router.get('/shops/:shopId/deployments', authSuperUser, async (req, res) => {
-    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    const shop = await Shop.findOne({ where: { shopSlug: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'no-such-shop' })
     }
@@ -217,12 +226,12 @@ module.exports = function (router) {
   })
 
   router.get('/shops/:shopId/assets', authSuperUser, async (req, res) => {
-    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    const shop = await Shop.findOne({ where: { shopSlug: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'no-such-shop' })
     }
 
-    const OutputDir = `${DSHOP_CACHE}/${shop.authToken}/data`
+    const OutputDir = `${DSHOP_CACHE}/${shop.shopSlug}/data`
     fs.readdir(OutputDir, (err, files) => {
       res.json({
         assets: err ? [] : files.filter((f) => f.match(/\.(png|svg|jpg|ico)$/))
@@ -231,7 +240,7 @@ module.exports = function (router) {
   })
 
   router.delete('/shops/:shopId/assets', authSuperUser, async (req, res) => {
-    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    const shop = await Shop.findOne({ where: { shopSlug: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'no-such-shop' })
     }
@@ -239,7 +248,7 @@ module.exports = function (router) {
       return res.json({ success: false, reason: 'no-file-specified' })
     }
 
-    const file = `${DSHOP_CACHE}/${shop.authToken}/data/${req.body.file}`
+    const file = `${DSHOP_CACHE}/${shop.shopSlug}/data/${req.body.file}`
     if (!file) {
       return res.json({ success: false, reason: 'no-such-file' })
     }
@@ -250,7 +259,7 @@ module.exports = function (router) {
   })
 
   router.post('/shops/:shopId/sync-cache', authSuperUser, async (req, res) => {
-    const shop = await Shop.findOne({ where: { authToken: req.params.shopId } })
+    const shop = await Shop.findOne({ where: { shopSlug: req.params.shopId } })
     if (!shop) {
       return res.json({ success: false, reason: 'no-such-shop' })
     }
@@ -265,7 +274,7 @@ module.exports = function (router) {
       return res.json({ success: false, reason: 'no-ipfs-api' })
     }
 
-    const OutputDir = `${DSHOP_CACHE}/${shop.authToken}`
+    const OutputDir = `${DSHOP_CACHE}/${shop.shopSlug}`
 
     fs.mkdirSync(OutputDir, { recursive: true })
 
@@ -387,7 +396,7 @@ module.exports = function (router) {
     authSuperUser,
     async (req, res, next) => {
       const shop = await Shop.findOne({
-        where: { authToken: req.params.shopId }
+        where: { shopSlug: req.params.shopId }
       })
       if (!shop) {
         return res.json({ success: false, reason: 'shop-not-found' })
@@ -444,7 +453,7 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res, next) => {
-      const uploadDir = `${DSHOP_CACHE}/${req.shop.authToken}/data`
+      const uploadDir = `${DSHOP_CACHE}/${req.shop.shopSlug}/data`
 
       if (!fs.existsSync(uploadDir)) {
         return res.json({ success: false, reason: 'dir-not-found' })
@@ -522,7 +531,7 @@ module.exports = function (router) {
     authSellerAndShop,
     authRole('admin'),
     async (req, res) => {
-      const configFile = `${DSHOP_CACHE}/${req.shop.authToken}/data/config.json`
+      const configFile = `${DSHOP_CACHE}/${req.shop.shopSlug}/data/config.json`
 
       if (!fs.existsSync(configFile)) {
         return res.json({ success: false, reason: 'dir-not-found' })
@@ -633,17 +642,17 @@ module.exports = function (router) {
   router.delete('/shops/:shopId', authSuperUser, async (req, res) => {
     try {
       const shop = await Shop.findOne({
-        where: { authToken: req.params.shopId }
+        where: { shopSlug: req.params.shopId }
       })
 
       await ShopDeployment.destroy({ where: { shopId: shop.id } })
-      await Shop.destroy({ where: { authToken: req.params.shopId } })
+      await Shop.destroy({ where: { shopSlug: req.params.shopId } })
 
       if (req.body.deleteCache) {
         await new Promise((resolve, reject) => {
           execFile(
             'rm',
-            ['-rf', `${DSHOP_CACHE}/${shop.authToken}`],
+            ['-rf', `${DSHOP_CACHE}/${shop.shopSlug}`],
             (error, stdout) => {
               if (error) reject(error)
               else resolve(stdout)
@@ -664,9 +673,9 @@ module.exports = function (router) {
    * TODO:
    *  - record activity in AdminLogs
    */
-  router.post('/shops/:authToken/deploy', authSuperUser, async (req, res) => {
-    const { authToken } = req.params
-    const shop = await Shop.findOne({ where: { authToken } })
+  router.post('/shops/:shopSlug/deploy', authSuperUser, async (req, res) => {
+    const { shopSlug } = req.params
+    const shop = await Shop.findOne({ where: { shopSlug } })
     if (!shop) {
       return res.json({ success: false, reason: 'shop-not-found' })
     }

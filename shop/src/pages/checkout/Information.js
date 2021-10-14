@@ -25,7 +25,7 @@ const CheckoutInfo = () => {
     cart.userInfo || { country: 'United States' }
   )
   const shippingApi = get(config, 'shippingApi')
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)

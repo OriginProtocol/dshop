@@ -91,7 +91,7 @@ const PaymentSpecificDiscounts = () => {
   const [saving, setSaving] = useState(false)
 
   const { data: discounts = [], loading } = useRest('/discounts')
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
 
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)

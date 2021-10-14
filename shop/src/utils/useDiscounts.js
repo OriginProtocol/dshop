@@ -11,7 +11,7 @@ function useDiscounts() {
     async function fetchDiscounts() {
       setLoading(true)
       const headers = new Headers({
-        authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
+        authorization: `bearer ${encodeURIComponent(config.backendShopSlug)}`
       })
       const myRequest = new Request(`${config.backend}/discounts`, {
         headers,

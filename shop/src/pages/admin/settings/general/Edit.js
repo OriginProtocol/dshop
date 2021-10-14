@@ -24,7 +24,7 @@ const GeneralSettings = () => {
   const { config } = useConfig()
   const [, dispatch] = useStateValue()
   const { shopConfig } = useShopConfig()
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const [state, setState] = useReducer(reducer, { domain: '' })
   const input = formInput(state, (newState) =>
     setState({ ...newState, hasChanges: true })

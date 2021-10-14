@@ -94,7 +94,7 @@ describe('Inventory', () => {
         state: OrderPaymentStatuses.Paid
       },
       headers: {
-        authorization: `Bearer ${shop.authToken}`
+        authorization: `Bearer ${shop.shopSlug}`
       }
     })
     expect(resp.success).to.be.true
@@ -158,7 +158,7 @@ describe('Inventory', () => {
         state: OrderPaymentStatuses.Rejected
       },
       headers: {
-        authorization: `Bearer ${shop.authToken}`
+        authorization: `Bearer ${shop.shopSlug}`
       }
     })
     expect(resp.success).to.be.true
@@ -216,7 +216,7 @@ describe('Inventory', () => {
         state: OrderPaymentStatuses.Paid
       },
       headers: {
-        authorization: `Bearer ${shop.authToken}`
+        authorization: `Bearer ${shop.shopSlug}`
       }
     })
     expect(resp.success).to.be.true

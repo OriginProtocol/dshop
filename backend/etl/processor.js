@@ -235,7 +235,7 @@ class EtlJobProcessor {
     shop.dataUrl = getShopDataUrl(shop, netConfig)
 
     // Get the shop's deploy dir.
-    shop.outputDir = `${DSHOP_CACHE}/${shop.authToken}/data`
+    shop.outputDir = `${DSHOP_CACHE}/${shop.shopSlug}/data`
   }
 
   /**

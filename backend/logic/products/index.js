@@ -97,7 +97,7 @@ function getUniqueID(title, shop) {
  * @returns {Object}
  */
 function readProductsFile(shop) {
-  const outDir = path.resolve(`${DSHOP_CACHE}/${shop.authToken}/data`)
+  const outDir = path.resolve(`${DSHOP_CACHE}/${shop.shopSlug}/data`)
   const productsPath = `${outDir}/products.json`
   const fileData = fs.readFileSync(productsPath)
 
@@ -142,7 +142,7 @@ async function readProductDataFromWeb(shop, networkConfig, productId) {
  * @param {Object} data Updated data to write back
  */
 function writeProductsFile(shop, data) {
-  const outDir = path.resolve(`${DSHOP_CACHE}/${shop.authToken}/data`)
+  const outDir = path.resolve(`${DSHOP_CACHE}/${shop.shopSlug}/data`)
   const productsPath = `${outDir}/products.json`
   fs.writeFileSync(productsPath, JSON.stringify(data, undefined, 2))
 }
@@ -186,7 +186,7 @@ function appendToProductsFile(shop, productData) {
  */
 function writeProductData(shop, productId, data) {
   const outDir = path.resolve(
-    `${DSHOP_CACHE}/${shop.authToken}/data/${productId}`
+    `${DSHOP_CACHE}/${shop.shopSlug}/data/${productId}`
   )
   if (!fs.existsSync(outDir)) {
     fs.mkdirSync(outDir, { recursive: true })
@@ -204,7 +204,7 @@ function writeProductData(shop, productId, data) {
  */
 async function removeProductData(shop, productId) {
   const outDir = path.resolve(
-    `${DSHOP_CACHE}/${shop.authToken}/data/${productId}`
+    `${DSHOP_CACHE}/${shop.shopSlug}/data/${productId}`
   )
   if (fs.existsSync(outDir)) {
     // fs.rmdirSync(outDir, { recursive: true })
@@ -232,7 +232,7 @@ async function removeProductData(shop, productId) {
  * }}
  */
 async function moveProductImages(shop, productId, productData) {
-  const dataDir = shop.authToken
+  const dataDir = shop.shopSlug
   const tmpDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/__tmp`)
   const targetDir = path.resolve(`${DSHOP_CACHE}/${dataDir}/data/${productId}`)
 
@@ -310,7 +310,7 @@ async function moveProductImages(shop, productId, productData) {
 async function upsertProduct(shop, productData) {
   if (productData.id) {
     const dataDir = path.resolve(
-      `${DSHOP_CACHE}/${shop.authToken}/data/${productData.id}/data.json`
+      `${DSHOP_CACHE}/${shop.shopSlug}/data/${productData.id}/data.json`
     )
     if (!fs.existsSync(dataDir)) {
       return {

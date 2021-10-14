@@ -90,7 +90,7 @@ describe('Shops', () => {
     expect(shop.name).to.equal(body.name)
     expect(shop.hostname).to.startsWith(body.dataDir)
     expect(shop.listingId).to.equal(TEST_LISTING_ID_1)
-    expect(shop.authToken).to.equal(dataDir)
+    expect(shop.shopSlug).to.equal(dataDir)
     // TODO: check shop.config
 
     // Check the admin activity was recorded.
@@ -305,7 +305,7 @@ describe('Shops', () => {
       networkId: 999,
       name: " Robinette's Shoop-2020 ",
       listingId: '999-001-' + Date.now(),
-      authToken: 'token',
+      shopSlug: 'token',
       config: encryptConfig({}),
       sellerId: 1,
       hostname: kebabCase('cool shoop hostname')
@@ -317,7 +317,7 @@ describe('Shops', () => {
     expect(newShop.name).to.be.equal(data.name.trim())
     expect(newShop.networkId).to.be.equal(data.networkId)
     expect(newShop.listingId).to.be.equal(data.listingId)
-    expect(newShop.authToken).to.be.equal(data.authToken)
+    expect(newShop.shopSlug).to.be.equal(data.shopSlug)
     expect(newShop.sellerId).to.be.equal(data.sellerId)
     expect(newShop.hostname).to.be.equal(data.hostname)
     expect(newShop.config).to.be.a('string')
@@ -329,7 +329,7 @@ describe('Shops', () => {
       networkId: 999,
       name: undefined,
       listingId: '999-001-' + Date.now(),
-      authToken: 'token',
+      shopSlug: 'token',
       config: encryptConfig({}),
       sellerId: 1,
       hostname: kebabCase('cool shoop hostname')

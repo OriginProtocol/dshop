@@ -5,10 +5,10 @@ import useConfig from 'utils/useConfig'
 import { useStateValue } from 'data/state'
 
 const getShopConfig = memoize(
-  async function fetchShopConfig(backend, authToken) {
+  async function fetchShopConfig(backend, shopSlug) {
     const result = await fetch(`${backend}/config`, {
       credentials: 'include',
-      headers: { authorization: `bearer ${encodeURIComponent(authToken)}` }
+      headers: { authorization: `bearer ${encodeURIComponent(shopSlug)}` }
     }).then((raw) => raw.json())
 
     return result.config
@@ -26,7 +26,7 @@ function useShopConfig() {
     setLoading(true)
     const shopConfig = await getShopConfig(
       config.backend,
-      config.backendAuthToken,
+      config.backendShopSlug,
       reload.shopConfig
     )
     setLoading(false)

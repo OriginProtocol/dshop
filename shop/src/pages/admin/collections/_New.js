@@ -53,7 +53,7 @@ const AdminCreateCollection = ({
   const title = useAutoFocus()
   const { collections } = useCollections()
   const [state, setState] = useSetState({ title: get(collection, 'title', '') })
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const input = formInput(state, (newState) => setState(newState))
   const Feedback = formFeedback(state)
 

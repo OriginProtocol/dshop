@@ -145,7 +145,7 @@ const AdminSettings = ({ shop }) => {
 
         if (valid) {
           setSaving(true)
-          const token = shop ? shop.authToken : config.backendAuthToken
+          const token = shop ? shop.shopSlug : config.backendShopSlug
           const raw = await fetch(`${config.backend}/shop/config`, {
             headers: {
               authorization: `bearer ${encodeURIComponent(token)}`,

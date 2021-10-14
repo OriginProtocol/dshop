@@ -1,14 +1,14 @@
 import useConfig from 'utils/useConfig'
 
 function useBackendApi(opts = {}) {
-  const { authToken } = opts
+  const { shopSlug } = opts
   const { config } = useConfig()
 
   function postRaw(url, opts = {}) {
     const headers = { ...opts.headers }
-    if (authToken) {
+    if (shopSlug) {
       headers.authorization = `bearer ${encodeURIComponent(
-        config.backendAuthToken
+        config.backendShopSlug
       )}`
     }
     if (!opts.method) {
@@ -45,9 +45,9 @@ function useBackendApi(opts = {}) {
 
   function get(url, opts = {}) {
     const headers = { 'content-type': 'application/json' }
-    if (authToken) {
+    if (shopSlug) {
       headers.authorization = `bearer ${encodeURIComponent(
-        config.backendAuthToken
+        config.backendShopSlug
       )}`
     }
     return new Promise((resolve, reject) => {

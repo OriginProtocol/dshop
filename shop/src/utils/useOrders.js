@@ -17,7 +17,7 @@ function useOrders(pageId, search) {
       const raw = await fetch(`${config.backend}/orders?${params.toString()}`, {
         credentials: 'include',
         headers: {
-          authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
+          authorization: `bearer ${encodeURIComponent(config.backendShopSlug)}`
         }
       })
       setLoading(false)
@@ -27,7 +27,7 @@ function useOrders(pageId, search) {
       const { orders, pagination } = await raw.json()
       dispatch({ type: 'setOrders', orders, pagination })
     }
-    if (config.backendAuthToken) {
+    if (config.backendShopSlug) {
       fetchOrders()
     }
   }, [shouldReload, pageId, search, config.activeShop])

@@ -5,7 +5,7 @@ import useBackendApi from 'utils/useBackendApi'
 
 const NoPaymentDue = ({ onChange, encryptedData, submit }) => {
   const [submitError, setSubmitError] = useState()
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const defaultButtonText = <fbt desc="Submit order">Submit order</fbt>
 
   useEffect(() => {

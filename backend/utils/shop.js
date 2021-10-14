@@ -71,7 +71,7 @@ function getShopPublicUrl(shop, networkConfig) {
 function getShopDataUrl(shop, networkConfig) {
   return getDataUrl(
     shop.hostname,
-    shop.authToken,
+    shop.shopSlug,
     networkConfig.domain,
     networkConfig.backendUrl
   )
@@ -79,10 +79,10 @@ function getShopDataUrl(shop, networkConfig) {
 
 async function _tryDataDir(dataDir) {
   const hasDir = fs.existsSync(`${DSHOP_CACHE}/${dataDir}`)
-  const [authToken, hostname] = [dataDir, dataDir]
-  const existingShopWithAuthToken = await Shop.findOne({ where: { authToken } })
+  const [shopSlug, hostname] = [dataDir, dataDir]
+  const existingShopWithshopSlug = await Shop.findOne({ where: { shopSlug } })
   const existingShopWithHostname = await Shop.findOne({ where: { hostname } })
-  return !existingShopWithAuthToken && !hasDir && !existingShopWithHostname
+  return !existingShopWithshopSlug && !hasDir && !existingShopWithHostname
 }
 
 /**
@@ -128,7 +128,7 @@ async function getDataDir(dir) {
 }
 
 function getJsonConfigPath(shop) {
-  return `${DSHOP_CACHE}/${shop.authToken}/data/config.json`
+  return `${DSHOP_CACHE}/${shop.shopSlug}/data/config.json`
 }
 
 function loadJsonConfigFromDisk(shop) {

@@ -24,7 +24,7 @@ const AdvancedSettings = () => {
   const { config } = useConfig()
   const [, dispatch] = useStateValue()
 
-  const { post } = useBackendApi({ authToken: true })
+  const { post } = useBackendApi({ shopSlug: true })
   const [state, setState] = useReducer(reducer, { logErrors: true })
 
   const input = formInput(state, (newState) =>

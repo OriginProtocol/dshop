@@ -18,7 +18,7 @@ const AdminDeployShop = ({ className = '', shop, buttonText = 'Deploy' }) => {
   const [state, setState] = useSetState()
   useEffect(() => {
     if (state.deployShop) {
-      fetch(`${config.backend}/shops/${shop.authToken}/deploy`, {
+      fetch(`${config.backend}/shops/${shop.shopSlug}/deploy`, {
         headers: { 'content-type': 'application/json' },
         credentials: 'include',
         method: 'POST',
@@ -183,7 +183,7 @@ const Deploy = ({ state, setState, admin, shop }) => {
                 {state.dnsProvider !== 'cloudflare' ? null : (
                   <>
                     <div>Domain</div>
-                    <div>{`${shop.authToken}.${network.domain}`}</div>
+                    <div>{`${shop.shopSlug}.${network.domain}`}</div>
                   </>
                 )}
               </>
