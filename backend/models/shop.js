@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
       // Unique id. Passed by the admin front-end to the back-end to indicate
       // which shop the admin actions should be applied to.
       // Also used as the unique directory name (aka "dataDir") to store the shop's data on-disk.
-      authToken: DataTypes.STRING,
+      shopSlug: DataTypes.STRING,
       // Optional. Set if the shop's access is password protected.
       password: DataTypes.STRING,
       // Encrypted JSON blob containing the shop's configuration parameters.
