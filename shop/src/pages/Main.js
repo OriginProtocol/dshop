@@ -6,6 +6,7 @@ import useConfig from 'utils/useConfig'
 
 import Bars from 'components/icons/Bars.js'
 import Link from 'components/Link'
+import DisplayPolicy from 'components/DisplayShopPolicy'
 
 import Nav from './_Nav'
 import Notice from './_Notice'
@@ -21,7 +22,17 @@ import Cart from './cart/Cart'
 
 import fbt from 'fbt'
 
-const Content = () => {
+/*
+ * @param pol <Array<Array<String, String, boolean>>. The two strings represent a store's Policy title and contents respectively,
+ *  while the boolean is used to indicate whether there is an error associated with the policy
+ *  E.g.:
+ *  [
+ *    ['Terms and Conditions', 'Eget egestas purus viverra accumsan in nisl nisi scelerisque.', false],
+ *    ['Privacy Policy', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.', false ],
+ *    ['Return Policy', 'Eget egestas purus viverra accumsan.', false]
+ *  ]
+ */
+const Content = ({ pol }) => {
   const { config } = useConfig()
 
   useEffect(() => {
@@ -47,6 +58,17 @@ const Content = () => {
       <Route path="/search" component={Products} />
       <Route path="/about" component={About} />
       <Route path="/terms" component={Terms} />
+
+      {/* When the end user clicks on a shop policy link (on the footer of the website),
+     they are directed to a path that matches the pattern of the value
+     passed to the 'path' prop of the Route component below */}
+      {pol.map((policy, index) => {
+        return (
+          <Route key={`${index}`} path={`/policy${index + 1}`}>
+            <DisplayPolicy heading={policy[0]} text={policy[1]} />
+          </Route>
+        )
+      })}
       {!config.affiliates ? null : (
         <Route path="/affiliates" component={Affiliates} />
       )}
@@ -82,6 +104,31 @@ const Main = () => {
   const { config } = useConfig()
   const isMobile = useIsMobile()
   const [menu, setMenu] = useState(false)
+  const [policies, setPolicies] = useState([['', '', false]])
+  useEffect(() => {
+    fetch(`shop/policies`, {
+      method: 'GET',
+      headers: {
+        authorization: `bearer ${encodeURIComponent(config.backendAuthToken)}`
+      }
+    })
+      .then((res) => {
+        if (!res.ok) {
+          return null
+        } else {
+          return res.json() //Expected type: <Array<Array<String, String, boolean>>>
+        }
+      })
+      .then((result) => {
+        if (result) {
+          setPolicies(result)
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load shop policies', err)
+      })
+  }, [window.onload])
+
   if (!config) {
     return (
       <div className="mt-5 text-center">
@@ -89,6 +136,7 @@ const Main = () => {
       </div>
     )
   }
+
   if (isMobile) {
     return (
       <>
@@ -108,10 +156,10 @@ const Main = () => {
             </button>
           </header>
           <MobileMenu open={menu} onClose={() => setMenu(false)} />
-          <Content />
+          <Content pol={policies} />
         </div>
         <Notice footer={true} />
-        <Footer />
+        <Footer policyHeadings={policies.map((p) => p[0])} />
       </>
     )
   }
@@ -134,11 +182,11 @@ const Main = () => {
               <div dangerouslySetInnerHTML={{ __html: config.byline }} />
             )}
           </header>
-          <Content />
+          <Content pol={policies} />
         </div>
         <Notice footer={true} />
       </div>
-      <Footer />
+      <Footer policyHeadings={policies.map((p) => p[0])} />
     </>
   )
 }

@@ -6,9 +6,14 @@ import useConfig from 'utils/useConfig'
 import CurrencySelect from 'components/CurrencySelect'
 import LocaleSelect from 'components/LocaleSelect'
 
-const Footer = () => {
+/*
+ * @param policyHeadings <Array<string>> Individual elements of this array are displayed on the footer of a store's website, so that the user can click on them
+ * and be routed to the store's policy pages
+ */
+const Footer = ({ policyHeadings }) => {
   const { config } = useConfig()
   const date = new Date()
+
   return (
     <div className="footer">
       <div className="container">
@@ -28,28 +33,37 @@ const Footer = () => {
             <FbtParam name="year">{date.getFullYear()}</FbtParam>.
           </fbt>
         </div>
-        <div>
-          <div className="links">
-            <LocaleSelect />
-            <div className="currency-select">
-              <CurrencySelect />
-            </div>
-            {config.terms ? (
-              <Link to="/terms">
-                <fbt desc="TermsAndConditions">Terms &amp; Conditions</fbt>
-              </Link>
-            ) : null}
-            <Link to="/about">
-              <fbt desc="FAQ">FAQ</fbt>
-            </Link>
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              href="https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0"
-            >
-              <fbt desc="footer.aboutLink">About Dshop</fbt>
-            </a>
+        <div className="links">
+          <LocaleSelect />
+          <div className="currency-select">
+            <CurrencySelect />
           </div>
+          <div className="policies">
+            {policyHeadings
+              ? policyHeadings.map((element, index) => {
+                  return (
+                    <Link key={`${index}`} to={`/policy${index + 1}`}>
+                      {element}
+                    </Link>
+                  )
+                })
+              : null}
+          </div>
+          {config.terms ? (
+            <Link to="/terms">
+              <fbt desc="TermsAndConditions">Terms &amp; Conditions</fbt>
+            </Link>
+          ) : null}
+          <Link to="/about">
+            <fbt desc="FAQ">FAQ</fbt>
+          </Link>
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://medium.com/originprotocol/built-on-origin-a-decentralized-shopify-alternative-888adc4198b0"
+          >
+            <fbt desc="footer.aboutLink">About Dshop</fbt>
+          </a>
         </div>
       </div>
     </div>
@@ -85,6 +99,9 @@ require('react-styl')(`
       align-items: baseline
       :not(:last-child)
         margin-right: 2rem
+    .policies
+      display: flex
+      flex-direction: column
 
   .currency-select
     position: relative

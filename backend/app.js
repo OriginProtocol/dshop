@@ -30,7 +30,8 @@ const ORIGIN_WHITELIST = []
 const BODYPARSER_EXCLUDES = [
   '/webhook',
   '/products/upload-images',
-  '/themes/upload-images'
+  '/themes/upload-images',
+  '/store/policies'
 ]
 
 const app = express()
@@ -104,6 +105,7 @@ require('./routes/paypal')(router)
 require('./routes/exchange-rates')(router)
 require('./routes/crypto')(router)
 require('./routes/themes')(router)
+require('./routes/policies')(router)
 
 async function getNetworkName() {
   const network = await Network.findOne({ where: { active: true } })
