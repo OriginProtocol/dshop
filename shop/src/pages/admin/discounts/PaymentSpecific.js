@@ -135,6 +135,10 @@ const PaymentSpecificDiscounts = () => {
         )
       })
       return
+    } else if (!state.value) {
+      setState({
+        valueError: fbt('Required', 'admin.discounts.auto.valueError')
+      })
     } else if (
       state.minCartValue &&
       (state.minCartValue < 0 ||
@@ -322,6 +326,11 @@ const PaymentSpecificDiscounts = () => {
         <label className="font-weight-bold">
           <fbt desc="admin.discounts.auto.minCartValue">Min. Cart Value</fbt>
         </label>
+        <span className="labelDescription">
+          (
+          <fbt desc="admin.discounts.auto.minCartValueIsOptional">Optional</fbt>
+          )
+        </span>
         <div className="input-group">
           <div className="input-group-prepend">
             <span className="input-group-text">
@@ -342,6 +351,13 @@ const PaymentSpecificDiscounts = () => {
             Max. Discount Value
           </fbt>
         </label>
+        <span className="labelDescription">
+          (
+          <fbt desc="admin.discounts.auto.maxDiscountValueIsOptional">
+            Optional
+          </fbt>
+          )
+        </span>
         <div className="input-group">
           <div className="input-group-prepend">
             <span className="input-group-text">
@@ -384,4 +400,9 @@ require('react-styl')(`
   .admin-title ~ .desc
     font-size: 1rem
     color: #8293a4
+  .labelDescription
+    font-size: 14px
+    font-weight: 400
+    color: #8293a4
+    margin-left: .25rem
 `)
