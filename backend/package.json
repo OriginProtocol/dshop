@@ -73,7 +73,7 @@
     "randomstring": "^1.1.5",
     "reconnecting-websocket": "^4.4.0",
     "sequelize": "^5.21.10",
-    "sequelize-cli": "^5.5.1",
+    "sequelize-cli": "^6.3.0",
     "serve-static": "^1.14.1",
     "sharp": "0.27.1",
     "sqlite3": "5.0.0",
