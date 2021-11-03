@@ -10,6 +10,7 @@ const currencies = [
   'ETH',
   'DAI',
   'OGN',
+  'BAT',
   // Fiat:
   'KRW',
   'SGD',
@@ -44,7 +45,7 @@ const fetchExchangeRates = memoize(fetchExchangeRatesRaw, (...args) =>
   args.join('-')
 )
 // Clear cache every 5 mins
-setInterval(() => fetchExchangeRates.cache.clear(), 1000 * 60 * 5)
+setInterval(() => fetchExchangeRates.cache.clear(), 1000 * 60 * 20)
 
 module.exports = function (router) {
   router.post('/exchange-rates', (req, res) => {

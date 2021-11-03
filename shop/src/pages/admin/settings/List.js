@@ -37,10 +37,20 @@ const List = () => {
           title={<fbt desc="Appearance">Appearance</fbt>}
           desc={
             <fbt desc="admin.Settings.appearanceDesc">
-              Manage your shop’s online appearance
+              Manage your shop&apos;s online appearance
             </fbt>
           }
           link="/admin/settings/appearance"
+        />
+        <SettingsListItem
+          icon={<Icons.Legal />}
+          title={<fbt desc="Legal">Legal</fbt>}
+          desc={
+            <fbt desc="admin.Settings.legalDesc">
+              Detail your shop&apos;s policies
+            </fbt>
+          }
+          link="/admin/settings/legal"
         />
         <SettingsListItem
           icon={<Icons.Card />}

@@ -2,10 +2,10 @@ const { ethers } = require('ethers')
 const fs = require('fs')
 const { pick, sortBy, get } = require('lodash')
 const { execFile } = require('child_process')
-// const formidable = require('formidable')
+const formidable = require('formidable')
 const https = require('https')
 const http = require('http')
-// const mv = require('mv')
+const mv = require('mv')
 const dayjs = require('dayjs')
 const uuidv4 = require('uuid').v4
 
@@ -31,6 +31,7 @@ const { createSeller } = require('../utils/sellers')
 const { decryptConfig } = require('../utils/encryptedConfig')
 const { configureShopDNS } = require('../logic/deploy/dns')
 const { DSHOP_CACHE, DEFAULT_INFRA_RESOURCES } = require('../utils/const')
+const { isSafePath } = require('../utils/filesystem')
 const { isPublicDNSName } = require('../utils/dns')
 const { getLogger } = require('../utils/logger')
 const { readProductsFile } = require('../logic/products')
@@ -363,6 +364,13 @@ module.exports = function (router) {
    * @returns {Promise<{success: false, reason: string, field:string, message: string}|{success: true, slug: string}>}
    */
   router.post('/shop', authUser, async (req, res) => {
+    if (process.env.NEW_SHOP_CREATION_DISABLED) {
+      return res.status(400).json({
+        success: false,
+        reason: 'New shop creation disabled',
+        message: 'New shop creation disabled'
+      })
+    }
     const args = { ...req.body, seller: req.seller }
     const result = await createShop(args)
     if (!result.success) {
@@ -374,125 +382,138 @@ module.exports = function (router) {
     return res.json({ success: true, slug: result.slug })
   })
 
-  router.post('/shops/:shopId/save-files', authSuperUser, async (_, res) => {
-    return res.json({
-      reason: 'Uploads are disabled'
-    })
+  router.post(
+    '/shops/:shopId/save-files',
+    authSuperUser,
+    async (req, res, next) => {
+      const shop = await Shop.findOne({
+        where: { authToken: req.params.shopId }
+      })
+      if (!shop) {
+        return res.json({ success: false, reason: 'shop-not-found' })
+      }
 
-    // const shop = await Shop.findOne({
-    //   where: { authToken: req.params.shopId }
-    // })
-    // if (!shop) {
-    //   return res.json({ success: false, reason: 'shop-not-found' })
-    // }
+      const dataDir = req.params.shopId
+      const uploadDir = `${DSHOP_CACHE}/${dataDir}/data`
 
-    // const dataDir = req.params.shopId
-    // const uploadDir = `${DSHOP_CACHE}/${dataDir}/data`
+      if (!fs.existsSync(uploadDir)) {
+        return res.json({ success: false, reason: 'dir-not-found' })
+      }
 
-    // if (!fs.existsSync(uploadDir)) {
-    //   return res.json({ success: false, reason: 'dir-not-found' })
-    // }
+      const form = formidable({ multiples: true })
 
-    // const form = formidable({ multiples: true })
+      form.parse(req, async (err, fields, files) => {
+        if (err) {
+          next(err)
+          return
+        }
+        const allFiles = Array.isArray(files.file) ? files.file : [files.file]
+        try {
+          for (const file of allFiles) {
+            const dest = `${uploadDir}/${file.name}`
 
-    // form.parse(req, async (err, fields, files) => {
-    //   if (err) {
-    //     next(err)
-    //     return
-    //   }
-    //   const allFiles = Array.isArray(files.file) ? files.file : [files.file]
-    //   try {
-    //     for (const file of allFiles) {
-    //       await new Promise((resolve, reject) => {
-    //         fs.stat(file.path, (err, fstat) => {
-    //           if (err) return reject(err)
-    //           if (!fstat.isFile()) {
-    //             return reject(`${file.path} does not exist or is not a file`)
-    //           }
+            // Verify the given path is safe
+            if (!isSafePath(dest, [uploadDir]) || file.name.includes('..')) {
+              return res.json({ success: false, reason: 'invalid-filename' })
+            }
 
-    //           mv(file.path, `${uploadDir}/${file.name}`, (err) => {
-    //             return err ? reject(err) : resolve()
-    //           })
-    //         })
-    //       })
-    //     }
-    //     res.json({ success: true, fields, files })
-    //   } catch (e) {
-    //     log.error(e)
-    //     res.json({ success: false })
-    //   }
-    // })
-  })
+            await new Promise((resolve, reject) => {
+              fs.stat(file.path, (err, fstat) => {
+                if (err) return reject(err)
+                if (!fstat.isFile()) {
+                  return reject(`${file.path} does not exist or is not a file`)
+                }
+
+                mv(file.path, dest, (err) => {
+                  return err ? reject(err) : resolve()
+                })
+              })
+            })
+          }
+          res.json({ success: true, fields, files })
+        } catch (e) {
+          log.error(e)
+          res.json({ success: false })
+        }
+      })
+    }
+  )
 
   router.put(
     '/shop/assets',
     authSellerAndShop,
     authRole('admin'),
-    async (_, res) => {
-      return res.json({
-        reason: 'Uploads are disabled'
+    async (req, res, next) => {
+      const uploadDir = `${DSHOP_CACHE}/${req.shop.authToken}/data`
+
+      if (!fs.existsSync(uploadDir)) {
+        return res.json({ success: false, reason: 'dir-not-found' })
+      }
+
+      const form = formidable({ multiples: true })
+      form.parse(req, async (err, fields, files) => {
+        if (err) {
+          next(err)
+          return
+        }
+
+        if (!String(fields.type).match(/^(logo|favicon)$/)) {
+          return res.json({ success: false, reason: 'invalid-type' })
+        }
+
+        const { file } = files
+        if (!file) {
+          return res.json({ success: false, reason: 'no-file' })
+        }
+        if (Array.isArray(file)) {
+          return res.json({ success: false, reason: 'too-many-files' })
+        }
+
+        const dest = `${uploadDir}/${file.name}`
+
+        // Verify the given path is safe
+        if (!isSafePath(dest, [uploadDir]) || file.name.includes('..')) {
+          return res.json({ success: false, reason: 'invalid-filename' })
+        }
+
+        const relative = dest.replace(uploadDir, '').replace(/^\//, '')
+
+        try {
+          await new Promise((resolve, reject) => {
+            fs.stat(file.path, (err, fstat) => {
+              if (err) return reject(err)
+              if (!fstat.isFile()) {
+                return reject(`${file.path} does not exist or is not a file`)
+              }
+
+              console.log('MOVING FILE TO: ', dest)
+              mv(file.path, dest, (err) => {
+                return err ? reject(err) : resolve()
+              })
+            })
+          })
+
+          const raw = fs.readFileSync(`${uploadDir}/config.json`).toString()
+          const config = JSON.parse(raw)
+          config[fields.type] = relative
+          if (fields.type === 'logo') {
+            config.title = ''
+          }
+          fs.writeFileSync(
+            `${uploadDir}/config.json`,
+            JSON.stringify(config, null, 2)
+          )
+
+          await req.shop.update({
+            hasChanges: true
+          })
+
+          res.json({ success: true, path: relative })
+        } catch (e) {
+          log.error(e)
+          res.json({ success: false })
+        }
       })
-
-      // const uploadDir = `${DSHOP_CACHE}/${req.shop.authToken}/data`
-
-      // if (!fs.existsSync(uploadDir)) {
-      //   return res.json({ success: false, reason: 'dir-not-found' })
-      // }
-
-      // const form = formidable({ multiples: true })
-      // form.parse(req, async (err, fields, files) => {
-      //   if (err) {
-      //     next(err)
-      //     return
-      //   }
-
-      //   if (!String(fields.type).match(/^(logo|favicon)$/)) {
-      //     return res.json({ success: false, reason: 'invalid-type' })
-      //   }
-
-      //   const { file } = files
-      //   if (!file) {
-      //     return res.json({ success: false, reason: 'no-file' })
-      //   }
-      //   if (Array.isArray(file)) {
-      //     return res.json({ success: false, reason: 'too-many-files' })
-      //   }
-
-      //   try {
-      //     await new Promise((resolve, reject) => {
-      //       fs.stat(file.path, (err, fstat) => {
-      //         if (err) return reject(err)
-      //         if (!fstat.isFile()) {
-      //           return reject(`${file.path} does not exist or is not a file`)
-      //         }
-
-      //         mv(file.path, `${uploadDir}/${file.name}`, (err) => {
-      //           return err ? reject(err) : resolve()
-      //         })
-      //       })
-      //     })
-
-      //     const raw = fs.readFileSync(`${uploadDir}/config.json`).toString()
-      //     const config = JSON.parse(raw)
-      //     config[fields.type] = file.name
-      //     if (fields.type === 'logo') {
-      //       config.title = ''
-      //     }
-      //     fs.writeFileSync(
-      //       `${uploadDir}/config.json`,
-      //       JSON.stringify(config, null, 2)
-      //     )
-
-      //     await req.shop.update({
-      //       hasChanges: true
-      //     })
-
-      //     res.json({ success: true, path: file.name })
-      //   } catch (e) {
-      //     log.error(e)
-      //     res.json({ success: false })
-      //   }
-      // })
     }
   )
 
@@ -649,7 +670,6 @@ module.exports = function (router) {
     if (!shop) {
       return res.json({ success: false, reason: 'shop-not-found' })
     }
-    const dataDir = authToken
     const { networkId } = req.body
     let resourceSelection = req.body.resourceSelection
 
@@ -682,7 +702,7 @@ module.exports = function (router) {
       {
         uuid,
         networkId: networkId ? networkId : network.networkId,
-        subdomain: dataDir,
+        subdomain: shop.hostname,
         shopId: shop.id,
         resourceSelection
       },

@@ -69,6 +69,9 @@ module.exports = (sequelize, DataTypes) => {
       targetKey: 'shopId',
       onDelete: 'cascade'
     })
+    Shop.hasOne(models.Policies, {
+      onDelete: 'cascade'
+    })
   }
 
   return Shop

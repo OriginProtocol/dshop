@@ -36,8 +36,8 @@ export const Information = () => {
         })
       }}
     >
-      <div className="text-lg mb-2 font-medium">1. Contact information</div>
-      <div className="shadow-lg p-4 grid grid-cols-2 gap-x-3 gap-y-2 dark:bg-gray-900 bg-white">
+      <div className="mb-2 text-lg font-medium">1. Contact information</div>
+      <div className="grid grid-cols-2 p-4 bg-white shadow-lg gap-x-3 gap-y-2 dark:bg-gray-900">
         <label className="block mb-2 text-sm">Email</label>
         <label className="block mb-2 text-sm">Mobile Phone (optional)</label>
         <div>
@@ -49,8 +49,8 @@ export const Information = () => {
           <Feedback error={state.phoneError} />
         </div>
       </div>
-      <div className="text-lg mb-2 mt-8 font-medium">2. Shipping address</div>
-      <div className="shadow-lg p-4 dark:bg-gray-900 bg-white grid gap-y-2">
+      <div className="mt-8 mb-2 text-lg font-medium">2. Shipping address</div>
+      <div className="grid p-4 bg-white shadow-lg dark:bg-gray-900 gap-y-2">
         <div className="grid grid-cols-2 gap-x-3 gap-y-2">
           <label className="block mb-2 text-sm">First Name</label>
           <label className="block mb-2 text-sm">Last Name</label>
@@ -80,7 +80,7 @@ export const Information = () => {
         </div>
         <label className="mt-3 text-sm">Country</label>
         <CountrySelect
-          className="border px-3 py-2 dark:bg-black dark:border-gray-700 bg-gray-100 w-full"
+          className="w-full px-3 py-2 bg-gray-100 border dark:bg-black dark:border-gray-700"
           value={state.country}
           onChange={(e) => {
             const provinces = get(Countries[e.target.value], 'provinces')
@@ -104,7 +104,7 @@ export const Information = () => {
           {!country.provinces ? null : (
             <div>
               <ProvinceSelect
-                className="border px-3 py-2 bg-gray-100 w-full"
+                className="w-full px-3 py-2 bg-gray-100 border"
                 country={country}
                 {...input('province')}
               />
@@ -117,11 +117,11 @@ export const Information = () => {
           </div>
         </div>
       </div>
-      <div className="flex justify-between mt-12 items-center">
+      <div className="flex items-center justify-between mt-12">
         <Link className="text-lg" to="/cart">
           &laquo; Return to cart
         </Link>
-        <button className="btn btn-primary px-8">Continue</button>
+        <button className="px-8 btn btn-primary">Continue</button>
       </div>
     </form>
   )
@@ -134,8 +134,7 @@ export const MobileInformation = () => {
 
   const onSubmit = (e) => {
     e.preventDefault()
-
-    const { valid, newState } = validate(state)
+    const { valid, newState } = validate(state, ['emailError'])
     setState(newState)
     if (!valid) {
       window.scrollTo(0, 0)
@@ -147,10 +146,10 @@ export const MobileInformation = () => {
   return (
     <>
       <form
-        className="shadow-lg p-8 bg-white dark:bg-gray-900"
+        className="p-8 bg-white shadow-lg dark:bg-gray-900"
         onSubmit={onSubmit}
       >
-        <div className="text-lg mb-4 font-medium">1. Contact information</div>
+        <div className="mb-4 text-lg font-medium">1. Contact information</div>
         <label className="block mb-2 text-sm font-medium">Email</label>
         <div className="mb-6">
           <input {...input('email')} />
@@ -163,15 +162,15 @@ export const MobileInformation = () => {
           <input type="tel" {...input('phone')} />
           <Feedback error={state.phoneError} />
         </div>
-        <button className="btn btn-primary w-full">Continue</button>
+        <button className="w-full btn btn-primary">Continue</button>
       </form>
-      <div className="text-lg font-medium text-gray-500 px-8 my-8">
+      <div className="px-8 my-8 text-lg font-medium text-gray-500">
         2. Shipping address
       </div>
-      <div className="text-lg font-medium text-gray-500 px-8 my-8">
+      <div className="px-8 my-8 text-lg font-medium text-gray-500">
         3. Shipping method
       </div>
-      <div className="text-lg font-medium text-gray-500 px-8 my-8">
+      <div className="px-8 my-8 text-lg font-medium text-gray-500">
         4. Payment
       </div>
     </>

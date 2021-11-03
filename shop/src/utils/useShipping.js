@@ -12,14 +12,14 @@ function useShipping() {
 
   const country = get(cart, 'userInfo.country')
   const countryCode = get(Countries, `${country}.code`)
-  const defaultShippingZone = shippingZones.find(
+  const defaultShippingZones = shippingZones.filter(
     (zone) => !get(zone, 'countries.length', 0)
-  )
+  ) // Refers to the 'Rest of the World' shipping options, if set.
   const filteredShippingZones = shippingZones.filter(
     (zone) => (zone.countries || []).indexOf(countryCode) >= 0
   )
-  if (!filteredShippingZones.length && defaultShippingZone) {
-    filteredShippingZones.push(defaultShippingZone)
+  if (!filteredShippingZones.length && defaultShippingZones.length) {
+    filteredShippingZones.push(...defaultShippingZones)
   }
 
   const unshippableItems = cart.items.filter((item) => {
