@@ -15,6 +15,9 @@ buildTheme () {
   ./node_modules/.bin/webpack --output-path="../backend/themes/$themeName"
   cp "$1/screenshot.png" "../backend/themes/$themeName/screenshot.png"
   cp "$1/theme.json" "../backend/themes/$themeName/theme.json"
+  if [ -d "../backend/themes/$themeName/dist" ]; then 
+    cp "../node_modules/openpgp/dist/openpgp.min.js" "../node_modules/openpgp/dist/openpgp.worker.min.js" "../backend/themes/$themeName/dist"
+  fi
 
   echo $themeName built
 }

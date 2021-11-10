@@ -15,6 +15,7 @@ const CartItems = () => {
   const lg = isMobile ? ' btn-lg' : ''
 
   const currencyOpts = useCurrencyOpts()
+  const itemsOutOfStock = cart.items.some((i) => i.outOfStock)
 
   return (
     <>
@@ -65,9 +66,15 @@ const CartItems = () => {
             <Link to="/" className={`btn btn-outline-primary${lg}`}>
               <fbt desc="ContinueShopping">Continue Shopping</fbt>
             </Link>
-            <Link to="/checkout" className={`btn btn-primary${lg}`}>
-              <fbt desc="CheckOut">Check Out</fbt>
-            </Link>
+            {itemsOutOfStock ? (
+              <div className="btn btn-primary disabled">
+                <fbt desc="CheckOut">Check Out</fbt>
+              </div>
+            ) : (
+              <Link to="/checkout" className={`btn btn-primary${lg}`}>
+                <fbt desc="CheckOut">Check Out</fbt>
+              </Link>
+            )}
           </div>
         </div>
       </div>
