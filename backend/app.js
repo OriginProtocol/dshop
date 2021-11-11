@@ -208,6 +208,8 @@ router.get('*', async (req, res, next) => {
       set(config, `networks[${netId}].ipfsGateway`, network.ipfs)
       set(config, `networks[${netId}].ipfsApi`, network.ipfsApi)
       set(config, `networks[${netId}].backend`, netConfig.backendUrl)
+      // Franck 11/11/2021 Hardcoded notice to let buyers know the hosted dshops are shutting down.
+      config.notice = 'Store closed. Do not place any order. Contact the merchant for more information.'
       return res.json(config)
     }
   } catch (err) {
