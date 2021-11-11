@@ -20,6 +20,7 @@ const SocialLinks = ({
   const { config } = useConfig()
   const social = pick(
     config,
+    'facebook',
     'twitter',
     'medium',
     'instagram',

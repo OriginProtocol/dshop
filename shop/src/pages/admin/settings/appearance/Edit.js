@@ -100,7 +100,6 @@ const AppearanceSettings = () => {
 
         try {
           const shopConfig = pickBy(state, (v, k) => !k.endsWith('Error'))
-          console.log('shopConfig before post: ', shopConfig)
 
           // About file data
           shopConfig.about = ABOUT_FILENAME

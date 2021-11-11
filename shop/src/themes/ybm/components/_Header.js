@@ -7,7 +7,7 @@ import useIsMobile from 'utils/useIsMobile'
 import useThemeVars from 'utils/useThemeVars'
 import { useStateValue } from 'data/state'
 
-import SocialLink from 'components/SocialLink'
+import SocialLinks from 'components/SocialLinks'
 import CartIcon from 'components/icons/Cart'
 import MenuIcon from 'components/icons/Menu'
 import Link from 'components/Link'
@@ -71,18 +71,10 @@ const MobileMenu = ({ toggleMobileMenu }) => {
           Contact
         </div>
       </div>
-      <div className="mt-auto">
-        <SocialLink
-          href={config.twitter}
+      <div className="mt-auto flex gap-4">
+        <SocialLinks
           svg={{ height: 18, className: 'inline-block', color: '#fff' }}
-        />
-        <SocialLink
-          href={config.facebook}
-          svg={{ height: 18, className: 'ml-6 inline-block', color: '#fff' }}
-        />
-        <SocialLink
-          href={config.instagram}
-          svg={{ height: 18, className: 'ml-6 inline-block', color: '#fff' }}
+          contentOnly
         />
       </div>
     </div>
@@ -223,21 +215,11 @@ const DesktopLinks = ({ bg }) => {
           config.title
         )}
       </Link>
-      <div className="flex-1 flex justify-end items-center">
-        <SocialLink
-          className="hover:opacity-75"
-          href={config.facebook}
+      <div className="flex-1 flex gap-4 justify-end items-center">
+        <SocialLinks
+          itemClassName="hover:opacity-75"
           svg={svgProps}
-        />
-        <SocialLink
-          className="ml-8 hover:opacity-75"
-          href={config.twitter}
-          svg={svgProps}
-        />
-        <SocialLink
-          href={config.instagram}
-          className="ml-8 hover:opacity-75"
-          svg={svgProps}
+          contentOnly
         />
         <Cart cart={cart} bg={bg} />
       </div>
