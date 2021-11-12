@@ -55,7 +55,6 @@ const calculateCartTotal = (cart) => {
     if (discountType) {
       if (discountType === 'percentage') {
         discount = Math.round((preDiscountTotal * discountObj.value) / 100)
-        console.log(`discount: `, discount)
       } else if (discountType === 'fixed') {
         discount = discountObj.value * 100
       } else if (discountType === 'payment') {
