@@ -111,7 +111,7 @@ const PreviewImages = (props) => {
 }
 
 const ImagePicker = (props) => {
-  const { onChange, disabled, children, maxImages } = props
+  const { onChange, disabled, children, maxImages, useOriginal } = props
   const [state, setState] = useReducer(reducer, {})
   const { config } = useConfig()
 
@@ -130,21 +130,25 @@ const ImagePicker = (props) => {
       const formData = new FormData()
 
       for (const file of files) {
-        const processedFile = await new Promise((resolve) => {
-          loadImage(
-            file,
-            (img) => {
-              return img.toBlob((blob) => resolve(blob), 'image/jpeg')
-            },
-            {
-              orientation: true,
-              maxWidth: 2000,
-              maxHeight: 2000,
-              canvas: true
-            }
-          )
-        })
-        formData.append('file', processedFile)
+        if (useOriginal) {
+          formData.append('file', file)
+        } else {
+          const processedFile = await new Promise((resolve) => {
+            loadImage(
+              file,
+              (img) => {
+                return img.toBlob((blob) => resolve(blob), 'image/jpeg')
+              },
+              {
+                orientation: true,
+                maxWidth: 2000,
+                maxHeight: 2000,
+                canvas: true
+              }
+            )
+          })
+          formData.append('file', processedFile)
+        }
       }
 
       const body = formData

@@ -183,7 +183,7 @@ async function getOrCreateTestNetwork(opts = {}) {
       cloudflareEmail: 'cloudflareEmail',
       cloudflareApiKey: 'cloudflareApiKey',
       gcpCredentials: 'gcpCredentials',
-      domain: 'domain.com',
+      domain: 'notarealdomainsayscthulhu.com',
       deployDir: 'deployDir',
       fallbackShopConfig: {},
       ...opts.configOverride

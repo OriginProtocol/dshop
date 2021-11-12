@@ -151,7 +151,7 @@ function validate(state, { hasOptions, inventory }) {
 const EditProduct = () => {
   const history = useHistory()
   const match = useRouteMatch('/admin/products/:productId')
-  const [{ config }, dispatch] = useStateValue()
+  const [{ admin, config }, dispatch] = useStateValue()
   const { productId } = match.params
   const { post } = useBackendApi({ authToken: true })
 
@@ -165,6 +165,7 @@ const EditProduct = () => {
   })
 
   const [hasOptions, setHasOptions] = useState(false)
+  const [useOriginalImage, setOriginalImage] = useState(false)
 
   const isNewProduct = productId === 'new'
   const externallyManaged = formState.externalId ? true : false
@@ -262,7 +263,7 @@ const EditProduct = () => {
           .map((c) => c.id)
       })
     }
-  }, [collections.length, productId])
+  }, [collections, productId])
 
   useEffect(() => {
     if (hasOptions && (!formState.options || !formState.options.length)) {
@@ -322,7 +323,6 @@ const EditProduct = () => {
             : newState.price * 100,
           images: media.map((file) => file.path),
           collections: newState.collections,
-          quantity: formState.limitedEdition ? newState.quantity : -1,
           variants
         })
       })
@@ -481,19 +481,33 @@ const EditProduct = () => {
               </div>
 
               <div className="media-uploader">
-                <label>
-                  <fbt desc="Photos">Photos</fbt>{' '}
-                  {externallyManaged ? null : (
-                    <span>
-                      (
-                      <fbt desc="admin.products.addManyPhotos">
-                        add as many as you like
-                      </fbt>
-                      )
-                    </span>
+                <div className="d-flex">
+                  <label>
+                    <fbt desc="Photos">Photos</fbt>{' '}
+                    {externallyManaged ? null : (
+                      <span>
+                        (
+                        <fbt desc="admin.products.addManyPhotos">
+                          add as many as you like
+                        </fbt>
+                        )
+                      </span>
+                    )}
+                  </label>
+                  {!admin.superuser ? null : (
+                    <div className="ml-auto d-flex align-items-center">
+                      <input
+                        type="checkbox"
+                        className="mr-1"
+                        checked={useOriginalImage}
+                        onChange={(e) => setOriginalImage(e.target.checked)}
+                      />
+                      Use original
+                    </div>
                   )}
-                </label>
+                </div>
                 <ImagePicker
+                  useOriginal={useOriginalImage}
                   images={media}
                   onChange={(media) => {
                     setFormState({ hasChanges: true, imagesUpdated: true })

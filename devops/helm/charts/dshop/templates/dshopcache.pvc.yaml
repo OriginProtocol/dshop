@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "{{ template "dshopCacheStorage.fullname" . }}"
+spec:
+ accessModes:
+ - ReadWriteMany
+ storageClassName: ""
+ volumeName: {{ template "dshopCacheStorage.fullname" . }}
+ resources:
+   requests:
+     storage: {{ default "50Gi" .Values.dshopCacheStorageRequestSize }}

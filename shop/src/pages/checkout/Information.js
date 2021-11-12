@@ -36,10 +36,7 @@ const CheckoutInfo = () => {
     if (state.submitting) return
 
     const { valid, newState } = validate(state)
-    setState({
-      ...newState,
-      submitting: valid
-    })
+    setState({ ...newState, submitting: valid })
 
     if (valid) {
       let taxRate = 0
@@ -122,10 +119,6 @@ const CheckoutInfo = () => {
     } else {
       window.scrollTo(0, 0)
     }
-
-    setState({
-      submitting: false
-    })
   }
 
   return (

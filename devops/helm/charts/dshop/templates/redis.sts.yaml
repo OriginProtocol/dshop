@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "dshopRedis.fullname" . }}
+  labels:
+    {{- include "dshop.selectorLabels" . | nindent 8 }}
+spec:
+  replicas: {{ default 2 .Values.dshopRedisReplicas }}
+  selector:
+    matchLabels:
+      app: {{ template "dshopRedis.fullname" . }}
+  serviceName: {{ template "dshopRedis.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "dshopRedis.fullname" . }}
+    spec:
+      initContainers:
+      - name: configure-redis
+        image: "{{ default "redis" .Values.dshopRedisImage }}:{{ .Values.dshopRedisImageTag }}"
+        command: ["/bin/bash", "/config/bootstrap-pod.sh"]
+        env:
+          - name: NAMESPACE
+            value: default
+          - name: STS_NAME
+            value: {{ template "dshopRedis.fullname" . }}
+        volumeMounts:
+          - mountPath: /data
+            name: {{ template "dshopRedis.fullname" . }}-redis
+          - mountPath: /config
+            name: config
+            readOnly: false
+      containers:
+      - name: redis
+        image: "{{ default "redis" .Values.dshopRedisImage }}:{{ .Values.dshopRedisImageTag }}"
+        command: ["redis-server",  "/config/redis.conf"]
+        volumeMounts:
+          - mountPath: /data
+            name: {{ template "dshopRedis.fullname" . }}-redis
+          - mountPath: /config
+            name: config
+            readOnly: false
+        ports:
+          - name: redis
+            containerPort: 6379
+          - name: gossip
+            containerPort: 16379
+      volumes:
+      - name: config
+        configMap:
+          name: {{ template "dshopRedis.fullname" . }}
+          items: 
+          - key: redis.conf
+            path: redis.conf
+          - key: bootstrap-pod.sh
+            path: bootstrap-pod.sh
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ template "dshopRedis.fullname" . }}-redis
+      labels:
+        app: {{ template "dshopRedis.fullname" . }}
+    spec:
+      accessModes:
+        - ReadWriteOnce  # Read-write for a single node only
+      storageClassName: "standard"
+      resources:
+        requests:
+          storage: {{ default "10Gi" .Values.dshopRedisStorageSize }}
