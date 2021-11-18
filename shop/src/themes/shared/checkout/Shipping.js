@@ -9,6 +9,7 @@ import { Countries, CountriesDefaultInfo } from '@origin/utils/Countries'
 import { useStateValue } from 'data/state'
 import useShipping from 'utils/useShipping'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
+import useConfig from 'utils/useConfig'
 import validate from 'data/validations/checkoutInfo'
 import useForm from 'utils/useForm'
 
@@ -141,6 +142,7 @@ export const MobileShippingAddress = () => {
     errorClassName: 'bg-red-100 border-red-700',
     feedbackClassName: 'text-red-700 mt-1 text-sm'
   })
+  const { config } = useConfig()
 
   const country = Countries[state.country] || 'United States'
 
@@ -154,6 +156,38 @@ export const MobileShippingAddress = () => {
       return
     }
     dispatch({ type: 'updateUserInfo', info: newState })
+
+    //Calculate taxes
+    try {
+      if (config.taxRates.length) {
+        const taxedCountry = config.taxRates.find(
+          (obj) => obj.country == Countries[newState.country].code
+        )
+
+        //If taxes are configured on the 'country' level, do this
+        let taxRate = get(taxedCountry, 'rate', 0)
+
+        //If taxes are configured at the 'province' level, do this
+        if (newState.province && taxedCountry.provinces) {
+          const currentProvinceCode = get(
+            Countries[newState.country].provinces,
+            newState.province
+          )['code']
+
+          for (const provinceObject of taxedCountry.provinces) {
+            if (provinceObject.province == currentProvinceCode) {
+              taxRate = provinceObject.rate
+              break
+            }
+          }
+        }
+
+        dispatch({ type: 'updateTaxRate', taxRate })
+      }
+    } catch (err) {
+      console.error('Error: Taxes not added to cart', err)
+    }
+
     history.push('/checkout/shipping')
   }
   return (

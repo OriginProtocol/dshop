@@ -6,6 +6,7 @@ import { Countries, CountriesDefaultInfo } from '@origin/utils/Countries'
 import validate from 'data/validations/checkoutInfo'
 import { useStateValue } from 'data/state'
 import useForm from 'utils/useForm'
+import useConfig from 'utils/useConfig'
 
 import Link from 'components/Link'
 import CountrySelect from 'components/CountrySelect'
@@ -14,6 +15,7 @@ import ProvinceSelect from 'components/ProvinceSelect'
 export const Information = () => {
   const history = useHistory()
   const [{ cart }, dispatch] = useStateValue()
+  const { config } = useConfig()
 
   const { state, setState, input, Feedback } = useForm(initialState(cart))
 
@@ -30,6 +32,38 @@ export const Information = () => {
           return
         }
         dispatch({ type: 'updateUserInfo', info: newState })
+
+        //Calculate taxes
+        try {
+          if (config.taxRates.length) {
+            const taxedCountry = config.taxRates.find(
+              (obj) => obj.country == Countries[newState.country].code
+            )
+
+            //If taxes are configured on the 'country' level, do this
+            let taxRate = get(taxedCountry, 'rate', 0)
+
+            //If taxes are configured at the 'province' level, do this
+            if (newState.province && taxedCountry.provinces) {
+              const currentProvinceCode = get(
+                Countries[newState.country].provinces,
+                newState.province
+              )['code']
+
+              for (const provinceObject of taxedCountry.provinces) {
+                if (provinceObject.province == currentProvinceCode) {
+                  taxRate = provinceObject.rate
+                  break
+                }
+              }
+            }
+
+            dispatch({ type: 'updateTaxRate', taxRate })
+          }
+        } catch (err) {
+          console.error('Error: Taxes not added to cart', err)
+        }
+
         history.push({
           pathname: '/checkout/shipping',
           state: { scrollToTop: true }

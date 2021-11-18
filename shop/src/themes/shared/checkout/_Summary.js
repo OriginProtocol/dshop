@@ -128,7 +128,7 @@ function name(cart) {
 }
 
 function address(cart) {
-  return 'address1 address2 city zip country'
+  return 'address1 address2 city province zip country'
     .split(' ')
     .map((i) => get(cart, `userInfo.${i}`))
     .filter((i) => i)
