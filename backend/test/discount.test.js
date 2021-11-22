@@ -14,6 +14,7 @@ const {
 const { processor } = require('../queues/makeOfferProcessor')
 const { Discount } = require('../models')
 const { OrderPaymentStatuses, OrderPaymentTypes } = require('../utils/enums')
+const calculateCartTotal = require('@origin/utils/calculateCartTotal')
 
 describe('Discounts', () => {
   let network,
@@ -375,5 +376,150 @@ describe('Discounts', () => {
       expect(order.currency).to.equal(data.currency)
       expect(order.data).to.eql(data)
     }
+  })
+
+  /*    This test is to confirm that cart totals are being calculated as expected when the 'Exclude Shipping' and 'Exclude Taxes' checkboxes
+  are toggled during discount creation. In other words, this is a test for the interface between created discounts and the 
+  'calculateCartTotal' module.
+  It also checks that user actions (of toggling) are being recorded in the discount object.
+
+  An overview of the discount names is below:
+  shipTax00 - Both 'Exclude Shipping' and 'Exclude Taxes' are unchecked
+  shipTax01 - 'Exclude Shipping' is unchecked.'Exclude Taxes' is checked
+  shipTax10 - 'Exclude Shipping' is checked.'Exclude Taxes' is unchecked
+  shipTax11 - Both 'Exclude Shipping' and 'Exclude Taxes' are checked
+*/
+  it('Should calculate cart totals properly', async () => {
+    const carts = []
+
+    const shipTax00 = await Discount.create({
+      shopId: shop.id,
+      status: 'active',
+      code: '100OFF',
+      discountType: 'percentage',
+      value: 100, // 100% off
+      excludeShipping: false,
+      excludeTaxes: false,
+      startTime: Date.now(),
+      endTime: null,
+      minCartValue: 10,
+      maxDiscountValue: 100,
+      data: null
+    })
+
+    const shipTax01 = await Discount.create({
+      shopId: shop.id,
+      status: 'active',
+      code: '100OFF',
+      discountType: 'percentage',
+      value: 100, // 100% off
+      excludeShipping: false,
+      excludeTaxes: true,
+      startTime: Date.now(),
+      endTime: null,
+      minCartValue: 10,
+      maxDiscountValue: 100,
+      data: null
+    })
+
+    const shipTax10 = await Discount.create({
+      shopId: shop.id,
+      status: 'active',
+      code: '100OFF',
+      discountType: 'percentage',
+      value: 100, // 100% off
+      excludeShipping: true,
+      excludeTaxes: false,
+      startTime: Date.now(),
+      endTime: null,
+      minCartValue: 10,
+      maxDiscountValue: 100,
+      data: null
+    })
+
+    const shipTax11 = await Discount.create({
+      shopId: shop.id,
+      status: 'active',
+      code: '100OFF',
+      discountType: 'percentage',
+      value: 100, // 100% off
+      excludeShipping: true,
+      excludeTaxes: true,
+      startTime: Date.now(),
+      endTime: null,
+      minCartValue: 10 /* read $10 */,
+      maxDiscountValue: 100 /* read $100 */,
+      data: null
+    })
+
+    expect(percentageDiscount).to.have.property('excludeShipping')
+    expect(percentageDiscount).to.have.property('excludeTaxes')
+
+    expect(fixedDiscount).to.have.property('excludeShipping')
+    expect(fixedDiscount).to.have.property('excludeTaxes')
+
+    expect(shipTax00).to.have.property('excludeShipping', false)
+    expect(shipTax00).to.have.property('excludeTaxes', false)
+
+    expect(shipTax11).to.have.property('excludeShipping', true)
+    expect(shipTax11).to.have.property('excludeTaxes', true)
+
+    const discountsToTest = [shipTax00, shipTax01, shipTax10, shipTax11]
+    for (const discount of discountsToTest) {
+      const baseCart = {
+        items: [
+          {
+            product: 'iron-mask',
+            quantity: 1,
+            variant: 1234,
+            price: 8400 /*fixed point integer. Read $84.00*/
+          }
+        ],
+        instructions: '',
+        currency: 'USD',
+        taxRate: 1800 /* 18% */,
+        shipping: {
+          id: 'STANDARD',
+          label: 'Flat Rate',
+          amount: 500 /* fixed point integer. Read $5.00 */
+        },
+        discountObj: discount,
+        userInfo: {
+          /*usually populated, but not necessary for testing*/
+        }
+      }
+      const calculations = calculateCartTotal(baseCart)
+      carts.push({
+        ...baseCart,
+        total: calculations.total,
+        subTotal: calculations.subTotal,
+        discount: calculations.discount,
+        totalTaxes: calculations.totalTaxes
+      })
+    }
+
+    //Cart with the discount 'shipTax00'
+    expect(carts[0].subTotal).to.equal(8400)
+    expect(carts[0].totalTaxes).to.equal(1512) //18% of $84 = $15.12
+    expect(carts[0].discount).to.equal(10000) //Lesser of [100% (subtotal + shipping charges + taxes)] and 'maxDiscountValue'
+    expect(carts[0].total).to.equal(412) //(subtotal + shipping charges + taxes) - discount
+
+    //Cart with the discount 'shipTax01'
+    expect(carts[1].subTotal).to.equal(8400)
+    expect(carts[1].totalTaxes).to.equal(1512)
+    expect(carts[1].discount).to.equal(8900)
+    expect(carts[1].total).to.equal(1512)
+
+    //Cart with the discount 'shipTax10'
+    expect(carts[2].subTotal).to.equal(8400)
+    expect(carts[2].totalTaxes).to.equal(1512)
+    expect(carts[2].discount).to.equal(9912)
+    expect(carts[2].total).to.equal(500)
+
+    //Cart with the discount 'shipTax11'
+    expect(carts[3].subTotal).to.equal(8400)
+    expect(carts[3].totalTaxes).to.equal(1512)
+    expect(carts[3].discount).to.equal(8400)
+    expect(carts[3].total).to.equal(2012)
   })
 })

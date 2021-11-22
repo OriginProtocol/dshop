@@ -14,6 +14,7 @@ const safeDiscountProps = [
   'maxUses',
   'onePerCustomer',
   'excludeShipping',
+  'excludeTaxes',
   'startTime',
   'endTime',
   'data',
@@ -33,6 +34,7 @@ module.exports = function (router) {
         'value',
         'discountType',
         'excludeShipping',
+        'excludeTaxes',
         'maxDiscountValue',
         'minCartValue'
       ])

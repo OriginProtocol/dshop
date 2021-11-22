@@ -98,9 +98,9 @@ To run the full test suite:
 
 To run a specific test or group of tests:
 
-    yarn run test -- -g "Discounts"
+    yarn run test -g "Discounts"
 
-To run a single test, you can change it's function definition from it('blah blah...') to it.only('blah blah...') then run `yarn run test`
+To run a single test, you can change its function definition from it('blah blah...') to it.only('blah blah...') then run `yarn run test`
 
 Optionally, if you are going to run tests several times in a row (typically during development), you can speed up the test setup phase by starting the services in a separate terminal and leave them up and running.
 

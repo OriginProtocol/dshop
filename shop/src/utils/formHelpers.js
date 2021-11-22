@@ -28,7 +28,7 @@ export const formInput = (state, setState, opts = {}) => (
         [field]: valueOnly
           ? e
           : inPercent
-          ? e.target.value * 100
+          ? e.target.value * 100 //optimization: convert value to a 'fixed point' number before setting state. Ex: 10.32% => 1032
           : e.target.value,
         [`${field}Error`]: false
       })
