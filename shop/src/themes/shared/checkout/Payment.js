@@ -31,7 +31,7 @@ export const Payment = () => {
 
       <div className="text-lg mb-2 font-medium">3. Shipping method</div>
       <div className="shadow-lg p-4 bg-white dark:bg-gray-900 grid gap-y-2 mb-8">
-        {get(cart, 'userInfo.zip')}, {get(cart, 'userInfo.country')}
+        {get(cart, 'shipping.label')}
       </div>
       <div className="mb-2 flex justify-between items-center">
         <div className="text-lg font-medium">4. Payment</div>

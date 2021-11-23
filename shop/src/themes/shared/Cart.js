@@ -101,11 +101,11 @@ const Row = ({ item, price, onRemove }) => {
                   onRemove()
                 }}
               >
-                <CloseIcon />
+                <CloseIcon className="dark:stroke-current" />
               </a>
             </div>
             {!item.options ? null : (
-              <div className="flex text-gray-600 text-sm font-normal">
+              <div className="flex text-gray-500 text-sm font-normal">
                 {item.options.map((opt, idx) => (
                   <span key={idx} className="mr-4">
                     {opt}
@@ -122,7 +122,7 @@ const Row = ({ item, price, onRemove }) => {
             quantities[0]
           ) : (
             <select
-              className="form-control"
+              className="form-control rounded dark:bg-gray-600 dark:text-white"
               value={item.quantity}
               onChange={(e) => {
                 const quantity = Number(e.target.value)

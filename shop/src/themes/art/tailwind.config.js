@@ -38,7 +38,8 @@ module.exports = {
         body: ['var(--body-font)', ...defaultTheme.fontFamily.sans],
         serif: ['var(--header-font)', ...defaultTheme.fontFamily.serif],
         header: ['var(--header-font)', ...defaultTheme.fontFamily.serif]
-      }
+      },
+      inset: { '-3': '-0.75rem' }
     }
   }
 }

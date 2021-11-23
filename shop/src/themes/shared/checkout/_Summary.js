@@ -20,17 +20,16 @@ export const OrderSummary = ({ cart, discount = true }) => {
 
   return (
     <>
-      <div
-        className="grid gap-y-2"
-        style={{ gridTemplateColumns: 'auto auto auto' }}
-      >
+      <div className="flex flex-col">
         {cart.items.map((item) => (
           <Row
             key={`${item.product}-${item.variant}`}
             img={item.imageUrl}
             title={item.title}
-            quantity={item.quantity}
-            price={formatPrice(item.price, currencyOpts)}
+            productOptions={item.options.join(' / ')}
+            quantity={item.quantity || 1}
+            price={item.price}
+            currencyOptions={currencyOpts}
           />
         ))}
       </div>
@@ -87,19 +86,29 @@ export const OrderSummary = ({ cart, discount = true }) => {
   )
 }
 
-const Row = ({ title, quantity, img, price }) => (
+const Row = ({
+  title,
+  productOptions,
+  quantity,
+  img,
+  price,
+  currencyOptions
+}) => (
   <>
-    <div className="border-b pb-3 dark:border-gray-700">
-      <div className="flex items-center text-sm font-semibold">
-        <img className="h-16 mr-5" src={img} />
-        {title}
+    <div className="flex justify-between pb-3 dark:border-gray-700">
+      <div className="flex relative items-center text-sm font-semibold">
+        <img className="h-16 w-16 box-content object-scale-down" src={img} />
+        <span className="absolute -top-3 -right-3 h-6 w-6 rounded-full bg-gray-600 text-sm text-white flex justify-around items-center dark:border-gray-700">
+          {quantity}
+        </span>
       </div>
-    </div>
-    <div className="border-b pb-3 px-2 text-sm flex items-center justify-center dark:border-gray-700">
-      {quantity}
-    </div>
-    <div className="border-b pb-3 text-sm flex items-center justify-end dark:border-gray-700">
-      {price}
+      <div className="flex flex-col justify-center">
+        <div className="font-semibold">{title}</div>
+        <div className="text-xs font-light">{productOptions}</div>
+      </div>
+      <div className="flex items-center justify-end font-semi-bold dark:border-gray-700">
+        {formatPrice(quantity * price, currencyOptions)}
+      </div>
     </div>
   </>
 )

@@ -57,7 +57,8 @@ module.exports = {
       },
       fontFamily: {
         sans: ['IBMPlexSans', ...defaultTheme.fontFamily.sans]
-      }
+      },
+      inset: { '-3': '-0.75rem' }
     }
   }
 }
