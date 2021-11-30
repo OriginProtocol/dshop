@@ -22,7 +22,7 @@ const ManualTaxes = ({ state, setState }) => {
         </label>
         <div className="desc mb-3">
           <fbt desc="admin.settings.checkout.taxesDesc">
-            Charge taxes on your orders. By enabling this features, you
+            Charge taxes on your orders. By enabling this feature, you
             acknowledge that it is up to you and a tax professional to determine
             when and how much tax to collect and remit, and if this feature is
             right for you.
