@@ -14,13 +14,13 @@ Enter the super-admin information on the onboarding page.
 
 ![Registration](images/firstrun-registration.png)
 
-## Configure the server:
+## Configure the server
 
 ![Configuration](images/firstrun-configuration.png)
 
 Use the following field entries as a guide to fill out this page:
 
-If you are a merchant running a DShop in a **production** environment: 
+- If you are a merchant running a DShop in a **production** environment: 
   - ```Ethereum Network```: Mainnet
   - ```Root Domain```: The Domain name associated with your shop.
   - ```Marketplace Listing ID```: This field has the format <chain_id>-<marketplace_contract_version>-<listing_seq>. Use 1-001-1 to set a _default_ value here.
@@ -30,8 +30,8 @@ If you are a merchant running a DShop in a **production** environment:
   - ```Email Display Name```: choose a name
   - ```Allow New User Signups```: don't forget to check that box otherwise you won't be able to create a shop
 
-If you are running DShop in a **development** environment: 
- - ```Ethereum Network```: Localhost
+- If you are running DShop in a **development** environment: 
+  - ```Ethereum Network```: Localhost
   - ```Root Domain```: localhost
   - ```Marketplace Listing ID```: 999-001-1
   - ```IPFS Gateway```: http://localhost:8080
