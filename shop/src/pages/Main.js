@@ -143,17 +143,23 @@ const Main = () => {
         <Notice />
         <div className="container">
           <header>
-            <Link to="/" onClick={() => setMenu(false)}>
-              <h1>
-                {config.logo ? (
+            {config.logo ? (
+              <div className="box">
+                <Link to="/" onClick={() => setMenu(false)}>
                   <img src={`${config.dataSrc}${config.logo}`} />
-                ) : null}
-                {config.title}
-              </h1>
-            </Link>
-            <button className="btn" onClick={() => setMenu(!menu)}>
-              <Bars />
-            </button>
+                </Link>
+              </div>
+            ) : null}
+            <div className="box">
+              <Link to="/" onClick={() => setMenu(false)}>
+                <h1>{config.title}</h1>
+              </Link>
+            </div>
+            <div className="box menuBtn">
+              <button className="btn" onClick={() => setMenu(!menu)}>
+                <Bars />
+              </button>
+            </div>
           </header>
           <MobileMenu open={menu} onClose={() => setMenu(false)} />
           <Content pol={policies} />
@@ -239,14 +245,26 @@ require('react-styl')(`
     header
       margin-top: 1rem
       margin-bottom: 1rem
-      flex-wrap: nowrap
       .icon-bars
         width: 2rem
-      h1
-        margin: 0
-        font-weight: 300
-        font-size: 2rem
-        svg,img
-          width: 1.5rem
-          margin-right: 0.75rem
+      .box
+        min-width: 1.5rem
+        max-width: 256px
+        flex: 1 1 0%
+        a
+          display: flex
+          justify-content: center
+          img
+           min-width: 1.5rem
+           max-width: 256px
+        h1
+          display: flex
+          margin: 0
+          font-weight: 300
+          font-size: 2rem
+          align-items: center
+          svg
+            width: 1.5rem
+      .menuBtn
+          text-align: center
 `)
