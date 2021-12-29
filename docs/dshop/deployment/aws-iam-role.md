@@ -1,15 +1,19 @@
-Use the following as a guide to manually create and associate an AWS IAM role with DShop
+## Steps to create an AWS IAM role
 
 On a web browser, navigate to the 'Roles' tab in the IAM Dashboard of the AWS Management Console: https://console.aws.amazon.com/iamv2/home#/roles
+
 Click on the 'Create role' button
 ![IAM Dashboard](images/aws-iam-create-role-button.png)
 
 **NOTE:** If you do not see the 'Create role' button, log out of the console and log back in as a root user. 
 
 Select 'Another AWS account' as the _Trusted Entity_ and enter your root user Account ID. You can find your Account ID by clicking on your profile on the top-right of the page:
-![Enter details of Trusted Entity](image/aws-iam-enter-account-id.png)
+![Enter details of Trusted Entity](images/aws-iam-enter-account-id.png)
 
-The policies you choose on the next screen will determine the kinds of (AWS) resources your DShop can access. For example, the policy **AmazonS3FullAccess** will allow DShop to create and delete Amazon S3 buckets on your behalf. Keywords for other AWS services supported by DShop include 'ses' (Amazon SES), 'cloudfront' (AWS CloudFront), and 'route53' (Amazon Route 53). 
+The policies you choose on the next screen will determine the kinds of (AWS) resources your DShop can access. For example, the policy **AmazonS3FullAccess** will allow DShop to create and delete Amazon S3 buckets on your behalf. Search for the following keywords to find other supported services:
+ - 'ses' (Amazon SES)
+ - 'cloudfront' (AWS CloudFront)
+ - 'route53' (Amazon Route 53) 
 
 ![Search for policies](images/aws-iam-search-for-s3.png)
 
