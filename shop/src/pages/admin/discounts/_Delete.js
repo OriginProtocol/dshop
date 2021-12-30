@@ -4,7 +4,7 @@ import fbt from 'fbt'
 
 import useRedirect from 'utils/useRedirect'
 import useBackendApi from 'utils/useBackendApi'
-import ConfirmationModal from 'components/ConfirmationModal'
+import AdminConfirmationModal from 'components/ConfirmationModal'
 
 const AdminDeleteDiscount = ({
   reload,
@@ -16,9 +16,9 @@ const AdminDeleteDiscount = ({
   const { post } = useBackendApi({ authToken: true })
 
   return (
-    <ConfirmationModal
+    <AdminConfirmationModal
       className={`btn btn-outline-danger ${className}`}
-      customEl={<div>{children}</div>}
+      customEl={children}
       buttonText={fbt('Delete', 'Delete')}
       confirmText={fbt(
         'Are you sure you want to delete this discount?',

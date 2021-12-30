@@ -12,6 +12,7 @@ import Shipping from './shipping/Edit'
 import Advanced from './Advanced'
 import Checkout from './checkout/Edit'
 import Appearance from './appearance/Edit'
+import Legal from './legal/Edit'
 import List from './List'
 
 const AdminSettings = () => (
@@ -45,6 +46,9 @@ const AdminSettings = () => (
     </Route>
     <Route path="/admin/settings/appearance">
       <Appearance />
+    </Route>
+    <Route path="/admin/settings/legal">
+      <Legal />
     </Route>
     <Route path="/admin/settings/general">
       <General />

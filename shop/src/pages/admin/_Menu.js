@@ -90,6 +90,11 @@ const AdminMenu = () => {
                     <fbt desc="Appearance">Appearance</fbt>
                   </Link>
                 </li>
+                <li className={active('/admin/settings/legal', true)}>
+                  <Link to="/admin/settings/legal">
+                    <fbt desc="Legal">Legal</fbt>
+                  </Link>
+                </li>
                 <li className={active('/admin/settings/payments')}>
                   <Link to="/admin/settings/payments">
                     <fbt desc="Payments">Payments</fbt>

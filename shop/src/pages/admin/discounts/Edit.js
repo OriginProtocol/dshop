@@ -11,8 +11,9 @@ import useRedirect from 'utils/useRedirect'
 import { useStateValue } from 'data/state'
 import useSetState from 'utils/useSetState'
 import Link from 'components/Link'
-import DeleteButton from './_Delete'
+import AdminDeleteDiscount from './_Delete'
 import formatPrice from 'utils/formatPrice'
+import Tooltip from 'components/Tooltip'
 
 const times = Array(48)
   .fill(0)
@@ -110,7 +111,13 @@ const AdminEditDiscount = () => {
 
   const actions = (
     <div className="actions">
-      {!discount ? null : <DeleteButton discount={discount} />}
+      {!discount ? null : (
+        <AdminDeleteDiscount discount={discount}>
+          <button className="btn btn-outline-danger">
+            <fbt desc="Delete">Delete</fbt>
+          </button>
+        </AdminDeleteDiscount>
+      )}
       <button type="submit" className="btn btn-primary">
         <fbt desc="Save">Save</fbt>
       </button>
@@ -156,6 +163,7 @@ const AdminEditDiscount = () => {
               maxUses: newState.maxUses ? Number(newState.maxUses) : null,
               onePerCustomer: newState.onePerCustomer ? true : false,
               excludeShipping: newState.excludeShipping ? true : false,
+              excludeTaxes: newState.excludeTaxes ? true : false,
               maxDiscountValue: newState.maxDiscountValue
                 ? Number(newState.maxDiscountValue)
                 : null,
@@ -275,19 +283,89 @@ const AdminEditDiscount = () => {
         </div>
         {Feedback('value')}
       </div>
-      <div className="form-check mb-3">
-        <label className="form-check-label">
-          <input
-            className="form-check-input"
-            type="checkbox"
-            checked={state.excludeShipping ? true : false}
-            onChange={(e) => setState({ excludeShipping: e.target.checked })}
-          />
-          <fbt desc="admin.discounts.edit.excludeShipping">
-            Exclude Shipping Fees
-          </fbt>
-        </label>
-      </div>
+      <Tooltip
+        children={
+          <div className="form-check mb-3">
+            <label className="form-check-label">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={state.excludeShipping ? true : false}
+                onChange={(e) =>
+                  setState({ excludeShipping: e.target.checked })
+                }
+              />
+              <fbt desc="admin.discounts.edit.excludeShipping">
+                Exclude Shipping Fees
+              </fbt>
+            </label>
+          </div>
+        }
+        text={
+          <>
+            <p>
+              Check this box if you would like customers to pay for the full
+              price of shipping; if left unchecked, shipping charges will be
+              added to the subtotal <strong>before</strong> applying the
+              discount.
+            </p>
+            <p>
+              Example:
+              <br />
+              Order Subtotal: <strong>$100</strong>
+              <br />
+              Shipping: <strong>$20</strong>
+              <br />
+              Discount: <strong>10%</strong>
+              <br />
+              Cart Total if this box is <strong>checked</strong>: (0.9 x 100) +
+              20 = <strong>$110</strong>
+            </p>
+          </>
+        }
+      />
+      <Tooltip
+        children={
+          <div className="form-check mb-3">
+            <label className="form-check-label">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={state.excludeTaxes ? true : false}
+                onChange={(e) => setState({ excludeTaxes: e.target.checked })}
+              />
+              <fbt desc="admin.discounts.edit.excludeTaxes">Exclude Taxes</fbt>
+            </label>
+          </div>
+        }
+        text={
+          <>
+            <p>
+              Check this box if you would like customers to pay the tax amount
+              in full; if left unchecked, taxes will be added to the subtotal{' '}
+              <strong>before</strong> calculating the discount.
+            </p>
+            <p>
+              Examples:
+              <br />
+              Order Subtotal*: <strong>$100</strong>
+              <br />
+              Tax Rate: <strong>15%</strong>
+              <br />
+              Total Tax: <strong>$15</strong>
+              <br />
+              Discount: <strong>10%</strong>
+              <br />
+              Cart Total if this box is <strong>checked</strong>: (0.9 x 100) +
+              15 = <strong>$105</strong>
+              <br />
+              Cart Total if this box is <strong>unchecked</strong>: 0.9 x (100 +
+              15) = <strong>$103.5</strong>
+            </p>
+            <p>*Shipping charges not included</p>
+          </>
+        }
+      />
       <div className="form-group" style={{ maxWidth: '15rem' }}>
         <label>
           <fbt desc="admin.discounts.edit.maxUses">Max Uses</fbt>
@@ -409,3 +487,8 @@ const AdminEditDiscount = () => {
 }
 
 export default AdminEditDiscount
+
+require('react-styl')(`
+  .form-check
+    width: fit-content
+`)

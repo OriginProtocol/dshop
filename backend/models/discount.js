@@ -38,6 +38,9 @@ module.exports = (sequelize, DataTypes) => {
       excludeShipping: {
         type: DataTypes.BOOLEAN
       },
+      excludeTaxes: {
+        type: DataTypes.BOOLEAN
+      },
       startTime: {
         type: DataTypes.DATE
       },
