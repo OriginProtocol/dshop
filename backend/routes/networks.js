@@ -31,8 +31,7 @@ function pickConfig(body) {
     'notificationEmail',
     'notificationEmailDisplayName',
     'uiCdn',
-    'awsAccessKeyId',
-    'awsSecretAccessKey',
+    'awsRoleARN',
     'listingId',
     'defaultResourceSelection'
   ])
