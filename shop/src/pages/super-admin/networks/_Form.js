@@ -62,8 +62,7 @@ const _defaultShopConfigJSON = {
   mailgunSmtpLogin: '',
   mailgunSmtpPassword: '',
   awsRegion: '',
-  awsAccessKey: '',
-  awsAccessSecret: '',
+  awsRoleARN: '',
   upholdApi: '',
   upholdClient: '',
   upholdSecret: '',
@@ -103,8 +102,7 @@ function initialState() {
     notificationEmail: '',
     notificationEmailDisplayName: '',
     defaultResourceSelection: [],
-    awsAccessKeyId: '',
-    awsSecretAccessKey: '',
+    awsRoleARN: '',
     backendUrl,
     infra: {},
     infraErrors: [],
@@ -410,14 +408,9 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
       </div>
       <div className="form-row">
         <div className="form-group col-md-6">
-          <label>AWS Access Key ID</label>
-          <input {...input('awsAccessKeyId')} />
-          {Feedback('awsAccessKeyId')}
-        </div>
-        <div className="form-group col-md-6">
-          <label>AWS Secret Access Key</label>
-          <PasswordField field="awsSecretAccessKey" input={input} />
-          {Feedback('awsSecretAccessKey')}
+          <label>AWS Role ARN to access AWS resources</label>
+          <input {...input('awsRoleARN')} />
+          {Feedback('awsRoleARN')}
         </div>
       </div>
       <div className="form-row">

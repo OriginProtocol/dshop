@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const { trimStart, trimEnd } = require('lodash')
+const AWS = require('aws-sdk/global')
 const S3 = require('aws-sdk/clients/s3')
 const { isConfigured } = require('@origin/dshop-validation/matrix')
 
@@ -13,6 +14,7 @@ const { getLogger } = require('../../../utils/logger')
 const log = getLogger('logic.deploy.bucket.aws')
 
 let cachedClient = null
+let tempCredentials = null
 
 /**
  * Check if AWS is configured and we can deploy to it
@@ -34,13 +36,43 @@ function isAvailable({ networkConfig, resourceSelection }) {
  * @param args {Object}
  * @param args.networkConfig {Object} - Decrypted networkConfig object
  */
-function configure({ networkConfig }) {
-  cachedClient = new S3({
-    apiVersion: '2006-03-01',
+
+/*
+Instead of getting the accessKeyId and secretAccessKey from the networkConfig
+object, a call needs to be made to AWS.STS' assumeRole method. The result
+of this call will be a AWS.Credentials object, whose keys will have
+(temporary) values for accessKeyId and secretAccessKey
+ */
+async function configure({ networkConfig }) {
+  //Store the creds of the IAM user, if available in the 'networkConfig'
+  AWS.config = new AWS.Config({
     accessKeyId: networkConfig.awsAccessKeyId,
-    secretAccessKey: networkConfig.awsSecretAccessKey,
-    region: networkConfig.awsRegion // Optional
+    secretAccessKey: networkConfig.awsSecretAccessKey
   })
+
+  if (networkConfig.awsRoleARN) {
+    // The user wants DShop to use temporary credentials associated with an IAM Role. Ref: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/ChainableTemporaryCredentials.html#constructor-property
+    tempCredentials = new AWS.ChainableTemporaryCredentials({
+      params: {
+        RoleArn: networkConfig.awsRoleARN,
+        RoleSessionName: `DShop-aws-s3-session-${new Date().getTime()}`
+      }
+    })
+
+    await tempCredentials.getPromise().then(() => {
+      cachedClient = new S3({
+        apiVersion: '2006-03-01',
+        credentials: tempCredentials,
+        region: networkConfig.awsRegion // Optional
+      })
+    })
+  } else {
+    // Use the credentials from the 'credentialProviderChain' (AWS.config or EC2 Instance metadata)
+    cachedClient = new S3({
+      apiVersion: '2006-03-01',
+      region: networkConfig.awsRegion // Optional
+    })
+  }
 }
 
 /**
@@ -81,7 +113,11 @@ async function deploy({ shop, networkConfig, OutputDir }) {
       }
     }
 
-    await cachedClient.createBucket(params).promise()
+    await cachedClient
+      .createBucket(params, (err) => {
+        console.error(`Cannot create S3 Bucket:\n`, err)
+      })
+      .promise()
 
     log.debug('Waiting for bucket to exist...')
 
@@ -91,9 +127,19 @@ async function deploy({ shop, networkConfig, OutputDir }) {
     log.info(`Bucket ${bucketName} has been created.`)
   }
 
-  await uploadDirectory(bucketName, path.resolve(OutputDir, 'public'))
+  await cachedClient
+    .upload({
+      Bucket: bucketName,
+      Key: 'key',
+      Body: 'test_string'
+    })
+    .promise()
 
-  log.debug(`Uploaded ${OutputDir} to s3://${bucketName}/`)
+  log.debug(`Uploaded string to s3://${bucketName}/`)
+
+  // await uploadDirectory(bucketName, path.resolve(OutputDir, 'public'))
+
+  // log.debug(`Uploaded ${OutputDir} to s3://${bucketName}/`)
 
   return {
     bucketName,
