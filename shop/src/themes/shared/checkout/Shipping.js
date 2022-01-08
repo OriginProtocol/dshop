@@ -17,6 +17,7 @@ import Link from 'components/Link'
 import CountrySelect from 'components/CountrySelect'
 import ProvinceSelect from 'components/ProvinceSelect'
 
+import determineTaxes from './_Taxes'
 import { ContactInfo, ShippingAddress } from './_Summary'
 
 const Picker = ({ className }) => {
@@ -156,38 +157,10 @@ export const MobileShippingAddress = () => {
       return
     }
     dispatch({ type: 'updateUserInfo', info: newState })
-
-    //Calculate taxes
-    try {
-      if (config.taxRates.length) {
-        const taxedCountry = config.taxRates.find(
-          (obj) => obj.country == Countries[newState.country].code
-        )
-
-        //If taxes are configured on the 'country' level, do this
-        let taxRate = get(taxedCountry, 'rate', 0)
-
-        //If taxes are configured at the 'province' level, do this
-        if (newState.province && taxedCountry.provinces) {
-          const currentProvinceCode = get(
-            Countries[newState.country].provinces,
-            newState.province
-          )['code']
-
-          for (const provinceObject of taxedCountry.provinces) {
-            if (provinceObject.province == currentProvinceCode) {
-              taxRate = provinceObject.rate
-              break
-            }
-          }
-        }
-
-        dispatch({ type: 'updateTaxRate', taxRate })
-      }
-    } catch (err) {
-      console.error('Error: Taxes not added to cart', err)
-    }
-
+    dispatch({
+      type: 'updateTaxRate',
+      taxRate: determineTaxes(config, newState)
+    })
     history.push('/checkout/shipping')
   }
   return (
