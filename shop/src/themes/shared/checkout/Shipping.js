@@ -9,6 +9,7 @@ import { Countries, CountriesDefaultInfo } from '@origin/utils/Countries'
 import { useStateValue } from 'data/state'
 import useShipping from 'utils/useShipping'
 import useCurrencyOpts from 'utils/useCurrencyOpts'
+import useConfig from 'utils/useConfig'
 import validate from 'data/validations/checkoutInfo'
 import useForm from 'utils/useForm'
 
@@ -16,6 +17,7 @@ import Link from 'components/Link'
 import CountrySelect from 'components/CountrySelect'
 import ProvinceSelect from 'components/ProvinceSelect'
 
+import determineTaxes from './_Taxes'
 import { ContactInfo, ShippingAddress } from './_Summary'
 
 const Picker = ({ className }) => {
@@ -141,6 +143,7 @@ export const MobileShippingAddress = () => {
     errorClassName: 'bg-red-100 border-red-700',
     feedbackClassName: 'text-red-700 mt-1 text-sm'
   })
+  const { config } = useConfig()
 
   const country = Countries[state.country] || 'United States'
 
@@ -154,6 +157,10 @@ export const MobileShippingAddress = () => {
       return
     }
     dispatch({ type: 'updateUserInfo', info: newState })
+    dispatch({
+      type: 'updateTaxRate',
+      taxRate: determineTaxes(config, newState)
+    })
     history.push('/checkout/shipping')
   }
   return (

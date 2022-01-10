@@ -6,14 +6,18 @@ import { Countries, CountriesDefaultInfo } from '@origin/utils/Countries'
 import validate from 'data/validations/checkoutInfo'
 import { useStateValue } from 'data/state'
 import useForm from 'utils/useForm'
+import useConfig from 'utils/useConfig'
 
 import Link from 'components/Link'
 import CountrySelect from 'components/CountrySelect'
 import ProvinceSelect from 'components/ProvinceSelect'
 
+import determineTaxes from './_Taxes'
+
 export const Information = () => {
   const history = useHistory()
   const [{ cart }, dispatch] = useStateValue()
+  const { config } = useConfig()
 
   const { state, setState, input, Feedback } = useForm(initialState(cart))
 
@@ -30,6 +34,10 @@ export const Information = () => {
           return
         }
         dispatch({ type: 'updateUserInfo', info: newState })
+        dispatch({
+          type: 'updateTaxRate',
+          taxRate: determineTaxes(config, newState)
+        })
         history.push({
           pathname: '/checkout/shipping',
           state: { scrollToTop: true }
@@ -141,6 +149,7 @@ export const MobileInformation = () => {
       return
     }
     dispatch({ type: 'updateUserInfo', info: newState })
+
     history.push('/checkout/shipping-address')
   }
   return (
