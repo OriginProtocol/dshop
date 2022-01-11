@@ -6,7 +6,7 @@
     "supported": true,
     "type": "files",
     "depends": null,
-    "requiresConfig": ["awsRoleARN"]
+    "requiresConfig": []
   },
   {
     "id": "ipfs-cluster",
