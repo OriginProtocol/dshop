@@ -96,7 +96,7 @@
     "AMIIdentifier": {
       "Description": "The AMI Id to launch the EC2 instance from, if not the default ",
       "Type": "String",
-      "Default": "ami-0d1a97b1f34f5ae1d"
+      "Default": "ami-083b7cfcc9a1dc0cf"
     }
   },
 

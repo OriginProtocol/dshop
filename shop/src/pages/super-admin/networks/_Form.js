@@ -62,7 +62,8 @@ const _defaultShopConfigJSON = {
   mailgunSmtpLogin: '',
   mailgunSmtpPassword: '',
   awsRegion: '',
-  awsRoleARN: '',
+  awsAccessKey: '',
+  awsAccessSecret: '',
   upholdApi: '',
   upholdClient: '',
   upholdSecret: '',
@@ -102,7 +103,8 @@ function initialState() {
     notificationEmail: '',
     notificationEmailDisplayName: '',
     defaultResourceSelection: [],
-    awsRoleARN: '',
+    awsAccessKey: '',
+    awsAccessSecret: '',
     backendUrl,
     infra: {},
     infraErrors: [],
@@ -195,6 +197,32 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
   const { emailAppsList } = useEmailAppsList({
     shopConfig: state.fallbackShopConfig
   })
+
+  /*
+   * The Networks form should ask the shop admin for their AWS Credentials only when the DShop DApp is not deployed on an EC2 instance launched via AWS Marketplace.
+   * Reason: When DShop is deployed with the help of the Marketplace solution, the shop admin's AWS credentials can be obtained programatically.
+   * Reference: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials
+   */
+  const conditionallyRequestAWSCreds = () => {
+    if (process.env.AWS_MARKETPLACE_DEPLOYMENT) {
+      return
+    } else {
+      return (
+        <div className="form-row">
+          <div className="form-group col-md-6">
+            <label>AWS Access Key ID</label>
+            <input {...input('awsAccessKeyId')} />
+            {Feedback('awsAccessKeyId')}
+          </div>
+          <div className="form-group col-md-6">
+            <label>AWS Secret Access Key</label>
+            <PasswordField field="awsSecretAccessKey" input={input} />
+            {Feedback('awsSecretAccessKey')}
+          </div>
+        </div>
+      )
+    }
+  }
 
   const ProcessorIdToEmailComp = {
     sendgrid: SendgridModal,
@@ -406,13 +434,7 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
           {Feedback('gcpCredentials')}
         </div>
       </div>
-      <div className="form-row">
-        <div className="form-group col-md-6">
-          <label>AWS Role ARN to access AWS resources</label>
-          <input {...input('awsRoleARN')} />
-          {Feedback('awsRoleARN')}
-        </div>
-      </div>
+      {conditionallyRequestAWSCreds()}
       <div className="form-row">
         <div className="form-group col-md-6">
           <label>Discord Webhook</label>

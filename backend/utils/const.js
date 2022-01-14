@@ -68,7 +68,8 @@ const {
   IPFS_GATEWAY, // IPFS gateway override
   BUCKET_PREFIX = DEFAULT_BUCKET_PREFIX,
   SERVICE_PREFIX = DEFAULT_SERVICE_PREFIX,
-  EXTERNAL_IP
+  EXTERNAL_IP,
+  AWS_MARKETPLACE_DEPLOYMENT //bool indicating whether the app is running from an AWS EC2 instance launched via the marketplace
 } = process.env
 
 /**
@@ -128,6 +129,7 @@ module.exports = {
   BUCKET_PREFIX,
   SERVICE_PREFIX,
   EXTERNAL_IP,
+  AWS_MARKETPLACE_DEPLOYMENT,
   EXTERNAL_IP_SERVICE_URL,
   DEFAULT_INFRA_RESOURCES,
   DEFAULT_AWS_REGION,

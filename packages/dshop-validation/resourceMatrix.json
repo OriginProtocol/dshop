@@ -6,7 +6,7 @@
     "supported": true,
     "type": "files",
     "depends": null,
-    "requiresConfig": []
+    "requiresConfig": ["awsAccessKeyId", "awsSecretAccessKey"]
   },
   {
     "id": "ipfs-cluster",
