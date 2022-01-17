@@ -323,7 +323,7 @@ async function deploy({
         dataDir,
         resourceSelection
       })
-      log.info(`Result of bucket deployment: #${responses}`)
+      log.debug(`Result of bucket deployment: #${responses}`)
       if (responses.length > 0) {
         bucketUrls = responses.map((r) => r.url)
         bucketHttpUrls = responses.map((r) => r.httpUrl)
