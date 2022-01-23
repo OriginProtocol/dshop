@@ -13,7 +13,6 @@ import useCurrencyOpts from 'utils/useCurrencyOpts'
 const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
   const { config } = useConfig()
   const [{ cart }, dispatch] = useStateValue()
-
   const { post } = useBackendApi({ authToken: true })
 
   const currencyOpts = useCurrencyOpts()
@@ -30,8 +29,10 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
   const isSelected = get(cart, 'paymentMethod.id') === 'paypal'
   const paypalPaymentMethod = paymentMethods.find((o) => o.id === 'paypal')
 
-  const match = useRouteMatch('/checkout/payment/:intentId?')
-  const { intentId } = match.params
+  const match = useRouteMatch('/checkout/payment/:parameters?')
+  const { parameters } = match.params
+  // `parameters` may contain information we don't need. Therefore, we should filter it.
+  const intentId = parameters ? parameters.slice(0, 32) : null
 
   const createOrderAndRedirect = async () => {
     onChange({
@@ -50,7 +51,7 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
 
     try {
       const randomKey = randomstring.generate()
-      const returnUrl = `${window.location.origin}${window.location.pathname}#/checkout/payment/${randomKey}`
+      const returnUrl = `${window.location.origin}${window.location.pathname}${window.location.search}#/checkout/payment/${randomKey}`
       const { authorizeUrl, orderId } = await post('/paypal/pay', {
         body: JSON.stringify({
           amount: (cart.total / 100).toFixed(2),
@@ -62,7 +63,6 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
           currency: config.currency
         })
       })
-
       window.location = authorizeUrl
       localStorage[`paymentIntent${randomKey}`] = JSON.stringify({
         hash: encryptedData.hash,
@@ -73,7 +73,7 @@ const PayPal = ({ onChange, loading, encryptedData, submit, disabled }) => {
 
       return
     } catch (err) {
-      console.error(err)
+      console.error(`Could not create order using Paypal. `, err)
       setError(
         fbt(
           'Something went wrong. Please try again later.',
