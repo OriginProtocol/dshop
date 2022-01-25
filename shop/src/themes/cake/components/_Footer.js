@@ -11,6 +11,7 @@ const Footer = ({ policyHeadings }) => {
   const themeVars = useThemeVars()
   const relativeLogoPath = get(themeVars, 'header.logo.0.url')
   const logoUrl = `${config.dataSrc}${relativeLogoPath}`
+  const date = new Date()
 
   return (
     <div className="text-center bg-footer">
@@ -63,7 +64,7 @@ const Footer = ({ policyHeadings }) => {
         </div>
         <div className="flex flex-col sm:flex-row pb-8 sm:pb-0 justify-center text-secondary">
           <div className="mr-10">Powered by Origin Dshop</div>
-          <div>© 2021 Origin Protocol</div>
+          <div>© {date.getFullYear()} Origin Protocol</div>
         </div>
       </div>
     </div>

@@ -7,8 +7,7 @@ import Link from 'components/Link'
 import SocialLinks from 'components/SocialLinks'
 
 /*
- * @param policyHeadings <Array<string>> Individual elements of this array are displayed on the footer of a store's website, so that the user can click on them
- * and be routed to the store's policy pages
+ * @param policyHeadings <Array<string>> Individual elements of this array are displayed on the footer of a store's website. When a user clicks on a 'heading', they're routed to the corresponding policy page.
  */
 const Footer = ({ policyHeadings }) => {
   const { config } = useConfig()

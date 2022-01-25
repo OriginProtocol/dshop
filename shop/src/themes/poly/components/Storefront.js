@@ -15,7 +15,7 @@ import Footer from './_Footer'
 
 const Storefront = () => {
   const { config } = useConfig()
-  const [policies, setPolicies] = useState(['', '', false])
+  const [policies, setPolicies] = useState([['', '', false]])
 
   useEffect(() => {
     fetch('/shop/policies', {
