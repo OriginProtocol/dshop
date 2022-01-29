@@ -33,7 +33,11 @@ const { getLogger } = require('../../utils/logger')
 const { getMyIP } = require('../../utils/ip')
 const { assert } = require('../../utils/validators')
 const { hasCNAMEOrA } = require('../../utils/dns')
-const { DSHOP_CACHE, DEFAULT_INFRA_RESOURCES } = require('../../utils/const')
+const {
+  AWS_MARKETPLACE_DEPLOYMENT,
+  DSHOP_CACHE,
+  DEFAULT_INFRA_RESOURCES
+} = require('../../utils/const')
 
 const {
   deploymentLock,
@@ -309,6 +313,7 @@ async function deploy({
       selection: resourceSelection,
       id: 'gcp-files'
     }) ||
+    AWS_MARKETPLACE_DEPLOYMENT ||
     canUseResource({
       networkConfig,
       selection: resourceSelection,
