@@ -33,9 +33,10 @@ const useEmailAppsList = ({ shopConfig }) => {
       {
         id: 'aws',
         title: 'AWS SES',
-        description: awsEnabled
-          ? `AWS SES Access Key: ${maskSecret(awsAccessKey, 12)}`
-          : 'Send emails using AWS SES',
+        description:
+          awsEnabled && !process.env.AWS_MARKETPLACE_DEPLOYMENT
+            ? `AWS SES Access Key: ${maskSecret(awsAccessKey, 12)}`
+            : 'Send emails using AWS SES',
         icon: <img src="images/aws-ses.png" width="60%" />,
         enabled: awsEnabled
       },

@@ -2,7 +2,8 @@ import React, { useMemo, useState } from 'react'
 import fbt, { FbtParam } from 'fbt'
 
 import useShopConfig from 'utils/useShopConfig'
-import useStateValue from 'data/state'
+import { useStateValue } from 'data/state'
+import useBackendApi from 'utils/useBackendApi'
 import useEmailAppsList from 'utils/useEmailAppsList'
 import maskSecret from 'utils/maskSecret'
 
@@ -18,9 +19,13 @@ import ProcessorsList from 'components/settings/ProcessorsList'
 
 const AppSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
-  const [, dispatch] = useStateValue()
+  const [{ config }, dispatch] = useStateValue()
   const [connectModal, setShowConnectModal] = useState(false)
   const { emailAppsList } = useEmailAppsList({ shopConfig })
+  const { post } = useBackendApi({ authToken: true })
+
+  //Comment out the line below after testing is complete
+  process.env.AWS_MARKETPLACE_DEPLOYMENT = true
 
   const appsList = useMemo(() => {
     if (!shopConfig) return []
@@ -71,7 +76,29 @@ const AppSettings = () => {
               <button
                 className="btn btn-outline-primary px-4"
                 type="button"
-                onClick={() => setShowConnectModal(processor.id)}
+                onClick={async () => {
+                  if (
+                    process.env.AWS_MARKETPLACE_DEPLOYMENT &&
+                    processor.id == 'aws'
+                  ) {
+                    try {
+                      await post('/shop/config', {
+                        method: 'PUT',
+                        body: JSON.stringify({ email: 'aws' }),
+                        suppressError: true
+                      })
+                    } catch (err) {
+                      console.error(err)
+                    }
+                    // dispatch({
+                    //   type: 'setConfig',
+                    //   config: { ...shopConfig, ...config, email: 'aws' }
+                    // })
+                    refetch()
+                  } else {
+                    setShowConnectModal(processor.id)
+                  }
+                }}
               >
                 <fbt desc="Connect">Connect</fbt>
               </button>
@@ -91,13 +118,7 @@ const AppSettings = () => {
       ModalToRender = SendgridModal
       break
     case 'aws':
-    process.env.AWS_MARKETPLACE_DEPLOYMENT = true; 
-      process.env.AWS_MARKETPLACE_DEPLOYMENT
-        ? dispatch({
-            type: 'setConfigSimple',
-            config: { ...shopConfig, email: 'aws' }
-          })
-        : (ModalToRender = AWSModal)
+      ModalToRender = AWSModal
       break
     case 'mailgun':
       ModalToRender = MailgunModal
