@@ -39,7 +39,7 @@ async function sendPrintfulOrderFailedEmail(shopId, orderData, opts, skip) {
     fromEmail: from
   }
 
-  const htmlOutput = mjml2html(printfulOrderFailed(vars), { minify: true })
+  const htmlOutput = mjml2html(printfulOrderFailed(vars))
   const txtOutput = printfulOrderFailedTxt(vars)
 
   const message = {

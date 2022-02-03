@@ -277,7 +277,8 @@ const AdminSettings = ({ shop }) => {
               </div>
             </>
           )}
-          {state.email !== 'aws' ? null : (
+          {state.email !== 'aws' &&
+          !process.env.AWS_MARKETPLACE_DEPLOYMENT ? null : (
             <>
               <div className="form-group">
                 <label>AWS Region</label>

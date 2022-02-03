@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import fbt, { FbtParam } from 'fbt'
 
 import useShopConfig from 'utils/useShopConfig'
+import useStateValue from 'data/state'
 import useEmailAppsList from 'utils/useEmailAppsList'
 import maskSecret from 'utils/maskSecret'
 
@@ -17,6 +18,7 @@ import ProcessorsList from 'components/settings/ProcessorsList'
 
 const AppSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
+  const [, dispatch] = useStateValue()
   const [connectModal, setShowConnectModal] = useState(false)
   const { emailAppsList } = useEmailAppsList({ shopConfig })
 
@@ -89,7 +91,13 @@ const AppSettings = () => {
       ModalToRender = SendgridModal
       break
     case 'aws':
-      ModalToRender = AWSModal
+    process.env.AWS_MARKETPLACE_DEPLOYMENT = true; 
+      process.env.AWS_MARKETPLACE_DEPLOYMENT
+        ? dispatch({
+            type: 'setConfigSimple',
+            config: { ...shopConfig, email: 'aws' }
+          })
+        : (ModalToRender = AWSModal)
       break
     case 'mailgun':
       ModalToRender = MailgunModal

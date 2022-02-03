@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer')
 const aws = require('aws-sdk')
-// const { IS_TEST } = require('../const')
+const { AWS_MARKETPLACE_DEPLOYMENT } = require('../const')
 const encConf = require('../encryptedConfig')
 
 function getTransportFromConfig(config) {
@@ -24,12 +24,23 @@ function getTransportFromConfig(config) {
       }
     })
   } else if (config.email === 'aws') {
-    const SES = new aws.SES({
-      apiVersion: '2010-12-01',
-      region: config.awsRegion,
-      accessKeyId: config.awsAccessKey,
-      secretAccessKey: config.awsAccessSecret
-    })
+    let SES
+
+    if (AWS_MARKETPLACE_DEPLOYMENT) {
+      //Use the credentials from the EC2 Instance metadata
+      SES = new aws.SES({
+        apiVersion: '2010-12-01'
+      })
+    } else {
+      //Look up the shop admin's AWS credentials from 'config'
+      SES = new aws.SES({
+        apiVersion: '2010-12-01',
+        region: config.awsRegion,
+        accessKeyId: config.awsAccessKey,
+        secretAccessKey: config.awsAccessSecret
+      })
+    }
+
     return nodemailer.createTransport({ SES })
   }
 }

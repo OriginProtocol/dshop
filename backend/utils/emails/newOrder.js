@@ -159,8 +159,8 @@ async function sendNewOrderEmail({
     ...varsOverride
   }
 
-  const htmlOutputVendor = mjml2html(vendor(vars), { minify: true })
-  const htmlOutput = mjml2html(email(vars), { minify: true })
+  const htmlOutputVendor = mjml2html(vendor(vars))
+  const htmlOutput = mjml2html(email(vars))
   const txtOutput = emailTxt(vars)
 
   const message = {
