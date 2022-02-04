@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { validateSelection } from '@origin/dshop-validation/matrix'
 
 import useSetState from 'utils/useSetState'
+import useShopConfig from 'utils/useShopConfig'
 import { Networks } from 'data/Networks'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import PasswordField from 'components/admin/PasswordField'
@@ -145,6 +146,11 @@ function validate(state) {
 }
 
 const NetworkForm = ({ onSave, network, feedback, className }) => {
+  const { post } = useBackendApi({ authToken: true })
+  const { refetch } = useShopConfig()
+  //Comment out the line below after testing is complete
+  process.env.AWS_MARKETPLACE_DEPLOYMENT = true
+
   const [advanced, setAdvanced] = useState(false)
   // NOTE: defaultShopConfig is stored as string, probably
   // to make it editable from a text field.
@@ -255,7 +261,25 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
             <button
               className="btn btn-outline-primary mr-2"
               type="button"
-              onClick={() => setConfigureEmailModal(processor.id)}
+              onClick={async () => {
+                if (
+                  process.env.AWS_MARKETPLACE_DEPLOYMENT &&
+                  processor.id == 'aws'
+                ) {
+                  try {
+                    await post('/shop/config', {
+                      method: 'PUT',
+                      body: JSON.stringify({ email: 'aws' }),
+                      suppressError: true
+                    })
+                  } catch (err) {
+                    console.error(err)
+                  }
+                  refetch()
+                } else {
+                  setShowConnectModal(processor.id)
+                }
+              }}
             >
               Connect
             </button>
@@ -270,13 +294,21 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
     const selection = Object.keys(newState.infra).filter(
       (k) => newState.infra[k]
     )
-    const validRes = validateSelection({ networkConfig: newState, selection })
+    const awsResources = ['aws-files', 'aws-cdn', 'aws-dns', 'aws-email']
 
-    if (!validRes.success) {
-      setState({ ...stateUpdate, infraErrors: validRes.errors })
-      return false
+    //Validate selection only if it is something other than an AWS Resource, and DShop is not running on Amazon EC2.
+    //Reason: If DShop is running on EC2, it can connect to an[other] AWS resource automatically
+    if (
+      !awsResources.includes(selection) ||
+      !process.env.AWS_MARKETPLACE_DEPLOYMENT
+    ) {
+      const validRes = validateSelection({ networkConfig: newState, selection })
+
+      if (!validRes.success) {
+        setState({ ...stateUpdate, infraErrors: validRes.errors })
+        return false
+      }
     }
-
     setState({ ...stateUpdate, infraErrors: [] })
     return true
   }

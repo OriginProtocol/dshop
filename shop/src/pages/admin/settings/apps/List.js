@@ -19,7 +19,6 @@ import ProcessorsList from 'components/settings/ProcessorsList'
 
 const AppSettings = () => {
   const { shopConfig, refetch } = useShopConfig()
-  const [{ config }, dispatch] = useStateValue()
   const [connectModal, setShowConnectModal] = useState(false)
   const { emailAppsList } = useEmailAppsList({ shopConfig })
   const { post } = useBackendApi({ authToken: true })
@@ -90,10 +89,6 @@ const AppSettings = () => {
                     } catch (err) {
                       console.error(err)
                     }
-                    // dispatch({
-                    //   type: 'setConfig',
-                    //   config: { ...shopConfig, ...config, email: 'aws' }
-                    // })
                     refetch()
                   } else {
                     setShowConnectModal(processor.id)
