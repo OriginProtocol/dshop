@@ -146,8 +146,6 @@ function validate(state) {
 }
 
 const NetworkForm = ({ onSave, network, feedback, className }) => {
-  const { post } = useBackendApi({ authToken: true })
-  const { refetch } = useShopConfig()
   //Comment out the line below after testing is complete
   process.env.AWS_MARKETPLACE_DEPLOYMENT = true
 
@@ -266,18 +264,14 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
                   process.env.AWS_MARKETPLACE_DEPLOYMENT &&
                   processor.id == 'aws'
                 ) {
-                  try {
-                    await post('/shop/config', {
-                      method: 'PUT',
-                      body: JSON.stringify({ email: 'aws' }),
-                      suppressError: true
-                    })
-                  } catch (err) {
-                    console.error(err)
-                  }
-                  refetch()
+                  setState({
+                    fallbackShopConfig: {
+                      ...state.fallbackShopConfig,
+                      email: 'aws'
+                    }
+                  })
                 } else {
-                  setShowConnectModal(processor.id)
+                  setConfigureEmailModal(processor.id)
                 }
               }}
             >
