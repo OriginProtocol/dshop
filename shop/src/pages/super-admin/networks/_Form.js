@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { validateSelection } from '@origin/dshop-validation/matrix'
 
 import useSetState from 'utils/useSetState'
-import useShopConfig from 'utils/useShopConfig'
 import { Networks } from 'data/Networks'
 import { formInput, formFeedback } from 'utils/formHelpers'
 import PasswordField from 'components/admin/PasswordField'
@@ -146,9 +145,6 @@ function validate(state) {
 }
 
 const NetworkForm = ({ onSave, network, feedback, className }) => {
-  //Comment out the line below after testing is complete
-  process.env.AWS_MARKETPLACE_DEPLOYMENT = true
-
   const [advanced, setAdvanced] = useState(false)
   // NOTE: defaultShopConfig is stored as string, probably
   // to make it editable from a text field.

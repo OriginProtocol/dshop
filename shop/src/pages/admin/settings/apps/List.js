@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react'
 import fbt, { FbtParam } from 'fbt'
 
 import useShopConfig from 'utils/useShopConfig'
-import { useStateValue } from 'data/state'
 import useBackendApi from 'utils/useBackendApi'
 import useEmailAppsList from 'utils/useEmailAppsList'
 import maskSecret from 'utils/maskSecret'
@@ -22,9 +21,6 @@ const AppSettings = () => {
   const [connectModal, setShowConnectModal] = useState(false)
   const { emailAppsList } = useEmailAppsList({ shopConfig })
   const { post } = useBackendApi({ authToken: true })
-
-  //Comment out the line below after testing is complete
-  process.env.AWS_MARKETPLACE_DEPLOYMENT = true
 
   const appsList = useMemo(() => {
     if (!shopConfig) return []

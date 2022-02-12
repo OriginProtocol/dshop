@@ -64,8 +64,8 @@ sudo -u dshop yarn build:dist
 cd $BACKEND_PATH
 truncate -s 0 .env
 
-# Env var indicating it is a AWS deployment.
-echo "AWS_MARKETPLACE_DEPLOYMENT=true" >> .env
+# Env var indicating it is a AWS deployment. Append this to the env files in both the 'backend' and 'shop' folders
+echo "AWS_MARKETPLACE_DEPLOYMENT=true" | tee -a .env ../shop/.env
 
 # Encryption key for storing data securely in the DB.
 echo "ENCRYPTION_KEY=`openssl rand -base64 48`" >> .env

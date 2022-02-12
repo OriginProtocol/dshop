@@ -224,7 +224,9 @@ const webpackConfig = {
       DATA_DIR: process.env.DATA_DIR || '',
       CONTENT_CDN: process.env.CONTENT_CDN || '',
       CONTENT_HASH: process.env.CONTENT_HASH || '',
-      ABSOLUTE: process.env.ABSOLUTE || ''
+      ABSOLUTE: process.env.ABSOLUTE || '',
+      AWS_MARKETPLACE_DEPLOYMENT:
+        false || process.env.AWS_MARKETPLACE_DEPLOYMENT
     }),
     new MiniCssExtractPlugin({ filename: '[name].[contenthash:8].css' })
   ],

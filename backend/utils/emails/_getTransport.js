@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer')
 const aws = require('aws-sdk')
-const { AWS_MARKETPLACE_DEPLOYMENT } = require('../const')
+const { AWS_MARKETPLACE_DEPLOYMENT, DEFAULT_AWS_REGION } = require('../const')
 const encConf = require('../encryptedConfig')
 
 function getTransportFromConfig(config) {
@@ -29,7 +29,8 @@ function getTransportFromConfig(config) {
     if (AWS_MARKETPLACE_DEPLOYMENT) {
       //Use the credentials from the EC2 Instance metadata
       SES = new aws.SES({
-        apiVersion: '2010-12-01'
+        apiVersion: '2010-12-01',
+        region: DEFAULT_AWS_REGION
       })
     } else {
       //Look up the shop admin's AWS credentials from 'config'
