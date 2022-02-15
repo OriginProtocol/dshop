@@ -289,7 +289,7 @@ const NetworkForm = ({ onSave, network, feedback, className }) => {
     //Validate selection only if it is something other than an AWS Resource, and DShop is not running on Amazon EC2.
     //Reason: If DShop is running on EC2, it can connect to an[other] AWS resource automatically
     if (
-      !awsResources.includes(selection) ||
+      !awsResources.includes(selection) &&
       !process.env.AWS_MARKETPLACE_DEPLOYMENT
     ) {
       const validRes = validateSelection({ networkConfig: newState, selection })
