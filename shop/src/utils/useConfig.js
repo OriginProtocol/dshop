@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useStateValue } from 'data/state'
 import { fetchConfig } from 'data/fetchConfig'
+import useIsMounted from 'utils/useIsMounted'
 
 function useConfig() {
   const [{ config }, dispatch] = useStateValue()
   const [error, setError] = useState()
+  const isMounted = useIsMounted()
 
   function setActiveShop(shopSlug) {
     const dataDir = document
@@ -28,11 +30,13 @@ function useConfig() {
 
     fetchConfig(dataSrc, shopSlug, isBackend)
       .then((config) => {
+        if (!isMounted.current) return
         setError(false)
         config.activeShop = config.backendAuthToken
         dispatch({ type: 'setConfig', config })
       })
       .catch(() => {
+        if (!isMounted.current) return
         setError(true)
       })
   }
