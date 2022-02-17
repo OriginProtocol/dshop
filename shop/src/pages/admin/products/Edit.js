@@ -16,7 +16,6 @@ import { formInput, formFeedback } from 'utils/formHelpers'
 import { generateVariants } from 'utils/generateVariants'
 
 import fetchProduct from 'data/fetchProduct'
-import fetchProductStock from 'data/fetchProductStock'
 
 import Link from 'components/Link'
 import Redirect from 'components/Redirect'
@@ -329,7 +328,6 @@ const EditProduct = () => {
 
       // Clear memoize cache for existing product
       fetchProduct.cache.delete(`${config.dataSrc}-${product.id}`)
-      fetchProductStock.cache.clear()
 
       dispatch({
         type: 'toast',
