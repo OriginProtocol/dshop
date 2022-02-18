@@ -7,25 +7,37 @@ const Route53 = require('aws-sdk/clients/route53')
 
 const { append } = require('../string')
 const { getLogger } = require('../logger')
+const { DEFAULT_AWS_REGION } = require('./const')
 
 const log = getLogger('utils.dns.route53')
 
 const AWS_API_VERSION = '2013-04-01'
 
-/**
- * Return a Google Cloud DNS API client
- *
- * @returns {DNS}
- */
 function _getClient(credentials) {
   if (typeof credentials === 'string') credentials = JSON.parse(credentials)
 
   return new Route53({ apiVersion: AWS_API_VERSION, ...credentials })
 }
-const getClient = memoize(_getClient, (a) => {
-  if (!a) throw new Error('Must supply AWS credentails')
-  return stringify(a[0])
-})
+
+/**
+ * Return a Amazon Route53 DNS API client
+ * @param credentials <object> | null - AWS credentials are expected as a parameter if DShop is not deployed on Amazon EC2. aws-sdk can handle authentication tasks for a DShop instances running on EC2
+ * Ref: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials
+ * @returns {DNS}
+ */
+const getClient = (credentials) => {
+  if (credentials) {
+    memoize(_getClient, (a) => {
+      if (!a) throw new Error('Must supply AWS credentials')
+      return stringify(a[0])
+    })
+  } else {
+    return new Route53({
+      apiVersion: AWS_API_VERSION,
+      region: DEFAULT_AWS_REGION
+    })
+  }
+}
 
 /**
  * Create a change request object for use with changeResourceRecordSets
@@ -230,8 +242,7 @@ async function getRecord(client, zoneObj, DNSName, type) {
  * Try and resolve the known zone by the given name
  *
  * @param args {object}
- * @param args.credentials {object} credentials - The JSON Google service
- *  account credentials
+ * @param args.credentials {object} credentials - The JSON AWS account credentials
  * @param args.DNSName {string} name of DNS zone
  * @returns {boolean} if a zone exists
  */
@@ -254,8 +265,7 @@ async function resolveZone({ credentials, DNSName }) {
  * Ref: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Route53.html#listResourceRecordSets-property
  *
  * @param args {object}
- * @param args.credentials {object} credentials - The JSON Google service
- *  account credentials
+ * @param args.credentials {object} credentials - The JSON AWS account credentials
  * @param args.DNSName {string} name of DNS zone
  * @returns {boolean} if a zone exists
  */
@@ -315,8 +325,7 @@ async function addRecord({ credentials, zone, type, name, value }) {
  * Ref: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Route53.html
  *
  * @param {object} args
- * @param {string} args.credentials - The JSON Google service account
- *  credentials
+ * @param {string} args.credentials - The JSON AWS account credentials
  * @param {string} args.zone - The DNS zone we're adding records to
  * @param {string} args.subdomain - The name of the record we're setting
  * @param {string} args.ipfsGateway - The IPFS gateway to use for DNSLink

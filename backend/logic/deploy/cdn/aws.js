@@ -17,7 +17,8 @@ const { isConfigured } = require('@origin/dshop-validation/matrix')
 
 const {
   DEFAULT_AWS_REGION,
-  DEFAULT_AWS_CACHE_POLICY_NAME
+  DEFAULT_AWS_CACHE_POLICY_NAME,
+  AWS_MARKETPLACE_DEPLOYMENT
 } = require('../../../utils/const')
 const route53 = require('../../../utils/dns/route53')
 const { assert } = require('../../../utils/validators')
@@ -38,7 +39,7 @@ let cloudfrontClient, acmClient, awsCredentials, s3Client
 function isAvailable({ networkConfig, resourceSelection }) {
   return (
     resourceSelection.includes('aws-cdn') &&
-    isConfigured(networkConfig, 'aws-cdn')
+    (AWS_MARKETPLACE_DEPLOYMENT || isConfigured(networkConfig, 'aws-cdn'))
   )
 }
 
@@ -49,26 +50,41 @@ function isAvailable({ networkConfig, resourceSelection }) {
  * @param args.networkConfig {Object} - Decrypted networkConfig object
  */
 async function configure({ networkConfig }) {
-  awsCredentials = {
-    accessKeyId: networkConfig.awsAccessKeyId,
-    secretAccessKey: networkConfig.awsSecretAccessKey,
-    region: networkConfig.awsRegion || DEFAULT_AWS_REGION
+  if (AWS_MARKETPLACE_DEPLOYMENT) {
+    cloudfrontClient = new CloudFront({
+      apiVersion: '2020-05-31',
+      region: DEFAULT_AWS_REGION
+    })
+    acmClient = new ACM({
+      apiVersion: '2015-12-08',
+      region: DEFAULT_AWS_REGION
+    })
+    s3Client = new S3({
+      apiVersion: '2006-03-01',
+      region: DEFAULT_AWS_REGION
+    })
+  } else {
+    awsCredentials = {
+      accessKeyId: networkConfig.awsAccessKeyId,
+      secretAccessKey: networkConfig.awsSecretAccessKey,
+      region: networkConfig.awsRegion || DEFAULT_AWS_REGION
+    }
+    cloudfrontClient = new CloudFront({
+      apiVersion: '2020-05-31',
+      region: networkConfig.awsRegion || DEFAULT_AWS_REGION,
+      ...awsCredentials
+    })
+    acmClient = new ACM({
+      apiVersion: '2015-12-08',
+      region: networkConfig.awsRegion || DEFAULT_AWS_REGION,
+      ...awsCredentials
+    })
+    s3Client = new S3({
+      apiVersion: '2006-03-01',
+      region: networkConfig.awsRegion || DEFAULT_AWS_REGION,
+      ...awsCredentials
+    })
   }
-  cloudfrontClient = new CloudFront({
-    apiVersion: '2020-05-31',
-    region: networkConfig.awsRegion || DEFAULT_AWS_REGION,
-    ...awsCredentials
-  })
-  acmClient = new ACM({
-    apiVersion: '2015-12-08',
-    region: networkConfig.awsRegion || DEFAULT_AWS_REGION,
-    ...awsCredentials
-  })
-  s3Client = new S3({
-    apiVersion: '2006-03-01',
-    region: networkConfig.awsRegion || DEFAULT_AWS_REGION,
-    ...awsCredentials
-  })
 }
 
 /**

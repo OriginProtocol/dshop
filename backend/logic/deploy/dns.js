@@ -5,6 +5,7 @@ const {
 } = require('../../utils/dns/cloudflare')
 const { setRecords: setCloudDNSRecords } = require('../../utils/dns/clouddns')
 const { setRecords: setRoute53Records } = require('../../utils/dns/route53')
+const { AWS_MARKETPLACE_DEPLOYMENT } = require('../../utils/const')
 const { getLogger } = require('../../utils/logger')
 
 const log = getLogger('logic.deploy.dns')
@@ -63,18 +64,23 @@ async function configureShopDNS({
       })
     }
   } else if (resourceSelection.includes('aws-dns')) {
-    if (!isConfigured(networkConfig, 'aws-dns')) {
-      log.warn('AWS DNS Proider selected but not available!')
+    if (
+      !AWS_MARKETPLACE_DEPLOYMENT &&
+      !isConfigured(networkConfig, 'aws-dns')
+    ) {
+      log.warn('AWS DNS Provider selected but not available!')
     } else {
       await setRoute53Records({
         ipfsGateway: backendHost,
         zone,
         subdomain,
         hash,
-        credentials: {
-          accessKeyId: networkConfig.awsAccessKeyId,
-          secretAccessKey: networkConfig.awsSecretAccessKey
-        },
+        credentials: AWS_MARKETPLACE_DEPLOYMENT
+          ? null
+          : {
+              accessKeyId: networkConfig.awsAccessKeyId,
+              secretAccessKey: networkConfig.awsSecretAccessKey
+            },
         cname,
         ipAddresses
       })

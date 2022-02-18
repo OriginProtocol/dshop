@@ -251,6 +251,10 @@ const ActivateBuild = ({ className = '', shop, ipfsHash }) => {
                       {network.gcpCredentials ? (
                         <option value="gcp">GCP DNS</option>
                       ) : null}
+                      {process.env.AWS_MARKETPLACE_DEPLOYMENT ||
+                      (network.awsAccessKeyId && network.awsSecretAccessKey) ? (
+                        <option value="aws">Amazon Route53</option>
+                      ) : null}
                       {!isUnstoppable ? null : (
                         <option value="unstoppable">Unstoppable Domains</option>
                       )}

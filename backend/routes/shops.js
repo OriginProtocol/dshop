@@ -687,8 +687,10 @@ module.exports = function (router) {
       // DNS Provider
       if (req.body.dnsProvider === 'cloudflare') {
         resourceSelection.push('cloudflare-dns')
-      } else if (req.body.pinner === 'gcp') {
+      } else if (req.body.dnsProvider === 'gcp') {
         resourceSelection.push('gcp-dns')
+      } else if (req.body.dnsProvider === 'aws') {
+        resourceSelection.push('aws-dns')
       }
     }
 
