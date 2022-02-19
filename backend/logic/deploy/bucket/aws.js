@@ -7,7 +7,11 @@ const { isConfigured } = require('@origin/dshop-validation/matrix')
 const { guessContentType, walkDir } = require('../../../utils/filesystem')
 const { assert } = require('../../../utils/validators')
 const { BucketExistence } = require('../../../utils/enums')
-const { NETWORK_ID_TO_NAME, BUCKET_PREFIX } = require('../../../utils/const')
+const {
+  NETWORK_ID_TO_NAME,
+  AWS_MARKETPLACE_DEPLOYMENT,
+  BUCKET_PREFIX
+} = require('../../../utils/const')
 const { getLogger } = require('../../../utils/logger')
 
 const log = getLogger('logic.deploy.bucket.aws')
@@ -24,7 +28,7 @@ let cachedClient = null
 function isAvailable({ networkConfig, resourceSelection }) {
   return (
     resourceSelection.includes('aws-files') &&
-    isConfigured(networkConfig, 'aws-files')
+    (AWS_MARKETPLACE_DEPLOYMENT || isConfigured(networkConfig, 'aws-files'))
   )
 }
 
@@ -34,13 +38,23 @@ function isAvailable({ networkConfig, resourceSelection }) {
  * @param args {Object}
  * @param args.networkConfig {Object} - Decrypted networkConfig object
  */
+
 function configure({ networkConfig }) {
-  cachedClient = new S3({
-    apiVersion: '2006-03-01',
-    accessKeyId: networkConfig.awsAccessKeyId,
-    secretAccessKey: networkConfig.awsSecretAccessKey,
-    region: networkConfig.awsRegion // Optional
-  })
+  if (AWS_MARKETPLACE_DEPLOYMENT) {
+    //Use the credentials from the EC2 Instance metadata
+    cachedClient = new S3({
+      apiVersion: '2006-03-01',
+      region: networkConfig.awsRegion // Optional
+    })
+  } else {
+    //Look up the shop admin's AWS credentials from the network config
+    cachedClient = new S3({
+      apiVersion: '2006-03-01',
+      accessKeyId: networkConfig.awsAccessKeyId,
+      secretAccessKey: networkConfig.awsSecretAccessKey,
+      region: networkConfig.awsRegion // Optional
+    })
+  }
 }
 
 /**
@@ -81,7 +95,11 @@ async function deploy({ shop, networkConfig, OutputDir }) {
       }
     }
 
-    await cachedClient.createBucket(params).promise()
+    await cachedClient
+      .createBucket(params, (err) => {
+        console.error(`Cannot create S3 Bucket:\n`, err)
+      })
+      .promise()
 
     log.debug('Waiting for bucket to exist...')
 
