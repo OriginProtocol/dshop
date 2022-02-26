@@ -671,33 +671,12 @@ module.exports = function (router) {
       return res.json({ success: false, reason: 'shop-not-found' })
     }
     const { networkId } = req.body
-    let resourceSelection = req.body.resourceSelection
-
-    // Backwards compat. Depreciate eventually
-    if (!resourceSelection) {
-      resourceSelection = []
-
-      // IPFS Pinner
-      if (req.body.pinner === 'pinata') {
-        resourceSelection.push('ipfs-pinata')
-      } else if (req.body.pinner === 'ipfs-cluster') {
-        resourceSelection.push('ipfs-cluster')
-      }
-
-      // DNS Provider
-      if (req.body.dnsProvider === 'cloudflare') {
-        resourceSelection.push('cloudflare-dns')
-      } else if (req.body.dnsProvider === 'gcp') {
-        resourceSelection.push('gcp-dns')
-      } else if (req.body.dnsProvider === 'aws') {
-        resourceSelection.push('aws-dns')
-      }
-    }
 
     const network = await Network.findOne({ where: { networkId } })
     if (!network) {
       return res.json({ success: false, reason: 'no-such-network' })
     }
+    const networkConfig = decryptConfig(network.config)
     const uuid = uuidv4()
 
     await queues.deploymentQueue.add(
@@ -706,7 +685,7 @@ module.exports = function (router) {
         networkId: networkId ? networkId : network.networkId,
         subdomain: shop.hostname,
         shopId: shop.id,
-        resourceSelection
+        resourceSelection: networkConfig.defaultResourceSelection
       },
       {
         jobId: `deployment-${uuid}`,

@@ -33,7 +33,11 @@ const { getLogger } = require('../../utils/logger')
 const { getMyIP } = require('../../utils/ip')
 const { assert } = require('../../utils/validators')
 const { hasCNAMEOrA } = require('../../utils/dns')
-const { DSHOP_CACHE, DEFAULT_INFRA_RESOURCES } = require('../../utils/const')
+const {
+  DSHOP_CACHE,
+  DEFAULT_INFRA_RESOURCES,
+  AWS_MARKETPLACE_DEPLOYMENT
+} = require('../../utils/const')
 
 const {
   deploymentLock,
@@ -184,9 +188,17 @@ async function deploy({
 
   // Make sure the selected infra resources are a valid and configured combination
   if (resourceSelection) {
+    const awsResources = ['aws-files', 'aws-cdn', 'aws-dns', 'aws-email']
+
+    // If DShop is deployed on AWS EC2, skip validation checks for all AWS resources selected by the admin. Reason: DShop can attempt to connect
+    // to such resources automatically using the "EC2 instance metadata" service (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html#instance-metadata-security-credentials)
     const selectionValidation = validateSelection({
       networkConfig,
-      selection: resourceSelection
+      selection: AWS_MARKETPLACE_DEPLOYMENT
+        ? resourceSelection.filter(
+            (resource) => !awsResources.includes(resource)
+          )
+        : resourceSelection
     })
     if (!selectionValidation.success) {
       log.error('The infra resource selection is invalid!')
@@ -222,7 +234,10 @@ async function deploy({
     dnsProvider = 'gcp'
   } else if (isConfigured(networkConfig, 'cloudflare-dns')) {
     dnsProvider = 'cloudflare'
-  } else if (isConfigured(networkConfig, 'aws-dns')) {
+  } else if (
+    resourceSelection.includes('aws-dns') &&
+    (AWS_MARKETPLACE_DEPLOYMENT || isConfigured(networkConfig, 'aws-dns'))
+  ) {
     dnsProvider = 'aws'
   } else if (overrides.configureShopDNS) {
     dnsProvider = 'override'
@@ -346,8 +361,14 @@ async function deploy({
    */
   let ipAddresses = null
   let cnames = null
+
+  /**
+   * A DShop instance running on Amazon EC2 (identified by AWS_MARKETPLACE_DEPLOYMENT) can
+   * attempt a deployment to Amazon CloudFront (CDN) without explicitly being supplied
+   * AWS credentials. In other words, we can skip the 'canUseResourceType' check.
+   */
   if (
-    shop.enableCdn &&
+    AWS_MARKETPLACE_DEPLOYMENT ||
     canUseResourceType({
       networkConfig,
       selection: resourceSelection,

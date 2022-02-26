@@ -87,6 +87,10 @@ async function configure({ networkConfig }) {
   }
 }
 
+function wait(seconds) {
+  return new Promise((resolve) => setTimeout(resolve, seconds * 1000))
+}
+
 /**
  * Configure CDN to point to bucket
  *
@@ -127,6 +131,8 @@ async function configureCDN({ shop, deployment, domains }) {
     log.debug('Creating Certificate')
 
     acmCertificateArn = await createCertificate({ requestId, domains })
+    // We must wait a few seconds after calling createCertificate to obtain more information about the newly-issued certificate
+    await wait(10)
     cert = await getCertificateByARN(acmCertificateArn)
   }
 
@@ -200,11 +206,24 @@ async function configureCDN({ shop, deployment, domains }) {
   } else {
     log.debug('Creating Distribution')
 
+    //Wait for the ACM certificate to be validated before attempting to create a CloudFront Distribution
+    await acmClient
+      .waitFor(
+        'certificateValidated',
+        { CertificateArn: acmCertificateArn },
+        (err) => {
+          if (err) console.log(err, err.stack) // an error occurred
+        }
+      )
+      .promise()
+
     dist = await createDistribution({
       requestId,
       cnames: domains,
       bucketName,
-      bucketWebsiteUrl: getWebsiteURL(bucketName, awsCredentials.region),
+      bucketWebsiteUrl: awsCredentials
+        ? getWebsiteURL(bucketName, awsCredentials.region)
+        : getWebsiteURL(bucketName),
       acmCertificateArn,
       cachePolicyId: cachePolicy.CachePolicy.Id
     })
@@ -479,7 +498,8 @@ async function createDistribution({
       ViewerCertificate: {
         CloudFrontDefaultCertificate: false,
         ACMCertificateArn: acmCertificateArn,
-        SSLSupportMethod: 'sni-only'
+        SSLSupportMethod: 'sni-only',
+        MinimumProtocolVersion: 'TLSv1'
       },
       IsIPV6Enabled: true
     }

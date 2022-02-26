@@ -7,7 +7,7 @@ const Route53 = require('aws-sdk/clients/route53')
 
 const { append } = require('../string')
 const { getLogger } = require('../logger')
-const { DEFAULT_AWS_REGION } = require('./const')
+const { DEFAULT_AWS_REGION } = require('../const')
 
 const log = getLogger('utils.dns.route53')
 
