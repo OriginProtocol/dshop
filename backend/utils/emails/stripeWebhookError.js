@@ -32,7 +32,7 @@ async function stripeWebhookErrorEmail(shopId, errorData, skip) {
     ...errorData
   }
 
-  const htmlOutput = mjml2html(stripeWebhookError(vars), { minify: true })
+  const htmlOutput = mjml2html(stripeWebhookError(vars))
   const txtOutput = stripeWebhookErrorTxt(vars)
 
   const message = {

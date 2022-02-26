@@ -30,7 +30,7 @@ async function sendPasswordResetEmail({ network, seller, verifyUrl, skip }) {
     fromEmail: from
   }
 
-  const htmlOutput = mjml2html(forgotPassEmail(vars), { minify: true })
+  const htmlOutput = mjml2html(forgotPassEmail(vars))
   const txtOutput = forgotPassEmailTxt(vars)
 
   const message = {

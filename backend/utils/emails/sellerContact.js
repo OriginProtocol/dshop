@@ -35,7 +35,7 @@ async function sellerContactEmail({ network, seller, data, skip }) {
     fromEmail: from
   }
 
-  const htmlOutput = mjml2html(sellerContact(vars), { minify: true })
+  const htmlOutput = mjml2html(sellerContact(vars))
   const txtOutput = sellerContactTxt(vars)
 
   const message = {

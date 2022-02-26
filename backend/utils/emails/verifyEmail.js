@@ -24,7 +24,7 @@ async function sendVerifyEmail({ network, seller, verifyUrl, skip }) {
   const { name, email } = seller
   const vars = { head, name, verifyUrl, fromEmail: from }
 
-  const htmlOutput = mjml2html(verifyEmail(vars), { minify: true })
+  const htmlOutput = mjml2html(verifyEmail(vars))
   const txtOutput = verifyEmailTxt(vars)
 
   const message = {
