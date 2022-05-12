@@ -227,7 +227,8 @@ module.exports = function (router) {
   })
 
   router.post('/auth/login', async (req, res) => {
-    const seller = await Seller.findOne({ where: { email: req.body.email } })
+    const email = req.body.email.toLowerCase()
+    const seller = await Seller.findOne({ where: { email } })
     if (!seller) {
       log.debug('Login failed: no such user')
       return res.send(AUTH_FAILURE_RESPOSNE)
