@@ -148,7 +148,7 @@ const Main = () => {
                 {config.logo ? (
                   <img src={`${config.dataSrc}${config.logo}`} />
                 ) : null}
-                {config.title}
+                {config.fullTitle}
               </h1>
             </Link>
             <button className="btn" onClick={() => setMenu(!menu)}>
@@ -175,7 +175,7 @@ const Main = () => {
                 {config.logo ? (
                   <img src={`${config.dataSrc}${config.logo}`} />
                 ) : null}
-                {config.title}
+                {config.fullTitle}
               </h1>
             </Link>
             {!config.byline ? null : (
