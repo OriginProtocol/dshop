@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@nomiclabs/buidler": "^1.4.8",
-    "@openzeppelin/contracts": "^3.2.0"
+    "@openzeppelin/contracts": "^4.0.0"
   },
   "devDependencies": {
     "@nomiclabs/buidler-ethers": "2.0.2",
