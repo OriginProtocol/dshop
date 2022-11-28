@@ -16,9 +16,9 @@
     "@origin/utils": "^0.1.0",
     "bs58": "4.0.1",
     "cross-fetch": "3.0.6",
-    "eslint": "7.19.0",
+    "eslint": "8.6.0",
     "prettier": "2.2.1",
-    "form-data": "3.0.0"
+    "form-data": "4.0.0"
   },
   "prettier": {
     "semi": false,
