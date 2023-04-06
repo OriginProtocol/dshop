@@ -13,6 +13,7 @@ import { useStateValue } from 'data/state'
 import Link from 'components/Link'
 import PasswordField from 'components/admin/PasswordField'
 import Domains from './domains/List'
+import FormActions from '../FormActions'
 
 function reducer(state, newState) {
   return { ...state, ...newState }
@@ -38,21 +39,6 @@ const GeneralSettings = () => {
       ...pick(shopConfig, ['hostname', 'emailSubject', 'supportEmail'])
     })
   }, [shopConfig, config])
-
-  const actions = (
-    <div className="actions">
-      <button type="button" className="btn btn-outline-primary">
-        <fbt desc="Cancel">Cancel</fbt>
-      </button>
-      <button
-        type="submit"
-        className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
-        disabled={saving}
-      >
-        <fbt desc="Update">Update</fbt>
-      </button>
-    </div>
-  )
 
   return (
     <form
@@ -100,6 +86,14 @@ const GeneralSettings = () => {
         } catch (err) {
           console.error(err)
           setSaving(false)
+          dispatch({
+            type: 'toast',
+            message: fbt(
+              'Failed to save your changes. Try again later.',
+              'admin.settings.general.updateError'
+            ),
+            style: 'error'
+          })
         }
       }}
     >
@@ -109,7 +103,7 @@ const GeneralSettings = () => {
         </Link>
         <span className="chevron" />
         <fbt desc="General">General</fbt>
-        {actions}
+        <FormActions hasChanges={state.hasChanges} workInProgress={saving} />
       </h3>
       <div className="row">
         <div className="shop-settings col-md-8 col-lg-9">
@@ -208,7 +202,9 @@ const GeneralSettings = () => {
           </div>
         </div>
       </div>
-      <div className="footer-actions">{actions}</div>
+      <div className="footer-actions">
+        <FormActions hasChanges={state.hasChanges} workInProgress={saving} />
+      </div>
     </form>
   )
 }

@@ -7,6 +7,7 @@ import useBackendApi from 'utils/useBackendApi'
 import { formInput } from 'utils/formHelpers'
 import { useStateValue } from 'data/state'
 import Link from 'components/Link'
+import FormActions from './FormActions'
 
 function reducer(state, newState) {
   return { ...state, ...newState }
@@ -52,25 +53,25 @@ const AdvancedSettings = () => {
         body: JSON.stringify(state)
       })
       dispatch({
-        type: 'toast',
-        message: fbt(
-          'Your changes have been saved',
-          'admin.settings.advanced.changesSaved'
-        )
-      })
-      dispatch({
         type: 'setConfigSimple',
         config: {
           ...config,
           ...pick(state, configFields)
         }
       })
+      dispatch({ type: 'reload', target: 'shopConfig' })
+      dispatch({
+        type: 'toast',
+        message: (
+          <fbt desc="admin.settings.advanced.changesSaved">Settings saved</fbt>
+        )
+      })
     } catch (err) {
       console.error(err)
       dispatch({
         type: 'toast',
         message: fbt(
-          'Failed to save your changes',
+          'Failed to save your changes. Try again later.',
           'admin.settings.advanced.saveError'
         ),
         style: 'error'
@@ -89,19 +90,11 @@ const AdvancedSettings = () => {
           <fbt desc="Settings">Settings</fbt>
         </Link>
         <span className="chevron" />
-        Advanced
-        <div className="actions">
-          <button type="button" className="btn btn-outline-primary">
-            <fbt desc="Cancel">Cancel</fbt>
-          </button>
-          <button
-            type="submit"
-            className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
-            disabled={state.saving}
-          >
-            <fbt desc="Update">Update</fbt>
-          </button>
-        </div>
+        <fbt desc="Advanced">Advanced</fbt>
+        <FormActions
+          hasChanges={state.hasChanges}
+          workInProgress={state.saving}
+        />
       </h3>
       <div className="mt-4">
         <div className="shop-settings">

@@ -371,6 +371,7 @@ const EditProduct = () => {
       )}
       <button
         className={`btn btn-primary${formState.hasChanges ? '' : ' disabled'}`}
+        disabled={!formState.hasChanges}
         type="submit"
         children="Save"
       />
@@ -780,6 +781,10 @@ export default EditProduct
 require('react-styl')(`
   .admin-edit-product
     display: block
+
+    button
+      :disabled
+        cursor: default
 
     .footer-actions
       border-top: 1px solid #cdd7e0

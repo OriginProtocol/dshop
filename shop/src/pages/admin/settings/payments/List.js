@@ -23,6 +23,7 @@ import OfflinePayments from './OfflinePayments'
 import DisconnectModal from './_DisconnectModal'
 
 import ProcessorsList from 'components/settings/ProcessorsList'
+import FormActions from '../FormActions'
 
 const validate = (state) => {
   const newState = {}
@@ -186,28 +187,6 @@ const PaymentSettings = () => {
       }))
   }, [shopConfig])
 
-  const actions = (
-    <>
-      <button type="button" className="btn btn-outline-primary">
-        <fbt desc="Cancel">Cancel</fbt>
-      </button>
-      <button
-        type="submit"
-        className={`btn btn-${state.hasChanges ? '' : 'outline-'}primary`}
-        disabled={saving}
-        children={
-          saving ? (
-            <>
-              <fbt desc="Updating">Updating</fbt>...
-            </>
-          ) : (
-            <fbt desc="Update">Update</fbt>
-          )
-        }
-      />
-    </>
-  )
-
   function onCloseModal() {
     setShowConnectModal(null)
     refetch()
@@ -242,11 +221,17 @@ const PaymentSettings = () => {
             setSaving(false)
             return
           }
-
-          dispatch({ type: 'toast', message: 'Saved OK' })
           dispatch({
             type: 'setConfigSimple',
             config: { ...config, ...shopConfig }
+          })
+          dispatch({
+            type: 'toast',
+            message: (
+              <fbt desc="admin.settings.payments.savedMessage">
+                Settings saved
+              </fbt>
+            )
           })
           dispatch({ type: 'reload', target: 'shopConfig' })
           setState({ hasChanges: false })
@@ -254,6 +239,14 @@ const PaymentSettings = () => {
         } catch (err) {
           console.error(err)
           setSaving(false)
+          dispatch({
+            type: 'toast',
+            message: fbt(
+              'Failed to save your changes. Try again later.',
+              'admin.settings.payments.updateError'
+            ),
+            style: 'error'
+          })
         }
       }}
     >
@@ -263,7 +256,7 @@ const PaymentSettings = () => {
         </Link>
         <span className="chevron" />
         <fbt desc="Payments">Payments</fbt>
-        <div className="actions">{actions}</div>
+        <FormActions hasChanges={state.hasChanges} workInProgress={saving} />
       </h3>
       <div className="shop-settings processors-list">
         <h4>
@@ -355,14 +348,14 @@ const PaymentSettings = () => {
         )}
 
         <OfflinePayments
-          onChange={setState}
+          onChange={(updates) => setState({ ...updates, hasChanges: true })}
           offlinePaymentMethods={state.offlinePaymentMethods}
         />
 
         <CryptoSettings {...{ state, setState, config }} />
       </div>
       <div className="footer-actions">
-        <div className="actions">{actions}</div>
+        <FormActions hasChanges={state.hasChanges} workInProgress={saving} />
       </div>
     </form>
   )
