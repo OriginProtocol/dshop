@@ -145,14 +145,6 @@ describe('Discounts', () => {
       {
         discount: { code: 'DOESNOTEXIST', value: '10', discountType: 'fixed' },
         error: 'Discount error: Invalid discount code'
-      },
-      // Discount that creates inconsistent cart data.
-      {
-        discount: {
-          ...pick(fixedDiscount, ['code', 'discountType', 'value', 'data']),
-          corruptTestData: true
-        },
-        error: 'Discount error: Cart value mismatch'
       }
     ]
 
@@ -256,7 +248,6 @@ describe('Discounts', () => {
           id: 'paypal',
           label: 'PayPal'
         },
-        error: 'Discount error: Cart value mismatch',
         paymentType: OrderPaymentTypes.PayPal
       }
     ]

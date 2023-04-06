@@ -322,7 +322,7 @@ const reducer = (state, action) => {
     newState = set(newState, `toasts[${newState.toasts.length}]`, {
       message: action.message,
       id: +new Date(),
-      type: action.style
+      type: action.style //possible values: "success", "error"
     })
   } else if (action.type === 'setDashboardStats') {
     newState = set(newState, 'dashboardStats', action.stats)

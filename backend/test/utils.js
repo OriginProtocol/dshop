@@ -299,6 +299,7 @@ async function updateNetworkConfig(network, networkConfig) {
  *  - {models.Discount} discount: discount
  *  - {Object} paymentMethod: payment method override
  *  - {boolean} corruptPrice: whether or not to generate a cart with a corrupted item price
+ *  - {boolean} corruptSubTotal: whether or not to generate a cart with a corrupted subTotal
  * @returns {Promise<{data: *, ipfsHash: *}>}
  */
 async function createTestEncryptedOfferData(network, shop, key, opts = {}) {
@@ -309,15 +310,14 @@ async function createTestEncryptedOfferData(network, shop, key, opts = {}) {
   // Calculate discount amount, if any.
   let discountAmount = 0
   if (opts.discount) {
-    if (opts.discount.corruptTestData) {
-      discountAmount = 9999
-    } else if (['percentage', 'payment'].includes(opts.discount.discountType)) {
+    if (['percentage', 'payment'].includes(opts.discount.discountType)) {
       const totalWithShipping =
         subTotalAmount + (opts.discount.excludeShipping ? 0 : shippingAmount)
       discountAmount = Math.round(
         (totalWithShipping * opts.discount.value) / 100
       )
     } else if (opts.discount.discountType === 'fixed') {
+      //convert opts.discount.value to a fixed point integer with the same scaling factor as other variables in the function
       discountAmount = opts.discount.value * 100
     } else {
       throw new Error(`Unexpected discount type: ${opts.discount.discountType}`)

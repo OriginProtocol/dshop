@@ -1,5 +1,4 @@
 const { get } = require('lodash')
-const calculateCartTotal = require('@origin/utils/calculateCartTotal')
 const { DiscountTypeEnums } = require('../../utils/enums')
 
 const { Sequelize, Discount, Order } = require('../../models')
@@ -97,9 +96,6 @@ const checkIfUserHasAvailedDiscount = async (
  * Validate the discount applied to an order.
  * If the discount is valid, increment the DB counter tracking its number of uses.
  *
- * IMPORTANT: Keep this function's total calculation
- * in sync with the calculation in shop/src/data/state.js
- *
  * @param {Models.Order} orderObj
  * @returns {{ valid: true}|{ error: string }}
  */
@@ -158,13 +154,6 @@ const validateDiscountOnOrder = async (orderObj) => {
     await checkIfUserHasAvailedDiscount(discountObj, userEmail, orderObj.shopId)
   ) {
     return { error: 'Discount error: Already availed the discount' }
-  }
-
-  const cartComputedValues = calculateCartTotal(cart)
-
-  if (cart.total !== cartComputedValues.total) {
-    // Something has gone wrong
-    return { error: `Discount error: Cart value mismatch` }
   }
 
   // Increment the DB counter tracking the discount's number of uses.

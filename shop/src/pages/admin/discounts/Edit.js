@@ -63,6 +63,13 @@ function validate(state) {
     )
   }
 
+  if (state.maxDiscountValue && Number(state.maxDiscountValue) <= 0) {
+    newState.maxDiscountError = fbt(
+      'Max discount must be greater than zero',
+      'admin.discounts.edit.maxDiscountError'
+    )
+  }
+
   const valid = Object.keys(newState).every((f) => f.indexOf('Error') < 0)
 
   return { valid, newState: { ...state, ...newState } }
@@ -177,6 +184,11 @@ const AdminEditDiscount = () => {
             redirectTo('/admin/discounts')
           }
         } else {
+          dispatch({
+            type: 'toast',
+            message: 'Please correct the error(s) and try again',
+            style: 'error'
+          })
           window.scrollTo(0, 0)
         }
       }}
@@ -456,7 +468,6 @@ const AdminEditDiscount = () => {
           </div>
           <input type="number" {...input('minCartValue')} />
         </div>
-        {Feedback('minCartValue')}
       </div>
 
       {state.discountType !== 'percentage' ? null : (
@@ -477,7 +488,7 @@ const AdminEditDiscount = () => {
             </div>
             <input type="number" {...input('maxDiscountValue')} />
           </div>
-          {Feedback('maxDiscountValue')}
+          {Feedback('maxDiscount')}
         </div>
       )}
 
