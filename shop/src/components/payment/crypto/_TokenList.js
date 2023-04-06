@@ -5,6 +5,7 @@ import usePrice from 'utils/usePrice'
 
 const TokenList = ({
   acceptedTokens,
+  tokenImageUrls,
   activeToken,
   setActiveToken,
   loading,
@@ -12,6 +13,7 @@ const TokenList = ({
   cart
 }) => {
   const { toTokenPrice, toFiatPrice } = usePrice(config.currency)
+
   return (
     <table>
       <thead>
@@ -28,7 +30,7 @@ const TokenList = ({
         </tr>
       </thead>
       <tbody>
-        {acceptedTokens.map((token) => {
+        {acceptedTokens.map((token, index) => {
           const isActive = activeToken.id === token.id
           return (
             <tr key={token.id} onClick={() => setActiveToken(token)}>
@@ -41,7 +43,7 @@ const TokenList = ({
                   onChange={() => setActiveToken(token)}
                 />
                 <div className={`token-logo${isActive ? ' active' : ''}`}>
-                  <img src={`images/payment/${token.name.toLowerCase()}.svg`} />
+                  <img src={tokenImageUrls[index]} />
                 </div>
                 <div>{token.name}</div>
               </td>

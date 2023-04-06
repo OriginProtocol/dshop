@@ -6,6 +6,7 @@ import fbt from 'fbt'
 import useConfig from 'utils/useConfig'
 import usePrice from 'utils/usePrice'
 import useToken from 'utils/useToken'
+import useTokenImage from 'utils/useTokenImage'
 import useWallet from 'utils/useWallet'
 import useBackendApi from 'utils/useBackendApi'
 import { useStateValue } from 'data/state'
@@ -22,6 +23,7 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
   const { toTokenPrice } = usePrice(config.currency)
   const wallet = useWallet({ needSigner: true })
   const { post } = useBackendApi({ authToken: true })
+  const [tokenImageUrls, setTokenImageUrls] = useState([])
 
   const paymentMethods = get(config, 'paymentMethods', [])
   const cryptoSelected = get(cart, 'paymentMethod.id') === 'crypto'
@@ -97,6 +99,20 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
   const acceptedTokens = config.acceptedTokens
 
   useEffect(() => {
+    const tokenImgPromises = []
+
+    acceptedTokens.forEach((token) =>
+      tokenImgPromises.push(useTokenImage(token.address))
+    )
+
+    //Ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled
+    Promise.allSettled(tokenImgPromises).then((resultArray) => {
+      const urls = resultArray.map((result) => result.value)
+      setTokenImageUrls(urls)
+    })
+  }, [acceptedTokens])
+
+  useEffect(() => {
     const newState = {
       submit: 0,
       disabled:
@@ -161,6 +177,7 @@ const PayWithCryptoDirect = ({ submit, encryptedData, onChange, loading }) => {
           <TokenList
             {...{
               acceptedTokens,
+              tokenImageUrls,
               activeToken,
               setActiveToken,
               loading,
