@@ -47,6 +47,7 @@
     "@origin/services": "^0.1.0",
     "@origin/utils": "^0.1.0",
     "@popperjs/core": "^2.9.1",
+    "@tailwindcss/typography": "0.2.0",
     "@uphold/uphold-sdk-javascript": "^2.4.0",
     "@web3-react/core": "^6.1.1",
     "@web3-react/injected-connector": "^6.0.7",

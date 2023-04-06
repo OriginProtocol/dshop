@@ -5,7 +5,11 @@ import useConfig from 'utils/useConfig'
 import Link from 'components/Link'
 import SocialLinks from 'components/SocialLinks'
 import useThemeVars from 'utils/useThemeVars'
-const Footer = () => {
+
+/*
+ * @param policyHeadings <Array<string>> Individual elements of this array are displayed on the footer of a store's website. When a user clicks on a 'heading', they're routed to the corresponding policy page.
+ */
+const Footer = ({ policyHeadings }) => {
   const { config } = useConfig()
   const date = new Date()
   const themeVars = useThemeVars()
@@ -50,6 +54,18 @@ const Footer = () => {
           <Link to="/about" className="hover:opacity-75">
             About
           </Link>
+          <ul>
+            {/* Display links to policy pages if and only if the prop 'policyHeadings' is passed a value other than the expected default */}
+            {policyHeadings &&
+              policyHeadings != [''] &&
+              policyHeadings.map((heading, index) => {
+                return (
+                  <li key={`${index}`}>
+                    <Link to={`/policy${index + 1}`}>{heading}</Link>
+                  </li>
+                )
+              })}
+          </ul>
         </div>
       </div>
     </div>

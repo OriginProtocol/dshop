@@ -1,19 +1,28 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
-
 import Link from 'components/Link'
-
 import useThemeVars from 'utils/useThemeVars'
 
 import Header from './_Header'
 import Footer from './_Footer'
 import Collections from './_Collections'
+import { getPolicies } from './Policies'
 
 const Home = () => {
   const { config } = useConfig()
   const themeVars = useThemeVars()
+  const [policyHeadings, setHeadings] = useState([''])
+  useEffect(() => {
+    const updatePolicies = async () => {
+      getPolicies(config.backendAuthToken).then((obj) => {
+        setHeadings(obj.policyHeads)
+      })
+    }
+
+    updatePolicies()
+  }, [window.onload])
 
   return (
     <>
@@ -43,7 +52,7 @@ const Home = () => {
           View All Products
         </Link>
       </div>
-      <Footer />
+      <Footer policyHeadings={policyHeadings} />
     </>
   )
 }

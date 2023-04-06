@@ -3,12 +3,12 @@ import fbt from 'fbt'
 
 import Link from 'components/Link'
 
-const displayPolicy = ({ heading, text }) => {
+const DisplayPolicy = ({ heading, text }) => {
   return (
     <>
       <div className="collection">
         <div className="breadcrumbs">
-          <Link to="/">
+          <Link to="/" className="linkToHome">
             <fbt desc="Home">Home</fbt>
           </Link>
           <span>{heading}</span>
@@ -24,7 +24,7 @@ const displayPolicy = ({ heading, text }) => {
   )
 }
 
-export default displayPolicy
+export default DisplayPolicy
 
 require('react-styl')(`
   .policy-text

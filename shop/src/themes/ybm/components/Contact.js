@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import get from 'lodash/get'
 
 import useConfig from 'utils/useConfig'
@@ -8,6 +8,7 @@ import SocialLink from 'components/SocialLink'
 
 import Header from './_Header'
 import Footer from './_Footer'
+import { getPolicies } from './Policies'
 
 const Contact = () => {
   const { config } = useConfig()
@@ -17,7 +18,16 @@ const Contact = () => {
   const header = get(themeVars, 'contact.headerImage.0', {})
   const contactEmail = get(themeVars, 'contact.email', config.supportEmail)
   const contactNumber = get(themeVars, 'contact.number', config.supportPhone)
+  const [policyHeadings, setHeadings] = useState([''])
+  useEffect(() => {
+    const updatePolicies = async () => {
+      getPolicies(config.backendAuthToken).then((obj) => {
+        setHeadings(obj.policyHeads)
+      })
+    }
 
+    updatePolicies()
+  }, [])
   return (
     <>
       <Header
@@ -72,7 +82,7 @@ const Contact = () => {
           )}
         </div>
       </div>
-      <Footer />
+      <Footer policyHeadings={policyHeadings} />
     </>
   )
 }
