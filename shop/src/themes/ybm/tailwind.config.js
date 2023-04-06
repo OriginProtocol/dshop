@@ -32,7 +32,8 @@ module.exports = {
           400: '#c2a66c',
           100: '#f1f1ef'
         }
-      }
+      },
+      inset: { '-3': '-0.75rem' }
     }
   }
 }

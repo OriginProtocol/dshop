@@ -48,6 +48,9 @@
     @apply bg-black text-orange-400;
   }
 }
+  .closeIcon {
+    stroke:  #fff; 
+  }
 
 @media (min-width: 768px) {
   .container {
