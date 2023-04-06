@@ -56,7 +56,7 @@
     "formidable": "git://github.com/node-formidable/formidable.git#v1.2.3",
     "google-auth-library": "^6.1.4",
     "inquirer": "^7.3.3",
-    "ipfs-deploy": "8.0.1",
+    "ipfs-deploy": "9.0.0",
     "ipfs-http-client": "^49.0.0",
     "json-stable-stringify": "^1.0.1",
     "lodash": "^4.17.20",
