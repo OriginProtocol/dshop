@@ -30,6 +30,7 @@ const configFields = [
   'instagram',
   'medium',
   'youtube',
+  'otherMedia',
   'about',
   'themeId'
 ]

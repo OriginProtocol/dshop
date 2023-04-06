@@ -7,7 +7,7 @@ import useConfig from 'utils/useConfig'
 import useThemeVars from 'utils/useThemeVars'
 
 import CurrencySelect from 'components/CurrencySelect'
-import SocialLink from 'components/SocialLink'
+import SocialLinks from 'components/SocialLinks'
 import Link from 'components/Link'
 
 const Footer = () => {
@@ -23,20 +23,10 @@ const Footer = () => {
       <div className="container flex items-center flex-col sm:flex-row">
         <div className="flex-1 order-2 sm:order-1 flex">
           <div className="grid grid-flow-col gap-6">
-            <SocialLink
-              href={config.twitter}
-              className="hover:opacity-75"
+            <SocialLinks
+              itemClassName="hover:opacity-75"
               svg={{ height: '18', color: '#fff' }}
-            />
-            <SocialLink
-              href={config.facebook}
-              className="hover:opacity-75"
-              svg={{ height: '18', color: '#fff' }}
-            />
-            <SocialLink
-              href={config.instagram}
-              className="hover:opacity-75"
-              svg={{ height: '18', color: '#fff' }}
+              contentOnly
             />
           </div>
         </div>

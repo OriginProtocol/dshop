@@ -5,6 +5,7 @@ import Twitter from 'components/icons/Twitter'
 import Instagram from 'components/icons/Instagram'
 import Medium from 'components/icons/Medium'
 import YouTube from 'components/icons/YouTube'
+import Globe from 'components/icons/Globe'
 
 const networks = [
   {
@@ -31,6 +32,11 @@ const networks = [
     value: 'youtube',
     name: 'YouTube',
     icon: <YouTube />
+  },
+  {
+    value: 'otherMedia',
+    name: 'Other',
+    icon: <Globe />
   }
 ]
 

@@ -10,7 +10,6 @@ import CartIcon from 'components/icons/Cart'
 import Link from 'components/Link'
 import SocialLinks from 'components/SocialLinks'
 import MenuIcon from 'components/icons/Menu'
-import SocialLink from 'components/SocialLink'
 
 const Cart = ({ cart }) => (
   <Link to="/cart" className="nav-link relative flex">
@@ -134,17 +133,10 @@ const MobileMenu = ({ toggleMobileMenu }) => {
         </div>
       </div>
       <div className="mt-auto">
-        <SocialLink
-          href={config.twitter}
-          svg={{ height: 18, className: 'inline-block', color: '#fff' }}
-        />
-        <SocialLink
-          href={config.facebook}
-          svg={{ height: 18, className: 'ml-6 inline-block', color: '#fff' }}
-        />
-        <SocialLink
-          href={config.instagram}
-          svg={{ height: 18, className: 'ml-6 inline-block', color: '#fff' }}
+        <SocialLinks
+          itemClassName="hidden sm:inline-block hover:opacity-75"
+          svg={{ color: '#fff', width: 20, height: 20 }}
+          contentOnly
         />
       </div>
     </div>

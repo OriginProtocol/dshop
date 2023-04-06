@@ -33,7 +33,8 @@ const Onboarding = () => {
       config.twitter ||
       config.instagram ||
       config.medium ||
-      config.youtube)
+      config.youtube ||
+      config.otherMedia)
   )
 
   const taskset = [

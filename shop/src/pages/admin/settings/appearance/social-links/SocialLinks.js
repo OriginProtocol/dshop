@@ -4,7 +4,7 @@ import fbt from 'fbt'
 import Tooltip from 'components/Tooltip'
 
 import Delete from './_Delete'
-import EditModal from './_Edit'
+import EditSocialLinkModal from './_Edit'
 
 import networks from './_networks'
 
@@ -39,7 +39,7 @@ const SocialLinks = ({ socialLinks, setSocialLinks }) => {
           })}
         </div>
         <div className="mt-3">
-          <EditModal onChange={(newVal) => setSocialLinks(newVal)} />
+          <EditSocialLinkModal onChange={(newVal) => setSocialLinks(newVal)} />
         </div>
       </div>
     </>
@@ -61,7 +61,7 @@ const SocialLink = ({
         {name}
       </div>
     </Tooltip>
-    <EditModal
+    <EditSocialLinkModal
       editMode={true}
       defaultValues={{
         network: networkId,
